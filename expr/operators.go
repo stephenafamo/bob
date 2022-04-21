@@ -76,6 +76,50 @@ func IN(right any, left ...any) query.Expression {
 	}
 }
 
+// NOT IN operator
+// if the first value is not in any of the rest
+func NIN(right any, left ...any) query.Expression {
+	return leftRight{
+		right:    right,
+		left:     Group(left...),
+		operator: "NOT IN",
+	}
+}
+
+func NULL(exp any) query.Expression {
+	return null{
+		expr:   exp,
+		isNull: true,
+	}
+}
+
+func NOTNULL(exp any) query.Expression {
+	return null{
+		expr:   exp,
+		isNull: false,
+	}
+}
+
+type null struct {
+	expr   any
+	isNull bool
+}
+
+func (n null) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	args, err := query.Express(w, d, start, n.expr)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Write([]byte(" IS"))
+	if !n.isNull {
+		w.Write([]byte(" NOT"))
+	}
+	w.Write([]byte(" NULL"))
+
+	return args, nil
+}
+
 // For window functions
 func OVER(f function, window any) query.Expression {
 	return over{
