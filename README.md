@@ -2,6 +2,13 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/typesql.svg)](https://pkg.go.dev/github.com/stephenafamo/typesql)
 
+## Examples
+
+Examples are in the [examples folder](examples):
+
+* PostgreSQL
+  * [Select](examples/postgres_select.md)
+
 ## Principles
 
 ### Custom Crafting
@@ -133,20 +140,35 @@ psql.Select(
 ).WriteQuery(w, 1)
 ```
 
-## Using the returned Query
+## Using the Query
 
-The Query object is an interface that has a single method:
+The `Query` object is an interface that has a single method:
 
 ```go
 type Query interface {
     // start is the index of the args, usually 1.
     // it is present to allow re-indexing in cases of a subquery
     // The method returns the value of any args placed
+    // An `io.Writer` is used for efficiency when building the query.
     WriteQuery(w io.Writer, start int) (args []any, err error)
 }
 ```
 
-An `io.Writer` is used for efficiency when building the query.
+For times when you only want the strings and args,
+and don't want to create an io.Writer, the `Build` function can be used:
+
+```go
+queryString, args, err := query.Build(psql.Select(...))
+```
+
+Since the query is built from scratch every time the `WriteQuery()` method is called,
+it can be useful to initialize the query one time and reuse where necessary.
+
+For that, the `MustBuild()` function can be used. This panics on error.
+
+```go
+var myquery, myargs = query.MustBuild(psql.Insert(...))
+```
 
 ## Roadmap
 

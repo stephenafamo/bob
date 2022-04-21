@@ -15,6 +15,15 @@ func TestSelect(t *testing.T) {
 		expectedQuery string
 		expectedArgs  []any
 	}{
+		"simple select": {
+			expectedQuery: "SELECT id, name FROM users WHERE id IN ($1, $2, $3)",
+			expectedArgs:  []any{100, 200, 300},
+			query: Select(
+				qm.Select("id", "name"),
+				qm.From("users"),
+				qm.Where(expr.IN("id", expr.Arg(100), expr.Arg(200), expr.Arg(300))),
+			),
+		},
 		"with rows from": {
 			query: Select(
 				qm.From(expr.TFunc(
