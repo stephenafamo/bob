@@ -11,8 +11,8 @@ type From struct {
 	Joins  []Join
 }
 
-func (f *From) AppendFrom(table Table) {
-	f.Tables = append(f.Tables, table)
+func (f *From) AppendFrom(tables ...any) {
+	f.Tables = append(f.Tables, tables...)
 }
 
 func (f *From) AppendJoin(j Join) {

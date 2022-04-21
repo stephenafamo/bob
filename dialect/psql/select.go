@@ -134,34 +134,17 @@ func (s SelectQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 
 type SelectQM struct{}
 
-func (qm SelectQM) With(q query.Query, name string, columns ...string) mods.QueryMod[*SelectQuery] {
-	return mods.With[*SelectQuery]{
-		Query:   q,
-		Name:    name,
-		Columns: columns,
-	}
+func (qm SelectQM) With(name string, columns ...string) cteChain[*SelectQuery] {
+	return cteChain[*SelectQuery](func() expr.CTE {
+		return expr.CTE{
+			Name:    name,
+			Columns: columns,
+		}
+	})
 }
 
-func (qm SelectQM) WithRecursive(q query.Query, name string, columns ...string) mods.QueryMod[*SelectQuery] {
-	return mods.With[*SelectQuery]{
-		Query:     q,
-		Name:      name,
-		Columns:   columns,
-		Recursive: true,
-	}
-}
-
-func (qm SelectQM) WithMaterialized(q query.Query, name string, columns ...string) mods.QueryMod[*SelectQuery] {
-	return mods.With[*SelectQuery]{
-		Query:        q,
-		Name:         name,
-		Columns:      columns,
-		Materialized: true,
-	}
-}
-
-func (qm SelectQM) WithCTE(cte expr.CTE) mods.QueryMod[*SelectQuery] {
-	return mods.With[*SelectQuery](cte)
+func (qm SelectQM) Recursive(r bool) mods.QueryMod[*SelectQuery] {
+	return mods.Recursive[*SelectQuery](r)
 }
 
 func (qm SelectQM) Distinct(expressions ...any) mods.QueryMod[*SelectQuery] {
@@ -175,8 +158,8 @@ func (qm SelectQM) Select(expressions ...any) mods.QueryMod[*SelectQuery] {
 	return mods.Select[*SelectQuery](expressions)
 }
 
-func (qm SelectQM) From(expression any) mods.QueryMod[*SelectQuery] {
-	return mods.From[*SelectQuery](expr.T(expression))
+func (qm SelectQM) From(exprs ...any) mods.QueryMod[*SelectQuery] {
+	return mods.From[*SelectQuery](exprs)
 }
 
 // For easy migration from sqlboiler/v4

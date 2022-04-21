@@ -45,7 +45,7 @@ func (t Table) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) 
 	return args, nil
 }
 
-// Table returns a table definition
+// T returns a table definition
 // the expression can be a table name, subquery, function, e.t.c.
 func T(expression any) Table {
 	t := Table{
@@ -56,8 +56,6 @@ func T(expression any) Table {
 }
 
 // TQuery returns a table definition based on a subquery
-// the first value in the aliases is used as the table alias
-// a 2nd value onward is used as the column aliases
 func TQuery(q query.Query, lateral bool) Table {
 	t := T(tableSubQuery{
 		query:   q,

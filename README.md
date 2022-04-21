@@ -84,14 +84,15 @@ cte := psql.Select(
     selMod.Where(expr.GTE("age", 21)),
 )
 
+var cte query.Query
 psql.Select(
-    selMod.With(cte, "adults"), // works
+    selMod.With("adults").As(cte), // works
     selMod.From("projects"),
 )
 
 var inMod = psql.InsertQM{}
 psql.Insert(
-    inMod.With(cte, "adults"), // works as well
+    inMod.With("adults").As(cte), // works as well
     inMod.From("projects"), // ERROR!
     inMod.Into("projects"), // works
 )
@@ -175,7 +176,7 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
 * [ ] Postgres
   * [x] Select
   * [x] Insert
-  * [ ] Update
+  * [x] Update
   * [ ] Delete
 * [ ] MySQL
   * [ ] Select

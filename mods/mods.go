@@ -20,6 +20,12 @@ func (f With[Q]) Apply(q Q) {
 	q.AppendWith(expr.CTE(f))
 }
 
+type Recursive[Q interface{ SetRecursive(bool) }] bool
+
+func (r Recursive[Q]) Apply(q Q) {
+	q.SetRecursive(bool(r))
+}
+
 type Distinct[Q interface{ SetDistinct(expr.Distinct) }] expr.Distinct
 
 func (d Distinct[Q]) Apply(q Q) {
@@ -32,10 +38,10 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
-type From[Q interface{ AppendFrom(expr.Table) }] expr.Table
+type From[Q interface{ AppendFrom(...any) }] []any
 
 func (f From[Q]) Apply(q Q) {
-	q.AppendFrom(expr.Table(f))
+	q.AppendFrom(f...)
 }
 
 type Join[Q interface{ AppendJoin(expr.Join) }] expr.Join
@@ -118,7 +124,6 @@ func (f For[Q]) Apply(q Q) {
 	q.SetFor(expr.For(f))
 }
 
-// For inserts
 type Values[Q interface{ AppendValues(vals ...any) }] []any
 
 func (s Values[Q]) Apply(q Q) {
@@ -131,54 +136,8 @@ func (s Returning[Q]) Apply(q Q) {
 	q.AppendReturning(s...)
 }
 
-type ConflictChain[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
+type Set[Q interface{ AppendSet(exprs ...any) }] []any
 
-func (s ConflictChain[Q]) Apply(q Q) {
-	q.SetConflict(s())
-}
-
-func (c ConflictChain[Q]) On(target any, where ...any) ConflictChain[Q] {
-	conflict := c()
-	conflict.Target.Target = target
-	conflict.Target.Where = append(conflict.Target.Where, where...)
-
-	return ConflictChain[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c ConflictChain[Q]) Do(do string) ConflictChain[Q] {
-	conflict := c()
-	conflict.Do = do
-
-	return ConflictChain[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c ConflictChain[Q]) Set(set any) ConflictChain[Q] {
-	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, set)
-
-	return ConflictChain[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c ConflictChain[Q]) SetEQ(a, b any) ConflictChain[Q] {
-	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, expr.EQ(a, b))
-
-	return ConflictChain[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c ConflictChain[Q]) Where(where ...any) ConflictChain[Q] {
-	conflict := c()
-	conflict.Where.Conditions = append(conflict.Where.Conditions, where...)
-
-	return ConflictChain[Q](func() expr.Conflict {
-		return conflict
-	})
+func (s Set[Q]) Apply(q Q) {
+	q.AppendSet(s...)
 }

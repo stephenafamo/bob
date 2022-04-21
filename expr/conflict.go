@@ -7,9 +7,10 @@ import (
 )
 
 type Conflict struct {
-	Do string // DO NOTHING | DO UPDATE
-	ConflictTarget
-	ConflictUpdateSet
+	Do     string // DO NOTHING | DO UPDATE
+	Target ConflictTarget
+	Set
+	Where
 }
 
 func (c *Conflict) SetConflict(conflict Conflict) {
@@ -27,11 +28,18 @@ func (c Conflict) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 	w.Write([]byte(" DO "))
 	w.Write([]byte(c.Do))
 
-	setArgs, err := query.ExpressIf(w, d, start+len(args), c.ConflictUpdateSet, true, " ", "")
+	setArgs, err := query.ExpressIf(w, d, start+len(args), c.Set, true, " ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, setArgs...)
+
+	whereArgs, err := query.ExpressIf(w, d, start+len(args), c.Where,
+		len(c.Where.Conditions) > 0, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, whereArgs...)
 
 	return args, nil
 }
@@ -48,26 +56,6 @@ func (c ConflictTarget) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any
 	}
 
 	whereArgs, err := query.ExpressSlice(w, d, start+len(args), c.Where, " WHERE ", " AND ", "")
-	if err != nil {
-		return nil, err
-	}
-	args = append(args, whereArgs...)
-
-	return args, nil
-}
-
-type ConflictUpdateSet struct {
-	Set   []any
-	Where []any
-}
-
-func (c ConflictUpdateSet) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	args, err := query.ExpressSlice(w, d, start, c.Set, "SET\n", ",\n", "")
-	if err != nil {
-		return nil, err
-	}
-
-	whereArgs, err := query.ExpressSlice(w, d, start+len(args), c.Where, "\nWHERE ", " AND ", "")
 	if err != nil {
 		return nil, err
 	}

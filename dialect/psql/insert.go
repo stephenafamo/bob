@@ -80,12 +80,17 @@ func (i InsertQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 
 type InsertQM struct{}
 
-func (qm InsertQM) With(q query.Query, name string, columns ...string) mods.QueryMod[*InsertQuery] {
-	return mods.With[*InsertQuery]{
-		Query:   q,
-		Name:    name,
-		Columns: columns,
-	}
+func (qm InsertQM) With(name string, columns ...string) cteChain[*InsertQuery] {
+	return cteChain[*InsertQuery](func() expr.CTE {
+		return expr.CTE{
+			Name:    name,
+			Columns: columns,
+		}
+	})
+}
+
+func (qm InsertQM) Recursive(r bool) mods.QueryMod[*InsertQuery] {
+	return mods.Recursive[*InsertQuery](r)
 }
 
 func (qm InsertQM) Into(name any, columns ...string) mods.QueryMod[*InsertQuery] {
@@ -114,10 +119,15 @@ func (qm InsertQM) Values(expressions ...any) mods.QueryMod[*InsertQuery] {
 }
 
 // The column to target. Will auto add brackets
-func (qm InsertQM) OnConflict(column any, where ...any) mods.ConflictChain[*InsertQuery] {
-	return mods.ConflictChain[*InsertQuery](func() expr.Conflict {
-		return expr.Conflict{}
-	}).On(expr.Group(column), where...)
+func (qm InsertQM) OnConflict(column any, where ...any) onConflict[*InsertQuery] {
+	return onConflict[*InsertQuery](func() expr.Conflict {
+		return expr.Conflict{
+			Target: expr.ConflictTarget{
+				Target: expr.Group(column),
+				Where:  where,
+			},
+		}
+	})
 }
 
 func (qm InsertQM) Returning(expressions ...any) mods.QueryMod[*InsertQuery] {

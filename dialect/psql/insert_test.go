@@ -25,7 +25,7 @@ func TestInsert(t *testing.T) {
 					expr.CONCAT(
 						"EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),
 					),
-				).SetWhere(expr.NE("d.zipcode", expr.S("21201"))),
+				).Where(expr.NE("d.zipcode", expr.S("21201"))),
 			),
 			expectedQuery: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
