@@ -173,11 +173,11 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
 
 ## Roadmap
 
-* [ ] Postgres
+* [x] Postgres
   * [x] Select
   * [x] Insert
   * [x] Update
-  * [ ] Delete
+  * [x] Delete
 * [ ] MySQL
   * [ ] Select
   * [ ] Insert

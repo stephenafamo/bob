@@ -44,6 +44,12 @@ func (f From[Q]) Apply(q Q) {
 	q.AppendFrom(f...)
 }
 
+type Using[Q interface{ AppendUsing(...any) }] []any
+
+func (f Using[Q]) Apply(q Q) {
+	q.AppendUsing(f...)
+}
+
 type Join[Q interface{ AppendJoin(expr.Join) }] expr.Join
 
 func (j Join[Q]) Apply(q Q) {
