@@ -131,55 +131,54 @@ func (s Returning[Q]) Apply(q Q) {
 	q.AppendReturning(s...)
 }
 
-type ConfictChain[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
+type ConflictChain[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
 
-func (s ConfictChain[Q]) Apply(q Q) {
+func (s ConflictChain[Q]) Apply(q Q) {
 	q.SetConflict(s())
-
 }
 
-func (c ConfictChain[Q]) On(target any, where ...any) ConfictChain[Q] {
+func (c ConflictChain[Q]) On(target any, where ...any) ConflictChain[Q] {
 	conflict := c()
-	conflict.ConflictTarget.Target = target
-	conflict.ConflictTarget.Where = append(conflict.ConflictTarget.Where, where...)
+	conflict.Target.Target = target
+	conflict.Target.Where = append(conflict.Target.Where, where...)
 
-	return ConfictChain[Q](func() expr.Conflict {
+	return ConflictChain[Q](func() expr.Conflict {
 		return conflict
 	})
 }
 
-func (c ConfictChain[Q]) Do(do string) ConfictChain[Q] {
+func (c ConflictChain[Q]) Do(do string) ConflictChain[Q] {
 	conflict := c()
 	conflict.Do = do
 
-	return ConfictChain[Q](func() expr.Conflict {
+	return ConflictChain[Q](func() expr.Conflict {
 		return conflict
 	})
 }
 
-func (c ConfictChain[Q]) Set(set any) ConfictChain[Q] {
+func (c ConflictChain[Q]) Set(set any) ConflictChain[Q] {
 	conflict := c()
-	conflict.ConflictUpdateSet.Set = append(conflict.ConflictUpdateSet.Where, set)
+	conflict.Set.Set = append(conflict.Set.Set, set)
 
-	return ConfictChain[Q](func() expr.Conflict {
+	return ConflictChain[Q](func() expr.Conflict {
 		return conflict
 	})
 }
 
-func (c ConfictChain[Q]) SetEQ(a, b any) ConfictChain[Q] {
+func (c ConflictChain[Q]) SetEQ(a, b any) ConflictChain[Q] {
 	conflict := c()
-	conflict.ConflictUpdateSet.Set = append(conflict.ConflictUpdateSet.Set, expr.EQ(a, b))
+	conflict.Set.Set = append(conflict.Set.Set, expr.EQ(a, b))
 
-	return ConfictChain[Q](func() expr.Conflict {
+	return ConflictChain[Q](func() expr.Conflict {
 		return conflict
 	})
 }
 
-func (c ConfictChain[Q]) SetWhere(where ...any) ConfictChain[Q] {
+func (c ConflictChain[Q]) Where(where ...any) ConflictChain[Q] {
 	conflict := c()
-	conflict.ConflictUpdateSet.Where = append(conflict.ConflictUpdateSet.Where, where...)
+	conflict.Where.Conditions = append(conflict.Where.Conditions, where...)
 
-	return ConfictChain[Q](func() expr.Conflict {
+	return ConflictChain[Q](func() expr.Conflict {
 		return conflict
 	})
 }

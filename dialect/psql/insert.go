@@ -114,8 +114,8 @@ func (qm InsertQM) Values(expressions ...any) mods.QueryMod[*InsertQuery] {
 }
 
 // The column to target. Will auto add brackets
-func (qm InsertQM) OnConflict(column any, where ...any) mods.ConfictChain[*InsertQuery] {
-	return mods.ConfictChain[*InsertQuery](func() expr.Conflict {
+func (qm InsertQM) OnConflict(column any, where ...any) mods.ConflictChain[*InsertQuery] {
+	return mods.ConflictChain[*InsertQuery](func() expr.Conflict {
 		return expr.Conflict{}
 	}).On(expr.Group(column), where...)
 }
