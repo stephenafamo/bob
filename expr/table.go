@@ -55,6 +55,24 @@ func T(expression any) Table {
 	return t
 }
 
+// TOnly return a table definition that is "ONLY table_name"
+func TOnly(name string) Table {
+	t := T(tableOnly{
+		name: name,
+	})
+
+	return t
+}
+
+// ONLY table_name
+type tableOnly struct {
+	name string
+}
+
+func (t tableOnly) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	return query.ExpressIf(w, d, start, Quote(t.name), true, "ONLY ", "")
+}
+
 // TQuery returns a table definition based on a subquery
 func TQuery(q query.Query, lateral bool) Table {
 	t := T(tableSubQuery{
