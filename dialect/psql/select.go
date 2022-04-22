@@ -196,36 +196,19 @@ func (qm SelectQM) Window(name string, definition any) mods.QueryMod[*SelectQuer
 	}
 }
 
+func (qm SelectQM) OrderBy(e any) mods.QueryMod[*SelectQuery] {
+	return orderBy[*SelectQuery](func() expr.OrderDef {
+		return expr.OrderDef{
+			Expression: e,
+		}
+	})
+}
+
 // For easy upgrade from sqlboiler/v4
-func (qm SelectQM) OrderBy(stmt string, args ...any) mods.QueryMod[*SelectQuery] {
+func (qm SelectQM) OrderByClause(stmt string, args ...any) mods.QueryMod[*SelectQuery] {
 	return mods.OrderBy[*SelectQuery]{
 		Expression: expr.Statement(stmt, args...),
 	}
-}
-
-func (qm SelectQM) OrderByAsc(e any) mods.QueryMod[*SelectQuery] {
-	return mods.OrderBy[*SelectQuery]{
-		Expression: e,
-		Direction:  "ASC",
-	}
-}
-
-func (qm SelectQM) OrderByDesc(e any) mods.QueryMod[*SelectQuery] {
-	return mods.OrderBy[*SelectQuery]{
-		Expression: e,
-		Direction:  "DESC",
-	}
-}
-
-func (qm SelectQM) OrderByUsing(e any, operator string) mods.QueryMod[*SelectQuery] {
-	return mods.OrderBy[*SelectQuery]{
-		Expression: e,
-		Direction:  "USING " + operator,
-	}
-}
-
-func (qm SelectQM) OrderByDef(order expr.OrderDef) mods.QueryMod[*SelectQuery] {
-	return mods.OrderBy[*SelectQuery](order)
 }
 
 func (qm SelectQM) Limit(count int64) mods.QueryMod[*SelectQuery] {

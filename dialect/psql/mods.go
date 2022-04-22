@@ -103,6 +103,66 @@ func (j joinMod[Q]) CrossJoin(e any) mods.QueryMod[Q] {
 	}
 }
 
+type orderBy[Q interface{ AppendOrder(expr.OrderDef) }] func() expr.OrderDef
+
+func (s orderBy[Q]) Apply(q Q) {
+	q.AppendOrder(s())
+}
+
+func (o orderBy[Q]) Asc() orderBy[Q] {
+	order := o()
+	order.Direction = "ASC"
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
+func (o orderBy[Q]) Desc() orderBy[Q] {
+	order := o()
+	order.Direction = "DESC"
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
+func (o orderBy[Q]) Using(operator string) orderBy[Q] {
+	order := o()
+	order.Direction = "USING " + operator
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
+func (o orderBy[Q]) NullsFirst() orderBy[Q] {
+	order := o()
+	order.Nulls = "FIRST"
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
+func (o orderBy[Q]) NullsLast() orderBy[Q] {
+	order := o()
+	order.Nulls = "LAST"
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
+func (o orderBy[Q]) Collate(collation string) orderBy[Q] {
+	order := o()
+	order.CollationName = collation
+
+	return orderBy[Q](func() expr.OrderDef {
+		return order
+	})
+}
+
 type onConflict[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
 
 func (s onConflict[Q]) Apply(q Q) {

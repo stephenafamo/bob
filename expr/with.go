@@ -19,10 +19,10 @@ func (w *With) SetRecursive(r bool) {
 	w.Recursive = r
 }
 
-func (o With) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (w With) WriteSQL(wr io.Writer, d query.Dialect, start int) ([]any, error) {
 	prefix := "WITH\n"
-	if o.Recursive {
+	if w.Recursive {
 		prefix = "WITH RECURSIVE\n"
 	}
-	return query.ExpressSlice(w, d, start, o.CTEs, prefix, ",\n", "")
+	return query.ExpressSlice(wr, d, start, w.CTEs, prefix, ",\n", "")
 }
