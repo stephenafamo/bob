@@ -6,8 +6,13 @@ import (
 	"github.com/stephenafamo/typesql/query"
 )
 
-func Arg(v any) query.Expression {
-	return arg{val: v}
+// Comma separated list of arguments
+func Arg(vals ...any) query.Expression {
+	return args{vals: vals}
+}
+
+func Placeholder(n uint) query.Expression {
+	return Arg(make([]any, n)...)
 }
 
 type arg struct {
@@ -17,15 +22,6 @@ type arg struct {
 func (a arg) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	d.WriteArg(w, start)
 	return []any{a.val}, nil
-}
-
-func Placeholder(n uint) query.Expression {
-	return Args(make([]any, n)...)
-}
-
-// Comma separated list of arguments
-func Args(vals ...any) query.Expression {
-	return args{vals: vals}
 }
 
 type args struct {

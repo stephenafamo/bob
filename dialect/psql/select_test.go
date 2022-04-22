@@ -21,7 +21,7 @@ func TestSelect(t *testing.T) {
 			query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
-				qm.Where(expr.IN("id", expr.Arg(100), expr.Arg(200), expr.Arg(300))),
+				qm.Where(expr.IN("id", expr.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {

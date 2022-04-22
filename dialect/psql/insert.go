@@ -31,7 +31,7 @@ func (i InsertQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return i.WriteSQL(w, dialect, start)
 }
 
-func (i InsertQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), i.With,
@@ -120,11 +120,24 @@ func (qm InsertQM) Values(expressions ...any) mods.QueryMod[*InsertQuery] {
 
 // The column to target. Will auto add brackets
 func (qm InsertQM) OnConflict(column any, where ...any) onConflict[*InsertQuery] {
+	if column != nil {
+		column = expr.P(column)
+	}
 	return onConflict[*InsertQuery](func() expr.Conflict {
 		return expr.Conflict{
 			Target: expr.ConflictTarget{
-				Target: expr.Group(column),
+				Target: column,
 				Where:  where,
+			},
+		}
+	})
+}
+
+func (qm InsertQM) OnConflictOnConstraint(constraint string) onConflict[*InsertQuery] {
+	return onConflict[*InsertQuery](func() expr.Conflict {
+		return expr.Conflict{
+			Target: expr.ConflictTarget{
+				Target: `ON CONSTRAINT "` + constraint + `"`,
 			},
 		}
 	})

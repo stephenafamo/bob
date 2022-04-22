@@ -15,12 +15,43 @@ func TestInsert(t *testing.T) {
 		expectedQuery string
 		expectedArgs  []any
 	}{
+		"simple insert": {
+			query: Insert(
+				qm.Into("films"),
+				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+			),
+			expectedQuery: "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6)",
+			expectedArgs:  []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+		},
+		"bulk insert": {
+			query: Insert(
+				qm.Into("films"),
+				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+			),
+			expectedQuery: `INSERT INTO films VALUES
+				($1, $2, $3, $4, $5, $6),
+				($7, $8, $9, $10, $11, $12)`,
+			expectedArgs: []any{
+				"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins",
+				"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins",
+			},
+		},
+		"on conflict do nothing": {
+			query: Insert(
+				qm.Into("films"),
+				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.OnConflict(nil).DoNothing(),
+			),
+			expectedQuery: "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
+			expectedArgs:  []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+		},
 		"upsert": {
 			query: Insert(
 				qm.Into(expr.T("distributors").As("d", "did", "dname")),
-				qm.Values(expr.Arg(8), expr.Arg("Anvil Distribution")),
-				qm.Values(expr.Arg(9), expr.Arg("Sentry Distribution")),
-				qm.OnConflict("did").Do("UPDATE").SetEQ(
+				qm.Values(expr.Arg(8, "Anvil Distribution")),
+				qm.Values(expr.Arg(9, "Sentry Distribution")),
+				qm.OnConflict("did").DoUpdate().SetEQ(
 					"dname",
 					expr.CONCAT(
 						"EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),

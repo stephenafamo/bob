@@ -8,6 +8,9 @@ Examples are in the [examples folder](examples):
 
 * PostgreSQL
   * [Select](examples/postgres_select.md)
+  * [Insert & Upsert](examples/postgres_insert.md)
+  * [Update](examples/postgres_update.md)
+  * [Delete](examples/postgres_delete.md)
 
 ## Principles
 

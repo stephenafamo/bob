@@ -32,7 +32,7 @@ func (u UpdateQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return u.WriteSQL(w, dialect, start)
 }
 
-func (u UpdateQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), u.With,

@@ -39,7 +39,7 @@ func (s SelectQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return s.WriteSQL(w, dialect, start)
 }
 
-func (s SelectQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), s.With,

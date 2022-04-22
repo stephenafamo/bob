@@ -30,7 +30,7 @@ func (u DeleteQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return u.WriteSQL(w, dialect, start)
 }
 
-func (u DeleteQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (u DeleteQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), u.With,
@@ -40,7 +40,7 @@ func (u DeleteQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, withArgs...)
 
-	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "DELTE FROM ", "")
+	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "DELETE FROM ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (u DeleteQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, retArgs...)
 
-	return nil, nil
+	return args, nil
 }
 
 type DeleteQM struct {

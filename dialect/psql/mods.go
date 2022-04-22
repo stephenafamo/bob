@@ -179,9 +179,18 @@ func (c onConflict[Q]) On(target any, where ...any) onConflict[Q] {
 	})
 }
 
-func (c onConflict[Q]) Do(do string) onConflict[Q] {
+func (c onConflict[Q]) DoNothing() mods.QueryMod[Q] {
 	conflict := c()
-	conflict.Do = do
+	conflict.Do = "NOTHING"
+
+	return onConflict[Q](func() expr.Conflict {
+		return conflict
+	})
+}
+
+func (c onConflict[Q]) DoUpdate() onConflict[Q] {
+	conflict := c()
+	conflict.Do = "UPDATE"
 
 	return onConflict[Q](func() expr.Conflict {
 		return conflict

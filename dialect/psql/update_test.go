@@ -9,6 +9,7 @@ import (
 
 func TestUpdate(t *testing.T) {
 	var qm = UpdateQM{}
+	var selectQM = SelectQM{}
 
 	tests := map[string]struct {
 		query         query.Query
@@ -36,6 +37,20 @@ func TestUpdate(t *testing.T) {
 			  WHERE accounts.name = $1
 			  AND employees.id = accounts.sales_person`,
 			expectedArgs: []any{"Acme Corporation"},
+		},
+		"with sub-select": {
+			expectedQuery: `UPDATE employees SET sales_count = sales_count + 1 WHERE id =
+				  (SELECT sales_person FROM accounts WHERE name = $1)`,
+			expectedArgs: []any{"Acme Corporation"},
+			query: Update(
+				qm.Table("employees"),
+				qm.SetEQ("sales_count", "sales_count + 1"),
+				qm.Where(expr.EQ("id", expr.P(Select(
+					selectQM.Select("sales_person"),
+					selectQM.From("accounts"),
+					selectQM.Where(expr.EQ("name", expr.Arg("Acme Corporation"))),
+				)))),
+			),
 		},
 	}
 

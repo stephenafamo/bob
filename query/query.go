@@ -35,6 +35,11 @@ func BuildN(q Query, start int) (string, []any, error) {
 }
 
 type Query interface {
+	// It should satisfy the Expression interface so that it can be used
+	// in places such as a sub-select
+	// However, it is allowed for a query to use its own dialect and not
+	// the dialect given to it
+	Expression
 	// start is the index of the args, usually 1.
 	// it is present to allow re-indexing in cases of a subquery
 	// The method returns the value of any args placed
@@ -42,12 +47,17 @@ type Query interface {
 }
 
 type Expression interface {
-	// Like query, but takes a dialect
+	// Writes the textual representation of the expression to the writer
+	// using the given dialect.
+	// start is the beginning index of the args if it needs to write any
 	WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error)
 }
 
 type Dialect interface {
+	// WriteArg should write an argument placeholder to the writer with the given index
 	WriteArg(w io.Writer, position int)
+	// WriteQuoted writes the given string to the writer surrounded by the appropriate
+	// quotes for the dialect
 	WriteQuoted(w io.Writer, s string)
 }
 
