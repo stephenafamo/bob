@@ -19,7 +19,7 @@ This is unlike most other query builders that use a common structure and attempt
 
 ### Progressive enhancement
 
-Most query mods will accept aa literal string that will be printed as is.
+Most query mods will accept a literal string that will be printed as is.
 
 However, many functions and methods are provided to express even the most complex queries in readable Go code.
 

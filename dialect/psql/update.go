@@ -74,7 +74,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, retArgs...)
 
-	return nil, nil
+	return args, nil
 }
 
 type UpdateQM struct {
