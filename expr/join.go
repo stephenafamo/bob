@@ -16,8 +16,11 @@ const (
 )
 
 type Join struct {
-	Type    string
-	To      any // the expression for the table
+	Type  string
+	To    any // the expression for the table
+	Alias string
+
+	// Join methods
 	Natural bool
 	On      []any
 	Using   []any
@@ -39,15 +42,18 @@ func (j Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	args = append(args, onArgs...)
 
 	usingArgs, err := query.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
-
 	args = append(args, usingArgs...)
+
+	if j.Alias != "" {
+		w.Write([]byte(" AS "))
+		d.WriteQuoted(w, j.Alias)
+	}
 
 	return args, nil
 }

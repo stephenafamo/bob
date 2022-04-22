@@ -2,8 +2,106 @@ package psql
 
 import (
 	"github.com/stephenafamo/typesql/expr"
+	"github.com/stephenafamo/typesql/mods"
 	"github.com/stephenafamo/typesql/query"
 )
+
+type join[Q interface{ AppendJoin(expr.Join) }] func() expr.Join
+
+func (j join[Q]) Apply(q Q) {
+	q.AppendJoin(j())
+}
+
+func (j join[Q]) To(e any) join[Q] {
+	jo := j()
+	jo.To = e
+
+	return join[Q](func() expr.Join {
+		return jo
+	})
+}
+
+func (j join[Q]) As(alias string) join[Q] {
+	jo := j()
+	jo.Alias = alias
+
+	return join[Q](func() expr.Join {
+		return jo
+	})
+}
+
+func (j join[Q]) Natural() mods.QueryMod[Q] {
+	jo := j()
+	jo.Natural = true
+
+	return mods.Join[Q](jo)
+}
+
+func (j join[Q]) On(on ...any) mods.QueryMod[Q] {
+	jo := j()
+	jo.On = append(jo.On, on)
+
+	return mods.Join[Q](jo)
+}
+
+func (j join[Q]) OnEQ(a, b any) mods.QueryMod[Q] {
+	jo := j()
+	jo.On = append(jo.On, expr.EQ(a, b))
+
+	return mods.Join[Q](jo)
+}
+
+func (j join[Q]) Using(using ...any) mods.QueryMod[Q] {
+	jo := j()
+	jo.Using = using
+
+	return mods.Join[Q](jo)
+}
+
+type joinMod[Q interface{ AppendJoin(expr.Join) }] struct{}
+
+func (j joinMod[Q]) InnerJoin(e any) join[Q] {
+	return join[Q](func() expr.Join {
+		return expr.Join{
+			Type: expr.InnerJoin,
+			To:   e,
+		}
+	})
+}
+
+func (j joinMod[Q]) LeftJoin(e any) join[Q] {
+	return join[Q](func() expr.Join {
+		return expr.Join{
+			Type: expr.LeftJoin,
+			To:   e,
+		}
+	})
+}
+
+func (j joinMod[Q]) RightJoin(e any) join[Q] {
+	return join[Q](func() expr.Join {
+		return expr.Join{
+			Type: expr.RightJoin,
+			To:   e,
+		}
+	})
+}
+
+func (j joinMod[Q]) FullJoin(e any) join[Q] {
+	return join[Q](func() expr.Join {
+		return expr.Join{
+			Type: expr.FullJoin,
+			To:   e,
+		}
+	})
+}
+
+func (j joinMod[Q]) CrossJoin(e any) mods.QueryMod[Q] {
+	return mods.Join[Q]{
+		Type: expr.CrossJoin,
+		To:   e,
+	}
+}
 
 type onConflict[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
 

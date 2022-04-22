@@ -22,7 +22,7 @@ func Select(mods ...mods.QueryMod[*SelectQuery]) *SelectQuery {
 type SelectQuery struct {
 	expr.With
 	expr.Select
-	expr.From
+	expr.FromItems
 	expr.Where
 	expr.GroupBy
 	expr.Having
@@ -55,7 +55,7 @@ func (s SelectQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, selArgs...)
 
-	fromArgs, err := query.ExpressIf(w, d, start+len(args), s.From, true, "\n", "")
+	fromArgs, err := query.ExpressSlice(w, d, start+len(args), s.FromItems.Items, "\nFROM ", ",\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,9 @@ func (s SelectQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	return args, nil
 }
 
-type SelectQM struct{}
+type SelectQM struct {
+	joinMod[*expr.FromItem]
+}
 
 func (qm SelectQM) With(name string, columns ...string) cteChain[*SelectQuery] {
 	return cteChain[*SelectQuery](func() expr.CTE {
@@ -158,128 +160,15 @@ func (qm SelectQM) Select(expressions ...any) mods.QueryMod[*SelectQuery] {
 	return mods.Select[*SelectQuery](expressions)
 }
 
-func (qm SelectQM) From(exprs ...any) mods.QueryMod[*SelectQuery] {
-	return mods.From[*SelectQuery](exprs)
-}
-
-// For easy migration from sqlboiler/v4
-func (qm SelectQM) InnerJoin(clause string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.InnerJoin,
-		To:   expr.Statement(clause, args),
+func (qm SelectQM) From(table any, fromMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[*SelectQuery] {
+	f := &expr.FromItem{
+		Table: table,
 	}
-}
-
-func (qm SelectQM) InnerJoinOn(to any, on ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.InnerJoin,
-		On:   on,
+	for _, mod := range fromMods {
+		mod.Apply(f)
 	}
-}
 
-func (qm SelectQM) InnerJoinUsing(to any, using ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:  expr.InnerJoin,
-		Using: using,
-	}
-}
-
-func (qm SelectQM) InnerJoinNatural(to any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:    expr.InnerJoin,
-		Natural: true,
-	}
-}
-
-func (qm SelectQM) LeftJoin(clause string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.LeftJoin,
-		To:   expr.Statement(clause, args),
-	}
-}
-
-func (qm SelectQM) LeftJoinOn(to any, on ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.LeftJoin,
-		On:   on,
-	}
-}
-
-func (qm SelectQM) LeftJoinUsing(to any, using ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:  expr.LeftJoin,
-		Using: using,
-	}
-}
-
-func (qm SelectQM) LeftJoinNatural(to any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:    expr.LeftJoin,
-		Natural: true,
-	}
-}
-
-func (qm SelectQM) RightJoin(clause string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.RightJoin,
-		To:   expr.Statement(clause, args),
-	}
-}
-
-func (qm SelectQM) RightJoinOn(to any, on ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.RightJoin,
-		On:   on,
-	}
-}
-
-func (qm SelectQM) RightJoinUsing(to any, using ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:  expr.RightJoin,
-		Using: using,
-	}
-}
-
-func (qm SelectQM) RightJoinNatural(to any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:    expr.RightJoin,
-		Natural: true,
-	}
-}
-
-func (qm SelectQM) FullJoin(clause string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.FullJoin,
-		To:   expr.Statement(clause, args),
-	}
-}
-
-func (qm SelectQM) FullJoinOn(to any, on ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.FullJoin,
-		On:   on,
-	}
-}
-
-func (qm SelectQM) FullJoinUsing(to any, using ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:  expr.FullJoin,
-		Using: using,
-	}
-}
-
-func (qm SelectQM) FullJoinNatural(to any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type:    expr.FullJoin,
-		Natural: true,
-	}
-}
-
-func (qm SelectQM) CrossJoin(clause string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.Join[*SelectQuery]{
-		Type: expr.CrossJoin,
-		To:   expr.Statement(clause, args),
-	}
+	return mods.FromItems[*SelectQuery](*f)
 }
 
 func (qm SelectQM) Where(e query.Expression) mods.QueryMod[*SelectQuery] {

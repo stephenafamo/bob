@@ -38,16 +38,10 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
-type From[Q interface{ AppendFrom(...any) }] []any
+type FromItems[Q interface{ AppendFromItem(expr.FromItem) }] expr.FromItem
 
-func (f From[Q]) Apply(q Q) {
-	q.AppendFrom(f...)
-}
-
-type Using[Q interface{ AppendUsing(...any) }] []any
-
-func (f Using[Q]) Apply(q Q) {
-	q.AppendUsing(f...)
+func (f FromItems[Q]) Apply(q Q) {
+	q.AppendFromItem(expr.FromItem(f))
 }
 
 type Join[Q interface{ AppendJoin(expr.Join) }] expr.Join

@@ -23,7 +23,7 @@ type UpdateQuery struct {
 	only bool
 	expr.Table
 	expr.Set
-	expr.From
+	expr.FromItems
 	expr.Where
 	expr.Returning
 }
@@ -42,12 +42,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, withArgs...)
 
-	prefix := "UPDATE "
-	if u.only {
-		prefix = "UPDATE ONLY "
-	}
-
-	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, prefix, "")
+	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "UPDATE ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +54,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	}
 	args = append(args, setArgs...)
 
-	fromArgs, err := query.ExpressIf(w, d, start+len(args), u.From,
-		len(u.From.Tables) > 0 || len(u.From.Joins) > 0, "\n", "")
+	fromArgs, err := query.ExpressSlice(w, d, start+len(args), u.FromItems.Items, "\nFROM ", ",\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +77,9 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) 
 	return nil, nil
 }
 
-type UpdateQM struct{}
+type UpdateQM struct {
+	joinMod[*expr.FromItem]
+}
 
 func (qm UpdateQM) With(name string, columns ...string) cteChain[*UpdateQuery] {
 	return cteChain[*UpdateQuery](func() expr.CTE {
@@ -129,8 +125,15 @@ func (qm UpdateQM) SetEQ(a, b any) mods.QueryMod[*UpdateQuery] {
 	return mods.Set[*UpdateQuery]{expr.EQ(a, b)}
 }
 
-func (qm UpdateQM) From(exprs ...any) mods.QueryMod[*UpdateQuery] {
-	return mods.From[*UpdateQuery](exprs)
+func (qm UpdateQM) From(table any, fromMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[*UpdateQuery] {
+	f := &expr.FromItem{
+		Table: table,
+	}
+	for _, mod := range fromMods {
+		mod.Apply(f)
+	}
+
+	return mods.FromItems[*UpdateQuery](*f)
 }
 
 func (qm UpdateQM) Where(e query.Expression) mods.QueryMod[*UpdateQuery] {
