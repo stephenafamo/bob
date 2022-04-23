@@ -1,57 +1,129 @@
 package psql
 
 import (
+	"log"
+
 	"github.com/stephenafamo/typesql/expr"
 	"github.com/stephenafamo/typesql/mods"
 	"github.com/stephenafamo/typesql/query"
 )
 
-type join[Q interface{ AppendJoin(expr.Join) }] func() expr.Join
+type withMod[Q interface {
+	AppendWith(expr.CTE)
+	SetRecursive(bool)
+}] struct{}
 
-func (j join[Q]) Apply(q Q) {
+func (withMod[Q]) With(name string, columns ...string) cteChain[Q] {
+	return cteChain[Q](func() expr.CTE {
+		return expr.CTE{
+			Name:    name,
+			Columns: columns,
+		}
+	})
+}
+
+func (withMod[Q]) Recursive(r bool) mods.QueryMod[Q] {
+	return mods.Recursive[Q](r)
+}
+
+type tableAliasMod[Q interface{ SetTableAlias(string, ...string) }] struct{}
+
+func (tableAliasMod[Q]) As(alias string, columns ...string) mods.QueryMod[Q] {
+	return mods.TableAs[Q]{
+		Alias:   alias,
+		Columns: columns,
+	}
+}
+
+type fromMod[Q interface{ AppendFromItem(expr.FromItem) }] struct{}
+
+func (fromMod[Q]) From(table any, fromMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[Q] {
+	f := expr.FromItem{}
+
+	switch t := table.(type) {
+	case string:
+		f.Table = t // early because it is a common case
+	case query.Query:
+		f.Table = expr.P(table)
+	case mods.QueryMod[*expr.FromItem]:
+		fromMods = append([]mods.QueryMod[*expr.FromItem]{t}, fromMods...)
+	default:
+		f.Table = t
+	}
+
+	for _, mod := range fromMods {
+		mod.Apply(&f)
+	}
+
+	return mods.FromItems[Q](f)
+}
+
+type fromItemMod struct{}
+
+func (fromItemMod) Only() mods.QueryMod[*expr.FromItem] {
+	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+		q.Only = true
+	})
+}
+
+func (fromItemMod) Lateral() mods.QueryMod[*expr.FromItem] {
+	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+		q.Lateral = true
+	})
+}
+
+func (fromItemMod) WithOrdinality() mods.QueryMod[*expr.FromItem] {
+	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+		q.WithOrdinality = true
+	})
+}
+
+type joinChain[Q interface{ AppendJoin(expr.Join) }] func() expr.Join
+
+func (j joinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
 }
 
-func (j join[Q]) To(e any) join[Q] {
+func (j joinChain[Q]) To(e any) joinChain[Q] {
 	jo := j()
 	jo.To = e
 
-	return join[Q](func() expr.Join {
+	return joinChain[Q](func() expr.Join {
 		return jo
 	})
 }
 
-func (j join[Q]) As(alias string) join[Q] {
+func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	jo := j()
 	jo.Alias = alias
 
-	return join[Q](func() expr.Join {
+	return joinChain[Q](func() expr.Join {
 		return jo
 	})
 }
 
-func (j join[Q]) Natural() mods.QueryMod[Q] {
+func (j joinChain[Q]) Natural() mods.QueryMod[Q] {
 	jo := j()
 	jo.Natural = true
 
 	return mods.Join[Q](jo)
 }
 
-func (j join[Q]) On(on ...any) mods.QueryMod[Q] {
+func (j joinChain[Q]) On(on ...any) mods.QueryMod[Q] {
 	jo := j()
 	jo.On = append(jo.On, on)
 
 	return mods.Join[Q](jo)
 }
 
-func (j join[Q]) OnEQ(a, b any) mods.QueryMod[Q] {
+func (j joinChain[Q]) OnEQ(a, b any) mods.QueryMod[Q] {
 	jo := j()
 	jo.On = append(jo.On, expr.EQ(a, b))
 
 	return mods.Join[Q](jo)
 }
 
-func (j join[Q]) Using(using ...any) mods.QueryMod[Q] {
+func (j joinChain[Q]) Using(using ...any) mods.QueryMod[Q] {
 	jo := j()
 	jo.Using = using
 
@@ -60,8 +132,8 @@ func (j join[Q]) Using(using ...any) mods.QueryMod[Q] {
 
 type joinMod[Q interface{ AppendJoin(expr.Join) }] struct{}
 
-func (j joinMod[Q]) InnerJoin(e any) join[Q] {
-	return join[Q](func() expr.Join {
+func (j joinMod[Q]) InnerJoin(e any) joinChain[Q] {
+	return joinChain[Q](func() expr.Join {
 		return expr.Join{
 			Type: expr.InnerJoin,
 			To:   e,
@@ -69,8 +141,8 @@ func (j joinMod[Q]) InnerJoin(e any) join[Q] {
 	})
 }
 
-func (j joinMod[Q]) LeftJoin(e any) join[Q] {
-	return join[Q](func() expr.Join {
+func (j joinMod[Q]) LeftJoin(e any) joinChain[Q] {
+	return joinChain[Q](func() expr.Join {
 		return expr.Join{
 			Type: expr.LeftJoin,
 			To:   e,
@@ -78,8 +150,8 @@ func (j joinMod[Q]) LeftJoin(e any) join[Q] {
 	})
 }
 
-func (j joinMod[Q]) RightJoin(e any) join[Q] {
-	return join[Q](func() expr.Join {
+func (j joinMod[Q]) RightJoin(e any) joinChain[Q] {
+	return joinChain[Q](func() expr.Join {
 		return expr.Join{
 			Type: expr.RightJoin,
 			To:   e,
@@ -87,8 +159,8 @@ func (j joinMod[Q]) RightJoin(e any) join[Q] {
 	})
 }
 
-func (j joinMod[Q]) FullJoin(e any) join[Q] {
-	return join[Q](func() expr.Join {
+func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
+	return joinChain[Q](func() expr.Join {
 		return expr.Join{
 			Type: expr.FullJoin,
 			To:   e,
@@ -295,5 +367,28 @@ func (c cteChain[Q]) CycleSet(value, defaultVal any) cteChain[Q] {
 	cte.Cycle.DefaultVal = defaultVal
 	return cteChain[Q](func() expr.CTE {
 		return cte
+	})
+}
+
+type lockChain[Q interface{ SetFor(expr.For) }] func() expr.For
+
+func (l lockChain[Q]) Apply(q Q) {
+	log.Printf("APPLYING: %#v", l())
+	q.SetFor(l())
+}
+
+func (l lockChain[Q]) NoWait() lockChain[Q] {
+	lock := l()
+	lock.Wait = expr.LockWaitNoWait
+	return lockChain[Q](func() expr.For {
+		return lock
+	})
+}
+
+func (l lockChain[Q]) SkipLocked() lockChain[Q] {
+	lock := l()
+	lock.Wait = expr.LockWaitSkipLocked
+	return lockChain[Q](func() expr.For {
+		return lock
 	})
 }

@@ -121,7 +121,7 @@ func (n null) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 }
 
 // For window functions
-func OVER(f function, window any) query.Expression {
+func OVER(f Function, window any) query.Expression {
 	return over{
 		function: f,
 		window:   window,
@@ -129,7 +129,7 @@ func OVER(f function, window any) query.Expression {
 }
 
 type over struct {
-	function function
+	function Function
 	window   any
 }
 

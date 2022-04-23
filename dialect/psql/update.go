@@ -78,20 +78,10 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
+	withMod[*UpdateQuery]
+	fromMod[*UpdateQuery]
+	fromItemMod
 	joinMod[*expr.FromItem]
-}
-
-func (qm UpdateQM) With(name string, columns ...string) cteChain[*UpdateQuery] {
-	return cteChain[*UpdateQuery](func() expr.CTE {
-		return expr.CTE{
-			Name:    name,
-			Columns: columns,
-		}
-	})
-}
-
-func (qm UpdateQM) Recursive(r bool) mods.QueryMod[*UpdateQuery] {
-	return mods.Recursive[*UpdateQuery](r)
 }
 
 func (qm UpdateQM) Only() mods.QueryMod[*UpdateQuery] {
@@ -123,17 +113,6 @@ func (qm UpdateQM) Set(exprs ...any) mods.QueryMod[*UpdateQuery] {
 
 func (qm UpdateQM) SetEQ(a, b any) mods.QueryMod[*UpdateQuery] {
 	return mods.Set[*UpdateQuery]{expr.EQ(a, b)}
-}
-
-func (qm UpdateQM) From(table any, fromMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[*UpdateQuery] {
-	f := &expr.FromItem{
-		Table: table,
-	}
-	for _, mod := range fromMods {
-		mod.Apply(f)
-	}
-
-	return mods.FromItems[*UpdateQuery](*f)
 }
 
 func (qm UpdateQM) Where(e query.Expression) mods.QueryMod[*UpdateQuery] {

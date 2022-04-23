@@ -6,14 +6,33 @@ import (
 	"github.com/stephenafamo/typesql/query"
 )
 
-func Func(name string, args ...any) function {
-	return function{
+func Func(name string, args ...any) Function {
+	return Function{
 		name: name,
 		args: args,
 	}
 }
 
-type function struct {
+type Functions []any
+
+func (f Functions) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	if len(f) > 1 {
+		w.Write([]byte("ROWS FROM ("))
+	}
+
+	args, err := query.ExpressSlice(w, d, start, f, "", ", ", "")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(f) > 1 {
+		w.Write([]byte(")"))
+	}
+
+	return args, nil
+}
+
+type Function struct {
 	name string
 	args []any
 
@@ -25,18 +44,28 @@ type function struct {
 	columns []columnDef
 }
 
-func (f function) Filter(e ...any) function {
+type funcMod[Q interface{ AppendFunction(Function) }] Function
+
+func (j funcMod[Q]) Apply(q Q) {
+	q.AppendFunction(Function(j))
+}
+
+func (f Function) ToMod() funcMod[*FromItem] {
+	return funcMod[*FromItem](f)
+}
+
+func (f Function) Filter(e ...any) Function {
 	f.filter = append(f.filter, e...)
 
 	return f
 }
 
-func (f function) Alias(name string) function {
+func (f Function) Alias(name string) Function {
 	f.name = name
 	return f
 }
 
-func (f function) Col(name, datatype string) function {
+func (f Function) Col(name, datatype string) Function {
 	f.columns = append(f.columns, columnDef{
 		name:     name,
 		dataType: datatype,
@@ -45,7 +74,7 @@ func (f function) Col(name, datatype string) function {
 	return f
 }
 
-func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f Function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}

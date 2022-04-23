@@ -48,7 +48,7 @@ func TestInsert(t *testing.T) {
 		},
 		"upsert": {
 			query: Insert(
-				qm.Into(expr.T("distributors").As("d", "did", "dname")),
+				qm.IntoAs("distributors", "d", "did", "dname"),
 				qm.Values(expr.Arg(8, "Anvil Distribution")),
 				qm.Values(expr.Arg(9, "Sentry Distribution")),
 				qm.OnConflict("did").DoUpdate().SetEQ(

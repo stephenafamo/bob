@@ -12,7 +12,7 @@ type Limit struct {
 }
 
 func (l *Limit) SetLimit(limit Limit) {
-	l = &limit
+	*l = limit
 }
 
 func (l Limit) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

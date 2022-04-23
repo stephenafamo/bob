@@ -26,13 +26,14 @@ func TestSelect(t *testing.T) {
 		},
 		"with rows from": {
 			query: Select(
-				qm.From(expr.TFunc(
+				qm.From(
 					expr.Func(
 						"json_to_recordset",
 						expr.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
-					).Col("a", "INTEGER").Col("b", "TEXT"),
-					expr.Func("generate_series", 1, 3),
-				).As("x", "p", "q", "s")),
+					).Col("a", "INTEGER").Col("b", "TEXT").ToMod(),
+					expr.Func("generate_series", 1, 3).ToMod(),
+					qm.As("x", "p", "q", "s"),
+				),
 				qm.OrderBy("p"),
 			),
 			expectedQuery: ` SELECT *
@@ -59,20 +60,20 @@ func TestSelect(t *testing.T) {
 					GROUP BY status`,
 			query: Select(
 				qm.Select("status", expr.Func("avg", "difference")),
-				qm.From(expr.TQuery(Select(
-					qm.Select(
-						"status",
-						expr.C(expr.MINUS(expr.OVER(
-							expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
-							expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-						), "created_date"), "difference"),
+				qm.From(
+					Select(
+						qm.Select(
+							"status",
+							expr.C(expr.MINUS(expr.OVER(
+								expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
+								expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
+							), "created_date"), "difference"),
+						),
+						qm.From("presales_presalestatus"),
 					),
-					qm.From("presales_presalestatus"),
-				), false).As("differnce_by_status")),
-				qm.Where(expr.IN(
-					"status",
-					expr.S("A"), expr.S("B"), expr.S("C"),
-				)),
+					qm.As("differnce_by_status"),
+				),
+				qm.Where(expr.IN("status", expr.S("A"), expr.S("B"), expr.S("C"))),
 				qm.GroupBy("status"),
 			),
 		},

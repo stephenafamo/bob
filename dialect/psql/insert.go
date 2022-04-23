@@ -78,25 +78,24 @@ func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 	return args, nil
 }
 
-type InsertQM struct{}
-
-func (qm InsertQM) With(name string, columns ...string) cteChain[*InsertQuery] {
-	return cteChain[*InsertQuery](func() expr.CTE {
-		return expr.CTE{
-			Name:    name,
-			Columns: columns,
-		}
-	})
-}
-
-func (qm InsertQM) Recursive(r bool) mods.QueryMod[*InsertQuery] {
-	return mods.Recursive[*InsertQuery](r)
+type InsertQM struct {
+	withMod[*InsertQuery]
 }
 
 func (qm InsertQM) Into(name any, columns ...string) mods.QueryMod[*InsertQuery] {
 	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Table = expr.Table{
 			Expression: name,
+			Columns:    columns,
+		}
+	})
+}
+
+func (qm InsertQM) IntoAs(name any, alias string, columns ...string) mods.QueryMod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+		i.Table = expr.Table{
+			Expression: name,
+			Alias:      alias,
 			Columns:    columns,
 		}
 	})

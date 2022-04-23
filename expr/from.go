@@ -38,11 +38,28 @@ where from_item can be one of:
 
 type FromItem struct {
 	Table any
+	Funcs []any
+
+	// Aliases
+	Alias   string
+	Columns []string
+
+	// Modifiers for the query
+	Only           bool
+	Lateral        bool
+	WithOrdinality bool
+
+	// Joins
 	Joins []Join
 }
 
-func (f *FromItem) SetTable(table Table) {
-	f.Table = table
+func (f *FromItem) SetTableAlias(alias string, columns ...string) {
+	f.Alias = alias
+	f.Columns = columns
+}
+
+func (f *FromItem) AppendFunction(function Function) {
+	f.Funcs = append(f.Funcs, function)
 }
 
 func (f *FromItem) AppendJoin(j Join) {
@@ -50,13 +67,46 @@ func (f *FromItem) AppendJoin(j Join) {
 }
 
 func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	if f.Table == nil {
+	if f.Table == nil && f.Funcs == nil {
 		return nil, nil
+	}
+
+	if f.Table == nil {
+		f.Table = Functions(f.Funcs)
+	}
+
+	if f.Only {
+		w.Write([]byte("ONLY "))
+	}
+
+	if f.Lateral {
+		w.Write([]byte("LATERAL "))
 	}
 
 	args, err := query.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err
+	}
+
+	if f.WithOrdinality {
+		w.Write([]byte("WITH ORDINALITY "))
+	}
+
+	if f.Alias != "" {
+		w.Write([]byte(" AS "))
+		d.WriteQuoted(w, f.Alias)
+	}
+
+	if len(f.Columns) > 0 {
+		w.Write([]byte("("))
+		for k, cAlias := range f.Columns {
+			if k != 0 {
+				w.Write([]byte(", "))
+			}
+
+			d.WriteQuoted(w, cAlias)
+		}
+		w.Write([]byte(")"))
 	}
 
 	joinArgs, err := query.ExpressSlice(w, d, start+len(args), f.Joins, "\n", "\n", "")

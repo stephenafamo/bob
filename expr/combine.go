@@ -22,7 +22,7 @@ type Combine struct {
 }
 
 func (s *Combine) SetCombine(c Combine) {
-	s = &c
+	*s = c
 }
 
 func (s Combine) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

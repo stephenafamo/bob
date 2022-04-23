@@ -13,7 +13,7 @@ type Fetch struct {
 }
 
 func (f *Fetch) SetFetch(fetch Fetch) {
-	f = &fetch
+	*f = fetch
 }
 
 func (f Fetch) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

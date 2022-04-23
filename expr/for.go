@@ -28,7 +28,7 @@ type For struct {
 }
 
 func (f *For) SetFor(lock For) {
-	f = &lock
+	*f = lock
 }
 
 func (f For) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

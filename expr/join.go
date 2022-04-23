@@ -32,6 +32,7 @@ func (j Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	}
 
 	w.Write([]byte(j.Type))
+	w.Write([]byte(" "))
 
 	args, err := query.Express(w, d, start, j.To)
 	if err != nil {
