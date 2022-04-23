@@ -361,7 +361,7 @@ func (c cteChain[Q]) Cycle(set, using string, cols ...string) cteChain[Q] {
 	})
 }
 
-func (c cteChain[Q]) CycleSet(value, defaultVal any) cteChain[Q] {
+func (c cteChain[Q]) CycleValue(value, defaultVal any) cteChain[Q] {
 	cte := c()
 	cte.Cycle.SetVal = value
 	cte.Cycle.DefaultVal = defaultVal
