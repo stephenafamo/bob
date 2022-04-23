@@ -71,7 +71,7 @@ Insert(
     qm.Into(expr.T("distributors").As("d", "did", "dname")),
     qm.Values(expr.Arg(8, "Anvil Distribution")),
     qm.Values(expr.Arg(9, "Sentry Distribution")),
-    qm.OnConflict("did").DoUpdate().SetEQ(
+    qm.OnConflict("did").DoUpdate().Set(
         "dname",
         expr.CONCAT("EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")")),
     ).Where(expr.NE("d.zipcode", expr.S("21201"))),

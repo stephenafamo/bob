@@ -13,7 +13,7 @@ UPDATE films SET kind = $1 WHERE kind = $2;
 ```go
 psql.Update(
     qm.Table("films"),
-    qm.SetEQ("kind", expr.Arg("Dramatic")),
+    qm.Set("kind", expr.Arg("Dramatic")),
     qm.Where(expr.EQ("kind", expr.Arg("Drama"))),
 )
 ```
@@ -33,7 +33,7 @@ AND employees.id = accounts.sales_person;
 ```go
 psql.Update(
     qm.Table("employees"),
-    qm.SetEQ("sales_count", "sales_count + 1"),
+    qm.Set("sales_count", "sales_count + 1"),
     qm.From("accounts"),
     qm.Where(expr.EQ("accounts.name", expr.Arg("Acme Corporation"))),
     qm.Where(expr.EQ("employees.id", "accounts.sales_person")),
@@ -54,7 +54,7 @@ UPDATE employees SET sales_count = sales_count + 1 WHERE id =
 ```go
 psql.Update(
     qm.Table("employees"),
-    qm.SetEQ("sales_count", "sales_count + 1"),
+    qm.Set("sales_count", "sales_count + 1"),
     qm.Where(expr.EQ("id", expr.P(Select(
         selectQM.Select("sales_person"),
         selectQM.From("accounts"),

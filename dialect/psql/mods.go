@@ -267,16 +267,7 @@ func (c onConflict[Q]) DoUpdate() onConflict[Q] {
 	})
 }
 
-func (c onConflict[Q]) Set(set any) onConflict[Q] {
-	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, set)
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c onConflict[Q]) SetEQ(a, b any) onConflict[Q] {
+func (c onConflict[Q]) Set(a, b any) onConflict[Q] {
 	conflict := c()
 	conflict.Set.Set = append(conflict.Set.Set, expr.EQ(a, b))
 

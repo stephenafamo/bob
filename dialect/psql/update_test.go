@@ -19,7 +19,7 @@ func TestUpdate(t *testing.T) {
 		"simple": {
 			query: Update(
 				qm.Table("films"),
-				qm.SetEQ("kind", expr.Arg("Dramatic")),
+				qm.SetArg("kind", "Dramatic"),
 				qm.Where(expr.EQ("kind", expr.Arg("Drama"))),
 			),
 			expectedQuery: `UPDATE films SET kind = $1 WHERE kind = $2`,
@@ -28,7 +28,7 @@ func TestUpdate(t *testing.T) {
 		"with from": {
 			query: Update(
 				qm.Table("employees"),
-				qm.SetEQ("sales_count", "sales_count + 1"),
+				qm.Set("sales_count", "sales_count + 1"),
 				qm.From("accounts"),
 				qm.Where(expr.EQ("accounts.name", expr.Arg("Acme Corporation"))),
 				qm.Where(expr.EQ("employees.id", "accounts.sales_person")),
@@ -44,7 +44,7 @@ func TestUpdate(t *testing.T) {
 			expectedArgs: []any{"Acme Corporation"},
 			query: Update(
 				qm.Table("employees"),
-				qm.SetEQ("sales_count", "sales_count + 1"),
+				qm.Set("sales_count", "sales_count + 1"),
 				qm.Where(expr.EQ("id", expr.P(Select(
 					selectQM.Select("sales_person"),
 					selectQM.From("accounts"),

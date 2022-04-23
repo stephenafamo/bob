@@ -51,7 +51,7 @@ func TestInsert(t *testing.T) {
 				qm.IntoAs("distributors", "d", "did", "dname"),
 				qm.Values(expr.Arg(8, "Anvil Distribution")),
 				qm.Values(expr.Arg(9, "Sentry Distribution")),
-				qm.OnConflict("did").DoUpdate().SetEQ(
+				qm.OnConflict("did").DoUpdate().Set(
 					"dname",
 					expr.CONCAT(
 						"EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),
