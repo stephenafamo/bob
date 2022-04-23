@@ -2,6 +2,11 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/typesql.svg)](https://pkg.go.dev/github.com/stephenafamo/typesql)
 
+## Features
+
+* 2x Faster than existing packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
+* Build any query. Supports the specification as closely as possible.
+
 ## Examples
 
 Examples are in the [examples folder](examples):
