@@ -1,8 +1,6 @@
 package psql
 
 import (
-	"log"
-
 	"github.com/stephenafamo/typesql/expr"
 	"github.com/stephenafamo/typesql/mods"
 	"github.com/stephenafamo/typesql/query"
@@ -373,7 +371,6 @@ func (c cteChain[Q]) CycleValue(value, defaultVal any) cteChain[Q] {
 type lockChain[Q interface{ SetFor(expr.For) }] func() expr.For
 
 func (l lockChain[Q]) Apply(q Q) {
-	log.Printf("APPLYING: %#v", l())
 	q.SetFor(l())
 }
 

@@ -2,7 +2,6 @@ package psql
 
 import (
 	"io"
-	"log"
 
 	"github.com/stephenafamo/typesql/expr"
 	"github.com/stephenafamo/typesql/mods"
@@ -122,7 +121,6 @@ func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 		return nil, err
 	}
 
-	log.Printf("FOR: %#v", s.For)
 	forArgs, err := query.ExpressIf(w, d, start+len(args), s.For,
 		s.For.Strength != "", "\n", "")
 	if err != nil {
