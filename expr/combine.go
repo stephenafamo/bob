@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 var ErrNoCombinationStrategy = errors.New("Combination strategy must be set")

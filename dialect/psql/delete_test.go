@@ -3,8 +3,8 @@ package psql
 import (
 	"testing"
 
-	"github.com/stephenafamo/typesql/expr"
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/query"
 )
 
 func TestDelete(t *testing.T) {

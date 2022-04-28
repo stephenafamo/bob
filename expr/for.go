@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 var ErrNoLockStrength = errors.New("No lock strength specified")

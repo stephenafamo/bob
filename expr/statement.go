@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 func Statement(clause string, args ...any) query.Expression {

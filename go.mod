@@ -1,4 +1,4 @@
-module github.com/stephenafamo/typesql
+module github.com/stephenafamo/bob
 
 go 1.18
 

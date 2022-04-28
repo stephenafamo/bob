@@ -4,7 +4,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 type Offset struct {

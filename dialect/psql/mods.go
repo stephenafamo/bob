@@ -1,9 +1,9 @@
 package psql
 
 import (
-	"github.com/stephenafamo/typesql/expr"
-	"github.com/stephenafamo/typesql/mods"
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/query"
 )
 
 type withMod[Q interface {

@@ -1,6 +1,6 @@
 package psql
 
-import "github.com/stephenafamo/typesql/expr"
+import "github.com/stephenafamo/bob/expr"
 
 type ValuesQuery struct {
 	// insert the group

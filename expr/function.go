@@ -3,7 +3,7 @@ package expr
 import (
 	"io"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 func Func(name string, args ...any) Function {

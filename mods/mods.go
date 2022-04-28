@@ -1,7 +1,7 @@
 package mods
 
 import (
-	"github.com/stephenafamo/typesql/expr"
+	"github.com/stephenafamo/bob/expr"
 )
 
 type QueryMod[T any] interface {

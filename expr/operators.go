@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 // An operator that has a left and right side

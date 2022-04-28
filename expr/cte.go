@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/typesql/query"
+	"github.com/stephenafamo/bob/query"
 )
 
 type CTE struct {

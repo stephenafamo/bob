@@ -1,6 +1,6 @@
-# TypeSQL: A typesafe SQL query builder
+# Bob (the builder): A spec compliant SQL query builder
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/typesql.svg)](https://pkg.go.dev/github.com/stephenafamo/typesql)
+[![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
 
 ## Features
 
@@ -21,7 +21,7 @@ Examples are in the [examples folder](examples):
 
 ### Custom Crafting
 
-In `typesql`, each dialect, and the applicable query mods are custom crafted
+In `bob`, each dialect, and the applicable query mods are custom crafted
 to be as close to the specification as possible.
 This is unlike most other query builders that use a common structure and attempt to adapt it to every dialect.
 
@@ -110,7 +110,7 @@ Using this query mod system, the mods closely match the allowed syntax for each 
 
 ## Quotes
 
-It is often required to quote identifiers in SQL queries. With `typesql`  use the `expr.Quote()` where necessary.  
+It is often required to quote identifiers in SQL queries. With `bob`  use the `expr.Quote()` where necessary.  
 When building the query, the quotes are added correctly by the dialect.
 
 It can take multiple strings that need to be quoted and joined with `.`
@@ -123,7 +123,7 @@ expr.Quote("schema_name", "table_name")
 
 ## Placeholders
 
-To prevent SQL injection, it is necessary to use placeholders in our queries. With `typesql` use `expr.Arg()` where necessary.  
+To prevent SQL injection, it is necessary to use placeholders in our queries. With `bob` use `expr.Arg()` where necessary.  
 This will write the placeholder correctly in the generated sql, and return the value in the argument slice.
 
 ```go
