@@ -3,6 +3,7 @@ package psql
 import (
 	"io"
 
+	"github.com/jinzhu/copier"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
@@ -27,12 +28,20 @@ type InsertQuery struct {
 	expr.Returning
 }
 
-func (i *InsertQuery) Apply(mods ...mods.QueryMod[*InsertQuery]) *InsertQuery {
+func (i *InsertQuery) Clone() *InsertQuery {
+	var i2 = new(InsertQuery)
+	copier.CopyWithOption(i2, i, copier.Option{
+		IgnoreEmpty: true,
+		DeepCopy:    true,
+	})
+
+	return i2
+}
+
+func (i *InsertQuery) Apply(mods ...mods.QueryMod[*InsertQuery]) {
 	for _, mod := range mods {
 		mod.Apply(i)
 	}
-
-	return i
 }
 
 func (i InsertQuery) WriteQuery(w io.Writer, start int) ([]any, error) {

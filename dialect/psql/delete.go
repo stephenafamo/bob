@@ -3,6 +3,7 @@ package psql
 import (
 	"io"
 
+	"github.com/jinzhu/copier"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
@@ -26,12 +27,20 @@ type DeleteQuery struct {
 	expr.Returning
 }
 
-func (d *DeleteQuery) Apply(mods ...mods.QueryMod[*DeleteQuery]) *DeleteQuery {
+func (d *DeleteQuery) Clone() *DeleteQuery {
+	var d2 = new(DeleteQuery)
+	copier.CopyWithOption(d2, d, copier.Option{
+		IgnoreEmpty: true,
+		DeepCopy:    true,
+	})
+
+	return d2
+}
+
+func (d *DeleteQuery) Apply(mods ...mods.QueryMod[*DeleteQuery]) {
 	for _, mod := range mods {
 		mod.Apply(d)
 	}
-
-	return d
 }
 
 func (d DeleteQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
