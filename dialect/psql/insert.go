@@ -18,7 +18,8 @@ func Insert(mods ...mods.QueryMod[*InsertQuery]) *InsertQuery {
 	return s
 }
 
-// Not handling on-conflict yet
+// Trying to represent the select query structure as documented in
+// https://www.postgresql.org/docs/current/sql-insert.html
 type InsertQuery struct {
 	expr.With
 	overriding string

@@ -150,11 +150,11 @@ func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type SelectQM struct {
-	withMod[*SelectQuery]
-	mods.FromMod[*SelectQuery]
-	fromItemMod
-	joinMod[*expr.FromItem]
-	mods.TableAliasMod[*expr.FromItem]
+	withMod[*SelectQuery]              // For CTEs
+	mods.FromMod[*SelectQuery]         // select *FROM*
+	joinMod[*expr.FromItem]            // joins, which are mods of the FROM
+	mods.TableAliasMod[*expr.FromItem] // Adding an alias to from item
+	fromItemMod                        // Dialect specific fromItem mods
 }
 
 func (SelectQM) Distinct(expressions ...any) mods.QueryMod[*SelectQuery] {

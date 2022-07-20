@@ -50,15 +50,6 @@ func (j joinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
 }
 
-func (j joinChain[Q]) To(e any) joinChain[Q] {
-	jo := j()
-	jo.To = e
-
-	return joinChain[Q](func() expr.Join {
-		return jo
-	})
-}
-
 func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	jo := j()
 	jo.Alias = alias

@@ -18,7 +18,8 @@ func Update(mods ...mods.QueryMod[*UpdateQuery]) *UpdateQuery {
 	return s
 }
 
-// Not handling on-conflict yet
+// Trying to represent the select query structure as documented in
+// https://www.postgresql.org/docs/current/sql-update.html
 type UpdateQuery struct {
 	expr.With
 	only bool
