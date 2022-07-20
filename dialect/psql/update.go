@@ -28,6 +28,14 @@ type UpdateQuery struct {
 	expr.Returning
 }
 
+func (u *UpdateQuery) Apply(mods ...mods.QueryMod[*UpdateQuery]) *UpdateQuery {
+	for _, mod := range mods {
+		mod.Apply(u)
+	}
+
+	return u
+}
+
 func (u UpdateQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return u.WriteSQL(w, dialect, start)
 }
@@ -79,7 +87,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 type UpdateQM struct {
 	withMod[*UpdateQuery]
-	fromMod[*UpdateQuery]
+	mods.FromMod[*UpdateQuery]
 	fromItemMod
 	joinMod[*expr.FromItem]
 }

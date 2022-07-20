@@ -2,13 +2,14 @@ package expr
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/stephenafamo/bob/query"
 )
 
 type Limit struct {
-	Count *int64
+	// Some DBs (e.g. SQite) can take an expression
+	// It is up to the mods to enforce any extra conditions
+	Count any
 }
 
 func (l *Limit) SetLimit(limit Limit) {
@@ -16,11 +17,5 @@ func (l *Limit) SetLimit(limit Limit) {
 }
 
 func (l Limit) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	if l.Count == nil {
-		return nil, nil
-	}
-
-	w.Write([]byte("LIMIT "))
-	w.Write([]byte(strconv.FormatInt(*l.Count, 10)))
-	return nil, nil
+	return query.ExpressIf(w, d, start, l.Count, l.Count != nil, "LIMIT ", "")
 }

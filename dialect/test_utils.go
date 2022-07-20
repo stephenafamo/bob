@@ -1,4 +1,4 @@
-package psql
+package dialect
 
 import (
 	"regexp"
@@ -17,10 +17,10 @@ func clean(s string) string {
 	return s
 }
 
-func queryDiff(a, b string) string {
+func QueryDiff(a, b string) string {
 	return cmp.Diff(clean(a), clean(b))
 }
 
-func argsDiff(a, b []any) string {
+func ArgsDiff(a, b []any) string {
 	return cmp.Diff(a, b)
 }

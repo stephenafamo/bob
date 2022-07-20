@@ -26,41 +26,49 @@ type DeleteQuery struct {
 	expr.Returning
 }
 
-func (u DeleteQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return u.WriteSQL(w, dialect, start)
+func (d *DeleteQuery) Apply(mods ...mods.QueryMod[*DeleteQuery]) *DeleteQuery {
+	for _, mod := range mods {
+		mod.Apply(d)
+	}
+
+	return d
 }
 
-func (u DeleteQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
+	return d.WriteSQL(w, dialect, start)
+}
+
+func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := query.ExpressIf(w, d, start+len(args), u.With,
-		len(u.With.CTEs) > 0, "\n", "")
+	withArgs, err := query.ExpressIf(w, dl, start+len(args), d.With,
+		len(d.With.CTEs) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, withArgs...)
 
-	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "DELETE FROM ", "")
+	tableArgs, err := query.ExpressIf(w, dl, start+len(args), d.Table, true, "DELETE FROM ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := query.ExpressSlice(w, d, start+len(args), u.FromItems.Items, "\nUSING ", ",\n", "")
+	usingArgs, err := query.ExpressSlice(w, dl, start+len(args), d.FromItems.Items, "\nUSING ", ",\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, usingArgs...)
 
-	whereArgs, err := query.ExpressIf(w, d, start+len(args), u.Where,
-		len(u.Where.Conditions) > 0, "\n", "")
+	whereArgs, err := query.ExpressIf(w, dl, start+len(args), d.Where,
+		len(d.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
 
-	retArgs, err := query.ExpressIf(w, d, start+len(args), u.Returning,
-		len(u.Returning.Expressions) > 0, "\n", "")
+	retArgs, err := query.ExpressIf(w, dl, start+len(args), d.Returning,
+		len(d.Returning.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +79,7 @@ func (u DeleteQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 type DeleteQM struct {
 	withMod[*DeleteQuery]
-	fromMod[*DeleteQuery]
+	mods.FromMod[*DeleteQuery]
 	fromItemMod
 	joinMod[*expr.FromItem]
 }
@@ -94,7 +102,7 @@ func (qm DeleteQM) FromAs(name any, alias string) mods.QueryMod[*DeleteQuery] {
 }
 
 func (qm DeleteQM) Using(table any, usingMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[*DeleteQuery] {
-	return qm.fromMod.From(table, usingMods...)
+	return qm.FromMod.From(table, usingMods...)
 }
 
 func (qm DeleteQM) Where(e query.Expression) mods.QueryMod[*DeleteQuery] {

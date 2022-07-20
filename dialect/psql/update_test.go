@@ -3,6 +3,7 @@ package psql
 import (
 	"testing"
 
+	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
@@ -60,10 +61,10 @@ func TestUpdate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			if diff := queryDiff(tc.expectedQuery, sql); diff != "" {
+			if diff := d.QueryDiff(tc.expectedQuery, sql); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
-			if diff := argsDiff(tc.expectedArgs, args); diff != "" {
+			if diff := d.ArgsDiff(tc.expectedArgs, args); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
 		})

@@ -31,14 +31,12 @@ func (s Select) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error)
 
 	if s.Distinct.Distinct {
 		w.Write([]byte("DISTINCT "))
-		if len(s.Distinct.On) > 0 {
-			onArgs, err := query.ExpressSlice(w, d, start+len(args), s.Distinct.On, "ON (", ", ", ") ")
-			if err != nil {
-				return nil, err
-			}
-
-			args = append(args, onArgs...)
+		onArgs, err := query.ExpressSlice(w, d, start+len(args), s.Distinct.On, "ON (", ", ", ") ")
+		if err != nil {
+			return nil, err
 		}
+
+		args = append(args, onArgs...)
 	}
 
 	if len(s.Columns) > 0 {

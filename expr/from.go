@@ -34,6 +34,9 @@ where from_item can be one of:
     [ LATERAL ] ROWS FROM( function_name ( [ argument [, ...] ] ) [ AS ( column_definition [, ...] ) ] [, ...] )
                 [ WITH ORDINALITY ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
     from_item [ NATURAL ] join_type from_item [ ON join_condition | USING ( join_column [, ...] ) [ AS join_using_alias ] ]
+
+
+SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
 */
 
 type FromItem struct {
@@ -44,10 +47,17 @@ type FromItem struct {
 	Alias   string
 	Columns []string
 
-	// Modifiers for the query
+	// Postgres modifiers for the query
 	Only           bool
 	Lateral        bool
 	WithOrdinality bool
+
+	// Sqlite modifiers
+	// Used for both INDEXED BY and NOT INDEXED
+	// nil = omitted
+	// empty string = NOT INDEXED
+	// non-empty string = INDEXED BY name
+	IndexedBy *string
 
 	// Joins
 	Joins []Join
@@ -107,6 +117,16 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 			d.WriteQuoted(w, cAlias)
 		}
 		w.Write([]byte(")"))
+	}
+
+	switch {
+	case f.IndexedBy == nil:
+		break
+	case *f.IndexedBy == "":
+		w.Write([]byte(" NOT INDEXED"))
+	default:
+		w.Write([]byte(" INDEXED BY "))
+		w.Write([]byte(*f.IndexedBy))
 	}
 
 	joinArgs, err := query.ExpressSlice(w, d, start+len(args), f.Joins, "\n", "\n", "")

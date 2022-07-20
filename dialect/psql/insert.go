@@ -27,6 +27,14 @@ type InsertQuery struct {
 	expr.Returning
 }
 
+func (i *InsertQuery) Apply(mods ...mods.QueryMod[*InsertQuery]) *InsertQuery {
+	for _, mod := range mods {
+		mod.Apply(i)
+	}
+
+	return i
+}
+
 func (i InsertQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return i.WriteSQL(w, dialect, start)
 }

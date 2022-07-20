@@ -57,6 +57,31 @@ func NE(right, left any) query.Expression {
 	}
 }
 
+// OR operator
+func OR(args ...any) query.Expression {
+	return sliceJoin{
+		expr:     args,
+		operator: "OR",
+	}
+}
+
+type sliceJoin struct {
+	expr     []any
+	operator string
+}
+
+func (s sliceJoin) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	return query.ExpressSlice(w, d, start, s.expr, "", fmt.Sprintf(" %s ", s.operator), "")
+}
+
+// AND operator
+func AND(args ...any) query.Expression {
+	return sliceJoin{
+		expr:     args,
+		operator: "AND",
+	}
+}
+
 // Subtract
 func MINUS(right, left any) query.Expression {
 	return leftRight{
@@ -153,11 +178,8 @@ func (o over) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 
 // Concatenation `||` operator
 func CONCAT(ss ...any) query.Expression {
-	return concat(ss)
-}
-
-type concat []any
-
-func (c concat) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, c, "", " || ", "")
+	return sliceJoin{
+		expr:     ss,
+		operator: "||",
+	}
 }

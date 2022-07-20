@@ -35,6 +35,14 @@ type SelectQuery struct {
 	expr.For
 }
 
+func (s *SelectQuery) Apply(mods ...mods.QueryMod[*SelectQuery]) *SelectQuery {
+	for _, mod := range mods {
+		mod.Apply(s)
+	}
+
+	return s
+}
+
 func (s SelectQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return s.WriteSQL(w, dialect, start)
 }
@@ -134,10 +142,10 @@ func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 type SelectQM struct {
 	withMod[*SelectQuery]
-	fromMod[*SelectQuery]
+	mods.FromMod[*SelectQuery]
 	fromItemMod
 	joinMod[*expr.FromItem]
-	tableAliasMod[*expr.FromItem]
+	mods.TableAliasMod[*expr.FromItem]
 }
 
 func (SelectQM) Distinct(expressions ...any) mods.QueryMod[*SelectQuery] {
@@ -157,6 +165,14 @@ func (SelectQM) Where(e query.Expression) mods.QueryMod[*SelectQuery] {
 
 func (SelectQM) WhereClause(clause string, args ...any) mods.QueryMod[*SelectQuery] {
 	return mods.Where[*SelectQuery]{expr.Statement(clause, args...)}
+}
+
+func (SelectQM) Having(e query.Expression) mods.QueryMod[*SelectQuery] {
+	return mods.Having[*SelectQuery]{e}
+}
+
+func (SelectQM) HavingClause(clause string, args ...any) mods.QueryMod[*SelectQuery] {
+	return mods.Having[*SelectQuery]{expr.Statement(clause, args...)}
 }
 
 func (SelectQM) GroupBy(e any) mods.QueryMod[*SelectQuery] {
@@ -184,22 +200,15 @@ func (SelectQM) OrderBy(e any) mods.QueryMod[*SelectQuery] {
 	})
 }
 
-// For easy upgrade from sqlboiler/v4
-func (SelectQM) OrderByClause(stmt string, args ...any) mods.QueryMod[*SelectQuery] {
-	return mods.OrderBy[*SelectQuery]{
-		Expression: expr.Statement(stmt, args...),
-	}
-}
-
 func (SelectQM) Limit(count int64) mods.QueryMod[*SelectQuery] {
 	return mods.Limit[*SelectQuery]{
-		Count: &count,
+		Count: count,
 	}
 }
 
 func (SelectQM) Offset(count int64) mods.QueryMod[*SelectQuery] {
 	return mods.Offset[*SelectQuery]{
-		Count: &count,
+		Count: count,
 	}
 }
 

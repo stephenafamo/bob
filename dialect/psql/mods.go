@@ -24,38 +24,6 @@ func (withMod[Q]) Recursive(r bool) mods.QueryMod[Q] {
 	return mods.Recursive[Q](r)
 }
 
-type tableAliasMod[Q interface{ SetTableAlias(string, ...string) }] struct{}
-
-func (tableAliasMod[Q]) As(alias string, columns ...string) mods.QueryMod[Q] {
-	return mods.TableAs[Q]{
-		Alias:   alias,
-		Columns: columns,
-	}
-}
-
-type fromMod[Q interface{ AppendFromItem(expr.FromItem) }] struct{}
-
-func (fromMod[Q]) From(table any, fromMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[Q] {
-	f := expr.FromItem{}
-
-	switch t := table.(type) {
-	case string:
-		f.Table = t // early because it is a common case
-	case query.Query:
-		f.Table = expr.P(table)
-	case mods.QueryMod[*expr.FromItem]:
-		fromMods = append([]mods.QueryMod[*expr.FromItem]{t}, fromMods...)
-	default:
-		f.Table = t
-	}
-
-	for _, mod := range fromMods {
-		mod.Apply(&f)
-	}
-
-	return mods.FromItems[Q](f)
-}
-
 type fromItemMod struct{}
 
 func (fromItemMod) Only() mods.QueryMod[*expr.FromItem] {

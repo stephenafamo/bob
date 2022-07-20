@@ -2,13 +2,14 @@ package expr
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/stephenafamo/bob/query"
 )
 
 type Offset struct {
-	Count *int64
+	// Some DBs (e.g. SQite) can take an expression
+	// It is up to the mods to enforce any extra conditions
+	Count any
 }
 
 func (o *Offset) SetOffset(offset Offset) {
@@ -16,10 +17,5 @@ func (o *Offset) SetOffset(offset Offset) {
 }
 
 func (o Offset) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	if o.Count == nil {
-		return nil, nil
-	}
-	w.Write([]byte("OFFSET "))
-	w.Write([]byte(strconv.FormatInt(*o.Count, 10)))
-	return nil, nil
+	return query.ExpressIf(w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
 }
