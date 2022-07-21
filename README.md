@@ -191,11 +191,11 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
   * [ ] Insert
   * [ ] Update
   * [ ] Delete
-* [ ] SQLite
-  * [ ] Select
-  * [ ] Insert
-  * [ ] Update
-  * [ ] Delete
+* [x] SQLite
+  * [x] Select
+  * [x] Insert
+  * [x] Update
+  * [x] Delete
 * [ ] SQL Server
   * [ ] Select
   * [ ] Insert
