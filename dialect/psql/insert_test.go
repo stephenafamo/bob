@@ -63,7 +63,7 @@ func TestInsert(t *testing.T) {
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT (did) DO UPDATE
 				SET dname = EXCLUDED.dname || ' (formerly ' || d.dname || ')'
-				WHERE d.zipcode <> '21201'`,
+				WHERE (d.zipcode <> '21201')`,
 			expectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 	}

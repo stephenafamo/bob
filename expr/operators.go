@@ -88,8 +88,8 @@ func (i startEnd) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 }
 
 // OVER: For window functions
-func OVER(f Function, window any) query.Expression {
-	return query.ExpressionFunc(func(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func OVER(f Function, window any) Builder {
+	return X(query.ExpressionFunc(func(w io.Writer, d query.Dialect, start int) ([]any, error) {
 		largs, err := query.Express(w, d, start, f)
 		if err != nil {
 			return nil, err
@@ -105,5 +105,5 @@ func OVER(f Function, window any) query.Expression {
 		fmt.Fprint(w, ")")
 
 		return append(largs, rargs...), nil
-	})
+	}))
 }

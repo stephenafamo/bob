@@ -17,7 +17,7 @@ func TestSelect(t *testing.T) {
 		expectedArgs  []any
 	}{
 		"simple select": {
-			expectedQuery: "SELECT id, name FROM users WHERE id IN (?1, ?2, ?3)",
+			expectedQuery: "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
 			expectedArgs:  []any{100, 200, 300},
 			query: Select(
 				qm.Select("id", "name"),
@@ -51,13 +51,13 @@ func TestSelect(t *testing.T) {
 			expectedQuery: `SELECT status, avg(difference)
 					FROM (
 						SELECT
-						status,
-						LEAD(created_date, 1, NOW())
-						OVER(PARTITION BY presale_id ORDER BY created_date) -
-						created_date AS "difference"
+						status, ((
+							LEAD(created_date, 1, NOW()) OVER
+							(PARTITION BY presale_id ORDER BY created_date)
+						) - created_date) AS "difference"
 						FROM presales_presalestatus
 					) AS "differnce_by_status"
-					WHERE status IN ('A', 'B', 'C')
+					WHERE (status IN ('A', 'B', 'C'))
 					GROUP BY status`,
 			query: Select(
 				qm.Select("status", expr.Func("avg", "difference")),
@@ -65,10 +65,10 @@ func TestSelect(t *testing.T) {
 					Select(
 						qm.Select(
 							"status",
-							qm.X(expr.OVER(
+							expr.OVER(
 								expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
 								expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-							)).MINUS("created_date").AS("difference"),
+							).MINUS("created_date").AS("difference"),
 						),
 						qm.From("presales_presalestatus"),
 					),
