@@ -30,13 +30,13 @@ type BaseQuery[E Expression] struct {
 }
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
-	var b2 BaseQuery[E]
-	copier.CopyWithOption(b2, b, copier.Option{
+	var b2 = new(BaseQuery[E])
+	copier.CopyWithOption(b2, &b, copier.Option{
 		IgnoreEmpty: true,
 		DeepCopy:    true,
 	})
 
-	return b2
+	return *b2
 }
 
 func (b BaseQuery[E]) Apply(mods ...Mod[E]) {
