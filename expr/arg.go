@@ -15,15 +15,6 @@ func Placeholder(n uint) query.Expression {
 	return Arg(make([]any, n)...)
 }
 
-type arg struct {
-	val any
-}
-
-func (a arg) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	d.WriteArg(w, start)
-	return []any{a.val}, nil
-}
-
 type args struct {
 	vals []any
 }
