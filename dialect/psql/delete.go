@@ -24,6 +24,7 @@ func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] 
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
 	expr.With
+	only bool
 	expr.Table
 	expr.FromItems
 	expr.Where
@@ -40,7 +41,13 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, 
 	}
 	args = append(args, withArgs...)
 
-	tableArgs, err := query.ExpressIf(w, dl, start+len(args), d.Table, true, "DELETE FROM ", "")
+	w.Write([]byte("DELETE FROM "))
+
+	if d.only {
+		w.Write([]byte("ONLY "))
+	}
+
+	tableArgs, err := query.ExpressIf(w, dl, start+len(args), d.Table, true, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +81,12 @@ type DeleteQM struct {
 	mods.FromMod[*DeleteQuery]
 	fromItemMod
 	joinMod[*expr.FromItem]
+}
+
+func (qm DeleteQM) Only() query.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(d *DeleteQuery) {
+		d.only = true
+	})
 }
 
 func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
