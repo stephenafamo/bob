@@ -41,7 +41,7 @@ func (c Conflict[Q]) DoUpdate() Conflict[Q] {
 
 func (c Conflict[Q]) Set(a, b any) Conflict[Q] {
 	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, expr.EQ(a, b))
+	conflict.Set.Set = append(conflict.Set.Set, expr.X(a).EQ(b))
 
 	return Conflict[Q](func() expr.Conflict {
 		return conflict

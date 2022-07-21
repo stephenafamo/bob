@@ -21,7 +21,7 @@ func TestUpdate(t *testing.T) {
 			query: Update(
 				qm.Table("films"),
 				qm.SetArg("kind", "Dramatic"),
-				qm.Where(expr.EQ("kind", expr.Arg("Drama"))),
+				qm.Where(qm.X("kind").EQ(expr.Arg("Drama"))),
 			),
 			expectedQuery: `UPDATE films SET kind = ?1 WHERE kind = ?2`,
 			expectedArgs:  []any{"Dramatic", "Drama"},
@@ -31,8 +31,8 @@ func TestUpdate(t *testing.T) {
 				qm.Table("employees"),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.From("accounts"),
-				qm.Where(expr.EQ("accounts.name", expr.Arg("Acme Corporation"))),
-				qm.Where(expr.EQ("employees.id", "accounts.sales_person")),
+				qm.Where(qm.X("accounts.name").EQ(expr.Arg("Acme Corporation"))),
+				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
 			),
 			expectedQuery: `UPDATE employees SET sales_count = sales_count + 1 FROM accounts
 			  WHERE accounts.name = ?1
@@ -47,10 +47,10 @@ func TestUpdate(t *testing.T) {
 				qm.TableAs("employees", "e"),
 				qm.NotIndexed(),
 				qm.Set("sales_count", "sales_count + 1"),
-				qm.Where(expr.EQ("id", expr.P(Select(
+				qm.Where(qm.X("id").EQ(expr.P(Select(
 					selectQM.Select("sales_person"),
 					selectQM.From("accounts"),
-					selectQM.Where(expr.EQ("name", expr.Arg("Acme Corporation"))),
+					selectQM.Where(qm.X("name").EQ(expr.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

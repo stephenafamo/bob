@@ -19,7 +19,7 @@ func TestDelete(t *testing.T) {
 		"simple": {
 			query: Delete(
 				qm.From("films"),
-				qm.Where(expr.EQ("kind", expr.Arg("Drama"))),
+				qm.Where(qm.X("kind").EQ(expr.Arg("Drama"))),
 			),
 			expectedQuery: `DELETE FROM films WHERE kind = $1`,
 			expectedArgs:  []any{"Drama"},
@@ -28,8 +28,8 @@ func TestDelete(t *testing.T) {
 			query: Delete(
 				qm.From("employees"),
 				qm.Using("accounts"),
-				qm.Where(expr.EQ("accounts.name", expr.Arg("Acme Corporation"))),
-				qm.Where(expr.EQ("employees.id", "accounts.sales_person")),
+				qm.Where(qm.X("accounts.name").EQ(expr.Arg("Acme Corporation"))),
+				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
 			),
 			expectedQuery: `DELETE FROM employees USING accounts
 			  WHERE accounts.name = $1

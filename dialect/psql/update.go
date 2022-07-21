@@ -84,6 +84,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
+	expr.ExpressionBuilder
 	withMod[*UpdateQuery]
 	mods.FromMod[*UpdateQuery]
 	fromItemMod
@@ -114,11 +115,11 @@ func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.EQ(a, b)}
+	return mods.Set[*UpdateQuery]{expr.X(a).EQ(b)}
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.EQ(a, expr.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.X(a).EQ(expr.Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {

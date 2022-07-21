@@ -85,6 +85,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
+	expr.ExpressionBuilder
 	withMod[*UpdateQuery]      // For CTEs
 	mods.FromMod[*UpdateQuery] // update *FROM*
 	joinMod[*expr.FromItem]    // joins, which are mods of the FROM
@@ -123,11 +124,11 @@ func (qm UpdateQM) IndexedBy(indexName string) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.EQ(a, b)}
+	return mods.Set[*UpdateQuery]{expr.X(a).EQ(b)}
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.EQ(a, expr.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.X(a).EQ(expr.Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {

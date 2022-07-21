@@ -79,6 +79,7 @@ func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type InsertQM struct {
+	expr.ExpressionBuilder
 	withMod[*InsertQuery] // For CTEs
 	orMod[*InsertQuery]   // INSERT or REPLACE|ABORT|IGNORE e.t.c.
 }

@@ -22,7 +22,7 @@ func TestSelect(t *testing.T) {
 			query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
-				qm.Where(expr.IN("id", expr.Arg(100, 200, 300))),
+				qm.Where(qm.X("id").IN(expr.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
@@ -65,16 +65,16 @@ func TestSelect(t *testing.T) {
 					Select(
 						qm.Select(
 							"status",
-							expr.As(expr.MINUS(expr.OVER(
+							qm.X(expr.OVER(
 								expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
 								expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-							), "created_date"), "difference"),
+							)).MINUS("created_date").AS("difference"),
 						),
 						qm.From("presales_presalestatus"),
 					),
 					qm.As("differnce_by_status"),
 				),
-				qm.Where(expr.IN("status", expr.S("A"), expr.S("B"), expr.S("C"))),
+				qm.Where(qm.X("status").IN(expr.S("A"), expr.S("B"), expr.S("C"))),
 				qm.GroupBy("status"),
 			),
 		},

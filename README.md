@@ -202,3 +202,18 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
   * [ ] Update
   * [ ] Delete
 * [ ] Common Operators
+  * [x] Equal
+  * [x] Not Equal
+  * [x] Less than
+  * [x] Less than or equal to
+  * [x] Greater than
+  * [x] Greater than or equal to
+  * [x] And
+  * [x] Or
+  * [x] In
+  * [x] Not In
+  * [x] Null
+  * [x] Not Null
+  * [x] Is distinct from
+  * [x] Is not distinct from
+  * [x] Concatenation: ||

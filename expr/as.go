@@ -6,13 +6,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func As(expression any, alias string) as {
-	return as{
-		Expression: expression,
-		Alias:      alias,
-	}
-}
-
 type as struct {
 	Expression any
 	Alias      string

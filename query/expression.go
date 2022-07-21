@@ -20,6 +20,12 @@ type Expression interface {
 	WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error)
 }
 
+type ExpressionFunc func(w io.Writer, d Dialect, start int) (args []any, err error)
+
+func (e ExpressionFunc) WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error) {
+	return e(w, d, start)
+}
+
 func Express(w io.Writer, d Dialect, start int, e any) ([]any, error) {
 	switch v := e.(type) {
 	case string:
