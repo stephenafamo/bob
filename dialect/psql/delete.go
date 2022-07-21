@@ -3,19 +3,21 @@ package psql
 import (
 	"io"
 
-	"github.com/jinzhu/copier"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
 
-func Delete(mods ...query.Mod[*DeleteQuery]) *DeleteQuery {
-	s := &DeleteQuery{}
-	for _, mod := range mods {
-		mod.Apply(s)
+func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] {
+	q := &DeleteQuery{}
+	for _, mod := range queryMods {
+		mod.Apply(q)
 	}
 
-	return s
+	return query.BaseQuery[*DeleteQuery]{
+		Expression: q,
+		Dialect:    Dialect{},
+	}
 }
 
 // Trying to represent the select query structure as documented in
@@ -26,26 +28,6 @@ type DeleteQuery struct {
 	expr.FromItems
 	expr.Where
 	expr.Returning
-}
-
-func (d *DeleteQuery) Clone() *DeleteQuery {
-	var d2 = new(DeleteQuery)
-	copier.CopyWithOption(d2, d, copier.Option{
-		IgnoreEmpty: true,
-		DeepCopy:    true,
-	})
-
-	return d2
-}
-
-func (d *DeleteQuery) Apply(mods ...query.Mod[*DeleteQuery]) {
-	for _, mod := range mods {
-		mod.Apply(d)
-	}
-}
-
-func (d DeleteQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return d.WriteSQL(w, dialect, start)
 }
 
 func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, error) {

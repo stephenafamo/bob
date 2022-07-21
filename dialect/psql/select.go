@@ -3,19 +3,21 @@ package psql
 import (
 	"io"
 
-	"github.com/jinzhu/copier"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
 
-func Select(mods ...query.Mod[*SelectQuery]) *SelectQuery {
-	s := &SelectQuery{}
-	for _, mod := range mods {
-		mod.Apply(s)
+func Select(queryMods ...query.Mod[*SelectQuery]) query.BaseQuery[*SelectQuery] {
+	q := &SelectQuery{}
+	for _, mod := range queryMods {
+		mod.Apply(q)
 	}
 
-	return s
+	return query.BaseQuery[*SelectQuery]{
+		Expression: q,
+		Dialect:    Dialect{},
+	}
 }
 
 // Trying to represent the select query structure as documented in
@@ -34,26 +36,6 @@ type SelectQuery struct {
 	expr.Offset
 	expr.Fetch
 	expr.For
-}
-
-func (s *SelectQuery) Clone() *SelectQuery {
-	var s2 = new(SelectQuery)
-	copier.CopyWithOption(s2, s, copier.Option{
-		IgnoreEmpty: true,
-		DeepCopy:    true,
-	})
-
-	return s2
-}
-
-func (s *SelectQuery) Apply(mods ...query.Mod[*SelectQuery]) {
-	for _, mod := range mods {
-		mod.Apply(s)
-	}
-}
-
-func (s SelectQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return s.WriteSQL(w, dialect, start)
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

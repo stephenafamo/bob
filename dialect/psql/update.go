@@ -3,19 +3,21 @@ package psql
 import (
 	"io"
 
-	"github.com/jinzhu/copier"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
 
-func Update(mods ...query.Mod[*UpdateQuery]) *UpdateQuery {
-	s := &UpdateQuery{}
-	for _, mod := range mods {
-		mod.Apply(s)
+func Update(queryMods ...query.Mod[*UpdateQuery]) query.BaseQuery[*UpdateQuery] {
+	q := &UpdateQuery{}
+	for _, mod := range queryMods {
+		mod.Apply(q)
 	}
 
-	return s
+	return query.BaseQuery[*UpdateQuery]{
+		Expression: q,
+		Dialect:    Dialect{},
+	}
 }
 
 // Trying to represent the select query structure as documented in
@@ -28,26 +30,6 @@ type UpdateQuery struct {
 	expr.FromItems
 	expr.Where
 	expr.Returning
-}
-
-func (u *UpdateQuery) Clone() *UpdateQuery {
-	var u2 = new(UpdateQuery)
-	copier.CopyWithOption(u2, u, copier.Option{
-		IgnoreEmpty: true,
-		DeepCopy:    true,
-	})
-
-	return u2
-}
-
-func (u *UpdateQuery) Apply(mods ...query.Mod[*UpdateQuery]) {
-	for _, mod := range mods {
-		mod.Apply(u)
-	}
-}
-
-func (u UpdateQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return u.WriteSQL(w, dialect, start)
 }
 
 func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
