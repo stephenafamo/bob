@@ -60,7 +60,13 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 	}
 	args = append(args, withArgs...)
 
-	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "UPDATE ", "")
+	w.Write([]byte("UPDATE "))
+
+	if u.only {
+		w.Write([]byte("ONLY "))
+	}
+
+	tableArgs, err := query.ExpressIf(w, d, start+len(args), u.Table, true, "", "")
 	if err != nil {
 		return nil, err
 	}
