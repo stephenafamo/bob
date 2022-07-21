@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Select(mods ...mods.QueryMod[*SelectQuery]) *SelectQuery {
+func Select(mods ...query.Mod[*SelectQuery]) *SelectQuery {
 	s := &SelectQuery{}
 	for _, mod := range mods {
 		mod.Apply(s)
@@ -46,7 +46,7 @@ func (s *SelectQuery) Clone() *SelectQuery {
 	return s2
 }
 
-func (s *SelectQuery) Apply(mods ...mods.QueryMod[*SelectQuery]) {
+func (s *SelectQuery) Apply(mods ...query.Mod[*SelectQuery]) {
 	for _, mod := range mods {
 		mod.Apply(s)
 	}
@@ -157,51 +157,51 @@ type SelectQM struct {
 	fromItemMod                        // Dialect specific fromItem mods
 }
 
-func (SelectQM) Distinct(expressions ...any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Distinct(expressions ...any) query.Mod[*SelectQuery] {
 	return mods.Distinct[*SelectQuery]{
 		Distinct: true,
 		On:       expressions,
 	}
 }
 
-func (SelectQM) Select(expressions ...any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Select(expressions ...any) query.Mod[*SelectQuery] {
 	return mods.Select[*SelectQuery](expressions)
 }
 
-func (SelectQM) Where(e query.Expression) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Where(e query.Expression) query.Mod[*SelectQuery] {
 	return mods.Where[*SelectQuery]{e}
 }
 
-func (SelectQM) WhereClause(clause string, args ...any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) WhereClause(clause string, args ...any) query.Mod[*SelectQuery] {
 	return mods.Where[*SelectQuery]{expr.Statement(clause, args...)}
 }
 
-func (SelectQM) Having(e query.Expression) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Having(e query.Expression) query.Mod[*SelectQuery] {
 	return mods.Having[*SelectQuery]{e}
 }
 
-func (SelectQM) HavingClause(clause string, args ...any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) HavingClause(clause string, args ...any) query.Mod[*SelectQuery] {
 	return mods.Having[*SelectQuery]{expr.Statement(clause, args...)}
 }
 
-func (SelectQM) GroupBy(e any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) GroupBy(e any) query.Mod[*SelectQuery] {
 	return mods.GroupBy[*SelectQuery]{
 		E: e,
 	}
 }
 
-func (SelectQM) GroupByDistinct(distinct bool) mods.QueryMod[*SelectQuery] {
+func (SelectQM) GroupByDistinct(distinct bool) query.Mod[*SelectQuery] {
 	return mods.GroupByDistinct[*SelectQuery](distinct)
 }
 
-func (SelectQM) Window(name string, definition any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Window(name string, definition any) query.Mod[*SelectQuery] {
 	return mods.Window[*SelectQuery]{
 		Name:      name,
 		Definiton: definition,
 	}
 }
 
-func (SelectQM) OrderBy(e any) mods.QueryMod[*SelectQuery] {
+func (SelectQM) OrderBy(e any) query.Mod[*SelectQuery] {
 	return orderBy[*SelectQuery](func() expr.OrderDef {
 		return expr.OrderDef{
 			Expression: e,
@@ -209,26 +209,26 @@ func (SelectQM) OrderBy(e any) mods.QueryMod[*SelectQuery] {
 	})
 }
 
-func (SelectQM) Limit(count int64) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Limit(count int64) query.Mod[*SelectQuery] {
 	return mods.Limit[*SelectQuery]{
 		Count: count,
 	}
 }
 
-func (SelectQM) Offset(count int64) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Offset(count int64) query.Mod[*SelectQuery] {
 	return mods.Offset[*SelectQuery]{
 		Count: count,
 	}
 }
 
-func (SelectQM) Fetch(count int64, withTies bool) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Fetch(count int64, withTies bool) query.Mod[*SelectQuery] {
 	return mods.Fetch[*SelectQuery]{
 		Count:    &count,
 		WithTies: withTies,
 	}
 }
 
-func (SelectQM) Union(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Union(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Union,
 		Query:    q,
@@ -236,7 +236,7 @@ func (SelectQM) Union(q query.Query) mods.QueryMod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) UnionAll(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) UnionAll(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Union,
 		Query:    q,
@@ -244,7 +244,7 @@ func (SelectQM) UnionAll(q query.Query) mods.QueryMod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) Intersect(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Intersect(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Intersect,
 		Query:    q,
@@ -252,7 +252,7 @@ func (SelectQM) Intersect(q query.Query) mods.QueryMod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) IntersectAll(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) IntersectAll(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Intersect,
 		Query:    q,
@@ -260,7 +260,7 @@ func (SelectQM) IntersectAll(q query.Query) mods.QueryMod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) Except(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) Except(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Except,
 		Query:    q,
@@ -268,7 +268,7 @@ func (SelectQM) Except(q query.Query) mods.QueryMod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) ExceptAll(q query.Query) mods.QueryMod[*SelectQuery] {
+func (SelectQM) ExceptAll(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
 		Strategy: expr.Except,
 		Query:    q,

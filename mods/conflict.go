@@ -2,6 +2,7 @@ package mods
 
 import (
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/query"
 )
 
 type Conflict[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
@@ -20,7 +21,7 @@ func (c Conflict[Q]) On(target any, where ...any) Conflict[Q] {
 	})
 }
 
-func (c Conflict[Q]) DoNothing() QueryMod[Q] {
+func (c Conflict[Q]) DoNothing() query.Mod[Q] {
 	conflict := c()
 	conflict.Do = "NOTHING"
 

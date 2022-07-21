@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Update(mods ...mods.QueryMod[*UpdateQuery]) *UpdateQuery {
+func Update(mods ...query.Mod[*UpdateQuery]) *UpdateQuery {
 	s := &UpdateQuery{}
 	for _, mod := range mods {
 		mod.Apply(s)
@@ -40,7 +40,7 @@ func (u *UpdateQuery) Clone() *UpdateQuery {
 	return u2
 }
 
-func (u *UpdateQuery) Apply(mods ...mods.QueryMod[*UpdateQuery]) {
+func (u *UpdateQuery) Apply(mods ...query.Mod[*UpdateQuery]) {
 	for _, mod := range mods {
 		mod.Apply(u)
 	}
@@ -108,13 +108,13 @@ type UpdateQM struct {
 	joinMod[*expr.FromItem]
 }
 
-func (qm UpdateQM) Only() mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) Only() query.Mod[*UpdateQuery] {
 	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
 		u.only = true
 	})
 }
 
-func (qm UpdateQM) Table(name any) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) Table(name any) query.Mod[*UpdateQuery] {
 	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
 		u.Table = expr.Table{
 			Expression: name,
@@ -122,7 +122,7 @@ func (qm UpdateQM) Table(name any) mods.QueryMod[*UpdateQuery] {
 	})
 }
 
-func (qm UpdateQM) TableAs(name any, alias string) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
 	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
 		u.Table = expr.Table{
 			Expression: name,
@@ -131,22 +131,22 @@ func (qm UpdateQM) TableAs(name any, alias string) mods.QueryMod[*UpdateQuery] {
 	})
 }
 
-func (qm UpdateQM) Set(a, b any) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
 	return mods.Set[*UpdateQuery]{expr.EQ(a, b)}
 }
 
-func (qm UpdateQM) SetArg(a, b any) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
 	return mods.Set[*UpdateQuery]{expr.EQ(a, expr.Arg(b))}
 }
 
-func (qm UpdateQM) Where(e query.Expression) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {
 	return mods.Where[*UpdateQuery]{e}
 }
 
-func (qm UpdateQM) WhereClause(clause string, args ...any) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*UpdateQuery] {
 	return mods.Where[*UpdateQuery]{expr.Statement(clause, args...)}
 }
 
-func (qm UpdateQM) Returning(expressions ...any) mods.QueryMod[*UpdateQuery] {
+func (qm UpdateQM) Returning(expressions ...any) query.Mod[*UpdateQuery] {
 	return mods.Returning[*UpdateQuery](expressions)
 }

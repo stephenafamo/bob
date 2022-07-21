@@ -4,10 +4,6 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-type QueryMod[T any] interface {
-	Apply(T)
-}
-
 type QueryModFunc[T any] func(T)
 
 func (q QueryModFunc[T]) Apply(query T) {

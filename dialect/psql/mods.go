@@ -20,25 +20,25 @@ func (withMod[Q]) With(name string, columns ...string) cteChain[Q] {
 	})
 }
 
-func (withMod[Q]) Recursive(r bool) mods.QueryMod[Q] {
+func (withMod[Q]) Recursive(r bool) query.Mod[Q] {
 	return mods.Recursive[Q](r)
 }
 
 type fromItemMod struct{}
 
-func (fromItemMod) Only() mods.QueryMod[*expr.FromItem] {
+func (fromItemMod) Only() query.Mod[*expr.FromItem] {
 	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
 		q.Only = true
 	})
 }
 
-func (fromItemMod) Lateral() mods.QueryMod[*expr.FromItem] {
+func (fromItemMod) Lateral() query.Mod[*expr.FromItem] {
 	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
 		q.Lateral = true
 	})
 }
 
-func (fromItemMod) WithOrdinality() mods.QueryMod[*expr.FromItem] {
+func (fromItemMod) WithOrdinality() query.Mod[*expr.FromItem] {
 	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
 		q.WithOrdinality = true
 	})
@@ -59,28 +59,28 @@ func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	})
 }
 
-func (j joinChain[Q]) Natural() mods.QueryMod[Q] {
+func (j joinChain[Q]) Natural() query.Mod[Q] {
 	jo := j()
 	jo.Natural = true
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) On(on ...any) mods.QueryMod[Q] {
+func (j joinChain[Q]) On(on ...any) query.Mod[Q] {
 	jo := j()
 	jo.On = append(jo.On, on)
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) OnEQ(a, b any) mods.QueryMod[Q] {
+func (j joinChain[Q]) OnEQ(a, b any) query.Mod[Q] {
 	jo := j()
 	jo.On = append(jo.On, expr.EQ(a, b))
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) Using(using ...any) mods.QueryMod[Q] {
+func (j joinChain[Q]) Using(using ...any) query.Mod[Q] {
 	jo := j()
 	jo.Using = using
 
@@ -125,7 +125,7 @@ func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
 	})
 }
 
-func (j joinMod[Q]) CrossJoin(e any) mods.QueryMod[Q] {
+func (j joinMod[Q]) CrossJoin(e any) query.Mod[Q] {
 	return mods.Join[Q]{
 		Type: expr.CrossJoin,
 		To:   e,

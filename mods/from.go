@@ -8,7 +8,7 @@ import (
 // To be embeded in other query mod providers
 type FromMod[Q interface{ AppendFromItem(expr.FromItem) }] struct{}
 
-func (FromMod[Q]) From(table any, fromMods ...QueryMod[*expr.FromItem]) QueryMod[Q] {
+func (FromMod[Q]) From(table any, fromMods ...query.Mod[*expr.FromItem]) query.Mod[Q] {
 	f := expr.FromItem{}
 
 	switch t := table.(type) {
@@ -16,8 +16,8 @@ func (FromMod[Q]) From(table any, fromMods ...QueryMod[*expr.FromItem]) QueryMod
 		f.Table = t // early because it is a common case
 	case query.Query:
 		f.Table = expr.P(table) // wrap in brackets
-	case QueryMod[*expr.FromItem]:
-		fromMods = append([]QueryMod[*expr.FromItem]{t}, fromMods...)
+	case query.Mod[*expr.FromItem]:
+		fromMods = append([]query.Mod[*expr.FromItem]{t}, fromMods...)
 	default:
 		f.Table = t
 	}
@@ -31,7 +31,7 @@ func (FromMod[Q]) From(table any, fromMods ...QueryMod[*expr.FromItem]) QueryMod
 
 type TableAliasMod[Q interface{ SetTableAlias(string, ...string) }] struct{}
 
-func (TableAliasMod[Q]) As(alias string, columns ...string) QueryMod[Q] {
+func (TableAliasMod[Q]) As(alias string, columns ...string) query.Mod[Q] {
 	return TableAs[Q]{
 		Alias:   alias,
 		Columns: columns,

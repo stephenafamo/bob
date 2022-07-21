@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Insert(mods ...mods.QueryMod[*InsertQuery]) *InsertQuery {
+func Insert(mods ...query.Mod[*InsertQuery]) *InsertQuery {
 	s := &InsertQuery{}
 	for _, mod := range mods {
 		mod.Apply(s)
@@ -39,7 +39,7 @@ func (i *InsertQuery) Clone() *InsertQuery {
 	return i2
 }
 
-func (i *InsertQuery) Apply(mods ...mods.QueryMod[*InsertQuery]) {
+func (i *InsertQuery) Apply(mods ...query.Mod[*InsertQuery]) {
 	for _, mod := range mods {
 		mod.Apply(i)
 	}
@@ -100,7 +100,7 @@ type InsertQM struct {
 	withMod[*InsertQuery]
 }
 
-func (qm InsertQM) Into(name any, columns ...string) mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) Into(name any, columns ...string) query.Mod[*InsertQuery] {
 	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Table = expr.Table{
 			Expression: name,
@@ -109,7 +109,7 @@ func (qm InsertQM) Into(name any, columns ...string) mods.QueryMod[*InsertQuery]
 	})
 }
 
-func (qm InsertQM) IntoAs(name any, alias string, columns ...string) mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*InsertQuery] {
 	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Table = expr.Table{
 			Expression: name,
@@ -119,19 +119,19 @@ func (qm InsertQM) IntoAs(name any, alias string, columns ...string) mods.QueryM
 	})
 }
 
-func (qm InsertQM) OverridingSystem() mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) OverridingSystem() query.Mod[*InsertQuery] {
 	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.overriding = "SYSTEM"
 	})
 }
 
-func (qm InsertQM) OverridingUser() mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) OverridingUser() query.Mod[*InsertQuery] {
 	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.overriding = "USER"
 	})
 }
 
-func (qm InsertQM) Values(expressions ...any) mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) Values(expressions ...any) query.Mod[*InsertQuery] {
 	return mods.Values[*InsertQuery](expressions)
 }
 
@@ -160,6 +160,6 @@ func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*Inse
 	})
 }
 
-func (qm InsertQM) Returning(expressions ...any) mods.QueryMod[*InsertQuery] {
+func (qm InsertQM) Returning(expressions ...any) query.Mod[*InsertQuery] {
 	return mods.Returning[*InsertQuery](expressions)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Delete(mods ...mods.QueryMod[*DeleteQuery]) *DeleteQuery {
+func Delete(mods ...query.Mod[*DeleteQuery]) *DeleteQuery {
 	s := &DeleteQuery{}
 	for _, mod := range mods {
 		mod.Apply(s)
@@ -38,7 +38,7 @@ func (d *DeleteQuery) Clone() *DeleteQuery {
 	return d2
 }
 
-func (d *DeleteQuery) Apply(mods ...mods.QueryMod[*DeleteQuery]) {
+func (d *DeleteQuery) Apply(mods ...query.Mod[*DeleteQuery]) {
 	for _, mod := range mods {
 		mod.Apply(d)
 	}
@@ -94,7 +94,7 @@ type DeleteQM struct {
 	joinMod[*expr.FromItem]
 }
 
-func (qm DeleteQM) From(name any) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
 		u.Table = expr.Table{
 			Expression: name,
@@ -102,7 +102,7 @@ func (qm DeleteQM) From(name any) mods.QueryMod[*DeleteQuery] {
 	})
 }
 
-func (qm DeleteQM) FromAs(name any, alias string) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) FromAs(name any, alias string) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
 		u.Table = expr.Table{
 			Expression: name,
@@ -111,18 +111,18 @@ func (qm DeleteQM) FromAs(name any, alias string) mods.QueryMod[*DeleteQuery] {
 	})
 }
 
-func (qm DeleteQM) Using(table any, usingMods ...mods.QueryMod[*expr.FromItem]) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) Using(table any, usingMods ...query.Mod[*expr.FromItem]) query.Mod[*DeleteQuery] {
 	return qm.FromMod.From(table, usingMods...)
 }
 
-func (qm DeleteQM) Where(e query.Expression) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) Where(e query.Expression) query.Mod[*DeleteQuery] {
 	return mods.Where[*DeleteQuery]{e}
 }
 
-func (qm DeleteQM) WhereClause(clause string, args ...any) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*DeleteQuery] {
 	return mods.Where[*DeleteQuery]{expr.Statement(clause, args...)}
 }
 
-func (qm DeleteQM) Returning(expressions ...any) mods.QueryMod[*DeleteQuery] {
+func (qm DeleteQM) Returning(expressions ...any) query.Mod[*DeleteQuery] {
 	return mods.Returning[*DeleteQuery](expressions)
 }
