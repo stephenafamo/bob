@@ -192,58 +192,6 @@ func (o orderBy[Q]) Collate(collation string) orderBy[Q] {
 	})
 }
 
-type onConflict[Q interface{ SetConflict(expr.Conflict) }] func() expr.Conflict
-
-func (s onConflict[Q]) Apply(q Q) {
-	q.SetConflict(s())
-}
-
-func (c onConflict[Q]) On(target any, where ...any) onConflict[Q] {
-	conflict := c()
-	conflict.Target.Target = target
-	conflict.Target.Where = append(conflict.Target.Where, where...)
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c onConflict[Q]) DoNothing() mods.QueryMod[Q] {
-	conflict := c()
-	conflict.Do = "NOTHING"
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c onConflict[Q]) DoUpdate() onConflict[Q] {
-	conflict := c()
-	conflict.Do = "UPDATE"
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c onConflict[Q]) Set(a, b any) onConflict[Q] {
-	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, expr.EQ(a, b))
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
-func (c onConflict[Q]) Where(where ...any) onConflict[Q] {
-	conflict := c()
-	conflict.Where.Conditions = append(conflict.Where.Conditions, where...)
-
-	return onConflict[Q](func() expr.Conflict {
-		return conflict
-	})
-}
-
 type cteChain[Q interface{ AppendWith(expr.CTE) }] func() expr.CTE
 
 func (c cteChain[Q]) Apply(q Q) {
@@ -267,7 +215,17 @@ func (c cteChain[Q]) As(q query.Query) cteChain[Q] {
 	})
 }
 
-func (c cteChain[Q]) Materialized(b bool) cteChain[Q] {
+func (c cteChain[Q]) NotMaterialized() cteChain[Q] {
+	var b = false
+	cte := c()
+	cte.Materialized = &b
+	return cteChain[Q](func() expr.CTE {
+		return cte
+	})
+}
+
+func (c cteChain[Q]) Materialized() cteChain[Q] {
+	var b = true
 	cte := c()
 	cte.Materialized = &b
 	return cteChain[Q](func() expr.CTE {

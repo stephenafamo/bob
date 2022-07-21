@@ -136,11 +136,11 @@ func (qm InsertQM) Values(expressions ...any) mods.QueryMod[*InsertQuery] {
 }
 
 // The column to target. Will auto add brackets
-func (qm InsertQM) OnConflict(column any, where ...any) onConflict[*InsertQuery] {
+func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
 	if column != nil {
 		column = expr.P(column)
 	}
-	return onConflict[*InsertQuery](func() expr.Conflict {
+	return mods.Conflict[*InsertQuery](func() expr.Conflict {
 		return expr.Conflict{
 			Target: expr.ConflictTarget{
 				Target: column,
@@ -150,8 +150,8 @@ func (qm InsertQM) OnConflict(column any, where ...any) onConflict[*InsertQuery]
 	})
 }
 
-func (qm InsertQM) OnConflictOnConstraint(constraint string) onConflict[*InsertQuery] {
-	return onConflict[*InsertQuery](func() expr.Conflict {
+func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*InsertQuery] {
+	return mods.Conflict[*InsertQuery](func() expr.Conflict {
 		return expr.Conflict{
 			Target: expr.ConflictTarget{
 				Target: `ON CONSTRAINT "` + constraint + `"`,
