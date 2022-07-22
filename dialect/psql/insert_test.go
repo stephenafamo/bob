@@ -54,7 +54,7 @@ func TestInsert(t *testing.T) {
 				qm.Values(expr.Arg(9, "Sentry Distribution")),
 				qm.OnConflict("did").DoUpdate().Set(
 					"dname",
-					expr.CONCAT(
+					qm.CONCAT(
 						"EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),
 					),
 				).Where(qm.X("d.zipcode").NE(expr.S("21201"))),
@@ -62,7 +62,7 @@ func TestInsert(t *testing.T) {
 			expectedQuery: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT (did) DO UPDATE
-				SET dname = EXCLUDED.dname || ' (formerly ' || d.dname || ')'
+				SET dname = (EXCLUDED.dname || ' (formerly ' || d.dname || ')')
 				WHERE (d.zipcode <> '21201')`,
 			expectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},

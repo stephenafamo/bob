@@ -65,7 +65,7 @@ func TestSelect(t *testing.T) {
 					Select(
 						qm.Select(
 							"status",
-							expr.OVER(
+							qm.OVER(
 								expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
 								expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
 							).MINUS("created_date").AS("difference"),

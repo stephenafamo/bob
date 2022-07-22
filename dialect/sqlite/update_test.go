@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
@@ -63,6 +64,7 @@ func TestUpdate(t *testing.T) {
 				t.Fatalf("error: %v", err)
 			}
 			if diff := d.QueryDiff(tc.expectedQuery, sql); diff != "" {
+				fmt.Printf("\n\n%s\n\n", sql)
 				t.Fatalf("diff: %s", diff)
 			}
 			if diff := d.ArgsDiff(tc.expectedArgs, args); diff != "" {

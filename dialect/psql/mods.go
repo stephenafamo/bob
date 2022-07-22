@@ -75,7 +75,7 @@ func (j joinChain[Q]) On(on ...any) query.Mod[Q] {
 
 func (j joinChain[Q]) OnEQ(a, b any) query.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, expr.X(a).EQ(b))
+	jo.On = append(jo.On, BuilderMod{}.X(a).EQ(b))
 
 	return mods.Join[Q](jo)
 }

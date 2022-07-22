@@ -84,7 +84,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
-	expr.ExpressionBuilder
+	BuilderMod
 	withMod[*UpdateQuery]
 	mods.FromMod[*UpdateQuery]
 	fromItemMod
