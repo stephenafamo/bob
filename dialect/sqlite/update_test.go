@@ -22,7 +22,7 @@ func TestUpdate(t *testing.T) {
 			query: Update(
 				qm.Table("films"),
 				qm.SetArg("kind", "Dramatic"),
-				qm.Where(qm.X("kind").EQ(expr.Arg("Drama"))),
+				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
 			),
 			expectedQuery: `UPDATE films SET kind = ?1 WHERE (kind = ?2)`,
 			expectedArgs:  []any{"Dramatic", "Drama"},
@@ -32,7 +32,7 @@ func TestUpdate(t *testing.T) {
 				qm.Table("employees"),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.From("accounts"),
-				qm.Where(qm.X("accounts.name").EQ(expr.Arg("Acme Corporation"))),
+				qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
 				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
 			),
 			expectedQuery: `UPDATE employees SET sales_count = sales_count + 1 FROM accounts
@@ -51,7 +51,7 @@ func TestUpdate(t *testing.T) {
 				qm.Where(qm.X("id").EQ(expr.P(Select(
 					selectQM.Select("sales_person"),
 					selectQM.From("accounts"),
-					selectQM.Where(qm.X("name").EQ(expr.Arg("Acme Corporation"))),
+					selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

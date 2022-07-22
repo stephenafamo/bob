@@ -19,7 +19,7 @@ func TestInsert(t *testing.T) {
 		"simple insert": {
 			query: Insert(
 				qm.Into("films"),
-				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			expectedQuery: "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
 			expectedArgs:  []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
@@ -27,8 +27,8 @@ func TestInsert(t *testing.T) {
 		"bulk insert": {
 			query: Insert(
 				qm.Into("films"),
-				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			expectedQuery: `INSERT INTO films VALUES
 				(?1, ?2, ?3, ?4, ?5, ?6),
@@ -41,7 +41,7 @@ func TestInsert(t *testing.T) {
 		"on conflict do nothing": {
 			query: Insert(
 				qm.Into("films"),
-				qm.Values(expr.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 				qm.OnConflict(nil).DoNothing(),
 			),
 			expectedQuery: "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT DO NOTHING",
@@ -50,8 +50,8 @@ func TestInsert(t *testing.T) {
 		"upsert": {
 			query: Insert(
 				qm.IntoAs("distributors", "d", "did", "dname"),
-				qm.Values(expr.Arg(8, "Anvil Distribution")),
-				qm.Values(expr.Arg(9, "Sentry Distribution")),
+				qm.Values(qm.Arg(8, "Anvil Distribution")),
+				qm.Values(qm.Arg(9, "Sentry Distribution")),
 				qm.OnConflict("did").DoUpdate().Set(
 					"dname",
 					qm.CONCAT(
@@ -70,8 +70,8 @@ func TestInsert(t *testing.T) {
 			query: Insert(
 				qm.OrReplace(),
 				qm.Into("distributors", "did", "dname"),
-				qm.Values(expr.Arg(8, "Anvil Distribution")),
-				qm.Values(expr.Arg(9, "Sentry Distribution")),
+				qm.Values(qm.Arg(8, "Anvil Distribution")),
+				qm.Values(qm.Arg(9, "Sentry Distribution")),
 			),
 			expectedQuery: `INSERT OR REPLACE INTO distributors ("did", "dname")
 				VALUES (?1, ?2), (?3, ?4)`,

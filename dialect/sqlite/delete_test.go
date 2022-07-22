@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -19,7 +18,7 @@ func TestDelete(t *testing.T) {
 		"simple": {
 			query: Delete(
 				qm.From("films"),
-				qm.Where(qm.X("kind").EQ(expr.Arg("Drama"))),
+				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
 			),
 			expectedQuery: `DELETE FROM films WHERE (kind = ?1)`,
 			expectedArgs:  []any{"Drama"},

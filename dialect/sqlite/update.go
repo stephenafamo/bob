@@ -128,7 +128,7 @@ func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", a, expr.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, qm.Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {

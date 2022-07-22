@@ -22,7 +22,7 @@ func TestSelect(t *testing.T) {
 			query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
-				qm.Where(qm.X("id").IN(expr.Arg(100, 200, 300))),
+				qm.Where(qm.X("id").IN(qm.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
@@ -30,7 +30,7 @@ func TestSelect(t *testing.T) {
 				qm.From(
 					expr.Func(
 						"json_to_recordset",
-						expr.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
+						qm.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
 					).Col("a", "INTEGER").Col("b", "TEXT").ToMod(),
 					expr.Func("generate_series", 1, 3).ToMod(),
 					qm.As("x", "p", "q", "s"),

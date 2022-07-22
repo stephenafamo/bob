@@ -15,7 +15,7 @@ type builder[B any] interface {
 func X[T any, B builder[T]](exp any) T {
 	// Wrap in parenthesis if not a raw string or string in quotes
 	switch exp.(type) {
-	case string, rawString:
+	case string, rawString, args:
 		break
 	default:
 		exp = P(exp)
@@ -44,19 +44,28 @@ func (e ExpressionBuilder[T, B]) NotX(exp any) T {
 	return NotX[T, B](exp)
 }
 
-// OR
-func (e ExpressionBuilder[T, B]) OR(args ...any) T {
+// Or
+func (e ExpressionBuilder[T, B]) Or(args ...any) T {
 	return e.X(sliceJoin{expr: args, operator: " OR "})
 }
 
-// AND
-func (e ExpressionBuilder[T, B]) AND(args ...any) T {
+// And
+func (e ExpressionBuilder[T, B]) And(args ...any) T {
 	return e.X(sliceJoin{expr: args, operator: " AND "})
 }
 
 // Concatenation `||` operator
 func (e ExpressionBuilder[T, B]) CONCAT(ss ...any) T {
 	return e.X(sliceJoin{expr: ss, operator: " || "})
+}
+
+// Comma separated list of arguments
+func (e ExpressionBuilder[T, B]) Arg(vals ...any) T {
+	return e.X(args{vals: vals})
+}
+
+func (e ExpressionBuilder[T, B]) Placeholder(n uint) T {
+	return e.Arg(make([]any, n)...)
 }
 
 // OVER: For window functions
