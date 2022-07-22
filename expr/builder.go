@@ -7,29 +7,34 @@ import (
 )
 
 // Build an expression
-func X(start any) Builder {
+func X(exp any) Builder {
 	// Wrap in parenthesis if not a raw string or string in quotes
-	switch start.(type) {
+	switch exp.(type) {
 	case string, rawString:
 		break
 	default:
-		start = P(start)
+		exp = P(exp)
 	}
 
-	return Builder{base: start}
+	return Builder{base: exp}
+}
+
+// prefix the expression with a NOT
+func NotX(exp any) Builder {
+	return Builder{base: P(startEnd{prefix: "NOT ", expr: X(exp)})}
 }
 
 // To be embeded in query mods
 type ExpressionBuilder struct{}
 
 // Start building an expression
-func (e ExpressionBuilder) X(start any) Builder {
-	return X(start)
+func (e ExpressionBuilder) X(exp any) Builder {
+	return X(exp)
 }
 
 // prefix the expression with a NOT
-func (e ExpressionBuilder) NOT(exp any) Builder {
-	return X(startEnd{prefix: "NOT ", expr: exp})
+func (e ExpressionBuilder) NotX(exp any) Builder {
+	return NotX(exp)
 }
 
 type Builder struct {

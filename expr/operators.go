@@ -49,27 +49,18 @@ func (s sliceJoin) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, err
 }
 
 // OR
-func OR(args ...any) query.Expression {
-	return sliceJoin{
-		expr:     args,
-		operator: " OR ",
-	}
+func OR(args ...any) Builder {
+	return X(sliceJoin{expr: args, operator: " OR "})
 }
 
 // AND
-func AND(args ...any) query.Expression {
-	return sliceJoin{
-		expr:     args,
-		operator: " AND ",
-	}
+func AND(args ...any) Builder {
+	return X(sliceJoin{expr: args, operator: " AND "})
 }
 
 // Concatenation `||` operator
-func CONCAT(ss ...any) query.Expression {
-	return sliceJoin{
-		expr:     ss,
-		operator: " || ",
-	}
+func CONCAT(ss ...any) Builder {
+	return X(sliceJoin{expr: ss, operator: " || "})
 }
 
 type startEnd struct {
