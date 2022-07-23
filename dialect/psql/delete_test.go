@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
-	"github.com/stephenafamo/bob/query"
 )
 
 func TestDelete(t *testing.T) {
@@ -32,18 +31,5 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for name, tc := range examples {
-		t.Run(name, func(t *testing.T) {
-			sql, args, err := query.Build(tc.Query)
-			if err != nil {
-				t.Fatalf("error: %v", err)
-			}
-			if diff := d.QueryDiff(tc.ExpectedQuery, sql); diff != "" {
-				t.Fatalf("diff: %s", diff)
-			}
-			if diff := d.ArgsDiff(tc.ExpectedArgs, args); diff != "" {
-				t.Fatalf("diff: %s", diff)
-			}
-		})
-	}
+	d.RunTests(t, examples)
 }

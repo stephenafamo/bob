@@ -3,6 +3,7 @@ package dialect
 import (
 	"regexp"
 	"strings"
+	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob/query"
@@ -19,7 +20,7 @@ type Testcase struct {
 }
 
 var oneOrMoreSpace = regexp.MustCompile(`\s+`)
-var spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)]+)\s*`)
+var spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)])\s*`)
 
 func Clean(s string) string {
 	s = strings.TrimSpace(s)
@@ -34,4 +35,21 @@ func QueryDiff(a, b string) string {
 
 func ArgsDiff(a, b []any) string {
 	return cmp.Diff(a, b)
+}
+
+func RunTests(t *testing.T, examples Testcases) {
+	for name, tc := range examples {
+		t.Run(name, func(t *testing.T) {
+			sql, args, err := query.Build(tc.Query)
+			if err != nil {
+				t.Fatalf("error: %v", err)
+			}
+			if diff := QueryDiff(tc.ExpectedQuery, sql); diff != "" {
+				t.Fatalf("diff: %s", diff)
+			}
+			if diff := ArgsDiff(tc.ExpectedArgs, args); diff != "" {
+				t.Fatalf("diff: %s", diff)
+			}
+		})
+	}
 }
