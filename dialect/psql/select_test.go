@@ -33,7 +33,7 @@ func TestSelect(t *testing.T) {
 				),
 				qm.OrderBy("p"),
 			),
-			ExpectedQuery: ` SELECT *
+			ExpectedQuery: `SELECT *
 				FROM ROWS FROM
 					(
 						json_to_recordset($1)

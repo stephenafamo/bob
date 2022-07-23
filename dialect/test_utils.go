@@ -37,8 +37,8 @@ func ArgsDiff(a, b []any) string {
 	return cmp.Diff(a, b)
 }
 
-func RunTests(t *testing.T, examples Testcases) {
-	for name, tc := range examples {
+func RunTests(t *testing.T, cases Testcases) {
+	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			sql, args, err := query.Build(tc.Query)
 			if err != nil {

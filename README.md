@@ -4,18 +4,15 @@
 
 ## Features
 
-* 2x Faster than existing packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
+* Faster than comparable packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
 * Build any query. Supports the specification as closely as possible.
 
 ## Examples
 
 Examples are in the [examples folder](examples):
 
-* PostgreSQL
-  * [Select](examples/postgres_select.md)
-  * [Insert & Upsert](examples/postgres_insert.md)
-  * [Update](examples/postgres_update.md)
-  * [Delete](examples/postgres_delete.md)
+* [Postgres](examples/psql)
+* [SQLite](examples/sqlite)
 
 ## Principles
 
@@ -186,6 +183,12 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
   * [x] Insert
   * [x] Update
   * [x] Delete
+  * [ ] Postgres Specific Operators
+    * [ ] Is [Not] True
+    * [ ] Is [Not] False
+    * [ ] Is [Not] Unknown
+    * [ ] [Not] Between Symmetric
+    * [ ] Is [Not] [NFC|NFD|NFKC|NFKD] Normalized
 * [ ] MySQL
   * [ ] Select
   * [ ] Insert
@@ -196,13 +199,15 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
   * [x] Insert
   * [x] Update
   * [x] Delete
+  * [ ] SQLite Specific Operators
+    * [ ] GLOB
 * [ ] SQL Server
   * [ ] Select
   * [ ] Insert
   * [ ] Update
   * [ ] Delete
 * [ ] Common Operators
-  * [x] Equal
+  * [x] [Not] Equal
   * [x] Not Equal
   * [x] Less than
   * [x] Less than or equal to
@@ -210,10 +215,8 @@ var myquery, myargs = query.MustBuild(psql.Insert(...))
   * [x] Greater than or equal to
   * [x] And
   * [x] Or
-  * [x] In
-  * [x] Not In
-  * [x] Null
-  * [x] Not Null
-  * [x] Is distinct from
-  * [x] Is not distinct from
+  * [x] [Not] In
+  * [x] [Not] Null
+  * [x] Is [not] distinct from
   * [x] Concatenation: ||
+  * [ ] Between
