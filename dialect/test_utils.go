@@ -5,12 +5,20 @@ import (
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/stephenafamo/bob/query"
 )
 
-var oneOrMoreSpace = regexp.MustCompile(`\s+`)
-var spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)])\s*`)
+type Testcases map[string]Testcase
+type Testcase struct {
+	Query         query.Query
+	ExpectedQuery string
+	ExpectedArgs  []any
+}
 
-func clean(s string) string {
+var oneOrMoreSpace = regexp.MustCompile(`\s+`)
+var spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)]+)\s*`)
+
+func Clean(s string) string {
 	s = strings.TrimSpace(s)
 	s = oneOrMoreSpace.ReplaceAllLiteralString(s, " ")
 	s = spaceAroundBrackets.ReplaceAllString(s, " $1 ")
@@ -18,7 +26,7 @@ func clean(s string) string {
 }
 
 func QueryDiff(a, b string) string {
-	return cmp.Diff(clean(a), clean(b))
+	return cmp.Diff(Clean(a), Clean(b))
 }
 
 func ArgsDiff(a, b []any) string {

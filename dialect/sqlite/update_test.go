@@ -1,7 +1,6 @@
 package sqlite
 
 import (
-	"fmt"
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
@@ -41,8 +40,9 @@ func TestUpdate(t *testing.T) {
 			expectedArgs: []any{"Acme Corporation"},
 		},
 		"with sub-select": {
-			expectedQuery: `UPDATE employees AS "e" NOT INDEXED SET sales_count = sales_count + 1 WHERE (id =
-				  (SELECT sales_person FROM accounts WHERE (name = ?1)))`,
+			expectedQuery: `UPDATE employees AS "e" NOT INDEXED
+				SET sales_count = sales_count + 1
+				WHERE (id = (SELECT sales_person FROM accounts WHERE (name = ?1)))`,
 			expectedArgs: []any{"Acme Corporation"},
 			query: Update(
 				qm.TableAs("employees", "e"),
@@ -64,7 +64,6 @@ func TestUpdate(t *testing.T) {
 				t.Fatalf("error: %v", err)
 			}
 			if diff := d.QueryDiff(tc.expectedQuery, sql); diff != "" {
-				fmt.Printf("\n\n%s\n\n", sql)
 				t.Fatalf("diff: %s", diff)
 			}
 			if diff := d.ArgsDiff(tc.expectedArgs, args); diff != "" {

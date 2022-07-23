@@ -9,44 +9,39 @@ import (
 
 func TestDelete(t *testing.T) {
 	var qm = DeleteQM{}
-
-	tests := map[string]struct {
-		query         query.Query
-		expectedQuery string
-		expectedArgs  []any
-	}{
+	var examples = d.Testcases{
 		"simple": {
-			query: Delete(
+			Query: Delete(
 				qm.From("films"),
 				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
 			),
-			expectedQuery: `DELETE FROM films WHERE (kind = $1)`,
-			expectedArgs:  []any{"Drama"},
+			ExpectedQuery: `DELETE FROM films WHERE (kind = $1)`,
+			ExpectedArgs:  []any{"Drama"},
 		},
 		"with using": {
-			query: Delete(
+			Query: Delete(
 				qm.From("employees"),
 				qm.Using("accounts"),
 				qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
 				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
 			),
-			expectedQuery: `DELETE FROM employees USING accounts
+			ExpectedQuery: `DELETE FROM employees USING accounts
 			  WHERE (accounts.name = $1)
 			  AND (employees.id = accounts.sales_person)`,
-			expectedArgs: []any{"Acme Corporation"},
+			ExpectedArgs: []any{"Acme Corporation"},
 		},
 	}
 
-	for name, tc := range tests {
+	for name, tc := range examples {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := query.Build(tc.query)
+			sql, args, err := query.Build(tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			if diff := d.QueryDiff(tc.expectedQuery, sql); diff != "" {
+			if diff := d.QueryDiff(tc.ExpectedQuery, sql); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
-			if diff := d.ArgsDiff(tc.expectedArgs, args); diff != "" {
+			if diff := d.ArgsDiff(tc.ExpectedArgs, args); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
 		})

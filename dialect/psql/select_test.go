@@ -10,23 +10,18 @@ import (
 
 func TestSelect(t *testing.T) {
 	var qm = SelectQM{}
-
-	tests := map[string]struct {
-		query         query.Query
-		expectedQuery string
-		expectedArgs  []any
-	}{
+	var examples = d.Testcases{
 		"simple select": {
-			expectedQuery: "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
-			expectedArgs:  []any{100, 200, 300},
-			query: Select(
+			ExpectedQuery: "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
+			ExpectedArgs:  []any{100, 200, 300},
+			Query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
 				qm.Where(qm.X("id").IN(qm.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
-			query: Select(
+			Query: Select(
 				qm.From(
 					expr.Func(
 						"json_to_recordset",
@@ -37,7 +32,7 @@ func TestSelect(t *testing.T) {
 				),
 				qm.OrderBy("p"),
 			),
-			expectedQuery: ` SELECT *
+			ExpectedQuery: ` SELECT *
 				FROM ROWS FROM
 					(
 						json_to_recordset($1)
@@ -45,10 +40,10 @@ func TestSelect(t *testing.T) {
 						generate_series(1, 3)
 					) AS "x" ("p", "q", "s")
 				ORDER BY p`,
-			expectedArgs: []any{`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`},
+			ExpectedArgs: []any{`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`},
 		},
 		"with sub-select": {
-			expectedQuery: `SELECT status, avg(difference)
+			ExpectedQuery: `SELECT status, avg(difference)
 					FROM (
 						SELECT
 						status, ((
@@ -59,7 +54,7 @@ func TestSelect(t *testing.T) {
 					) AS "differnce_by_status"
 					WHERE (status IN ('A', 'B', 'C'))
 					GROUP BY status`,
-			query: Select(
+			Query: Select(
 				qm.Select("status", expr.Func("avg", "difference")),
 				qm.From(
 					Select(
@@ -80,16 +75,16 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, tc := range examples {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := query.Build(tc.query)
+			sql, args, err := query.Build(tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			if diff := d.QueryDiff(tc.expectedQuery, sql); diff != "" {
+			if diff := d.QueryDiff(tc.ExpectedQuery, sql); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
-			if diff := d.ArgsDiff(tc.expectedArgs, args); diff != "" {
+			if diff := d.ArgsDiff(tc.ExpectedArgs, args); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
 		})
