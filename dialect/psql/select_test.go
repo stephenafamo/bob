@@ -12,6 +12,7 @@ func TestSelect(t *testing.T) {
 	var qm = SelectQM{}
 	var examples = d.Testcases{
 		"simple select": {
+			Doc:           "Simple Select with some conditions",
 			ExpectedQuery: "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
 			ExpectedArgs:  []any{100, 200, 300},
 			Query: Select(
@@ -21,6 +22,7 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"with rows from": {
+			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: Select(
 				qm.From(
 					expr.Func(
@@ -42,7 +44,8 @@ func TestSelect(t *testing.T) {
 				ORDER BY p`,
 			ExpectedArgs: []any{`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`},
 		},
-		"with sub-select": {
+		"with sub-select and window": {
+			Doc: "Select from subquery with window function",
 			ExpectedQuery: `SELECT status, avg(difference)
 					FROM (
 						SELECT

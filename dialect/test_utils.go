@@ -9,10 +9,13 @@ import (
 )
 
 type Testcases map[string]Testcase
+
+// Also used to generate documentation
 type Testcase struct {
 	Query         query.Query
 	ExpectedQuery string
 	ExpectedArgs  []any
+	Doc           string
 }
 
 var oneOrMoreSpace = regexp.MustCompile(`\s+`)
