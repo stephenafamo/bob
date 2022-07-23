@@ -121,7 +121,7 @@ func (qm InsertQM) Values(expressions ...any) query.Mod[*InsertQuery] {
 // The column to target. Will auto add brackets
 func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
 	if column != nil {
-		column = expr.P(column)
+		column = qm.P(column)
 	}
 	return mods.Conflict[*InsertQuery](func() expr.Conflict {
 		return expr.Conflict{

@@ -1,4 +1,4 @@
-package expr
+package builder
 
 import (
 	"fmt"
@@ -8,11 +8,11 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Statement(clause string, args ...any) query.Expression {
-	return statement{
+func (e Builder[T, B]) Statement(clause string, args ...any) T {
+	return e.X(statement{
 		clause: clause,
 		args:   args,
-	}
+	})
 }
 
 // A raw statement with arguments

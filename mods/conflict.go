@@ -1,6 +1,7 @@
 package mods
 
 import (
+	"github.com/stephenafamo/bob/builder"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
@@ -41,7 +42,7 @@ func (c Conflict[Q]) DoUpdate() Conflict[Q] {
 
 func (c Conflict[Q]) Set(a, b any) Conflict[Q] {
 	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, expr.OP("=", a, b))
+	conflict.Set.Set = append(conflict.Set.Set, builder.OP("=", a, b))
 
 	return Conflict[Q](func() expr.Conflict {
 		return conflict

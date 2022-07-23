@@ -115,9 +115,9 @@ sqlite.Insert(
   qm.OnConflict("did").DoUpdate().Set(
     "dname",
     qm.CONCAT(
-      "EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),
+      "EXCLUDED.dname", qm.S(" (formerly "), "d.dname", qm.S(")"),
     ),
-  ).Where(qm.X("d.zipcode").NE(expr.S("21201"))),
+  ).Where(qm.X("d.zipcode").NE(qm.S("21201"))),
 )
 ```
 

@@ -155,16 +155,16 @@ func (SelectQM) Where(e query.Expression) query.Mod[*SelectQuery] {
 	return mods.Where[*SelectQuery]{e}
 }
 
-func (SelectQM) WhereClause(clause string, args ...any) query.Mod[*SelectQuery] {
-	return mods.Where[*SelectQuery]{expr.Statement(clause, args...)}
+func (qm SelectQM) WhereClause(clause string, args ...any) query.Mod[*SelectQuery] {
+	return mods.Where[*SelectQuery]{qm.Statement(clause, args...)}
 }
 
 func (SelectQM) Having(e query.Expression) query.Mod[*SelectQuery] {
 	return mods.Having[*SelectQuery]{e}
 }
 
-func (SelectQM) HavingClause(clause string, args ...any) query.Mod[*SelectQuery] {
-	return mods.Having[*SelectQuery]{expr.Statement(clause, args...)}
+func (qm SelectQM) HavingClause(clause string, args ...any) query.Mod[*SelectQuery] {
+	return mods.Having[*SelectQuery]{qm.Statement(clause, args...)}
 }
 
 func (SelectQM) GroupBy(e any) query.Mod[*SelectQuery] {

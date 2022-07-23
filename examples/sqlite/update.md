@@ -68,7 +68,7 @@ sqlite.Update(
   qm.TableAs("employees", "e"),
   qm.NotIndexed(),
   qm.Set("sales_count", "sales_count + 1"),
-  qm.Where(qm.X("id").EQ(expr.P(Select(
+  qm.Where(qm.X("id").EQ(qm.P(Select(
     selectQM.Select("sales_person"),
     selectQM.From("accounts"),
     selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),

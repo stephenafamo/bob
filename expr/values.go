@@ -13,7 +13,13 @@ type Values struct {
 
 	// for multiple inserts
 	// each sub-slice is one set of values
-	Vals []group
+	Vals []value
+}
+
+type value []any
+
+func (v value) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	return query.ExpressSlice(w, d, start, v, "(", ", ", ")")
 }
 
 func (v *Values) AppendValues(vals ...any) {

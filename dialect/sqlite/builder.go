@@ -1,13 +1,13 @@
 package sqlite
 
-import "github.com/stephenafamo/bob/expr"
+import "github.com/stephenafamo/bob/builder"
 
 var bmod = BuilderMod{}
 
-type BuilderMod = expr.ExpressionBuilder[Builder, Builder]
+type BuilderMod = builder.Builder[Builder, Builder]
 
 type Builder struct {
-	expr.Common[Builder, Builder]
+	builder.Chain[Builder, Builder]
 }
 
 func (Builder) New(exp any) Builder {

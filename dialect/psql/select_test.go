@@ -71,7 +71,7 @@ func TestSelect(t *testing.T) {
 					),
 					qm.As("differnce_by_status"),
 				),
-				qm.Where(qm.X("status").IN(expr.S("A"), expr.S("B"), expr.S("C"))),
+				qm.Where(qm.X("status").IN(qm.S("A"), qm.S("B"), qm.S("C"))),
 				qm.GroupBy("status"),
 			),
 		},

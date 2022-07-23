@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
-	"github.com/stephenafamo/bob/expr"
 )
 
 func TestInsert(t *testing.T) {
@@ -50,9 +49,9 @@ func TestInsert(t *testing.T) {
 				qm.OnConflict("did").DoUpdate().Set(
 					"dname",
 					qm.CONCAT(
-						"EXCLUDED.dname", expr.S(" (formerly "), "d.dname", expr.S(")"),
+						"EXCLUDED.dname", qm.S(" (formerly "), "d.dname", qm.S(")"),
 					),
-				).Where(qm.X("d.zipcode").NE(expr.S("21201"))),
+				).Where(qm.X("d.zipcode").NE(qm.S("21201"))),
 			),
 			ExpectedQuery: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES (?1, ?2), (?3, ?4)

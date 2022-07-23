@@ -51,12 +51,6 @@ func (t TableAs[Q]) Apply(q Q) {
 	q.SetTableAlias(t.Alias, t.Columns...)
 }
 
-type Function[Q interface{ AppendFunction(expr.Function) }] expr.Function
-
-func (j Function[Q]) Apply(q Q) {
-	q.AppendFunction(expr.Function(j))
-}
-
 type Join[Q interface{ AppendJoin(expr.Join) }] expr.Join
 
 func (j Join[Q]) Apply(q Q) {

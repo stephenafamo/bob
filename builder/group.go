@@ -1,4 +1,4 @@
-package expr
+package builder
 
 import (
 	"io"
@@ -6,8 +6,8 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Group(exps ...any) query.Expression {
-	return group(exps)
+func (e Builder[T, B]) Group(exps ...any) T {
+	return e.X(group(exps))
 }
 
 // Multiple expressions that will be group together as a single expression
