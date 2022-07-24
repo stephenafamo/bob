@@ -6,11 +6,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-// Comma separated list of arguments
-func (e Builder[T, B]) Arg(vals ...any) T {
-	return e.X(args{vals: vals})
-}
-
 type args struct {
 	vals []any
 }

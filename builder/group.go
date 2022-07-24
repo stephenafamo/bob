@@ -6,10 +6,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func (e Builder[T, B]) Group(exps ...any) T {
-	return e.X(group(exps))
-}
-
 // Multiple expressions that will be group together as a single expression
 type group []any
 

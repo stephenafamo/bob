@@ -8,13 +8,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func (e Builder[T, B]) Statement(clause string, args ...any) T {
-	return e.X(statement{
-		clause: clause,
-		args:   args,
-	})
-}
-
 // A raw statement with arguments
 type statement struct {
 	clause string // The clause with ? used for placeholders

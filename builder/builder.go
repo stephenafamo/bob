@@ -4,10 +4,6 @@ type builder[B any] interface {
 	New(any) B
 }
 
-type functionBuilder[F any] interface {
-	NewFunction(name string, args ...any) F
-}
-
 // Build an expression
 func X[T any, B builder[T]](exp any) T {
 	var b B
@@ -69,6 +65,42 @@ func (e Builder[T, B]) CONCAT(ss ...any) T {
 	return e.X(sliceJoin{expr: ss, operator: " || "})
 }
 
+// single quoted raw string
+func (e Builder[T, B]) S(s string) T {
+	return e.X(rawString(s))
+}
+
+// Comma separated list of arguments
+func (e Builder[T, B]) Arg(vals ...any) T {
+	return e.X(args{vals: vals})
+}
+
 func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
+}
+
+func (e Builder[T, B]) Statement(clause string, args ...any) T {
+	return e.X(statement{
+		clause: clause,
+		args:   args,
+	})
+}
+
+func (e Builder[T, B]) Group(exps ...any) T {
+	return e.X(group(exps))
+}
+
+// quoted and joined... something like "users"."id"
+func (e Builder[T, B]) Quote(aa ...string) T {
+	var ss = make([]any, len(aa))
+	for k, v := range aa {
+		ss[k] = v
+	}
+
+	return e.X(quoted(ss))
+}
+
+// Add parentheses around an expression
+func (e Builder[T, B]) P(exp any) T {
+	return e.X(parentheses{inside: exp})
 }

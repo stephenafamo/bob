@@ -11,11 +11,6 @@ func P(exp any) query.Expression {
 	return parentheses{inside: exp}
 }
 
-// Add parentheses around an expression
-func (e Builder[T, B]) P(exp any) T {
-	return e.X(parentheses{inside: exp})
-}
-
 // Multiple expressions that will be group together as a single expression
 type parentheses struct {
 	inside any

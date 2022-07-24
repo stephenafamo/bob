@@ -40,12 +40,12 @@ FROM presales_presalestatus
 
 // different ways to express "SELECT status"
 qm.Select("status") // SELECT status
-qm.Select(expr.Quote("status")) // SELECT "status"
+qm.Select(qm.Quote("status")) // SELECT "status"
 
 // Ways to express LEAD(created_date, 1, NOW())
-"LEAD(created_date, 1, NOW()")
-expr.Func("LEAD", "created_date", 1, "NOW()"))
-expr.Func("LEAD", "created_date", 1, expr.Func("NOW"))
+"LEAD(created_date, 1, NOW()"
+qm.F("LEAD", "created_date", 1, "NOW()")
+qm.F("LEAD", "created_date", 1, qm.F("NOW"))
 
 // Ways to express PARTITION BY presale_id ORDER BY created_date
 "PARTITION BY presale_id ORDER BY created_date"
@@ -53,8 +53,7 @@ expr.Window("").PartitionBy("presale_id").OrderBy("created_date")
 
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
-expr.OVER(
-    expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
+qm.Func("LEAD", "created_date", 1, qm.Func("NOW")).Over(
     expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
 )
 
@@ -62,12 +61,10 @@ expr.OVER(
 psql.Select(
     qm.Select(
         "status",
-        expr.C(expr.MINUS(expr.OVER(
-            expr.Func("LEAD", "created_date", 1, expr.Func("NOW")),
+        qm.F("LEAD", "created_date", 1, qm.F("NOW")).Over(
             expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-        ), "created_date"), "difference"),
-    ),
-    qm.From("presales_presalestatus"),
+        ).Minus("created_date").As("difference")),
+    qm.From("presales_presalestatus")),
 )
 ```
 
@@ -86,7 +83,7 @@ As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions)
 var selMod = psql.SelectQM{}
 cte := psql.Select(
     selMod.From("users"),
-    selMod.Where(expr.GTE("age", 21)),
+    selMod.Where(qm.X("age").GTE(21)),
 )
 
 var cte query.Query
@@ -115,8 +112,77 @@ It can take multiple strings that need to be quoted and joined with `.`
 ```go
 // Postgres: "schema_name"."table_name"
 // MySQL: `schema_name`.`table_name`
-expr.Quote("schema_name", "table_name")
+qm.Quote("schema_name", "table_name")
 ```
+
+## Expressions
+
+The query mods have methods to fluently build complex expressions.  
+It starts with one of several methods which then return a chain that has methods for various operators.
+
+For example:
+
+```go
+// Query: ($1 >= 50) AND (name IS NOT NULL)
+// Args: 'Stephen'
+qm.Arg("Stephen").GTE(50).
+    And(qm.X("name").IsNotNull())
+
+// OR
+
+qm.And(
+    qm.Arg("Stephen").GTE(50),
+    qm.X("name").IsNotNull(),
+)
+```
+
+### Starters
+
+These methods are embeded in every query mod and can be used to create a chainable expression.
+
+**NOTE:** These are the common starters. Each dialect can sometimes include their own starters.  
+For example, starters for common function calls can easily be added
+
+* `X(any)`: Plain start to a chain.
+* `NotX(any)`: Creates a `NOT expr` expression that is then chainable.
+* `F(name string, args ...any)`: A generic function call. Takes a name and the arguments.
+* `OR(...any)`: Joins multiple expressions with "OR"
+* `AND(...any)`: Joins multiple expressions with "AND"
+* `CONCAT(...any)`: Joins multiple expressions with "||"
+* `S(string)`: Create a plain string literal. Single quoted.
+* `Arg(...any)`: One or more arguments. These are replaced with placeholders in the query and the args returned.
+* `Placeholders(uint)`: Inserts a `count` of placeholders without any specific value yet. Useful for compiling reusable queries.
+* `Statement(clause string, args ...any)`: For inserting a raw statement somewhere. To keep it dialect agnostic, placeholders should be inserted with `?` and a literal question mark can be escaped with a backslash `\?`.
+* `Group(...any)`: To easily group a number of expressions. Wraps them in parentheses and seperates them with commas.
+* `Quote(...string)`: For quoting. [See details](#quotes)
+* `P(any)`: To manually wrap an expression with parentheses. This is often not necessary as the parentheses will be added as the expression is built.
+
+
+### Chaining
+
+The type returned by the starter methods return have methods for common operators.  
+**NOTE:** These are the common operators. Each dialect can sometimes include their own starters
+
+* `IsNull()`: X IS NULL
+* `IsNotNull()`: X IS NOT NULL
+* `Is(y any)`: X IS DISTINCT FROM Y
+* `IsNot(y any)`: X IS NOT DISTINCT FROM Y
+* `EQ(y any)`: X = Y
+* `NE(y any)`: X <> Y
+* `LT(y any)`: X < Y
+* `LTE(y any)`: X <= Y
+* `GT(y any)`: X > Y
+* `GTE(y any)`: X >= Y
+* `In(...any)`: X IN (y, z)
+* `NotIn(...any)`: X NOT IN (y, z)
+* `Or(y any)`: X OR Y
+* `And(y any)`: X AND Y
+* `Concat(y any)`: X || Y
+
+The following expressions cannot be chained and are expected to be used at the end of a chain
+
+* `As(alias string)`: X as "alias". Used for aliasing column names
+
 
 ## Placeholders
 
@@ -130,8 +196,8 @@ This will write the placeholder correctly in the generated sql, and return the v
 // SQL Server: SELECT * from users WHERE id = @p1 AND name = @p2
 psql.Select(
     qm.From("users"),
-    qm.Where(expr.EQ("id", expr.Arg(100))),
-    qm.Where(expr.EQ("name", expr.Arg("Stephen"))),
+    qm.Where(expr.X("id").EQ(expr.Arg(100))),
+    qm.Where(expr.X("name".EQ(expr.Arg("Stephen"))),
 ).WriteQuery(w, 1)
 ```
 
