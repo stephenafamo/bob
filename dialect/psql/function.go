@@ -1,0 +1,134 @@
+package psql
+
+import (
+	"io"
+
+	"github.com/stephenafamo/bob/builder"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/query"
+)
+
+type function struct {
+	name string
+	args []any
+
+	// Used in value functions. Supported by Sqlite and Postgres
+	filter []any
+
+	alias   string // used with there should be an alias before the columns
+	columns []columnDef
+
+	// For chain methods
+	builder.Chain[chain, chain]
+}
+
+func (f *function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	if f.name == "" {
+		return nil, nil
+	}
+
+	w.Write([]byte(f.name))
+	w.Write([]byte("("))
+	args, err := query.ExpressSlice(w, d, start, f.args, "", ", ", "")
+	if err != nil {
+		return nil, err
+	}
+	w.Write([]byte(")"))
+
+	filterArgs, err := query.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, filterArgs...)
+
+	if len(f.columns) > 0 {
+		w.Write([]byte(" AS "))
+	}
+
+	if len(f.alias) > 0 {
+		w.Write([]byte(f.alias))
+		w.Write([]byte(" "))
+	}
+
+	colArgs, err := query.ExpressSlice(w, d, start+len(args), f.columns, "(", ", ", ")")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, colArgs...)
+
+	return args, nil
+}
+
+// Multiple functions can be uses as a goup with ROWS FROM
+func (f *function) Apply(q *expr.FromItem) {
+	switch fs := q.Table.(type) {
+	case functions:
+		q.Table = append(fs, f)
+	default:
+		q.Table = functions{f}
+	}
+}
+
+func (f *function) Over(window any) chain {
+	return chain{Chain: builder.Chain[chain, chain]{
+		Base: query.ExpressionFunc(func(w io.Writer, d query.Dialect, start int) ([]any, error) {
+			largs, err := query.Express(w, d, start, f)
+			if err != nil {
+				return nil, err
+			}
+
+			rargs, err := query.ExpressIf(w, d, start+len(largs), window, true, "OVER (", ")")
+			if err != nil {
+				return nil, err
+			}
+
+			return append(largs, rargs...), nil
+		}),
+	}}
+}
+
+func (f *function) As(alias string) *function {
+	f.alias = alias
+	return f
+}
+
+func (f *function) Col(name, datatype string) *function {
+	f.columns = append(f.columns, columnDef{
+		name:     name,
+		dataType: datatype,
+	})
+
+	return f
+}
+
+type columnDef struct {
+	name     string
+	dataType string
+}
+
+func (c columnDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	w.Write([]byte(c.name))
+	w.Write([]byte(" "))
+	w.Write([]byte(c.dataType))
+
+	return nil, nil
+}
+
+type functions []any
+
+func (f functions) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	if len(f) > 1 {
+		w.Write([]byte("ROWS FROM ("))
+	}
+
+	args, err := query.ExpressSlice(w, d, start, f, "", ", ", "")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(f) > 1 {
+		w.Write([]byte(")"))
+	}
+
+	return args, nil
+}

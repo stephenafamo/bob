@@ -86,7 +86,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
-	BuilderMod
+	builderMod
 	withMod[*UpdateQuery]      // For CTEs
 	mods.FromMod[*UpdateQuery] // update *FROM*
 	joinMod[*expr.FromItem]    // joins, which are mods of the FROM

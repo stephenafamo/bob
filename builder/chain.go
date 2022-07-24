@@ -16,22 +16,22 @@ func (x Chain[T, B]) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 // IS DISTINCT FROM
-func (x Chain[T, B]) IS(exp any) T {
+func (x Chain[T, B]) Is(exp any) T {
 	return X[T, B](StartEnd{expr: x.Base, suffix: " IS DISTINCT FROM"})
 }
 
 // IS NOT DISTINCT FROM
-func (x Chain[T, B]) ISNOT() T {
+func (x Chain[T, B]) IsNot() T {
 	return X[T, B](StartEnd{expr: x.Base, suffix: " IS NOT DISTINCT FROM"})
 }
 
 // IS NUll
-func (x Chain[T, B]) ISNULL() T {
+func (x Chain[T, B]) IsNull() T {
 	return X[T, B](StartEnd{expr: x.Base, suffix: " NULL"})
 }
 
 // IS NOT NUll
-func (x Chain[T, B]) ISNOTNULL() T {
+func (x Chain[T, B]) IsNotNull() T {
 	return X[T, B](StartEnd{expr: x.Base, suffix: " IS NOT NULL"})
 }
 
@@ -66,38 +66,36 @@ func (x Chain[T, B]) GTE(target any) T {
 }
 
 // IN
-func (x Chain[T, B]) IN(vals ...any) T {
+func (x Chain[T, B]) In(vals ...any) T {
 	return X[T, B](leftRight{left: x.Base, right: group(vals), operator: "IN"})
 }
 
 // NOT IN
-func (x Chain[T, B]) NIN(vals ...any) T {
+func (x Chain[T, B]) NotIn(vals ...any) T {
 	return X[T, B](leftRight{left: x.Base, right: group(vals), operator: "NOT IN"})
 }
 
 // OR
-func (x Chain[T, B]) OR(target any) T {
+func (x Chain[T, B]) Or(target any) T {
 	return X[T, B](leftRight{operator: "OR", left: x.Base, right: target})
 }
 
 // AND
-func (x Chain[T, B]) AND(target any) T {
+func (x Chain[T, B]) And(target any) T {
 	return X[T, B](leftRight{operator: "AND", left: x.Base, right: target})
 }
 
 // Concatenate: `||``
-func (x Chain[T, B]) CONCAT(target any) T {
+func (x Chain[T, B]) Concat(target any) T {
 	return X[T, B](leftRight{operator: "||", left: x.Base, right: target})
 }
 
 // Subtract
-func (x Chain[T, B]) MINUS(target any) T {
+func (x Chain[T, B]) Minus(target any) T {
 	return X[T, B](leftRight{operator: "-", left: x.Base, right: target})
 }
 
 // As does not return a Builder. Should be used at the end of an expression
-func (x Chain[T, B]) AS(alias string) query.Expression {
-	var aliasExp = Chain[T, B]{Base: alias}.Quote()
-
-	return leftRight{left: x.Base, operator: " AS ", right: aliasExp}
+func (x Chain[T, B]) As(alias string) query.Expression {
+	return leftRight{left: x.Base, operator: " AS ", right: quoted{alias}}
 }

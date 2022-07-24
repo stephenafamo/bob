@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -45,6 +46,7 @@ func RunTests(t *testing.T, cases Testcases) {
 				t.Fatalf("error: %v", err)
 			}
 			if diff := QueryDiff(tc.ExpectedQuery, sql); diff != "" {
+				fmt.Println(sql)
 				t.Fatalf("diff: %s", diff)
 			}
 			if diff := ArgsDiff(tc.ExpectedArgs, args); diff != "" {

@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob/query"
@@ -41,7 +42,6 @@ SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
 
 type FromItem struct {
 	Table any
-	Funcs []any
 
 	// Aliases
 	Alias   string
@@ -68,21 +68,13 @@ func (f *FromItem) SetTableAlias(alias string, columns ...string) {
 	f.Columns = columns
 }
 
-func (f *FromItem) AppendFunction(function Function) {
-	f.Funcs = append(f.Funcs, function)
-}
-
 func (f *FromItem) AppendJoin(j Join) {
 	f.Joins = append(f.Joins, j)
 }
 
 func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	if f.Table == nil && f.Funcs == nil {
-		return nil, nil
-	}
-
 	if f.Table == nil {
-		f.Table = Functions(f.Funcs)
+		return nil, nil
 	}
 
 	if f.Only {
@@ -93,6 +85,7 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte("LATERAL "))
 	}
 
+	fmt.Printf("Table: %v, %T\n", f.Table, f.Table)
 	args, err := query.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err

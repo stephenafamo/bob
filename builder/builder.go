@@ -1,19 +1,17 @@
 package builder
 
-import (
-	"fmt"
-	"io"
-
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/query"
-)
-
 type builder[B any] interface {
 	New(any) B
 }
 
+type functionBuilder[F any] interface {
+	NewFunction(name string, args ...any) F
+}
+
 // Build an expression
 func X[T any, B builder[T]](exp any) T {
+	var b B
+
 	// Wrap in parenthesis if not a raw string or string in quotes
 	switch exp.(type) {
 	case string, rawString, quoted:
@@ -30,7 +28,6 @@ func X[T any, B builder[T]](exp any) T {
 		exp = P(exp)
 	}
 
-	var b B
 	return b.New(exp)
 }
 
@@ -41,6 +38,10 @@ func NotX[T any, B builder[T]](exp any) T {
 }
 
 // To be embeded in query mods
+// T is the chain type, this allows dialects to have custom chain methods
+// F is function type, so that the dialect can change where it
+// accepted. E.g. it can be modified to work as a mod
+// B has a New() method that is used to create a new instance of T
 type Builder[T any, B builder[T]] struct{}
 
 // Start building an expression
@@ -70,25 +71,4 @@ func (e Builder[T, B]) CONCAT(ss ...any) T {
 
 func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
-}
-
-// OVER: For window functions
-func (e Builder[T, B]) OVER(f expr.Function, window any) T {
-	return e.X(query.ExpressionFunc(func(w io.Writer, d query.Dialect, start int) ([]any, error) {
-		largs, err := query.Express(w, d, start, f)
-		if err != nil {
-			return nil, err
-		}
-
-		fmt.Fprint(w, " OVER (")
-
-		rargs, err := query.Express(w, d, start+len(largs), window)
-		if err != nil {
-			return nil, err
-		}
-
-		fmt.Fprint(w, ")")
-
-		return append(largs, rargs...), nil
-	}))
 }
