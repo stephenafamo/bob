@@ -95,7 +95,7 @@ psql.Select(
 var inMod = psql.InsertQM{}
 psql.Insert(
     inMod.With("adults").As(cte), // works as well
-    inMod.From("projects"), // ERROR!
+    inMod.From("projects"), // ERROR: Does not compile!!!
     inMod.Into("projects"), // works
 )
 ```
@@ -157,7 +157,6 @@ For example, starters for common function calls can easily be added
 * `Quote(...string)`: For quoting. [See details](#quotes)
 * `P(any)`: To manually wrap an expression with parentheses. This is often not necessary as the parentheses will be added as the expression is built.
 
-
 ### Chaining
 
 The type returned by the starter methods return have methods for common operators.  
@@ -182,7 +181,6 @@ The type returned by the starter methods return have methods for common operator
 The following expressions cannot be chained and are expected to be used at the end of a chain
 
 * `As(alias string)`: X as "alias". Used for aliasing column names
-
 
 ## Placeholders
 
