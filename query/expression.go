@@ -31,6 +31,9 @@ func Express(w io.Writer, d Dialect, start int, e any) ([]any, error) {
 	case string:
 		w.Write([]byte(v))
 		return nil, nil
+	case []byte:
+		w.Write([]byte(v))
+		return nil, nil
 	case Expression:
 		return v.WriteSQL(w, d, start)
 	default:

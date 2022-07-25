@@ -177,10 +177,9 @@ func (SelectQM) GroupByDistinct(distinct bool) query.Mod[*SelectQuery] {
 	return mods.GroupByDistinct[*SelectQuery](distinct)
 }
 
-func (SelectQM) Window(name string, definition any) query.Mod[*SelectQuery] {
-	return mods.Window[*SelectQuery]{
-		Name:      name,
-		Definiton: definition,
+func (SelectQM) Window(name string) *windowChain[*SelectQuery] {
+	return &windowChain[*SelectQuery]{
+		name: name,
 	}
 }
 

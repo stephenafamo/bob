@@ -297,3 +297,30 @@ func (l lockChain[Q]) SkipLocked() lockChain[Q] {
 		return lock
 	})
 }
+
+type windowChain[Q interface{ AppendWindow(expr.NamedWindow) }] struct {
+	name string
+	def  expr.WindowDef
+}
+
+func (w *windowChain[Q]) Apply(q Q) {
+	q.AppendWindow(expr.NamedWindow{
+		Name:      w.name,
+		Definiton: w.def,
+	})
+}
+
+func (w *windowChain[Q]) As(name string) *windowChain[Q] {
+	w.def.From = name
+	return w
+}
+
+func (w *windowChain[Q]) PartitionBy(condition ...any) *windowChain[Q] {
+	w.def = w.def.PartitionBy(condition...)
+	return w
+}
+
+func (w *windowChain[Q]) OrderBy(order ...any) *windowChain[Q] {
+	w.def = w.def.OrderBy(order...)
+	return w
+}

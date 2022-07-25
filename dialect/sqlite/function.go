@@ -30,22 +30,13 @@ func (f *function) Filter(e ...any) *function {
 	return f
 }
 
-func (f *function) Over(window any) chain {
-	return chain{Chain: builder.Chain[chain, chain]{
-		Base: query.ExpressionFunc(func(w io.Writer, d query.Dialect, start int) ([]any, error) {
-			largs, err := query.Express(w, d, start, f)
-			if err != nil {
-				return nil, err
-			}
-
-			rargs, err := query.ExpressIf(w, d, start+len(largs), window, true, "OVER (", ")")
-			if err != nil {
-				return nil, err
-			}
-
-			return append(largs, rargs...), nil
-		}),
-	}}
+func (f *function) Over(window string) *functionOver {
+	w := &functionOver{
+		function: f,
+		window:   expr.WindowDef{From: window},
+	}
+	w.Base = w
+	return w
 }
 
 func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -68,4 +59,34 @@ func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 	args = append(args, filterArgs...)
 
 	return args, nil
+}
+
+type functionOver struct {
+	function *function
+	window   expr.WindowDef
+	builder.Chain[chain, chain]
+}
+
+func (w *functionOver) PartitionBy(condition ...any) *functionOver {
+	w.window = w.window.PartitionBy(condition...)
+	return w
+}
+
+func (w *functionOver) OrderBy(order ...any) *functionOver {
+	w.window = w.window.OrderBy(order...)
+	return w
+}
+
+func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	fargs, err := query.Express(w, d, start, wr.function)
+	if err != nil {
+		return nil, err
+	}
+
+	winargs, err := query.ExpressIf(w, d, start+len(fargs), wr.window, true, "OVER (", ")")
+	if err != nil {
+		return nil, err
+	}
+
+	return append(fargs, winargs...), nil
 }

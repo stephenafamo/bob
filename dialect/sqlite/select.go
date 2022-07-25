@@ -159,10 +159,9 @@ func (SelectQM) GroupBy(e any) query.Mod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) Window(name string, definition any) query.Mod[*SelectQuery] {
-	return mods.Window[*SelectQuery]{
-		Name:      name,
-		Definiton: definition,
+func (SelectQM) Window(name string) *windowChain[*SelectQuery] {
+	return &windowChain[*SelectQuery]{
+		name: name,
 	}
 }
 

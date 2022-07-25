@@ -50,10 +50,10 @@ SQL:
 SELECT status, avg(difference)
 FROM (
   SELECT
-  status,
-  (LEAD(created_date, 1, NOW())
-  OVER (PARTITION BY presale_id ORDER BY created_date)
-   - created_date) AS "difference"
+    status,
+    (LEAD(created_date, 1, NOW())
+    OVER (PARTITION BY presale_id ORDER BY created_date)
+     - created_date) AS "difference"
   FROM presales_presalestatus
 ) AS "differnce_by_status"
 WHERE (status IN ('A', 'B', 'C'))
@@ -68,9 +68,12 @@ sqlite.Select(
   qm.From(Select(
     qm.Select(
       "status",
-      qm.F("LEAD", "created_date", 1, qm.F("NOW")).Over(
-        expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-      ).Minus("created_date").As("difference")),
+      qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+        Over("").
+        PartitionBy("presale_id").
+        OrderBy("created_date").
+        Minus("created_date").
+        As("difference")),
     qm.From("presales_presalestatus")),
     qm.As("differnce_by_status"),
   ),

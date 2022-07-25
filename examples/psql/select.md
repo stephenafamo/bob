@@ -82,9 +82,12 @@ psql.Select(
   qm.From(Select(
     qm.Select(
       "status",
-      qm.F("LEAD", "created_date", 1, qm.F("NOW")).Over(
-        expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-      ).Minus("created_date").As("difference")),
+      qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+        Over("").
+        PartitionBy("presale_id").
+        OrderBy("created_date").
+        Minus("created_date").
+        As("difference")),
     qm.From("presales_presalestatus")),
     qm.As("differnce_by_status")),
   qm.Where(qm.X("status").In(qm.S("A"), qm.S("B"), qm.S("C"))),

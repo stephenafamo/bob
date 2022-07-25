@@ -6,12 +6,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Window(from string) WindowDef {
-	return WindowDef{
-		From: from,
-	}
-}
-
 type WindowDef struct {
 	From        string // an existing window name
 	orderBy     []any
@@ -67,8 +61,11 @@ type NamedWindow struct {
 
 func (n NamedWindow) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	w.Write([]byte(n.Name))
-	w.Write([]byte(" AS "))
-	return query.Express(w, d, start, n.Definiton)
+	w.Write([]byte(" AS ("))
+	args, err := query.Express(w, d, start, n.Definiton)
+	w.Write([]byte(")"))
+
+	return args, err
 }
 
 type Windows struct {

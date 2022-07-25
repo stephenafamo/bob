@@ -53,17 +53,21 @@ expr.Window("").PartitionBy("presale_id").OrderBy("created_date")
 
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
-qm.Func("LEAD", "created_date", 1, qm.Func("NOW")).Over(
-    expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-)
+qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+    Over("").
+    PartitionBy("presale_id").
+    OrderBy("created_date")
 
 // The full query
 psql.Select(
     qm.Select(
         "status",
-        qm.F("LEAD", "created_date", 1, qm.F("NOW")).Over(
-            expr.Window("").PartitionBy("presale_id").OrderBy("created_date"),
-        ).Minus("created_date").As("difference")),
+        qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+            Over("").
+            PartitionBy("presale_id").
+            OrderBy("created_date").
+            Minus("created_date").
+            As("difference")),
     qm.From("presales_presalestatus")),
 )
 ```
