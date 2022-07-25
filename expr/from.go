@@ -1,7 +1,6 @@
 package expr
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob/query"
@@ -85,7 +84,6 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte("LATERAL "))
 	}
 
-	fmt.Printf("Table: %v, %T\n", f.Table, f.Table)
 	args, err := query.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err
