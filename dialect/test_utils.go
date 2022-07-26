@@ -47,6 +47,7 @@ func RunTests(t *testing.T, cases Testcases) {
 			}
 			if diff := QueryDiff(tc.ExpectedQuery, sql); diff != "" {
 				fmt.Println(sql)
+				fmt.Println(args)
 				t.Fatalf("diff: %s", diff)
 			}
 			if diff := ArgsDiff(tc.ExpectedArgs, args); diff != "" {

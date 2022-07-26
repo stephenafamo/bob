@@ -1,6 +1,8 @@
 package sqlite
 
 import (
+	"database/sql"
+
 	"github.com/stephenafamo/bob/builder"
 )
 
@@ -10,7 +12,7 @@ type builderMod struct {
 	builder.Builder[chain, chain]
 }
 
-func (b builderMod) F(name string, args ...any) *function {
+func (builderMod) F(name string, args ...any) *function {
 	f := &function{
 		name: name,
 		args: args,
@@ -21,6 +23,12 @@ func (b builderMod) F(name string, args ...any) *function {
 	f.Chain.Base = f
 
 	return f
+}
+
+func (builderMod) Named(name string, value any) chain {
+	var b chain
+	b.Base = sql.Named(name, value)
+	return b
 }
 
 type chain struct {

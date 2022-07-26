@@ -1,16 +1,28 @@
 package query
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 )
 
+var ErrNoNamedArgs = errors.New("Dialect does not support named arguments")
+
 type Dialect interface {
 	// WriteArg should write an argument placeholder to the writer with the given index
 	WriteArg(w io.Writer, position int)
+
 	// WriteQuoted writes the given string to the writer surrounded by the appropriate
 	// quotes for the dialect
 	WriteQuoted(w io.Writer, s string)
+}
+
+// Can also write namded args
+type DialectWithNamed interface {
+	Dialect
+	// WriteNamedArg should write an argument placeholder to the writer with the given name
+	WriteNamedArg(w io.Writer, name string)
 }
 
 type Expression interface {
@@ -34,6 +46,13 @@ func Express(w io.Writer, d Dialect, start int, e any) ([]any, error) {
 	case []byte:
 		w.Write([]byte(v))
 		return nil, nil
+	case sql.NamedArg:
+		dn, ok := d.(DialectWithNamed)
+		if !ok {
+			return nil, ErrNoNamedArgs
+		}
+		dn.WriteNamedArg(w, v.Name)
+		return []any{v}, nil
 	case Expression:
 		return v.WriteSQL(w, d, start)
 	default:
