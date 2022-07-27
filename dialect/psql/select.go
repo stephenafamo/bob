@@ -186,7 +186,7 @@ func (SelectQM) Window(name string) windowMod[*SelectQuery] {
 	return m
 }
 
-func (SelectQM) OrderBy(e any) query.Mod[*SelectQuery] {
+func (SelectQM) OrderBy(e any) orderBy[*SelectQuery] {
 	return orderBy[*SelectQuery](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
