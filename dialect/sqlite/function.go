@@ -31,12 +31,12 @@ func (f *function) Filter(e ...any) *function {
 }
 
 func (f *function) Over(window string) *functionOver {
-	w := &functionOver{
+	fo := &functionOver{
 		function: f,
-		window:   clause.WindowDef{From: window},
 	}
-	w.Base = w
-	return w
+	fo.def = fo
+	fo.Base = fo
+	return fo
 }
 
 func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -63,18 +63,9 @@ func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 
 type functionOver struct {
 	function *function
-	window   clause.WindowDef
+	clause.WindowDef
+	windowChain[*functionOver]
 	expr.Chain[chain, chain]
-}
-
-func (w *functionOver) PartitionBy(condition ...any) *functionOver {
-	w.window.AddPartitionBy(condition...)
-	return w
-}
-
-func (w *functionOver) OrderBy(order ...any) *functionOver {
-	w.window.AddOrderBy(order...)
-	return w
 }
 
 func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -83,7 +74,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any
 		return nil, err
 	}
 
-	winargs, err := query.ExpressIf(w, d, start+len(fargs), wr.window, true, "OVER (", ")")
+	winargs, err := query.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}

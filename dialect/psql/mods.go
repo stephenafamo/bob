@@ -1,7 +1,6 @@
 package psql
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob/clause"
@@ -310,7 +309,7 @@ type windowMod[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
 func (w windowMod[Q]) Apply(q Q) {
 	q.AppendWindow(clause.NamedWindow{
 		Name:      w.name,
-		Definiton: w.def,
+		Definiton: w.WindowDef,
 	})
 }
 
@@ -356,7 +355,7 @@ func (w *windowChain[T]) FromUnboundedPreceding() T {
 func (w *windowChain[T]) FromPreceding(exp any) T {
 	w.def.SetStart(query.ExpressionFunc(
 		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
-			return nil, nil
+			return query.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
 	return w.def
@@ -367,13 +366,21 @@ func (w *windowChain[T]) FromCurrentRow() T {
 	return w.def
 }
 
-func (w *windowChain[T]) FromNFollowing(count int) T {
-	w.def.SetStart(fmt.Sprintf("%d FOLLOWING", count))
+func (w *windowChain[T]) FromFollowing(exp any) T {
+	w.def.SetStart(query.ExpressionFunc(
+		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
+			return query.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+		}),
+	)
 	return w.def
 }
 
-func (w *windowChain[T]) ToNPreceding(count int) T {
-	w.def.SetEnd(fmt.Sprintf("%d PRECEDING", count))
+func (w *windowChain[T]) ToPreceding(exp any) T {
+	w.def.SetEnd(query.ExpressionFunc(
+		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
+			return query.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
+		}),
+	)
 	return w.def
 }
 
@@ -382,8 +389,12 @@ func (w *windowChain[T]) ToCurrentRow(count int) T {
 	return w.def
 }
 
-func (w *windowChain[T]) ToNFollowing(count int) T {
-	w.def.SetEnd(fmt.Sprintf("%d FOLLOWING", count))
+func (w *windowChain[T]) ToFollowing(exp any) T {
+	w.def.SetEnd(query.ExpressionFunc(
+		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
+			return query.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+		}),
+	)
 	return w.def
 }
 

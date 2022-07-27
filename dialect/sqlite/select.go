@@ -159,10 +159,13 @@ func (SelectQM) GroupBy(e any) query.Mod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) Window(name string) *windowChain[*SelectQuery] {
-	return &windowChain[*SelectQuery]{
+func (SelectQM) Window(name string) windowMod[*SelectQuery] {
+	m := windowMod[*SelectQuery]{
 		name: name,
 	}
+
+	m.windowChain.def = &m
+	return m
 }
 
 func (SelectQM) OrderBy(e any) query.Mod[*SelectQuery] {
