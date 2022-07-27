@@ -14,6 +14,12 @@ Examples are in the [examples folder](examples):
 * [Postgres](examples/psql)
 * [SQLite](examples/sqlite)
 
+## QuickLinks
+
+* [Building A Query](#query-building)
+* [Using A Query](#using-the-query)
+* [Raw Queries](#raw-queries)
+
 ## Principles
 
 ### Custom Crafting
@@ -49,7 +55,7 @@ qm.F("LEAD", "created_date", 1, qm.F("NOW"))
 
 // Ways to express PARTITION BY presale_id ORDER BY created_date
 "PARTITION BY presale_id ORDER BY created_date"
-expr.Window("").PartitionBy("presale_id").OrderBy("created_date")
+qm.Window("").PartitionBy("presale_id").OrderBy("created_date")
 
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
@@ -72,7 +78,9 @@ psql.Select(
 )
 ```
 
-## QueryMods
+## Query Building
+
+Query building is done with the use of QueryMods.
 
 QueryMods are options applied to a query. Each query type of each dialect defines what mods can be applied to it.  
 This way, the possible options can be built to match the spec as closely as possible.
@@ -108,14 +116,16 @@ Using this query mod system, the mods closely match the allowed syntax for each 
 
 ## Quotes
 
-It is often required to quote identifiers in SQL queries. With `bob`  use the `expr.Quote()` where necessary.  
+It is often required to quote identifiers in SQL queries. With `bob`  use the `qm.Quote()` where necessary.  
 When building the query, the quotes are added correctly by the dialect.
 
 It can take multiple strings that need to be quoted and joined with `.`
 
 ```go
 // Postgres: "schema_name"."table_name"
+// SQLite: "schema_name"."table_name"
 // MySQL: `schema_name`.`table_name`
+// SQL Server: [schema_name].[table_name]
 qm.Quote("schema_name", "table_name")
 ```
 
@@ -186,9 +196,9 @@ The following expressions cannot be chained and are expected to be used at the e
 
 * `As(alias string)`: X as "alias". Used for aliasing column names
 
-## Placeholders
+## Parameters
 
-To prevent SQL injection, it is necessary to use placeholders in our queries. With `bob` use `expr.Arg()` where necessary.  
+To prevent SQL injection, it is necessary to use parameters in our queries. With `bob` use `qm.Arg()` where necessary.  
 This will write the placeholder correctly in the generated sql, and return the value in the argument slice.
 
 ```go
@@ -198,19 +208,24 @@ This will write the placeholder correctly in the generated sql, and return the v
 // SQL Server: SELECT * from users WHERE id = @p1 AND name = @p2
 psql.Select(
     qm.From("users"),
-    qm.Where(expr.X("id").EQ(expr.Arg(100))),
-    qm.Where(expr.X("name".EQ(expr.Arg("Stephen"))),
+    qm.Where(qm.X("id").EQ(qm.Arg(100))),
+    qm.Where(qm.X("name".EQ(qm.Arg("Stephen"))),
 ).WriteQuery(w, 1)
 ```
 
-Another option is to use `expr.Statement()` which takes a clause and args. The placeholder in the clauses are question marks `?`.
+## Raw Queries
+
+As any good query builder, you are allowed to use your own raw SQL queries.
+Either at the top level with `psql.Raw()` or inside any clause with `qm.Raw()`.
+
+Another option is to use `qm.Raw()` which takes a clause and args. The placeholder in the clauses are question marks `?`.
 
 ```go
 // SELECT * from users WHERE id = $1 AND name = $2
 // args: 100, "Stephen"
 psql.Select(
     qm.From("users"),
-    qm.Where(expr.Statement("id = ? and name = ?", 100, "Stephen")),
+    qm.Where(qm.Raw("id = ? and name = ?", 100, "Stephen")),
 ).WriteQuery(w, 1)
 ```
 
