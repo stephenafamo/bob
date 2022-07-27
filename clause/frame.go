@@ -49,7 +49,7 @@ func (f Frame) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) 
 	w.Write([]byte(f.Mode))
 	w.Write([]byte(" "))
 
-	if f.End != "" {
+	if f.End != nil {
 		w.Write([]byte("BETWEEN "))
 	}
 
