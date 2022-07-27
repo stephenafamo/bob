@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -14,13 +15,34 @@ type statement struct {
 	args   []any  // The replacements for the placeholders in order
 }
 
+type statementError struct {
+	args         int
+	placeholders int
+	clause       string
+}
+
+func (s *statementError) Error() string {
+	return fmt.Sprintf(
+		"Bad Statement: has %d placeholders but %d args: %s",
+		s.placeholders, s.args, s.clause,
+	)
+}
+
+func (s *statementError) Equal(I error) bool {
+	var s2 *statementError
+	if errors.As(I, &s2) {
+		return s2.args == s.args && s2.placeholders == s.placeholders
+	}
+
+	return false
+}
+
 func (s statement) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately
 	total := s.convertQuestionMarks(w, d, start)
 
 	if len(s.args) != total {
-		return s.args, fmt.Errorf("Bad Statement: has %d placeholders but %d args: %s",
-			total, len(s.args), s.clause)
+		return s.args, &statementError{args: len(s.args), placeholders: total, clause: s.clause}
 	}
 
 	return s.args, nil

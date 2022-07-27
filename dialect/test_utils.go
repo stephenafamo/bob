@@ -38,6 +38,10 @@ func ArgsDiff(a, b []any) string {
 	return cmp.Diff(a, b)
 }
 
+func ErrDiff(a, b error) string {
+	return cmp.Diff(a, b)
+}
+
 func RunTests(t *testing.T, cases Testcases) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -46,6 +50,39 @@ func RunTests(t *testing.T, cases Testcases) {
 				t.Fatalf("error: %v", err)
 			}
 			if diff := QueryDiff(tc.ExpectedQuery, sql); diff != "" {
+				fmt.Println(sql)
+				fmt.Println(args)
+				t.Fatalf("diff: %s", diff)
+			}
+			if diff := ArgsDiff(tc.ExpectedArgs, args); diff != "" {
+				t.Fatalf("diff: %s", diff)
+			}
+		})
+	}
+}
+
+type ExpressionTestcases map[string]ExpressionTestcase
+
+// Also used to generate documentation
+type ExpressionTestcase struct {
+	Expression    query.Expression
+	ExpectedSQL   string
+	ExpectedArgs  []any
+	ExpectedError error
+	Doc           string
+}
+
+func RunExpressionTests(t *testing.T, d query.Dialect, cases ExpressionTestcases) {
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			b := &strings.Builder{}
+			args, err := query.Express(b, d, 1, tc.Expression)
+			sql := b.String()
+
+			if diff := ErrDiff(tc.ExpectedError, err); diff != "" {
+				t.Fatalf("diff: %s", diff)
+			}
+			if diff := QueryDiff(tc.ExpectedSQL, sql); diff != "" {
 				fmt.Println(sql)
 				fmt.Println(args)
 				t.Fatalf("diff: %s", diff)
