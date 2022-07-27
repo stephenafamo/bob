@@ -16,7 +16,7 @@ func Insert(queryMods ...query.Mod[*InsertQuery]) query.BaseQuery[*InsertQuery] 
 
 	return query.BaseQuery[*InsertQuery]{
 		Expression: q,
-		Dialect:    Dialect{},
+		Dialect:    dialect,
 	}
 }
 

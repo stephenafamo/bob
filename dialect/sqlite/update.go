@@ -17,7 +17,7 @@ func Update(queryMods ...query.Mod[*UpdateQuery]) query.BaseQuery[*UpdateQuery] 
 
 	return query.BaseQuery[*UpdateQuery]{
 		Expression: q,
-		Dialect:    Dialect{},
+		Dialect:    dialect,
 	}
 }
 

@@ -16,7 +16,7 @@ func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] 
 
 	return query.BaseQuery[*DeleteQuery]{
 		Expression: q,
-		Dialect:    Dialect{},
+		Dialect:    dialect,
 	}
 }
 

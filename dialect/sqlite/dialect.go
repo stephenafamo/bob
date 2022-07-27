@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+var dialect Dialect
+
 type Dialect struct{}
 
 func (d Dialect) WriteArg(w io.Writer, position int) {
