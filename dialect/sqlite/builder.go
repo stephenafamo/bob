@@ -35,19 +35,8 @@ type chain struct {
 	expr.Chain[chain, chain]
 }
 
-func (c chain) Get() any {
-	return c.Base
-}
-
 func (chain) New(exp any) chain {
 	var b chain
 	b.Base = exp
 	return b
-}
-
-func (f function) NewFunction(name string, args ...any) function {
-	return function{
-		name: name,
-		args: args,
-	}
 }

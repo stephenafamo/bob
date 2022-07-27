@@ -39,26 +39,17 @@ func OP(operator string, left, right any) query.Expression {
 	}
 }
 
-type sliceJoin struct {
-	expr     []any
-	operator string
+// If no separator, a space is used
+type Join struct {
+	Exprs []any
+	Sep   string
 }
 
-func (s sliceJoin) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, s.expr, "", s.operator, "")
-}
-
-type StartEnd struct {
-	prefix string
-	expr   any
-	suffix string
-}
-
-func (i StartEnd) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	args, err := query.ExpressIf(w, d, start, i.expr, true, i.prefix, i.suffix)
-	if err != nil {
-		return nil, err
+func (s Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	sep := s.Sep
+	if sep == "" {
+		sep = " "
 	}
 
-	return args, nil
+	return query.ExpressSlice(w, d, start, s.Exprs, "", sep, "")
 }

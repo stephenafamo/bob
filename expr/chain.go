@@ -17,22 +17,22 @@ func (x Chain[T, B]) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 // IS DISTINCT FROM
 func (x Chain[T, B]) Is(exp any) T {
-	return X[T, B](StartEnd{expr: x.Base, suffix: " IS DISTINCT FROM"})
+	return X[T, B](Join{Exprs: []any{x.Base, "IS DISTINCT FROM", exp}})
 }
 
 // IS NOT DISTINCT FROM
-func (x Chain[T, B]) IsNot() T {
-	return X[T, B](StartEnd{expr: x.Base, suffix: " IS NOT DISTINCT FROM"})
+func (x Chain[T, B]) IsNot(exp any) T {
+	return X[T, B](Join{Exprs: []any{x.Base, "IS NOT DISTINCT FROM", exp}})
 }
 
 // IS NUll
 func (x Chain[T, B]) IsNull() T {
-	return X[T, B](StartEnd{expr: x.Base, suffix: " NULL"})
+	return X[T, B](Join{Exprs: []any{x.Base, "IS NULL"}})
 }
 
 // IS NOT NUll
 func (x Chain[T, B]) IsNotNull() T {
-	return X[T, B](StartEnd{expr: x.Base, suffix: " IS NOT NULL"})
+	return X[T, B](Join{Exprs: []any{x.Base, "IS NOT NULL"}})
 }
 
 // Equal
@@ -76,18 +76,30 @@ func (x Chain[T, B]) NotIn(vals ...any) T {
 }
 
 // OR
-func (x Chain[T, B]) Or(target any) T {
-	return X[T, B](leftRight{operator: "OR", left: x.Base, right: target})
+func (x Chain[T, B]) Or(targets ...any) T {
+	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " OR "})
 }
 
 // AND
-func (x Chain[T, B]) And(target any) T {
-	return X[T, B](leftRight{operator: "AND", left: x.Base, right: target})
+func (x Chain[T, B]) And(targets ...any) T {
+	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " AND "})
 }
 
 // Concatenate: `||``
-func (x Chain[T, B]) Concat(target any) T {
-	return X[T, B](leftRight{operator: "||", left: x.Base, right: target})
+func (x Chain[T, B]) Concat(targets ...any) T {
+	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " || "})
+}
+
+// BETWEEN a AND b
+func (x Chain[T, B]) Between(a, b any) T {
+	return X[T, B](Join{Exprs: []any{x.Base, "BETWEEN", a, "AND", b}})
+}
+
+// NOT BETWEEN a AND b
+func (x Chain[T, B]) NotBetween(a, b any) T {
+	return X[T, B](Join{Exprs: []any{
+		x.Base, "NOT BETWEEN", a, "AND", b,
+	}})
 }
 
 // Subtract
@@ -95,7 +107,8 @@ func (x Chain[T, B]) Minus(target any) T {
 	return X[T, B](leftRight{operator: "-", left: x.Base, right: target})
 }
 
-// As does not return a Builder. Should be used at the end of an expression
+// As does not return a new chain. Should be used at the end of an expression
+// useful for columns
 func (x Chain[T, B]) As(alias string) query.Expression {
 	return leftRight{left: x.Base, operator: " AS ", right: quoted{alias}}
 }

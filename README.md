@@ -276,7 +276,7 @@ var myquery, myargs = psql.Insert(...).MustBuild()
     * [ ] Is [Not] True
     * [ ] Is [Not] False
     * [ ] Is [Not] Unknown
-    * [ ] [Not] Between Symmetric
+    * [x] [Not] Between Symmetric
     * [ ] Is [Not] [NFC|NFD|NFKC|NFKD] Normalized
 * **MySQL**
   * [x] Raw
@@ -311,4 +311,4 @@ var myquery, myargs = psql.Insert(...).MustBuild()
   * [x] [Not] Null
   * [x] Is [not] distinct from
   * [x] Concatenation: ||
-  * [ ] Between
+  * [x] Between

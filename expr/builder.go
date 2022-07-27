@@ -30,7 +30,7 @@ func X[T any, B builder[T]](exp any) T {
 // prefix the expression with a NOT
 func NotX[T any, B builder[T]](exp any) T {
 	var b B
-	return b.New(P(StartEnd{prefix: "NOT ", expr: X[T, B](exp)}))
+	return b.New(P(Join{Exprs: []any{"NOT", X[T, B](exp)}}))
 }
 
 // To be embeded in query mods
@@ -52,17 +52,17 @@ func (e Builder[T, B]) NotX(exp any) T {
 
 // Or
 func (e Builder[T, B]) Or(args ...any) T {
-	return e.X(sliceJoin{expr: args, operator: " OR "})
+	return e.X(Join{Exprs: args, Sep: " OR "})
 }
 
 // And
 func (e Builder[T, B]) And(args ...any) T {
-	return e.X(sliceJoin{expr: args, operator: " AND "})
+	return e.X(Join{Exprs: args, Sep: " AND "})
 }
 
 // Concatenation `||` operator
 func (e Builder[T, B]) CONCAT(ss ...any) T {
-	return e.X(sliceJoin{expr: ss, operator: " || "})
+	return e.X(Join{Exprs: ss, Sep: " || "})
 }
 
 // single quoted raw string

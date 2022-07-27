@@ -32,3 +32,17 @@ func (chain) New(exp any) chain {
 	b.Base = exp
 	return b
 }
+
+// BETWEEN SYMMETRIC a AND b
+func (x chain) BetweenSymmetric(a, b any) chain {
+	return bmod.X(expr.Join{Exprs: []any{
+		x.Base, "BETWEEN SYMMETRIC", a, "AND", b,
+	}})
+}
+
+// NOT BETWEEN SYMMETRIC a AND b
+func (x chain) NotBetweenSymmetric(a, b any) chain {
+	return bmod.X(expr.Join{Exprs: []any{
+		x.Base, "NOT BETWEEN SYMMETRIC", a, "AND", b,
+	}})
+}
