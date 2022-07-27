@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob/builder"
-	"github.com/stephenafamo/bob/expr"
+	clause "github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -24,13 +24,13 @@ func Update(queryMods ...query.Mod[*UpdateQuery]) query.BaseQuery[*UpdateQuery] 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-update.html
 type UpdateQuery struct {
-	expr.With
+	clause.With
 	only bool
-	expr.Table
-	expr.Set
-	expr.FromItems
-	expr.Where
-	expr.Returning
+	clause.Table
+	clause.Set
+	clause.FromItems
+	clause.Where
+	clause.Returning
 }
 
 func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -89,7 +89,7 @@ type UpdateQM struct {
 	withMod[*UpdateQuery]
 	mods.FromMod[*UpdateQuery]
 	fromItemMod
-	joinMod[*expr.FromItem]
+	joinMod[*clause.FromItem]
 }
 
 func (qm UpdateQM) Only() query.Mod[*UpdateQuery] {
@@ -100,7 +100,7 @@ func (qm UpdateQM) Only() query.Mod[*UpdateQuery] {
 
 func (qm UpdateQM) Table(name any) query.Mod[*UpdateQuery] {
 	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
-		u.Table = expr.Table{
+		u.Table = clause.Table{
 			Expression: name,
 		}
 	})
@@ -108,7 +108,7 @@ func (qm UpdateQM) Table(name any) query.Mod[*UpdateQuery] {
 
 func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
 	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
-		u.Table = expr.Table{
+		u.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
 		}
@@ -131,6 +131,6 @@ func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*UpdateQuer
 	return mods.Where[*UpdateQuery]{qm.Raw(clause, args...)}
 }
 
-func (qm UpdateQM) Returning(expressions ...any) query.Mod[*UpdateQuery] {
-	return mods.Returning[*UpdateQuery](expressions)
+func (qm UpdateQM) Returning(clauseessions ...any) query.Mod[*UpdateQuery] {
+	return mods.Returning[*UpdateQuery](clauseessions)
 }

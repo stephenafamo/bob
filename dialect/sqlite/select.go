@@ -3,7 +3,7 @@ package sqlite
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -23,17 +23,17 @@ func Select(queryMods ...query.Mod[*SelectQuery]) query.BaseQuery[*SelectQuery] 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_select.html
 type SelectQuery struct {
-	expr.With
-	expr.Select
-	expr.FromItems
-	expr.Where
-	expr.GroupBy
-	expr.Having
-	expr.Windows
-	expr.Combine
-	expr.OrderBy
-	expr.Limit
-	expr.Offset
+	clause.With
+	clause.Select
+	clause.FromItems
+	clause.Where
+	clause.GroupBy
+	clause.Having
+	clause.Windows
+	clause.Combine
+	clause.OrderBy
+	clause.Limit
+	clause.Offset
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -120,11 +120,11 @@ func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 type SelectQM struct {
 	builderMod
-	withMod[*SelectQuery]              // For CTEs
-	mods.FromMod[*SelectQuery]         // select *FROM*
-	joinMod[*expr.FromItem]            // joins, which are mods of the FROM
-	mods.TableAliasMod[*expr.FromItem] // Adding an alias to from item
-	fromItemMod                        // Dialect specific fromItem mods
+	withMod[*SelectQuery]                // For CTEs
+	mods.FromMod[*SelectQuery]           // select *FROM*
+	joinMod[*clause.FromItem]            // joins, which are mods of the FROM
+	mods.TableAliasMod[*clause.FromItem] // Adding an alias to from item
+	fromItemMod                          // Dialect specific fromItem mods
 }
 
 func (SelectQM) Distinct() query.Mod[*SelectQuery] {
@@ -133,8 +133,8 @@ func (SelectQM) Distinct() query.Mod[*SelectQuery] {
 	}
 }
 
-func (SelectQM) Select(expressions ...any) query.Mod[*SelectQuery] {
-	return mods.Select[*SelectQuery](expressions)
+func (SelectQM) Select(clauseessions ...any) query.Mod[*SelectQuery] {
+	return mods.Select[*SelectQuery](clauseessions)
 }
 
 func (SelectQM) Where(e query.Expression) query.Mod[*SelectQuery] {
@@ -166,21 +166,21 @@ func (SelectQM) Window(name string) *windowChain[*SelectQuery] {
 }
 
 func (SelectQM) OrderBy(e any) query.Mod[*SelectQuery] {
-	return orderBy[*SelectQuery](func() expr.OrderDef {
-		return expr.OrderDef{
+	return orderBy[*SelectQuery](func() clause.OrderDef {
+		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-// Sqlite can use an expression for the limit
+// Sqlite can use an clauseession for the limit
 func (SelectQM) Limit(count any) query.Mod[*SelectQuery] {
 	return mods.Limit[*SelectQuery]{
 		Count: count,
 	}
 }
 
-// Sqlite can use an expression for the offset
+// Sqlite can use an clauseession for the offset
 func (SelectQM) Offset(count any) query.Mod[*SelectQuery] {
 	return mods.Offset[*SelectQuery]{
 		Count: count,
@@ -189,7 +189,7 @@ func (SelectQM) Offset(count any) query.Mod[*SelectQuery] {
 
 func (SelectQM) Union(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
-		Strategy: expr.Union,
+		Strategy: clause.Union,
 		Query:    q,
 		All:      false,
 	}
@@ -197,7 +197,7 @@ func (SelectQM) Union(q query.Query) query.Mod[*SelectQuery] {
 
 func (SelectQM) UnionAll(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
-		Strategy: expr.Union,
+		Strategy: clause.Union,
 		Query:    q,
 		All:      true,
 	}
@@ -205,7 +205,7 @@ func (SelectQM) UnionAll(q query.Query) query.Mod[*SelectQuery] {
 
 func (SelectQM) Intersect(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
-		Strategy: expr.Intersect,
+		Strategy: clause.Intersect,
 		Query:    q,
 		All:      false,
 	}
@@ -213,7 +213,7 @@ func (SelectQM) Intersect(q query.Query) query.Mod[*SelectQuery] {
 
 func (SelectQM) Except(q query.Query) query.Mod[*SelectQuery] {
 	return mods.Combine[*SelectQuery]{
-		Strategy: expr.Except,
+		Strategy: clause.Except,
 		Query:    q,
 		All:      false,
 	}

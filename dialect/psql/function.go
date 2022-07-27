@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob/builder"
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -60,7 +60,7 @@ func (f *function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, err
 }
 
 // Multiple functions can be uses as a goup with ROWS FROM
-func (f *function) Apply(q *expr.FromItem) {
+func (f *function) Apply(q *clause.FromItem) {
 	switch fs := q.Table.(type) {
 	case functions:
 		q.Table = append(fs, f)
@@ -107,7 +107,7 @@ func (c columnDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, err
 
 type functionOver struct {
 	function *function
-	expr.WindowDef
+	clause.WindowDef
 	windowChain[*functionOver]
 	builder.Chain[chain, chain]
 }

@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
 
 type withMod[Q interface {
-	AppendWith(expr.CTE)
+	AppendWith(clause.CTE)
 	SetRecursive(bool)
 }] struct{}
 
 func (withMod[Q]) With(name string, columns ...string) cteChain[Q] {
-	return cteChain[Q](func() expr.CTE {
-		return expr.CTE{
+	return cteChain[Q](func() clause.CTE {
+		return clause.CTE{
 			Name:    name,
 			Columns: columns,
 		}
@@ -29,25 +29,25 @@ func (withMod[Q]) Recursive(r bool) query.Mod[Q] {
 
 type fromItemMod struct{}
 
-func (fromItemMod) Only() query.Mod[*expr.FromItem] {
-	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+func (fromItemMod) Only() query.Mod[*clause.FromItem] {
+	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.Only = true
 	})
 }
 
-func (fromItemMod) Lateral() query.Mod[*expr.FromItem] {
-	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+func (fromItemMod) Lateral() query.Mod[*clause.FromItem] {
+	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.Lateral = true
 	})
 }
 
-func (fromItemMod) WithOrdinality() query.Mod[*expr.FromItem] {
-	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+func (fromItemMod) WithOrdinality() query.Mod[*clause.FromItem] {
+	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.WithOrdinality = true
 	})
 }
 
-type joinChain[Q interface{ AppendJoin(expr.Join) }] func() expr.Join
+type joinChain[Q interface{ AppendJoin(clause.Join) }] func() clause.Join
 
 func (j joinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
@@ -57,7 +57,7 @@ func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	jo := j()
 	jo.Alias = alias
 
-	return joinChain[Q](func() expr.Join {
+	return joinChain[Q](func() clause.Join {
 		return jo
 	})
 }
@@ -90,39 +90,39 @@ func (j joinChain[Q]) Using(using ...any) query.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-type joinMod[Q interface{ AppendJoin(expr.Join) }] struct{}
+type joinMod[Q interface{ AppendJoin(clause.Join) }] struct{}
 
 func (j joinMod[Q]) InnerJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.InnerJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.InnerJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) LeftJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.LeftJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.LeftJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) RightJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.RightJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.RightJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.FullJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.FullJoin,
 			To:   e,
 		}
 	})
@@ -130,12 +130,12 @@ func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
 
 func (j joinMod[Q]) CrossJoin(e any) query.Mod[Q] {
 	return mods.Join[Q]{
-		Type: expr.CrossJoin,
+		Type: clause.CrossJoin,
 		To:   e,
 	}
 }
 
-type orderBy[Q interface{ AppendOrder(expr.OrderDef) }] func() expr.OrderDef
+type orderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef
 
 func (s orderBy[Q]) Apply(q Q) {
 	q.AppendOrder(s())
@@ -145,7 +145,7 @@ func (o orderBy[Q]) Asc() orderBy[Q] {
 	order := o()
 	order.Direction = "ASC"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -154,7 +154,7 @@ func (o orderBy[Q]) Desc() orderBy[Q] {
 	order := o()
 	order.Direction = "DESC"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -163,7 +163,7 @@ func (o orderBy[Q]) Using(operator string) orderBy[Q] {
 	order := o()
 	order.Direction = "USING " + operator
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -172,7 +172,7 @@ func (o orderBy[Q]) NullsFirst() orderBy[Q] {
 	order := o()
 	order.Nulls = "FIRST"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -181,7 +181,7 @@ func (o orderBy[Q]) NullsLast() orderBy[Q] {
 	order := o()
 	order.Nulls = "LAST"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -190,12 +190,12 @@ func (o orderBy[Q]) Collate(collation string) orderBy[Q] {
 	order := o()
 	order.CollationName = collation
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
 
-type cteChain[Q interface{ AppendWith(expr.CTE) }] func() expr.CTE
+type cteChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
 
 func (c cteChain[Q]) Apply(q Q) {
 	q.AppendWith(c())
@@ -205,7 +205,7 @@ func (c cteChain[Q]) Name(tableName string, columnNames ...string) cteChain[Q] {
 	cte := c()
 	cte.Name = tableName
 	cte.Columns = columnNames
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -213,7 +213,7 @@ func (c cteChain[Q]) Name(tableName string, columnNames ...string) cteChain[Q] {
 func (c cteChain[Q]) As(q query.Query) cteChain[Q] {
 	cte := c()
 	cte.Query = q
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -222,7 +222,7 @@ func (c cteChain[Q]) NotMaterialized() cteChain[Q] {
 	var b = false
 	cte := c()
 	cte.Materialized = &b
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -231,31 +231,31 @@ func (c cteChain[Q]) Materialized() cteChain[Q] {
 	var b = true
 	cte := c()
 	cte.Materialized = &b
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
 func (c cteChain[Q]) SearchBreadth(setCol string, searchCols ...string) cteChain[Q] {
 	cte := c()
-	cte.Search = expr.CTESearch{
-		Order:   expr.SearchDepth,
+	cte.Search = clause.CTESearch{
+		Order:   clause.SearchDepth,
 		Columns: searchCols,
 		Set:     setCol,
 	}
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
 func (c cteChain[Q]) SearchDepth(setCol string, searchCols ...string) cteChain[Q] {
 	cte := c()
-	cte.Search = expr.CTESearch{
-		Order:   expr.SearchDepth,
+	cte.Search = clause.CTESearch{
+		Order:   clause.SearchDepth,
 		Columns: searchCols,
 		Set:     setCol,
 	}
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -265,7 +265,7 @@ func (c cteChain[Q]) Cycle(set, using string, cols ...string) cteChain[Q] {
 	cte.Cycle.Set = set
 	cte.Cycle.Using = using
 	cte.Cycle.Columns = cols
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -274,12 +274,12 @@ func (c cteChain[Q]) CycleValue(value, defaultVal any) cteChain[Q] {
 	cte := c()
 	cte.Cycle.SetVal = value
 	cte.Cycle.DefaultVal = defaultVal
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-type lockChain[Q interface{ SetFor(expr.For) }] func() expr.For
+type lockChain[Q interface{ SetFor(clause.For) }] func() clause.For
 
 func (l lockChain[Q]) Apply(q Q) {
 	q.SetFor(l())
@@ -287,34 +287,34 @@ func (l lockChain[Q]) Apply(q Q) {
 
 func (l lockChain[Q]) NoWait() lockChain[Q] {
 	lock := l()
-	lock.Wait = expr.LockWaitNoWait
-	return lockChain[Q](func() expr.For {
+	lock.Wait = clause.LockWaitNoWait
+	return lockChain[Q](func() clause.For {
 		return lock
 	})
 }
 
 func (l lockChain[Q]) SkipLocked() lockChain[Q] {
 	lock := l()
-	lock.Wait = expr.LockWaitSkipLocked
-	return lockChain[Q](func() expr.For {
+	lock.Wait = clause.LockWaitSkipLocked
+	return lockChain[Q](func() clause.For {
 		return lock
 	})
 }
 
-type windowMod[Q interface{ AppendWindow(expr.NamedWindow) }] struct {
+type windowMod[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
 	name string
-	expr.WindowDef
+	clause.WindowDef
 	windowChain[*windowMod[Q]]
 }
 
 func (w windowMod[Q]) Apply(q Q) {
-	q.AppendWindow(expr.NamedWindow{
+	q.AppendWindow(clause.NamedWindow{
 		Name:      w.name,
 		Definiton: w.def,
 	})
 }
 
-type windowChain[T expr.IWindow] struct {
+type windowChain[T clause.IWindow] struct {
 	def T
 }
 

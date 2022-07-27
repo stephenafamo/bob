@@ -3,7 +3,7 @@ package sqlite
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -23,10 +23,10 @@ func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_delete.html
 type DeleteQuery struct {
-	expr.With
-	expr.FromItem
-	expr.Where
-	expr.Returning
+	clause.With
+	clause.FromItem
+	clause.Where
+	clause.Returning
 }
 
 func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, error) {
@@ -71,7 +71,7 @@ type DeleteQM struct {
 
 func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		q.Table = expr.Table{
+		q.Table = clause.Table{
 			Expression: name,
 		}
 	})
@@ -79,7 +79,7 @@ func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
 
 func (qm DeleteQM) FromAs(name any, alias string) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		q.Table = expr.Table{
+		q.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
 		}
@@ -107,6 +107,6 @@ func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*DeleteQuer
 	return mods.Where[*DeleteQuery]{qm.Raw(clause, args...)}
 }
 
-func (qm DeleteQM) Returning(expressions ...any) query.Mod[*DeleteQuery] {
-	return mods.Returning[*DeleteQuery](expressions)
+func (qm DeleteQM) Returning(clauseessions ...any) query.Mod[*DeleteQuery] {
+	return mods.Returning[*DeleteQuery](clauseessions)
 }

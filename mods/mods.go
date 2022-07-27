@@ -1,7 +1,7 @@
 package mods
 
 import (
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 )
 
 type QueryModFunc[T any] func(T)
@@ -10,10 +10,10 @@ func (q QueryModFunc[T]) Apply(query T) {
 	q(query)
 }
 
-type With[Q interface{ AppendWith(expr.CTE) }] expr.CTE
+type With[Q interface{ AppendWith(clause.CTE) }] clause.CTE
 
 func (f With[Q]) Apply(q Q) {
-	q.AppendWith(expr.CTE(f))
+	q.AppendWith(clause.CTE(f))
 }
 
 type Recursive[Q interface{ SetRecursive(bool) }] bool
@@ -22,10 +22,10 @@ func (r Recursive[Q]) Apply(q Q) {
 	q.SetRecursive(bool(r))
 }
 
-type Distinct[Q interface{ SetDistinct(expr.Distinct) }] expr.Distinct
+type Distinct[Q interface{ SetDistinct(clause.Distinct) }] clause.Distinct
 
 func (d Distinct[Q]) Apply(q Q) {
-	q.SetDistinct(expr.Distinct(d))
+	q.SetDistinct(clause.Distinct(d))
 }
 
 type Select[Q interface{ AppendSelect(columns ...any) }] []any
@@ -34,10 +34,10 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
-type FromItems[Q interface{ AppendFromItem(expr.FromItem) }] expr.FromItem
+type FromItems[Q interface{ AppendFromItem(clause.FromItem) }] clause.FromItem
 
 func (f FromItems[Q]) Apply(q Q) {
-	q.AppendFromItem(expr.FromItem(f))
+	q.AppendFromItem(clause.FromItem(f))
 }
 
 type TableAs[Q interface {
@@ -51,10 +51,10 @@ func (t TableAs[Q]) Apply(q Q) {
 	q.SetTableAlias(t.Alias, t.Columns...)
 }
 
-type Join[Q interface{ AppendJoin(expr.Join) }] expr.Join
+type Join[Q interface{ AppendJoin(clause.Join) }] clause.Join
 
 func (j Join[Q]) Apply(q Q) {
-	q.AppendJoin(expr.Join(j))
+	q.AppendJoin(clause.Join(j))
 }
 
 type Where[Q interface{ AppendWhere(e ...any) }] []any
@@ -89,46 +89,46 @@ func (d Having[Q]) Apply(q Q) {
 	q.AppendHaving(d...)
 }
 
-type Window[Q interface{ AppendWindow(expr.NamedWindow) }] expr.NamedWindow
+type Window[Q interface{ AppendWindow(clause.NamedWindow) }] clause.NamedWindow
 
 func (f Window[Q]) Apply(q Q) {
-	q.AppendWindow(expr.NamedWindow(f))
+	q.AppendWindow(clause.NamedWindow(f))
 }
 
-type OrderBy[Q interface{ AppendOrder(expr.OrderDef) }] expr.OrderDef
+type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] clause.OrderDef
 
 func (f OrderBy[Q]) Apply(q Q) {
-	q.AppendOrder(expr.OrderDef(f))
+	q.AppendOrder(clause.OrderDef(f))
 }
 
-type Limit[Q interface{ SetLimit(expr.Limit) }] expr.Limit
+type Limit[Q interface{ SetLimit(clause.Limit) }] clause.Limit
 
 func (f Limit[Q]) Apply(q Q) {
-	q.SetLimit(expr.Limit(f))
+	q.SetLimit(clause.Limit(f))
 }
 
-type Offset[Q interface{ SetOffset(expr.Offset) }] expr.Offset
+type Offset[Q interface{ SetOffset(clause.Offset) }] clause.Offset
 
 func (f Offset[Q]) Apply(q Q) {
-	q.SetOffset(expr.Offset(f))
+	q.SetOffset(clause.Offset(f))
 }
 
-type Fetch[Q interface{ SetFetch(expr.Fetch) }] expr.Fetch
+type Fetch[Q interface{ SetFetch(clause.Fetch) }] clause.Fetch
 
 func (f Fetch[Q]) Apply(q Q) {
-	q.SetFetch(expr.Fetch(f))
+	q.SetFetch(clause.Fetch(f))
 }
 
-type Combine[Q interface{ SetCombine(expr.Combine) }] expr.Combine
+type Combine[Q interface{ SetCombine(clause.Combine) }] clause.Combine
 
 func (f Combine[Q]) Apply(q Q) {
-	q.SetCombine(expr.Combine(f))
+	q.SetCombine(clause.Combine(f))
 }
 
-type For[Q interface{ SetFor(expr.For) }] expr.For
+type For[Q interface{ SetFor(clause.For) }] clause.For
 
 func (f For[Q]) Apply(q Q) {
-	q.SetFor(expr.For(f))
+	q.SetFor(clause.For(f))
 }
 
 type Values[Q interface{ AppendValues(vals ...any) }] []any
@@ -143,7 +143,7 @@ func (s Returning[Q]) Apply(q Q) {
 	q.AppendReturning(s...)
 }
 
-type Set[Q interface{ AppendSet(exprs ...any) }] []any
+type Set[Q interface{ AppendSet(clauses ...any) }] []any
 
 func (s Set[Q]) Apply(q Q) {
 	q.AppendSet(s...)

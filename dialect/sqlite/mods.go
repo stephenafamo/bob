@@ -3,7 +3,7 @@ package sqlite
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -53,13 +53,13 @@ func (o orMod[Q]) OrRollback() query.Mod[Q] {
 }
 
 type withMod[Q interface {
-	AppendWith(expr.CTE)
+	AppendWith(clause.CTE)
 	SetRecursive(bool)
 }] struct{}
 
 func (withMod[Q]) With(name string, columns ...string) cteChain[Q] {
-	return cteChain[Q](func() expr.CTE {
-		return expr.CTE{
+	return cteChain[Q](func() clause.CTE {
+		return clause.CTE{
 			Name:    name,
 			Columns: columns,
 		}
@@ -70,7 +70,7 @@ func (withMod[Q]) Recursive(r bool) query.Mod[Q] {
 	return mods.Recursive[Q](r)
 }
 
-type cteChain[Q interface{ AppendWith(expr.CTE) }] func() expr.CTE
+type cteChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
 
 func (c cteChain[Q]) Apply(q Q) {
 	q.AppendWith(c())
@@ -80,7 +80,7 @@ func (c cteChain[Q]) Name(tableName string, columnNames ...string) cteChain[Q] {
 	cte := c()
 	cte.Name = tableName
 	cte.Columns = columnNames
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -88,7 +88,7 @@ func (c cteChain[Q]) Name(tableName string, columnNames ...string) cteChain[Q] {
 func (c cteChain[Q]) As(q query.Query) cteChain[Q] {
 	cte := c()
 	cte.Query = q
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -97,7 +97,7 @@ func (c cteChain[Q]) NotMaterialized() cteChain[Q] {
 	var b = false
 	cte := c()
 	cte.Materialized = &b
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
@@ -106,27 +106,27 @@ func (c cteChain[Q]) Materialized() cteChain[Q] {
 	var b = true
 	cte := c()
 	cte.Materialized = &b
-	return cteChain[Q](func() expr.CTE {
+	return cteChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
 type fromItemMod struct{}
 
-func (fromItemMod) NotIndexed() query.Mod[*expr.FromItem] {
-	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+func (fromItemMod) NotIndexed() query.Mod[*clause.FromItem] {
+	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		var s string
 		q.IndexedBy = &s
 	})
 }
 
-func (fromItemMod) IndexedBy(indexName string) query.Mod[*expr.FromItem] {
-	return mods.QueryModFunc[*expr.FromItem](func(q *expr.FromItem) {
+func (fromItemMod) IndexedBy(indexName string) query.Mod[*clause.FromItem] {
+	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.IndexedBy = &indexName
 	})
 }
 
-type joinChain[Q interface{ AppendJoin(expr.Join) }] func() expr.Join
+type joinChain[Q interface{ AppendJoin(clause.Join) }] func() clause.Join
 
 func (j joinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
@@ -136,7 +136,7 @@ func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	jo := j()
 	jo.Alias = alias
 
-	return joinChain[Q](func() expr.Join {
+	return joinChain[Q](func() clause.Join {
 		return jo
 	})
 }
@@ -169,39 +169,39 @@ func (j joinChain[Q]) Using(using ...any) query.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-type joinMod[Q interface{ AppendJoin(expr.Join) }] struct{}
+type joinMod[Q interface{ AppendJoin(clause.Join) }] struct{}
 
 func (j joinMod[Q]) InnerJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.InnerJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.InnerJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) LeftJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.LeftJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.LeftJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) RightJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.RightJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.RightJoin,
 			To:   e,
 		}
 	})
 }
 
 func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
-	return joinChain[Q](func() expr.Join {
-		return expr.Join{
-			Type: expr.FullJoin,
+	return joinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.FullJoin,
 			To:   e,
 		}
 	})
@@ -209,12 +209,12 @@ func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
 
 func (j joinMod[Q]) CrossJoin(e any) query.Mod[Q] {
 	return mods.Join[Q]{
-		Type: expr.CrossJoin,
+		Type: clause.CrossJoin,
 		To:   e,
 	}
 }
 
-type orderBy[Q interface{ AppendOrder(expr.OrderDef) }] func() expr.OrderDef
+type orderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef
 
 func (s orderBy[Q]) Apply(q Q) {
 	q.AppendOrder(s())
@@ -224,7 +224,7 @@ func (o orderBy[Q]) Collate(collation string) orderBy[Q] {
 	order := o()
 	order.CollationName = collation
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -233,7 +233,7 @@ func (o orderBy[Q]) Asc() orderBy[Q] {
 	order := o()
 	order.Direction = "ASC"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -242,7 +242,7 @@ func (o orderBy[Q]) Desc() orderBy[Q] {
 	order := o()
 	order.Direction = "DESC"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -251,7 +251,7 @@ func (o orderBy[Q]) NullsFirst() orderBy[Q] {
 	order := o()
 	order.Nulls = "FIRST"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
@@ -260,18 +260,18 @@ func (o orderBy[Q]) NullsLast() orderBy[Q] {
 	order := o()
 	order.Nulls = "LAST"
 
-	return orderBy[Q](func() expr.OrderDef {
+	return orderBy[Q](func() clause.OrderDef {
 		return order
 	})
 }
 
-type windowChain[Q interface{ AppendWindow(expr.NamedWindow) }] struct {
+type windowChain[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
 	name string
-	def  expr.WindowDef
+	def  clause.WindowDef
 }
 
 func (w *windowChain[Q]) Apply(q Q) {
-	q.AppendWindow(expr.NamedWindow{
+	q.AppendWindow(clause.NamedWindow{
 		Name:      w.name,
 		Definiton: w.def,
 	})

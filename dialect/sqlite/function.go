@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob/builder"
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -20,7 +20,7 @@ type function struct {
 }
 
 // A function can be a target for a query
-func (f *function) Apply(q *expr.FromItem) {
+func (f *function) Apply(q *clause.FromItem) {
 	q.Table = f
 }
 
@@ -33,7 +33,7 @@ func (f *function) Filter(e ...any) *function {
 func (f *function) Over(window string) *functionOver {
 	w := &functionOver{
 		function: f,
-		window:   expr.WindowDef{From: window},
+		window:   clause.WindowDef{From: window},
 	}
 	w.Base = w
 	return w
@@ -63,7 +63,7 @@ func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 
 type functionOver struct {
 	function *function
-	window   expr.WindowDef
+	window   clause.WindowDef
 	builder.Chain[chain, chain]
 }
 

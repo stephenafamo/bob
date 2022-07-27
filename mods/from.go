@@ -2,23 +2,23 @@ package mods
 
 import (
 	"github.com/stephenafamo/bob/builder"
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/query"
 )
 
 // To be embeded in other query mod providers
-type FromMod[Q interface{ AppendFromItem(expr.FromItem) }] struct{}
+type FromMod[Q interface{ AppendFromItem(clause.FromItem) }] struct{}
 
-func (FromMod[Q]) From(table any, fromMods ...query.Mod[*expr.FromItem]) query.Mod[Q] {
-	f := expr.FromItem{}
+func (FromMod[Q]) From(table any, fromMods ...query.Mod[*clause.FromItem]) query.Mod[Q] {
+	f := clause.FromItem{}
 
 	switch t := table.(type) {
 	case string:
 		f.Table = t // early because it is a common case
 	case query.Query:
 		f.Table = builder.P(table) // wrap in brackets
-	case query.Mod[*expr.FromItem]:
-		fromMods = append([]query.Mod[*expr.FromItem]{t}, fromMods...)
+	case query.Mod[*clause.FromItem]:
+		fromMods = append([]query.Mod[*clause.FromItem]{t}, fromMods...)
 	default:
 		f.Table = t
 	}

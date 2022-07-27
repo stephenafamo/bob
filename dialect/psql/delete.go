@@ -3,7 +3,7 @@ package psql
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -23,12 +23,12 @@ func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
-	expr.With
+	clause.With
 	only bool
-	expr.Table
-	expr.FromItems
-	expr.Where
-	expr.Returning
+	clause.Table
+	clause.FromItems
+	clause.Where
+	clause.Returning
 }
 
 func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, error) {
@@ -81,7 +81,7 @@ type DeleteQM struct {
 	withMod[*DeleteQuery]
 	mods.FromMod[*DeleteQuery]
 	fromItemMod
-	joinMod[*expr.FromItem]
+	joinMod[*clause.FromItem]
 }
 
 func (qm DeleteQM) Only() query.Mod[*DeleteQuery] {
@@ -92,7 +92,7 @@ func (qm DeleteQM) Only() query.Mod[*DeleteQuery] {
 
 func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
-		u.Table = expr.Table{
+		u.Table = clause.Table{
 			Expression: name,
 		}
 	})
@@ -100,14 +100,14 @@ func (qm DeleteQM) From(name any) query.Mod[*DeleteQuery] {
 
 func (qm DeleteQM) FromAs(name any, alias string) query.Mod[*DeleteQuery] {
 	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
-		u.Table = expr.Table{
+		u.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
 		}
 	})
 }
 
-func (qm DeleteQM) Using(table any, usingMods ...query.Mod[*expr.FromItem]) query.Mod[*DeleteQuery] {
+func (qm DeleteQM) Using(table any, usingMods ...query.Mod[*clause.FromItem]) query.Mod[*DeleteQuery] {
 	return qm.FromMod.From(table, usingMods...)
 }
 
@@ -119,6 +119,6 @@ func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*DeleteQuer
 	return mods.Where[*DeleteQuery]{qm.Raw(clause, args...)}
 }
 
-func (qm DeleteQM) Returning(expressions ...any) query.Mod[*DeleteQuery] {
-	return mods.Returning[*DeleteQuery](expressions)
+func (qm DeleteQM) Returning(clauseessions ...any) query.Mod[*DeleteQuery] {
+	return mods.Returning[*DeleteQuery](clauseessions)
 }

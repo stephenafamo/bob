@@ -1,11 +1,11 @@
 package psql
 
-import "github.com/stephenafamo/bob/expr"
+import "github.com/stephenafamo/bob/clause"
 
 type ValuesQuery struct {
 	// insert the group
-	expr.OrderBy
-	expr.Limit
-	expr.Offset
-	expr.Fetch
+	clause.OrderBy
+	clause.Limit
+	clause.Offset
+	clause.Fetch
 }
