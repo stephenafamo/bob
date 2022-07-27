@@ -14,8 +14,8 @@ func TestDelete(t *testing.T) {
 				qm.From("films"),
 				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
 			),
-			ExpectedQuery: `DELETE FROM films WHERE (kind = ?1)`,
-			ExpectedArgs:  []any{"Drama"},
+			ExpectedSQL:  `DELETE FROM films WHERE (kind = ?1)`,
+			ExpectedArgs: []any{"Drama"},
 		},
 	}
 

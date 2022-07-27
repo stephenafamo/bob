@@ -256,7 +256,7 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 		c.doc = dialect.Clean(val[1 : len(val)-1])
 	case "Query":
 		c.builder = rgxTabs.ReplaceAllLiteralString(val, "  ")
-	case "ExpectedQuery":
+	case "ExpectedSQL":
 		c.query = reindent(rgxTabs.ReplaceAllLiteralString(val[1:len(val)-1], "  "))
 	case "ExpectedArgs":
 		visitor := &argVisitor{fset: c.fset}

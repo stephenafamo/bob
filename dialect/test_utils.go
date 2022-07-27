@@ -14,10 +14,10 @@ type Testcases map[string]Testcase
 
 // Also used to generate documentation
 type Testcase struct {
-	Query         query.Query
-	ExpectedQuery string
-	ExpectedArgs  []any
-	Doc           string
+	Query        query.Query
+	ExpectedSQL  string
+	ExpectedArgs []any
+	Doc          string
 }
 
 var oneOrMoreSpace = regexp.MustCompile(`\s+`)
@@ -49,7 +49,7 @@ func RunTests(t *testing.T, cases Testcases) {
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			if diff := QueryDiff(tc.ExpectedQuery, sql); diff != "" {
+			if diff := QueryDiff(tc.ExpectedSQL, sql); diff != "" {
 				fmt.Println(sql)
 				fmt.Println(args)
 				t.Fatalf("diff: %s", diff)

@@ -11,8 +11,8 @@ func TestSelect(t *testing.T) {
 
 	var examples = d.Testcases{
 		"simple select": {
-			ExpectedQuery: "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
-			ExpectedArgs:  []any{100, 200, 300},
+			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
+			ExpectedArgs: []any{100, 200, 300},
 			Query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
@@ -27,11 +27,11 @@ func TestSelect(t *testing.T) {
 				),
 				qm.OrderBy("p"),
 			),
-			ExpectedQuery: `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s") ORDER BY p`,
-			ExpectedArgs:  nil,
+			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s") ORDER BY p`,
+			ExpectedArgs: nil,
 		},
 		"with sub-select": {
-			ExpectedQuery: `SELECT status, avg(difference)
+			ExpectedSQL: `SELECT status, avg(difference)
 					FROM (
 						SELECT
 							status,

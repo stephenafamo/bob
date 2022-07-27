@@ -15,8 +15,8 @@ func TestInsert(t *testing.T) {
 				qm.Into("films"),
 				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
-			ExpectedQuery: "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6)",
-			ExpectedArgs:  []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+			ExpectedSQL:  "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6)",
+			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
 		},
 		"bulk insert": {
 			Query: Insert(
@@ -24,7 +24,7 @@ func TestInsert(t *testing.T) {
 				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
-			ExpectedQuery: `INSERT INTO films VALUES
+			ExpectedSQL: `INSERT INTO films VALUES
 				($1, $2, $3, $4, $5, $6),
 				($7, $8, $9, $10, $11, $12)`,
 			ExpectedArgs: []any{
@@ -44,7 +44,7 @@ func TestInsert(t *testing.T) {
 					),
 				).Where(qm.X("d.zipcode").NE(qm.S("21201"))),
 			),
-			ExpectedQuery: `INSERT INTO distributors AS "d" ("did", "dname")
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT (did) DO UPDATE
 				SET dname = (EXCLUDED.dname || ' (formerly ' || d.dname || ')')
@@ -58,8 +58,8 @@ func TestInsert(t *testing.T) {
 				qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 				qm.OnConflict(nil).DoNothing(),
 			),
-			ExpectedQuery: "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
-			ExpectedArgs:  []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+			ExpectedSQL:  "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
+			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
 		},
 	}
 

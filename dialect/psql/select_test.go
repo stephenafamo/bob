@@ -10,9 +10,9 @@ func TestSelect(t *testing.T) {
 	var qm = SelectQM{}
 	var examples = d.Testcases{
 		"simple select": {
-			Doc:           "Simple Select with some conditions",
-			ExpectedQuery: "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
-			ExpectedArgs:  []any{100, 200, 300},
+			Doc:          "Simple Select with some conditions",
+			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
+			ExpectedArgs: []any{100, 200, 300},
 			Query: Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
@@ -32,7 +32,7 @@ func TestSelect(t *testing.T) {
 				),
 				qm.OrderBy("p"),
 			),
-			ExpectedQuery: `SELECT *
+			ExpectedSQL: `SELECT *
 				FROM ROWS FROM
 					(
 						json_to_recordset($1) AS (a INTEGER, b TEXT),
@@ -43,7 +43,7 @@ func TestSelect(t *testing.T) {
 		},
 		"with sub-select and window": {
 			Doc: "Select from subquery with window function",
-			ExpectedQuery: `SELECT status, avg(difference)
+			ExpectedSQL: `SELECT status, avg(difference)
 					FROM (
 						SELECT
 							status, 
