@@ -1,32 +1,33 @@
-package psql
+package psql_test
 
 import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
+	"github.com/stephenafamo/bob/dialect/psql"
 )
 
 func TestUpdate(t *testing.T) {
-	var qm = UpdateQM{}
-	var selectQM = SelectQM{}
+	var qm = psql.UpdateQM{}
+	var selectQM = psql.SelectQM{}
 
 	var examples = d.Testcases{
 		"simple": {
-			Query: Update(
+			Query: psql.Update(
 				qm.Table("films"),
 				qm.SetArg("kind", "Dramatic"),
-				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
+				qm.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET kind = $1 WHERE (kind = $2)`,
 			ExpectedArgs: []any{"Dramatic", "Drama"},
 		},
 		"with from": {
-			Query: Update(
+			Query: psql.Update(
 				qm.Table("employees"),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.From("accounts"),
-				qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
-				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
+				qm.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
+				qm.Where(psql.X("employees.id").EQ("accounts.sales_person")),
 			),
 			ExpectedSQL: `UPDATE employees SET sales_count = sales_count + 1 FROM accounts
 			  WHERE (accounts.name = $1)
@@ -37,13 +38,13 @@ func TestUpdate(t *testing.T) {
 			ExpectedSQL: `UPDATE employees SET sales_count = sales_count + 1 WHERE (id =
 				  (SELECT sales_person FROM accounts WHERE (name = $1)))`,
 			ExpectedArgs: []any{"Acme Corporation"},
-			Query: Update(
+			Query: psql.Update(
 				qm.Table("employees"),
 				qm.Set("sales_count", "sales_count + 1"),
-				qm.Where(qm.X("id").EQ(qm.P(Select(
+				qm.Where(psql.X("id").EQ(psql.P(psql.Select(
 					selectQM.Select("sales_person"),
 					selectQM.From("accounts"),
-					selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),
+					selectQM.Where(psql.X("name").EQ(psql.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

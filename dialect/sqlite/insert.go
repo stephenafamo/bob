@@ -79,7 +79,6 @@ func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type InsertQM struct {
-	builderMod
 	withMod[*InsertQuery] // For CTEs
 	orMod[*InsertQuery]   // INSERT or REPLACE|ABORT|IGNORE e.t.c.
 }
@@ -109,7 +108,7 @@ func (qm InsertQM) Values(clauseessions ...any) query.Mod[*InsertQuery] {
 
 func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
 	if column != nil {
-		column = qm.P(column)
+		column = P(column)
 	}
 	return mods.Conflict[*InsertQuery](func() clause.Conflict {
 		return clause.Conflict{

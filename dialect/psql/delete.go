@@ -77,7 +77,6 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, 
 }
 
 type DeleteQM struct {
-	builderMod
 	withMod[*DeleteQuery]
 	mods.FromMod[*DeleteQuery]
 	fromItemMod
@@ -116,7 +115,7 @@ func (qm DeleteQM) Where(e query.Expression) query.Mod[*DeleteQuery] {
 }
 
 func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*DeleteQuery] {
-	return mods.Where[*DeleteQuery]{qm.Raw(clause, args...)}
+	return mods.Where[*DeleteQuery]{Raw(clause, args...)}
 }
 
 func (qm DeleteQM) Returning(clauseessions ...any) query.Mod[*DeleteQuery] {

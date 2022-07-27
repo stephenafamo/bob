@@ -1,32 +1,33 @@
-package sqlite
+package sqlite_test
 
 import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
+	"github.com/stephenafamo/bob/dialect/sqlite"
 )
 
 func TestUpdate(t *testing.T) {
-	var qm = UpdateQM{}
-	var selectQM = SelectQM{}
+	var qm = sqlite.UpdateQM{}
+	var selectQM = sqlite.SelectQM{}
 
 	var examples = d.Testcases{
 		"simple": {
-			Query: Update(
+			Query: sqlite.Update(
 				qm.Table("films"),
 				qm.SetArg("kind", "Dramatic"),
-				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
+				qm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET kind = ?1 WHERE (kind = ?2)`,
 			ExpectedArgs: []any{"Dramatic", "Drama"},
 		},
 		"with from": {
-			Query: Update(
+			Query: sqlite.Update(
 				qm.Table("employees"),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.From("accounts"),
-				qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
-				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
+				qm.Where(sqlite.X("accounts.name").EQ(sqlite.Arg("Acme Corporation"))),
+				qm.Where(sqlite.X("employees.id").EQ("accounts.sales_person")),
 			),
 			ExpectedSQL: `UPDATE employees SET sales_count = sales_count + 1 FROM accounts
 			  WHERE (accounts.name = ?1)
@@ -38,14 +39,14 @@ func TestUpdate(t *testing.T) {
 				SET sales_count = sales_count + 1
 				WHERE (id = (SELECT sales_person FROM accounts WHERE (name = ?1)))`,
 			ExpectedArgs: []any{"Acme Corporation"},
-			Query: Update(
+			Query: sqlite.Update(
 				qm.TableAs("employees", "e"),
 				qm.NotIndexed(),
 				qm.Set("sales_count", "sales_count + 1"),
-				qm.Where(qm.X("id").EQ(qm.P(Select(
+				qm.Where(sqlite.X("id").EQ(sqlite.P(sqlite.Select(
 					selectQM.Select("sales_person"),
 					selectQM.From("accounts"),
-					selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),
+					selectQM.Where(sqlite.X("name").EQ(sqlite.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

@@ -306,8 +306,6 @@ func toMarkdown(destination string, cases []testcase) {
 	}
 
 	buf := bytes.NewBuffer(nil)
-
-	codeprefix := filepath.Base(filepath.Dir(destination))
 	for index, c := range cases {
 		if index > 0 {
 			fmt.Fprint(buf, "\n")
@@ -327,7 +325,7 @@ func toMarkdown(destination string, cases []testcase) {
 			fmt.Fprintf(buf, "\n")
 		}
 		// write the go query
-		fmt.Fprintf(buf, "Code:\n\n```go\n%s.%s\n```\n", codeprefix, c.builder)
+		fmt.Fprintf(buf, "Code:\n\n```go\n%s\n```\n", c.builder)
 	}
 
 	file, err := os.Create(destination)

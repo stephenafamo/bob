@@ -79,7 +79,6 @@ func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type InsertQM struct {
-	builderMod
 	withMod[*InsertQuery]
 }
 
@@ -121,7 +120,7 @@ func (qm InsertQM) Values(clauseessions ...any) query.Mod[*InsertQuery] {
 // The column to target. Will auto add brackets
 func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
 	if column != nil {
-		column = qm.P(column)
+		column = P(column)
 	}
 	return mods.Conflict[*InsertQuery](func() clause.Conflict {
 		return clause.Conflict{

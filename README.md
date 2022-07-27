@@ -50,8 +50,8 @@ qm.Select(qm.Quote("status")) // SELECT "status"
 
 // Ways to express LEAD(created_date, 1, NOW())
 "LEAD(created_date, 1, NOW()"
-qm.F("LEAD", "created_date", 1, "NOW()")
-qm.F("LEAD", "created_date", 1, qm.F("NOW"))
+psql.F("LEAD", "created_date", 1, "NOW()")
+psql.F("LEAD", "created_date", 1, qm.F("NOW"))
 
 // Ways to express PARTITION BY presale_id ORDER BY created_date
 "PARTITION BY presale_id ORDER BY created_date"
@@ -59,7 +59,7 @@ qm.Window("").PartitionBy("presale_id").OrderBy("created_date")
 
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
-qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+psql.F("LEAD", "created_date", 1, psql.F("NOW")).
     Over("").
     PartitionBy("presale_id").
     OrderBy("created_date")
@@ -68,7 +68,7 @@ qm.F("LEAD", "created_date", 1, qm.F("NOW")).
 psql.Select(
     qm.Select(
         "status",
-        qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+        psql.F("LEAD", "created_date", 1, psql.F("NOW")).
             Over("").
             PartitionBy("presale_id").
             OrderBy("created_date").
@@ -95,7 +95,7 @@ As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions)
 var selMod = psql.SelectQM{}
 cte := psql.Select(
     selMod.From("users"),
-    selMod.Where(qm.X("age").GTE(21)),
+    selMod.Where(psql.X("age").GTE(21)),
 )
 
 var cte query.Query
@@ -126,33 +126,33 @@ It can take multiple strings that need to be quoted and joined with `.`
 // SQLite: "schema_name"."table_name"
 // MySQL: `schema_name`.`table_name`
 // SQL Server: [schema_name].[table_name]
-qm.Quote("schema_name", "table_name")
+psql.Quote("schema_name", "table_name")
 ```
 
 ## Expressions
 
-The query mods have methods to fluently build complex expressions.  
-It starts with one of several methods which then return a chain that has methods for various operators.
+Every dialect contain starter functions to fluently build complex expressions.  
+It starts with one of several functions which then return a chain that has methods for various operators.
 
 For example:
 
 ```go
 // Query: ($1 >= 50) AND (name IS NOT NULL)
 // Args: 'Stephen'
-qm.Arg("Stephen").GTE(50).
-    And(qm.X("name").IsNotNull())
+psql.Arg("Stephen").GTE(50).
+    And(psql.X("name").IsNotNull())
 
 // OR
 
-qm.And(
-    qm.Arg("Stephen").GTE(50),
-    qm.X("name").IsNotNull(),
+psql.And(
+    psql.Arg("Stephen").GTE(50),
+    psql.X("name").IsNotNull(),
 )
 ```
 
 ### Starters
 
-These methods are embeded in every query mod and can be used to create a chainable expression.
+These functions are included in every dialect and can be used to create a chainable expression.
 
 **NOTE:** These are the common starters. Each dialect can sometimes include their own starters.  
 For example, starters for common function calls can easily be added
@@ -208,25 +208,30 @@ This will write the placeholder correctly in the generated sql, and return the v
 // SQL Server: SELECT * from users WHERE id = @p1 AND name = @p2
 psql.Select(
     qm.From("users"),
-    qm.Where(qm.X("id").EQ(qm.Arg(100))),
-    qm.Where(qm.X("name".EQ(qm.Arg("Stephen"))),
-).WriteQuery(w, 1)
+    qm.Where(psql.X("id").EQ(psql.Arg(100))),
+    qm.Where(psql.X("name".EQ(psql.Arg("Stephen"))),
+)
 ```
 
 ## Raw Queries
 
 As any good query builder, you are allowed to use your own raw SQL queries.
-Either at the top level with `psql.Raw()` or inside any clause with `qm.Raw()`.
+Either at the top level with `psql.RawQuery()` or inside any clause with `psql.Raw()`.
 
-Another option is to use `qm.Raw()` which takes a clause and args. The placeholder in the clauses are question marks `?`.
+These functions take a query and args. The placeholder in the clauses are question marks `?`.
 
 ```go
 // SELECT * from users WHERE id = $1 AND name = $2
 // args: 100, "Stephen"
+
+psql.RawQuery(`SELECT * FROM USERS WHERE id = ? and name = ?`, 100, "Stephen")
+// -----
+// OR
+// -----
 psql.Select(
     qm.From("users"),
-    qm.Where(qm.Raw("id = ? and name = ?", 100, "Stephen")),
-).WriteQuery(w, 1)
+    qm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
+)
 ```
 
 ## Using the Query

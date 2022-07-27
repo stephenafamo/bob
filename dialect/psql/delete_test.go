@@ -1,28 +1,29 @@
-package psql
+package psql_test
 
 import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
+	"github.com/stephenafamo/bob/dialect/psql"
 )
 
 func TestDelete(t *testing.T) {
-	var qm = DeleteQM{}
+	var qm = psql.DeleteQM{}
 	var examples = d.Testcases{
 		"simple": {
-			Query: Delete(
+			Query: psql.Delete(
 				qm.From("films"),
-				qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
+				qm.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `DELETE FROM films WHERE (kind = $1)`,
 			ExpectedArgs: []any{"Drama"},
 		},
 		"with using": {
-			Query: Delete(
+			Query: psql.Delete(
 				qm.From("employees"),
 				qm.Using("accounts"),
-				qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
-				qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
+				qm.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
+				qm.Where(psql.X("employees.id").EQ("accounts.sales_person")),
 			),
 			ExpectedSQL: `DELETE FROM employees USING accounts
 			  WHERE (accounts.name = $1)

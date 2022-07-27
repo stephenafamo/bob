@@ -11,15 +11,15 @@ import (
 
 func RawQuery(d query.Dialect, q string, args ...any) query.BaseQuery[Raw] {
 	return query.BaseQuery[Raw]{
-		Expression: Raw{clause: q, args: args},
+		Expression: Raw{query: q, args: args},
 		Dialect:    d,
 	}
 }
 
 // A Raw Raw with arguments
 type Raw struct {
-	clause string // The clause with ? used for placeholders
-	args   []any  // The replacements for the placeholders in order
+	query string // The clause with ? used for placeholders
+	args  []any  // The replacements for the placeholders in order
 }
 
 func (r Raw) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -27,7 +27,7 @@ func (r Raw) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	total := r.convertQuestionMarks(w, d, start)
 
 	if len(r.args) != total {
-		return r.args, &rawError{args: len(r.args), placeholders: total, clause: r.clause}
+		return r.args, &rawError{args: len(r.args), placeholders: total, clause: r.query}
 	}
 
 	return r.args, nil
@@ -44,7 +44,7 @@ func (r Raw) convertQuestionMarks(w io.Writer, d query.Dialect, startAt int) int
 	paramIndex := 0
 	total := 0
 
-	clause := r.clause
+	clause := r.query
 	for {
 		if paramIndex >= len(clause) {
 			break

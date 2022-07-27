@@ -18,7 +18,7 @@ Code:
 sqlite.Select(
   qm.Select("id", "name"),
   qm.From("users"),
-  qm.Where(qm.X("id").In(qm.Arg(100, 200, 300))),
+  qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 )
 ```
 
@@ -35,7 +35,7 @@ Code:
 ```go
 sqlite.Select(
   qm.From(
-    qm.F("generate_series", 1, 3),
+    sqlite.F("generate_series", 1, 3),
     qm.As("x", "p", "q", "s"),
   ),
   qm.OrderBy("p"),
@@ -64,11 +64,11 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Select("status", qm.F("avg", "difference")),
-  qm.From(Select(
+  qm.Select("status", sqlite.F("avg", "difference")),
+  qm.From(sqlite.Select(
     qm.Select(
       "status",
-      qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+      sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
         Over("").
         PartitionBy("presale_id").
         OrderBy("created_date").
@@ -77,7 +77,7 @@ sqlite.Select(
     qm.From("presales_presalestatus")),
     qm.As("differnce_by_status"),
   ),
-  qm.Where(qm.X("status").In(qm.S("A"), qm.S("B"), qm.S("C"))),
+  qm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
   qm.GroupBy("status"),
 )
 ```

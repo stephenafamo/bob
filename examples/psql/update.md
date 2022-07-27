@@ -17,7 +17,7 @@ Code:
 psql.Update(
   qm.Table("films"),
   qm.SetArg("kind", "Dramatic"),
-  qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
+  qm.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
 )
 ```
 
@@ -42,8 +42,8 @@ psql.Update(
   qm.Table("employees"),
   qm.Set("sales_count", "sales_count + 1"),
   qm.From("accounts"),
-  qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
-  qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
+  qm.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
+  qm.Where(psql.X("employees.id").EQ("accounts.sales_person")),
 )
 ```
 
@@ -66,10 +66,10 @@ Code:
 psql.Update(
   qm.Table("employees"),
   qm.Set("sales_count", "sales_count + 1"),
-  qm.Where(qm.X("id").EQ(qm.P(Select(
+  qm.Where(psql.X("id").EQ(psql.P(psql.Select(
     selectQM.Select("sales_person"),
     selectQM.From("accounts"),
-    selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),
+    selectQM.Where(psql.X("name").EQ(psql.Arg("Acme Corporation"))),
   )))),
 )
 ```

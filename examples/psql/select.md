@@ -18,7 +18,7 @@ Code:
 psql.Select(
   qm.Select("id", "name"),
   qm.From("users"),
-  qm.Where(qm.X("id").In(qm.Arg(100, 200, 300))),
+  qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 )
 ```
 
@@ -45,11 +45,11 @@ Code:
 ```go
 psql.Select(
   qm.From(
-    qm.F(
+    psql.F(
       "json_to_recordset",
-      qm.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
+      psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
     ).Col("a", "INTEGER").Col("b", "TEXT"),
-    qm.F("generate_series", 1, 3),
+    psql.F("generate_series", 1, 3),
     qm.As("x", "p", "q", "s"),
   ),
   qm.OrderBy("p"),
@@ -78,11 +78,11 @@ Code:
 
 ```go
 psql.Select(
-  qm.Select("status", qm.F("avg", "difference")),
-  qm.From(Select(
+  qm.Select("status", psql.F("avg", "difference")),
+  qm.From(psql.Select(
     qm.Select(
       "status",
-      qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+      psql.F("LEAD", "created_date", 1, psql.F("NOW")).
         Over("").
         PartitionBy("presale_id").
         OrderBy("created_date").
@@ -90,7 +90,7 @@ psql.Select(
         As("difference")),
     qm.From("presales_presalestatus")),
     qm.As("differnce_by_status")),
-  qm.Where(qm.X("status").In(qm.S("A"), qm.S("B"), qm.S("C"))),
+  qm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
   qm.GroupBy("status"),
 )
 ```

@@ -17,7 +17,7 @@ Code:
 sqlite.Update(
   qm.Table("films"),
   qm.SetArg("kind", "Dramatic"),
-  qm.Where(qm.X("kind").EQ(qm.Arg("Drama"))),
+  qm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
 )
 ```
 
@@ -42,8 +42,8 @@ sqlite.Update(
   qm.Table("employees"),
   qm.Set("sales_count", "sales_count + 1"),
   qm.From("accounts"),
-  qm.Where(qm.X("accounts.name").EQ(qm.Arg("Acme Corporation"))),
-  qm.Where(qm.X("employees.id").EQ("accounts.sales_person")),
+  qm.Where(sqlite.X("accounts.name").EQ(sqlite.Arg("Acme Corporation"))),
+  qm.Where(sqlite.X("employees.id").EQ("accounts.sales_person")),
 )
 ```
 
@@ -68,10 +68,10 @@ sqlite.Update(
   qm.TableAs("employees", "e"),
   qm.NotIndexed(),
   qm.Set("sales_count", "sales_count + 1"),
-  qm.Where(qm.X("id").EQ(qm.P(Select(
+  qm.Where(sqlite.X("id").EQ(sqlite.P(sqlite.Select(
     selectQM.Select("sales_person"),
     selectQM.From("accounts"),
-    selectQM.Where(qm.X("name").EQ(qm.Arg("Acme Corporation"))),
+    selectQM.Where(sqlite.X("name").EQ(sqlite.Arg("Acme Corporation"))),
   )))),
 )
 ```

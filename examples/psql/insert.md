@@ -20,7 +20,7 @@ Code:
 ```go
 psql.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -54,8 +54,8 @@ Code:
 ```go
 psql.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -83,14 +83,14 @@ Code:
 ```go
 psql.Insert(
   qm.IntoAs("distributors", "d", "did", "dname"),
-  qm.Values(qm.Arg(8, "Anvil Distribution")),
-  qm.Values(qm.Arg(9, "Sentry Distribution")),
+  qm.Values(psql.Arg(8, "Anvil Distribution")),
+  qm.Values(psql.Arg(9, "Sentry Distribution")),
   qm.OnConflict("did").DoUpdate().Set(
     "dname",
-    qm.CONCAT(
-      "EXCLUDED.dname", qm.S(" (formerly "), "d.dname", qm.S(")"),
+    psql.Concat(
+      "EXCLUDED.dname", psql.S(" (formerly "), "d.dname", psql.S(")"),
     ),
-  ).Where(qm.X("d.zipcode").NE(qm.S("21201"))),
+  ).Where(psql.X("d.zipcode").NE(psql.S("21201"))),
 )
 ```
 
@@ -116,7 +116,7 @@ Code:
 ```go
 psql.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
   qm.OnConflict(nil).DoNothing(),
 )
 ```

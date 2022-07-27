@@ -1,28 +1,29 @@
-package sqlite
+package sqlite_test
 
 import (
 	"testing"
 
 	d "github.com/stephenafamo/bob/dialect"
+	"github.com/stephenafamo/bob/dialect/sqlite"
 )
 
 func TestSelect(t *testing.T) {
-	var qm = SelectQM{}
+	var qm = sqlite.SelectQM{}
 
 	var examples = d.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
 			ExpectedArgs: []any{100, 200, 300},
-			Query: Select(
+			Query: sqlite.Select(
 				qm.Select("id", "name"),
 				qm.From("users"),
-				qm.Where(qm.X("id").In(qm.Arg(100, 200, 300))),
+				qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
-			Query: Select(
+			Query: sqlite.Select(
 				qm.From(
-					qm.F("generate_series", 1, 3),
+					sqlite.F("generate_series", 1, 3),
 					qm.As("x", "p", "q", "s"),
 				),
 				qm.OrderBy("p"),
@@ -42,12 +43,12 @@ func TestSelect(t *testing.T) {
 					) AS "differnce_by_status"
 					WHERE (status IN ('A', 'B', 'C'))
 					GROUP BY status`,
-			Query: Select(
-				qm.Select("status", qm.F("avg", "difference")),
-				qm.From(Select(
+			Query: sqlite.Select(
+				qm.Select("status", sqlite.F("avg", "difference")),
+				qm.From(sqlite.Select(
 					qm.Select(
 						"status",
-						qm.F("LEAD", "created_date", 1, qm.F("NOW")).
+						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
 							Over("").
 							PartitionBy("presale_id").
 							OrderBy("created_date").
@@ -56,7 +57,7 @@ func TestSelect(t *testing.T) {
 					qm.From("presales_presalestatus")),
 					qm.As("differnce_by_status"),
 				),
-				qm.Where(qm.X("status").In(qm.S("A"), qm.S("B"), qm.S("C"))),
+				qm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
 				qm.GroupBy("status"),
 			),
 		},

@@ -20,7 +20,7 @@ Code:
 ```go
 sqlite.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -54,8 +54,8 @@ Code:
 ```go
 sqlite.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -81,7 +81,7 @@ Code:
 ```go
 sqlite.Insert(
   qm.Into("films"),
-  qm.Values(qm.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
   qm.OnConflict(nil).DoNothing(),
 )
 ```
@@ -110,14 +110,14 @@ Code:
 ```go
 sqlite.Insert(
   qm.IntoAs("distributors", "d", "did", "dname"),
-  qm.Values(qm.Arg(8, "Anvil Distribution")),
-  qm.Values(qm.Arg(9, "Sentry Distribution")),
+  qm.Values(sqlite.Arg(8, "Anvil Distribution")),
+  qm.Values(sqlite.Arg(9, "Sentry Distribution")),
   qm.OnConflict("did").DoUpdate().Set(
     "dname",
-    qm.CONCAT(
-      "EXCLUDED.dname", qm.S(" (formerly "), "d.dname", qm.S(")"),
+    sqlite.Concat(
+      "EXCLUDED.dname", sqlite.S(" (formerly "), "d.dname", sqlite.S(")"),
     ),
-  ).Where(qm.X("d.zipcode").NE(qm.S("21201"))),
+  ).Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
 )
 ```
 
@@ -143,7 +143,7 @@ Code:
 sqlite.Insert(
   qm.OrReplace(),
   qm.Into("distributors", "did", "dname"),
-  qm.Values(qm.Arg(8, "Anvil Distribution")),
-  qm.Values(qm.Arg(9, "Sentry Distribution")),
+  qm.Values(sqlite.Arg(8, "Anvil Distribution")),
+  qm.Values(sqlite.Arg(9, "Sentry Distribution")),
 )
 ```

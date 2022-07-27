@@ -86,7 +86,6 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
-	builderMod
 	withMod[*UpdateQuery]      // For CTEs
 	mods.FromMod[*UpdateQuery] // update *FROM*
 	joinMod[*clause.FromItem]  // joins, which are mods of the FROM
@@ -129,7 +128,7 @@ func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", a, qm.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {
@@ -137,7 +136,7 @@ func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{qm.Raw(clause, args...)}
+	return mods.Where[*UpdateQuery]{Raw(clause, args...)}
 }
 
 func (qm UpdateQM) Returning(clauseessions ...any) query.Mod[*UpdateQuery] {
