@@ -266,7 +266,8 @@ var myquery, myargs = psql.Insert(...).MustBuild()
 
 ## Roadmap
 
-* [x] Postgres
+* **Postgres**
+  * [x] Raw
   * [x] Select
   * [x] Insert
   * [x] Update
@@ -277,24 +278,27 @@ var myquery, myargs = psql.Insert(...).MustBuild()
     * [ ] Is [Not] Unknown
     * [ ] [Not] Between Symmetric
     * [ ] Is [Not] [NFC|NFD|NFKC|NFKD] Normalized
-* [ ] MySQL
+* **MySQL**
+  * [x] Raw
   * [ ] Select
   * [ ] Insert
   * [ ] Update
   * [ ] Delete
-* [x] SQLite
+* **SQLite**
+  * [x] Raw
   * [x] Select
   * [x] Insert
   * [x] Update
   * [x] Delete
   * [ ] SQLite Specific Operators
     * [ ] GLOB
-* [ ] SQL Server
+* **SQL Server**
+  * [x] Raw
   * [ ] Select
   * [ ] Insert
   * [ ] Update
   * [ ] Delete
-* [ ] Common Operators
+* **Common Operators**
   * [x] [Not] Equal
   * [x] Not Equal
   * [x] Less than
