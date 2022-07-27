@@ -1,6 +1,9 @@
 package psql
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
@@ -298,29 +301,113 @@ func (l lockChain[Q]) SkipLocked() lockChain[Q] {
 	})
 }
 
-type windowChain[Q interface{ AppendWindow(expr.NamedWindow) }] struct {
+type windowMod[Q interface{ AppendWindow(expr.NamedWindow) }] struct {
 	name string
-	def  expr.WindowDef
+	expr.WindowDef
+	windowChain[*windowMod[Q]]
 }
 
-func (w *windowChain[Q]) Apply(q Q) {
+func (w windowMod[Q]) Apply(q Q) {
 	q.AppendWindow(expr.NamedWindow{
 		Name:      w.name,
 		Definiton: w.def,
 	})
 }
 
-func (w *windowChain[Q]) As(name string) *windowChain[Q] {
-	w.def.From = name
-	return w
+type windowChain[T expr.IWindow] struct {
+	def T
 }
 
-func (w *windowChain[Q]) PartitionBy(condition ...any) *windowChain[Q] {
-	w.def = w.def.PartitionBy(condition...)
-	return w
+func (w *windowChain[T]) From(name string) T {
+	w.def.SetFrom(name)
+	return w.def
 }
 
-func (w *windowChain[Q]) OrderBy(order ...any) *windowChain[Q] {
-	w.def = w.def.OrderBy(order...)
-	return w
+func (w *windowChain[T]) PartitionBy(condition ...any) T {
+	w.def.AddPartitionBy(condition...)
+	return w.def
+}
+
+func (w *windowChain[T]) OrderBy(order ...any) T {
+	w.def.AddOrderBy(order...)
+	return w.def
+}
+
+func (w *windowChain[T]) Range() T {
+	w.def.SetMode("RANGE")
+	return w.def
+}
+
+func (w *windowChain[T]) Rows() T {
+	w.def.SetMode("ROWS")
+	return w.def
+}
+
+func (w *windowChain[T]) Groups() T {
+	w.def.SetMode("GROUPS")
+	return w.def
+}
+
+func (w *windowChain[T]) FromUnboundedPreceding() T {
+	w.def.SetStart("UNBOUNDED PRECEDING")
+	return w.def
+}
+
+func (w *windowChain[T]) FromPreceding(exp any) T {
+	w.def.SetStart(query.ExpressionFunc(
+		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
+			return nil, nil
+		}),
+	)
+	return w.def
+}
+
+func (w *windowChain[T]) FromCurrentRow() T {
+	w.def.SetStart("CURRENT ROW")
+	return w.def
+}
+
+func (w *windowChain[T]) FromNFollowing(count int) T {
+	w.def.SetStart(fmt.Sprintf("%d FOLLOWING", count))
+	return w.def
+}
+
+func (w *windowChain[T]) ToNPreceding(count int) T {
+	w.def.SetEnd(fmt.Sprintf("%d PRECEDING", count))
+	return w.def
+}
+
+func (w *windowChain[T]) ToCurrentRow(count int) T {
+	w.def.SetEnd("CURRENT ROW")
+	return w.def
+}
+
+func (w *windowChain[T]) ToNFollowing(count int) T {
+	w.def.SetEnd(fmt.Sprintf("%d FOLLOWING", count))
+	return w.def
+}
+
+func (w *windowChain[T]) ToUnboundedFollowing() T {
+	w.def.SetEnd("UNBOUNDED FOLLOWING")
+	return w.def
+}
+
+func (w *windowChain[T]) ExcludeNoOthers() T {
+	w.def.SetExclusion("NO OTHERS")
+	return w.def
+}
+
+func (w *windowChain[T]) ExcludeCurrentRow() T {
+	w.def.SetExclusion("CURRENT ROW")
+	return w.def
+}
+
+func (w *windowChain[T]) ExcludeGroup() T {
+	w.def.SetExclusion("GROUP")
+	return w.def
+}
+
+func (w *windowChain[T]) ExcludeTies() T {
+	w.def.SetExclusion("TIES")
+	return w.def
 }

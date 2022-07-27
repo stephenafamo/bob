@@ -6,26 +6,33 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
+type IWindow interface {
+	SetFrom(string)
+	AddPartitionBy(...any)
+	AddOrderBy(...any)
+	SetMode(string)
+	SetStart(any)
+	SetEnd(any)
+	SetExclusion(string)
+}
+
 type WindowDef struct {
 	From        string // an existing window name
 	orderBy     []any
 	partitionBy []any
-	Frame       frameClause
+	Frame
 }
 
-func (wi WindowDef) PartitionBy(condition ...any) WindowDef {
+func (wi *WindowDef) SetFrom(from string) {
+	wi.From = from
+}
+
+func (wi *WindowDef) AddPartitionBy(condition ...any) {
 	wi.partitionBy = append(wi.partitionBy, condition...)
-	return wi
 }
 
-func (wi WindowDef) OrderBy(order ...any) WindowDef {
+func (wi *WindowDef) AddOrderBy(order ...any) {
 	wi.orderBy = append(wi.orderBy, order...)
-	return wi
-}
-
-func (wi WindowDef) SetFrame(frame frameClause) WindowDef {
-	wi.Frame = frame
-	return wi
 }
 
 func (wi WindowDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

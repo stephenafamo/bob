@@ -283,11 +283,11 @@ func (w *windowChain[Q]) As(name string) *windowChain[Q] {
 }
 
 func (w *windowChain[Q]) PartitionBy(condition ...any) *windowChain[Q] {
-	w.def = w.def.PartitionBy(condition...)
+	w.def.AddPartitionBy(condition...)
 	return w
 }
 
 func (w *windowChain[Q]) OrderBy(order ...any) *windowChain[Q] {
-	w.def = w.def.OrderBy(order...)
+	w.def.AddOrderBy(order...)
 	return w
 }

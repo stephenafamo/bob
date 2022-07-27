@@ -68,12 +68,12 @@ type functionOver struct {
 }
 
 func (w *functionOver) PartitionBy(condition ...any) *functionOver {
-	w.window = w.window.PartitionBy(condition...)
+	w.window.AddPartitionBy(condition...)
 	return w
 }
 
 func (w *functionOver) OrderBy(order ...any) *functionOver {
-	w.window = w.window.OrderBy(order...)
+	w.window.AddOrderBy(order...)
 	return w
 }
 
