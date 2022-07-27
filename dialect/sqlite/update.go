@@ -137,7 +137,7 @@ func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{qm.Statement(clause, args...)}
+	return mods.Where[*UpdateQuery]{qm.Raw(clause, args...)}
 }
 
 func (qm UpdateQM) Returning(expressions ...any) query.Mod[*UpdateQuery] {

@@ -79,8 +79,8 @@ func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
 }
 
-func (e Builder[T, B]) Statement(clause string, args ...any) T {
-	return e.X(statement{
+func (e Builder[T, B]) Raw(clause string, args ...any) T {
+	return e.X(Raw{
 		clause: clause,
 		args:   args,
 	})

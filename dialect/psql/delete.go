@@ -16,7 +16,7 @@ func Delete(queryMods ...query.Mod[*DeleteQuery]) query.BaseQuery[*DeleteQuery] 
 
 	return query.BaseQuery[*DeleteQuery]{
 		Expression: q,
-		Dialect:    Dialect{},
+		Dialect:    dialect,
 	}
 }
 
@@ -116,7 +116,7 @@ func (qm DeleteQM) Where(e query.Expression) query.Mod[*DeleteQuery] {
 }
 
 func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*DeleteQuery] {
-	return mods.Where[*DeleteQuery]{qm.Statement(clause, args...)}
+	return mods.Where[*DeleteQuery]{qm.Raw(clause, args...)}
 }
 
 func (qm DeleteQM) Returning(expressions ...any) query.Mod[*DeleteQuery] {
