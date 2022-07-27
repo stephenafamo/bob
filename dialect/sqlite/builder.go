@@ -3,13 +3,13 @@ package sqlite
 import (
 	"database/sql"
 
-	"github.com/stephenafamo/bob/builder"
+	"github.com/stephenafamo/bob/expr"
 )
 
 var bmod = builderMod{}
 
 type builderMod struct {
-	builder.Builder[chain, chain]
+	expr.Builder[chain, chain]
 }
 
 func (builderMod) F(name string, args ...any) *function {
@@ -32,7 +32,7 @@ func (builderMod) Named(name string, value any) chain {
 }
 
 type chain struct {
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 func (c chain) Get() any {

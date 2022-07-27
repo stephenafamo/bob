@@ -3,8 +3,8 @@ package sqlite
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/builder"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -16,7 +16,7 @@ type function struct {
 	filter []any
 
 	// For chain methods
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 // A function can be a target for a query
@@ -64,7 +64,7 @@ func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 type functionOver struct {
 	function *function
 	window   clause.WindowDef
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 func (w *functionOver) PartitionBy(condition ...any) *functionOver {

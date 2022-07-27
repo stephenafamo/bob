@@ -3,8 +3,8 @@ package psql
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/builder"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -19,7 +19,7 @@ type function struct {
 	columns []columnDef
 
 	// For chain methods
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 func (f *function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -109,7 +109,7 @@ type functionOver struct {
 	function *function
 	clause.WindowDef
 	windowChain[*functionOver]
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

@@ -3,8 +3,8 @@ package sqlite
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/builder"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -125,11 +125,11 @@ func (qm UpdateQM) IndexedBy(indexName string) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{builder.OP("=", a, b)}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, b)}
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{builder.OP("=", a, qm.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, qm.Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {

@@ -1,8 +1,8 @@
 package mods
 
 import (
-	"github.com/stephenafamo/bob/builder"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/query"
 )
 
@@ -16,7 +16,7 @@ func (FromMod[Q]) From(table any, fromMods ...query.Mod[*clause.FromItem]) query
 	case string:
 		f.Table = t // early because it is a common case
 	case query.Query:
-		f.Table = builder.P(table) // wrap in brackets
+		f.Table = expr.P(table) // wrap in brackets
 	case query.Mod[*clause.FromItem]:
 		fromMods = append([]query.Mod[*clause.FromItem]{t}, fromMods...)
 	default:

@@ -3,8 +3,8 @@ package psql
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/builder"
 	clause "github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/query"
 )
@@ -85,7 +85,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
-	BuilderMod
+	builderMod
 	withMod[*UpdateQuery]
 	mods.FromMod[*UpdateQuery]
 	fromItemMod
@@ -116,11 +116,11 @@ func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
 }
 
 func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{builder.OP("=", a, b)}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, b)}
 }
 
 func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{builder.OP("=", a, qm.Arg(b))}
+	return mods.Set[*UpdateQuery]{expr.OP("=", a, qm.Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {

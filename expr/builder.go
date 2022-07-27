@@ -1,4 +1,4 @@
-package builder
+package expr
 
 type builder[B any] interface {
 	New(any) B

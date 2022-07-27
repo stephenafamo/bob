@@ -132,7 +132,7 @@ func (s SelectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type SelectQM struct {
-	BuilderMod
+	builderMod
 	withMod[*SelectQuery]                // For CTEs
 	mods.FromMod[*SelectQuery]           // select *FROM*
 	joinMod[*clause.FromItem]            // joins, which are mods of the FROM

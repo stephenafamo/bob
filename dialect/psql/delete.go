@@ -77,7 +77,7 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, 
 }
 
 type DeleteQM struct {
-	BuilderMod
+	builderMod
 	withMod[*DeleteQuery]
 	mods.FromMod[*DeleteQuery]
 	fromItemMod

@@ -1,14 +1,16 @@
 package psql
 
 import (
-	"github.com/stephenafamo/bob/builder"
+	"github.com/stephenafamo/bob/expr"
 )
 
-type BuilderMod struct {
-	builder.Builder[chain, chain]
+var bmod = builderMod{}
+
+type builderMod struct {
+	expr.Builder[chain, chain]
 }
 
-func (b BuilderMod) F(name string, args ...any) *function {
+func (b builderMod) F(name string, args ...any) *function {
 	f := &function{
 		name: name,
 		args: args,
@@ -22,7 +24,7 @@ func (b BuilderMod) F(name string, args ...any) *function {
 }
 
 type chain struct {
-	builder.Chain[chain, chain]
+	expr.Chain[chain, chain]
 }
 
 func (chain) New(exp any) chain {
