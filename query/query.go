@@ -54,3 +54,25 @@ func (b BaseQuery[E]) WriteQuery(w io.Writer, start int) ([]any, error) {
 func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error) {
 	return b.Expression.WriteSQL(w, b.Dialect, start)
 }
+
+// MustBuild builds the query and panics on error
+// useful for initializing queries that need to be reused
+func (q BaseQuery[E]) MustBuild() (string, []any) {
+	return MustBuildN(q, 1)
+}
+
+// MustBuildN builds the query and panics on error
+// start numbers the arguments from a different point
+func (q BaseQuery[E]) MustBuildN(start int) (string, []any) {
+	return MustBuildN(q, start)
+}
+
+// Convinient function to build query from start
+func (q BaseQuery[E]) Build() (string, []any, error) {
+	return BuildN(q, 1)
+}
+
+// Convinient function to build query from a point
+func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
+	return BuildN(q, start)
+}

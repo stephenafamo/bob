@@ -228,11 +228,16 @@ type Query interface {
 }
 ```
 
-For times when you only want the strings and args,
-and don't want to create an io.Writer, the `Build` function can be used:
+The `WriteQuery` method is useful when we want to write to an exisiting `io.Writer`.  
+However we often just want the query string and arguments. So the Query objects have the following methods:
+
+* `Build() (query string, args []any, err error)`
+* `BuildN(start int) (query string, args []any, err error)`
+* `MustBuild() (query string, args []any) // panics on error`
+* `MustBuildN(start int) (query string, args []any) // panics on error`
 
 ```go
-queryString, args, err := query.Build(psql.Select(...))
+queryString, args, err := psql.Select(...).Build()
 ```
 
 Since the query is built from scratch every time the `WriteQuery()` method is called,
@@ -241,7 +246,7 @@ it can be useful to initialize the query one time and reuse where necessary.
 For that, the `MustBuild()` function can be used. This panics on error.
 
 ```go
-var myquery, myargs = query.MustBuild(psql.Insert(...))
+var myquery, myargs = psql.Insert(...).MustBuild()
 ```
 
 ## Roadmap
