@@ -30,7 +30,7 @@ func (c CTE) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 		w.Write([]byte("NOT MATERIALIZED "))
 	}
 
-	args, err := c.Query.WriteQuery(w, start)
+	args, err := query.ExpressIf(w, d, start, c.Query, true, "(", ")")
 	if err != nil {
 		return nil, err
 	}
