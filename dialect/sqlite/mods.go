@@ -8,50 +8,6 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-type or struct {
-	to string
-}
-
-func (o *or) SetOr(to string) {
-	o.to = to
-}
-
-func (o or) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressIf(w, d, start, o.to, o.to != "", " OR ", "")
-}
-
-type orMod[Q interface{ SetOr(string) }] struct{}
-
-func (o orMod[Q]) OrAbort() query.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
-		i.SetOr("ABORT")
-	})
-}
-
-func (o orMod[Q]) OrFail() query.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
-		i.SetOr("FAIL")
-	})
-}
-
-func (o orMod[Q]) OrIgnore() query.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
-		i.SetOr("IGNORE")
-	})
-}
-
-func (o orMod[Q]) OrReplace() query.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
-		i.SetOr("REPLACE")
-	})
-}
-
-func (o orMod[Q]) OrRollback() query.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
-		i.SetOr("ROLLBACK")
-	})
-}
-
 type withMod[Q interface {
 	AppendWith(clause.CTE)
 	SetRecursive(bool)
