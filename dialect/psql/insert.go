@@ -113,8 +113,15 @@ func (qm InsertQM) OverridingUser() query.Mod[*InsertQuery] {
 	})
 }
 
-func (qm InsertQM) Values(clauseessions ...any) query.Mod[*InsertQuery] {
-	return mods.Values[*InsertQuery](clauseessions)
+func (qm InsertQM) Values(clauses ...any) query.Mod[*InsertQuery] {
+	return mods.Values[*InsertQuery](clauses)
+}
+
+// Insert from a select query
+func (qm InsertQM) Query(q query.BaseQuery[*SelectQuery]) query.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+		i.Query = q
+	})
 }
 
 // The column to target. Will auto add brackets
