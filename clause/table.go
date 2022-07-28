@@ -31,7 +31,7 @@ func (t Table) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) 
 	}
 
 	if len(t.Columns) > 0 {
-		w.Write([]byte("("))
+		w.Write([]byte(" ("))
 		for k, cAlias := range t.Columns {
 			if k != 0 {
 				w.Write([]byte(", "))
