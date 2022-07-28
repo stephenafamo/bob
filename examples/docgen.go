@@ -20,7 +20,7 @@ import (
 
 var rgxTabs = regexp.MustCompile(`\t`)
 var rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
-var rgxBacktics = regexp.MustCompile(`\x60 \+ "\x60" \+ \x60`)
+var rgxBacktics = regexp.MustCompile(`\x60 \+ "(\x60\w*\x60)" \+ \x60`)
 
 func main() {
 	var base = "./dialect"
@@ -258,10 +258,15 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 	case "Query":
 		c.builder = rgxTabs.ReplaceAllLiteralString(val, "  ")
 	case "ExpectedSQL":
-		c.query = reindent(
-			rgxBacktics.ReplaceAllLiteralString(
-				rgxTabs.ReplaceAllLiteralString(
-					val[1:len(val)-1], "  "), "`"))
+		q := reindent(rgxTabs.ReplaceAllLiteralString(val[1:len(val)-1], "  "))
+
+		match := rgxBacktics.FindStringSubmatchIndex(q)
+		for match != nil {
+			q = q[:match[0]] + q[match[2]:match[3]] + q[match[1]:]
+			match = rgxBacktics.FindStringSubmatchIndex(q)
+		}
+
+		c.query = q
 	case "ExpectedArgs":
 		visitor := &argVisitor{fset: c.fset}
 		ast.Walk(wrapVisitor{next: visitor}, kv.Value)
