@@ -8,13 +8,13 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Insert(queryMods ...query.Mod[*InsertQuery]) query.BaseQuery[*InsertQuery] {
-	q := &InsertQuery{}
+func Insert(queryMods ...query.Mod[*insertQuery]) query.BaseQuery[*insertQuery] {
+	q := &insertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return query.BaseQuery[*InsertQuery]{
+	return query.BaseQuery[*insertQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -22,7 +22,7 @@ func Insert(queryMods ...query.Mod[*InsertQuery]) query.BaseQuery[*InsertQuery] 
 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-insert.html
-type InsertQuery struct {
+type insertQuery struct {
 	clause.With
 	overriding string
 	clause.Table
@@ -31,7 +31,7 @@ type InsertQuery struct {
 	clause.Returning
 }
 
-func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (i insertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), i.With,
@@ -79,11 +79,11 @@ func (i InsertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type InsertQM struct {
-	withMod[*InsertQuery]
+	withMod[*insertQuery]
 }
 
-func (qm InsertQM) Into(name any, columns ...string) query.Mod[*InsertQuery] {
-	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+func (qm InsertQM) Into(name any, columns ...string) query.Mod[*insertQuery] {
+	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Columns:    columns,
@@ -91,8 +91,8 @@ func (qm InsertQM) Into(name any, columns ...string) query.Mod[*InsertQuery] {
 	})
 }
 
-func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*InsertQuery] {
-	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*insertQuery] {
+	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -101,35 +101,35 @@ func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*
 	})
 }
 
-func (qm InsertQM) OverridingSystem() query.Mod[*InsertQuery] {
-	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+func (qm InsertQM) OverridingSystem() query.Mod[*insertQuery] {
+	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.overriding = "SYSTEM"
 	})
 }
 
-func (qm InsertQM) OverridingUser() query.Mod[*InsertQuery] {
-	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+func (qm InsertQM) OverridingUser() query.Mod[*insertQuery] {
+	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.overriding = "USER"
 	})
 }
 
-func (qm InsertQM) Values(clauses ...any) query.Mod[*InsertQuery] {
-	return mods.Values[*InsertQuery](clauses)
+func (qm InsertQM) Values(clauses ...any) query.Mod[*insertQuery] {
+	return mods.Values[*insertQuery](clauses)
 }
 
 // Insert from a select query
-func (qm InsertQM) Query(q query.BaseQuery[*SelectQuery]) query.Mod[*InsertQuery] {
-	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
+func (qm InsertQM) Query(q query.BaseQuery[*selectQuery]) query.Mod[*insertQuery] {
+	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Query = q
 	})
 }
 
 // The column to target. Will auto add brackets
-func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
+func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*insertQuery] {
 	if column != nil {
 		column = P(column)
 	}
-	return mods.Conflict[*InsertQuery](func() clause.Conflict {
+	return mods.Conflict[*insertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
 				Target: column,
@@ -139,8 +139,8 @@ func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQue
 	})
 }
 
-func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*InsertQuery] {
-	return mods.Conflict[*InsertQuery](func() clause.Conflict {
+func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*insertQuery] {
+	return mods.Conflict[*insertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
 				Target: `ON CONSTRAINT "` + constraint + `"`,
@@ -149,6 +149,6 @@ func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*Inse
 	})
 }
 
-func (qm InsertQM) Returning(clauseessions ...any) query.Mod[*InsertQuery] {
-	return mods.Returning[*InsertQuery](clauseessions)
+func (qm InsertQM) Returning(clauseessions ...any) query.Mod[*insertQuery] {
+	return mods.Returning[*insertQuery](clauseessions)
 }

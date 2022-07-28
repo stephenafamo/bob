@@ -9,13 +9,13 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
-func Update(queryMods ...query.Mod[*UpdateQuery]) query.BaseQuery[*UpdateQuery] {
-	q := &UpdateQuery{}
+func Update(queryMods ...query.Mod[*updateQuery]) query.BaseQuery[*updateQuery] {
+	q := &updateQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return query.BaseQuery[*UpdateQuery]{
+	return query.BaseQuery[*updateQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -23,7 +23,7 @@ func Update(queryMods ...query.Mod[*UpdateQuery]) query.BaseQuery[*UpdateQuery] 
 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-update.html
-type UpdateQuery struct {
+type updateQuery struct {
 	clause.With
 	only bool
 	clause.Table
@@ -33,7 +33,7 @@ type UpdateQuery struct {
 	clause.Returning
 }
 
-func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (u updateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := query.ExpressIf(w, d, start+len(args), u.With,
@@ -85,28 +85,28 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 }
 
 type UpdateQM struct {
-	withMod[*UpdateQuery]
-	mods.FromMod[*UpdateQuery]
+	withMod[*updateQuery]
+	mods.FromMod[*updateQuery]
 	fromItemMod
 	joinMod[*clause.FromItem]
 }
 
-func (qm UpdateQM) Only() query.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
+func (qm UpdateQM) Only() query.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(u *updateQuery) {
 		u.only = true
 	})
 }
 
-func (qm UpdateQM) Table(name any) query.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
+func (qm UpdateQM) Table(name any) query.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(u *updateQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 		}
 	})
 }
 
-func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
+func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(u *updateQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -114,22 +114,22 @@ func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*UpdateQuery] {
 	})
 }
 
-func (qm UpdateQM) Set(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", a, b)}
+func (qm UpdateQM) Set(a, b any) query.Mod[*updateQuery] {
+	return mods.Set[*updateQuery]{expr.OP("=", a, b)}
 }
 
-func (qm UpdateQM) SetArg(a, b any) query.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", a, Arg(b))}
+func (qm UpdateQM) SetArg(a, b any) query.Mod[*updateQuery] {
+	return mods.Set[*updateQuery]{expr.OP("=", a, Arg(b))}
 }
 
-func (qm UpdateQM) Where(e query.Expression) query.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{e}
+func (qm UpdateQM) Where(e query.Expression) query.Mod[*updateQuery] {
+	return mods.Where[*updateQuery]{e}
 }
 
-func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{Raw(clause, args...)}
+func (qm UpdateQM) WhereClause(clause string, args ...any) query.Mod[*updateQuery] {
+	return mods.Where[*updateQuery]{Raw(clause, args...)}
 }
 
-func (qm UpdateQM) Returning(clauseessions ...any) query.Mod[*UpdateQuery] {
-	return mods.Returning[*UpdateQuery](clauseessions)
+func (qm UpdateQM) Returning(clauseessions ...any) query.Mod[*updateQuery] {
+	return mods.Returning[*updateQuery](clauseessions)
 }
