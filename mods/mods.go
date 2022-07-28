@@ -101,16 +101,20 @@ func (f OrderBy[Q]) Apply(q Q) {
 	q.AppendOrder(clause.OrderDef(f))
 }
 
-type Limit[Q interface{ SetLimit(clause.Limit) }] clause.Limit
-
-func (f Limit[Q]) Apply(q Q) {
-	q.SetLimit(clause.Limit(f))
+type Limit[Q interface{ SetLimit(limit any) }] struct {
+	Count any
 }
 
-type Offset[Q interface{ SetOffset(clause.Offset) }] clause.Offset
+func (f Limit[Q]) Apply(q Q) {
+	q.SetLimit(f.Count)
+}
+
+type Offset[Q interface{ SetOffset(offset any) }] struct {
+	Count any
+}
 
 func (f Offset[Q]) Apply(q Q) {
-	q.SetOffset(clause.Offset(f))
+	q.SetOffset(f.Count)
 }
 
 type Fetch[Q interface{ SetFetch(clause.Fetch) }] clause.Fetch

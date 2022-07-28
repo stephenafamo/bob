@@ -12,8 +12,8 @@ type Limit struct {
 	Count any
 }
 
-func (l *Limit) SetLimit(limit Limit) {
-	*l = limit
+func (l *Limit) SetLimit(limit any) {
+	l.Count = limit
 }
 
 func (l Limit) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {

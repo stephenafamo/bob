@@ -114,12 +114,12 @@ func (qm UpdateQM) TableAs(name any, alias string) query.Mod[*updateQuery] {
 	})
 }
 
-func (qm UpdateQM) Set(a, b any) query.Mod[*updateQuery] {
-	return mods.Set[*updateQuery]{expr.OP("=", a, b)}
+func (qm UpdateQM) Set(a string, b any) query.Mod[*updateQuery] {
+	return mods.Set[*updateQuery]{expr.OP("=", Quote(a), b)}
 }
 
-func (qm UpdateQM) SetArg(a, b any) query.Mod[*updateQuery] {
-	return mods.Set[*updateQuery]{expr.OP("=", a, Arg(b))}
+func (qm UpdateQM) SetArg(a string, b any) query.Mod[*updateQuery] {
+	return mods.Set[*updateQuery]{expr.OP("=", Quote(a), Arg(b))}
 }
 
 func (qm UpdateQM) Where(e query.Expression) query.Mod[*updateQuery] {

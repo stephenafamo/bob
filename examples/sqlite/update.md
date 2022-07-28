@@ -3,7 +3,7 @@
 SQL:
 
 ```sql
-UPDATE films SET kind = ?1 WHERE (kind = ?2)
+UPDATE films SET "kind" = ?1 WHERE (kind = ?2)
 ```
 
 Args:
@@ -26,7 +26,7 @@ sqlite.Update(
 SQL:
 
 ```sql
-UPDATE employees SET sales_count = sales_count + 1 FROM accounts
+UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
 WHERE (accounts.name = ?1)
 AND (employees.id = accounts.sales_person)
 ```
@@ -53,7 +53,7 @@ SQL:
 
 ```sql
 UPDATE employees AS "e" NOT INDEXED
-SET sales_count = sales_count + 1
+SET "sales_count" = sales_count + 1
 WHERE (id = (SELECT sales_person FROM accounts WHERE (name = ?1)))
 ```
 

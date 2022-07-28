@@ -12,8 +12,8 @@ type Offset struct {
 	Count any
 }
 
-func (o *Offset) SetOffset(offset Offset) {
-	*o = offset
+func (o *Offset) SetOffset(offset any) {
+	o.Count = offset
 }
 
 func (o Offset) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
