@@ -114,6 +114,24 @@ psql.Insert(
 
 Using this query mod system, the mods closely match the allowed syntax for each specific query type.
 
+For conditional queries, the query object have an `Apply()` method which can be used to add more query mods.
+
+```go
+q := psql.Select(
+    qm.From("projects"),
+) // SELECT * FROM projects
+
+if !user.IsAdmin {
+    q.Apply(
+        qm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
+    ) // SELECT * FROM projects WHERE user_id = $1
+}
+```
+
+> Since the mods modify the main query object any new mods added with `Apply()` will affect all instances of the query.
+>
+> To reuse the base of a query and add new mods each time, first use the `Clone()` method.
+
 ## Quotes
 
 It is often required to quote identifiers in SQL queries. With `bob`  use the `qm.Quote()` where necessary.  
