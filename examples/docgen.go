@@ -20,6 +20,7 @@ import (
 
 var rgxTabs = regexp.MustCompile(`\t`)
 var rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
+var rgxBacktics = regexp.MustCompile(`\x60 \+ "\x60" \+ \x60`)
 
 func main() {
 	var base = "./dialect"
@@ -164,13 +165,13 @@ func (v varVisitor) Visit(n ast.Node) ast.Visitor {
 type valueVisitor struct {
 	fset        *token.FileSet
 	destination string
-	name        string
 	cases       []testcase
 }
 
 func (c *valueVisitor) Visit(n ast.Node) ast.Visitor {
 	if n == nil {
 		toMarkdown(c.destination, c.cases)
+		c.cases = nil
 		return nil
 	}
 
@@ -257,7 +258,10 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 	case "Query":
 		c.builder = rgxTabs.ReplaceAllLiteralString(val, "  ")
 	case "ExpectedSQL":
-		c.query = reindent(rgxTabs.ReplaceAllLiteralString(val[1:len(val)-1], "  "))
+		c.query = reindent(
+			rgxBacktics.ReplaceAllLiteralString(
+				rgxTabs.ReplaceAllLiteralString(
+					val[1:len(val)-1], "  "), "`"))
 	case "ExpectedArgs":
 		visitor := &argVisitor{fset: c.fset}
 		ast.Walk(wrapVisitor{next: visitor}, kv.Value)
@@ -333,7 +337,7 @@ func toMarkdown(destination string, cases []testcase) {
 		panic(err)
 	}
 	defer file.Close()
-	fmt.Printf("writing to %s\n", destination)
+	fmt.Printf("writing to %s %d cases\n", destination, len(cases))
 
 	if _, err = io.Copy(file, buf); err != nil {
 		panic(err)
