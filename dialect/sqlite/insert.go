@@ -106,8 +106,9 @@ func (qm InsertQM) Values(clauses ...any) query.Mod[*insertQuery] {
 	return mods.Values[*insertQuery](clauses)
 }
 
-// Insert from a select query
-func (qm InsertQM) Query(q query.BaseQuery[*selectQuery]) query.Mod[*insertQuery] {
+// Insert from a query
+// If Go allows type parameters on methods, limit this to select and raw
+func (qm InsertQM) Query(q query.Query) query.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Query = q
 	})
