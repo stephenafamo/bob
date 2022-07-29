@@ -2,6 +2,7 @@ package clause
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob/query"
@@ -37,9 +38,11 @@ func (f For) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	}
 
 	w.Write([]byte("FOR "))
-	w.Write([]byte(f.Strength))
+	if f.Strength != "" {
+		fmt.Fprintf(w, "%s ", f.Strength)
+	}
 
-	args, err := query.ExpressSlice(w, d, start, f.Tables, " OF ", ", ", "")
+	args, err := query.ExpressSlice(w, d, start, f.Tables, "OF ", ", ", "")
 	if err != nil {
 		return nil, err
 	}
