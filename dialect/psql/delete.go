@@ -118,6 +118,6 @@ func (qm DeleteQM) WhereClause(clause string, args ...any) query.Mod[*deleteQuer
 	return mods.Where[*deleteQuery]{Raw(clause, args...)}
 }
 
-func (qm DeleteQM) Returning(clauseessions ...any) query.Mod[*deleteQuery] {
-	return mods.Returning[*deleteQuery](clauseessions)
+func (qm DeleteQM) Returning(clauses ...any) query.Mod[*deleteQuery] {
+	return mods.Returning[*deleteQuery](clauses)
 }

@@ -128,6 +128,6 @@ func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*insertQue
 	})
 }
 
-func (qm InsertQM) Returning(clauseessions ...any) query.Mod[*insertQuery] {
-	return mods.Returning[*insertQuery](clauseessions)
+func (qm InsertQM) Returning(clauses ...any) query.Mod[*insertQuery] {
+	return mods.Returning[*insertQuery](clauses)
 }
