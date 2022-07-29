@@ -21,8 +21,8 @@ func X(exp any) chain {
 	return bmod.X(exp)
 }
 
-func NotX(exp any) chain {
-	return bmod.NotX(exp)
+func Not(exp any) chain {
+	return bmod.Not(exp)
 }
 
 func Or(args ...any) chain {

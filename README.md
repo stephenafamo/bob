@@ -176,7 +176,7 @@ These functions are included in every dialect and can be used to create a chaina
 For example, starters for common function calls can easily be added
 
 * `X(any)`: Plain start to a chain.
-* `NotX(any)`: Creates a `NOT expr` expression that is then chainable.
+* `Not(any)`: Creates a `NOT expr` expression that is then chainable.
 * `F(name string, args ...any)`: A generic function call. Takes a name and the arguments.
 * `OR(...any)`: Joins multiple expressions with "OR"
 * `AND(...any)`: Joins multiple expressions with "AND"

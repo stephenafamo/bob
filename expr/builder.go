@@ -28,7 +28,7 @@ func X[T any, B builder[T]](exp any) T {
 }
 
 // prefix the expression with a NOT
-func NotX[T any, B builder[T]](exp any) T {
+func Not[T any, B builder[T]](exp any) T {
 	var b B
 	return b.New(P(Join{Exprs: []any{"NOT", X[T, B](exp)}}))
 }
@@ -46,8 +46,8 @@ func (e Builder[T, B]) X(exp any) T {
 }
 
 // prefix the expression with a NOT
-func (e Builder[T, B]) NotX(exp any) T {
-	return NotX[T, B](exp)
+func (e Builder[T, B]) Not(exp any) T {
+	return Not[T, B](exp)
 }
 
 // Or
