@@ -16,7 +16,7 @@ Code:
 
 ```go
 psql.Select(
-  qm.Select("id", "name"),
+  qm.Columns("id", "name"),
   qm.From("users"),
   qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 )
@@ -40,7 +40,7 @@ Code:
 
 ```go
 psql.Select(
-  qm.Select("id", "name"),
+  qm.Columns("id", "name"),
   qm.Distinct(),
   qm.From("users"),
   qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
@@ -65,7 +65,7 @@ Code:
 
 ```go
 psql.Select(
-  qm.Select("id", "name"),
+  qm.Columns("id", "name"),
   qm.Distinct("id"),
   qm.From("users"),
   qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
@@ -128,9 +128,9 @@ Code:
 
 ```go
 psql.Select(
-  qm.Select("status", psql.F("avg", "difference")),
+  qm.Columns("status", psql.F("avg", "difference")),
   qm.From(psql.Select(
-    qm.Select(
+    qm.Columns(
       "status",
       psql.F("LEAD", "created_date", 1, psql.F("NOW")).
         Over("").

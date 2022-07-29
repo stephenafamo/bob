@@ -45,8 +45,8 @@ FROM presales_presalestatus
 */
 
 // different ways to express "SELECT status"
-qm.Select("status") // SELECT status
-qm.Select(qm.Quote("status")) // SELECT "status"
+psql.Select(qm.Columns("status")) // SELECT status
+psql.Select(qm.Columns(qm.Quote("status"))) // SELECT "status"
 
 // Ways to express LEAD(created_date, 1, NOW())
 "LEAD(created_date, 1, NOW()"
@@ -66,7 +66,7 @@ psql.F("LEAD", "created_date", 1, psql.F("NOW")).
 
 // The full query
 psql.Select(
-    qm.Select(
+    qm.Columns(
         "status",
         psql.F("LEAD", "created_date", 1, psql.F("NOW")).
             Over("").

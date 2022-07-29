@@ -67,7 +67,7 @@ psql.Update(
   qm.Table("employees"),
   qm.Set("sales_count", "sales_count + 1"),
   qm.Where(psql.X("id").EQ(psql.P(psql.Select(
-    selectQM.Select("sales_person"),
+    selectQM.Columns("sales_person"),
     selectQM.From("accounts"),
     selectQM.Where(psql.X("name").EQ(psql.Arg("Acme Corporation"))),
   )))),

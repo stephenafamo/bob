@@ -147,7 +147,7 @@ func (SelectQM) Distinct(on ...any) query.Mod[*selectQuery] {
 	})
 }
 
-func (SelectQM) Select(clauses ...any) query.Mod[*selectQuery] {
+func (SelectQM) Columns(clauses ...any) query.Mod[*selectQuery] {
 	return mods.Select[*selectQuery](clauses)
 }
 

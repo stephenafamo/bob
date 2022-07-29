@@ -16,7 +16,7 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Select("id", "name"),
+  qm.Columns("id", "name"),
   qm.From("users"),
   qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 )
@@ -40,7 +40,7 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Select("id", "name"),
+  qm.Columns("id", "name"),
   qm.Distinct(),
   qm.From("users"),
   qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
@@ -89,9 +89,9 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Select("status", sqlite.F("avg", "difference")),
+  qm.Columns("status", sqlite.F("avg", "difference")),
   qm.From(sqlite.Select(
-    qm.Select(
+    qm.Columns(
       "status",
       sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
         Over("").
