@@ -127,9 +127,9 @@ type SelectQM struct {
 }
 
 func (SelectQM) Distinct() query.Mod[*selectQuery] {
-	return mods.Distinct[*selectQuery]{
-		Distinct: true,
-	}
+	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
+		q.Select.Modifiers = []any{"DISTINCT"}
+	})
 }
 
 func (SelectQM) Select(clauseessions ...any) query.Mod[*selectQuery] {

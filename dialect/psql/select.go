@@ -139,11 +139,12 @@ type SelectQM struct {
 	fromItemMod                          // Dialect specific fromItem mods
 }
 
-func (SelectQM) Distinct(clauseessions ...any) query.Mod[*selectQuery] {
-	return mods.Distinct[*selectQuery]{
-		Distinct: true,
-		On:       clauseessions,
-	}
+func (SelectQM) Distinct(on ...any) query.Mod[*selectQuery] {
+	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
+		q.Select.Modifiers = []any{
+			distinct{on: on},
+		}
+	})
 }
 
 func (SelectQM) Select(clauseessions ...any) query.Mod[*selectQuery] {

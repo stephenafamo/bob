@@ -22,6 +22,56 @@ psql.Select(
 )
 ```
 
+## Select Distinct
+
+SQL:
+
+```sql
+SELECT DISTINCT id, name FROM users WHERE (id IN ($1, $2, $3))
+```
+
+Args:
+
+* `100`
+* `200`
+* `300`
+
+Code:
+
+```go
+psql.Select(
+  qm.Select("id", "name"),
+  qm.Distinct(),
+  qm.From("users"),
+  qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+)
+```
+
+## Select Distinct On
+
+SQL:
+
+```sql
+SELECT DISTINCT ON(id) id, name FROM users WHERE (id IN ($1, $2, $3))
+```
+
+Args:
+
+* `100`
+* `200`
+* `300`
+
+Code:
+
+```go
+psql.Select(
+  qm.Select("id", "name"),
+  qm.Distinct("id"),
+  qm.From("users"),
+  qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+)
+```
+
 ## Select from group of functions. Automatically uses the `ROWS FROM` syntax
 
 SQL:

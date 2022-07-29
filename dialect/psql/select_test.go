@@ -20,6 +20,26 @@ func TestSelect(t *testing.T) {
 				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
+		"select distinct": {
+			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (id IN ($1, $2, $3))",
+			ExpectedArgs: []any{100, 200, 300},
+			Query: psql.Select(
+				qm.Select("id", "name"),
+				qm.Distinct(),
+				qm.From("users"),
+				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+			),
+		},
+		"select distinct on": {
+			ExpectedSQL:  "SELECT DISTINCT ON(id) id, name FROM users WHERE (id IN ($1, $2, $3))",
+			ExpectedArgs: []any{100, 200, 300},
+			Query: psql.Select(
+				qm.Select("id", "name"),
+				qm.Distinct("id"),
+				qm.From("users"),
+				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+			),
+		},
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(

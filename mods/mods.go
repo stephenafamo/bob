@@ -22,12 +22,6 @@ func (r Recursive[Q]) Apply(q Q) {
 	q.SetRecursive(bool(r))
 }
 
-type Distinct[Q interface{ SetDistinct(clause.Distinct) }] clause.Distinct
-
-func (d Distinct[Q]) Apply(q Q) {
-	q.SetDistinct(clause.Distinct(d))
-}
-
 type Select[Q interface{ AppendSelect(columns ...any) }] []any
 
 func (s Select[Q]) Apply(q Q) {

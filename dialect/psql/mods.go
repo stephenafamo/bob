@@ -8,6 +8,15 @@ import (
 	"github.com/stephenafamo/bob/query"
 )
 
+type distinct struct {
+	on []any
+}
+
+func (di distinct) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	w.Write([]byte("DISTINCT"))
+	return query.ExpressSlice(w, d, start, di.on, " ON (", ", ", ")")
+}
+
 type withMod[Q interface {
 	AppendWith(clause.CTE)
 	SetRecursive(bool)

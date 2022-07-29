@@ -20,6 +20,16 @@ func TestSelect(t *testing.T) {
 				qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 			),
 		},
+		"select distinct": {
+			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
+			ExpectedArgs: []any{100, 200, 300},
+			Query: sqlite.Select(
+				qm.Select("id", "name"),
+				qm.Distinct(),
+				qm.From("users"),
+				qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
+			),
+		},
 		"with rows from": {
 			Query: sqlite.Select(
 				qm.From(

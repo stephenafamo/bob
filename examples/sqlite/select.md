@@ -22,6 +22,31 @@ sqlite.Select(
 )
 ```
 
+## Select Distinct
+
+SQL:
+
+```sql
+SELECT DISTINCT id, name FROM users WHERE (id IN (?1, ?2, ?3))
+```
+
+Args:
+
+* `100`
+* `200`
+* `300`
+
+Code:
+
+```go
+sqlite.Select(
+  qm.Select("id", "name"),
+  qm.Distinct(),
+  qm.From("users"),
+  qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
+)
+```
+
 ## With Rows From
 
 SQL:
