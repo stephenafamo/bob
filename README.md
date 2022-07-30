@@ -20,6 +20,15 @@ Examples are in the [examples folder](examples):
 * [Using A Query](#using-the-query)
 * [Raw Queries](#raw-queries)
 
+## Dialect Support
+
+| Dialect     | Select | Insert | Update | Delete |
+|-------------|--------|--------|--------|--------|
+| Postgres    | ✅     | ✅     | ✅     | ✅     |
+| MySQL       | ✅     | ✅     |        | ✅     |
+| SQLite      | ✅     | ✅     | ✅     | ✅     |
+| SQL Server  |        |        |        |        |
+
 ## Principles
 
 ### Custom Crafting
