@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob/query"
@@ -37,6 +38,8 @@ where from_item can be one of:
 
 
 SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
+
+MySQL: https://dev.mysql.com/doc/refman/8.0/en/join.html
 */
 
 type FromItem struct {
@@ -46,17 +49,13 @@ type FromItem struct {
 	Alias   string
 	Columns []string
 
-	// Postgres modifiers for the query
-	Only           bool
-	Lateral        bool
-	WithOrdinality bool
-
-	// Sqlite modifiers
-	// Used for both INDEXED BY and NOT INDEXED
-	// nil = omitted
-	// empty string = NOT INDEXED
-	// non-empty string = INDEXED BY name
-	IndexedBy *string
+	// Dialect specific modifiers
+	Only           bool        // Postgres
+	Lateral        bool        // Postgres & MySQL
+	WithOrdinality bool        // Postgres
+	IndexedBy      *string     // SQLite
+	Partitions     []string    // MySQL
+	IndexHints     []IndexHint // MySQL
 
 	// Joins
 	Joins []Join
@@ -69,6 +68,14 @@ func (f *FromItem) SetTableAlias(alias string, columns ...string) {
 
 func (f *FromItem) AppendJoin(j Join) {
 	f.Joins = append(f.Joins, j)
+}
+
+func (f *FromItem) AppendPartition(partitions ...string) {
+	f.Partitions = append(f.Partitions, partitions...)
+}
+
+func (f *FromItem) AppendIndexHint(i IndexHint) {
+	f.IndexHints = append(f.IndexHints, i)
 }
 
 func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
@@ -90,7 +97,12 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 	}
 
 	if f.WithOrdinality {
-		w.Write([]byte("WITH ORDINALITY "))
+		w.Write([]byte(" WITH ORDINALITY"))
+	}
+
+	_, err = query.ExpressSlice(w, d, start, f.Partitions, " PARTITION (", ", ", ")")
+	if err != nil {
+		return nil, err
 	}
 
 	if f.Alias != "" {
@@ -110,6 +122,12 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte(")"))
 	}
 
+	// No args for index hints
+	_, err = query.ExpressSlice(w, d, start+len(args), f.IndexHints, "\n", " ", "")
+	if err != nil {
+		return nil, err
+	}
+
 	switch {
 	case f.IndexedBy == nil:
 		break
@@ -127,4 +145,32 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 	args = append(args, joinArgs...)
 
 	return args, nil
+}
+
+type IndexHint struct {
+	Type    string // USE, FORCE or IGNORE
+	Indexes []string
+	For     string // JOIN, ORDER BY or GROUP BY
+}
+
+func (f IndexHint) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+	if f.Type == "" {
+		return nil, nil
+	}
+	fmt.Fprintf(w, "%s INDEX ", f.Type)
+
+	_, err := query.ExpressIf(w, d, start, f.For, f.For != "", " FOR ", "")
+	if err != nil {
+		return nil, err
+	}
+
+	// Always include the brackets
+	fmt.Fprint(w, " (")
+	_, err = query.ExpressSlice(w, d, start, f.Indexes, "", ", ", "")
+	if err != nil {
+		return nil, err
+	}
+	fmt.Fprint(w, ")")
+
+	return nil, nil
 }
