@@ -25,7 +25,7 @@ Examples are in the [examples folder](examples):
 | Dialect     | Select | Insert | Update | Delete |
 |-------------|--------|--------|--------|--------|
 | Postgres    | ✅     | ✅     | ✅     | ✅     |
-| MySQL       | ✅     | ✅     |        | ✅     |
+| MySQL       | ✅     | ✅     | ✅     | ✅     |
 | SQLite      | ✅     | ✅     | ✅     | ✅     |
 | SQL Server  |        |        |        |        |
 
@@ -314,7 +314,7 @@ var myquery, myargs = psql.Insert(...).MustBuild()
   * [x] Raw
   * [x] Select
   * [x] Insert
-  * [ ] Update
+  * [x] Update
   * [x] Delete
 * **SQLite**
   * [x] Raw
