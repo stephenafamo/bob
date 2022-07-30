@@ -159,7 +159,7 @@ func (SelectQM) Distinct(on ...any) query.Mod[*selectQuery] {
 
 func (SelectQM) HighPriority() query.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "HIGH PRIORITY")
+		q.Select.Modifiers = append(q.Select.Modifiers, "HIGH_PRIORITY")
 	})
 }
 

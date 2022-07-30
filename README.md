@@ -306,7 +306,7 @@ var myquery, myargs = psql.Insert(...).MustBuild()
   * [x] Select
   * [x] Insert
   * [ ] Update
-  * [ ] Delete
+  * [x] Delete
 * **SQLite**
   * [x] Raw
   * [x] Select
