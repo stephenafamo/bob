@@ -5,8 +5,14 @@ type builder[B any] interface {
 }
 
 // Build an expression
-func X[T any, B builder[T]](exp any) T {
+func X[T any, B builder[T]](exp any, others ...any) T {
 	var b B
+
+	// Easy chain. For example:
+	// X("a", "=", "b")
+	if len(others) > 0 {
+		exp = Join{Exprs: append([]any{exp}, others...)}
+	}
 
 	// Wrap in parenthesis if not a raw string or string in quotes
 	switch exp.(type) {
@@ -41,8 +47,8 @@ func Not[T any, B builder[T]](exp any) T {
 type Builder[T any, B builder[T]] struct{}
 
 // Start building an expression
-func (e Builder[T, B]) X(exp any) T {
-	return X[T, B](exp)
+func (e Builder[T, B]) X(exp any, others ...any) T {
+	return X[T, B](exp, others...)
 }
 
 // prefix the expression with a NOT

@@ -181,6 +181,19 @@ psql.And(
 
 These functions are included in every dialect and can be used to create a chainable expression.
 
+The most flexible starter is `X()`
+
+* Pass a single value to start a plain chain
+* Pass multiple values to join them all with spaces. This is better than using a plain string because it is easier to interpolate quoted values, args, e.t.c.
+
+```go
+// SQL: "schema"."table"."name" = $1
+// Args: 'Stephen'
+psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
+```
+
+Other starters are listed below:
+
 **NOTE:** These are the common starters. Each dialect can sometimes include their own starters.  
 For example, starters for common function calls can easily be added
 

@@ -17,8 +17,8 @@ func S(s string) chain {
 	return bmod.S(s)
 }
 
-func X(exp any) chain {
-	return bmod.X(exp)
+func X(exp any, others ...any) chain {
+	return bmod.X(exp, others...)
 }
 
 func Not(exp any) chain {
