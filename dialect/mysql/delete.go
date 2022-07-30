@@ -23,6 +23,8 @@ func Delete(queryMods ...query.Mod[*deleteQuery]) query.BaseQuery[*deleteQuery] 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.0/en/delete.html
 type deleteQuery struct {
+	hints
+
 	clause.With
 	modifiers[string]
 	partitions
@@ -44,6 +46,13 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, 
 	args = append(args, withArgs...)
 
 	w.Write([]byte("DELETE "))
+
+	// no optimizer hint args
+	_, err = query.ExpressIf(w, dl, start+len(args), d.hints,
+		len(d.hints.hints) > 0, "\n", "\n")
+	if err != nil {
+		return nil, err
+	}
 
 	// no modifiers args
 	_, err = query.ExpressIf(w, dl, start+len(args), d.modifiers,
@@ -88,6 +97,7 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl query.Dialect, start int) ([]any, 
 }
 
 type DeleteQM struct {
+	hintMod[*deleteQuery] // for optimizer hints
 	withMod[*deleteQuery]
 	mods.FromMod[*deleteQuery]
 	fromItemMod

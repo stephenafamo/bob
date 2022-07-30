@@ -58,6 +58,11 @@ func (s selectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 
 	// Add hints as the first modifier to the select clause
 	s.Select.Modifiers = append(s.modifiers.modifiers, s.Select.Modifiers...)
+
+	// Add hints first if any exists
+	if len(s.hints.hints) > 0 {
+		s.Select.Modifiers = append([]any{s.hints}, s.Select.Modifiers...)
+	}
 	selArgs, err := query.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
 	if err != nil {
 		return nil, err
