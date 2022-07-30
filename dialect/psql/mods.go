@@ -209,15 +209,6 @@ func (c cteChain[Q]) Apply(q Q) {
 	q.AppendWith(c())
 }
 
-func (c cteChain[Q]) Name(tableName string, columnNames ...string) cteChain[Q] {
-	cte := c()
-	cte.Name = tableName
-	cte.Columns = columnNames
-	return cteChain[Q](func() clause.CTE {
-		return cte
-	})
-}
-
 func (c cteChain[Q]) As(q query.Query) cteChain[Q] {
 	cte := c()
 	cte.Query = q
