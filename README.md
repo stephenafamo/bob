@@ -12,6 +12,7 @@
 Examples are in the [examples folder](examples):
 
 * [Postgres](examples/psql)
+* [MySQL](examples/mysql)
 * [SQLite](examples/sqlite)
 
 ## QuickLinks
