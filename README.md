@@ -303,8 +303,8 @@ var myquery, myargs = psql.Insert(...).MustBuild()
     * [ ] Is [Not] [NFC|NFD|NFKC|NFKD] Normalized
 * **MySQL**
   * [x] Raw
-  * [ ] Select
-  * [ ] Insert
+  * [x] Select
+  * [x] Insert
   * [ ] Update
   * [ ] Delete
 * **SQLite**
