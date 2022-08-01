@@ -1,0 +1,24 @@
+name: Quality
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.18'
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -race -covermode atomic -coverprofile=covprofile.out ./...
+
+      - name: Send coverage
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: coverprofile.out

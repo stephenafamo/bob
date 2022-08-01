@@ -4,6 +4,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
+[![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
 
 ## Features
 
