@@ -3,14 +3,14 @@ package expr
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type args struct {
 	vals []any
 }
 
-func (a args) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (a args) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	for k := range a.vals {
 		if k > 0 {
 			w.Write([]byte(", "))

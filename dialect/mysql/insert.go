@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
-	"github.com/stephenafamo/bob/query"
 )
 
-func Insert(queryMods ...query.Mod[*insertQuery]) query.BaseQuery[*insertQuery] {
+func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
 	q := &insertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return query.BaseQuery[*insertQuery]{
+	return bob.BaseQuery[*insertQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -37,34 +37,34 @@ type insertQuery struct {
 	duplicateKeyUpdate []set
 }
 
-func (i insertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
 	w.Write([]byte("INSERT "))
 
 	// no optimizer hint args
-	_, err = query.ExpressIf(w, d, start+len(args), i.hints,
+	_, err = bob.ExpressIf(w, d, start+len(args), i.hints,
 		len(i.hints.hints) > 0, "\n", "\n")
 	if err != nil {
 		return nil, err
 	}
 
 	// no modifiers args
-	_, err = query.ExpressIf(w, d, start+len(args), i.modifiers,
+	_, err = bob.ExpressIf(w, d, start+len(args), i.modifiers,
 		len(i.modifiers.modifiers) > 0, "", " ")
 	if err != nil {
 		return nil, err
 	}
 
 	// no expected table args
-	_, err = query.ExpressIf(w, d, start+len(args), i.table, true, "INTO ", " ")
+	_, err = bob.ExpressIf(w, d, start+len(args), i.table, true, "INTO ", " ")
 	if err != nil {
 		return nil, err
 	}
 
 	// no partition args
-	_, err = query.ExpressIf(w, d, start+len(args), i.partitions,
+	_, err = bob.ExpressIf(w, d, start+len(args), i.partitions,
 		len(i.partitions.partitions) > 0, "", " ")
 	if err != nil {
 		return nil, err
@@ -84,14 +84,14 @@ func (i insertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 	}
 
 	// Either this or the values will get expressed
-	valArgs, err := query.ExpressSlice(w, d, start+len(args), i.sets, "\nSET ", "\n", " ")
+	valArgs, err := bob.ExpressSlice(w, d, start+len(args), i.sets, "\nSET ", "\n", " ")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, valArgs...)
 
 	// Either this or SET will get expressed
-	setArgs, err := query.ExpressIf(w, d, start+len(args), i.Values, len(i.sets) == 0, "\n", " ")
+	setArgs, err := bob.ExpressIf(w, d, start+len(args), i.Values, len(i.sets) == 0, "\n", " ")
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (i insertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 	}
 
 	// Either this or the values will get expressed
-	updateArgs, err := query.ExpressSlice(w, d, start+len(args), i.duplicateKeyUpdate,
+	updateArgs, err := bob.ExpressSlice(w, d, start+len(args), i.duplicateKeyUpdate,
 		"\nON DUPLICATE KEY UPDATE\n", "\n", "")
 	if err != nil {
 		return nil, err
@@ -139,38 +139,38 @@ type InsertQM struct {
 	partitionMod[*insertQuery] // for partitions
 }
 
-func (qm InsertQM) Into(name any, columns ...string) query.Mod[*insertQuery] {
+func (qm InsertQM) Into(name any, columns ...string) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.table = name
 		i.columns = columns
 	})
 }
 
-func (qm InsertQM) LowPriority() query.Mod[*insertQuery] {
+func (qm InsertQM) LowPriority() bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func (qm InsertQM) HighPriority() query.Mod[*insertQuery] {
+func (qm InsertQM) HighPriority() bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
-func (qm InsertQM) Ignore() query.Mod[*insertQuery] {
+func (qm InsertQM) Ignore() bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func (qm InsertQM) Values(clauses ...any) query.Mod[*insertQuery] {
+func (qm InsertQM) Values(clauses ...any) bob.Mod[*insertQuery] {
 	return mods.Values[*insertQuery](clauses)
 }
 
 // Insert from a query
 // If Go allows type parameters on methods, limit this to select, table and raw
-func (qm InsertQM) Query(q query.BaseQuery[*selectQuery]) query.Mod[*insertQuery] {
+func (qm InsertQM) Query(q bob.BaseQuery[*selectQuery]) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Query = q
 	})
@@ -184,14 +184,14 @@ func (qm InsertQM) Set(col string, val any) setMod[*insertQuery] {
 	}
 }
 
-func (qm InsertQM) As(rowAlias string, colAlias ...string) query.Mod[*insertQuery] {
+func (qm InsertQM) As(rowAlias string, colAlias ...string) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.rowAlias = rowAlias
 		i.columnAlias = colAlias
 	})
 }
 
-func (qm InsertQM) OnDuplicateKeyUpdate(sets ...setMod[*insertQuery]) query.Mod[*insertQuery] {
+func (qm InsertQM) OnDuplicateKeyUpdate(sets ...setMod[*insertQuery]) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		for _, s := range sets {
 			i.duplicateKeyUpdate = append(i.duplicateKeyUpdate, set(s))

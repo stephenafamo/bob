@@ -1,9 +1,9 @@
 package mods
 
 import (
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/query"
 )
 
 type Conflict[Q interface{ SetConflict(clause.Conflict) }] func() clause.Conflict
@@ -22,7 +22,7 @@ func (c Conflict[Q]) On(target any, where ...any) Conflict[Q] {
 	})
 }
 
-func (c Conflict[Q]) DoNothing() query.Mod[Q] {
+func (c Conflict[Q]) DoNothing() bob.Mod[Q] {
 	conflict := c()
 	conflict.Do = "NOTHING"
 

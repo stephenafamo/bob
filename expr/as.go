@@ -3,7 +3,7 @@ package expr
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type as struct {
@@ -11,8 +11,8 @@ type as struct {
 	Alias      string
 }
 
-func (a as) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	args, err := query.Express(w, d, start, a.Expression)
+func (a as) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	args, err := bob.Express(w, d, start, a.Expression)
 	if err != nil {
 		return nil, err
 	}

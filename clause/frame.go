@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 var (
@@ -35,7 +35,7 @@ func (f *Frame) SetExclusion(excl string) {
 	f.Exclusion = excl
 }
 
-func (f Frame) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Mode == "" {
 		return nil, ErrNoFrameMode
 	}
@@ -53,19 +53,19 @@ func (f Frame) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) 
 		w.Write([]byte("BETWEEN "))
 	}
 
-	startArgs, err := query.Express(w, d, start, f.Start)
+	startArgs, err := bob.Express(w, d, start, f.Start)
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, startArgs...)
 
-	endArgs, err := query.ExpressIf(w, d, start, f.End, f.End != "", " AND ", "")
+	endArgs, err := bob.ExpressIf(w, d, start, f.End, f.End != "", " AND ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, endArgs...)
 
-	query.ExpressIf(w, d, start, f.Exclusion, f.Exclusion != "", " EXCLUDE ", "")
+	bob.ExpressIf(w, d, start, f.Exclusion, f.Exclusion != "", " EXCLUDE ", "")
 
 	return nil, nil
 }

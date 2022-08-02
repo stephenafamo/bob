@@ -3,16 +3,16 @@ package expr
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Chain[T any, B builder[T]] struct {
 	Base any
 }
 
-// WriteSQL satisfies the query.Expression interface
-func (x Chain[T, B]) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.Express(w, d, start, x.Base)
+// WriteSQL satisfies the bob.Expression interface
+func (x Chain[T, B]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.Express(w, d, start, x.Base)
 }
 
 // IS DISTINCT FROM
@@ -109,6 +109,6 @@ func (x Chain[T, B]) Minus(target any) T {
 
 // As does not return a new chain. Should be used at the end of an expression
 // useful for columns
-func (x Chain[T, B]) As(alias string) query.Expression {
+func (x Chain[T, B]) As(alias string) bob.Expression {
 	return leftRight{left: x.Base, operator: " AS ", right: quoted{alias}}
 }

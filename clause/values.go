@@ -3,13 +3,13 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Values struct {
 	// Query takes the highest priority
 	// If present, will attempt to insert from this query
-	Query query.Query
+	Query bob.Query
 
 	// for multiple inserts
 	// each sub-slice is one set of values
@@ -18,8 +18,8 @@ type Values struct {
 
 type value []any
 
-func (v value) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, v, "(", ", ", ")")
+func (v value) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(w, d, start, v, "(", ", ", ")")
 }
 
 func (v *Values) AppendValues(vals ...any) {
@@ -30,7 +30,7 @@ func (v *Values) AppendValues(vals ...any) {
 	v.Vals = append(v.Vals, vals)
 }
 
-func (v Values) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (v Values) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// If a query is present, use it
 	if v.Query != nil {
 		return v.Query.WriteQuery(w, start)
@@ -38,7 +38,7 @@ func (v Values) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error)
 
 	// If values are present, use them
 	if len(v.Vals) > 0 {
-		return query.ExpressSlice(w, d, start, v.Vals, "VALUES ", ", ", "")
+		return bob.ExpressSlice(w, d, start, v.Vals, "VALUES ", ", ", "")
 	}
 
 	// If no value was present, use default value

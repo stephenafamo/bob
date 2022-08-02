@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 var ErrNoLockStrength = errors.New("No lock strength specified")
@@ -32,7 +32,7 @@ func (f *For) SetFor(lock For) {
 	*f = lock
 }
 
-func (f For) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f For) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Strength == "" {
 		return nil, nil
 	}
@@ -42,7 +42,7 @@ func (f For) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 		fmt.Fprintf(w, "%s ", f.Strength)
 	}
 
-	args, err := query.ExpressSlice(w, d, start, f.Tables, "OF ", ", ", "")
+	args, err := bob.ExpressSlice(w, d, start, f.Tables, "OF ", ", ", "")
 	if err != nil {
 		return nil, err
 	}

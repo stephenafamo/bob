@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 // dquoted and joined... something like "users"."id"
 type quoted []any
 
-func (q quoted) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (q quoted) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(q) == 0 {
 		return nil, nil
 	}

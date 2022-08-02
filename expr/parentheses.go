@@ -3,11 +3,11 @@ package expr
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 // Add parentheses around an expression
-func P(exp any) query.Expression {
+func P(exp any) bob.Expression {
 	return parentheses{inside: exp}
 }
 
@@ -16,6 +16,6 @@ type parentheses struct {
 	inside any
 }
 
-func (p parentheses) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressIf(w, d, start, p.inside, p.inside != nil, "(", ")")
+func (p parentheses) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(w, d, start, p.inside, p.inside != nil, "(", ")")
 }

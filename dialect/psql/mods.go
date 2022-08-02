@@ -3,18 +3,18 @@ package psql
 import (
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
-	"github.com/stephenafamo/bob/query"
 )
 
 type distinct struct {
 	on []any
 }
 
-func (di distinct) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (di distinct) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("DISTINCT"))
-	return query.ExpressSlice(w, d, start, di.on, " ON (", ", ", ")")
+	return bob.ExpressSlice(w, d, start, di.on, " ON (", ", ", ")")
 }
 
 type withMod[Q interface {
@@ -31,25 +31,25 @@ func (withMod[Q]) With(name string, columns ...string) cteChain[Q] {
 	})
 }
 
-func (withMod[Q]) Recursive(r bool) query.Mod[Q] {
+func (withMod[Q]) Recursive(r bool) bob.Mod[Q] {
 	return mods.Recursive[Q](r)
 }
 
 type fromItemMod struct{}
 
-func (fromItemMod) Only() query.Mod[*clause.FromItem] {
+func (fromItemMod) Only() bob.Mod[*clause.FromItem] {
 	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.Only = true
 	})
 }
 
-func (fromItemMod) Lateral() query.Mod[*clause.FromItem] {
+func (fromItemMod) Lateral() bob.Mod[*clause.FromItem] {
 	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.Lateral = true
 	})
 }
 
-func (fromItemMod) WithOrdinality() query.Mod[*clause.FromItem] {
+func (fromItemMod) WithOrdinality() bob.Mod[*clause.FromItem] {
 	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
 		q.WithOrdinality = true
 	})
@@ -70,28 +70,28 @@ func (j joinChain[Q]) As(alias string) joinChain[Q] {
 	})
 }
 
-func (j joinChain[Q]) Natural() query.Mod[Q] {
+func (j joinChain[Q]) Natural() bob.Mod[Q] {
 	jo := j()
 	jo.Natural = true
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) On(on ...any) query.Mod[Q] {
+func (j joinChain[Q]) On(on ...any) bob.Mod[Q] {
 	jo := j()
 	jo.On = append(jo.On, on)
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) OnEQ(a, b any) query.Mod[Q] {
+func (j joinChain[Q]) OnEQ(a, b any) bob.Mod[Q] {
 	jo := j()
 	jo.On = append(jo.On, bmod.X(a).EQ(b))
 
 	return mods.Join[Q](jo)
 }
 
-func (j joinChain[Q]) Using(using ...any) query.Mod[Q] {
+func (j joinChain[Q]) Using(using ...any) bob.Mod[Q] {
 	jo := j()
 	jo.Using = using
 
@@ -136,7 +136,7 @@ func (j joinMod[Q]) FullJoin(e any) joinChain[Q] {
 	})
 }
 
-func (j joinMod[Q]) CrossJoin(e any) query.Mod[Q] {
+func (j joinMod[Q]) CrossJoin(e any) bob.Mod[Q] {
 	return mods.Join[Q]{
 		Type: clause.CrossJoin,
 		To:   e,
@@ -209,7 +209,7 @@ func (c cteChain[Q]) Apply(q Q) {
 	q.AppendWith(c())
 }
 
-func (c cteChain[Q]) As(q query.Query) cteChain[Q] {
+func (c cteChain[Q]) As(q bob.Query) cteChain[Q] {
 	cte := c()
 	cte.Query = q
 	return cteChain[Q](func() clause.CTE {
@@ -353,9 +353,9 @@ func (w *windowChain[T]) FromUnboundedPreceding() T {
 }
 
 func (w *windowChain[T]) FromPreceding(exp any) T {
-	w.def.SetStart(query.ExpressionFunc(
-		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
-			return query.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
+	w.def.SetStart(bob.ExpressionFunc(
+		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
 	return w.def
@@ -367,18 +367,18 @@ func (w *windowChain[T]) FromCurrentRow() T {
 }
 
 func (w *windowChain[T]) FromFollowing(exp any) T {
-	w.def.SetStart(query.ExpressionFunc(
-		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
-			return query.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+	w.def.SetStart(bob.ExpressionFunc(
+		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)
 	return w.def
 }
 
 func (w *windowChain[T]) ToPreceding(exp any) T {
-	w.def.SetEnd(query.ExpressionFunc(
-		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
-			return query.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
+	w.def.SetEnd(bob.ExpressionFunc(
+		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
 	return w.def
@@ -390,9 +390,9 @@ func (w *windowChain[T]) ToCurrentRow(count int) T {
 }
 
 func (w *windowChain[T]) ToFollowing(exp any) T {
-	w.def.SetEnd(query.ExpressionFunc(
-		func(w io.Writer, d query.Dialect, start int) (args []any, err error) {
-			return query.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+	w.def.SetEnd(bob.ExpressionFunc(
+		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)
 	return w.def

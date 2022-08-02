@@ -3,7 +3,7 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 const (
@@ -26,7 +26,7 @@ type Join struct {
 	Using   []any
 }
 
-func (j Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if j.Natural {
 		w.Write([]byte("NATURAL "))
 	}
@@ -34,18 +34,18 @@ func (j Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 	w.Write([]byte(j.Type))
 	w.Write([]byte(" "))
 
-	args, err := query.Express(w, d, start, j.To)
+	args, err := bob.Express(w, d, start, j.To)
 	if err != nil {
 		return nil, err
 	}
 
-	onArgs, err := query.ExpressSlice(w, d, start+len(args), j.On, " ON ", " AND ", "")
+	onArgs, err := bob.ExpressSlice(w, d, start+len(args), j.On, " ON ", " AND ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, onArgs...)
 
-	usingArgs, err := query.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")")
+	usingArgs, err := bob.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}

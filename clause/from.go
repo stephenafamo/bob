@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type FromItems struct {
@@ -15,8 +15,8 @@ func (f *FromItems) AppendFromItem(item FromItem) {
 	f.Items = append(f.Items, item)
 }
 
-func (f FromItems) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, f.Items, "", ",\n", "")
+func (f FromItems) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(w, d, start, f.Items, "", ",\n", "")
 }
 
 /*
@@ -37,7 +37,7 @@ where from_item can be one of:
     from_item [ NATURAL ] join_type from_item [ ON join_condition | USING ( join_column [, ...] ) [ AS join_using_alias ] ]
 
 
-SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
+SQLite: https://www.sqlite.org/syntax/table-or-subbob.html
 
 MySQL: https://dev.mysql.com/doc/refman/8.0/en/join.html
 */
@@ -78,7 +78,7 @@ func (f *FromItem) AppendIndexHint(i IndexHint) {
 	f.IndexHints = append(f.IndexHints, i)
 }
 
-func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f FromItem) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Table == nil {
 		return nil, nil
 	}
@@ -91,7 +91,7 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte("LATERAL "))
 	}
 
-	args, err := query.Express(w, d, start, f.Table)
+	args, err := bob.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte(" WITH ORDINALITY"))
 	}
 
-	_, err = query.ExpressSlice(w, d, start, f.Partitions, " PARTITION (", ", ", ")")
+	_, err = bob.ExpressSlice(w, d, start, f.Partitions, " PARTITION (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 	}
 
 	// No args for index hints
-	_, err = query.ExpressSlice(w, d, start+len(args), f.IndexHints, "\n", " ", "")
+	_, err = bob.ExpressSlice(w, d, start+len(args), f.IndexHints, "\n", " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (f FromItem) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, erro
 		w.Write([]byte(*f.IndexedBy))
 	}
 
-	joinArgs, err := query.ExpressSlice(w, d, start+len(args), f.Joins, "\n", "\n", "")
+	joinArgs, err := bob.ExpressSlice(w, d, start+len(args), f.Joins, "\n", "\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -153,20 +153,20 @@ type IndexHint struct {
 	For     string // JOIN, ORDER BY or GROUP BY
 }
 
-func (f IndexHint) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f IndexHint) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Type == "" {
 		return nil, nil
 	}
 	fmt.Fprintf(w, "%s INDEX ", f.Type)
 
-	_, err := query.ExpressIf(w, d, start, f.For, f.For != "", " FOR ", "")
+	_, err := bob.ExpressIf(w, d, start, f.For, f.For != "", " FOR ", "")
 	if err != nil {
 		return nil, err
 	}
 
 	// Always include the brackets
 	fmt.Fprint(w, " (")
-	_, err = query.ExpressSlice(w, d, start, f.Indexes, "", ", ", "")
+	_, err = bob.ExpressSlice(w, d, start, f.Indexes, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}

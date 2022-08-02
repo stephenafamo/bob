@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 var ErrNoCombinationStrategy = errors.New("Combination strategy must be set")
@@ -17,7 +17,7 @@ const (
 
 type Combine struct {
 	Strategy string
-	Query    query.Query
+	Query    bob.Query
 	All      bool
 }
 
@@ -25,7 +25,7 @@ func (s *Combine) SetCombine(c Combine) {
 	*s = c
 }
 
-func (s Combine) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (s Combine) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if s.Strategy == "" {
 		return nil, ErrNoCombinationStrategy
 	}
@@ -38,7 +38,7 @@ func (s Combine) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error
 		w.Write([]byte(" "))
 	}
 
-	args, err := query.Express(w, d, start, s.Query)
+	args, err := bob.Express(w, d, start, s.Query)
 	if err != nil {
 		return nil, err
 	}

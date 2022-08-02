@@ -6,11 +6,11 @@ import (
 	"io"
 	"strings"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
-func RawQuery(d query.Dialect, q string, args ...any) query.BaseQuery[Raw] {
-	return query.BaseQuery[Raw]{
+func RawQuery(d bob.Dialect, q string, args ...any) bob.BaseQuery[Raw] {
+	return bob.BaseQuery[Raw]{
 		Expression: Raw{query: q, args: args},
 		Dialect:    d,
 	}
@@ -22,7 +22,7 @@ type Raw struct {
 	args  []any  // The replacements for the placeholders in order
 }
 
-func (r Raw) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (r Raw) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately
 	total := r.convertQuestionMarks(w, d, start)
 
@@ -36,7 +36,7 @@ func (r Raw) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
 // convertQuestionMarks converts each occurrence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func (r Raw) convertQuestionMarks(w io.Writer, d query.Dialect, startAt int) int {
+func (r Raw) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) int {
 	if startAt == 0 {
 		panic("Not a valid start number.")
 	}

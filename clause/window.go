@@ -3,7 +3,7 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type IWindow interface {
@@ -35,24 +35,24 @@ func (wi *WindowDef) AddOrderBy(order ...any) {
 	wi.orderBy = append(wi.orderBy, order...)
 }
 
-func (wi WindowDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (wi WindowDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if wi.From != "" {
 		w.Write([]byte(wi.From))
 		w.Write([]byte(" "))
 	}
 
-	args, err := query.ExpressSlice(w, d, start, wi.partitionBy, "PARTITION BY ", ", ", " ")
+	args, err := bob.ExpressSlice(w, d, start, wi.partitionBy, "PARTITION BY ", ", ", " ")
 	if err != nil {
 		return nil, err
 	}
 
-	orderArgs, err := query.ExpressSlice(w, d, start, wi.orderBy, "ORDER BY ", ", ", "")
+	orderArgs, err := bob.ExpressSlice(w, d, start, wi.orderBy, "ORDER BY ", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, orderArgs...)
 
-	frameArgs, err := query.ExpressIf(w, d, start, wi.Frame, wi.Frame.Mode != "", " ", "")
+	frameArgs, err := bob.ExpressIf(w, d, start, wi.Frame, wi.Frame.Mode != "", " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -66,10 +66,10 @@ type NamedWindow struct {
 	Definiton any
 }
 
-func (n NamedWindow) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (n NamedWindow) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(n.Name))
 	w.Write([]byte(" AS ("))
-	args, err := query.Express(w, d, start, n.Definiton)
+	args, err := bob.Express(w, d, start, n.Definiton)
 	w.Write([]byte(")"))
 
 	return args, err
@@ -83,6 +83,6 @@ func (wi *Windows) AppendWindow(w NamedWindow) {
 	wi.Windows = append(wi.Windows, w)
 }
 
-func (wi Windows) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, wi.Windows, "WINDOW ", ", ", "")
+func (wi Windows) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(w, d, start, wi.Windows, "WINDOW ", ", ", "")
 }

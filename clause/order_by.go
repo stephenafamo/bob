@@ -3,7 +3,7 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type OrderBy struct {
@@ -14,8 +14,8 @@ func (o *OrderBy) AppendOrder(order OrderDef) {
 	o.Expressions = append(o.Expressions, order)
 }
 
-func (o OrderBy) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressSlice(w, d, start, o.Expressions, "ORDER BY ", ", ", "")
+func (o OrderBy) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(w, d, start, o.Expressions, "ORDER BY ", ", ", "")
 }
 
 type OrderDef struct {
@@ -25,13 +25,13 @@ type OrderDef struct {
 	CollationName string
 }
 
-func (o OrderDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (o OrderDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if o.CollationName != "" {
 		w.Write([]byte("COLLATE "))
 		w.Write([]byte(o.CollationName))
 	}
 
-	args, err := query.Express(w, d, start, o.Expression)
+	args, err := bob.Express(w, d, start, o.Expression)
 	if err != nil {
 		return nil, err
 	}

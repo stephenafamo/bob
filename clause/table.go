@@ -3,7 +3,7 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Table struct {
@@ -19,8 +19,8 @@ func (t Table) As(alias string, columns ...string) Table {
 	return t
 }
 
-func (t Table) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	args, err := query.Express(w, d, start, t.Expression)
+func (t Table) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	args, err := bob.Express(w, d, start, t.Expression)
 	if err != nil {
 		return nil, err
 	}

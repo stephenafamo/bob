@@ -3,7 +3,7 @@ package clause
 import (
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Offset struct {
@@ -16,6 +16,6 @@ func (o *Offset) SetOffset(offset any) {
 	o.Count = offset
 }
 
-func (o Offset) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	return query.ExpressIf(w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
+func (o Offset) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
 }

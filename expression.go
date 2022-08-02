@@ -1,4 +1,4 @@
-package query
+package bob
 
 import (
 	"database/sql"

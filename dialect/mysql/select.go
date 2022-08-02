@@ -3,18 +3,18 @@ package mysql
 import (
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
-	"github.com/stephenafamo/bob/query"
 )
 
-func Select(queryMods ...query.Mod[*selectQuery]) query.BaseQuery[*selectQuery] {
+func Select(queryMods ...bob.Mod[*selectQuery]) bob.BaseQuery[*selectQuery] {
 	q := &selectQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return query.BaseQuery[*selectQuery]{
+	return bob.BaseQuery[*selectQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -46,10 +46,10 @@ func (s *selectQuery) setInto(i into) {
 	s.into = &i
 }
 
-func (s selectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (s selectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := query.ExpressIf(w, d, start+len(args), s.With,
+	withArgs, err := bob.ExpressIf(w, d, start+len(args), s.With,
 		len(s.With.CTEs) > 0, "\n", "")
 	if err != nil {
 		return nil, err
@@ -63,80 +63,80 @@ func (s selectQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, e
 	if len(s.hints.hints) > 0 {
 		s.Select.Modifiers = append([]any{s.hints}, s.Select.Modifiers...)
 	}
-	selArgs, err := query.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
+	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, selArgs...)
 
-	fromArgs, err := query.ExpressSlice(w, d, start+len(args), s.FromItems.Items, "\nFROM ", ",\n", "")
+	fromArgs, err := bob.ExpressSlice(w, d, start+len(args), s.FromItems.Items, "\nFROM ", ",\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, fromArgs...)
 
-	whereArgs, err := query.ExpressIf(w, d, start+len(args), s.Where,
+	whereArgs, err := bob.ExpressIf(w, d, start+len(args), s.Where,
 		len(s.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
 
-	groupByArgs, err := query.ExpressIf(w, d, start+len(args), s.GroupBy,
+	groupByArgs, err := bob.ExpressIf(w, d, start+len(args), s.GroupBy,
 		len(s.GroupBy.Groups) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, groupByArgs...)
 
-	havingArgs, err := query.ExpressIf(w, d, start+len(args), s.Having,
+	havingArgs, err := bob.ExpressIf(w, d, start+len(args), s.Having,
 		len(s.Having.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, havingArgs...)
 
-	windowArgs, err := query.ExpressIf(w, d, start+len(args), s.Windows,
+	windowArgs, err := bob.ExpressIf(w, d, start+len(args), s.Windows,
 		len(s.Windows.Windows) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, windowArgs...)
 
-	combineArgs, err := query.ExpressIf(w, d, start+len(args), s.Combine,
+	combineArgs, err := bob.ExpressIf(w, d, start+len(args), s.Combine,
 		s.Combine.Query != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, combineArgs...)
 
-	orderArgs, err := query.ExpressIf(w, d, start+len(args), s.OrderBy,
+	orderArgs, err := bob.ExpressIf(w, d, start+len(args), s.OrderBy,
 		len(s.OrderBy.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, orderArgs...)
 
-	_, err = query.ExpressIf(w, d, start+len(args), s.Limit,
+	_, err = bob.ExpressIf(w, d, start+len(args), s.Limit,
 		s.Limit.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = query.ExpressIf(w, d, start+len(args), s.Offset,
+	_, err = bob.ExpressIf(w, d, start+len(args), s.Offset,
 		s.Offset.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 
-	forArgs, err := query.ExpressIf(w, d, start+len(args), s.For,
+	forArgs, err := bob.ExpressIf(w, d, start+len(args), s.For,
 		s.For.Strength != "", "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, forArgs...)
 
-	intoArgs, err := query.ExpressIf(w, d, start+len(args), s.into,
+	intoArgs, err := bob.ExpressIf(w, d, start+len(args), s.into,
 		s.into != nil, "\n", "")
 	if err != nil {
 		return nil, err
@@ -156,69 +156,69 @@ type SelectQM struct {
 	intoMod[*selectQuery]      // INTO clause
 }
 
-func (SelectQM) Distinct(on ...any) query.Mod[*selectQuery] {
+func (SelectQM) Distinct(on ...any) bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "DISTINCT")
 	})
 }
 
-func (SelectQM) HighPriority() query.Mod[*selectQuery] {
+func (SelectQM) HighPriority() bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "HIGH_PRIORITY")
 	})
 }
 
-func (SelectQM) Straight() query.Mod[*selectQuery] {
+func (SelectQM) Straight() bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "STRAIGHT_JOIN")
 	})
 }
 
-func (SelectQM) SmallResult() query.Mod[*selectQuery] {
+func (SelectQM) SmallResult() bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_SMALL_RESULT")
 	})
 }
 
-func (SelectQM) BigResult() query.Mod[*selectQuery] {
+func (SelectQM) BigResult() bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BIG_RESULT")
 	})
 }
 
-func (SelectQM) BufferResult() query.Mod[*selectQuery] {
+func (SelectQM) BufferResult() bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BUFFER_RESULT")
 	})
 }
 
-func (SelectQM) Columns(clauses ...any) query.Mod[*selectQuery] {
+func (SelectQM) Columns(clauses ...any) bob.Mod[*selectQuery] {
 	return mods.Select[*selectQuery](clauses)
 }
 
-func (SelectQM) Where(e query.Expression) query.Mod[*selectQuery] {
+func (SelectQM) Where(e bob.Expression) bob.Mod[*selectQuery] {
 	return mods.Where[*selectQuery]{e}
 }
 
-func (qm SelectQM) WhereClause(clause string, args ...any) query.Mod[*selectQuery] {
+func (qm SelectQM) WhereClause(clause string, args ...any) bob.Mod[*selectQuery] {
 	return mods.Where[*selectQuery]{Raw(clause, args...)}
 }
 
-func (SelectQM) Having(e query.Expression) query.Mod[*selectQuery] {
+func (SelectQM) Having(e bob.Expression) bob.Mod[*selectQuery] {
 	return mods.Having[*selectQuery]{e}
 }
 
-func (qm SelectQM) HavingClause(clause string, args ...any) query.Mod[*selectQuery] {
+func (qm SelectQM) HavingClause(clause string, args ...any) bob.Mod[*selectQuery] {
 	return mods.Having[*selectQuery]{Raw(clause, args...)}
 }
 
-func (SelectQM) GroupBy(e any) query.Mod[*selectQuery] {
+func (SelectQM) GroupBy(e any) bob.Mod[*selectQuery] {
 	return mods.GroupBy[*selectQuery]{
 		E: e,
 	}
 }
 
-func (SelectQM) WithRollup(distinct bool) query.Mod[*selectQuery] {
+func (SelectQM) WithRollup(distinct bool) bob.Mod[*selectQuery] {
 	return mods.QueryModFunc[*selectQuery](func(q *selectQuery) {
 		q.SetGroupWith("ROLLUP")
 	})
@@ -241,19 +241,19 @@ func (SelectQM) OrderBy(e any) orderBy[*selectQuery] {
 	})
 }
 
-func (SelectQM) Limit(count int64) query.Mod[*selectQuery] {
+func (SelectQM) Limit(count int64) bob.Mod[*selectQuery] {
 	return mods.Limit[*selectQuery]{
 		Count: count,
 	}
 }
 
-func (SelectQM) Offset(count int64) query.Mod[*selectQuery] {
+func (SelectQM) Offset(count int64) bob.Mod[*selectQuery] {
 	return mods.Offset[*selectQuery]{
 		Count: count,
 	}
 }
 
-func (SelectQM) Union(q query.Query) query.Mod[*selectQuery] {
+func (SelectQM) Union(q bob.Query) bob.Mod[*selectQuery] {
 	return mods.Combine[*selectQuery]{
 		Strategy: clause.Union,
 		Query:    q,
@@ -261,7 +261,7 @@ func (SelectQM) Union(q query.Query) query.Mod[*selectQuery] {
 	}
 }
 
-func (SelectQM) UnionAll(q query.Query) query.Mod[*selectQuery] {
+func (SelectQM) UnionAll(q bob.Query) bob.Mod[*selectQuery] {
 	return mods.Combine[*selectQuery]{
 		Strategy: clause.Union,
 		Query:    q,

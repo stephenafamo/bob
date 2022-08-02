@@ -7,14 +7,14 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Testcases map[string]Testcase
 
 // Also used to generate documentation
 type Testcase struct {
-	Query        query.Query
+	Query        bob.Query
 	ExpectedSQL  string
 	ExpectedArgs []any
 	Doc          string
@@ -45,7 +45,7 @@ func ErrDiff(a, b error) string {
 func RunTests(t *testing.T, cases Testcases) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := query.Build(tc.Query)
+			sql, args, err := bob.Build(tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
@@ -65,18 +65,18 @@ type ExpressionTestcases map[string]ExpressionTestcase
 
 // Also used to generate documentation
 type ExpressionTestcase struct {
-	Expression    query.Expression
+	Expression    bob.Expression
 	ExpectedSQL   string
 	ExpectedArgs  []any
 	ExpectedError error
 	Doc           string
 }
 
-func RunExpressionTests(t *testing.T, d query.Dialect, cases ExpressionTestcases) {
+func RunExpressionTests(t *testing.T, d bob.Dialect, cases ExpressionTestcases) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			b := &strings.Builder{}
-			args, err := query.Express(b, d, 1, tc.Expression)
+			args, err := bob.Express(b, d, 1, tc.Expression)
 			sql := b.String()
 
 			if diff := ErrDiff(tc.ExpectedError, err); diff != "" {

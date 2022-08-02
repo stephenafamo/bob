@@ -4,7 +4,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 type Fetch struct {
@@ -16,7 +16,7 @@ func (f *Fetch) SetFetch(fetch Fetch) {
 	*f = fetch
 }
 
-func (f Fetch) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f Fetch) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Count == nil {
 		return nil, nil
 	}

@@ -3,9 +3,9 @@ package psql
 import (
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/query"
 )
 
 type function struct {
@@ -22,20 +22,20 @@ type function struct {
 	expr.Chain[chain, chain]
 }
 
-func (f *function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
 
 	w.Write([]byte(f.name))
 	w.Write([]byte("("))
-	args, err := query.ExpressSlice(w, d, start, f.args, "", ", ", "")
+	args, err := bob.ExpressSlice(w, d, start, f.args, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 	w.Write([]byte(")"))
 
-	filterArgs, err := query.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
+	filterArgs, err := bob.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (f *function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, err
 		w.Write([]byte(" "))
 	}
 
-	colArgs, err := query.ExpressSlice(w, d, start+len(args), f.columns, "(", ", ", ")")
+	colArgs, err := bob.ExpressSlice(w, d, start+len(args), f.columns, "(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ type columnDef struct {
 	dataType string
 }
 
-func (c columnDef) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(c.name))
 	w.Write([]byte(" "))
 	w.Write([]byte(c.dataType))
@@ -112,13 +112,13 @@ type functionOver struct {
 	expr.Chain[chain, chain]
 }
 
-func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	fargs, err := query.Express(w, d, start, wr.function)
+func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	fargs, err := bob.Express(w, d, start, wr.function)
 	if err != nil {
 		return nil, err
 	}
 
-	winargs, err := query.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -128,12 +128,12 @@ func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any
 
 type functions []any
 
-func (f functions) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f functions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {
 		w.Write([]byte("ROWS FROM ("))
 	}
 
-	args, err := query.ExpressSlice(w, d, start, f, "", ", ", "")
+	args, err := bob.ExpressSlice(w, d, start, f, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}

@@ -3,18 +3,18 @@ package psql
 import (
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/mods"
-	"github.com/stephenafamo/bob/query"
 )
 
-func Insert(queryMods ...query.Mod[*insertQuery]) query.BaseQuery[*insertQuery] {
+func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
 	q := &insertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return query.BaseQuery[*insertQuery]{
+	return bob.BaseQuery[*insertQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -31,43 +31,43 @@ type insertQuery struct {
 	clause.Returning
 }
 
-func (i insertQuery) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := query.ExpressIf(w, d, start+len(args), i.With,
+	withArgs, err := bob.ExpressIf(w, d, start+len(args), i.With,
 		len(i.With.CTEs) > 0, "", "\n")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, withArgs...)
 
-	tableArgs, err := query.ExpressIf(w, d, start+len(args), i.Table,
+	tableArgs, err := bob.ExpressIf(w, d, start+len(args), i.Table,
 		true, "INSERT INTO ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, tableArgs...)
 
-	_, err = query.ExpressIf(w, d, start+len(args), i.overriding,
+	_, err = bob.ExpressIf(w, d, start+len(args), i.overriding,
 		i.overriding != "", "\nOVERRIDING ", " VALUE")
 	if err != nil {
 		return nil, err
 	}
 
-	valArgs, err := query.ExpressIf(w, d, start+len(args), i.Values, true, "\n", "")
+	valArgs, err := bob.ExpressIf(w, d, start+len(args), i.Values, true, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, valArgs...)
 
-	retArgs, err := query.ExpressIf(w, d, start+len(args), i.Returning,
+	retArgs, err := bob.ExpressIf(w, d, start+len(args), i.Returning,
 		len(i.Returning.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, retArgs...)
 
-	conflictArgs, err := query.ExpressIf(w, d, start+len(args), i.Conflict,
+	conflictArgs, err := bob.ExpressIf(w, d, start+len(args), i.Conflict,
 		i.Conflict.Do != "", "\n", "")
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ type InsertQM struct {
 	withMod[*insertQuery]
 }
 
-func (qm InsertQM) Into(name any, columns ...string) query.Mod[*insertQuery] {
+func (qm InsertQM) Into(name any, columns ...string) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
@@ -91,7 +91,7 @@ func (qm InsertQM) Into(name any, columns ...string) query.Mod[*insertQuery] {
 	})
 }
 
-func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*insertQuery] {
+func (qm InsertQM) IntoAs(name any, alias string, columns ...string) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
@@ -101,25 +101,25 @@ func (qm InsertQM) IntoAs(name any, alias string, columns ...string) query.Mod[*
 	})
 }
 
-func (qm InsertQM) OverridingSystem() query.Mod[*insertQuery] {
+func (qm InsertQM) OverridingSystem() bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.overriding = "SYSTEM"
 	})
 }
 
-func (qm InsertQM) OverridingUser() query.Mod[*insertQuery] {
+func (qm InsertQM) OverridingUser() bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.overriding = "USER"
 	})
 }
 
-func (qm InsertQM) Values(clauses ...any) query.Mod[*insertQuery] {
+func (qm InsertQM) Values(clauses ...any) bob.Mod[*insertQuery] {
 	return mods.Values[*insertQuery](clauses)
 }
 
 // Insert from a query
 // If Go allows type parameters on methods, limit this to select and raw
-func (qm InsertQM) Query(q query.Query) query.Mod[*insertQuery] {
+func (qm InsertQM) Query(q bob.Query) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Query = q
 	})
@@ -150,6 +150,6 @@ func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*inse
 	})
 }
 
-func (qm InsertQM) Returning(clauses ...any) query.Mod[*insertQuery] {
+func (qm InsertQM) Returning(clauses ...any) bob.Mod[*insertQuery] {
 	return mods.Returning[*insertQuery](clauses)
 }

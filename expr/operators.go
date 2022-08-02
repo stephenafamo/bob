@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/stephenafamo/bob/query"
+	"github.com/stephenafamo/bob"
 )
 
 // An operator that has a left and right side
@@ -14,15 +14,15 @@ type leftRight struct {
 	left     any
 }
 
-func (lr leftRight) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	largs, err := query.Express(w, d, start, lr.left)
+func (lr leftRight) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	largs, err := bob.Express(w, d, start, lr.left)
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Fprintf(w, " %s ", lr.operator)
 
-	rargs, err := query.Express(w, d, start+len(largs), lr.right)
+	rargs, err := bob.Express(w, d, start+len(largs), lr.right)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (lr leftRight) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, er
 }
 
 // Generic operator between a left and right val
-func OP(operator string, left, right any) query.Expression {
+func OP(operator string, left, right any) bob.Expression {
 	return leftRight{
 		right:    right,
 		left:     left,
@@ -45,11 +45,11 @@ type Join struct {
 	Sep   string
 }
 
-func (s Join) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (s Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	sep := s.Sep
 	if sep == "" {
 		sep = " "
 	}
 
-	return query.ExpressSlice(w, d, start, s.Exprs, "", sep, "")
+	return bob.ExpressSlice(w, d, start, s.Exprs, "", sep, "")
 }

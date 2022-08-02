@@ -3,9 +3,9 @@ package sqlite
 import (
 	"io"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/query"
 )
 
 type function struct {
@@ -39,20 +39,20 @@ func (f *function) Over(window string) *functionOver {
 	return fo
 }
 
-func (f function) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
+func (f function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
 
 	w.Write([]byte(f.name))
 	w.Write([]byte("("))
-	args, err := query.ExpressSlice(w, d, start, f.args, "", ", ", "")
+	args, err := bob.ExpressSlice(w, d, start, f.args, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 	w.Write([]byte(")"))
 
-	filterArgs, err := query.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
+	filterArgs, err := bob.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ type functionOver struct {
 	expr.Chain[chain, chain]
 }
 
-func (wr *functionOver) WriteSQL(w io.Writer, d query.Dialect, start int) ([]any, error) {
-	fargs, err := query.Express(w, d, start, wr.function)
+func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	fargs, err := bob.Express(w, d, start, wr.function)
 	if err != nil {
 		return nil, err
 	}
 
-	winargs, err := query.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
