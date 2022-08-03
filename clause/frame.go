@@ -67,5 +67,5 @@ func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 
 	bob.ExpressIf(w, d, start, f.Exclusion, f.Exclusion != "", " EXCLUDE ", "")
 
-	return nil, nil
+	return args, nil
 }
