@@ -31,6 +31,7 @@ type BaseQuery[E Expression] struct {
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
 	var b2 = new(BaseQuery[E])
+	//nolint:errcheck
 	copier.CopyWithOption(b2, &b, copier.Option{
 		IgnoreEmpty: true,
 		DeepCopy:    true,
