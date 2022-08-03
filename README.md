@@ -1,6 +1,6 @@
 # Bob (the builder): A spec compliant SQL query builder
 
-[![Build Status](https://github.com/stephenafamo/bob/workflows/test/badge.svg)](https://github.com/stephenafamo/bob/actions)
+[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stephenafamo/bob)
 [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob)
