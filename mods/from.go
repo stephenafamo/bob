@@ -6,7 +6,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-// To be embeded in other query mod providers
+// To be embedded in other query mod providers
 type FromMod[Q interface{ AppendFromItem(clause.FromItem) }] struct{}
 
 func (FromMod[Q]) From(table any, fromMods ...bob.Mod[*clause.FromItem]) bob.Mod[Q] {

@@ -308,8 +308,8 @@ type windowMod[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
 
 func (w windowMod[Q]) Apply(q Q) {
 	q.AppendWindow(clause.NamedWindow{
-		Name:      w.name,
-		Definiton: w.WindowDef,
+		Name:       w.name,
+		Definition: w.WindowDef,
 	})
 }
 

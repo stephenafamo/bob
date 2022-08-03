@@ -39,7 +39,7 @@ func Not[T any, B builder[T]](exp any) T {
 	return b.New(P(Join{Exprs: []any{"NOT", X[T, B](exp)}}))
 }
 
-// To be embeded in query mods
+// To be embedded in query mods
 // T is the chain type, this allows dialects to have custom chain methods
 // F is function type, so that the dialect can change where it
 // accepted. E.g. it can be modified to work as a mod

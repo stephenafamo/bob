@@ -62,14 +62,14 @@ func (wi WindowDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, erro
 }
 
 type NamedWindow struct {
-	Name      string
-	Definiton any
+	Name       string
+	Definition any
 }
 
 func (n NamedWindow) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(n.Name))
 	w.Write([]byte(" AS ("))
-	args, err := bob.Express(w, d, start, n.Definiton)
+	args, err := bob.Express(w, d, start, n.Definition)
 	w.Write([]byte(")"))
 
 	return args, err

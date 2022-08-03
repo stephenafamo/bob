@@ -8,7 +8,7 @@ func F(name string, args ...any) *function {
 		args: args,
 	}
 
-	// We have embeded the same function as the chain base
+	// We have embedded the same function as the chain base
 	// this is so that chained methods can also be used by functions
 	f.Chain.Base = f
 
