@@ -27,15 +27,13 @@ func One[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) (T, 
 
 	// Record the mapping
 	v.recording = true
-	_, err = genFunc(v)
-	if err != nil {
+	if _, err = genFunc(v); err != nil {
 		return t, err
 	}
 	v.recording = false
 
 	rows.Next()
-	err = v.scanRow(rows)
-	if err != nil {
+	if err = v.scanRow(rows); err != nil {
 		return t, err
 	}
 
@@ -48,6 +46,7 @@ func One[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) (T, 
 }
 
 func All[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) ([]T, error) {
+	var results []T
 
 	sql, args, err := Build(q)
 	if err != nil {
@@ -69,13 +68,10 @@ func All[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) ([]T
 
 	// Record the mapping
 	v.recording = true
-	_, err = genFunc(v)
-	if err != nil {
+	if _, err = genFunc(v); err != nil {
 		return nil, err
 	}
 	v.recording = false
-
-	var results []T
 
 	for rows.Next() {
 		err = v.scanRow(rows)

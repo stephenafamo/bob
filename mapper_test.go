@@ -22,7 +22,7 @@ type MapperTest[T any] struct {
 // To quickly generate column definition for tests
 // make it in the form {"1": 1, "2": 2}
 func columns(n int) map[string]int {
-	var m = make(map[string]int, n)
+	m := make(map[string]int, n)
 	for i := 0; i < n; i++ {
 		m[strconv.Itoa(i)] = i
 	}
@@ -31,7 +31,7 @@ func columns(n int) map[string]int {
 }
 
 func columnNames(names ...string) map[string]int {
-	var m = make(map[string]int, len(names))
+	m := make(map[string]int, len(names))
 	for i, name := range names {
 		m[name] = i
 	}
@@ -40,12 +40,14 @@ func columnNames(names ...string) map[string]int {
 }
 
 func RunMapperTests[T any](t *testing.T, cases MapperTests[T]) {
+	t.Helper()
 	for name, tc := range cases {
 		RunMapperTest(t, name, tc)
 	}
 }
 
 func RunMapperTest[T any](t *testing.T, name string, tc MapperTest[T]) {
+	t.Helper()
 	t.Run(name, func(t *testing.T) {
 		m := tc.Mapper(tc.Values.columnsCopy())
 
@@ -136,7 +138,7 @@ func TestSliceMapper(t *testing.T) {
 }
 
 func mapToVals[T any](vals []any) map[string]T {
-	var m = make(map[string]T, len(vals))
+	m := make(map[string]T, len(vals))
 	for i, v := range vals {
 		m[strconv.Itoa(i)] = v.(T)
 	}

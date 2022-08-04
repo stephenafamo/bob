@@ -20,8 +20,10 @@ type Testcase struct {
 	Doc          string
 }
 
-var oneOrMoreSpace = regexp.MustCompile(`\s+`)
-var spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)])\s*`)
+var (
+	oneOrMoreSpace      = regexp.MustCompile(`\s+`)
+	spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)])\s*`)
+)
 
 func Clean(s string) string {
 	s = strings.TrimSpace(s)
@@ -43,6 +45,7 @@ func ErrDiff(a, b error) string {
 }
 
 func RunTests(t *testing.T, cases Testcases) {
+	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			sql, args, err := bob.Build(tc.Query)
@@ -73,6 +76,7 @@ type ExpressionTestcase struct {
 }
 
 func RunExpressionTests(t *testing.T, d bob.Dialect, cases ExpressionTestcases) {
+	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			b := &strings.Builder{}

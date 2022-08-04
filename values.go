@@ -55,7 +55,7 @@ type Values struct {
 // since modifing the map can have unintended side effects.
 // Ideally, a generator should only call this once
 func (v *Values) columnsCopy() map[string]int {
-	var m = make(map[string]int, len(v.columns))
+	m := make(map[string]int, len(v.columns))
 	for k, v := range v.columns {
 		m[k] = v
 	}
@@ -79,13 +79,14 @@ func (v *Values) record(name string, t reflect.Type) {
 }
 
 func (v *Values) scanRow(r Row) error {
-	var pointers = make([]any, len(v.columns))
+	pointers := make([]any, len(v.columns))
 
 	for name, i := range v.columns {
 		t := v.types[name]
 		if t == nil {
 			var fallback interface{}
 			pointers[i] = &fallback
+
 			continue
 		}
 

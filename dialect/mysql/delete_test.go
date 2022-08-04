@@ -8,8 +8,8 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	var qm = mysql.DeleteQM{}
-	var examples = d.Testcases{
+	qm := mysql.DeleteQM{}
+	examples := d.Testcases{
 		"simple": {
 			Query: mysql.Delete(
 				qm.From("films"),

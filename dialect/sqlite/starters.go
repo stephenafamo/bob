@@ -1,6 +1,13 @@
 package sqlite
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/stephenafamo/bob/expr"
+)
+
+//nolint:gochecknoglobals
+var bmod = expr.Builder[chain, chain]{}
 
 func F(name string, args ...any) *function {
 	f := &function{

@@ -8,9 +8,8 @@ import (
 )
 
 func TestSelect(t *testing.T) {
-	var qm = mysql.SelectQM{}
-
-	var examples = d.Testcases{
+	qm := mysql.SelectQM{}
+	examples := d.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?, ?, ?))",
 			ExpectedArgs: []any{100, 200, 300},

@@ -7,8 +7,10 @@ import (
 	"strconv"
 )
 
-type cols = map[string]int
-type visited map[reflect.Type]int
+type (
+	cols    = map[string]int
+	visited map[reflect.Type]int
+)
 
 func (v visited) copy() visited {
 	v2 := make(visited, len(v))
@@ -111,7 +113,7 @@ func SingleValueMapper[T any](c cols) func(*Values) (T, error) {
 // Maps each row into []any in the order
 func SliceMapper[T any](c cols) func(*Values) ([]T, error) {
 	return func(v *Values) ([]T, error) {
-		var row = make([]T, len(c))
+		row := make([]T, len(c))
 
 		for name, index := range c {
 			row[index] = Get[T](v, name)
@@ -125,7 +127,7 @@ func SliceMapper[T any](c cols) func(*Values) ([]T, error) {
 // Most likely used with interface{} to get a map[string]interface{}
 func MapMapper[T any](c cols) func(*Values) (map[string]T, error) {
 	return func(v *Values) (map[string]T, error) {
-		var row = make(map[string]T, len(c))
+		row := make(map[string]T, len(c))
 
 		for name := range c {
 			row[name] = Get[T](v, name)

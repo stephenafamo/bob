@@ -8,9 +8,8 @@ import (
 )
 
 func TestInsert(t *testing.T) {
-	var qm = mysql.InsertQM{}
-
-	var examples = d.Testcases{
+	qm := mysql.InsertQM{}
+	examples := d.Testcases{
 		"simple insert": {
 			Query: mysql.Insert(
 				qm.Into("films"),

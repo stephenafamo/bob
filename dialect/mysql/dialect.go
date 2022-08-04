@@ -4,6 +4,7 @@ import (
 	"io"
 )
 
+//nolint:gochecknoglobals
 var dialect Dialect
 
 type Dialect struct{}

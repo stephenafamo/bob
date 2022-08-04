@@ -8,8 +8,8 @@ import (
 )
 
 func TestSelect(t *testing.T) {
-	var qm = psql.SelectQM{}
-	var examples = d.Testcases{
+	qm := psql.SelectQM{}
+	examples := d.Testcases{
 		"simple select": {
 			Doc:          "Simple Select with some conditions",
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",

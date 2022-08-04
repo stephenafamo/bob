@@ -50,7 +50,7 @@ func mapperFromMapping[T any](m mapping, typ reflect.Type, allowUnknown bool) fu
 
 	return func(c cols) func(*Values) (T, error) {
 		// Filter the mapping so we only ask for the available columns
-		var filtered = make(mapping)
+		filtered := make(mapping)
 		for name := range c {
 			v, ok := m[name]
 			if !ok {
@@ -227,7 +227,6 @@ func (s structMapper) getMapping(typ reflect.Type) (mapping, error) {
 	return m, nil
 }
 
-// TODO: Add max recursion depth
 func (s structMapper) setMappings(typ reflect.Type, prefix string, v visited, m mapping, inits [][]int, position ...int) {
 	count := v[typ]
 	if count > s.maxDepth {
@@ -267,7 +266,7 @@ func (s structMapper) setMappings(typ reflect.Type, prefix string, v visited, m 
 
 		hasExported = true
 
-		var key = prefix
+		key := prefix
 
 		if !field.Anonymous {
 			var sep string
@@ -311,6 +310,7 @@ func (s structMapper) setMappings(typ reflect.Type, prefix string, v visited, m 
 	}
 }
 
+//nolint:gochecknoglobals
 var defaultStructMapper = structMapper{
 	structTagKey:        "db",
 	columnSeparator:     ".",

@@ -4,8 +4,6 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-var bmod = expr.Builder[chain, chain]{}
-
 type chain struct {
 	expr.Chain[chain, chain]
 }

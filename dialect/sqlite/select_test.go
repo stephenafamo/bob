@@ -8,9 +8,8 @@ import (
 )
 
 func TestSelect(t *testing.T) {
-	var qm = sqlite.SelectQM{}
-
-	var examples = d.Testcases{
+	qm := sqlite.SelectQM{}
+	examples := d.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
 			ExpectedArgs: []any{100, 200, 300},

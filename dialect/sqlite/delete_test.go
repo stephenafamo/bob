@@ -8,8 +8,8 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	var qm = sqlite.DeleteQM{}
-	var examples = d.Testcases{
+	qm := sqlite.DeleteQM{}
+	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Delete(
 				qm.From("films"),

@@ -7,7 +7,7 @@ import (
 )
 
 func TestStatement(t *testing.T) {
-	var examples = d.ExpressionTestcases{
+	examples := d.ExpressionTestcases{
 		"plain": {
 			Expression: Raw{
 				query: "SELECT a, b FROM alphabet",

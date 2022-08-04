@@ -32,9 +32,9 @@ type Expression interface {
 	WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error)
 }
 
-type ExpressionFunc func(w io.Writer, d Dialect, start int) (args []any, err error)
+type ExpressionFunc func(w io.Writer, d Dialect, start int) ([]any, error)
 
-func (e ExpressionFunc) WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error) {
+func (e ExpressionFunc) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
 	return e(w, d, start)
 }
 

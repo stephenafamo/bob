@@ -218,7 +218,7 @@ func (c cteChain[Q]) As(q bob.Query) cteChain[Q] {
 }
 
 func (c cteChain[Q]) NotMaterialized() cteChain[Q] {
-	var b = false
+	b := false
 	cte := c()
 	cte.Materialized = &b
 	return cteChain[Q](func() clause.CTE {
@@ -227,7 +227,7 @@ func (c cteChain[Q]) NotMaterialized() cteChain[Q] {
 }
 
 func (c cteChain[Q]) Materialized() cteChain[Q] {
-	var b = true
+	b := true
 	cte := c()
 	cte.Materialized = &b
 	return cteChain[Q](func() clause.CTE {
@@ -354,7 +354,7 @@ func (w *windowChain[T]) FromUnboundedPreceding() T {
 
 func (w *windowChain[T]) FromPreceding(exp any) T {
 	w.def.SetStart(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
@@ -368,7 +368,7 @@ func (w *windowChain[T]) FromCurrentRow() T {
 
 func (w *windowChain[T]) FromFollowing(exp any) T {
 	w.def.SetStart(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)
@@ -377,7 +377,7 @@ func (w *windowChain[T]) FromFollowing(exp any) T {
 
 func (w *windowChain[T]) ToPreceding(exp any) T {
 	w.def.SetEnd(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
@@ -391,7 +391,7 @@ func (w *windowChain[T]) ToCurrentRow(count int) T {
 
 func (w *windowChain[T]) ToFollowing(exp any) T {
 	w.def.SetEnd(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) (args []any, err error) {
+		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)

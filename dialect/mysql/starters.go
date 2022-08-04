@@ -1,5 +1,10 @@
 package mysql
 
+import "github.com/stephenafamo/bob/expr"
+
+//nolint:gochecknoglobals
+var bmod = expr.Builder[chain, chain]{}
+
 func F(name string, args ...any) *function {
 	f := &function{
 		name: name,

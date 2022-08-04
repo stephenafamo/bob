@@ -8,10 +8,9 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	var qm = sqlite.UpdateQM{}
-	var selectQM = sqlite.SelectQM{}
-
-	var examples = d.Testcases{
+	qm := sqlite.UpdateQM{}
+	selectQM := sqlite.SelectQM{}
+	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Update(
 				qm.Table("films"),

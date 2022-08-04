@@ -8,8 +8,8 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	var qm = psql.DeleteQM{}
-	var examples = d.Testcases{
+	qm := psql.DeleteQM{}
+	examples := d.Testcases{
 		"simple": {
 			Query: psql.Delete(
 				qm.From("films"),

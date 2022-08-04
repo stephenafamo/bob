@@ -2,10 +2,62 @@
 run:
   timeout: 15m
 
+linters:
+  # # Disable all linters.
+  # # Default: false
+  disable-all: true
+  # # Enable specific linter
+  # # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  enable:
+    # defaults
+    - deadcode
+    - revive
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    # extras
+    - errname
+    - errorlint
+    - gci
+    - gochecknoglobals
+    - gocyclo
+    - godox
+    - gofumpt
+    - gosec
+    - maintidx
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - prealloc
+    - predeclared
+    - revive
+    - thelper
+    - unparam
+
 linters-settings:
   errcheck:
-    # List of functions to exclude from checking, where each entry is a single function to exclude.
-    # See https://github.com/kisielk/errcheck#excluding-functions for details.
     exclude-functions:
       - (io.Writer).Write
+  revive:
+    rules:
+      - name: receiver-naming
+        disabled: true
 
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gochecknoglobals
+        - gocyclo
+        - dupl
+        - gosec

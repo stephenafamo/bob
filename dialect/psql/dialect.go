@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+//nolint:gochecknoglobals
 var dialect Dialect
 
 type Dialect struct{}

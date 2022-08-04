@@ -8,10 +8,9 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	var qm = mysql.UpdateQM{}
-	var selectQM = mysql.SelectQM{}
-
-	var examples = d.Testcases{
+	qm := mysql.UpdateQM{}
+	selectQM := mysql.SelectQM{}
+	examples := d.Testcases{
 		"simple": {
 			Query: mysql.Update(
 				qm.Table("films"),

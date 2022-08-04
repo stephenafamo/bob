@@ -6,8 +6,10 @@ import (
 	"database/sql/driver"
 )
 
-var _ db = DB{}
-var _ db = Tx{}
+var (
+	_ db = DB{}
+	_ db = Tx{}
+)
 
 // A constraint that *sql.DB, *sql.Tx and *sql.Conn satisfy
 type stdInterface interface {

@@ -18,12 +18,14 @@ import (
 	"github.com/stephenafamo/bob/dialect"
 )
 
-var rgxTabs = regexp.MustCompile(`\t`)
-var rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
-var rgxBacktics = regexp.MustCompile(`\x60 \+ "(\x60\w*\x60)" \+ \x60`)
+var (
+	rgxTabs          = regexp.MustCompile(`\t`)
+	rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
+	rgxBacktics      = regexp.MustCompile(`\x60 \+ "(\x60\w*\x60)" \+ \x60`)
+)
 
 func main() {
-	var base = "./dialect"
+	base := "./dialect"
 
 	dialects, err := os.ReadDir(base)
 	if err != nil {
@@ -134,13 +136,13 @@ func (v varVisitor) Visit(n ast.Node) ast.Visitor {
 		return nil
 	}
 
-	var buf = bytes.NewBuffer(nil)
+	buf := bytes.NewBuffer(nil)
 
 	x := n.(*ast.ValueSpec)
 	name := x.Names[0]
 
 	printer.Fprint(buf, v.fset, name)
-	var nameStr = buf.String()
+	nameStr := buf.String()
 	buf.Reset()
 	if nameStr != "examples" {
 		return nil
@@ -152,7 +154,7 @@ func (v varVisitor) Visit(n ast.Node) ast.Visitor {
 	}
 
 	printer.Fprint(buf, v.fset, value.Type)
-	var typeStr = buf.String()
+	typeStr := buf.String()
 	_ = typeStr
 
 	if _, final, _ := strings.Cut(nameStr, "."); final == "Testcases" {
@@ -243,14 +245,14 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 		return nil
 	}
 
-	var buf = bytes.NewBuffer(nil)
+	buf := bytes.NewBuffer(nil)
 
 	printer.Fprint(buf, c.fset, kv.Key)
-	var key = buf.String()
+	key := buf.String()
 	buf.Reset()
 
 	printer.Fprint(buf, c.fset, kv.Value)
-	var val = buf.String()
+	val := buf.String()
 
 	switch key {
 	case "Doc":
@@ -291,7 +293,7 @@ func (a *argVisitor) Visit(n ast.Node) ast.Visitor {
 		return nil
 	}
 
-	var buf = bytes.NewBuffer(nil)
+	buf := bytes.NewBuffer(nil)
 	printer.Fprint(buf, a.fset, n)
 	raw := buf.String()
 
@@ -309,7 +311,7 @@ func toMarkdown(destination string, cases []testcase) {
 		panic("markdown destination is not set")
 	}
 
-	err := os.MkdirAll(filepath.Dir(destination), 0755)
+	err := os.MkdirAll(filepath.Dir(destination), 755)
 	if err != nil {
 		panic(err)
 	}
@@ -351,7 +353,7 @@ func toMarkdown(destination string, cases []testcase) {
 
 func reindent(s string) string {
 	var minLead []byte
-	var firstline = true
+	firstline := true
 
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {
