@@ -311,7 +311,7 @@ func toMarkdown(destination string, cases []testcase) {
 		panic("markdown destination is not set")
 	}
 
-	err := os.MkdirAll(filepath.Dir(destination), 755)
+	err := os.MkdirAll(filepath.Dir(destination), 0o755)
 	if err != nil {
 		panic(err)
 	}
@@ -323,7 +323,7 @@ func toMarkdown(destination string, cases []testcase) {
 		}
 
 		if c.doc == "" {
-			c.doc = strings.Title(c.name)
+			c.doc = strings.Title(c.name) //nolint:staticcheck
 		}
 		// write the sql query
 		fmt.Fprintf(buf, "## %s\n\nSQL:\n\n```sql\n%s\n```\n\n", c.doc, c.query)
