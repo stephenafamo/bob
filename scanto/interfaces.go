@@ -1,4 +1,4 @@
-package bob
+package scanto
 
 import (
 	"context"

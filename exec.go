@@ -2,9 +2,11 @@ package bob
 
 import (
 	"context"
+
+	"github.com/stephenafamo/bob/scanto"
 )
 
-func One[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) (T, error) {
+func One[T any](ctx context.Context, exec scanto.Queryer, q Query, m scanto.MapperGen[T]) (T, error) {
 	var t T
 
 	sql, args, err := Build(q)
@@ -12,80 +14,14 @@ func One[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) (T, 
 		return t, err
 	}
 
-	rows, err := exec.QueryContext(ctx, sql, args...)
-	if err != nil {
-		return t, err
-	}
-	defer rows.Close()
-
-	v, err := newValues(rows)
-	if err != nil {
-		return t, err
-	}
-
-	genFunc := m(v.columnsCopy())
-
-	// Record the mapping
-	v.recording = true
-	if _, err = genFunc(v); err != nil {
-		return t, err
-	}
-	v.recording = false
-
-	rows.Next()
-	if err = v.scanRow(rows); err != nil {
-		return t, err
-	}
-
-	t, err = genFunc(v)
-	if err != nil {
-		return t, err
-	}
-
-	return t, rows.Err()
+	return scanto.One[T](ctx, exec, m, sql, args...)
 }
 
-func All[T any](ctx context.Context, exec Queryer, q Query, m MapperGen[T]) ([]T, error) {
-	var results []T
-
+func All[T any](ctx context.Context, exec scanto.Queryer, q Query, m scanto.MapperGen[T]) ([]T, error) {
 	sql, args, err := Build(q)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := exec.QueryContext(ctx, sql, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	v, err := newValues(rows)
-	if err != nil {
-		return nil, err
-	}
-
-	genFunc := m(v.columnsCopy())
-
-	// Record the mapping
-	v.recording = true
-	if _, err = genFunc(v); err != nil {
-		return nil, err
-	}
-	v.recording = false
-
-	for rows.Next() {
-		err = v.scanRow(rows)
-		if err != nil {
-			return nil, err
-		}
-
-		one, err := genFunc(v)
-		if err != nil {
-			return nil, err
-		}
-
-		results = append(results, one)
-	}
-
-	return results, rows.Err()
+	return scanto.All[T](ctx, exec, m, sql, args...)
 }

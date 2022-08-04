@@ -54,6 +54,9 @@ linters-settings:
 
 issues:
   exclude-rules:
+    - path: .
+      linters:
+        - typecheck
     # Exclude some linters from running on tests files.
     - path: _test\.go
       linters:

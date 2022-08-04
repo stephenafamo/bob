@@ -1,4 +1,4 @@
-package bob
+package scanto
 
 import (
 	"reflect"
@@ -49,6 +49,12 @@ type Values struct {
 	recording bool
 	types     map[string]reflect.Type
 	scanned   []any
+}
+
+// IsRecording returns wether the values are currently in recording mode
+// When recording, calls to Get() will record the expected type
+func (v *Values) IsRecording() bool {
+	return v.recording
 }
 
 // To get a copy of the columns to pass to mapper generators
