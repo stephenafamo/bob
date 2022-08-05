@@ -1263,5 +1263,3 @@ func colTypeToReflectType(typ string) reflect.Type {
 	}
 	panic("invalid fakedb column type of " + typ)
 }
-
-

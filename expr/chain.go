@@ -85,7 +85,7 @@ func (x Chain[T, B]) And(targets ...any) T {
 	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " AND "})
 }
 
-// Concatenate: `||``
+// Concatenate: ||
 func (x Chain[T, B]) Concat(targets ...any) T {
 	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " || "})
 }

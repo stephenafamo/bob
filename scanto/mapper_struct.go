@@ -154,9 +154,11 @@ func WithFieldNameMapper(mapperFn NameMapperFunc) MappingOption {
 // In order for reflection to capture the interface type, you must pass it by pointer.
 //
 // For example your database library defines a scanner interface like this:
-// type Scanner interface {
-//     Scan(...) error
-// }
+//
+//	type Scanner interface {
+//	    Scan(...) error
+//	}
+//
 // You can pass it to dbscan this way:
 // dbscan.WithScannableTypes((*Scanner)(nil)).
 func WithScannableTypes(scannableTypes ...interface{}) MappingOption {
