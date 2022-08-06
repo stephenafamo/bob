@@ -1,6 +1,7 @@
-github.com/google/go-cmp v0.5.7 h1:81/ik6ipDQS2aGcBfIN5dHDB36BwrStyeAQquSYCV4o=
-github.com/google/go-cmp v0.5.7/go.mod h1:n+brtR0CgQNWTVd5ZUFpTBC8YFBDLK/h/bpaJ8/DtOE=
+github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
+github.com/google/go-cmp v0.5.8/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/jinzhu/copier v0.3.5 h1:GlvfUwHk62RokgqVNvYsku0TATCF7bAHVwEXoBh3iJg=
 github.com/jinzhu/copier v0.3.5/go.mod h1:DfbEm0FYsaqBcKcFuvmOZb218JkPGtvSHsKg8S8hyyg=
-golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
-golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+github.com/stephenafamo/fakedb v0.0.0-20220805120735-35a21624803f h1:rAkxfJo5lnBYDB1W+WPsZx3AgvxcBJFxkWPLqafKctI=
+github.com/stephenafamo/scan v0.0.0-20220806221333-463cf920d95f h1:kcMADsgGE36SwQ2pWL9eG3XSGpW+ERbvpUHDj9SFx0w=
+github.com/stephenafamo/scan v0.0.0-20220806221333-463cf920d95f/go.mod h1:JFXl5FYQUbFWNFjlXIN6TLCh4fKOaMB2VYj0HbV6hRY=
