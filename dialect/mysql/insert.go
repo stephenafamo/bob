@@ -170,7 +170,7 @@ func (qm InsertQM) Values(clauses ...any) bob.Mod[*insertQuery] {
 
 // Insert from a query
 // If Go allows type parameters on methods, limit this to select, table and raw
-func (qm InsertQM) Query(q bob.BaseQuery[*selectQuery]) bob.Mod[*insertQuery] {
+func (qm InsertQM) Query(q bob.Query) bob.Mod[*insertQuery] {
 	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
 		i.Query = q
 	})
