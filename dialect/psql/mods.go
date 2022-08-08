@@ -79,7 +79,7 @@ func (j joinChain[Q]) Natural() bob.Mod[Q] {
 
 func (j joinChain[Q]) On(on ...any) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, on)
+	jo.On = append(jo.On, on...)
 
 	return mods.Join[Q](jo)
 }
