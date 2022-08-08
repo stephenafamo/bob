@@ -165,7 +165,6 @@ func (selectQM) FromFunction(funcs ...*function) bob.Mod[*SelectQuery] {
 		}
 
 		q.SetTable(functions(funcs))
-		return
 	})
 }
 
