@@ -26,7 +26,7 @@ type DeleteQuery struct {
 	clause.With
 	only bool
 	clause.Table
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.Returning
 }
@@ -53,7 +53,8 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressSlice(w, dl, start+len(args), d.FromItems.Items, "\nUSING ", ",\n", "")
+	usingArgs, err := bob.ExpressIf(w, dl, start+len(args), d.From,
+		d.From.Table != nil, "\nUSING ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +82,8 @@ var DeleteQM = deleteQM{}
 
 type deleteQM struct {
 	withMod[*DeleteQuery]
-	mods.FromMod[*DeleteQuery]
-	fromItemMod
-	joinMod[*clause.FromItem]
+	fromItemMod[*DeleteQuery]
+	joinMod[*clause.From]
 }
 
 func (qm deleteQM) Only() bob.Mod[*DeleteQuery] {
@@ -109,8 +109,10 @@ func (qm deleteQM) FromAs(name any, alias string) bob.Mod[*DeleteQuery] {
 	})
 }
 
-func (qm deleteQM) Using(table any, usingMods ...bob.Mod[*clause.FromItem]) bob.Mod[*DeleteQuery] {
-	return qm.FromMod.From(table, usingMods...)
+func (qm deleteQM) Using(table any) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
+		q.SetTable(table)
+	})
 }
 
 func (qm deleteQM) Where(e bob.Expression) bob.Mod[*DeleteQuery] {

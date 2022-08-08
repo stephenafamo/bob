@@ -35,23 +35,34 @@ func (withMod[Q]) Recursive(r bool) bob.Mod[Q] {
 	return mods.Recursive[Q](r)
 }
 
-type fromItemMod struct{}
+type fromItemMod[Q interface {
+	SetTableAlias(alias string, columns ...string)
+	SetOnly(bool)
+	SetLateral(bool)
+	SetWithOrdinality(bool)
+}] struct{}
 
-func (fromItemMod) Only() bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		q.Only = true
+func (fromItemMod[Q]) As(alias string, columns ...string) bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetTableAlias(alias, columns...)
 	})
 }
 
-func (fromItemMod) Lateral() bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		q.Lateral = true
+func (fromItemMod[Q]) Only() bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetOnly(true)
 	})
 }
 
-func (fromItemMod) WithOrdinality() bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		q.WithOrdinality = true
+func (fromItemMod[Q]) Lateral() bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetLateral(true)
+	})
+}
+
+func (fromItemMod[Q]) WithOrdinality() bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetWithOrdinality(true)
 	})
 }
 

@@ -58,18 +58,26 @@ func (c cteChain[Q]) Materialized() cteChain[Q] {
 	})
 }
 
-type fromItemMod struct{}
+type fromItemMod[Q interface {
+	SetTableAlias(alias string, columns ...string)
+	SetIndexedBy(i *string)
+}] struct{}
 
-func (fromItemMod) NotIndexed() bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		var s string
-		q.IndexedBy = &s
+func (fromItemMod[Q]) As(alias string, columns ...string) bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetTableAlias(alias, columns...)
 	})
 }
 
-func (fromItemMod) IndexedBy(indexName string) bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		q.IndexedBy = &indexName
+func (fromItemMod[Q]) NotIndexed() bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetIndexedBy(nil)
+	})
+}
+
+func (fromItemMod[Q]) IndexedBy(indexName string) bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetIndexedBy(&indexName)
 	})
 }
 

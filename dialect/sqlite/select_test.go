@@ -31,10 +31,8 @@ func TestSelect(t *testing.T) {
 		},
 		"with rows from": {
 			Query: sqlite.Select(
-				qm.From(
-					sqlite.F("generate_series", 1, 3),
-					qm.As("x", "p", "q", "s"),
-				),
+				qm.From(sqlite.F("generate_series", 1, 3)),
+				qm.As("x", "p", "q", "s"),
 				qm.OrderBy("p"),
 			),
 			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s") ORDER BY p`,
@@ -64,8 +62,8 @@ func TestSelect(t *testing.T) {
 							Minus("created_date").
 							As("difference")),
 					qm.From("presales_presalestatus")),
-					qm.As("differnce_by_status"),
 				),
+				qm.As("differnce_by_status"),
 				qm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
 				qm.GroupBy("status"),
 			),

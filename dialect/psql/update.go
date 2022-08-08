@@ -28,7 +28,7 @@ type UpdateQuery struct {
 	only bool
 	clause.Table
 	clause.Set
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.Returning
 }
@@ -61,7 +61,8 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, setArgs...)
 
-	fromArgs, err := bob.ExpressSlice(w, d, start+len(args), u.FromItems.Items, "\nFROM ", ",\n", "")
+	fromArgs, err := bob.ExpressIf(w, d, start+len(args), u.From,
+		u.From.Table != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +90,8 @@ var UpdateQM = updateQM{}
 
 type updateQM struct {
 	withMod[*UpdateQuery]
-	mods.FromMod[*UpdateQuery]
-	fromItemMod
-	joinMod[*clause.FromItem]
+	fromItemMod[*UpdateQuery]
+	joinMod[*clause.From]
 }
 
 func (qm updateQM) Only() bob.Mod[*UpdateQuery] {
@@ -123,6 +123,12 @@ func (qm updateQM) Set(a string, b any) bob.Mod[*UpdateQuery] {
 
 func (qm updateQM) SetArg(a string, b any) bob.Mod[*UpdateQuery] {
 	return mods.Set[*UpdateQuery]{expr.OP("=", Quote(a), Arg(b))}
+}
+
+func (updateQM) From(table any) bob.Mod[*UpdateQuery] {
+	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
+		q.SetTable(table)
+	})
 }
 
 func (qm updateQM) Where(e bob.Expression) bob.Mod[*UpdateQuery] {

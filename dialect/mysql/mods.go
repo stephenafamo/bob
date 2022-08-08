@@ -26,19 +26,27 @@ func (withMod[Q]) Recursive(r bool) bob.Mod[Q] {
 	return mods.Recursive[Q](r)
 }
 
-type fromItemMod struct {
-	mods.TableAliasMod[*clause.FromItem] // Adding an alias to from item
-	partitionMod[*clause.FromItem]       // for partitions
+type fromItemMod[Q interface {
+	SetTableAlias(alias string, columns ...string)
+	SetLateral(bool)
+}] struct {
+	partitionMod[*clause.From] // for partitions
 }
 
-func (fromItemMod) Lateral() bob.Mod[*clause.FromItem] {
-	return mods.QueryModFunc[*clause.FromItem](func(q *clause.FromItem) {
-		q.Lateral = true
+func (fromItemMod[Q]) As(alias string, columns ...string) bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetTableAlias(alias, columns...)
 	})
 }
 
-func (fromItemMod) UseIndex(first string, others ...string) *indexHintChain[*clause.FromItem] {
-	return &indexHintChain[*clause.FromItem]{
+func (fromItemMod[Q]) Lateral() bob.Mod[Q] {
+	return mods.QueryModFunc[Q](func(q Q) {
+		q.SetLateral(true)
+	})
+}
+
+func (fromItemMod[Q]) UseIndex(first string, others ...string) *indexHintChain[*clause.From] {
+	return &indexHintChain[*clause.From]{
 		hint: clause.IndexHint{
 			Type:    "USE",
 			Indexes: append([]string{first}, others...),
@@ -46,8 +54,8 @@ func (fromItemMod) UseIndex(first string, others ...string) *indexHintChain[*cla
 	}
 }
 
-func (fromItemMod) IgnoreIndex(first string, others ...string) *indexHintChain[*clause.FromItem] {
-	return &indexHintChain[*clause.FromItem]{
+func (fromItemMod[Q]) IgnoreIndex(first string, others ...string) *indexHintChain[*clause.From] {
+	return &indexHintChain[*clause.From]{
 		hint: clause.IndexHint{
 			Type:    "IGNORE",
 			Indexes: append([]string{first}, others...),
@@ -55,8 +63,8 @@ func (fromItemMod) IgnoreIndex(first string, others ...string) *indexHintChain[*
 	}
 }
 
-func (fromItemMod) ForceIndex(first string, others ...string) *indexHintChain[*clause.FromItem] {
-	return &indexHintChain[*clause.FromItem]{
+func (fromItemMod[Q]) ForceIndex(first string, others ...string) *indexHintChain[*clause.From] {
+	return &indexHintChain[*clause.From]{
 		hint: clause.IndexHint{
 			Type:    "FORCE",
 			Indexes: append([]string{first}, others...),

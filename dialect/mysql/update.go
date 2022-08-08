@@ -29,7 +29,7 @@ type updateQuery struct {
 
 	clause.With
 	clause.Set
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.OrderBy
 	clause.Limit
@@ -45,7 +45,7 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, withArgs...)
 
-	w.Write([]byte("UPDATE "))
+	w.Write([]byte("UPDATE"))
 
 	// no optimizer hint args
 	_, err = bob.ExpressIf(w, d, start+len(args), u.hints,
@@ -56,16 +56,17 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 
 	// no modifiers args
 	_, err = bob.ExpressIf(w, d, start+len(args), u.modifiers,
-		len(u.modifiers.modifiers) > 0, "", " ")
+		len(u.modifiers.modifiers) > 0, " ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	tableArgs, err := bob.ExpressSlice(w, d, start+len(args), u.FromItems.Items, "\n", ",\n", "")
+	fromArgs, err := bob.ExpressIf(w, d, start+len(args), u.From,
+		u.From.Table != nil, " ", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, tableArgs...)
+	args = append(args, fromArgs...)
 
 	setArgs, err := bob.ExpressIf(w, d, start+len(args), u.Set, true, " ", "")
 	if err != nil {
@@ -99,10 +100,8 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 type UpdateQM struct {
 	hintMod[*updateQuery] // for optimizer hints
 	withMod[*updateQuery]
-
-	fromMod mods.FromMod[*updateQuery] // we don't use it as FROM
-	fromItemMod
-	joinMod[*clause.FromItem]
+	fromItemMod[*updateQuery]
+	joinMod[*clause.From]
 }
 
 func (UpdateQM) LowPriority() bob.Mod[*deleteQuery] {
@@ -117,12 +116,21 @@ func (UpdateQM) Ignore() bob.Mod[*deleteQuery] {
 	})
 }
 
-func (u UpdateQM) Table(name any, mods ...bob.Mod[*clause.FromItem]) bob.Mod[*updateQuery] {
-	return u.fromMod.From(name, mods...)
+func (u UpdateQM) Table(name any) bob.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(u *updateQuery) {
+		u.Table = clause.Table{
+			Expression: name,
+		}
+	})
 }
 
-func (u UpdateQM) TableAs(name any, alias string, mods ...bob.Mod[*clause.FromItem]) bob.Mod[*updateQuery] {
-	return u.fromMod.From(name, append(mods, u.As(alias))...)
+func (u UpdateQM) TableAs(name any, alias string) bob.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(u *updateQuery) {
+		u.Table = clause.Table{
+			Expression: name,
+			Alias:      alias,
+		}
+	})
 }
 
 func (UpdateQM) Set(a string, b any) bob.Mod[*updateQuery] {

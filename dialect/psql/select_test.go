@@ -43,14 +43,14 @@ func TestSelect(t *testing.T) {
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(
-				qm.From(
+				qm.FromFunction(
 					psql.F(
 						"json_to_recordset",
 						psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
 					).Col("a", "INTEGER").Col("b", "TEXT"),
 					psql.F("generate_series", 1, 3),
-					qm.As("x", "p", "q", "s"),
 				),
+				qm.As("x", "p", "q", "s"),
 				qm.OrderBy("p"),
 			),
 			ExpectedSQL: `SELECT *
@@ -87,7 +87,8 @@ func TestSelect(t *testing.T) {
 							Minus("created_date").
 							As("difference")),
 					qm.From("presales_presalestatus")),
-					qm.As("differnce_by_status")),
+				),
+				qm.As("differnce_by_status"),
 				qm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
 				qm.GroupBy("status"),
 			),

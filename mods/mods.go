@@ -28,23 +28,6 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
-type FromItems[Q interface{ AppendFromItem(clause.FromItem) }] clause.FromItem
-
-func (f FromItems[Q]) Apply(q Q) {
-	q.AppendFromItem(clause.FromItem(f))
-}
-
-type TableAs[Q interface {
-	SetTableAlias(alias string, columns ...string)
-}] struct {
-	Alias   string
-	Columns []string
-}
-
-func (t TableAs[Q]) Apply(q Q) {
-	q.SetTableAlias(t.Alias, t.Columns...)
-}
-
 type Join[Q interface{ AppendJoin(clause.Join) }] clause.Join
 
 func (j Join[Q]) Apply(q Q) {

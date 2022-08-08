@@ -26,9 +26,9 @@ func Update(queryMods ...bob.Mod[*updateQuery]) bob.BaseQuery[*updateQuery] {
 type updateQuery struct {
 	clause.With
 	or
-	clause.FromItem
+	table clause.From
 	clause.Set
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.Returning
 }
@@ -50,7 +50,7 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 		return nil, err
 	}
 
-	tableArgs, err := bob.ExpressIf(w, d, start+len(args), u.FromItem, true, " ", "")
+	tableArgs, err := bob.ExpressIf(w, d, start+len(args), u.table, true, " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,8 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, setArgs...)
 
-	fromArgs, err := bob.ExpressSlice(w, d, start+len(args), u.FromItems.Items, "\nFROM ", ",\n", "")
+	fromArgs, err := bob.ExpressIf(w, d, start+len(args), u.From,
+		u.From.Table != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -86,40 +87,35 @@ func (u updateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 }
 
 type UpdateQM struct {
-	withMod[*updateQuery]      // For CTEs
-	mods.FromMod[*updateQuery] // update *FROM*
-	joinMod[*clause.FromItem]  // joins, which are mods of the FROM
-	fromItemMod                // Dialect specific fromItem mods
-	orMod[*updateQuery]        // UPDATE or REPLACE|ABORT|IGNORE e.t.c.
+	withMod[*updateQuery]     // For CTEs
+	joinMod[*clause.From]     // joins, which are mods of the FROM
+	fromItemMod[*updateQuery] // Dialect specific fromItem mods
+	orMod[*updateQuery]       // UPDATE or REPLACE|ABORT|IGNORE e.t.c.
 }
 
 func (qm UpdateQM) Table(name any) bob.Mod[*updateQuery] {
 	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
-		q.Table = clause.Table{
-			Expression: name,
-		}
+		q.table.Table = name
 	})
 }
 
 func (qm UpdateQM) TableAs(name any, alias string) bob.Mod[*updateQuery] {
 	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
-		q.Table = clause.Table{
-			Expression: name,
-			Alias:      alias,
-		}
+		q.table.Table = name
+		q.table.Alias = alias
 	})
 }
 
-func (qm UpdateQM) NotIndexed() bob.Mod[*updateQuery] {
+func (qm UpdateQM) TableIndexedBy(i string) bob.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
+		q.table.IndexedBy = &i
+	})
+}
+
+func (qm UpdateQM) TableNotIndexed() bob.Mod[*updateQuery] {
 	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
 		var s string
-		q.IndexedBy = &s
-	})
-}
-
-func (qm UpdateQM) IndexedBy(indexName string) bob.Mod[*updateQuery] {
-	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
-		q.IndexedBy = &indexName
+		q.table.IndexedBy = &s
 	})
 }
 
@@ -129,6 +125,12 @@ func (qm UpdateQM) Set(a string, b any) bob.Mod[*updateQuery] {
 
 func (qm UpdateQM) SetArg(a string, b any) bob.Mod[*updateQuery] {
 	return mods.Set[*updateQuery]{expr.OP("=", Quote(a), Arg(b))}
+}
+
+func (UpdateQM) From(table any) bob.Mod[*updateQuery] {
+	return mods.QueryModFunc[*updateQuery](func(q *updateQuery) {
+		q.SetTable(table)
+	})
 }
 
 func (qm UpdateQM) Where(e bob.Expression) bob.Mod[*updateQuery] {

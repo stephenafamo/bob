@@ -7,18 +7,6 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type FromItems struct {
-	Items []FromItem
-}
-
-func (f *FromItems) AppendFromItem(item FromItem) {
-	f.Items = append(f.Items, item)
-}
-
-func (f FromItems) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressSlice(w, d, start, f.Items, "", ",\n", "")
-}
-
 /*
 https://www.postgresql.org/docs/current/sql-select.html#SQL-WITH
 
@@ -42,7 +30,7 @@ SQLite: https://www.sqlite.org/syntax/table-or-subbob.html
 MySQL: https://dev.mysql.com/doc/refman/8.0/en/join.html
 */
 
-type FromItem struct {
+type From struct {
 	Table any
 
 	// Aliases
@@ -61,24 +49,44 @@ type FromItem struct {
 	Joins []Join
 }
 
-func (f *FromItem) SetTableAlias(alias string, columns ...string) {
+func (f *From) SetTable(table any) {
+	f.Table = table
+}
+
+func (f *From) SetTableAlias(alias string, columns ...string) {
 	f.Alias = alias
 	f.Columns = columns
 }
 
-func (f *FromItem) AppendJoin(j Join) {
+func (f *From) SetOnly(only bool) {
+	f.Only = only
+}
+
+func (f *From) SetLateral(lateral bool) {
+	f.Lateral = lateral
+}
+
+func (f *From) SetWithOrdinality(to bool) {
+	f.WithOrdinality = to
+}
+
+func (f *From) SetIndexedBy(i *string) {
+	f.IndexedBy = i
+}
+
+func (f *From) AppendJoin(j Join) {
 	f.Joins = append(f.Joins, j)
 }
 
-func (f *FromItem) AppendPartition(partitions ...string) {
+func (f *From) AppendPartition(partitions ...string) {
 	f.Partitions = append(f.Partitions, partitions...)
 }
 
-func (f *FromItem) AppendIndexHint(i IndexHint) {
+func (f *From) AppendIndexHint(i IndexHint) {
 	f.IndexHints = append(f.IndexHints, i)
 }
 
-func (f FromItem) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Table == nil {
 		return nil, nil
 	}
@@ -91,9 +99,16 @@ func (f FromItem) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 		w.Write([]byte("LATERAL "))
 	}
 
+	_, isQuery := f.Table.(bob.Query)
+	if isQuery {
+		w.Write([]byte("("))
+	}
 	args, err := bob.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err
+	}
+	if isQuery {
+		w.Write([]byte(")"))
 	}
 
 	if f.WithOrdinality {

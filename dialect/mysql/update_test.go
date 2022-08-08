@@ -22,8 +22,7 @@ func TestUpdate(t *testing.T) {
 		},
 		"update multiple tables": {
 			Query: mysql.Update(
-				qm.Table("employees"),
-				qm.Table("accounts"),
+				qm.Table("employees, accounts"),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
 				qm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),

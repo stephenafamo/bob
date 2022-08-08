@@ -59,16 +59,6 @@ func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	return args, nil
 }
 
-// Multiple functions can be uses as a goup with ROWS FROM
-func (f *function) Apply(q *clause.FromItem) {
-	switch fs := q.Table.(type) {
-	case functions:
-		q.Table = append(fs, f)
-	default:
-		q.Table = functions{f}
-	}
-}
-
 func (f *function) Over(window string) *functionOver {
 	fo := &functionOver{
 		function: f,
@@ -126,7 +116,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 	return append(fargs, winargs...), nil
 }
 
-type functions []any
+type functions []*function
 
 func (f functions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {

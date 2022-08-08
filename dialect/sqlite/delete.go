@@ -24,7 +24,7 @@ func Delete(queryMods ...bob.Mod[*deleteQuery]) bob.BaseQuery[*deleteQuery] {
 // https://www.sqlite.org/lang_delete.html
 type deleteQuery struct {
 	clause.With
-	clause.FromItem
+	clause.From
 	clause.Where
 	clause.Returning
 }
@@ -41,7 +41,7 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 
 	w.Write([]byte("DELETE FROM"))
 
-	tableArgs, err := bob.ExpressIf(w, dl, start+len(args), d.FromItem, true, " ", "")
+	tableArgs, err := bob.ExpressIf(w, dl, start+len(args), d.From, true, " ", "")
 	if err != nil {
 		return nil, err
 	}

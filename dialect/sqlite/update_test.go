@@ -40,7 +40,7 @@ func TestUpdate(t *testing.T) {
 			ExpectedArgs: []any{"Acme Corporation"},
 			Query: sqlite.Update(
 				qm.TableAs("employees", "e"),
-				qm.NotIndexed(),
+				qm.TableNotIndexed(),
 				qm.Set("sales_count", "sales_count + 1"),
 				qm.Where(sqlite.X("id").EQ(sqlite.P(sqlite.Select(
 					selectQM.Columns("sales_person"),

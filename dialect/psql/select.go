@@ -25,7 +25,7 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 type SelectQuery struct {
 	clause.With
 	clause.Select
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.GroupBy
 	clause.Having
@@ -54,7 +54,7 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, selArgs...)
 
-	fromArgs, err := bob.ExpressSlice(w, d, start+len(args), s.FromItems.Items, "\nFROM ", ",\n", "")
+	fromArgs, err := bob.ExpressIf(w, d, start+len(args), s.From, true, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +135,9 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 var SelectQM = selectQM{}
 
 type selectQM struct {
-	withMod[*SelectQuery]                // For CTEs
-	mods.FromMod[*SelectQuery]           // select *FROM*
-	joinMod[*clause.FromItem]            // joins, which are mods of the FROM
-	mods.TableAliasMod[*clause.FromItem] // Adding an alias to from item
-	fromItemMod                          // Dialect specific fromItem mods
+	withMod[*SelectQuery]     // For CTEs
+	joinMod[*SelectQuery]     // joins, which are mods of the FROM
+	fromItemMod[*SelectQuery] // Dialect specific fromItem mods
 }
 
 func (selectQM) Distinct(on ...any) bob.Mod[*SelectQuery] {
@@ -147,6 +145,27 @@ func (selectQM) Distinct(on ...any) bob.Mod[*SelectQuery] {
 		q.Select.Modifiers = []any{
 			distinct{on: on},
 		}
+	})
+}
+
+func (selectQM) From(table any) bob.Mod[*SelectQuery] {
+	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
+		q.SetTable(table)
+	})
+}
+
+func (selectQM) FromFunction(funcs ...*function) bob.Mod[*SelectQuery] {
+	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
+		if len(funcs) == 0 {
+			return
+		}
+		if len(funcs) == 1 {
+			q.SetTable(funcs[0])
+			return
+		}
+
+		q.SetTable(functions(funcs))
+		return
 	})
 }
 

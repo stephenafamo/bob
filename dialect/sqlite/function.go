@@ -20,7 +20,7 @@ type function struct {
 }
 
 // A function can be a target for a query
-func (f *function) Apply(q *clause.FromItem) {
+func (f *function) Apply(q *clause.From) {
 	q.Table = f
 }
 

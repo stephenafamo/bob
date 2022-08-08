@@ -29,7 +29,7 @@ type deleteQuery struct {
 	modifiers[string]
 	partitions
 	tables []clause.Table
-	clause.FromItems
+	clause.From
 	clause.Where
 	clause.OrderBy
 	clause.Limit
@@ -67,7 +67,8 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressSlice(w, dl, start+len(args), d.FromItems.Items, "\nUSING ", ",\n", "")
+	usingArgs, err := bob.ExpressIf(w, dl, start+len(args), d.From,
+		d.From.Table != nil, "\nUSING ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +100,8 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 type DeleteQM struct {
 	hintMod[*deleteQuery] // for optimizer hints
 	withMod[*deleteQuery]
-	mods.FromMod[*deleteQuery]
-	fromItemMod
-	joinMod[*clause.FromItem]
+	fromItemMod[*deleteQuery]
+	joinMod[*clause.From]
 }
 
 func (DeleteQM) LowPriority() bob.Mod[*deleteQuery] {
@@ -139,8 +139,10 @@ func (qm DeleteQM) FromAs(name any, alias string) bob.Mod[*deleteQuery] {
 	})
 }
 
-func (qm DeleteQM) Using(table any, usingMods ...bob.Mod[*clause.FromItem]) bob.Mod[*deleteQuery] {
-	return qm.FromMod.From(table, usingMods...)
+func (qm DeleteQM) Using(table any) bob.Mod[*deleteQuery] {
+	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+		q.SetTable(table)
+	})
 }
 
 func (qm DeleteQM) Where(e bob.Expression) bob.Mod[*deleteQuery] {

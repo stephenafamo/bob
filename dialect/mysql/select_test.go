@@ -33,8 +33,8 @@ func TestSelect(t *testing.T) {
 			Query: mysql.Select(
 				qm.From(
 					mysql.F("generate_series", 1, 3),
-					qm.As("x", "p", "q", "s"),
 				),
+				qm.As("x", "p", "q", "s"),
 				qm.OrderBy("p"),
 			),
 			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS ` + "`x`" + ` (` + "`p`" + `, ` + "`q`" + `, ` + "`s`" + `) ORDER BY p`,
@@ -64,8 +64,8 @@ func TestSelect(t *testing.T) {
 							Minus("created_date").
 							As("difference")),
 					qm.From("presales_presalestatus")),
-					qm.As("differnce_by_status"),
 				),
+				qm.As("differnce_by_status"),
 				qm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
 				qm.GroupBy("status"),
 			),
