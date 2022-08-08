@@ -107,7 +107,7 @@ However, if using an unspported mod, the error will be displayed at compile time
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
 
 ```go
-var selMod = psql.SelectQM{}
+var selMod = psql.SelectQM
 cte := psql.Select(
     selMod.From("users"),
     selMod.Where(psql.X("age").GTE(21)),
@@ -119,7 +119,7 @@ psql.Select(
     selMod.From("projects"),
 )
 
-var inMod = psql.InsertQM{}
+var inMod = psql.InsertQM
 psql.Insert(
     inMod.With("adults").As(cte), // works as well
     inMod.From("projects"), // ERROR: Does not compile!!!

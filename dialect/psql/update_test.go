@@ -8,8 +8,8 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	qm := psql.UpdateQM{}
-	selectQM := psql.SelectQM{}
+	qm := psql.UpdateQM
+	selectQM := psql.SelectQM
 	examples := d.Testcases{
 		"simple": {
 			Query: psql.Update(

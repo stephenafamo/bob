@@ -8,13 +8,13 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
-	q := &insertQuery{}
+func Insert(queryMods ...bob.Mod[*InsertQuery]) bob.BaseQuery[*InsertQuery] {
+	q := &InsertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*insertQuery]{
+	return bob.BaseQuery[*InsertQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -22,7 +22,7 @@ func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-insert.html
-type insertQuery struct {
+type InsertQuery struct {
 	clause.With
 	overriding string
 	clause.Table
@@ -31,7 +31,7 @@ type insertQuery struct {
 	clause.Returning
 }
 
-func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := bob.ExpressIf(w, d, start+len(args), i.With,
@@ -78,12 +78,15 @@ func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	return args, nil
 }
 
-type InsertQM struct {
-	withMod[*insertQuery]
+//nolint:gochecknoglobals
+var InsertQM = insertQM{}
+
+type insertQM struct {
+	withMod[*InsertQuery]
 }
 
-func (qm InsertQM) Into(name any, columns ...string) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) Into(name any, columns ...string) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Columns:    columns,
@@ -91,8 +94,8 @@ func (qm InsertQM) Into(name any, columns ...string) bob.Mod[*insertQuery] {
 	})
 }
 
-func (qm InsertQM) IntoAs(name any, alias string, columns ...string) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) IntoAs(name any, alias string, columns ...string) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -101,36 +104,36 @@ func (qm InsertQM) IntoAs(name any, alias string, columns ...string) bob.Mod[*in
 	})
 }
 
-func (qm InsertQM) OverridingSystem() bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) OverridingSystem() bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.overriding = "SYSTEM"
 	})
 }
 
-func (qm InsertQM) OverridingUser() bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) OverridingUser() bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.overriding = "USER"
 	})
 }
 
-func (qm InsertQM) Values(clauses ...any) bob.Mod[*insertQuery] {
-	return mods.Values[*insertQuery](clauses)
+func (qm insertQM) Values(clauses ...any) bob.Mod[*InsertQuery] {
+	return mods.Values[*InsertQuery](clauses)
 }
 
 // Insert from a query
 // If Go allows type parameters on methods, limit this to select and raw
-func (qm InsertQM) Query(q bob.Query) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) Query(q bob.Query) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Query = q
 	})
 }
 
 // The column to target. Will auto add brackets
-func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*insertQuery] {
+func (qm insertQM) OnConflict(column any, where ...any) mods.Conflict[*InsertQuery] {
 	if column != nil {
 		column = P(column)
 	}
-	return mods.Conflict[*insertQuery](func() clause.Conflict {
+	return mods.Conflict[*InsertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
 				Target: column,
@@ -140,8 +143,8 @@ func (qm InsertQM) OnConflict(column any, where ...any) mods.Conflict[*insertQue
 	})
 }
 
-func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*insertQuery] {
-	return mods.Conflict[*insertQuery](func() clause.Conflict {
+func (qm insertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*InsertQuery] {
+	return mods.Conflict[*InsertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
 				Target: `ON CONSTRAINT "` + constraint + `"`,
@@ -150,6 +153,6 @@ func (qm InsertQM) OnConflictOnConstraint(constraint string) mods.Conflict[*inse
 	})
 }
 
-func (qm InsertQM) Returning(clauses ...any) bob.Mod[*insertQuery] {
-	return mods.Returning[*insertQuery](clauses)
+func (qm insertQM) Returning(clauses ...any) bob.Mod[*InsertQuery] {
+	return mods.Returning[*InsertQuery](clauses)
 }

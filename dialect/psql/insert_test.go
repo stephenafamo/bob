@@ -8,7 +8,7 @@ import (
 )
 
 func TestInsert(t *testing.T) {
-	qm := psql.InsertQM{}
+	qm := psql.InsertQM
 	examples := d.Testcases{
 		"simple insert": {
 			Query: psql.Insert(

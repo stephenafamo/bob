@@ -8,7 +8,7 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	qm := psql.DeleteQM{}
+	qm := psql.DeleteQM
 	examples := d.Testcases{
 		"simple": {
 			Query: psql.Delete(

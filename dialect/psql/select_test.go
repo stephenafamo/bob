@@ -8,7 +8,7 @@ import (
 )
 
 func TestSelect(t *testing.T) {
-	qm := psql.SelectQM{}
+	qm := psql.SelectQM
 	examples := d.Testcases{
 		"simple select": {
 			Doc:          "Simple Select with some conditions",
