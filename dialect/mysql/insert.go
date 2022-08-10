@@ -9,13 +9,13 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
-	q := &insertQuery{}
+func Insert(queryMods ...bob.Mod[*InsertQuery]) bob.BaseQuery[*InsertQuery] {
+	q := &InsertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*insertQuery]{
+	return bob.BaseQuery[*InsertQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -23,7 +23,7 @@ func Insert(queryMods ...bob.Mod[*insertQuery]) bob.BaseQuery[*insertQuery] {
 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.0/en/insert.html
-type insertQuery struct {
+type InsertQuery struct {
 	hints
 	modifiers[string]
 	partitions
@@ -37,7 +37,7 @@ type insertQuery struct {
 	duplicateKeyUpdate []set
 }
 
-func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
@@ -129,70 +129,73 @@ func (i insertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	return args, nil
 }
 
-func (i *insertQuery) addSet(s set) {
+func (i *InsertQuery) addSet(s set) {
 	i.sets = append(i.sets, s)
 }
 
-type InsertQM struct {
-	setMod[*insertQuery]
-	hintMod[*insertQuery]      // for optimizer hints
-	partitionMod[*insertQuery] // for partitions
+//nolint:gochecknoglobals
+var InsertQM = insertQM{}
+
+type insertQM struct {
+	setMod[*InsertQuery]
+	hintMod[*InsertQuery]      // for optimizer hints
+	partitionMod[*InsertQuery] // for partitions
 }
 
-func (qm InsertQM) Into(name any, columns ...string) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) Into(name any, columns ...string) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.table = name
 		i.columns = columns
 	})
 }
 
-func (qm InsertQM) LowPriority() bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) LowPriority() bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func (qm InsertQM) HighPriority() bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) HighPriority() bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
-func (qm InsertQM) Ignore() bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) Ignore() bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func (qm InsertQM) Values(clauses ...any) bob.Mod[*insertQuery] {
-	return mods.Values[*insertQuery](clauses)
+func (qm insertQM) Values(clauses ...any) bob.Mod[*InsertQuery] {
+	return mods.Values[*InsertQuery](clauses)
 }
 
 // Insert from a query
 // If Go allows type parameters on methods, limit this to select, table and raw
-func (qm InsertQM) Query(q bob.Query) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) Query(q bob.Query) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.Query = q
 	})
 }
 
 // Insert with Set a = b
-func (qm InsertQM) Set(col string, val any) setMod[*insertQuery] {
-	return setMod[*insertQuery]{
+func (qm insertQM) Set(col string, val any) setMod[*InsertQuery] {
+	return setMod[*InsertQuery]{
 		col: col,
 		val: val,
 	}
 }
 
-func (qm InsertQM) As(rowAlias string, colAlias ...string) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) As(rowAlias string, colAlias ...string) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		i.rowAlias = rowAlias
 		i.columnAlias = colAlias
 	})
 }
 
-func (qm InsertQM) OnDuplicateKeyUpdate(sets ...setMod[*insertQuery]) bob.Mod[*insertQuery] {
-	return mods.QueryModFunc[*insertQuery](func(i *insertQuery) {
+func (qm insertQM) OnDuplicateKeyUpdate(sets ...setMod[*InsertQuery]) bob.Mod[*InsertQuery] {
+	return mods.QueryModFunc[*InsertQuery](func(i *InsertQuery) {
 		for _, s := range sets {
 			i.duplicateKeyUpdate = append(i.duplicateKeyUpdate, set(s))
 		}

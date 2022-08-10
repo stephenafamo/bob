@@ -8,13 +8,13 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func Delete(queryMods ...bob.Mod[*deleteQuery]) bob.BaseQuery[*deleteQuery] {
-	q := &deleteQuery{}
+func Delete(queryMods ...bob.Mod[*DeleteQuery]) bob.BaseQuery[*DeleteQuery] {
+	q := &DeleteQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*deleteQuery]{
+	return bob.BaseQuery[*DeleteQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -22,7 +22,7 @@ func Delete(queryMods ...bob.Mod[*deleteQuery]) bob.BaseQuery[*deleteQuery] {
 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.0/en/delete.html
-type deleteQuery struct {
+type DeleteQuery struct {
 	hints
 
 	clause.With
@@ -35,7 +35,7 @@ type deleteQuery struct {
 	clause.Limit
 }
 
-func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := bob.ExpressIf(w, dl, start+len(args), d.With,
@@ -97,41 +97,44 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	return args, nil
 }
 
-type DeleteQM struct {
-	hintMod[*deleteQuery] // for optimizer hints
-	withMod[*deleteQuery]
-	fromItemMod[*deleteQuery]
+//nolint:gochecknoglobals
+var DeleteQM = deleteQM{}
+
+type deleteQM struct {
+	hintMod[*DeleteQuery] // for optimizer hints
+	withMod[*DeleteQuery]
+	fromItemMod[*DeleteQuery]
 	joinMod[*clause.From]
 }
 
-func (DeleteQM) LowPriority() bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(i *deleteQuery) {
+func (deleteQM) LowPriority() bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(i *DeleteQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func (DeleteQM) Quick() bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(i *deleteQuery) {
+func (deleteQM) Quick() bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(i *DeleteQuery) {
 		i.AppendModifier("QUICK")
 	})
 }
 
-func (DeleteQM) Ignore() bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(i *deleteQuery) {
+func (deleteQM) Ignore() bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(i *DeleteQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func (qm DeleteQM) From(name any) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(u *deleteQuery) {
+func (qm deleteQM) From(name any) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
 		u.tables = append(u.tables, clause.Table{
 			Expression: name,
 		})
 	})
 }
 
-func (qm DeleteQM) FromAs(name any, alias string) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(u *deleteQuery) {
+func (qm deleteQM) FromAs(name any, alias string) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(u *DeleteQuery) {
 		u.tables = append(u.tables, clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -139,30 +142,30 @@ func (qm DeleteQM) FromAs(name any, alias string) bob.Mod[*deleteQuery] {
 	})
 }
 
-func (qm DeleteQM) Using(table any) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+func (qm deleteQM) Using(table any) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
 		q.SetTable(table)
 	})
 }
 
-func (qm DeleteQM) Where(e bob.Expression) bob.Mod[*deleteQuery] {
-	return mods.Where[*deleteQuery]{e}
+func (qm deleteQM) Where(e bob.Expression) bob.Mod[*DeleteQuery] {
+	return mods.Where[*DeleteQuery]{e}
 }
 
-func (qm DeleteQM) WhereClause(clause string, args ...any) bob.Mod[*deleteQuery] {
-	return mods.Where[*deleteQuery]{Raw(clause, args...)}
+func (qm deleteQM) WhereClause(clause string, args ...any) bob.Mod[*DeleteQuery] {
+	return mods.Where[*DeleteQuery]{Raw(clause, args...)}
 }
 
-func (DeleteQM) OrderBy(e any) orderBy[*deleteQuery] {
-	return orderBy[*deleteQuery](func() clause.OrderDef {
+func (deleteQM) OrderBy(e any) orderBy[*DeleteQuery] {
+	return orderBy[*DeleteQuery](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func (DeleteQM) Limit(count int64) bob.Mod[*deleteQuery] {
-	return mods.Limit[*deleteQuery]{
+func (deleteQM) Limit(count int64) bob.Mod[*DeleteQuery] {
+	return mods.Limit[*DeleteQuery]{
 		Count: count,
 	}
 }
