@@ -15,7 +15,7 @@ func X[T any, B builder[T]](exp any, others ...any) T {
 	}
 
 	// Wrap in parenthesis if not a raw string or string in quotes
-	switch exp.(type) {
+	switch t := exp.(type) {
 	case string, rawString, quoted:
 		// expected to be printed as it is
 		break
@@ -26,6 +26,8 @@ func X[T any, B builder[T]](exp any, others ...any) T {
 	case group, parentheses:
 		// Already has its own parentheses
 		break
+	case T:
+		return t
 	default:
 		exp = P(exp)
 	}
