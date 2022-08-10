@@ -19,7 +19,7 @@ type function struct {
 	columns []columnDef
 
 	// For chain methods
-	expr.Chain[chain, chain]
+	expr.Chain[Expression, Expression]
 }
 
 func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -99,7 +99,7 @@ type functionOver struct {
 	function *function
 	clause.WindowDef
 	windowChain[*functionOver]
-	expr.Chain[chain, chain]
+	expr.Chain[Expression, Expression]
 }
 
 func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {

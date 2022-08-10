@@ -16,7 +16,7 @@ type function struct {
 	filter []any
 
 	// For chain methods
-	expr.Chain[chain, chain]
+	expr.Chain[Expression, Expression]
 }
 
 // A function can be a target for a query
@@ -65,7 +65,7 @@ type functionOver struct {
 	function *function
 	clause.WindowDef
 	windowChain[*functionOver]
-	expr.Chain[chain, chain]
+	expr.Chain[Expression, Expression]
 }
 
 func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {

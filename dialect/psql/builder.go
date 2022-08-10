@@ -1,28 +1,37 @@
 package psql
 
 import (
+	"strings"
+
 	"github.com/stephenafamo/bob/expr"
 )
 
-type chain struct {
-	expr.Chain[chain, chain]
+type Expression struct {
+	expr.Chain[Expression, Expression]
 }
 
-func (chain) New(exp any) chain {
-	var b chain
+func (Expression) New(exp any) Expression {
+	var b Expression
 	b.Base = exp
 	return b
 }
 
+// Implements fmt.Stringer()
+func (x Expression) String() string {
+	w := strings.Builder{}
+	x.WriteSQL(&w, dialect, 1)
+	return w.String()
+}
+
 // BETWEEN SYMMETRIC a AND b
-func (x chain) BetweenSymmetric(a, b any) chain {
+func (x Expression) BetweenSymmetric(a, b any) Expression {
 	return bmod.X(expr.Join{Exprs: []any{
 		x.Base, "BETWEEN SYMMETRIC", a, "AND", b,
 	}})
 }
 
 // NOT BETWEEN SYMMETRIC a AND b
-func (x chain) NotBetweenSymmetric(a, b any) chain {
+func (x Expression) NotBetweenSymmetric(a, b any) Expression {
 	return bmod.X(expr.Join{Exprs: []any{
 		x.Base, "NOT BETWEEN SYMMETRIC", a, "AND", b,
 	}})

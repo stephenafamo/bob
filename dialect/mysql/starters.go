@@ -3,7 +3,7 @@ package mysql
 import "github.com/stephenafamo/bob/expr"
 
 //nolint:gochecknoglobals
-var bmod = expr.Builder[chain, chain]{}
+var bmod = expr.Builder[Expression, Expression]{}
 
 func F(name string, args ...any) *function {
 	f := &function{
@@ -18,50 +18,50 @@ func F(name string, args ...any) *function {
 	return f
 }
 
-func S(s string) chain {
+func S(s string) Expression {
 	return bmod.S(s)
 }
 
-func X(exp any, others ...any) chain {
+func X(exp any, others ...any) Expression {
 	return bmod.X(exp, others...)
 }
 
-func Not(exp any) chain {
+func Not(exp any) Expression {
 	return bmod.Not(exp)
 }
 
-func Or(args ...any) chain {
+func Or(args ...any) Expression {
 	return bmod.Or(args...)
 }
 
-func And(args ...any) chain {
+func And(args ...any) Expression {
 	return bmod.And(args...)
 }
 
-func Concat(args ...any) chain {
+func Concat(args ...any) Expression {
 	return bmod.Concat(args...)
 }
 
-func Arg(args ...any) chain {
+func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
-func P(exp any) chain {
+func P(exp any) Expression {
 	return bmod.P(exp)
 }
 
-func Placeholder(n uint) chain {
+func Placeholder(n uint) Expression {
 	return bmod.Placeholder(n)
 }
 
-func Raw(query string, args ...any) chain {
+func Raw(query string, args ...any) Expression {
 	return bmod.Raw(query, args...)
 }
 
-func Group(exps ...any) chain {
+func Group(exps ...any) Expression {
 	return bmod.Group(exps...)
 }
 
-func Quote(ss ...string) chain {
+func Quote(ss ...string) Expression {
 	return bmod.Quote(ss...)
 }
