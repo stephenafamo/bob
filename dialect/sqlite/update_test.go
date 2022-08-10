@@ -8,8 +8,8 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	qm := sqlite.UpdateQM{}
-	selectQM := sqlite.SelectQM{}
+	qm := sqlite.UpdateQM
+	selectQM := sqlite.SelectQM
 	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Update(

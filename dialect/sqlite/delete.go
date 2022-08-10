@@ -8,13 +8,13 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func Delete(queryMods ...bob.Mod[*deleteQuery]) bob.BaseQuery[*deleteQuery] {
-	q := &deleteQuery{}
+func Delete(queryMods ...bob.Mod[*DeleteQuery]) bob.BaseQuery[*DeleteQuery] {
+	q := &DeleteQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*deleteQuery]{
+	return bob.BaseQuery[*DeleteQuery]{
 		Expression: q,
 		Dialect:    dialect,
 	}
@@ -22,14 +22,14 @@ func Delete(queryMods ...bob.Mod[*deleteQuery]) bob.BaseQuery[*deleteQuery] {
 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_delete.html
-type deleteQuery struct {
+type DeleteQuery struct {
 	clause.With
 	clause.From
 	clause.Where
 	clause.Returning
 }
 
-func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	withArgs, err := bob.ExpressIf(w, dl, start+len(args), d.With,
@@ -64,20 +64,23 @@ func (d deleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	return args, nil
 }
 
-type DeleteQM struct {
-	withMod[*deleteQuery]
+//nolint:gochecknoglobals
+var DeleteQM = deleteQM{}
+
+type deleteQM struct {
+	withMod[*DeleteQuery]
 }
 
-func (qm DeleteQM) From(name any) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+func (qm deleteQM) From(name any) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
 		q.Table = clause.Table{
 			Expression: name,
 		}
 	})
 }
 
-func (qm DeleteQM) FromAs(name any, alias string) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+func (qm deleteQM) FromAs(name any, alias string) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
 		q.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -85,27 +88,27 @@ func (qm DeleteQM) FromAs(name any, alias string) bob.Mod[*deleteQuery] {
 	})
 }
 
-func (qm DeleteQM) NotIndexed() bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+func (qm deleteQM) NotIndexed() bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
 		var s string
 		q.IndexedBy = &s
 	})
 }
 
-func (qm DeleteQM) IndexedBy(indexName string) bob.Mod[*deleteQuery] {
-	return mods.QueryModFunc[*deleteQuery](func(q *deleteQuery) {
+func (qm deleteQM) IndexedBy(indexName string) bob.Mod[*DeleteQuery] {
+	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
 		q.IndexedBy = &indexName
 	})
 }
 
-func (qm DeleteQM) Where(e bob.Expression) bob.Mod[*deleteQuery] {
-	return mods.Where[*deleteQuery]{e}
+func (qm deleteQM) Where(e bob.Expression) bob.Mod[*DeleteQuery] {
+	return mods.Where[*DeleteQuery]{e}
 }
 
-func (qm DeleteQM) WhereClause(clause string, args ...any) bob.Mod[*deleteQuery] {
-	return mods.Where[*deleteQuery]{Raw(clause, args...)}
+func (qm deleteQM) WhereClause(clause string, args ...any) bob.Mod[*DeleteQuery] {
+	return mods.Where[*DeleteQuery]{Raw(clause, args...)}
 }
 
-func (qm DeleteQM) Returning(clauses ...any) bob.Mod[*deleteQuery] {
-	return mods.Returning[*deleteQuery](clauses)
+func (qm deleteQM) Returning(clauses ...any) bob.Mod[*DeleteQuery] {
+	return mods.Returning[*DeleteQuery](clauses)
 }

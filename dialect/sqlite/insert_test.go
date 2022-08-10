@@ -8,7 +8,7 @@ import (
 )
 
 func TestInsert(t *testing.T) {
-	qm := sqlite.InsertQM{}
+	qm := sqlite.InsertQM
 	examples := d.Testcases{
 		"simple insert": {
 			Query: sqlite.Insert(

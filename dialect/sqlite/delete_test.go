@@ -8,7 +8,7 @@ import (
 )
 
 func TestDelete(t *testing.T) {
-	qm := sqlite.DeleteQM{}
+	qm := sqlite.DeleteQM
 	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Delete(
