@@ -19,7 +19,7 @@ func (Expression) New(exp any) Expression {
 // Implements fmt.Stringer()
 func (x Expression) String() string {
 	w := strings.Builder{}
-	x.WriteSQL(&w, dialect, 1)
+	x.WriteSQL(&w, dialect, 1) //nolint:errcheck
 	return w.String()
 }
 
