@@ -16,12 +16,12 @@ func (x Chain[T, B]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 }
 
 // IS DISTINCT FROM
-func (x Chain[T, B]) Is(exp any) T {
+func (x Chain[T, B]) IsDistinctFrom(exp any) T {
 	return X[T, B](Join{Exprs: []any{x.Base, "IS DISTINCT FROM", exp}})
 }
 
 // IS NOT DISTINCT FROM
-func (x Chain[T, B]) IsNot(exp any) T {
+func (x Chain[T, B]) IsNotDistinctFrom(exp any) T {
 	return X[T, B](Join{Exprs: []any{x.Base, "IS NOT DISTINCT FROM", exp}})
 }
 
