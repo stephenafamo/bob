@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/jinzhu/copier"
+	"github.com/stephenafamo/scan"
 )
 
 type Query interface {
@@ -38,6 +39,34 @@ func (b BaseQuery[E]) Clone() BaseQuery[E] {
 	})
 
 	return *b2
+}
+
+func (b BaseQuery[E]) GetLoaders() []LoadFunc {
+	if l, ok := any(b.Expression).(Loadable); ok {
+		return l.GetLoaders()
+	}
+
+	return nil
+}
+
+func (b BaseQuery[E]) AppendLoader(f LoadFunc) {
+	if l, ok := any(b.Expression).(Loadable); ok {
+		l.AppendLoader(f)
+	}
+}
+
+func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
+	if l, ok := any(b.Expression).(MapperModder); ok {
+		return l.GetMapperMods()
+	}
+
+	return nil
+}
+
+func (b BaseQuery[E]) AppendMapperMod(m scan.MapperMod) {
+	if l, ok := any(b.Expression).(MapperModder); ok {
+		l.AppendMapperMod(m)
+	}
 }
 
 func (b BaseQuery[E]) Apply(mods ...Mod[E]) {

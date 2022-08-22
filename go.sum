@@ -3,5 +3,5 @@ github.com/google/go-cmp v0.5.8/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeN
 github.com/jinzhu/copier v0.3.5 h1:GlvfUwHk62RokgqVNvYsku0TATCF7bAHVwEXoBh3iJg=
 github.com/jinzhu/copier v0.3.5/go.mod h1:DfbEm0FYsaqBcKcFuvmOZb218JkPGtvSHsKg8S8hyyg=
 github.com/stephenafamo/fakedb v0.0.0-20220805120735-35a21624803f h1:rAkxfJo5lnBYDB1W+WPsZx3AgvxcBJFxkWPLqafKctI=
-github.com/stephenafamo/scan v0.0.0-20220806221333-463cf920d95f h1:kcMADsgGE36SwQ2pWL9eG3XSGpW+ERbvpUHDj9SFx0w=
-github.com/stephenafamo/scan v0.0.0-20220806221333-463cf920d95f/go.mod h1:JFXl5FYQUbFWNFjlXIN6TLCh4fKOaMB2VYj0HbV6hRY=
+github.com/stephenafamo/scan v0.0.0-20220822013905-ae5919116505 h1:T7b+O0OkGW/qZe6hAUiPTnd1DoT6h5KEpSoIwEc7Uls=
+github.com/stephenafamo/scan v0.0.0-20220822013905-ae5919116505/go.mod h1:JFXl5FYQUbFWNFjlXIN6TLCh4fKOaMB2VYj0HbV6hRY=

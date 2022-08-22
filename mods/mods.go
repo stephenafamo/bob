@@ -1,8 +1,17 @@
 package mods
 
 import (
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 )
+
+type QueryMods[T any] []bob.Mod[T]
+
+func (q QueryMods[T]) Apply(query T) {
+	for _, v := range q {
+		v.Apply(query)
+	}
+}
 
 type QueryModFunc[T any] func(T)
 

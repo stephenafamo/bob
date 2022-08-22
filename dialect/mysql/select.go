@@ -40,6 +40,7 @@ type SelectQuery struct {
 	clause.Limit
 	clause.Offset
 	clause.For
+	clause.Load[*SelectQuery]
 }
 
 func (s *SelectQuery) setInto(i into) {
@@ -47,6 +48,10 @@ func (s *SelectQuery) setInto(i into) {
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	for _, l := range s.Load.EagerLoadMods {
+		l.Apply(&s)
+	}
+
 	var args []any
 
 	withArgs, err := bob.ExpressIf(w, d, start+len(args), s.With,

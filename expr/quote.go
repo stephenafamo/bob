@@ -7,6 +7,15 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
+func Quote(aa ...string) bob.Expression {
+	ss := make([]any, len(aa))
+	for k, v := range aa {
+		ss[k] = v
+	}
+
+	return quoted(ss)
+}
+
 // dquoted and joined... something like "users"."id"
 type quoted []any
 
