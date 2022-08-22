@@ -110,5 +110,5 @@ func (x Chain[T, B]) Minus(target any) T {
 // As does not return a new chain. Should be used at the end of an expression
 // useful for columns
 func (x Chain[T, B]) As(alias string) bob.Expression {
-	return leftRight{left: x.Base, operator: " AS ", right: quoted{alias}}
+	return leftRight{left: x.Base, operator: "AS", right: quoted{alias}}
 }

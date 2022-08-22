@@ -39,6 +39,11 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		return nil, err
 	}
 
+	if j.Alias != "" {
+		w.Write([]byte(" AS "))
+		d.WriteQuoted(w, j.Alias)
+	}
+
 	onArgs, err := bob.ExpressSlice(w, d, start+len(args), j.On, " ON ", " AND ", "")
 	if err != nil {
 		return nil, err
@@ -50,11 +55,6 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		return nil, err
 	}
 	args = append(args, usingArgs...)
-
-	if j.Alias != "" {
-		w.Write([]byte(" AS "))
-		d.WriteQuoted(w, j.Alias)
-	}
 
 	return args, nil
 }
