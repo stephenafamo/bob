@@ -102,14 +102,14 @@ func (t Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec scan.Querye
 
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
-// If updateCols is nil, it updates all the columsn set in Topt
+// If updateCols is nil, it updates all the columns set in Topt
 func (t Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, row Topt) (T, error) {
 	panic("not implemented")
 }
 
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
-// If updateCols is nil, it updates all the columsn set in Topt
+// If updateCols is nil, it updates all the columns set in Topt
 func (t Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, rows ...Topt) (Tslice, error) {
 	panic("not implemented")
 }

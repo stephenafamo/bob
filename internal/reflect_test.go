@@ -35,9 +35,9 @@ type Blog struct {
 
 type BlogWithTags struct {
 	ID          string `db:"blog_id,pk,generated"`
-	Title       string
-	Description string
-	User        User `db:"-"`
+	Title       string `db:"title,pk"`
+	Description string `db:"description,generated"`
+	User        User   `db:"-"`
 }
 
 func TestGetColumns(t *testing.T) {
@@ -67,11 +67,21 @@ func TestGetColumns(t *testing.T) {
 		"user",
 	}})
 
-	testGetColumns[BlogWithTags](t, Columns{All: []string{
-		"blog_id",
-		"title",
-		"description",
-	}})
+	testGetColumns[BlogWithTags](t, Columns{
+		All: []string{
+			"blog_id",
+			"title",
+			"description",
+		},
+		PKs: []string{
+			"blog_id",
+			"title",
+		},
+		Generated: []string{
+			"blog_id",
+			"description",
+		},
+	})
 }
 
 func testGetColumns[T any](t *testing.T, expected Columns) {

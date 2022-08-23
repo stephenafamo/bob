@@ -16,7 +16,7 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,gosec
 var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
 type Loader bob.LoadFunc
