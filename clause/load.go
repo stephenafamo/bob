@@ -7,6 +7,7 @@ import (
 
 type Load[Q any] struct {
 	LoadFuncs           []bob.LoadFunc
+	ExtraLoaders        []bob.ExtraLoader
 	EagerLoadMapperMods []scan.MapperMod
 	EagerLoadMods       []bob.Mod[Q]
 }
@@ -29,4 +30,12 @@ func (l *Load[Q]) GetLoaders() []bob.LoadFunc {
 
 func (l *Load[Q]) AppendLoader(f bob.LoadFunc) {
 	l.LoadFuncs = append(l.LoadFuncs, f)
+}
+
+func (l *Load[Q]) GetExtraLoaders() []bob.ExtraLoader {
+	return l.ExtraLoaders
+}
+
+func (l *Load[Q]) AppendExtraLoader(lo ...bob.ExtraLoader) {
+	l.ExtraLoaders = append(l.ExtraLoaders, lo...)
 }

@@ -9,13 +9,17 @@ import (
 type (
 	MapperModder interface {
 		GetMapperMods() []scan.MapperMod
-		AppendMapperMod(scan.MapperMod)
 	}
 
 	LoadFunc = func(ctx context.Context, exec scan.Queryer, retrieved any) error
 	Loadable interface {
 		GetLoaders() []LoadFunc
-		AppendLoader(LoadFunc)
+		GetExtraLoaders() []ExtraLoader
+	}
+
+	ExtraLoader interface {
+		LoadOne(context.Context, scan.Queryer) error
+		LoadMany(context.Context, scan.Queryer) error
 	}
 )
 
@@ -28,10 +32,8 @@ func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T
 	}
 
 	if l, ok := q.(MapperModder); ok {
-		loaders := l.GetMapperMods()
-		if len(loaders) > 0 {
-			current, _ := ctx.Value(scan.CtxKeyMapperMods).([]scan.MapperMod)
-			ctx = context.WithValue(ctx, scan.CtxKeyMapperMods, append(current, loaders...))
+		if loaders := l.GetMapperMods(); len(loaders) > 0 {
+			m = scan.Mod(m, loaders...)
 		}
 	}
 
@@ -43,6 +45,11 @@ func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T
 	if l, ok := q.(Loadable); ok {
 		for _, loader := range l.GetLoaders() {
 			if err := loader(ctx, exec, t); err != nil {
+				return t, err
+			}
+		}
+		for _, loader := range l.GetExtraLoaders() {
+			if err := loader.LoadOne(ctx, exec); err != nil {
 				return t, err
 			}
 		}
@@ -65,10 +72,8 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m sca
 	}
 
 	if l, ok := q.(MapperModder); ok {
-		loaders := l.GetMapperMods()
-		if len(loaders) > 0 {
-			current, _ := ctx.Value(scan.CtxKeyMapperMods).([]scan.MapperMod)
-			ctx = context.WithValue(ctx, scan.CtxKeyMapperMods, append(current, loaders...))
+		if loaders := l.GetMapperMods(); len(loaders) > 0 {
+			m = scan.Mod(m, loaders...)
 		}
 	}
 
@@ -85,6 +90,11 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m sca
 				return typedSlice, err
 			}
 		}
+		for _, loader := range l.GetExtraLoaders() {
+			if err := loader.LoadMany(ctx, exec); err != nil {
+				return typedSlice, err
+			}
+		}
 	}
 
 	return typedSlice, nil
@@ -98,10 +108,8 @@ func Cursor[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mappe
 	}
 
 	if l, ok := q.(MapperModder); ok {
-		loaders := l.GetMapperMods()
-		if len(loaders) > 0 {
-			current, _ := ctx.Value(scan.CtxKeyMapperMods).([]scan.MapperMod)
-			ctx = context.WithValue(ctx, scan.CtxKeyMapperMods, append(current, loaders...))
+		if loaders := l.GetMapperMods(); len(loaders) > 0 {
+			m = scan.Mod(m, loaders...)
 		}
 	}
 

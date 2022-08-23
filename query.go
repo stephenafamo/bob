@@ -23,6 +23,11 @@ type Mod[T any] interface {
 	Apply(T)
 }
 
+var (
+	_ Loadable     = BaseQuery[Expression]{}
+	_ MapperModder = BaseQuery[Expression]{}
+)
+
 // BaseQuery wraps common functionality such as cloning, applying new mods and
 // the actual query interface implementation
 type BaseQuery[E Expression] struct {
@@ -49,10 +54,12 @@ func (b BaseQuery[E]) GetLoaders() []LoadFunc {
 	return nil
 }
 
-func (b BaseQuery[E]) AppendLoader(f LoadFunc) {
+func (b BaseQuery[E]) GetExtraLoaders() []ExtraLoader {
 	if l, ok := any(b.Expression).(Loadable); ok {
-		l.AppendLoader(f)
+		return l.GetExtraLoaders()
 	}
+
+	return nil
 }
 
 func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
@@ -61,12 +68,6 @@ func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
 	}
 
 	return nil
-}
-
-func (b BaseQuery[E]) AppendMapperMod(m scan.MapperMod) {
-	if l, ok := any(b.Expression).(MapperModder); ok {
-		l.AppendMapperMod(m)
-	}
 }
 
 func (b BaseQuery[E]) Apply(mods ...Mod[E]) {
