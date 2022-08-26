@@ -1,11 +1,12 @@
 package orm
 
+type RelSide struct {
+	From  string
+	To    string
+	Pairs map[string]string
+}
+
 type Relationship struct {
-	Name string
-
-	LocalTable   string
-	ForeignTable string
-
-	// pairs of local to foreign columns
-	ColumnPairs map[string]string
+	Name  string
+	Sides []RelSide
 }

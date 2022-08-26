@@ -102,29 +102,35 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 	}
 
 	return eagerLoader[T](func(ctx context.Context) (string, mods.QueryMods[*psql.SelectQuery]) {
-		alias := fmt.Sprintf("%s_%d", rel.ForeignTable, randsrc.Int63n(10000))
 		parent, _ := ctx.Value(orm.CtxLoadParentAlias).(string)
 		if parent == "" {
-			parent = rel.LocalTable
+			parent = rel.Sides[0].From
 		}
 
-		colsMod := psql.SelectQM.Columns(settings.columns.WithParent(alias).WithPrefix(alias + "."))
+		var alias string
+		var queryMods mods.QueryMods[*psql.SelectQuery]
 
-		on := make([]any, 0, len(rel.ColumnPairs))
-		for localCol, foreignCol := range rel.ColumnPairs {
-			on = append(on, psql.X(
-				psql.Quote(alias, foreignCol),
-				"=",
-				psql.Quote(parent, localCol),
-			))
+		for _, side := range rel.Sides {
+			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
+			on := make([]any, 0, len(side.Pairs))
+			for fromCol, toCol := range side.Pairs {
+				on = append(on, psql.X(
+					psql.Quote(alias, fromCol),
+					"=",
+					psql.Quote(parent, toCol),
+				))
+			}
+
+			queryMods = append(queryMods, psql.SelectQM.
+				LeftJoin(psql.Quote(side.To)).
+				As(alias).
+				On(on...))
 		}
 
-		joinMod := psql.SelectQM.
-			LeftJoin(psql.Quote(rel.ForeignTable)).
-			As(alias).
-			On(on...)
-
-		return alias, mods.QueryMods[*psql.SelectQuery]{colsMod, joinMod}
+		queryMods = append(queryMods, psql.SelectQM.Columns(
+			settings.columns.WithParent(alias).WithPrefix(alias+"."),
+		))
+		return alias, queryMods
 	}, rel.Name, settings)
 }
 
