@@ -115,9 +115,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 			on := make([]any, 0, len(side.Pairs))
 			for fromCol, toCol := range side.Pairs {
 				on = append(on, psql.X(
-					psql.Quote(alias, fromCol),
+					psql.Quote(parent, fromCol),
 					"=",
-					psql.Quote(parent, toCol),
+					psql.Quote(alias, toCol),
 				))
 			}
 
