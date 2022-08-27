@@ -107,23 +107,23 @@ However, if using an unspported mod, the error will be displayed at compile time
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
 
 ```go
-var selMod = psql.SelectQM
+import "github.com/stephenafamo/bob/dialect/psql/select/qm"
 cte := psql.Select(
-    selMod.From("users"),
-    selMod.Where(psql.X("age").GTE(21)),
+    qm.From("users"),
+    qm.Where(psql.X("age").GTE(21)),
 )
 
 var cte query.Query
 psql.Select(
-    selMod.With("adults").As(cte), // works
-    selMod.From("projects"),
+    qm.With("adults").As(cte), // works
+    qm.From("projects"),
 )
 
-var inMod = psql.InsertQM
+import "github.com/stephenafamo/bob/dialect/psql/insert/qm"
 psql.Insert(
-    inMod.With("adults").As(cte), // works as well
-    inMod.From("projects"), // ERROR: Does not compile!!!
-    inMod.Into("projects"), // works
+    qm.With("adults").As(cte), // works as well
+    qm.From("projects"), // ERROR: Does not compile!!!
+    qm.Into("projects"), // works
 )
 ```
 

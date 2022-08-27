@@ -1,10 +1,13 @@
-package psql
+package dialect
 
 import (
 	"strings"
 
 	"github.com/stephenafamo/bob/expr"
 )
+
+//nolint:gochecknoglobals
+var bmod = expr.Builder[Expression, Expression]{}
 
 type Expression struct {
 	expr.Chain[Expression, Expression]
@@ -19,7 +22,7 @@ func (Expression) New(exp any) Expression {
 // Implements fmt.Stringer()
 func (x Expression) String() string {
 	w := strings.Builder{}
-	x.WriteSQL(&w, dialect, 1) //nolint:errcheck
+	x.WriteSQL(&w, Dialect, 1) //nolint:errcheck
 	return w.String()
 }
 

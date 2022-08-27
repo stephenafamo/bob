@@ -4,16 +4,12 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql"
-	pmods "github.com/stephenafamo/bob/dialect/psql/mods"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/mods"
 )
 
-// type deleteQM struct {
-// joinMod[*clause.From]
-// }
-
-func With(name string, columns ...string) pmods.CteChain[*psql.DeleteQuery] {
-	return pmods.With[*psql.DeleteQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*psql.DeleteQuery] {
+	return dialect.With[*psql.DeleteQuery](name, columns...)
 }
 
 func Recursive(r bool) bob.Mod[*psql.DeleteQuery] {
@@ -73,24 +69,24 @@ func WithOrdinality() bob.Mod[*psql.DeleteQuery] {
 	})
 }
 
-func InnerJoin(e any) pmods.JoinChain[*psql.DeleteQuery] {
-	return pmods.InnerJoin[*psql.DeleteQuery](e)
+func InnerJoin(e any) dialect.JoinChain[*psql.DeleteQuery] {
+	return dialect.InnerJoin[*psql.DeleteQuery](e)
 }
 
-func LeftJoin(e any) pmods.JoinChain[*psql.DeleteQuery] {
-	return pmods.LeftJoin[*psql.DeleteQuery](e)
+func LeftJoin(e any) dialect.JoinChain[*psql.DeleteQuery] {
+	return dialect.LeftJoin[*psql.DeleteQuery](e)
 }
 
-func RightJoin(e any) pmods.JoinChain[*psql.DeleteQuery] {
-	return pmods.RightJoin[*psql.DeleteQuery](e)
+func RightJoin(e any) dialect.JoinChain[*psql.DeleteQuery] {
+	return dialect.RightJoin[*psql.DeleteQuery](e)
 }
 
-func FullJoin(e any) pmods.JoinChain[*psql.DeleteQuery] {
-	return pmods.FullJoin[*psql.DeleteQuery](e)
+func FullJoin(e any) dialect.JoinChain[*psql.DeleteQuery] {
+	return dialect.FullJoin[*psql.DeleteQuery](e)
 }
 
 func CrossJoin(e any) bob.Mod[*psql.DeleteQuery] {
-	return pmods.CrossJoin[*psql.DeleteQuery](e)
+	return dialect.CrossJoin[*psql.DeleteQuery](e)
 }
 
 func Where(e bob.Expression) bob.Mod[*psql.DeleteQuery] {

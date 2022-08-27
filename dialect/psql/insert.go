@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
 func Insert(queryMods ...bob.Mod[*InsertQuery]) bob.BaseQuery[*InsertQuery] {
@@ -15,7 +16,7 @@ func Insert(queryMods ...bob.Mod[*InsertQuery]) bob.BaseQuery[*InsertQuery] {
 
 	return bob.BaseQuery[*InsertQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 

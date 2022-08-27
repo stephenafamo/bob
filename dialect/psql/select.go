@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
 func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
@@ -15,7 +16,7 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 
 	return bob.BaseQuery[*SelectQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -134,4 +135,3 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	w.Write([]byte("\n"))
 	return args, nil
 }
-

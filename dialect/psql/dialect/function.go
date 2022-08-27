@@ -1,4 +1,4 @@
-package psql
+package dialect
 
 import (
 	"io"
@@ -6,6 +6,10 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
 )
+
+func NewFunction(name string, args ...any) Function {
+	return Function{name: name, args: args}
+}
 
 type Function struct {
 	name string
@@ -64,7 +68,7 @@ func (f *Function) FilterWhere(e ...any) *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
-	fo.windowChain = &windowChain[*functionOver]{wrap: fo}
+	fo.WindowChain = &WindowChain[*functionOver]{Wrap: fo}
 	fo.Base = fo
 	return fo
 }
@@ -73,7 +77,7 @@ func (f *Function) Over(window string) *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
-	fo.windowChain = &windowChain[*functionOver]{wrap: fo}
+	fo.WindowChain = &WindowChain[*functionOver]{Wrap: fo}
 	fo.Base = fo
 	return fo
 }
@@ -107,7 +111,7 @@ func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 
 type functionOver struct {
 	function *Function
-	*windowChain[*functionOver]
+	*WindowChain[*functionOver]
 	expr.Chain[Expression, Expression]
 }
 

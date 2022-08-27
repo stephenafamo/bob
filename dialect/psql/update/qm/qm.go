@@ -4,13 +4,13 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql"
-	pmods "github.com/stephenafamo/bob/dialect/psql/mods"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) pmods.CteChain[*psql.UpdateQuery] {
-	return pmods.With[*psql.UpdateQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*psql.UpdateQuery] {
+	return dialect.With[*psql.UpdateQuery](name, columns...)
 }
 
 func Recursive(r bool) bob.Mod[*psql.UpdateQuery] {
@@ -54,7 +54,7 @@ func From(table any) bob.Mod[*psql.UpdateQuery] {
 	})
 }
 
-func FromFunction(funcs ...*psql.Function) bob.Mod[*psql.UpdateQuery] {
+func FromFunction(funcs ...*dialect.Function) bob.Mod[*psql.UpdateQuery] {
 	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
 		if len(funcs) == 0 {
 			return
@@ -64,7 +64,7 @@ func FromFunction(funcs ...*psql.Function) bob.Mod[*psql.UpdateQuery] {
 			return
 		}
 
-		q.SetTable(psql.Functions(funcs))
+		q.SetTable(dialect.Functions(funcs))
 	})
 }
 
@@ -92,24 +92,24 @@ func WithOrdinality() bob.Mod[*psql.UpdateQuery] {
 	})
 }
 
-func InnerJoin(e any) pmods.JoinChain[*psql.UpdateQuery] {
-	return pmods.InnerJoin[*psql.UpdateQuery](e)
+func InnerJoin(e any) dialect.JoinChain[*psql.UpdateQuery] {
+	return dialect.InnerJoin[*psql.UpdateQuery](e)
 }
 
-func LeftJoin(e any) pmods.JoinChain[*psql.UpdateQuery] {
-	return pmods.LeftJoin[*psql.UpdateQuery](e)
+func LeftJoin(e any) dialect.JoinChain[*psql.UpdateQuery] {
+	return dialect.LeftJoin[*psql.UpdateQuery](e)
 }
 
-func RightJoin(e any) pmods.JoinChain[*psql.UpdateQuery] {
-	return pmods.RightJoin[*psql.UpdateQuery](e)
+func RightJoin(e any) dialect.JoinChain[*psql.UpdateQuery] {
+	return dialect.RightJoin[*psql.UpdateQuery](e)
 }
 
-func FullJoin(e any) pmods.JoinChain[*psql.UpdateQuery] {
-	return pmods.FullJoin[*psql.UpdateQuery](e)
+func FullJoin(e any) dialect.JoinChain[*psql.UpdateQuery] {
+	return dialect.FullJoin[*psql.UpdateQuery](e)
 }
 
 func CrossJoin(e any) bob.Mod[*psql.UpdateQuery] {
-	return pmods.CrossJoin[*psql.UpdateQuery](e)
+	return dialect.CrossJoin[*psql.UpdateQuery](e)
 }
 
 func Where(e bob.Expression) bob.Mod[*psql.UpdateQuery] {

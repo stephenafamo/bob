@@ -1,17 +1,12 @@
-package mods
+package dialect
 
 import (
 	"io"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/psql"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
-
-//nolint:gochecknoglobals
-var bmod = expr.Builder[psql.Expression, psql.Expression]{}
 
 type Distinct struct {
 	On []any
@@ -22,8 +17,8 @@ func (di Distinct) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	return bob.ExpressSlice(w, d, start, di.On, " ON (", ", ", ")")
 }
 
-func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string) CteChain[Q] {
-	return CteChain[Q](func() clause.CTE {
+func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string) CTEChain[Q] {
+	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{
 			Name:    name,
 			Columns: columns,
@@ -210,77 +205,77 @@ func (o OrderBy[Q]) Collate(collation string) OrderBy[Q] {
 	})
 }
 
-type CteChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
+type CTEChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
 
-func (c CteChain[Q]) Apply(q Q) {
+func (c CTEChain[Q]) Apply(q Q) {
 	q.AppendWith(c())
 }
 
-func (c CteChain[Q]) As(q bob.Query) CteChain[Q] {
+func (c CTEChain[Q]) As(q bob.Query) CTEChain[Q] {
 	cte := c()
 	cte.Query = q
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) NotMaterialized() CteChain[Q] {
+func (c CTEChain[Q]) NotMaterialized() CTEChain[Q] {
 	b := false
 	cte := c()
 	cte.Materialized = &b
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) Materialized() CteChain[Q] {
+func (c CTEChain[Q]) Materialized() CTEChain[Q] {
 	b := true
 	cte := c()
 	cte.Materialized = &b
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) SearchBreadth(setCol string, searchCols ...string) CteChain[Q] {
+func (c CTEChain[Q]) SearchBreadth(setCol string, searchCols ...string) CTEChain[Q] {
 	cte := c()
 	cte.Search = clause.CTESearch{
 		Order:   clause.SearchDepth,
 		Columns: searchCols,
 		Set:     setCol,
 	}
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) SearchDepth(setCol string, searchCols ...string) CteChain[Q] {
+func (c CTEChain[Q]) SearchDepth(setCol string, searchCols ...string) CTEChain[Q] {
 	cte := c()
 	cte.Search = clause.CTESearch{
 		Order:   clause.SearchDepth,
 		Columns: searchCols,
 		Set:     setCol,
 	}
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) Cycle(set, using string, cols ...string) CteChain[Q] {
+func (c CTEChain[Q]) Cycle(set, using string, cols ...string) CTEChain[Q] {
 	cte := c()
 	cte.Cycle.Set = set
 	cte.Cycle.Using = using
 	cte.Cycle.Columns = cols
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }
 
-func (c CteChain[Q]) CycleValue(value, defaultVal any) CteChain[Q] {
+func (c CTEChain[Q]) CycleValue(value, defaultVal any) CTEChain[Q] {
 	cte := c()
 	cte.Cycle.SetVal = value
 	cte.Cycle.DefaultVal = defaultVal
-	return CteChain[Q](func() clause.CTE {
+	return CTEChain[Q](func() clause.CTE {
 		return cte
 	})
 }

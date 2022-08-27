@@ -4,12 +4,12 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql"
-	pmods "github.com/stephenafamo/bob/dialect/psql/mods"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) pmods.CteChain[*psql.InsertQuery] {
-	return pmods.With[*psql.InsertQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*psql.InsertQuery] {
+	return dialect.With[*psql.InsertQuery](name, columns...)
 }
 
 func Recursive(r bool) bob.Mod[*psql.SelectQuery] {
