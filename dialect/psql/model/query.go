@@ -45,13 +45,6 @@ func (f *ViewQuery[T, Tslice]) All(ctx context.Context, exec scan.Queryer) (Tsli
 		return nil, err
 	}
 
-	for _, val := range vals {
-		ctx, err = f.afterSelectHooks.Do(ctx, exec, val)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return vals, nil
 }
 
