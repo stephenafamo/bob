@@ -208,7 +208,9 @@ func (selectQM) Window(name string) windowMod[*SelectQuery] {
 		name: name,
 	}
 
-	m.windowChain.def = &m
+	m.windowChain = &windowChain[*windowMod[*SelectQuery]]{
+		wrap: &m,
+	}
 	return m
 }
 

@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
 )
 
@@ -59,11 +58,22 @@ func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	return args, nil
 }
 
+func (f *function) FilterWhere(e ...any) *functionOver {
+	f.filter = append(f.filter, e...)
+
+	fo := &functionOver{
+		function: f,
+	}
+	fo.windowChain = &windowChain[*functionOver]{wrap: fo}
+	fo.Base = fo
+	return fo
+}
+
 func (f *function) Over(window string) *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
-	fo.def = fo
+	fo.windowChain = &windowChain[*functionOver]{wrap: fo}
 	fo.Base = fo
 	return fo
 }
@@ -97,8 +107,7 @@ func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 
 type functionOver struct {
 	function *function
-	clause.WindowDef
-	windowChain[*functionOver]
+	*windowChain[*functionOver]
 	expr.Chain[Expression, Expression]
 }
 
@@ -108,7 +117,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 		return nil, err
 	}
 
-	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
