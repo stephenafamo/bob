@@ -52,7 +52,7 @@ func (wi WindowDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, erro
 	}
 	args = append(args, orderArgs...)
 
-	frameArgs, err := bob.ExpressIf(w, d, start, wi.Frame, wi.Frame.Mode != "", " ", "")
+	frameArgs, err := bob.ExpressIf(w, d, start, wi.Frame, wi.Frame.Defined, " ", "")
 	if err != nil {
 		return nil, err
 	}

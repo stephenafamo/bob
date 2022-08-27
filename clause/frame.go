@@ -1,18 +1,13 @@
 package clause
 
 import (
-	"errors"
 	"io"
 
 	"github.com/stephenafamo/bob"
 )
 
-var (
-	ErrNoFrameMode  = errors.New("No frame mode specified")
-	ErrNoFrameStart = errors.New("No frame start specified")
-)
-
 type Frame struct {
+	Defined   bool // whether any of the parts was defined
 	Mode      string
 	Start     any
 	End       any    // can be nil
@@ -20,28 +15,32 @@ type Frame struct {
 }
 
 func (f *Frame) SetMode(mode string) {
+	f.Defined = true
 	f.Mode = mode
 }
 
 func (f *Frame) SetStart(start any) {
+	f.Defined = true
 	f.Start = start
 }
 
 func (f *Frame) SetEnd(end any) {
+	f.Defined = true
 	f.End = end
 }
 
 func (f *Frame) SetExclusion(excl string) {
+	f.Defined = true
 	f.Exclusion = excl
 }
 
 func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Mode == "" {
-		return nil, ErrNoFrameMode
+		f.Mode = "RANGE"
 	}
 
 	if f.Start == nil {
-		return nil, ErrNoFrameStart
+		f.Start = "UNBOUNDED PRECEDING"
 	}
 
 	var args []any
@@ -59,7 +58,7 @@ func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 	args = append(args, startArgs...)
 
-	endArgs, err := bob.ExpressIf(w, d, start, f.End, f.End != "", " AND ", "")
+	endArgs, err := bob.ExpressIf(w, d, start, f.End, f.End != nil, " AND ", "")
 	if err != nil {
 		return nil, err
 	}
