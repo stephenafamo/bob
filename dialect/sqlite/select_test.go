@@ -3,13 +3,13 @@ package sqlite_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/select/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestSelect(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?1, ?2, ?3))",
 			ExpectedArgs: []any{100, 200, 300},
@@ -70,5 +70,5 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

@@ -3,13 +3,13 @@ package psql_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/select/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestSelect(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple select": {
 			Doc:          "Simple Select with some conditions",
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
@@ -95,5 +95,5 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

@@ -3,11 +3,11 @@ package expr
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestStatement(t *testing.T) {
-	examples := d.ExpressionTestcases{
+	examples := testutils.ExpressionTestcases{
 		"plain": {
 			Expression: Raw{
 				query: "SELECT a, b FROM alphabet",
@@ -39,5 +39,5 @@ func TestStatement(t *testing.T) {
 		},
 	}
 
-	d.RunExpressionTests(t, dialect{}, examples)
+	testutils.RunExpressionTests(t, dialect{}, examples)
 }

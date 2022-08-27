@@ -3,13 +3,13 @@ package psql_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/insert/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestInsert(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple insert": {
 			Query: psql.Insert(
 				qm.Into("films"),
@@ -63,5 +63,5 @@ func TestInsert(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

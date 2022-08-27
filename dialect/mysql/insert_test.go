@@ -3,13 +3,13 @@ package mysql_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/insert/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestInsert(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple insert": {
 			Query: mysql.Insert(
 				qm.Into("films"),
@@ -76,5 +76,5 @@ func TestInsert(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

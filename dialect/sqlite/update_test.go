@@ -3,14 +3,14 @@ package sqlite_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	selectQM "github.com/stephenafamo/bob/dialect/sqlite/select/qm"
 	"github.com/stephenafamo/bob/dialect/sqlite/update/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestUpdate(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple": {
 			Query: sqlite.Update(
 				qm.Table("films"),
@@ -51,5 +51,5 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

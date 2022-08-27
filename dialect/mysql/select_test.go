@@ -3,13 +3,13 @@ package mysql_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/select/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestSelect(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?, ?, ?))",
 			ExpectedArgs: []any{100, 200, 300},
@@ -72,5 +72,5 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

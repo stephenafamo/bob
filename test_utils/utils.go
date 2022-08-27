@@ -1,4 +1,4 @@
-package dialect
+package testutils
 
 import (
 	"fmt"

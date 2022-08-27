@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/stephenafamo/bob/dialect"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 var (
@@ -256,7 +256,7 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 
 	switch key {
 	case "Doc":
-		c.doc = dialect.Clean(val[1 : len(val)-1])
+		c.doc = testutils.Clean(val[1 : len(val)-1])
 	case "Query":
 		c.builder = rgxTabs.ReplaceAllLiteralString(val, "  ")
 	case "ExpectedSQL":

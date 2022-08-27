@@ -3,14 +3,14 @@ package mysql_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	selectQM "github.com/stephenafamo/bob/dialect/mysql/select/qm"
 	"github.com/stephenafamo/bob/dialect/mysql/update/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestUpdate(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple": {
 			Query: mysql.Update(
 				qm.Table("films"),
@@ -49,5 +49,5 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }

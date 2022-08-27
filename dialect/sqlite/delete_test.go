@@ -3,13 +3,13 @@ package sqlite_test
 import (
 	"testing"
 
-	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/delete/qm"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 func TestDelete(t *testing.T) {
-	examples := d.Testcases{
+	examples := testutils.Testcases{
 		"simple": {
 			Query: sqlite.Delete(
 				qm.From("films"),
@@ -20,5 +20,5 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	d.RunTests(t, examples)
+	testutils.RunTests(t, examples)
 }
