@@ -21,9 +21,20 @@ type (
 		LoadOne(context.Context, scan.Queryer) error
 		LoadMany(context.Context, scan.Queryer) error
 	}
+
+	ExecSettings[T any] struct {
+		AfterSelect func(ctx context.Context, retrieved []T) error
+	}
+
+	ExecOption[T any] func(*ExecSettings[T])
 )
 
-func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T]) (T, error) {
+func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (T, error) {
+	settings := ExecSettings[T]{}
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
 	var t T
 
 	sql, args, err := Build(q)
@@ -55,17 +66,28 @@ func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T
 		}
 	}
 
+	if settings.AfterSelect != nil {
+		if err := settings.AfterSelect(ctx, []T{t}); err != nil {
+			return t, err
+		}
+	}
+
 	return t, err
 }
 
-func All[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T]) ([]T, error) {
-	return Allx[T, []T](ctx, exec, q, m)
+func All[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) ([]T, error) {
+	return Allx[T, []T](ctx, exec, q, m, opts...)
 }
 
 // Allx takes 2 type parameters. The second is a special return type of the returned slice
 // this is especially useful for when the the [Query] is [Loadable] and the loader depends on the
 // return value implementing an interface
-func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T]) (Ts, error) {
+func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (Ts, error) {
+	settings := ExecSettings[T]{}
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
 	sql, args, err := Build(q)
 	if err != nil {
 		return nil, err
@@ -97,11 +119,22 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m sca
 		}
 	}
 
+	if settings.AfterSelect != nil {
+		if err := settings.AfterSelect(ctx, typedSlice); err != nil {
+			return typedSlice, err
+		}
+	}
+
 	return typedSlice, nil
 }
 
 // Cursor returns a cursor that works similar to *sql.Rows
-func Cursor[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T]) (scan.ICursor[T], error) {
+func Cursor[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (scan.ICursor[T], error) {
+	settings := ExecSettings[T]{}
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
 	sql, args, err := Build(q)
 	if err != nil {
 		return nil, err
@@ -113,41 +146,39 @@ func Cursor[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mappe
 		}
 	}
 
-	if l, ok := q.(Loadable); ok {
-		m2 := scan.Mapper[T](func(ctx context.Context, c map[string]int) func(*scan.Values) (T, error) {
-			mapFunc := m(ctx, c)
-			return func(v *scan.Values) (T, error) {
-				o, err := mapFunc(v)
-				if err != nil {
-					return o, err
-				}
+	l, ok := q.(Loadable)
+	if !ok {
+		return scan.Cursor(ctx, exec, m, sql, args...)
+	}
 
-				for _, v := range l.GetLoaders() {
-					err = v(ctx, exec, o)
-					if err != nil {
-						return o, err
-					}
-				}
-
-				return o, err
+	m2 := scan.Mapper[T](func(ctx context.Context, c map[string]int) func(*scan.Values) (T, error) {
+		mapFunc := m(ctx, c)
+		return func(v *scan.Values) (T, error) {
+			t, err := mapFunc(v)
+			if err != nil {
+				return t, err
 			}
-		})
-		return scan.Cursor(ctx, exec, m2, sql, args...)
-	}
 
-	return scan.Cursor(ctx, exec, m, sql, args...)
-}
+			for _, loader := range l.GetLoaders() {
+				err = loader(ctx, exec, t)
+				if err != nil {
+					return t, err
+				}
+			}
+			for _, loader := range l.GetExtraLoaders() {
+				if err := loader.LoadOne(ctx, exec); err != nil {
+					return t, err
+				}
+			}
 
-// Collect multiple slices of values from a single query
-// collector must be of the structure
-// func(cols) func(*Values) (t1, t2, ..., error)
-// The returned slice contains values like this
-// {[]t1, []t2}
-func Collect(ctx context.Context, exec scan.Queryer, q Query, collector func(context.Context, map[string]int) any) ([]any, error) {
-	sql, args, err := Build(q)
-	if err != nil {
-		return nil, err
-	}
+			if settings.AfterSelect != nil {
+				if err := settings.AfterSelect(ctx, []T{t}); err != nil {
+					return t, err
+				}
+			}
+			return t, err
+		}
+	})
 
-	return scan.Collect(ctx, exec, collector, sql, args...)
+	return scan.Cursor(ctx, exec, m2, sql, args...)
 }

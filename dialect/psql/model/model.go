@@ -11,11 +11,6 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
-	view := NewView[T, Tslice](name0, nameX...)
-	return Table[T, Tslice, Topt]{view}
-}
-
 func NewView[T any, Tslice ~[]T](name0 string, nameX ...string) View[T, Tslice] {
 	var zero T
 
@@ -39,95 +34,117 @@ type View[T any, Tslice ~[]T] struct {
 	cols    internal.Columns
 	allCols orm.Columns
 	pkCols  orm.Columns
+
+	AfterSelectHooks orm.Hooks[T]
+}
+
+func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
+	view := NewView[T, Tslice](name0, nameX...)
+	return Table[T, Tslice, Topt]{
+		View: &view,
+	}
 }
 
 // The table contains extract information from the struct and contains
 // hooks ???
 // caches ???
 type Table[T any, Tslice ~[]T, Topt any] struct {
-	View[T, Tslice]
+	*View[T, Tslice]
+
+	BeforeInsertHooks orm.Hooks[Topt]
+	AfterInsertHooks  orm.Hooks[T]
+
+	BeforeUpsertHooks orm.Hooks[Topt]
+	AfterUpsertHooks  orm.Hooks[T]
+
+	BeforeUpdateHooks orm.Hooks[T]
+	AfterUpdateHooks  orm.Hooks[T]
+
+	BeforeDeleteHooks orm.Hooks[T]
+	AfterDeleteHooks  orm.Hooks[T]
 }
 
-func (t View[T, Tslice]) Name() psql.Expression {
+func (t *View[T, Tslice]) Name() psql.Expression {
 	return psql.Quote(t.name...)
 }
 
 // Returns a column list
-func (t View[T, Tslice]) Columns() orm.Columns {
+func (t *View[T, Tslice]) Columns() orm.Columns {
 	return t.allCols
 }
 
 // Returns a column list
-func (t View[T, Tslice]) PKColumns() orm.Columns {
+func (t *View[T, Tslice]) PKColumns() orm.Columns {
 	return t.pkCols
 }
 
 // Adds table name et al
-func (t View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQuery[T, Tslice] {
-	f := &ViewQuery[T, Tslice]{BaseQuery: psql.Select(
-		psql.SelectQM.From(t.Name()),
-	)}
-	f.Apply(queryMods...)
+func (t *View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQuery[T, Tslice] {
+	q := psql.Select(psql.SelectQM.From(t.Name()))
+	q.Apply(queryMods...)
 
 	// Append the table columns
-	if len(f.BaseQuery.Expression.Select.Columns) == 0 {
-		f.BaseQuery.Expression.AppendSelect(t.Columns())
+	if len(q.Expression.Select.Columns) == 0 {
+		q.Expression.AppendSelect(t.Columns())
 	}
 
-	return f
+	return &ViewQuery[T, Tslice]{
+		BaseQuery:        q,
+		afterSelectHooks: &t.AfterSelectHooks,
+	}
 }
 
 // Insert inserts a row into the table with only the set columns in Topt
-func (t Table[T, Tslice, Topt]) Insert(ctx context.Context, exec scan.Queryer, row Topt) (T, error) {
+func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec scan.Queryer, row Topt) (T, error) {
 	panic("not implemented")
 }
 
 // Insert inserts a row into the table with only the set columns in Topt
-func (t Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec scan.Queryer, rows ...Topt) (Tslice, error) {
+func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec scan.Queryer, rows ...Topt) (Tslice, error) {
 	panic("not implemented")
 }
 
 // Updates the given model
 // if columns is nil, every column is updated
-func (t Table[T, Tslice, Topt]) Update(ctx context.Context, exec scan.Queryer, columns *orm.Columns, row T) (T, int64, error) {
+func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec scan.Queryer, columns *orm.Columns, row T) (T, int64, error) {
 	// should return the updated row
 	panic("not implemented")
 }
 
 // Updates the given models
 // if columns is nil, every column is updated
-func (t Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec scan.Queryer, vals Topt, rows ...T) (Tslice, int64, error) {
+func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec scan.Queryer, vals Topt, rows ...T) (Tslice, int64, error) {
 	panic("not implemented")
 }
 
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
 // If updateCols is nil, it updates all the columns set in Topt
-func (t Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, row Topt) (T, error) {
+func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, row Topt) (T, error) {
 	panic("not implemented")
 }
 
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
 // If updateCols is nil, it updates all the columns set in Topt
-func (t Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, rows ...Topt) (Tslice, error) {
+func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec scan.Queryer, updateOnConflict bool, conflictCols, updateCols *orm.Columns, rows ...Topt) (Tslice, error) {
 	panic("not implemented")
 }
 
 // Deletes the given model
 // if columns is nil, every column is deleted
-func (t Table[T, Tslice, Topt]) Delete(ctx context.Context, exec scan.Queryer, row T) (int64, error) {
+func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec scan.Queryer, row T) (int64, error) {
 	panic("not implemented")
 }
 
 // Deletes the given models
 // if columns is nil, every column is deleted
-func (t Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec scan.Queryer, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec scan.Queryer, rows ...T) (int64, error) {
 	panic("not implemented")
 }
 
 // Adds table name et al
-func (t Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *TableQuery[T, Tslice, Topt] {
+func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *TableQuery[T, Tslice, Topt] {
 	vq := t.View.Query(queryMods...)
 	return &TableQuery[T, Tslice, Topt]{*vq}
 }

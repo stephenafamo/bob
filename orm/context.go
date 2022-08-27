@@ -1,9 +1,12 @@
 package orm
 
-type ctxKey string
+type ctxKey int
 
-//nolint:gochecknoglobals
-var (
-	CtxLoadPrefix      ctxKey = "load_parent_alias"
-	CtxLoadParentAlias ctxKey = "load_prefix"
+const (
+	// The prefix of an eager loaded relationship
+	CtxLoadPrefix ctxKey = iota
+	// The alias of an eager loader's parent
+	CtxLoadParentAlias
+	// If set to true, hooks are skipped
+	ctxSkipHooks
 )
