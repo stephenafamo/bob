@@ -5,8 +5,8 @@ import "github.com/stephenafamo/bob/expr"
 //nolint:gochecknoglobals
 var bmod = expr.Builder[Expression, Expression]{}
 
-func F(name string, args ...any) *function {
-	f := &function{
+func F(name string, args ...any) *Function {
+	f := &Function{
 		name: name,
 		args: args,
 	}

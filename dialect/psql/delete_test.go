@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/delete/qm"
 )
 
 func TestDelete(t *testing.T) {
-	qm := psql.DeleteQM
 	examples := d.Testcases{
 		"simple": {
 			Query: psql.Delete(

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/select/qm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -80,7 +81,7 @@ func (t *View[T, Tslice]) PKColumns() orm.Columns {
 
 // Adds table name et al
 func (t *View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := psql.Select(psql.SelectQM.From(t.Name()))
+	q := psql.Select(qm.From(t.Name()))
 	q.Apply(queryMods...)
 
 	// Append the table columns

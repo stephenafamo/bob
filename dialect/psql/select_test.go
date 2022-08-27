@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/select/qm"
 )
 
 func TestSelect(t *testing.T) {
-	qm := psql.SelectQM
 	examples := d.Testcases{
 		"simple select": {
 			Doc:          "Simple Select with some conditions",

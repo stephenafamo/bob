@@ -7,7 +7,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-type function struct {
+type Function struct {
 	name string
 	args []any
 
@@ -21,7 +21,7 @@ type function struct {
 	expr.Chain[Expression, Expression]
 }
 
-func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
@@ -58,7 +58,7 @@ func (f *function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	return args, nil
 }
 
-func (f *function) FilterWhere(e ...any) *functionOver {
+func (f *Function) FilterWhere(e ...any) *functionOver {
 	f.filter = append(f.filter, e...)
 
 	fo := &functionOver{
@@ -69,7 +69,7 @@ func (f *function) FilterWhere(e ...any) *functionOver {
 	return fo
 }
 
-func (f *function) Over(window string) *functionOver {
+func (f *Function) Over(window string) *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
@@ -78,12 +78,12 @@ func (f *function) Over(window string) *functionOver {
 	return fo
 }
 
-func (f *function) As(alias string) *function {
+func (f *Function) As(alias string) *Function {
 	f.alias = alias
 	return f
 }
 
-func (f *function) Col(name, datatype string) *function {
+func (f *Function) Col(name, datatype string) *Function {
 	f.columns = append(f.columns, columnDef{
 		name:     name,
 		dataType: datatype,
@@ -106,7 +106,7 @@ func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 }
 
 type functionOver struct {
-	function *function
+	function *Function
 	*windowChain[*functionOver]
 	expr.Chain[Expression, Expression]
 }
@@ -125,9 +125,9 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 	return append(fargs, winargs...), nil
 }
 
-type functions []*function
+type Functions []*Function
 
-func (f functions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Functions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {
 		w.Write([]byte("ROWS FROM ("))
 	}

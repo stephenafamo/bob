@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/insert/qm"
 )
 
 func TestInsert(t *testing.T) {
-	qm := psql.InsertQM
 	examples := d.Testcases{
 		"simple insert": {
 			Query: psql.Insert(

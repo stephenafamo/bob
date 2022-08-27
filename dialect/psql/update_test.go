@@ -5,11 +5,11 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/psql"
+	selectQM "github.com/stephenafamo/bob/dialect/psql/select/qm"
+	"github.com/stephenafamo/bob/dialect/psql/update/qm"
 )
 
 func TestUpdate(t *testing.T) {
-	qm := psql.UpdateQM
-	selectQM := psql.SelectQM
 	examples := d.Testcases{
 		"simple": {
 			Query: psql.Update(
