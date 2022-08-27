@@ -1,4 +1,4 @@
-package sqlite
+package dialect
 
 import (
 	"io"
@@ -8,7 +8,11 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-type function struct {
+func NewFunction(name string, args ...any) Function {
+	return Function{name: name, args: args}
+}
+
+type Function struct {
 	name string
 	args []any
 
@@ -20,26 +24,26 @@ type function struct {
 }
 
 // A function can be a target for a query
-func (f *function) Apply(q *clause.From) {
+func (f *Function) Apply(q *clause.From) {
 	q.Table = f
 }
 
-func (f *function) Filter(e ...any) *function {
+func (f *Function) Filter(e ...any) *Function {
 	f.filter = append(f.filter, e...)
 
 	return f
 }
 
-func (f *function) Over(window string) *functionOver {
+func (f *Function) Over(window string) *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
-	fo.def = fo
+	fo.WindowChain = &WindowChain[*functionOver]{Wrap: fo}
 	fo.Base = fo
 	return fo
 }
 
-func (f function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
@@ -62,9 +66,8 @@ func (f function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 }
 
 type functionOver struct {
-	function *function
-	clause.WindowDef
-	windowChain[*functionOver]
+	function *Function
+	*WindowChain[*functionOver]
 	expr.Chain[Expression, Expression]
 }
 
@@ -74,7 +77,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 		return nil, err
 	}
 
-	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.WindowDef, true, "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}

@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
+	"github.com/stephenafamo/bob/dialect/sqlite/delete/qm"
 )
 
 func TestDelete(t *testing.T) {
-	qm := sqlite.DeleteQM
 	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Delete(

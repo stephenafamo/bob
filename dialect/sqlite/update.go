@@ -5,8 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
 func Update(queryMods ...bob.Mod[*UpdateQuery]) bob.BaseQuery[*UpdateQuery] {
@@ -17,7 +16,7 @@ func Update(queryMods ...bob.Mod[*UpdateQuery]) bob.BaseQuery[*UpdateQuery] {
 
 	return bob.BaseQuery[*UpdateQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -26,7 +25,7 @@ func Update(queryMods ...bob.Mod[*UpdateQuery]) bob.BaseQuery[*UpdateQuery] {
 type UpdateQuery struct {
 	clause.With
 	or
-	table clause.From
+	Table clause.From
 	clause.Set
 	clause.From
 	clause.Where
@@ -50,7 +49,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 		return nil, err
 	}
 
-	tableArgs, err := bob.ExpressIf(w, d, start+len(args), u.table, true, " ", "")
+	tableArgs, err := bob.ExpressIf(w, d, start+len(args), u.Table, true, " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -84,66 +83,4 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	args = append(args, retArgs...)
 
 	return args, nil
-}
-
-//nolint:gochecknoglobals
-var UpdateQM = updateQM{}
-
-type updateQM struct {
-	withMod[*UpdateQuery]     // For CTEs
-	joinMod[*clause.From]     // joins, which are mods of the FROM
-	fromItemMod[*UpdateQuery] // Dialect specific fromItem mods
-	orMod[*UpdateQuery]       // UPDATE or REPLACE|ABORT|IGNORE e.t.c.
-}
-
-func (qm updateQM) Table(name any) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
-		q.table.Table = name
-	})
-}
-
-func (qm updateQM) TableAs(name any, alias string) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
-		q.table.Table = name
-		q.table.Alias = alias
-	})
-}
-
-func (qm updateQM) TableIndexedBy(i string) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
-		q.table.IndexedBy = &i
-	})
-}
-
-func (qm updateQM) TableNotIndexed() bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
-		var s string
-		q.table.IndexedBy = &s
-	})
-}
-
-func (qm updateQM) Set(a string, b any) bob.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", Quote(a), b)}
-}
-
-func (qm updateQM) SetArg(a string, b any) bob.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", Quote(a), Arg(b))}
-}
-
-func (updateQM) From(table any) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(q *UpdateQuery) {
-		q.SetTable(table)
-	})
-}
-
-func (qm updateQM) Where(e bob.Expression) bob.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{e}
-}
-
-func (qm updateQM) WhereClause(clause string, args ...any) bob.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{Raw(clause, args...)}
-}
-
-func (qm updateQM) Returning(clauses ...any) bob.Mod[*UpdateQuery] {
-	return mods.Returning[*UpdateQuery](clauses)
 }

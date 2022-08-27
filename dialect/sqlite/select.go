@@ -5,7 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
 func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
@@ -16,7 +16,7 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 
 	return bob.BaseQuery[*SelectQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -121,114 +121,4 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 
 	w.Write([]byte("\n"))
 	return args, nil
-}
-
-//nolint:gochecknoglobals
-var SelectQM = selectQM{}
-
-type selectQM struct {
-	withMod[*SelectQuery]     // For CTEs
-	joinMod[*clause.From]     // joins, which are mods of the FROM
-	fromItemMod[*SelectQuery] // Dialect specific fromItem mods
-}
-
-func (selectQM) Distinct() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = []any{"DISTINCT"}
-	})
-}
-
-func (selectQM) Columns(clauses ...any) bob.Mod[*SelectQuery] {
-	return mods.Select[*SelectQuery](clauses)
-}
-
-func (selectQM) From(table any) bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.SetTable(table)
-	})
-}
-
-func (selectQM) Where(e bob.Expression) bob.Mod[*SelectQuery] {
-	return mods.Where[*SelectQuery]{e}
-}
-
-func (qm selectQM) WhereClause(clause string, args ...any) bob.Mod[*SelectQuery] {
-	return mods.Where[*SelectQuery]{Raw(clause, args...)}
-}
-
-func (selectQM) Having(e bob.Expression) bob.Mod[*SelectQuery] {
-	return mods.Having[*SelectQuery]{e}
-}
-
-func (qm selectQM) HavingClause(clause string, args ...any) bob.Mod[*SelectQuery] {
-	return mods.Having[*SelectQuery]{Raw(clause, args...)}
-}
-
-func (selectQM) GroupBy(e any) bob.Mod[*SelectQuery] {
-	return mods.GroupBy[*SelectQuery]{
-		E: e,
-	}
-}
-
-func (selectQM) Window(name string) windowMod[*SelectQuery] {
-	m := windowMod[*SelectQuery]{
-		name: name,
-	}
-
-	m.windowChain.def = &m
-	return m
-}
-
-func (selectQM) OrderBy(e any) orderBy[*SelectQuery] {
-	return orderBy[*SelectQuery](func() clause.OrderDef {
-		return clause.OrderDef{
-			Expression: e,
-		}
-	})
-}
-
-// Sqlite can use an clauseession for the limit
-func (selectQM) Limit(count any) bob.Mod[*SelectQuery] {
-	return mods.Limit[*SelectQuery]{
-		Count: count,
-	}
-}
-
-// Sqlite can use an clauseession for the offset
-func (selectQM) Offset(count any) bob.Mod[*SelectQuery] {
-	return mods.Offset[*SelectQuery]{
-		Count: count,
-	}
-}
-
-func (selectQM) Union(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Union,
-		Query:    q,
-		All:      false,
-	}
-}
-
-func (selectQM) UnionAll(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Union,
-		Query:    q,
-		All:      true,
-	}
-}
-
-func (selectQM) Intersect(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Intersect,
-		Query:    q,
-		All:      false,
-	}
-}
-
-func (selectQM) Except(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Except,
-		Query:    q,
-		All:      false,
-	}
 }

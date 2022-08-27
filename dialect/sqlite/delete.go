@@ -5,7 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
 func Delete(queryMods ...bob.Mod[*DeleteQuery]) bob.BaseQuery[*DeleteQuery] {
@@ -16,7 +16,7 @@ func Delete(queryMods ...bob.Mod[*DeleteQuery]) bob.BaseQuery[*DeleteQuery] {
 
 	return bob.BaseQuery[*DeleteQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -62,53 +62,4 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	args = append(args, retArgs...)
 
 	return args, nil
-}
-
-//nolint:gochecknoglobals
-var DeleteQM = deleteQM{}
-
-type deleteQM struct {
-	withMod[*DeleteQuery]
-}
-
-func (qm deleteQM) From(name any) bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		q.Table = clause.Table{
-			Expression: name,
-		}
-	})
-}
-
-func (qm deleteQM) FromAs(name any, alias string) bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		q.Table = clause.Table{
-			Expression: name,
-			Alias:      alias,
-		}
-	})
-}
-
-func (qm deleteQM) NotIndexed() bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		var s string
-		q.IndexedBy = &s
-	})
-}
-
-func (qm deleteQM) IndexedBy(indexName string) bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(q *DeleteQuery) {
-		q.IndexedBy = &indexName
-	})
-}
-
-func (qm deleteQM) Where(e bob.Expression) bob.Mod[*DeleteQuery] {
-	return mods.Where[*DeleteQuery]{e}
-}
-
-func (qm deleteQM) WhereClause(clause string, args ...any) bob.Mod[*DeleteQuery] {
-	return mods.Where[*DeleteQuery]{Raw(clause, args...)}
-}
-
-func (qm deleteQM) Returning(clauses ...any) bob.Mod[*DeleteQuery] {
-	return mods.Returning[*DeleteQuery](clauses)
 }

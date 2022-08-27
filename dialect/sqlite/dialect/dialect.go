@@ -1,4 +1,4 @@
-package sqlite
+package dialect
 
 import (
 	"io"
@@ -6,21 +6,21 @@ import (
 )
 
 //nolint:gochecknoglobals
-var dialect Dialect
+var Dialect dialect
 
-type Dialect struct{}
+type dialect struct{}
 
-func (d Dialect) WriteArg(w io.Writer, position int) {
+func (d dialect) WriteArg(w io.Writer, position int) {
 	w.Write([]byte("?"))
 	w.Write([]byte(strconv.Itoa(position)))
 }
 
-func (d Dialect) WriteNamedArg(w io.Writer, name string) {
+func (d dialect) WriteNamedArg(w io.Writer, name string) {
 	w.Write([]byte(":"))
 	w.Write([]byte(name))
 }
 
-func (d Dialect) WriteQuoted(w io.Writer, s string) {
+func (d dialect) WriteQuoted(w io.Writer, s string) {
 	w.Write([]byte(`"`))
 	w.Write([]byte(s))
 	w.Write([]byte(`"`))

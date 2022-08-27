@@ -1,4 +1,4 @@
-package sqlite
+package dialect
 
 import (
 	"strings"
@@ -19,6 +19,6 @@ func (Expression) New(exp any) Expression {
 // Implements fmt.Stringer()
 func (x Expression) String() string {
 	w := strings.Builder{}
-	x.WriteSQL(&w, dialect, 1) //nolint:errcheck
+	x.WriteSQL(&w, Dialect, 1) //nolint:errcheck
 	return w.String()
 }

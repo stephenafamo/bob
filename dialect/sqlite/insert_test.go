@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
+	"github.com/stephenafamo/bob/dialect/sqlite/insert/qm"
 )
 
 func TestInsert(t *testing.T) {
-	qm := sqlite.InsertQM
 	examples := d.Testcases{
 		"simple insert": {
 			Query: sqlite.Insert(

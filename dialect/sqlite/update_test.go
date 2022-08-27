@@ -5,11 +5,11 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite"
+	selectQM "github.com/stephenafamo/bob/dialect/sqlite/select/qm"
+	"github.com/stephenafamo/bob/dialect/sqlite/update/qm"
 )
 
 func TestUpdate(t *testing.T) {
-	qm := sqlite.UpdateQM
-	selectQM := sqlite.SelectQM
 	examples := d.Testcases{
 		"simple": {
 			Query: sqlite.Update(
