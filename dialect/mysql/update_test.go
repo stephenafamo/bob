@@ -5,11 +5,11 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
+	selectQM "github.com/stephenafamo/bob/dialect/mysql/select/qm"
+	"github.com/stephenafamo/bob/dialect/mysql/update/qm"
 )
 
 func TestUpdate(t *testing.T) {
-	qm := mysql.UpdateQM
-	selectQM := mysql.SelectQM
 	examples := d.Testcases{
 		"simple": {
 			Query: mysql.Update(

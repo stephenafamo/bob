@@ -1,21 +1,23 @@
 package mysql
 
-import "github.com/stephenafamo/bob/expr"
+import (
+	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/expr"
+)
+
+type Expression = dialect.Expression
 
 //nolint:gochecknoglobals
 var bmod = expr.Builder[Expression, Expression]{}
 
-func F(name string, args ...any) *function {
-	f := &function{
-		name: name,
-		args: args,
-	}
+func F(name string, args ...any) *dialect.Function {
+	f := dialect.NewFunction(name, args...)
 
 	// We have embedded the same function as the chain base
 	// this is so that chained methods can also be used by functions
-	f.Chain.Base = f
+	f.Chain.Base = &f
 
-	return f
+	return &f
 }
 
 func S(s string) Expression {

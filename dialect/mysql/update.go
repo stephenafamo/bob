@@ -5,8 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	clause "github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
 func Update(queryMods ...bob.Mod[*UpdateQuery]) bob.BaseQuery[*UpdateQuery] {
@@ -17,7 +16,7 @@ func Update(queryMods ...bob.Mod[*UpdateQuery]) bob.BaseQuery[*UpdateQuery] {
 
 	return bob.BaseQuery[*UpdateQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -95,73 +94,4 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 
 	return args, nil
-}
-
-//nolint:gochecknoglobals
-var UpdateQM = updateQM{}
-
-type updateQM struct {
-	hintMod[*UpdateQuery] // for optimizer hints
-	withMod[*UpdateQuery]
-	fromItemMod[*UpdateQuery]
-	joinMod[*clause.From]
-}
-
-func (updateQM) LowPriority() bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(i *DeleteQuery) {
-		i.AppendModifier("LOW_PRIORITY")
-	})
-}
-
-func (updateQM) Ignore() bob.Mod[*DeleteQuery] {
-	return mods.QueryModFunc[*DeleteQuery](func(i *DeleteQuery) {
-		i.AppendModifier("IGNORE")
-	})
-}
-
-func (u updateQM) Table(name any) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
-		u.Table = clause.Table{
-			Expression: name,
-		}
-	})
-}
-
-func (u updateQM) TableAs(name any, alias string) bob.Mod[*UpdateQuery] {
-	return mods.QueryModFunc[*UpdateQuery](func(u *UpdateQuery) {
-		u.Table = clause.Table{
-			Expression: name,
-			Alias:      alias,
-		}
-	})
-}
-
-func (updateQM) Set(a string, b any) bob.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", Quote(a), b)}
-}
-
-func (updateQM) SetArg(a string, b any) bob.Mod[*UpdateQuery] {
-	return mods.Set[*UpdateQuery]{expr.OP("=", Quote(a), Arg(b))}
-}
-
-func (updateQM) Where(e bob.Expression) bob.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{e}
-}
-
-func (updateQM) WhereClause(clause string, args ...any) bob.Mod[*UpdateQuery] {
-	return mods.Where[*UpdateQuery]{Raw(clause, args...)}
-}
-
-func (updateQM) OrderBy(e any) orderBy[*UpdateQuery] {
-	return orderBy[*UpdateQuery](func() clause.OrderDef {
-		return clause.OrderDef{
-			Expression: e,
-		}
-	})
-}
-
-func (updateQM) Limit(count int64) bob.Mod[*UpdateQuery] {
-	return mods.Limit[*UpdateQuery]{
-		Count: count,
-	}
 }

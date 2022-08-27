@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
+	"github.com/stephenafamo/bob/dialect/mysql/insert/qm"
 )
 
 func TestInsert(t *testing.T) {
-	qm := mysql.InsertQM
 	examples := d.Testcases{
 		"simple insert": {
 			Query: mysql.Insert(
@@ -62,11 +62,10 @@ func TestInsert(t *testing.T) {
 				qm.Values(mysql.Arg(8, "Anvil Distribution")),
 				qm.Values(mysql.Arg(9, "Sentry Distribution")),
 				qm.As("new"),
-				qm.OnDuplicateKeyUpdate(
-					qm.Set("dbname", mysql.Concat(
+				qm.OnDuplicateKeyUpdate().
+					Set("dbname", mysql.Concat(
 						"new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
 					)),
-				),
 			),
 			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
 				VALUES (?, ?), (?, ?)

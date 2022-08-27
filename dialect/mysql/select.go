@@ -5,7 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
 func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
@@ -16,7 +16,7 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 
 	return bob.BaseQuery[*SelectQuery]{
 		Expression: q,
-		Dialect:    dialect,
+		Dialect:    dialect.Dialect,
 	}
 }
 
@@ -25,7 +25,7 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 type SelectQuery struct {
 	hints
 	modifiers[any]
-	into *into
+	into any
 
 	clause.With
 	clause.Select
@@ -43,8 +43,8 @@ type SelectQuery struct {
 	clause.Load[*SelectQuery]
 }
 
-func (s *SelectQuery) setInto(i into) {
-	s.into = &i
+func (s *SelectQuery) SetInto(i any) {
+	s.into = i
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -150,152 +150,4 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 
 	w.Write([]byte("\n"))
 	return args, nil
-}
-
-//nolint:gochecknoglobals
-var SelectQM = selectQM{}
-
-type selectQM struct {
-	hintMod[*SelectQuery]     // for optimizer hints
-	withMod[*SelectQuery]     // For CTEs
-	joinMod[*clause.From]     // joins, which are mods of the FROM
-	fromItemMod[*SelectQuery] // Dialect specific fromItem mods
-	intoMod[*SelectQuery]     // INTO clause
-}
-
-func (selectQM) Distinct(on ...any) bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "DISTINCT")
-	})
-}
-
-func (selectQM) HighPriority() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "HIGH_PRIORITY")
-	})
-}
-
-func (selectQM) Straight() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "STRAIGHT_JOIN")
-	})
-}
-
-func (selectQM) SmallResult() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_SMALL_RESULT")
-	})
-}
-
-func (selectQM) BigResult() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BIG_RESULT")
-	})
-}
-
-func (selectQM) BufferResult() bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BUFFER_RESULT")
-	})
-}
-
-func (selectQM) Columns(clauses ...any) bob.Mod[*SelectQuery] {
-	return mods.Select[*SelectQuery](clauses)
-}
-
-func (selectQM) From(table any) bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.SetTable(table)
-	})
-}
-
-func (selectQM) Where(e bob.Expression) bob.Mod[*SelectQuery] {
-	return mods.Where[*SelectQuery]{e}
-}
-
-func (qm selectQM) WhereClause(clause string, args ...any) bob.Mod[*SelectQuery] {
-	return mods.Where[*SelectQuery]{Raw(clause, args...)}
-}
-
-func (selectQM) Having(e bob.Expression) bob.Mod[*SelectQuery] {
-	return mods.Having[*SelectQuery]{e}
-}
-
-func (qm selectQM) HavingClause(clause string, args ...any) bob.Mod[*SelectQuery] {
-	return mods.Having[*SelectQuery]{Raw(clause, args...)}
-}
-
-func (selectQM) GroupBy(e any) bob.Mod[*SelectQuery] {
-	return mods.GroupBy[*SelectQuery]{
-		E: e,
-	}
-}
-
-func (selectQM) WithRollup(distinct bool) bob.Mod[*SelectQuery] {
-	return mods.QueryModFunc[*SelectQuery](func(q *SelectQuery) {
-		q.SetGroupWith("ROLLUP")
-	})
-}
-
-func (selectQM) Window(name string) windowMod[*SelectQuery] {
-	m := windowMod[*SelectQuery]{
-		name: name,
-	}
-
-	m.windowChain.def = &m
-	return m
-}
-
-func (selectQM) OrderBy(e any) orderBy[*SelectQuery] {
-	return orderBy[*SelectQuery](func() clause.OrderDef {
-		return clause.OrderDef{
-			Expression: e,
-		}
-	})
-}
-
-func (selectQM) Limit(count int64) bob.Mod[*SelectQuery] {
-	return mods.Limit[*SelectQuery]{
-		Count: count,
-	}
-}
-
-func (selectQM) Offset(count int64) bob.Mod[*SelectQuery] {
-	return mods.Offset[*SelectQuery]{
-		Count: count,
-	}
-}
-
-func (selectQM) Union(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Union,
-		Query:    q,
-		All:      false,
-	}
-}
-
-func (selectQM) UnionAll(q bob.Query) bob.Mod[*SelectQuery] {
-	return mods.Combine[*SelectQuery]{
-		Strategy: clause.Union,
-		Query:    q,
-		All:      true,
-	}
-}
-
-func (selectQM) ForUpdate(tables ...string) lockChain[*SelectQuery] {
-	return lockChain[*SelectQuery](func() clause.For {
-		return clause.For{
-			Strength: clause.LockStrengthUpdate,
-			Tables:   tables,
-		}
-	})
-}
-
-func (selectQM) ForShare(tables ...string) lockChain[*SelectQuery] {
-	return lockChain[*SelectQuery](func() clause.For {
-		return clause.For{
-			Strength: clause.LockStrengthShare,
-			Tables:   tables,
-		}
-	})
 }

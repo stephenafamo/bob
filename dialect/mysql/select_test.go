@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
+	"github.com/stephenafamo/bob/dialect/mysql/select/qm"
 )
 
 func TestSelect(t *testing.T) {
-	qm := mysql.SelectQM
 	examples := d.Testcases{
 		"simple select": {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?, ?, ?))",

@@ -5,10 +5,10 @@ import (
 
 	d "github.com/stephenafamo/bob/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql"
+	"github.com/stephenafamo/bob/dialect/mysql/delete/qm"
 )
 
 func TestDelete(t *testing.T) {
-	qm := mysql.DeleteQM
 	examples := d.Testcases{
 		"simple": {
 			Query: mysql.Delete(
