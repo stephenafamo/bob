@@ -35,12 +35,7 @@ type Executor interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 }
 
-func Exec[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (int64, error) {
-	settings := ExecSettings[T]{}
-	for _, opt := range opts {
-		opt(&settings)
-	}
-
+func Exec(ctx context.Context, exec Executor, q Query) (int64, error) {
 	sql, args, err := Build(q)
 	if err != nil {
 		return 0, err
