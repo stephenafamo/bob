@@ -51,6 +51,10 @@ func Values(clauses ...any) bob.Mod[*psql.InsertQuery] {
 	return mods.Values[*psql.InsertQuery](clauses)
 }
 
+func Rows(rows ...[]any) bob.Mod[*psql.InsertQuery] {
+	return mods.Rows[*psql.InsertQuery](rows)
+}
+
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*psql.InsertQuery] {
 	return mods.QueryModFunc[*psql.InsertQuery](func(i *psql.InsertQuery) {

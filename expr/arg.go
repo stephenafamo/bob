@@ -6,6 +6,10 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
+func Arg(vals ...any) bob.Expression {
+	return args{vals: vals}
+}
+
 type args struct {
 	vals []any
 }

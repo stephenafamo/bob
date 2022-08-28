@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/scan"
 )
 
 type ExtraLoader struct {
@@ -30,7 +29,7 @@ func (a *ExtraLoader) Collect(v any) error {
 	return nil
 }
 
-func (a *ExtraLoader) LoadOne(ctx context.Context, exec scan.Queryer) error {
+func (a *ExtraLoader) LoadOne(ctx context.Context, exec bob.Executor) error {
 	if len(a.collected) == 0 || len(a.Fs) == 0 {
 		return nil
 	}
@@ -48,7 +47,7 @@ func (a *ExtraLoader) LoadOne(ctx context.Context, exec scan.Queryer) error {
 	return nil
 }
 
-func (a *ExtraLoader) LoadMany(ctx context.Context, exec scan.Queryer) error {
+func (a *ExtraLoader) LoadMany(ctx context.Context, exec bob.Executor) error {
 	if len(a.collected) == 0 || len(a.Fs) == 0 {
 		return nil
 	}

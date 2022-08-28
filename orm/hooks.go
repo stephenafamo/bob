@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/stephenafamo/scan"
+	"github.com/stephenafamo/bob"
 )
 
 // SkipHooks modifies a context to prevent hooks from running for any query
@@ -13,7 +13,7 @@ func SkipHooks(ctx context.Context) context.Context {
 	return context.WithValue(ctx, ctxSkipHooks, true)
 }
 
-type Hook[T any] func(context.Context, scan.Queryer, T) (context.Context, error)
+type Hook[T any] func(context.Context, bob.Executor, T) (context.Context, error)
 
 type Hooks[T any] struct {
 	mu    sync.RWMutex
@@ -27,7 +27,7 @@ func (h *Hooks[T]) Add(hook Hook[T]) {
 	h.hooks = append(h.hooks, hook)
 }
 
-func (h *Hooks[T]) Do(ctx context.Context, exec scan.Queryer, o T) (context.Context, error) {
+func (h *Hooks[T]) Do(ctx context.Context, exec bob.Executor, o T) (context.Context, error) {
 	if skip, ok := ctx.Value(ctxSkipHooks).(bool); skip && ok {
 		return ctx, nil
 	}

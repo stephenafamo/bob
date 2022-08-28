@@ -27,6 +27,12 @@ type Columns struct {
 	aliasPrefix string
 }
 
+func (c Columns) Names() []string {
+	names := make([]string, len(c.names))
+	copy(names, c.names)
+	return names
+}
+
 func (c Columns) WithAggFunc(a, b string) Columns {
 	c.aggFunc = [2]string{a, b}
 	return c

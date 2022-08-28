@@ -127,6 +127,14 @@ func (s Values[Q]) Apply(q Q) {
 	q.AppendValues(s...)
 }
 
+type Rows[Q interface{ AppendValues(vals ...any) }] [][]any
+
+func (r Rows[Q]) Apply(q Q) {
+	for _, row := range r {
+		q.AppendValues(row...)
+	}
+}
+
 type Returning[Q interface{ AppendReturning(vals ...any) }] []any
 
 func (s Returning[Q]) Apply(q Q) {

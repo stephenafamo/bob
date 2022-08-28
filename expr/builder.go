@@ -80,7 +80,7 @@ func (e Builder[T, B]) S(s string) T {
 
 // Comma separated list of arguments
 func (e Builder[T, B]) Arg(vals ...any) T {
-	return e.X(args{vals: vals})
+	return e.X(Arg(vals...))
 }
 
 func (e Builder[T, B]) Placeholder(n uint) T {

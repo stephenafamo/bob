@@ -59,6 +59,10 @@ func Values(clauses ...any) bob.Mod[*sqlite.InsertQuery] {
 	return mods.Values[*sqlite.InsertQuery](clauses)
 }
 
+func Rows(rows ...[]any) bob.Mod[*sqlite.InsertQuery] {
+	return mods.Rows[*sqlite.InsertQuery](rows)
+}
+
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*sqlite.InsertQuery] {
 	return mods.QueryModFunc[*sqlite.InsertQuery](func(i *sqlite.InsertQuery) {

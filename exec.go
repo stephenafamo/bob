@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/stephenafamo/scan"
 )
@@ -11,15 +12,15 @@ type (
 		GetMapperMods() []scan.MapperMod
 	}
 
-	LoadFunc = func(ctx context.Context, exec scan.Queryer, retrieved any) error
+	LoadFunc = func(ctx context.Context, exec Executor, retrieved any) error
 	Loadable interface {
 		GetLoaders() []LoadFunc
 		GetExtraLoaders() []ExtraLoader
 	}
 
 	ExtraLoader interface {
-		LoadOne(context.Context, scan.Queryer) error
-		LoadMany(context.Context, scan.Queryer) error
+		LoadOne(context.Context, Executor) error
+		LoadMany(context.Context, Executor) error
 	}
 
 	ExecSettings[T any] struct {
@@ -29,7 +30,39 @@ type (
 	ExecOption[T any] func(*ExecSettings[T])
 )
 
-func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (T, error) {
+type Executor interface {
+	scan.Queryer
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}
+
+func Exec[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (int64, error) {
+	settings := ExecSettings[T]{}
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
+	sql, args, err := Build(q)
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := exec.ExecContext(ctx, sql, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	if l, ok := q.(Loadable); ok {
+		for _, loader := range l.GetExtraLoaders() {
+			if err := loader.LoadOne(ctx, exec); err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	return result.RowsAffected()
+}
+
+func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (T, error) {
 	settings := ExecSettings[T]{}
 	for _, opt := range opts {
 		opt(&settings)
@@ -75,14 +108,14 @@ func One[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T
 	return t, err
 }
 
-func All[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) ([]T, error) {
+func All[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) ([]T, error) {
 	return Allx[T, []T](ctx, exec, q, m, opts...)
 }
 
 // Allx takes 2 type parameters. The second is a special return type of the returned slice
 // this is especially useful for when the the [Query] is [Loadable] and the loader depends on the
 // return value implementing an interface
-func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (Ts, error) {
+func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (Ts, error) {
 	settings := ExecSettings[T]{}
 	for _, opt := range opts {
 		opt(&settings)
@@ -129,7 +162,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec scan.Queryer, q Query, m sca
 }
 
 // Cursor returns a cursor that works similar to *sql.Rows
-func Cursor[T any](ctx context.Context, exec scan.Queryer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (scan.ICursor[T], error) {
+func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (scan.ICursor[T], error) {
 	settings := ExecSettings[T]{}
 	for _, opt := range opts {
 		opt(&settings)

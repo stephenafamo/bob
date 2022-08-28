@@ -40,6 +40,10 @@ func Values(clauses ...any) bob.Mod[*mysql.InsertQuery] {
 	return mods.Values[*mysql.InsertQuery](clauses)
 }
 
+func Rows(rows ...[]any) bob.Mod[*mysql.InsertQuery] {
+	return mods.Rows[*mysql.InsertQuery](rows)
+}
+
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*mysql.InsertQuery] {
 	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {

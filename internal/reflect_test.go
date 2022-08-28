@@ -1,15 +1,23 @@
 package internal
 
 import (
+	"bytes"
+	"database/sql/driver"
+	"fmt"
+	"io"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
 )
 
 type User struct {
-	ID        string
+	ID        int
 	FirstName string
 	LastName  string
 }
@@ -41,57 +49,208 @@ type BlogWithTags struct {
 }
 
 func TestGetColumns(t *testing.T) {
-	testGetColumns[User](t, Columns{All: []string{
-		"id",
-		"first_name",
-		"last_name",
-	}})
+	testGetColumns[User](t, Mapping{
+		All:          []string{"id", "first_name", "last_name"},
+		PKs:          make([]string, 3),
+		Generated:    make([]string, 3),
+		NonGenerated: []string{"id", "first_name", "last_name"},
+	})
 
-	testGetColumns[Timestamps](t, Columns{All: []string{
-		"created_at",
-		"updated_at",
-	}})
+	testGetColumns[Timestamps](t, Mapping{
+		All:          []string{"created_at", "updated_at"},
+		PKs:          make([]string, 2),
+		Generated:    make([]string, 2),
+		NonGenerated: []string{"created_at", "updated_at"},
+	})
 
-	testGetColumns[UserWithTimestamps](t, Columns{All: []string{
-		"id",
-		"first_name",
-		"last_name",
-		"created_at",
-		"updated_at",
-	}})
+	testGetColumns[UserWithTimestamps](t, Mapping{
+		All:          []string{"id", "first_name", "last_name", "timestamps"},
+		PKs:          make([]string, 4),
+		Generated:    make([]string, 4),
+		NonGenerated: []string{"id", "first_name", "last_name", "timestamps"},
+	})
 
-	testGetColumns[Blog](t, Columns{All: []string{
-		"id",
-		"title",
-		"description",
-		"user",
-	}})
+	testGetColumns[Blog](t, Mapping{
+		All:          []string{"id", "title", "description", "user"},
+		PKs:          make([]string, 4),
+		Generated:    make([]string, 4),
+		NonGenerated: []string{"id", "title", "description", "user"},
+	})
 
-	testGetColumns[BlogWithTags](t, Columns{
-		All: []string{
-			"blog_id",
-			"title",
-			"description",
-		},
-		PKs: []string{
-			"blog_id",
-			"title",
-		},
-		Generated: []string{
-			"blog_id",
-			"description",
-		},
+	testGetColumns[BlogWithTags](t, Mapping{
+		All:          []string{"blog_id", "title", "description", ""},
+		PKs:          []string{"blog_id", "title", "", ""},
+		Generated:    []string{"blog_id", "", "description", ""},
+		NonGenerated: []string{"", "title", "", ""},
 	})
 }
 
-func testGetColumns[T any](t *testing.T, expected Columns) {
+func testGetColumns[T any](t *testing.T, expected Mapping) {
 	t.Helper()
 	var x T
 	xTyp := reflect.TypeOf(x)
 	t.Run(xTyp.Name(), func(t *testing.T) {
-		cols := GetColumns(xTyp)
+		cols := GetMappings(xTyp)
 		if diff := cmp.Diff(expected, cols); diff != "" {
 			t.Fatal(diff)
 		}
 	})
+}
+
+type SettableUser struct {
+	ID        int
+	FirstName string
+	LastName  string
+	FullName  string `db:",generated"`
+	Bio       omit.Val[string]
+}
+
+type testGetColumnsCase[T any] struct {
+	Filter  []string
+	Rows    []T
+	Columns []string
+	Values  [][]any
+}
+
+func TestGetColumnValues(t *testing.T) {
+	user1 := User{ID: 1, FirstName: "Stephen", LastName: "AfamO"}
+	user2 := User{ID: 2, FirstName: "Peter", LastName: "Pan"}
+	user3 := SettableUser{ID: 3, FirstName: "John", LastName: "Doe", FullName: "John Doe"}
+	user4 := SettableUser{
+		ID: 4, FirstName: "Jane", LastName: "Does",
+		FullName: "Jane Does", Bio: omit.From("Foo Bar"),
+	}
+
+	testGetColumnValues(t, "pointer", testGetColumnsCase[*User]{
+		Rows:    []*User{&user1},
+		Columns: []string{"id", "first_name", "last_name"},
+		Values:  [][]any{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
+	})
+
+	testGetColumnValues(t, "single row", testGetColumnsCase[User]{
+		Rows:    []User{user1},
+		Columns: []string{"id", "first_name", "last_name"},
+		Values:  [][]any{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
+	})
+
+	testGetColumnValues(t, "with generated", testGetColumnsCase[SettableUser]{
+		Rows:    []SettableUser{user3},
+		Columns: []string{"id", "first_name", "last_name"},
+		Values:  [][]any{{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe")}},
+	})
+
+	testGetColumnValues(t, "settable and set", testGetColumnsCase[SettableUser]{
+		Rows:    []SettableUser{user4},
+		Columns: []string{"id", "first_name", "last_name", "bio"},
+		Values: [][]any{{
+			expr.Arg(4), expr.Arg("Jane"),
+			expr.Arg("Does"), expr.Arg(omit.From("Foo Bar")),
+		}},
+	})
+
+	testGetColumnValues(t, "single user with filter", testGetColumnsCase[User]{
+		Filter:  []string{"first_name", "last_name"},
+		Rows:    []User{user1},
+		Columns: []string{"first_name", "last_name"},
+		Values:  [][]any{{expr.Arg("Stephen"), expr.Arg("AfamO")}},
+	})
+
+	testGetColumnValues(t, "multiple users", testGetColumnsCase[User]{
+		Rows:    []User{user1, user2},
+		Columns: []string{"id", "first_name", "last_name"},
+		Values: [][]any{
+			{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")},
+			{expr.Arg(2), expr.Arg("Peter"), expr.Arg("Pan")},
+		},
+	})
+
+	testGetColumnValues(t, "multiple users with filter", testGetColumnsCase[User]{
+		Filter:  []string{"id", "first_name"},
+		Rows:    []User{user1, user2},
+		Columns: []string{"id", "first_name"},
+		Values: [][]any{
+			{expr.Arg(1), expr.Arg("Stephen")},
+			{expr.Arg(2), expr.Arg("Peter")},
+		},
+	})
+
+	testGetColumnValues(t, "first has fewer columns", testGetColumnsCase[SettableUser]{
+		Rows:    []SettableUser{user3, user4},
+		Columns: []string{"id", "first_name", "last_name"},
+		Values: [][]any{
+			{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe")},
+			{expr.Arg(4), expr.Arg("Jane"), expr.Arg("Does")},
+		},
+	})
+
+	testGetColumnValues(t, "first has more columns", testGetColumnsCase[SettableUser]{
+		Rows:    []SettableUser{user4, user3},
+		Columns: []string{"id", "first_name", "last_name", "bio"},
+		Values: [][]any{
+			{expr.Arg(4), expr.Arg("Jane"), expr.Arg("Does"), expr.Arg(omit.From("Foo Bar"))},
+			{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe"), expr.Arg(omit.FromCond("", false))},
+		},
+	})
+}
+
+func testGetColumnValues[T any](t *testing.T, name string, tc testGetColumnsCase[T]) {
+	t.Helper()
+	var x T
+	xTyp := reflect.TypeOf(x)
+	cols := GetMappings(xTyp)
+	if name == "" {
+		name = xTyp.Name()
+	}
+
+	t.Run(name, func(t *testing.T) {
+		cols, values, err := GetColumnValues(cols, tc.Filter, tc.Rows...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if diff := cmp.Diff(tc.Columns, cols); diff != "" {
+			t.Errorf("Columns: %s", diff)
+		}
+		if diff := cmp.Diff(tc.Values, values,
+			cmp.Transformer("optTransformer", optTransformer),
+			cmp.Transformer("expTransformer", expTransformer),
+		); diff != "" {
+			t.Errorf("Values: %s", diff)
+		}
+	})
+}
+
+type dialect struct{}
+
+func (d dialect) WriteArg(w io.Writer, position int) {
+	fmt.Fprintf(w, "$%s", strconv.Itoa(position))
+}
+
+func (d dialect) WriteQuoted(w io.Writer, s string) {
+	fmt.Fprintf(w, "%q", s)
+}
+
+type expression struct {
+	Query string
+	Args  []any
+	Error error
+}
+
+func expTransformer(e bob.Expression) expression {
+	buf := &bytes.Buffer{}
+	args, err := e.WriteSQL(buf, dialect{}, 1)
+
+	return expression{
+		Query: buf.String(),
+		Args:  args,
+		Error: err,
+	}
+}
+
+func optTransformer(e interface{ IsSet() bool }) any {
+	if v, ok := e.(driver.Valuer); ok {
+		value, err := v.Value()
+		return []any{value, err}
+	}
+
+	return []any{e.IsSet(), fmt.Sprint(e)}
 }
