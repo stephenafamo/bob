@@ -2,12 +2,41 @@ package model
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
+
+func NewView[T any, Tslice ~[]T](name0 string, nameX ...string) View[T, Tslice] {
+	var zero T
+
+	names := append([]string{name0}, nameX...)
+	mappings := internal.GetMappings(reflect.TypeOf(zero))
+	allCols := mappings.Columns(names...)
+
+	return View[T, Tslice]{
+		name:    names,
+		prefix:  names[len(names)-1] + ".",
+		mapping: mappings,
+		allCols: allCols,
+		pkCols:  allCols.Only(mappings.PKs...),
+	}
+}
+
+type View[T any, Tslice ~[]T] struct {
+	prefix string
+	name   []string
+
+	mapping internal.Mapping
+	allCols orm.Columns
+	pkCols  orm.Columns
+
+	AfterSelectHooks orm.Hooks[T]
+}
 
 type ViewQuery[T any, Ts ~[]T] struct {
 	bob.BaseQuery[*psql.SelectQuery]
@@ -61,16 +90,4 @@ func (f *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (b
 	f.BaseQuery.Expression.Select.Columns = []any{"count(1)"}
 	count, err := bob.One(ctx, exec, f.BaseQuery, scan.SingleColumnMapper[int64])
 	return count > 0, err
-}
-
-type TableQuery[T any, Ts ~[]T, Topt any] struct {
-	ViewQuery[T, Ts]
-}
-
-func (f *TableQuery[T, Tslice, Topt]) UpdateAll(Topt) (int64, error) {
-	panic("not implemented")
-}
-
-func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
-	panic("not implemented")
 }

@@ -14,33 +14,6 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-func NewView[T any, Tslice ~[]T](name0 string, nameX ...string) View[T, Tslice] {
-	var zero T
-
-	names := append([]string{name0}, nameX...)
-	mappings := internal.GetMappings(reflect.TypeOf(zero))
-	allCols := mappings.Columns(names...)
-
-	return View[T, Tslice]{
-		name:    names,
-		prefix:  names[len(names)-1] + ".",
-		mapping: mappings,
-		allCols: allCols,
-		pkCols:  allCols.Only(mappings.PKs...),
-	}
-}
-
-type View[T any, Tslice ~[]T] struct {
-	prefix string
-	name   []string
-
-	mapping internal.Mapping
-	allCols orm.Columns
-	pkCols  orm.Columns
-
-	AfterSelectHooks orm.Hooks[T]
-}
-
 func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
 	var zeroOpt Topt
 	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))
@@ -216,4 +189,16 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *TableQuery[T, Tslice, Topt] {
 	vq := t.View.Query(queryMods...)
 	return &TableQuery[T, Tslice, Topt]{*vq}
+}
+
+type TableQuery[T any, Ts ~[]T, Topt any] struct {
+	ViewQuery[T, Ts]
+}
+
+func (f *TableQuery[T, Tslice, Topt]) UpdateAll(Topt) (int64, error) {
+	panic("not implemented")
+}
+
+func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
+	panic("not implemented")
 }
