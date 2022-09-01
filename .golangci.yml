@@ -48,6 +48,7 @@ linters-settings:
   errcheck:
     exclude-functions:
       - (io.Writer).Write
+      - (*text/template.Template).Parse
   revive:
     rules:
       - name: receiver-naming
