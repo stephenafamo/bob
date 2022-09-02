@@ -6,7 +6,7 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-func TestSetIsJoinTable(t *testing.T) {
+func TestJoinTable(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

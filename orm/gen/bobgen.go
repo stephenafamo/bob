@@ -274,7 +274,7 @@ func (s *State[T]) initDBInfo() error {
 // processTypeReplacements checks the config for type replacements
 // and performs them.
 func (s *State[T]) processTypeReplacements() {
-	for _, r := range s.Config.TypeReplaces {
+	for _, r := range s.Config.Replacements {
 		for i := range s.Tables {
 			t := s.Tables[i]
 
@@ -380,7 +380,7 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 
 // shouldReplaceInTable checks if tables were specified in types.match in the config.
 // If tables were set, it checks if the given table is among the specified tables.
-func shouldReplaceInTable(t drivers.Table, r TypeReplace) bool {
+func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 	if len(r.Tables) == 0 {
 		return true
 	}

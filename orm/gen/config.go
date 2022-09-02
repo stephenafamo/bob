@@ -27,15 +27,15 @@ type Config[T any] struct {
 	Templates           []fs.FS          `toml:"-" json:"-"`
 	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
 
-	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
-	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
-	Inflections  Inflections   `toml:"inflections,omitempty" json:"inflections,omitempty"`
+	Aliases      Aliases     `toml:"aliases,omitempty" json:"aliases,omitempty"`
+	Replacements []Replace   `toml:"replacements,omitempty" json:"replacements,omitempty"`
+	Inflections  Inflections `toml:"inflections,omitempty" json:"inflections,omitempty"`
 
 	Generator string `toml:"generator" json:"generator"`
 }
 
-// TypeReplace replaces a column type with something else
-type TypeReplace struct {
+// Replace replaces a column type with something else
+type Replace struct {
 	Tables  []string       `toml:"tables,omitempty" json:"tables,omitempty"`
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
@@ -133,13 +133,19 @@ func ConvertAliases(i interface{}) Aliases {
 			})
 		}
 
-		relationshipsIntf, ok := t["relationships"]
-		if ok {
-			iterateMapOrSlice(relationshipsIntf, func(name string, rIntf interface{}) {
-				if ta.Relationships == nil {
-					ta.Relationships = make(map[string]string)
+		if relsIntf, ok := t["relationships"]; ok {
+			ta.Relationships = make(map[string]string)
+
+			iterateMapOrSlice(relsIntf, func(name string, relIntf interface{}) {
+				var alias string
+				switch rel := relIntf.(type) {
+				case map[string]interface{}, map[interface{}]interface{}:
+					cmap := cast.ToStringMap(relIntf)
+					alias = cmap["alias"].(string)
+				case string:
+					alias = rel
 				}
-				ta.Relationships[name] = cast.ToString(rIntf)
+				ta.Relationships[name] = alias
 			})
 		}
 
@@ -165,25 +171,25 @@ func iterateMapOrSlice(mapOrSlice interface{}, fn func(name string, obj interfac
 	}
 }
 
-// ConvertTypeReplace is necessary because viper
-func ConvertTypeReplace(i interface{}) []TypeReplace {
+// ConvertReplacements is necessary because viper
+func ConvertReplacements(i interface{}) []Replace {
 	if i == nil {
 		return nil
 	}
 
 	intfArray := i.([]interface{})
-	replaces := make([]TypeReplace, 0, len(intfArray))
+	replaces := make([]Replace, 0, len(intfArray))
 	for _, r := range intfArray {
 		replaceIntf := cast.ToStringMap(r)
-		replace := TypeReplace{}
+		replace := Replace{}
 
 		if replaceIntf["match"] == nil || replaceIntf["replace"] == nil {
 			panic("replace types must specify both match and replace")
 		}
 
+		replace.Tables = tablesOfReplace(replaceIntf["match"])
 		replace.Match = columnFromInterface(replaceIntf["match"])
 		replace.Replace = columnFromInterface(replaceIntf["replace"])
-		replace.Tables = tablesOfTypeReplace(replaceIntf["match"])
 
 		replaces = append(replaces, replace)
 	}
@@ -191,7 +197,7 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 	return replaces
 }
 
-func tablesOfTypeReplace(i interface{}) []string {
+func tablesOfReplace(i interface{}) []string {
 	tables := []string{}
 
 	m := cast.ToStringMap(i)

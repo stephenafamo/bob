@@ -47,7 +47,9 @@ func (m *MockDriver) ViewNames(filter drivers.Filter) ([]string, error) {
 
 // Columns returns a list of mock columns
 func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
-	return map[string][]drivers.Column{
+	var cols []drivers.Column
+
+	for _, col := range map[string][]drivers.Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "name", Type: "string", DBType: "character"},
@@ -83,7 +85,11 @@ func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter)
 			{Name: "pilot_id", Type: "int", DBType: "integer"},
 			{Name: "language_id", Type: "int", DBType: "integer"},
 		},
-	}[tableName], nil
+	}[tableName] {
+		cols = append(cols, m.translateColumnType(col))
+	}
+
+	return cols, nil
 }
 
 // ViewColumns returns a list of mock columns
@@ -160,8 +166,8 @@ func (m *MockDriver) Constraints(drivers.ColumnFilter) (drivers.DBConstraints, e
 	}, nil
 }
 
-// TranslateColumnType converts a column to its type
-func (m *MockDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+// translateColumnType converts a column to its type
+func (m *MockDriver) translateColumnType(c drivers.Column) drivers.Column {
 	switch c.DBType {
 	case "bigint", "bigserial":
 		c.Type = "int64"

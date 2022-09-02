@@ -267,7 +267,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 	}
 
-	s.Config.TypeReplaces = []TypeReplace{
+	s.Config.Replacements = []Replace{
 		{
 			Match: drivers.Column{
 				DBType: "serial",
