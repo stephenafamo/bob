@@ -175,9 +175,7 @@ func columnWithImports(t *testing.T, c map[string]any, pkgs ...string) map[strin
 	}
 
 	c2Imports, _ := c2["imports"].([]string)
-	for _, pkg := range pkgs {
-		c2Imports = append(c2Imports, pkg)
-	}
+	c2Imports = append(c2Imports, pkgs...)
 	c2["imports"] = c2Imports
 
 	return c2

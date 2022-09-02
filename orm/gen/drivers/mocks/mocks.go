@@ -47,7 +47,7 @@ func (m *MockDriver) ViewNames(filter drivers.Filter) ([]string, error) {
 
 // Columns returns a list of mock columns
 func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
-	var cols []drivers.Column
+	var cols []drivers.Column //nolint:prealloc
 
 	for _, col := range map[string][]drivers.Column{
 		"pilots": {
