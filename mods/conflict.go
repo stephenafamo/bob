@@ -12,9 +12,8 @@ func (s Conflict[Q]) Apply(q Q) {
 	q.SetConflict(s())
 }
 
-func (c Conflict[Q]) On(target any, where ...any) Conflict[Q] {
+func (c Conflict[Q]) OnWhere(where ...any) Conflict[Q] {
 	conflict := c()
-	conflict.Target.Target = target
 	conflict.Target.Where = append(conflict.Target.Where, where...)
 
 	return Conflict[Q](func() clause.Conflict {

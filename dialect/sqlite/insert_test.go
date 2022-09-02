@@ -36,7 +36,7 @@ func TestInsert(t *testing.T) {
 			Query: sqlite.Insert(
 				qm.Into("films"),
 				qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.OnConflict(nil).DoNothing(),
+				qm.OnConflict().DoNothing(),
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT DO NOTHING",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},

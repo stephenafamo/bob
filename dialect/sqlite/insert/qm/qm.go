@@ -70,15 +70,11 @@ func Query(q bob.Query) bob.Mod[*sqlite.InsertQuery] {
 	})
 }
 
-func OnConflict(column any, where ...any) mods.Conflict[*sqlite.InsertQuery] {
-	if column != nil {
-		column = sqlite.P(column)
-	}
+func OnConflict(columns ...any) mods.Conflict[*sqlite.InsertQuery] {
 	return mods.Conflict[*sqlite.InsertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
-				Target: column,
-				Where:  where,
+				Columns: columns,
 			},
 		}
 	})

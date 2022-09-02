@@ -63,15 +63,11 @@ func Query(q bob.Query) bob.Mod[*psql.InsertQuery] {
 }
 
 // The column to target. Will auto add brackets
-func OnConflict(column any, where ...any) mods.Conflict[*psql.InsertQuery] {
-	if column != nil {
-		column = psql.P(column)
-	}
+func OnConflict(columns ...any) mods.Conflict[*psql.InsertQuery] {
 	return mods.Conflict[*psql.InsertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
-				Target: column,
-				Where:  where,
+				Columns: columns,
 			},
 		}
 	})
@@ -81,7 +77,7 @@ func OnConflictOnConstraint(constraint string) mods.Conflict[*psql.InsertQuery] 
 	return mods.Conflict[*psql.InsertQuery](func() clause.Conflict {
 		return clause.Conflict{
 			Target: clause.ConflictTarget{
-				Target: `ON CONSTRAINT "` + constraint + `"`,
+				Constraint: constraint,
 			},
 		}
 	})

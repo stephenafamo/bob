@@ -20,7 +20,7 @@ func (c *Conflict) SetConflict(conflict Conflict) {
 func (c Conflict) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("ON CONFLICT"))
 
-	args, err := bob.ExpressIf(w, d, start, c.Target, true, " ", "")
+	args, err := bob.ExpressIf(w, d, start, c.Target, true, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +45,17 @@ func (c Conflict) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 }
 
 type ConflictTarget struct {
-	Target any
-	Where  []any
+	Constraint string
+	Columns    []any
+	Where      []any
 }
 
 func (c ConflictTarget) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	args, err := bob.ExpressIf(w, d, start, c.Target, c.Target != nil, "", "")
+	if c.Constraint != "" {
+		return bob.ExpressIf(w, d, start, c.Constraint, true, " ON CONSTRAINT ", "")
+	}
+
+	args, err := bob.ExpressSlice(w, d, start, c.Columns, " (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
