@@ -16,7 +16,7 @@ func Quote(aa ...string) bob.Expression {
 	return quoted(ss)
 }
 
-// dquoted and joined... something like "users"."id"
+// quoted and joined... something like "users"."id"
 type quoted []any
 
 func (q quoted) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {

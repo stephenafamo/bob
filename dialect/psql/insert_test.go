@@ -37,12 +37,11 @@ func TestInsert(t *testing.T) {
 				qm.IntoAs("distributors", "d", "did", "dname"),
 				qm.Values(psql.Arg(8, "Anvil Distribution")),
 				qm.Values(psql.Arg(9, "Sentry Distribution")),
-				qm.OnConflict("did").DoUpdate().Set(
-					"dname",
-					psql.Concat(
+				qm.OnConflict("did").DoUpdate().
+					Set("dname", psql.Concat(
 						"EXCLUDED.dname", psql.S(" (formerly "), "d.dname", psql.S(")"),
-					),
-				).Where(psql.X("d.zipcode").NE(psql.S("21201"))),
+					)).
+					Where(psql.X("d.zipcode").NE(psql.S("21201"))),
 			),
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
@@ -56,17 +55,15 @@ func TestInsert(t *testing.T) {
 				qm.IntoAs("distributors", "d", "did", "dname"),
 				qm.Values(psql.Arg(8, "Anvil Distribution")),
 				qm.Values(psql.Arg(9, "Sentry Distribution")),
-				qm.OnConflictOnConstraint("distributors_pkey").DoUpdate().Set(
-					"dname",
-					psql.Concat(
-						"EXCLUDED.dname", psql.S(" (formerly "), "d.dname", psql.S(")"),
-					),
-				).Where(psql.X("d.zipcode").NE(psql.S("21201"))),
+				qm.OnConflictOnConstraint("distributors_pkey").
+					DoUpdate().
+					SetExcluded("dname").
+					Where(psql.X("d.zipcode").NE(psql.S("21201"))),
 			),
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT ON CONSTRAINT distributors_pkey DO UPDATE
-				SET dname = (EXCLUDED.dname || ' (formerly ' || d.dname || ')')
+				SET "dname" = EXCLUDED. "dname"
 				WHERE (d.zipcode <> '21201')`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
