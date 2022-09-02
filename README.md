@@ -7,10 +7,16 @@
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
 [![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
 
+Bob helps build SQL queries. It does not try to abstract away SQL, or to hide implementation, instead **Bob** adds typed handrails to the query building
+for a better development experience.
+
+**Bob** can be progressively adopted from raw SQL query strings, to fully typed queries and models generated for your database.
+
 ## Features
 
 * Faster than comparable packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
 * Build any query. Supports the specification as closely as possible.
+* Generate models from your database schema.
 
 ## Examples
 
@@ -28,12 +34,12 @@ Examples are in the [examples folder](examples):
 
 ## Dialect Support
 
-| Dialect     | Select | Insert | Update | Delete |
-|-------------|--------|--------|--------|--------|
-| Postgres    | ✅     | ✅     | ✅     | ✅     |
-| MySQL       | ✅     | ✅     | ✅     | ✅     |
-| SQLite      | ✅     | ✅     | ✅     | ✅     |
-| SQL Server  |        |        |        |        |
+| Dialect     | Select | Insert | Update | Delete |  ORM |
+|-------------|--------|--------|--------|--------|------|
+| Postgres    | ✅     | ✅     | ✅     | ✅     | ✅   |
+| MySQL       | ✅     | ✅     | ✅     | ✅     |      |
+| SQLite      | ✅     | ✅     | ✅     | ✅     |      |
+| SQL Server  |        |        |        |        |      |
 
 ## Principles
 
