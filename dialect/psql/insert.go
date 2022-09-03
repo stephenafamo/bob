@@ -60,19 +60,19 @@ func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, valArgs...)
 
-	retArgs, err := bob.ExpressIf(w, d, start+len(args), i.Returning,
-		len(i.Returning.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
-	}
-	args = append(args, retArgs...)
-
 	conflictArgs, err := bob.ExpressIf(w, d, start+len(args), i.Conflict,
 		i.Conflict.Do != "", "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, conflictArgs...)
+
+	retArgs, err := bob.ExpressIf(w, d, start+len(args), i.Returning,
+		len(i.Returning.Expressions) > 0, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, retArgs...)
 
 	w.Write([]byte("\n"))
 	return args, nil
