@@ -6,6 +6,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/select/qm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -36,6 +37,31 @@ type View[T any, Tslice ~[]T] struct {
 	pkCols  orm.Columns
 
 	AfterSelectHooks orm.Hooks[T]
+}
+
+func (t *View[T, Tslice]) Name() psql.Expression {
+	return psql.Quote(t.name...)
+}
+
+// Returns a column list
+func (t *View[T, Tslice]) Columns() orm.Columns {
+	return t.allCols
+}
+
+// Adds table name et al
+func (t *View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQuery[T, Tslice] {
+	q := psql.Select(qm.From(t.Name()))
+	q.Apply(queryMods...)
+
+	// Append the table columns
+	if len(q.Expression.Select.Columns) == 0 {
+		q.Expression.AppendSelect(t.Columns())
+	}
+
+	return &ViewQuery[T, Tslice]{
+		BaseQuery:        q,
+		afterSelectHooks: &t.AfterSelectHooks,
+	}
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {

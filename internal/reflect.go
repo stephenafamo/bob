@@ -29,6 +29,7 @@ var settableTyp = reflect.TypeOf((*interface{ IsSet() bool })(nil)).Elem()
 type Mapping struct {
 	All          []string
 	PKs          []string
+	NonPKs       []string
 	Generated    []string
 	NonGenerated []string
 
@@ -92,6 +93,7 @@ func GetMappings(typ reflect.Type) Mapping {
 
 	c.All = make([]string, typ.NumField())
 	c.PKs = make([]string, typ.NumField())
+	c.NonPKs = make([]string, typ.NumField())
 	c.Generated = make([]string, typ.NumField())
 	c.NonGenerated = make([]string, typ.NumField())
 
@@ -120,6 +122,8 @@ func GetMappings(typ reflect.Type) Mapping {
 		c.All[field.Index[0]] = props.Name
 		if props.IsPK {
 			c.PKs[field.Index[0]] = props.Name
+		} else {
+			c.NonPKs[field.Index[0]] = props.Name
 		}
 		if props.IsGenerated {
 			c.Generated[field.Index[0]] = props.Name

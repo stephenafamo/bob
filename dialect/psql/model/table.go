@@ -8,7 +8,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	inqm "github.com/stephenafamo/bob/dialect/psql/insert/qm"
-	"github.com/stephenafamo/bob/dialect/psql/select/qm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -16,11 +15,13 @@ import (
 
 func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
 	var zeroOpt Topt
+
 	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))
 	view := NewView[T, Tslice](name0, nameX...)
 	return Table[T, Tslice, Topt]{
 		View:       &view,
 		optMapping: optMapping,
+		optPkCols:  optMapping.Columns(view.name...).Only(optMapping.PKs...),
 	}
 }
 
@@ -29,6 +30,7 @@ func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table
 // caches ???
 type Table[T any, Tslice ~[]T, Topt any] struct {
 	*View[T, Tslice]
+	optPkCols  orm.Columns
 	optMapping internal.Mapping
 
 	BeforeInsertHooks orm.Hooks[Topt]
@@ -44,34 +46,9 @@ type Table[T any, Tslice ~[]T, Topt any] struct {
 	AfterDeleteHooks  orm.Hooks[T]
 }
 
-func (t *View[T, Tslice]) Name() psql.Expression {
-	return psql.Quote(t.name...)
-}
-
 // Returns a column list
-func (t *View[T, Tslice]) Columns() orm.Columns {
-	return t.allCols
-}
-
-// Returns a column list
-func (t *View[T, Tslice]) PKColumns() orm.Columns {
+func (t *Table[T, Tslice, Topt]) PKColumns() orm.Columns {
 	return t.pkCols
-}
-
-// Adds table name et al
-func (t *View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := psql.Select(qm.From(t.Name()))
-	q.Apply(queryMods...)
-
-	// Append the table columns
-	if len(q.Expression.Select.Columns) == 0 {
-		q.Expression.AppendSelect(t.Columns())
-	}
-
-	return &ViewQuery[T, Tslice]{
-		BaseQuery:        q,
-		afterSelectHooks: &t.AfterSelectHooks,
-	}
 }
 
 // Insert inserts a row into the table with only the set columns in Topt
@@ -91,7 +68,7 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 
 	q := psql.Insert(
 		inqm.Into(t.Name(), columns...),
-		inqm.Values(values[0]...),
+		inqm.Rows(values...),
 		inqm.Returning("*"),
 	)
 
@@ -162,15 +139,114 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
 // If updateCols is nil, it updates all the columns set in Topt
-func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols *orm.Columns, row Topt) (T, error) {
-	panic("not implemented")
+// if no column is set in Topt (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
+func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols []string, row Topt) (T, error) {
+	var err error
+	var zero T
+
+	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
+	if err != nil {
+		return zero, nil
+	}
+
+	columns, values, err := internal.GetColumnValues(t.optMapping, updateCols, row)
+	if err != nil {
+		return zero, fmt.Errorf("get upsert values: %w", err)
+	}
+
+	if len(conflictCols) == 0 {
+		conflictCols = t.optPkCols.Names()
+	}
+
+	var conflictQM bob.Mod[*psql.InsertQuery]
+	if !updateOnConflict {
+		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).DoNothing()
+	} else {
+		excludeSetCols := columns
+		if len(excludeSetCols) == 0 {
+			excludeSetCols = t.optMapping.NonPKs
+		}
+		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).
+			DoUpdate().
+			SetExcluded(excludeSetCols...)
+	}
+
+	q := psql.Insert(
+		inqm.Into(t.Name(), columns...),
+		inqm.Rows(values...),
+		inqm.Returning("*"),
+		conflictQM,
+	)
+
+	val, err := bob.One(ctx, exec, q, scan.StructMapper[T]())
+	if err != nil {
+		return val, err
+	}
+
+	_, err = t.AfterUpsertHooks.Do(ctx, exec, val)
+	if err != nil {
+		return val, err
+	}
+
+	return val, nil
 }
 
 // Uses the optional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
 // If updateCols is nil, it updates all the columns set in Topt
-func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols *orm.Columns, rows ...Topt) (Tslice, error) {
-	panic("not implemented")
+// if no column is set in Topt (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
+func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols []string, rows ...Topt) (Tslice, error) {
+	var err error
+
+	for _, row := range rows {
+		ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
+		if err != nil {
+			return nil, nil
+		}
+	}
+
+	columns, values, err := internal.GetColumnValues(t.optMapping, updateCols, rows...)
+	if err != nil {
+		return nil, fmt.Errorf("get upsert values: %w", err)
+	}
+
+	if len(conflictCols) == 0 {
+		conflictCols = t.optPkCols.Names()
+	}
+
+	var conflictQM bob.Mod[*psql.InsertQuery]
+	if !updateOnConflict {
+		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).DoNothing()
+	} else {
+		excludeSetCols := columns
+		if len(excludeSetCols) == 0 {
+			excludeSetCols = t.optMapping.NonPKs
+		}
+		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).
+			DoUpdate().
+			SetExcluded(excludeSetCols...)
+	}
+
+	q := psql.Insert(
+		inqm.Into(t.Name(), columns...),
+		inqm.Values(values[0]...),
+		inqm.Returning("*"),
+		conflictQM,
+	)
+
+	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
+	if err != nil {
+		return vals, err
+	}
+
+	for _, val := range vals {
+		_, err = t.AfterUpsertHooks.Do(ctx, exec, val)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return vals, nil
 }
 
 // Deletes the given model
@@ -201,4 +277,13 @@ func (f *TableQuery[T, Tslice, Topt]) UpdateAll(Topt) (int64, error) {
 
 func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
 	panic("not implemented")
+}
+
+func toAnySlice[T any, Ts ~[]T](s Ts) []any {
+	ret := make([]any, len(s))
+	for i, val := range s {
+		ret[i] = val
+	}
+
+	return ret
 }

@@ -51,7 +51,7 @@ type Optional{{$tAlias.UpSingular}} struct {
 			{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
 			{{- $colTyp = printf "null.Val[%s]" $column.Type -}}
 		{{- end -}}
-		{{$colAlias}} {{$colTyp}} `db:"{{$column.Name}}"`
+		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}"`
 	{{end -}}
 }
 

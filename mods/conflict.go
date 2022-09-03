@@ -48,11 +48,18 @@ func (c Conflict[Q]) Set(a, b any) Conflict[Q] {
 	})
 }
 
-func (c Conflict[Q]) SetExcluded(col string) Conflict[Q] {
+func (c Conflict[Q]) SetExcluded(cols ...string) Conflict[Q] {
 	conflict := c()
-	conflict.Set.Set = append(conflict.Set.Set, expr.Join{Exprs: []any{
-		expr.Quote(col), "=", "EXCLUDED.", expr.Quote(col),
-	}})
+	exprs := make([]any, 0, len(cols))
+	for _, col := range cols {
+		if col == "" {
+			continue
+		}
+		exprs = append(exprs,
+			expr.Join{Exprs: []any{expr.Quote(col), "=", "EXCLUDED.", expr.Quote(col)}},
+		)
+	}
+	conflict.Set.Set = append(conflict.Set.Set, exprs...)
 
 	return Conflict[Q](func() clause.Conflict {
 		return conflict
