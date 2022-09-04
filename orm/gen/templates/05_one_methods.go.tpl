@@ -1,11 +1,10 @@
 {{- if not .Table.IsView -}}
 {{$.Importer.Import "context"}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Name -}}
 
 // Update uses an executor to update the {{$tAlias.UpSingular}}
-func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, cols *orm.Columns) (int64, error) {
+func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, cols []string) (int64, error) {
 	rowsAff, err := {{$tAlias.UpPlural}}Table.Update(ctx, exec, cols, o)
 	if err != nil {
 		return rowsAff, err

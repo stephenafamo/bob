@@ -40,6 +40,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- if eq $rel.Type "to_one" -}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
 	return model.Preload[*{{$ftable.UpSingular}}, {{$ftable.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",

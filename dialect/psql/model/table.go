@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
+
+var ErrNothingToUpdate = errors.New("nothing to update")
 
 func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
 	var zeroOpt Topt
@@ -181,7 +184,46 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 // if columns is nil, every column is updated
 // NOTE: values from the DB are not refreshed into the models
 func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Executor, vals Topt, rows ...T) (int64, error) {
-	panic("not implemented")
+	columns, values, err := internal.GetColumnValues(t.optMapping, nil, vals)
+	if err != nil {
+		return 0, fmt.Errorf("get upsert values: %w", err)
+	}
+	if len(columns) == 0 {
+		return 0, ErrNothingToUpdate
+	}
+
+	q := psql.Update(upqm.Table(t.Name()))
+
+	for i, col := range columns {
+		q.Apply(upqm.Set(col, values[0][i]))
+	}
+
+	// Find a set the PKs
+	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
+	if err != nil {
+		return 0, fmt.Errorf("get update pk values: %w", err)
+	}
+
+	pkPairs := make([]any, len(pkVals))
+	for i, pair := range pkVals {
+		pkPairs[i] = psql.Group(pair...)
+	}
+
+	pkGroup := make([]any, len(pks))
+	for i, pk := range pks {
+		pkGroup[i] = psql.Quote(pk)
+	}
+
+	q.Apply(upqm.Where(
+		psql.Group(pkGroup...).In(pkPairs...),
+	))
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAff, nil
 }
 
 // Uses the optional columns to know what to insert
