@@ -192,6 +192,13 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, ErrNothingToUpdate
 	}
 
+	for _, row := range rows {
+		_, err = t.BeforeUpdateHooks.Do(ctx, exec, row)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	q := psql.Update(upqm.Table(t.Name()))
 
 	for i, col := range columns {
@@ -220,7 +227,14 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 
 	rowsAff, err := bob.Exec(ctx, exec, q)
 	if err != nil {
-		return 0, err
+		return rowsAff, err
+	}
+
+	for _, row := range rows {
+		_, err = t.AfterUpdateHooks.Do(ctx, exec, row)
+		if err != nil {
+			return rowsAff, err
+		}
 	}
 
 	return rowsAff, nil
@@ -363,15 +377,56 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 // Adds table name et al
 func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *TableQuery[T, Tslice, Topt] {
 	vq := t.View.Query(queryMods...)
-	return &TableQuery[T, Tslice, Topt]{*vq}
+	return &TableQuery[T, Tslice, Topt]{
+		ViewQuery:  *vq,
+		name:       t.name,
+		pkCols:     t.pkCols,
+		optMapping: t.optMapping,
+	}
 }
 
 type TableQuery[T any, Ts ~[]T, Topt any] struct {
 	ViewQuery[T, Ts]
+	name       []string
+	pkCols     orm.Columns
+	optMapping internal.Mapping
 }
 
-func (f *TableQuery[T, Tslice, Topt]) UpdateAll(Topt) (int64, error) {
-	panic("not implemented")
+// UpdateAll updates all rows matched by the current query
+// NOTE: Hooks cannot be run since the values are never retrieved
+func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Executor, vals Topt) (int64, error) {
+	columns, values, err := internal.GetColumnValues(t.optMapping, nil, vals)
+	if err != nil {
+		return 0, fmt.Errorf("get upsert values: %w", err)
+	}
+	if len(columns) == 0 {
+		return 0, ErrNothingToUpdate
+	}
+
+	q := psql.Update(upqm.Table(psql.Quote(t.name...)))
+
+	for i, col := range columns {
+		q.Apply(upqm.Set(col, values[0][i]))
+	}
+
+	pkGroup := make([]any, len(t.pkCols.Names()))
+	for i, pk := range t.pkCols.Names() {
+		pkGroup[i] = psql.Quote(pk)
+	}
+
+	// Select ONLY the primary keys
+	t.Expression.Select.Columns = pkGroup
+	// WHERE (col1, col2) IN (SELECT ...)
+	q.Apply(upqm.Where(
+		psql.Group(pkGroup...).In(t.Expression),
+	))
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAff, nil
 }
 
 func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
