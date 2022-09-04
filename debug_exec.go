@@ -16,14 +16,20 @@ type debugQueryer struct {
 	w Executor
 }
 
-func (d debugQueryer) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+func (d debugQueryer) print(query string, args ...any) {
 	fmt.Println(query)
-	fmt.Println([]any(args))
+	for i, arg := range args {
+		fmt.Printf("%d: %#v\n", i, arg)
+	}
+	fmt.Printf("\n")
+}
+
+func (d debugQueryer) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	d.print(query, args...)
 	return d.w.ExecContext(ctx, query, args...)
 }
 
 func (d debugQueryer) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
-	fmt.Println(query)
-	fmt.Println([]any(args))
+	d.print(query, args...)
 	return d.w.QueryContext(ctx, query, args...)
 }
