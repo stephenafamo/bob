@@ -52,6 +52,7 @@ func TestGetColumns(t *testing.T) {
 	testGetColumns[User](t, Mapping{
 		All:          []string{"id", "first_name", "last_name"},
 		PKs:          make([]string, 3),
+		NonPKs:       []string{"id", "first_name", "last_name"},
 		Generated:    make([]string, 3),
 		NonGenerated: []string{"id", "first_name", "last_name"},
 	})
@@ -59,6 +60,7 @@ func TestGetColumns(t *testing.T) {
 	testGetColumns[Timestamps](t, Mapping{
 		All:          []string{"created_at", "updated_at"},
 		PKs:          make([]string, 2),
+		NonPKs:       []string{"created_at", "updated_at"},
 		Generated:    make([]string, 2),
 		NonGenerated: []string{"created_at", "updated_at"},
 	})
@@ -66,6 +68,7 @@ func TestGetColumns(t *testing.T) {
 	testGetColumns[UserWithTimestamps](t, Mapping{
 		All:          []string{"id", "first_name", "last_name", "timestamps"},
 		PKs:          make([]string, 4),
+		NonPKs:       []string{"id", "first_name", "last_name", "timestamps"},
 		Generated:    make([]string, 4),
 		NonGenerated: []string{"id", "first_name", "last_name", "timestamps"},
 	})
@@ -73,6 +76,7 @@ func TestGetColumns(t *testing.T) {
 	testGetColumns[Blog](t, Mapping{
 		All:          []string{"id", "title", "description", "user"},
 		PKs:          make([]string, 4),
+		NonPKs:       []string{"id", "title", "description", "user"},
 		Generated:    make([]string, 4),
 		NonGenerated: []string{"id", "title", "description", "user"},
 	})
@@ -80,6 +84,7 @@ func TestGetColumns(t *testing.T) {
 	testGetColumns[BlogWithTags](t, Mapping{
 		All:          []string{"blog_id", "title", "description", ""},
 		PKs:          []string{"blog_id", "title", "", ""},
+		NonPKs:       []string{"", "", "description", ""},
 		Generated:    []string{"blog_id", "", "description", ""},
 		NonGenerated: []string{"", "title", "", ""},
 	})
