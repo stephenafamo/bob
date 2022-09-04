@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/jinzhu/copier v0.3.5
 	github.com/spf13/cast v1.5.0
-	github.com/stephenafamo/scan v0.0.0-20220823015109-6ed7a7a0da3f
+	github.com/stephenafamo/scan v0.0.0-20220903213716-8307e83853ef
 	github.com/volatiletech/strmangle v0.0.4
 	golang.org/x/tools v0.1.12
 )

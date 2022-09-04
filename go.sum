@@ -40,6 +40,8 @@ github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155
 github.com/stephenafamo/fakedb v0.0.0-20220823001843-60de746ea4b1 h1:mJcvTaBX3gmKTK34fLMkfsWmYGkBevD2GtEXV1vakYI=
 github.com/stephenafamo/scan v0.0.0-20220823015109-6ed7a7a0da3f h1:wVYsBDHyGM/8AibmDuJ38R+9WEPtWM5Ds4nEPVQtv3A=
 github.com/stephenafamo/scan v0.0.0-20220823015109-6ed7a7a0da3f/go.mod h1:jzTuAw6fanK9SKgNYem8LIAUMq4AcwKxkWSf10bPyq4=
+github.com/stephenafamo/scan v0.0.0-20220903213716-8307e83853ef h1:SnrmuVQuRjpXEGonG/hUb3TIAd8vkYpZQ0mpotYzKKU=
+github.com/stephenafamo/scan v0.0.0-20220903213716-8307e83853ef/go.mod h1:jzTuAw6fanK9SKgNYem8LIAUMq4AcwKxkWSf10bPyq4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=

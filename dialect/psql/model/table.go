@@ -101,6 +101,15 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 		return nil, fmt.Errorf("get insert values: %w", err)
 	}
 
+	// If there are no columns, force at least one column with "DEFAULT" for each row
+	if len(columns) == 0 {
+		columns = []string{firstNonEmpty(t.optMapping.All)}
+		values = make([][]any, len(rows))
+		for i := range rows {
+			values[i] = []any{"DEFAULT"}
+		}
+	}
+
 	q := psql.Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
@@ -210,6 +219,15 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 		return nil, fmt.Errorf("get upsert values: %w", err)
 	}
 
+	// If there are no columns, force at least one column with "DEFAULT" for each row
+	if len(columns) == 0 {
+		columns = []string{firstNonEmpty(t.optMapping.All)}
+		values = make([][]any, len(rows))
+		for i := range rows {
+			values[i] = []any{"DEFAULT"}
+		}
+	}
+
 	if len(conflictCols) == 0 {
 		conflictCols = t.optPkCols.Names()
 	}
@@ -279,11 +297,22 @@ func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
 	panic("not implemented")
 }
 
-func toAnySlice[T any, Ts ~[]T](s Ts) []any {
-	ret := make([]any, len(s))
-	for i, val := range s {
+func toAnySlice[T any, Ts ~[]T](slice Ts) []any {
+	ret := make([]any, len(slice))
+	for i, val := range slice {
 		ret[i] = val
 	}
 
 	return ret
+}
+
+func firstNonEmpty[T comparable, Ts ~[]T](slice Ts) T {
+	var zero T
+	for _, val := range slice {
+		if val != zero {
+			return val
+		}
+	}
+
+	return zero
 }
