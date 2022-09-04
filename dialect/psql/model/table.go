@@ -8,6 +8,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	inqm "github.com/stephenafamo/bob/dialect/psql/insert/qm"
+	upqm "github.com/stephenafamo/bob/dialect/psql/update/qm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -132,10 +133,48 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 }
 
 // Updates the given model
-// if columns is nil, every column is updated
+// if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
-func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, col *orm.Columns, row T) (int64, error) {
-	panic("not implemented")
+func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, cols []string, row T) (int64, error) {
+	_, err := t.BeforeUpdateHooks.Do(ctx, exec, row)
+	if err != nil {
+		return 0, err
+	}
+
+	q := psql.Update(upqm.Table(t.Name()))
+
+	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
+	if err != nil {
+		return 0, fmt.Errorf("get update pk values: %w", err)
+	}
+
+	if len(cols) == 0 {
+		cols = t.mapping.NonPKs
+	}
+	columns, values, err := internal.GetColumnValues(t.mapping, cols, row)
+	if err != nil {
+		return 0, fmt.Errorf("get update values: %w", err)
+	}
+
+	for i, pk := range pks {
+		q.Apply(upqm.Where(psql.Quote(pk).EQ(pkVals[0][i])))
+	}
+
+	for i, col := range columns {
+		q.Apply(upqm.Set(col, values[0][i]))
+	}
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = t.AfterUpdateHooks.Do(ctx, exec, row)
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAff, nil
 }
 
 // Updates the given models
