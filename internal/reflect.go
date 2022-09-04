@@ -24,7 +24,7 @@ func snakeCase(str string) string {
 }
 
 //nolint:gochecknoglobals
-var settableTyp = reflect.TypeOf((*interface{ IsSet() bool })(nil)).Elem()
+var settableTyp = reflect.TypeOf((*interface{ IsUnset() bool })(nil)).Elem()
 
 type Mapping struct {
 	All          []string
@@ -195,7 +195,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 
 		shoudSet := true
 		if field.Type().Implements(settableTyp) {
-			shoudSet = field.MethodByName("IsSet").Call(nil)[0].Interface().(bool)
+			shoudSet = !field.MethodByName("IsUnset").Call(nil)[0].Interface().(bool)
 		}
 
 		if !shoudSet {
