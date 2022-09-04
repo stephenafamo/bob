@@ -4,32 +4,8 @@ import (
 	"github.com/stephenafamo/bob/orm"
 )
 
-type (
-	RelType string
-)
-
-const (
-	ToOne  RelType = "to_one"
-	ToMany RelType = "to_many"
-)
-
-type Relationship struct {
-	// The type of relationship. ToOne or ToMany
-	// To know if it needs a single model or a slice
-	Type RelType `json:"type"`
-	orm.Relationship
-}
-
-func (r Relationship) Local() string {
-	return r.Sides[0].From
-}
-
-func (r Relationship) Foreign() string {
-	return r.Sides[len(r.Sides)-1].To
-}
-
-func BuildRelationships(tables []Table) map[string][]Relationship {
-	relationships := map[string][]Relationship{}
+func BuildRelationships(tables []Table) map[string][]orm.Relationship {
+	relationships := map[string][]orm.Relationship{}
 
 	tableNameMap := make(map[string]Table, len(tables))
 	for _, t := range tables {
@@ -37,12 +13,11 @@ func BuildRelationships(tables []Table) map[string][]Relationship {
 	}
 
 	for _, t1 := range tables {
-		fkUniqueMap := make(map[string]bool, len(t1.FKeys))
+		fkUniqueMap := make(map[string][2]bool, len(t1.FKeys))
 
 		// Build BelongsTo, ToOne and ToMany
 		for _, fk := range t1.FKeys {
 			localUnique := hasExactUnique(t1, fk.Columns...)
-			fkUniqueMap[fk.Name] = localUnique
 
 			t2, ok := tableNameMap[fk.ForeignTable]
 			if !ok {
@@ -50,6 +25,7 @@ func BuildRelationships(tables []Table) map[string][]Relationship {
 			}
 
 			foreignUnique := hasExactUnique(t2, fk.ForeignColumns...)
+			fkUniqueMap[fk.Name] = [2]bool{localUnique, foreignUnique}
 
 			pair1 := make(map[string]string, len(fk.Columns))
 			pair2 := make(map[string]string, len(fk.Columns))
@@ -59,29 +35,25 @@ func BuildRelationships(tables []Table) map[string][]Relationship {
 				pair2[foreignCol] = localCol
 			}
 
-			relationships[t1.Name] = append(relationships[t1.Name], Relationship{
-				Type: getRelType(foreignUnique),
-				Relationship: orm.Relationship{
-					Name: fk.Name,
-					Sides: []orm.RelSide{{
-						From:  t1.Name,
-						To:    t2.Name,
-						Pairs: pair1,
-					}},
-				},
+			relationships[t1.Name] = append(relationships[t1.Name], orm.Relationship{
+				Name: fk.Name,
+				Sides: []orm.RelSide{{
+					From:     t1.Name,
+					To:       t2.Name,
+					Pairs:    pair1,
+					ToUnique: foreignUnique,
+				}},
 			})
 
 			if !t1.IsJoinTable {
-				relationships[t2.Name] = append(relationships[t2.Name], Relationship{
-					Type: getRelType(localUnique),
-					Relationship: orm.Relationship{
-						Name: fk.Name,
-						Sides: []orm.RelSide{{
-							From:  t2.Name,
-							To:    t1.Name,
-							Pairs: pair2,
-						}},
-					},
+				relationships[t2.Name] = append(relationships[t2.Name], orm.Relationship{
+					Name: fk.Name,
+					Sides: []orm.RelSide{{
+						From:     t2.Name,
+						To:       t1.Name,
+						Pairs:    pair2,
+						ToUnique: localUnique,
+					}},
 				})
 			}
 		}
@@ -97,53 +69,43 @@ func BuildRelationships(tables []Table) map[string][]Relationship {
 		}
 		r1, r2 := rels[0], rels[1]
 
-		relationships[r1.Sides[0].To] = append(relationships[r1.Sides[0].To], Relationship{
-			Type: getRelType(fkUniqueMap[r1.Name]),
-			Relationship: orm.Relationship{
-				Name: r2.Name,
-				Sides: []orm.RelSide{
-					{
-						From:  r1.Sides[0].To,
-						To:    t1.Name,
-						Pairs: invertMap(r1.Sides[0].Pairs),
-					},
-					{
-						From:  t1.Name,
-						To:    r2.Sides[0].To,
-						Pairs: r2.Sides[0].Pairs,
-					},
+		relationships[r1.Sides[0].To] = append(relationships[r1.Sides[0].To], orm.Relationship{
+			Name: r2.Name,
+			Sides: []orm.RelSide{
+				{
+					From:     r1.Sides[0].To,
+					To:       t1.Name,
+					Pairs:    invertMap(r1.Sides[0].Pairs),
+					ToUnique: fkUniqueMap[r1.Name][0],
+				},
+				{
+					From:     t1.Name,
+					To:       r2.Sides[0].To,
+					Pairs:    r2.Sides[0].Pairs,
+					ToUnique: fkUniqueMap[r1.Name][1],
 				},
 			},
 		})
-		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], Relationship{
-			Type: getRelType(fkUniqueMap[r2.Name]),
-			Relationship: orm.Relationship{
-				Name: r1.Name,
-				Sides: []orm.RelSide{
-					{
-						From:  r2.Sides[0].To,
-						To:    t1.Name,
-						Pairs: invertMap(r2.Sides[0].Pairs),
-					},
-					{
-						From:  t1.Name,
-						To:    r1.Sides[0].To,
-						Pairs: r1.Sides[0].Pairs,
-					},
+		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], orm.Relationship{
+			Name: r1.Name,
+			Sides: []orm.RelSide{
+				{
+					From:     r2.Sides[0].To,
+					To:       t1.Name,
+					Pairs:    invertMap(r2.Sides[0].Pairs),
+					ToUnique: fkUniqueMap[r2.Name][0],
+				},
+				{
+					From:     t1.Name,
+					To:       r1.Sides[0].To,
+					Pairs:    r1.Sides[0].Pairs,
+					ToUnique: fkUniqueMap[r2.Name][1],
 				},
 			},
 		})
 	}
 
 	return relationships
-}
-
-func getRelType(foreignUnique bool) RelType {
-	if foreignUnique {
-		return ToOne
-	}
-
-	return ToMany
 }
 
 // Returns true if the table has a unique constraint on exactly these columns

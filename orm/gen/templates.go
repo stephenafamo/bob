@@ -199,6 +199,7 @@ var templateFunctions = template.FuncMap{
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
+	"relIsToMany":        relIsToMany,
 	"dbTag": func(t drivers.Table, c drivers.Column) string {
 		tag := c.Name
 		if t.PKey != nil {

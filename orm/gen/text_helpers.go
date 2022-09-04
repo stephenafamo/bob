@@ -3,6 +3,7 @@ package gen
 import (
 	"strings"
 
+	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/bob/orm/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
@@ -13,7 +14,7 @@ func relAlias(t drivers.Table) map[string]string {
 	for _, rel := range t.Relationships {
 		// When not a direct relationship we just use the table name
 		if len(rel.Sides) > 1 {
-			aliases[rel.Name] = formatRelAlias(rel.Type, rel.Sides[len(rel.Sides)-1].To)
+			aliases[rel.Name] = formatRelAlias(rel, rel.Sides[len(rel.Sides)-1].To)
 			continue
 		}
 
@@ -21,7 +22,7 @@ func relAlias(t drivers.Table) map[string]string {
 
 		// Just cop out and use the table name if there are multiple colummns
 		if len(rel.Sides[0].Pairs) > 1 {
-			aliases[rel.Name] = formatRelAlias(rel.Type, side.To)
+			aliases[rel.Name] = formatRelAlias(rel, side.To)
 			continue
 		}
 		var lcol, fcol string
@@ -37,7 +38,7 @@ func relAlias(t drivers.Table) map[string]string {
 		singularForeignTable := strmangle.Singular(side.To)
 
 		if lcolTrimmed == singularForeignTable || fcolTrimmed == singularLocalTable {
-			aliases[rel.Name] = formatRelAlias(rel.Type, side.To)
+			aliases[rel.Name] = formatRelAlias(rel, side.To)
 			continue
 		}
 
@@ -50,11 +51,11 @@ func relAlias(t drivers.Table) map[string]string {
 
 		if side.To == side.From {
 			// Handle special case of self-join
-			aliases[rel.Name] = formatRelAlias(rel.Type, colToUse)
+			aliases[rel.Name] = formatRelAlias(rel, colToUse)
 			continue
 		}
 
-		aliases[rel.Name] = formatRelAlias(rel.Type, colToUse+"_"+side.To)
+		aliases[rel.Name] = formatRelAlias(rel, colToUse+"_"+side.To)
 	}
 
 	return aliases
@@ -76,10 +77,20 @@ func trimSuffixes(str string) string {
 	return str
 }
 
-func formatRelAlias(relType drivers.RelType, name string) string {
-	if relType == drivers.ToMany {
+func formatRelAlias(rel orm.Relationship, name string) string {
+	if relIsToMany(rel) {
 		return strmangle.TitleCase(strmangle.Plural(name))
 	}
 
 	return strmangle.TitleCase(strmangle.Singular(name))
+}
+
+func relIsToMany(rel orm.Relationship) bool {
+	for _, side := range rel.Sides {
+		if !side.ToUnique {
+			return true
+		}
+	}
+
+	return false
 }

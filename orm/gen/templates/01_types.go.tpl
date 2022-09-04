@@ -60,7 +60,7 @@ type {{$tAlias.DownSingular}}R struct {
 	{{range .Table.Relationships -}}
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{if eq .Type "to_many" -}}
+	{{if relIsToMany . -}}
 	{{$relAlias}} {{$ftable.UpSingular}}Slice `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
 	{{else -}}
 	{{$relAlias}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`

@@ -3,6 +3,8 @@ package drivers
 import (
 	"fmt"
 	"strings"
+
+	"github.com/stephenafamo/bob/orm"
 )
 
 // Table metadata from the database schema.
@@ -19,7 +21,7 @@ type Table struct {
 
 	IsJoinTable bool `json:"is_join_table"`
 
-	Relationships []Relationship `json:"relationship"`
+	Relationships []orm.Relationship `json:"relationship"`
 
 	// For views
 	IsView bool `json:"is_view"`

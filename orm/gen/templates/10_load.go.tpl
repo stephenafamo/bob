@@ -15,7 +15,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	case "{{$relAlias}}":
-		{{if eq .Type "to_many" -}}
+		{{if relIsToMany . -}}
 		if rel, ok := retrieved.({{$ftable.UpSingular}}Slice); ok {
 			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel...)
 			return nil
@@ -39,7 +39,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{range $rel := $table.Relationships -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- if eq $rel.Type "to_one" -}}
+{{- if not (relIsToMany $rel) -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
 	return model.Preload[*{{$ftable.UpSingular}}, {{$ftable.UpSingular}}Slice](orm.Relationship{
@@ -105,7 +105,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 		{{- end}}
 	)
 
-	{{if eq $rel.Type "to_many"}}
+	{{if relIsToMany $rel}}
 	related, err := q.All(ctx, exec)
 	{{- else}}
 	related, err := q.One(ctx, exec)
@@ -158,7 +158,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			}
 			{{- end}}
 
-			{{if eq .Type "to_many" -}}
+			{{if relIsToMany . -}}
 			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
 			{{else -}}
 			o.R.{{$relAlias}} =  rel
@@ -238,7 +238,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			}
 			{{- end}}
 
-			{{if eq .Type "to_many" -}}
+			{{if relIsToMany . -}}
 				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$ftable.UpSingular}})
 			{{else -}}
 				o.R.{{$relAlias}} =  rel
