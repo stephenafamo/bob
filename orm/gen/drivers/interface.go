@@ -181,8 +181,7 @@ func views(c Constructor, concurrency int, names []string, filter ColumnFilter) 
 func view(c Constructor, name string, filter ColumnFilter) (Table, error) {
 	var err error
 	t := Table{
-		IsView: true,
-		Name:   name,
+		Name: name,
 	}
 
 	if t.Columns, err = c.ViewColumns(name, filter); err != nil {

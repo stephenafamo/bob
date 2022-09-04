@@ -1,4 +1,4 @@
-{{- if not .Table.IsView -}}
+{{if .Table.PKey -}}
 {{$.Importer.Import "context"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Name -}}

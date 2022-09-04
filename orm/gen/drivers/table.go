@@ -22,9 +22,6 @@ type Table struct {
 	IsJoinTable bool `json:"is_join_table"`
 
 	Relationships []orm.Relationship `json:"relationship"`
-
-	// For views
-	IsView bool `json:"is_view"`
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).
@@ -96,14 +93,14 @@ func ParseColumnFilter(tables, includes, excludes []string) ColumnFilter {
 		return colFilter
 	}
 	colFilter["*"] = Filter{
-		Include: columnsFromList2(includes, "*"),
-		Exclude: columnsFromList2(excludes, "*"),
+		Include: columnsFromList(includes, "*"),
+		Exclude: columnsFromList(excludes, "*"),
 	}
 
 	for _, t := range tables {
 		colFilter[t] = Filter{
-			Include: columnsFromList2(includes, t),
-			Exclude: columnsFromList2(excludes, t),
+			Include: columnsFromList(includes, t),
+			Exclude: columnsFromList(excludes, t),
 		}
 	}
 
@@ -111,7 +108,7 @@ func ParseColumnFilter(tables, includes, excludes []string) ColumnFilter {
 }
 
 // like ColumnsFromList, but does not include wildcard columns
-func columnsFromList2(list []string, tablename string) []string {
+func columnsFromList(list []string, tablename string) []string {
 	if len(list) == 0 {
 		return nil
 	}

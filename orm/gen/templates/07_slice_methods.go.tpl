@@ -1,4 +1,4 @@
-{{- if not .Table.IsView -}}
+{{if .Table.PKey -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Name -}}

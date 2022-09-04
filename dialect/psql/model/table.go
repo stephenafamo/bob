@@ -31,7 +31,6 @@ func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table
 }
 
 // The table contains extract information from the struct and contains
-// hooks ???
 // caches ???
 type Table[T any, Tslice ~[]T, Topt any] struct {
 	*View[T, Tslice]

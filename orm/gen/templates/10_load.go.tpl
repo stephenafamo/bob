@@ -3,8 +3,10 @@
 
 {{if $table.Relationships -}}
 {{$.Importer.Import "fmt" -}}
+{{$.Importer.Import "context" -}}
 {{$.Importer.Import "database/sql" -}}
 {{$.Importer.Import "errors" -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect) -}}
 func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 	if o == nil {
 		return nil

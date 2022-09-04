@@ -1,25 +1,13 @@
 var TableNames = struct {
-	{{range $table := .Tables}}{{if not $table.IsView -}}
+	{{range $table := .Tables -}}
 	{{$tAlias := $.Aliases.Table $table.Name -}}
 	{{$tAlias.UpPlural}} string
-	{{end}}{{end -}}
+	{{end -}}
 }{
-	{{range $table := .Tables}}{{if not $table.IsView -}}
+	{{range $table := .Tables -}}
 	{{$tAlias := $.Aliases.Table $table.Name -}}
 	{{$tAlias.UpPlural}}: {{quote $table.Name}},
-	{{end}}{{end -}}
-}
-
-var ViewNames = struct {
-	{{range $table := .Tables}}{{if $table.IsView -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
-	{{$tAlias.UpPlural}} string
-	{{end}}{{end -}}
-}{
-	{{range $table := .Tables}}{{if $table.IsView -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
-	{{$tAlias.UpPlural}}: {{quote $table.Name}},
-	{{end}}{{end -}}
+	{{end -}}
 }
 
 var ColumnNames = struct {

@@ -45,7 +45,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				}},
 			})
 
-			if !t1.IsJoinTable {
+			if !t1.IsJoinTable && t1.Name != t2.Name {
 				relationships[t2.Name] = append(relationships[t2.Name], orm.Relationship{
 					Name: fk.Name,
 					Sides: []orm.RelSide{{
@@ -115,7 +115,7 @@ func hasExactUnique(t Table, cols ...string) bool {
 	}
 
 	// Primary keys are unique
-	if sliceMatch(t.PKey.Columns, cols) {
+	if t.PKey != nil && sliceMatch(t.PKey.Columns, cols) {
 		return true
 	}
 
@@ -175,6 +175,10 @@ func distinctElems[T comparable, Ts ~[]T](a, b Ts) bool {
 // A composite primary key involving two columns
 // Both primary key columns are also foreign keys
 func IsJoinTable(t Table) bool {
+	if t.PKey == nil {
+		return false
+	}
+
 	// Must have exactly 2 foreign keys
 	if len(t.FKeys) != 2 {
 		return false

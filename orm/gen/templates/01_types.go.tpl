@@ -31,7 +31,7 @@ type {{$tAlias.UpSingular}} struct {
 	{{end -}}
 }
 
-{{if .Table.IsView -}}{{- else -}}
+{{if .Table.PKey -}}
 // Optional{{$tAlias.UpSingular}} is used for insert/upsert operations
 // Fields that have default values are optional, and do not have to be set
 // Fields without default values must be set or the zero value will be used

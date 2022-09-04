@@ -128,7 +128,7 @@ func (s *State[T]) Run() error {
 		}
 
 		// Generate the test templates
-		if !s.Config.NoTests && !table.IsView {
+		if !s.Config.NoTests {
 			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
 				return fmt.Errorf("unable to generate test output: %w", err)
 			}
@@ -258,10 +258,6 @@ func (s *State[T]) initDBInfo() error {
 
 	if len(dbInfo.Tables) == 0 {
 		return errors.New("no tables found in database")
-	}
-
-	if err := checkPKeys(dbInfo.Tables); err != nil {
-		return err
 	}
 
 	s.Schema = dbInfo.Schema
@@ -473,22 +469,6 @@ func (s *State[T]) initTags(tags []string) error {
 
 func (s *State[T]) initAliases(a *Aliases) {
 	FillAliases(a, s.Tables)
-}
-
-// checkPKeys ensures every table has a primary key column
-func checkPKeys(tables []drivers.Table) error {
-	var missingPkey []string
-	for _, t := range tables {
-		if !t.IsView && t.PKey == nil {
-			missingPkey = append(missingPkey, t.Name)
-		}
-	}
-
-	if len(missingPkey) != 0 {
-		return fmt.Errorf("primary key missing in tables (%s)", strings.Join(missingPkey, ", "))
-	}
-
-	return nil
 }
 
 // normalizeSlashes takes a path that was made on linux or windows and converts it
