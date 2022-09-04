@@ -37,11 +37,11 @@ func (w WhereMod[Q, C]) LTE(val C) bob.Mod[Q] {
 }
 
 func (w WhereMod[Q, C]) GT(val C) bob.Mod[Q] {
-	return mods.Where[Q]{psql.X(w.name).LT(psql.Arg(val))}
+	return mods.Where[Q]{psql.X(w.name).GT(psql.Arg(val))}
 }
 
 func (w WhereMod[Q, C]) GTE(val C) bob.Mod[Q] {
-	return mods.Where[Q]{psql.X(w.name).LTE(psql.Arg(val))}
+	return mods.Where[Q]{psql.X(w.name).GTE(psql.Arg(val))}
 }
 
 func (w WhereMod[Q, C]) IN(slice ...C) bob.Mod[Q] {
