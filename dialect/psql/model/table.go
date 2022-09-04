@@ -8,6 +8,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	delqm "github.com/stephenafamo/bob/dialect/psql/delete/qm"
 	inqm "github.com/stephenafamo/bob/dialect/psql/insert/qm"
 	upqm "github.com/stephenafamo/bob/dialect/psql/update/qm"
 	"github.com/stephenafamo/bob/internal"
@@ -365,13 +366,80 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 // Deletes the given model
 // if columns is nil, every column is deleted
 func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, row T) (int64, error) {
-	panic("not implemented")
+	_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
+	if err != nil {
+		return 0, err
+	}
+
+	q := psql.Delete(delqm.From(t.Name()))
+
+	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
+	if err != nil {
+		return 0, fmt.Errorf("get update pk values: %w", err)
+	}
+
+	for i, pk := range pks {
+		q.Apply(delqm.Where(psql.Quote(pk).EQ(pkVals[0][i])))
+	}
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = t.AfterDeleteHooks.Do(ctx, exec, row)
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAff, nil
 }
 
 // Deletes the given models
 // if columns is nil, every column is deleted
 func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
-	panic("not implemented")
+	for _, row := range rows {
+		_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	q := psql.Delete(delqm.From(t.Name()))
+
+	// Find a set the PKs
+	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
+	if err != nil {
+		return 0, fmt.Errorf("get update pk values: %w", err)
+	}
+
+	pkPairs := make([]any, len(pkVals))
+	for i, pair := range pkVals {
+		pkPairs[i] = psql.Group(pair...)
+	}
+
+	pkGroup := make([]any, len(pks))
+	for i, pk := range pks {
+		pkGroup[i] = psql.Quote(pk)
+	}
+
+	q.Apply(delqm.Where(
+		psql.Group(pkGroup...).In(pkPairs...),
+	))
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return rowsAff, err
+	}
+
+	for _, row := range rows {
+		_, err = t.AfterDeleteHooks.Do(ctx, exec, row)
+		if err != nil {
+			return rowsAff, err
+		}
+	}
+
+	return rowsAff, nil
 }
 
 // Adds table name et al
@@ -429,8 +497,29 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 	return rowsAff, nil
 }
 
-func (f *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
-	panic("not implemented")
+// DeleteAll deletes all rows matched by the current query
+// NOTE: Hooks cannot be run since the values are never retrieved
+func (t *TableQuery[T, Tslice, Topt]) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
+	q := psql.Delete(delqm.From(psql.Quote(t.name...)))
+
+	pkGroup := make([]any, len(t.pkCols.Names()))
+	for i, pk := range t.pkCols.Names() {
+		pkGroup[i] = psql.Quote(pk)
+	}
+
+	// Select ONLY the primary keys
+	t.Expression.Select.Columns = pkGroup
+	// WHERE (col1, col2) IN (SELECT ...)
+	q.Apply(delqm.Where(
+		psql.Group(pkGroup...).In(t.Expression),
+	))
+
+	rowsAff, err := bob.Exec(ctx, exec, q)
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAff, nil
 }
 
 func toAnySlice[T any, Ts ~[]T](slice Ts) []any {
