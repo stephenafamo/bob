@@ -21,14 +21,14 @@ func relAlias(t drivers.Table) map[string]string {
 		side := rel.Sides[0]
 
 		// Just cop out and use the table name if there are multiple colummns
-		if len(rel.Sides[0].Pairs) > 1 {
+		if len(rel.Sides[0].FromColumns) > 1 {
 			aliases[rel.Name] = formatRelAlias(rel, side.To)
 			continue
 		}
 		var lcol, fcol string
-		for l, f := range side.Pairs {
+		for i, l := range side.FromColumns {
 			lcol = l
-			fcol = f
+			fcol = side.ToColumns[i]
 		}
 
 		lcolTrimmed := strmangle.Singular(trimSuffixes(lcol))
@@ -78,19 +78,9 @@ func trimSuffixes(str string) string {
 }
 
 func formatRelAlias(rel orm.Relationship, name string) string {
-	if relIsToMany(rel) {
+	if rel.IsToMany() {
 		return strmangle.TitleCase(strmangle.Plural(name))
 	}
 
 	return strmangle.TitleCase(strmangle.Singular(name))
-}
-
-func relIsToMany(rel orm.Relationship) bool {
-	for _, side := range rel.Sides {
-		if !side.ToUnique {
-			return true
-		}
-	}
-
-	return false
 }

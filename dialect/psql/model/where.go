@@ -44,7 +44,7 @@ func (w WhereMod[Q, C]) GTE(val C) bob.Mod[Q] {
 	return mods.Where[Q]{psql.X(w.name).GTE(psql.Arg(val))}
 }
 
-func (w WhereMod[Q, C]) IN(slice ...C) bob.Mod[Q] {
+func (w WhereMod[Q, C]) In(slice ...C) bob.Mod[Q] {
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -52,7 +52,7 @@ func (w WhereMod[Q, C]) IN(slice ...C) bob.Mod[Q] {
 	return mods.Where[Q]{psql.X(w.name).In(psql.Arg(values...))}
 }
 
-func (w WhereMod[Q, C]) NIN(slice ...C) bob.Mod[Q] {
+func (w WhereMod[Q, C]) NotIn(slice ...C) bob.Mod[Q] {
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)

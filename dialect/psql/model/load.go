@@ -113,8 +113,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 
 		for _, side := range rel.Sides {
 			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
-			on := make([]any, 0, len(side.Pairs))
-			for fromCol, toCol := range side.Pairs {
+			on := make([]any, 0, len(side.FromColumns))
+			for i, fromCol := range side.FromColumns {
+				toCol := side.ToColumns[i]
 				on = append(on, psql.X(
 					psql.Quote(parent, fromCol),
 					"=",

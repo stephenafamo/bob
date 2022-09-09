@@ -14,18 +14,21 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 
 	for _, t1 := range tables {
 		fkUniqueMap := make(map[string][2]bool, len(t1.FKeys))
+		fkNullableMap := make(map[string]bool, len(t1.FKeys))
 
 		// Build BelongsTo, ToOne and ToMany
 		for _, fk := range t1.FKeys {
-			localUnique := hasExactUnique(t1, fk.Columns...)
-
 			t2, ok := tableNameMap[fk.ForeignTable]
 			if !ok {
 				continue // no matching target table
 			}
 
+			localUnique := hasExactUnique(t1, fk.Columns...)
 			foreignUnique := hasExactUnique(t2, fk.ForeignColumns...)
 			fkUniqueMap[fk.Name] = [2]bool{localUnique, foreignUnique}
+
+			localNullable := allNullable(t1, fk.Columns...)
+			fkNullableMap[fk.Name] = localNullable
 
 			pair1 := make(map[string]string, len(fk.Columns))
 			pair2 := make(map[string]string, len(fk.Columns))
@@ -38,10 +41,13 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 			relationships[t1.Name] = append(relationships[t1.Name], orm.Relationship{
 				Name: fk.Name,
 				Sides: []orm.RelSide{{
-					From:     t1.Name,
-					To:       t2.Name,
-					Pairs:    pair1,
-					ToUnique: foreignUnique,
+					From:        t1.Name,
+					FromColumns: fk.Columns,
+					To:          t2.Name,
+					ToColumns:   fk.ForeignColumns,
+					ToKey:       false,
+					ToUnique:    foreignUnique,
+					KeyNullable: localNullable,
 				}},
 			})
 
@@ -49,10 +55,13 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				relationships[t2.Name] = append(relationships[t2.Name], orm.Relationship{
 					Name: fk.Name,
 					Sides: []orm.RelSide{{
-						From:     t2.Name,
-						To:       t1.Name,
-						Pairs:    pair2,
-						ToUnique: localUnique,
+						From:        t2.Name,
+						FromColumns: fk.ForeignColumns,
+						To:          t1.Name,
+						ToColumns:   fk.Columns,
+						ToKey:       true,
+						ToUnique:    localUnique,
+						KeyNullable: localNullable,
 					}},
 				})
 			}
@@ -70,42 +79,73 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 		r1, r2 := rels[0], rels[1]
 
 		relationships[r1.Sides[0].To] = append(relationships[r1.Sides[0].To], orm.Relationship{
-			Name: r2.Name,
+			Name:        r2.Name,
+			ByJoinTable: true,
 			Sides: []orm.RelSide{
 				{
-					From:     r1.Sides[0].To,
-					To:       t1.Name,
-					Pairs:    invertMap(r1.Sides[0].Pairs),
-					ToUnique: fkUniqueMap[r1.Name][0],
+					From:        r1.Sides[0].To,
+					FromColumns: r1.Sides[0].ToColumns,
+					To:          t1.Name,
+					ToColumns:   r1.Sides[0].FromColumns,
+					ToKey:       true,
+					ToUnique:    fkUniqueMap[r1.Name][0],
+					KeyNullable: fkNullableMap[r1.Name],
 				},
 				{
-					From:     t1.Name,
-					To:       r2.Sides[0].To,
-					Pairs:    r2.Sides[0].Pairs,
-					ToUnique: fkUniqueMap[r1.Name][1],
+					From:        t1.Name,
+					FromColumns: r2.Sides[0].FromColumns,
+					To:          r2.Sides[0].To,
+					ToColumns:   r2.Sides[0].ToColumns,
+					ToKey:       false,
+					ToUnique:    fkUniqueMap[r1.Name][1],
+					KeyNullable: fkNullableMap[r2.Name],
 				},
 			},
 		})
 		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], orm.Relationship{
-			Name: r1.Name,
+			Name:        r1.Name,
+			ByJoinTable: true,
 			Sides: []orm.RelSide{
 				{
-					From:     r2.Sides[0].To,
-					To:       t1.Name,
-					Pairs:    invertMap(r2.Sides[0].Pairs),
-					ToUnique: fkUniqueMap[r2.Name][0],
+					From:        r2.Sides[0].To,
+					FromColumns: r2.Sides[0].ToColumns,
+					To:          t1.Name,
+					ToColumns:   r2.Sides[0].FromColumns,
+					ToKey:       true,
+					ToUnique:    fkUniqueMap[r2.Name][0],
+					KeyNullable: fkNullableMap[r2.Name],
 				},
 				{
-					From:     t1.Name,
-					To:       r1.Sides[0].To,
-					Pairs:    r1.Sides[0].Pairs,
-					ToUnique: fkUniqueMap[r2.Name][1],
+					From:        t1.Name,
+					FromColumns: r1.Sides[0].FromColumns,
+					To:          r1.Sides[0].To,
+					ToColumns:   r1.Sides[0].ToColumns,
+					ToKey:       false,
+					ToUnique:    fkUniqueMap[r2.Name][1],
+					KeyNullable: fkNullableMap[r1.Name],
 				},
 			},
 		})
 	}
 
 	return relationships
+}
+
+// Returns true if the table has a unique constraint on exactly these columns
+func allNullable(t Table, cols ...string) bool {
+	foundNullable := 0
+	for _, col := range t.Columns {
+		for _, cname := range cols {
+			if col.Name == cname && col.Nullable {
+				foundNullable++
+				if foundNullable == len(cols) {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
@@ -148,15 +188,6 @@ func sliceMatch[T comparable, Ts ~[]T](a, b Ts) bool {
 	}
 
 	return matches == len(a)
-}
-
-func invertMap[T comparable, Tm ~map[T]T](from Tm) Tm {
-	to := make(Tm, len(from))
-	for k, v := range from {
-		to[v] = k
-	}
-
-	return to
 }
 
 // Has no matching elements

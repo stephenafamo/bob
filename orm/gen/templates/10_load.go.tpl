@@ -17,7 +17,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	case "{{$relAlias}}":
-		{{if relIsToMany . -}}
+		{{if .IsToMany -}}
 		if rel, ok := retrieved.({{$ftable.UpSingular}}Slice); ok {
 			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel...)
 			return nil
@@ -41,7 +41,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{range $rel := $table.Relationships -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- if not (relIsToMany $rel) -}}
+{{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
 	return model.Preload[*{{$ftable.UpSingular}}, {{$ftable.UpSingular}}Slice](orm.Relationship{
@@ -53,12 +53,17 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 				{
 					From:   TableNames.{{$from.UpPlural}},
 					To: TableNames.{{$to.UpPlural}},
-					Pairs:  map[string]string{
-					{{range $l, $f := $side.Pairs -}}
-						{{- $fromCol := index $from.Columns $l -}}
-						{{- $toCol := index $to.Columns $f -}}
-						ColumnNames.{{$from.UpPlural}}.{{$fromCol}}: ColumnNames.{{$to.UpPlural}}.{{$toCol}},
-					{{- end}}
+					FromColumns: []string{
+						{{range $name := $side.FromColumns -}}
+						{{- $colAlias := index $from.Columns $name -}}
+						ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
+						{{- end}}
+					},
+					ToColumns: []string{
+						{{range $name := $side.ToColumns -}}
+						{{- $colAlias := index $to.Columns $name -}}
+						ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
+						{{- end}}
 					},
 				},
 				{{- end}}
@@ -92,9 +97,9 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 		{{- if gt $index 0 -}}
 		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
 		{{end -}}
-			{{range $l, $f := $side.Pairs -}}
-				{{- $fromCol := index $from.Columns $l -}}
-				{{- $toCol := index $to.Columns $f -}}
+			{{range $i, $local := $side.FromColumns -}}
+				{{- $fromCol := index $from.Columns $local -}}
+				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
 				{{- if gt $index 0 -}}
 				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
 				{{- else -}}
@@ -107,7 +112,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 		{{- end}}
 	)
 
-	{{if relIsToMany $rel}}
+	{{if $rel.IsToMany}}
 	related, err := q.All(ctx, exec)
 	{{- else}}
 	related, err := q.One(ctx, exec)
@@ -127,8 +132,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- $fromAlias := $.Aliases.Table $side.From -}}
 	{{- $toAlias := $.Aliases.Table $side.To -}}
 
-	{{range $l, $f := $side.Pairs -}}
-		{{- $fromCol := index $fromAlias.Columns $l -}}
+	{{range $index, $local := $side.FromColumns -}}
+		{{- $fromCol := index $fromAlias.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))
 		for _, o := range os {
 			{{$fromCol}}Args = append({{$fromCol}}Args, {{$.Dialect}}.Arg(o.{{$fromCol}}))
@@ -137,9 +142,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 
 	q := {{$ftable.UpPlural}}(mods...)
 	q.Apply(
-		{{range $l, $f := $side.Pairs -}}
-			{{- $fromCol := index $fromAlias.Columns $l -}}
-			{{- $toCol := index $toAlias.Columns $f -}}
+		{{range $index, $local := $side.FromColumns -}}
+			{{- $fromCol := index $fromAlias.Columns $local -}}
+			{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
 			qm.Where({{$ftable.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
 		{{- end}}
 	)
@@ -152,15 +157,16 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 
 	for _, rel := range {{$ftable.DownPlural}} {
 		for _, o := range os {
-			{{range $l, $f := $side.Pairs -}}
-			{{- $fromColGet := columnGetter $.Tables $side.From $fromAlias $l -}}
-			{{- $toColGet := columnGetter $.Tables $side.To $toAlias $f -}}
+			{{range $index, $local := $side.FromColumns -}}
+			{{- $foreign := index $side.ToColumns $index -}}
+			{{- $fromColGet := columnGetter $.Tables $side.From $fromAlias $local -}}
+			{{- $toColGet := columnGetter $.Tables $side.To $toAlias $foreign -}}
 			if o.{{$fromColGet}} != rel.{{$toColGet}} {
 			  continue
 			}
 			{{- end}}
 
-			{{if relIsToMany . -}}
+			{{if .IsToMany -}}
 			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
 			{{else -}}
 			o.R.{{$relAlias}} =  rel
@@ -182,8 +188,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- $lastFrom := $.Aliases.Table $lastSide.From -}}
 	{{- $lastTo := $.Aliases.Table $lastSide.To -}}
 
-	{{range $l, $f := $firstSide.Pairs -}}
-		{{- $fromCol := index $firstFrom.Columns $l -}}
+	{{range $index, $local := $firstSide.FromColumns -}}
+		{{- $fromCol := index $firstFrom.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))
 		for _, o := range os {
 			{{$fromCol}}Args = append({{$fromCol}}Args, {{$.Dialect}}.Arg(o.{{$fromCol}}))
@@ -201,9 +207,10 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		{{- if gt $index 0 -}}
 		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
 		{{end -}}
-			{{range $l, $f := $side.Pairs -}}
-				{{- $fromCol := index $from.Columns $l -}}
-				{{- $toCol := index $to.Columns $f -}}
+			{{range $i, $local := $side.FromColumns -}}
+				{{- $foreign := index $side.ToColumns $i -}}
+				{{- $fromCol := index $from.Columns $local -}}
+				{{- $toCol := index $to.Columns $foreign -}}
 				{{- if gt $index 0 -}}
 				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
 				{{- else -}}
@@ -221,9 +228,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
 	{{$ftable.DownPlural}}, err := bob.All(ctx, exec, q, scan.StructMapper[*struct{
 	  {{$ftable.UpSingular}}
-		{{range $l, $f := $firstSide.Pairs -}}
-			{{- $fromColAlias := index $firstFrom.Columns $l -}}
-			{{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $l -}}
+		{{range $index, $local := $firstSide.FromColumns -}}
+			{{- $fromColAlias := index $firstFrom.Columns $local -}}
+			{{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
 			Related{{$fromColAlias}} {{$fromCol.Type}} `db:"related_{{$firstSide.From}}.{{$fromColAlias}}"`
 		{{- end}}
 	}]())
@@ -233,14 +240,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 
 	for _, rel := range {{$ftable.DownPlural}} {
 		for _, o := range os {
-			{{range $l, $f := $firstSide.Pairs -}}
-			{{- $fromCol := index $firstFrom.Columns $l -}}
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{- $fromCol := index $firstFrom.Columns $local -}}
 			if o.{{$fromCol}} != rel.Related{{$fromCol}} {
 			  continue
 			}
 			{{- end}}
 
-			{{if relIsToMany . -}}
+			{{if .IsToMany -}}
 				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$ftable.UpSingular}})
 			{{else -}}
 				o.R.{{$relAlias}} =  rel
