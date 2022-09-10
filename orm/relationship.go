@@ -1,10 +1,18 @@
 package orm
 
+type RelWhere struct {
+	Column   string
+	Operator string
+	Value    string
+}
+
 type RelSide struct {
 	From        string
 	FromColumns []string
 	To          string
 	ToColumns   []string
+
+	FromWhere, ToWhere []RelWhere
 
 	// If the destination columns contain the key
 	// if false, it means the source columns are the foreign key
@@ -62,7 +70,7 @@ type RelSetMapping struct {
 }
 
 func (r Relationship) KeyedSides() []RelSetDetails {
-	var x []RelSetDetails
+	x := make([]RelSetDetails, 0, len(r.Sides))
 
 	for i, side := range r.Sides {
 		if !side.ToKey {

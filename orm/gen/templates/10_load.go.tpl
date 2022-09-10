@@ -53,18 +53,46 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 				{
 					From:   TableNames.{{$from.UpPlural}},
 					To: TableNames.{{$to.UpPlural}},
+					{{if $side.FromColumns -}}
 					FromColumns: []string{
 						{{range $name := $side.FromColumns -}}
 						{{- $colAlias := index $from.Columns $name -}}
 						ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
 						{{- end}}
 					},
+					{{- end}}
+					{{if $side.ToColumns -}}
 					ToColumns: []string{
 						{{range $name := $side.ToColumns -}}
 						{{- $colAlias := index $to.Columns $name -}}
 						ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
 						{{- end}}
 					},
+					{{end -}}
+					{{if $side.FromWhere -}}
+					FromWhere: []orm.RelWhere{
+						{{range $where := $side.FromWhere -}}
+						{{- $colAlias := index $from.Columns $where.Column -}}
+						{
+						  Column: ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
+							Operator: "{{$where.Operator}}",
+							Value: {{printf "%q" $where.Value}},
+						},
+						{{end -}}
+					},
+					{{end -}}
+					{{if $side.ToWhere -}}
+					ToWhere: []orm.RelWhere{
+						{{range $where := $side.ToWhere -}}
+						{{- $colAlias := index $to.Columns $where.Column -}}
+						{
+							Column: ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
+							Operator: "{{$where.Operator}}",
+							Value: {{printf "%q" $where.Value}},
+						},
+						{{end -}}
+					},
+					{{end -}}
 				},
 				{{- end}}
 			},
@@ -104,9 +132,21 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
 				{{- else -}}
 				qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
-				{{- end}}
+				{{- end -}}
 			{{- end}}
-		{{- if gt $index 0}}
+			{{- range $where := $side.FromWhere}}
+				{{- $fromCol := index $from.Columns $where.Column}}
+				{{if eq $index 0 -}}qm.Where({{end -}}
+				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}}),
+				{{- if eq $index 0 -}}),{{- end -}}
+			{{- end}}
+			{{- range $where := $side.ToWhere}}
+				{{- $toCol := index $to.Columns $where.Column}}
+				{{if eq $index 0 -}}qm.Where({{end -}}
+				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}}),
+				{{- if eq $index 0 -}}),{{- end -}}
+			{{- end}}
+		{{- if gt $index 0 -}}
 		),
 		{{- end -}}
 		{{- end}}
@@ -146,6 +186,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- $fromCol := index $fromAlias.Columns $local -}}
 			{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
 			qm.Where({{$ftable.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
+		{{- end}}
+		{{- range $where := $side.FromWhere}}
+			{{- $fromCol := index $fromAlias.Columns $where.Column}}
+			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+		{{- end}}
+		{{- range $where := $side.ToWhere}}
+			{{- $toCol := index $toAlias.Columns $where.Column}}
+			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
 		{{- end}}
 	)
 
@@ -217,6 +265,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 					qm.Columns({{$to.UpSingular}}Columns.{{$toCol}}.As("related_{{$side.From}}.{{$fromCol}}")),
 					qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
 				{{- end}}
+			{{- end}}
+			{{- range $where := $side.FromWhere}}
+				{{- $fromCol := index $from.Columns $where.Column}}
+				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+			{{- end}}
+			{{- range $where := $side.ToWhere}}
+				{{- $toCol := index $to.Columns $where.Column}}
+				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
 			{{- end}}
 		{{- if gt $index 0}}
 		),
