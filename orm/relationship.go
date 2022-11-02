@@ -58,6 +58,39 @@ func (r Relationship) IsRemovable() bool {
 	return false
 }
 
+func (r Relationship) InsertEarly() bool {
+	foreign := r.Foreign()
+	mappings := r.KeyedSides()
+	for _, mapping := range mappings {
+		if mapping.TableName == foreign {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (r Relationship) NeededColumns() []string {
+	ma := []string{}
+
+	local := r.Local()
+	foreign := r.Foreign()
+	mappings := r.KeyedSides()
+	for _, mapping := range mappings {
+		for _, ext := range mapping.Mapped {
+			if ext.ExternalTable == local {
+				continue
+			}
+			if ext.ExternalTable == foreign {
+				continue
+			}
+			ma = append(ma, ext.ExternalTable)
+		}
+	}
+
+	return ma
+}
+
 type RelSetDetails struct {
 	TableName string
 	Mapped    []RelSetMapping
