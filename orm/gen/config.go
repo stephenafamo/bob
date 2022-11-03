@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/spf13/cast"
+	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/bob/orm/gen/drivers"
 )
 
@@ -27,9 +28,10 @@ type Config[T any] struct {
 	Templates           []fs.FS          `toml:"-" json:"-"`
 	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
 
-	Aliases      Aliases     `toml:"aliases,omitempty" json:"aliases,omitempty"`
-	Replacements []Replace   `toml:"replacements,omitempty" json:"replacements,omitempty"`
-	Inflections  Inflections `toml:"inflections,omitempty" json:"inflections,omitempty"`
+	Aliases       Aliases                       `toml:"aliases,omitempty" json:"aliases,omitempty"`
+	Replacements  []Replace                     `toml:"replacements,omitempty" json:"replacements,omitempty"`
+	Relationships map[string][]orm.Relationship `toml:"relationships,omitempty" json:"relationships,omitempty"`
+	Inflections   Inflections                   `toml:"inflections,omitempty" json:"inflections,omitempty"`
 
 	Generator string `toml:"generator" json:"generator"`
 }
@@ -195,6 +197,93 @@ func ConvertReplacements(i interface{}) []Replace {
 	}
 
 	return replaces
+}
+
+// ConvertRelationships is necessary because viper
+func ConvertRelationships(i interface{}) map[string][]orm.Relationship {
+	if i == nil {
+		return nil
+	}
+
+	config := cast.ToStringMap(i)
+	if len(config) == 0 {
+		return nil
+	}
+
+	relationships := make(map[string][]orm.Relationship, len(config))
+
+	for table, relsIntf := range config {
+		relsInterfaceSlice := cast.ToSlice(relsIntf)
+		rels := make([]orm.Relationship, 0, len(relsInterfaceSlice))
+
+		for _, relIntf := range relsInterfaceSlice {
+			relMap := cast.ToStringMap(relIntf)
+			rel := orm.Relationship{
+				Name:        cast.ToString(relMap["name"]),
+				ByJoinTable: cast.ToBool(relMap["by_join_table"]),
+				Ignored:     cast.ToBool(relMap["ignored"]),
+				Sides:       relSideSliceFromInterface(relMap["sides"]),
+			}
+
+			rels = append(rels, rel)
+		}
+
+		relationships[table] = rels
+	}
+
+	return relationships
+}
+
+func relSideSliceFromInterface(i any) []orm.RelSide {
+	slice := cast.ToSlice(i)
+	if len(slice) == 0 {
+		return nil
+	}
+
+	sides := make([]orm.RelSide, len(slice))
+	for i, sideIntf := range slice {
+		sides[i] = relSideFromInterface(sideIntf)
+	}
+
+	return sides
+}
+
+func relSideFromInterface(i any) orm.RelSide {
+	sideMap := cast.ToStringMap(i)
+	return orm.RelSide{
+		From:        cast.ToString(sideMap["from"]),
+		FromColumns: cast.ToStringSlice(sideMap["from_columns"]),
+		To:          cast.ToString(sideMap["to"]),
+		ToColumns:   cast.ToStringSlice(sideMap["to_columns"]),
+		ToKey:       cast.ToBool(sideMap["to_key"]),
+		ToUnique:    cast.ToBool(sideMap["to_unique"]),
+		KeyNullable: cast.ToBool(sideMap["key_nullable"]),
+		FromWhere:   relWhereSliceFromInterface(sideMap["from_where"]),
+		ToWhere:     relWhereSliceFromInterface(sideMap["to_where"]),
+	}
+}
+
+func relWhereSliceFromInterface(i any) []orm.RelWhere {
+	slice := cast.ToSlice(i)
+	if len(slice) == 0 {
+		return nil
+	}
+
+	wheres := make([]orm.RelWhere, len(slice))
+	for i, whereIntf := range slice {
+		wheres[i] = relWhereFromInterface(whereIntf)
+	}
+
+	return wheres
+}
+
+func relWhereFromInterface(i any) orm.RelWhere {
+	relMap := cast.ToStringMap(i)
+	return orm.RelWhere{
+		Column:   cast.ToString(relMap["column"]),
+		Operator: cast.ToString(relMap["operator"]),
+		Value:    cast.ToString(relMap["value"]),
+	}
 }
 
 func tablesOfReplace(i interface{}) []string {

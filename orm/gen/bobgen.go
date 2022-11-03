@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/bob/orm/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
@@ -57,6 +58,7 @@ func New[T any](dialect string, config *Config[T]) (*State[T], error) {
 	}
 
 	s.processTypeReplacements()
+	s.processRelationshipConfig()
 
 	templates, err = s.initTemplates()
 	if err != nil {
@@ -392,22 +394,53 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
 func (s *State[T]) processRelationshipConfig() {
-	for _, r := range s.Config.Replacements {
-		for i := range s.Tables {
-			t := s.Tables[i]
+	if len(s.Tables) == 0 {
+		return
+	}
 
-			if !shouldReplaceInTable(t, r) {
-				continue
-			}
+	for i, t := range s.Tables {
+		rels, ok := s.Config.Relationships[t.Name]
+		if !ok {
+			continue
+		}
 
-			for j := range t.Columns {
-				c := t.Columns[j]
-				if matchColumn(c, r.Match) {
-					t.Columns[j] = columnMerge(c, r.Replace)
-				}
+		s.Tables[i].Relationships = mergeRelationships(s.Tables[i].Relationships, rels)
+	}
+}
+
+func mergeRelationships(srcs, extras []orm.Relationship) []orm.Relationship {
+Outer:
+	for _, extra := range extras {
+		for i, src := range srcs {
+			if src.Name == extra.Name {
+				srcs[i] = mergeRelationship(src, extra)
+				continue Outer
 			}
 		}
+
+		// No previous relationship was found, add it as-is
+		srcs = append(srcs, extra)
 	}
+
+	final := make([]orm.Relationship, 0, len(srcs))
+	for _, rel := range srcs {
+		if rel.Ignored || len(rel.Sides) < 1 {
+			continue
+		}
+
+		final = append(final, rel)
+	}
+
+	return final
+}
+
+func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
+	src.Ignored = extra.Ignored
+	if len(extra.Sides) > 0 {
+		src.Sides = extra.Sides
+	}
+
+	return src
 }
 
 // initOutFolders creates the folders that will hold the generated output.

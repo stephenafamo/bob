@@ -28,6 +28,8 @@ type Relationship struct {
 	Name        string
 	ByJoinTable bool
 	Sides       []RelSide
+
+	Ignored bool // Can be set through user configuration
 }
 
 func (r Relationship) Local() string {
