@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/spf13/cast"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/bob/orm/gen/drivers"
 )
 
