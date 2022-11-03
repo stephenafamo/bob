@@ -2,14 +2,14 @@ package orm
 
 import "fmt"
 
-type ErrBadRelationshipChain struct {
+type BadRelationshipChainError struct {
 	Table1  string
 	Column1 string
 	Table2  string
 	Column2 string
 }
 
-func (e *ErrBadRelationshipChain) Error() string {
+func (e *BadRelationshipChainError) Error() string {
 	return fmt.Sprintf(
 		"bad relationship chain: %s.%s <> %s.%s",
 		e.Table1, e.Column1,

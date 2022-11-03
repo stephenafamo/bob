@@ -389,7 +389,7 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 				mGetter := columnGetter(tables, mapp.ExternalTable, malias, mapp.ExternalColumn)
 
 				mret = append(mret, fmt.Sprintf(`if %s.%s != %s.%s {
-						return &orm.ErrBadRelationshipChain{
+						return &orm.BadRelationshipChainError{
 						    Table1: %q, Column1: %q,
 						    Table2: %q, Column2: %q,
 						}
