@@ -390,6 +390,26 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 	return false
 }
 
+// processRelationshipConfig checks any user included relationships and adds them to the tables
+func (s *State[T]) processRelationshipConfig() {
+	for _, r := range s.Config.Replacements {
+		for i := range s.Tables {
+			t := s.Tables[i]
+
+			if !shouldReplaceInTable(t, r) {
+				continue
+			}
+
+			for j := range t.Columns {
+				c := t.Columns[j]
+				if matchColumn(c, r.Match) {
+					t.Columns[j] = columnMerge(c, r.Replace)
+				}
+			}
+		}
+	}
+}
+
 // initOutFolders creates the folders that will hold the generated output.
 func (s *State[T]) initOutFolders(lazyTemplates []lazyTemplate) error {
 	if s.Config.Wipe {

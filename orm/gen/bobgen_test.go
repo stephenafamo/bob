@@ -116,7 +116,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		fmt.Println()
 	}
 
-	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob/orm/gen=%s", filepath.Dir(string(goModFilePath))))
+	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(string(goModFilePath))))
 	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf
 

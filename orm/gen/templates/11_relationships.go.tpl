@@ -31,7 +31,7 @@
     {{$create}}
 
     for {{if $create}}i{{else}}_{{end}}, rel := range rels {
-    {{setDeps $.Tables $.Aliases $rel false}}
+    {{setDeps $.Importer $.Tables $.Aliases $rel false}}
     }
 
     {{insertDeps $.Aliases $rel}}
@@ -53,7 +53,7 @@
     {{$create := createDeps $.Aliases $rel}}
     {{$create}}
 
-    {{$attach := setDeps $.Tables $.Aliases $rel true}}
+    {{$attach := setDeps $.Importer $.Tables $.Aliases $rel true}}
     {{with $attach}}
     for {{if $create}}i{{else}}_{{end}}, rel := range related {
       {{.}}
@@ -62,7 +62,7 @@
 
     {{insertDeps $.Aliases $rel}}
 
-    {{$relatedVals := relatedUpdateValues $.Tables $.Aliases $rel true}}
+    {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
     {{with $relatedVals}}
     _, err = {{$ftable.UpPlural}}Table.UpdateMany(
       ctx, exec, &Optional{{$ftable.UpSingular}}{

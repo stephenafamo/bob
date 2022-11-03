@@ -280,7 +280,7 @@ func columnGetter(tables []drivers.Table, table string, a TableAlias, column str
 	panic("unknown table " + table)
 }
 
-func columnSetter(tables []drivers.Table, table string, column, to string) string {
+func columnSetter(i Importer, tables []drivers.Table, table string, column, to string) string {
 	for _, t := range tables {
 		if t.Name != table {
 			continue
@@ -291,7 +291,8 @@ func columnSetter(tables []drivers.Table, table string, column, to string) strin
 			return to
 		}
 
-		return fmt.Sprintf("omitnull.From(%s)", to)
+		i.Import("github.com/aarondl/opt/null")
+		return fmt.Sprintf("null.From(%s)", to)
 	}
 
 	panic("unknown table " + table)
@@ -362,7 +363,7 @@ func insertDeps(aliases Aliases, r orm.Relationship) string {
 	return strings.Join(insert, "\n")
 }
 
-func setDeps(tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
+func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.KeyedSides()
@@ -414,7 +415,7 @@ func setDeps(tables []drivers.Table, aliases Aliases, r orm.Relationship, skipFo
 				extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 				malias := aliases.Tables[mapp.ExternalTable]
 
-				oSetter := columnSetter(tables, kside.TableName, mapp.Column, fmt.Sprintf(
+				oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
 					"%s.%s",
 					extObjVarName,
 					malias.Columns[mapp.ExternalColumn],
@@ -434,7 +435,7 @@ func setDeps(tables []drivers.Table, aliases Aliases, r orm.Relationship, skipFo
 	return strings.Join(ret, "\n")
 }
 
-func relatedUpdateValues(tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
+func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.KeyedSides()
@@ -451,7 +452,7 @@ func relatedUpdateValues(tables []drivers.Table, aliases Aliases, r orm.Relation
 			malias := aliases.Tables[mapp.ExternalTable]
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 
-			oSetter := columnSetter(tables, kside.TableName, mapp.Column, fmt.Sprintf(
+			oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
 				"%s.%s",
 				extObjVarName,
 				malias.Columns[mapp.ExternalColumn],
