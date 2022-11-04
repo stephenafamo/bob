@@ -75,8 +75,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 						{{- $colAlias := index $from.Columns $where.Column -}}
 						{
 						  Column: ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
-							Operator: "{{$where.Operator}}",
-							Value: {{printf "%q" $where.Value}},
+							Value: {{$where.Value}},
 						},
 						{{end -}}
 					},
@@ -87,8 +86,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 						{{- $colAlias := index $to.Columns $where.Column -}}
 						{
 							Column: ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
-							Operator: "{{$where.Operator}}",
-							Value: {{printf "%q" $where.Value}},
+							Value: {{$where.Value}},
 						},
 						{{end -}}
 					},
@@ -137,13 +135,13 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
 				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}}),
+				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}})),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
 				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}}),
+				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 		{{- if gt $index 0 -}}
@@ -189,11 +187,11 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		{{- end}}
 		{{- range $where := $side.FromWhere}}
 			{{- $fromCol := index $fromAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
 		{{- end}}
 		{{- range $where := $side.ToWhere}}
 			{{- $toCol := index $toAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
 		{{- end}}
 	)
 
@@ -268,11 +266,11 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "{{$where.Operator}}", {{printf "%q" $where.Value}})),
+				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
 			{{- end}}
 		{{- if gt $index 0}}
 		),

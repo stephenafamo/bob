@@ -1,9 +1,8 @@
 package orm
 
 type RelWhere struct {
-	Column   string
-	Operator string
-	Value    string
+	Column string
+	Value  string
 }
 
 type RelSide struct {
@@ -62,7 +61,7 @@ func (r Relationship) IsRemovable() bool {
 
 func (r Relationship) InsertEarly() bool {
 	foreign := r.Foreign()
-	mappings := r.KeyedSides()
+	mappings := r.ValuedSides()
 	for _, mapping := range mappings {
 		if mapping.TableName == foreign {
 			return false
@@ -77,15 +76,19 @@ func (r Relationship) NeededColumns() []string {
 
 	local := r.Local()
 	foreign := r.Foreign()
-	mappings := r.KeyedSides()
+	mappings := r.ValuedSides()
 	for _, mapping := range mappings {
 		for _, ext := range mapping.Mapped {
+			if ext.ExternalTable == "" {
+				continue
+			}
 			if ext.ExternalTable == local {
 				continue
 			}
 			if ext.ExternalTable == foreign {
 				continue
 			}
+
 			ma = append(ma, ext.ExternalTable)
 		}
 	}
@@ -100,61 +103,123 @@ type RelSetDetails struct {
 
 type RelSetMapping struct {
 	Column         string
+	Value          string
 	ExternalTable  string
 	ExternalColumn string
 }
 
-func (r Relationship) KeyedSides() []RelSetDetails {
+func (r Relationship) StaticSides() []struct {
+	Table   string
+	Columns [][2]string
+} {
+	x := make(map[string][][2]string, len(r.Sides))
+	for _, side := range r.Sides {
+		if len(side.FromWhere) > 0 {
+			columns := make([][2]string, 0, len(side.FromWhere))
+			for _, f := range side.FromWhere {
+				columns = append(columns, [2]string{f.Column, f.Value})
+			}
+			x[side.From] = append(x[side.From], columns...)
+		}
+
+		if len(side.ToWhere) > 0 {
+			columns := make([][2]string, 0, len(side.ToWhere))
+			for _, f := range side.ToWhere {
+				columns = append(columns, [2]string{f.Column, f.Value})
+			}
+			x[side.To] = append(x[side.To], columns...)
+		}
+	}
+
+	x2 := make([]struct {
+		Table   string
+		Columns [][2]string
+	}, 0, len(x))
+
+	for table, columns := range x {
+		x2 = append(x2, struct {
+			Table   string
+			Columns [][2]string
+		}{
+			Table:   table,
+			Columns: columns,
+		})
+	}
+	return x2
+}
+
+func (r Relationship) ValuedSides() []RelSetDetails {
 	x := make([]RelSetDetails, 0, len(r.Sides))
 
 	for i, side := range r.Sides {
-		if !side.ToKey {
-			if i != 0 && r.Sides[i-1].ToKey {
-				continue
-			}
+		fromDeets := RelSetDetails{
+			TableName: side.From,
+			Mapped:    make([]RelSetMapping, 0, len(side.FromColumns)+len(side.FromWhere)),
+		}
 
-			deets := RelSetDetails{
-				TableName: side.From,
-				Mapped:    make([]RelSetMapping, 0, len(side.FromColumns)),
+		toDeets := RelSetDetails{
+			TableName: side.To,
+			Mapped:    make([]RelSetMapping, 0, len(side.ToColumns)+len(side.ToWhere)),
+		}
+
+		if len(side.FromWhere) > 0 {
+			for _, f := range side.FromWhere {
+				fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
+					Column: f.Column,
+					Value:  f.Value,
+				})
 			}
+		}
+
+		if len(side.ToWhere) > 0 {
+			for _, f := range side.ToWhere {
+				toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
+					Column: f.Column,
+					Value:  f.Value,
+				})
+			}
+		}
+
+		//nolint:nestif
+		if !side.ToKey {
+			if i == 0 || !r.Sides[i-1].ToKey {
+				for i, f := range side.FromColumns {
+					fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
+						Column:         f,
+						ExternalTable:  side.To,
+						ExternalColumn: side.ToColumns[i],
+					})
+				}
+			}
+		} else {
 			for i, f := range side.FromColumns {
-				deets.Mapped = append(deets.Mapped, RelSetMapping{
-					Column:         f,
-					ExternalTable:  side.To,
-					ExternalColumn: side.ToColumns[i],
+				toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
+					Column:         side.ToColumns[i],
+					ExternalTable:  side.From,
+					ExternalColumn: f,
 				})
 			}
 
-			x = append(x, deets)
-			continue
-		}
-
-		deets := RelSetDetails{
-			TableName: side.To,
-			Mapped:    make([]RelSetMapping, 0, len(side.FromColumns)),
-		}
-		for i, f := range side.FromColumns {
-			deets.Mapped = append(deets.Mapped, RelSetMapping{
-				Column:         side.ToColumns[i],
-				ExternalTable:  side.From,
-				ExternalColumn: f,
-			})
-		}
-
-		if len(r.Sides) > i+1 {
-			nextSide := r.Sides[i+1]
-			if !nextSide.ToKey {
-				for i, f := range nextSide.FromColumns {
-					deets.Mapped = append(deets.Mapped, RelSetMapping{
-						Column:         f,
-						ExternalTable:  nextSide.To,
-						ExternalColumn: nextSide.ToColumns[i],
-					})
+			if len(r.Sides) > i+1 {
+				nextSide := r.Sides[i+1]
+				if !nextSide.ToKey {
+					for i, f := range nextSide.FromColumns {
+						toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
+							Column:         f,
+							ExternalTable:  nextSide.To,
+							ExternalColumn: nextSide.ToColumns[i],
+						})
+					}
 				}
 			}
 		}
 
-		x = append(x, deets)
+		if len(fromDeets.Mapped) > 0 {
+			x = append(x, fromDeets)
+		}
+		if len(toDeets.Mapped) > 0 {
+			x = append(x, toDeets)
+		}
 	}
 
 	return x

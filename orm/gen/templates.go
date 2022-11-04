@@ -311,7 +311,7 @@ func relDependencies(aliases Aliases, r orm.Relationship) string {
 func createDeps(aliases Aliases, r orm.Relationship) string {
 	local := r.Local()
 	foreign := r.Foreign()
-	ksides := r.KeyedSides()
+	ksides := r.ValuedSides()
 	needed := r.NeededColumns()
 
 	created := make([]string, 0, len(ksides))
@@ -336,7 +336,7 @@ func createDeps(aliases Aliases, r orm.Relationship) string {
 func insertDeps(aliases Aliases, r orm.Relationship) string {
 	local := r.Local()
 	foreign := r.Foreign()
-	ksides := r.KeyedSides()
+	ksides := r.ValuedSides()
 	needed := r.NeededColumns()
 
 	insert := make([]string, 0, len(ksides))
@@ -366,7 +366,7 @@ func insertDeps(aliases Aliases, r orm.Relationship) string {
 func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
-	ksides := r.KeyedSides()
+	ksides := r.ValuedSides()
 	needed := r.NeededColumns()
 
 	ret := make([]string, 0, len(ksides))
@@ -379,13 +379,27 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 		objVarName := getVarName(aliases, kside.TableName, local, foreign, false)
 		oalias := aliases.Tables[kside.TableName]
 
-		switch shouldSetObjs(kside.TableName, needed) {
+		switch shouldSetObjs(kside.TableName, local, needed) {
 		case false:
+			i.Import("github.com/stephenafamo/bob/orm")
 			for _, mapp := range kside.Mapped {
+				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
+
+				if mapp.Value != "" {
+					mret = append(mret, fmt.Sprintf(`if %s.%s != %s {
+						return &orm.BadRelationshipChainError{
+						    Table1: %q, Column1: %q, Value: %q,
+						}
+					}`,
+						objVarName, oGetter, mapp.Value,
+						kside.TableName, mapp.Column, mapp.Value,
+					))
+					continue
+				}
+
 				extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 				malias := aliases.Tables[mapp.ExternalTable]
 
-				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
 				mGetter := columnGetter(tables, mapp.ExternalTable, malias, mapp.ExternalColumn)
 
 				mret = append(mret, fmt.Sprintf(`if %s.%s != %s.%s {
@@ -412,9 +426,17 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 			}
 
 			for _, mapp := range kside.Mapped {
+				if mapp.Value != "" {
+					mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
+						objVarName,
+						oalias.Columns[mapp.Column],
+						mapp.Value,
+					))
+					continue
+				}
+
 				extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 				malias := aliases.Tables[mapp.ExternalTable]
-
 				oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
 					"%s.%s",
 					extObjVarName,
@@ -438,7 +460,7 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
-	ksides := r.KeyedSides()
+	ksides := r.ValuedSides()
 
 	for _, kside := range ksides {
 		if kside.TableName != foreign {
@@ -490,7 +512,11 @@ func getVarName(aliases Aliases, tableName, local, foreign string, plural bool) 
 	}
 }
 
-func shouldSetObjs(tableName string, needed []string) bool {
+func shouldSetObjs(tableName, local string, needed []string) bool {
+	if tableName == local {
+		return false
+	}
+
 	for _, n := range needed {
 		if tableName == n {
 			return false

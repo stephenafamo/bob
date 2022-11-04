@@ -31,7 +31,7 @@
     {{$create}}
 
     for {{if $create}}i{{else}}_{{end}}, rel := range rels {
-    {{setDeps $.Importer $.Tables $.Aliases $rel false}}
+      {{setDeps $.Importer $.Tables $.Aliases $rel false}}
     }
 
     {{insertDeps $.Aliases $rel}}
@@ -53,12 +53,9 @@
     {{$create := createDeps $.Aliases $rel}}
     {{$create}}
 
-    {{$attach := setDeps $.Importer $.Tables $.Aliases $rel true}}
-    {{with $attach}}
     for {{if $create}}i{{else}}_{{end}}, rel := range related {
-      {{.}}
+      {{setDeps $.Importer $.Tables $.Aliases $rel false}}
     }
-    {{end}}
 
     {{insertDeps $.Aliases $rel}}
 

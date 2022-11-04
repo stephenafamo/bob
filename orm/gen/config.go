@@ -280,9 +280,8 @@ func relWhereSliceFromInterface(i any) []orm.RelWhere {
 func relWhereFromInterface(i any) orm.RelWhere {
 	relMap := cast.ToStringMap(i)
 	return orm.RelWhere{
-		Column:   cast.ToString(relMap["column"]),
-		Operator: cast.ToString(relMap["operator"]),
-		Value:    cast.ToString(relMap["value"]),
+		Column: cast.ToString(relMap["column"]),
+		Value:  cast.ToString(relMap["value"]),
 	}
 }
 
