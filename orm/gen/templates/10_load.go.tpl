@@ -304,7 +304,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{if .IsToMany -}}
 				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$ftable.UpSingular}})
 			{{else -}}
-				o.R.{{$relAlias}} =  rel
+				o.R.{{$relAlias}} =  &rel.{{$ftable.UpSingular}}
 				break
 			{{end -}}
 		}

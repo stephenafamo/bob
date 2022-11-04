@@ -2,7 +2,7 @@ package orm
 
 import "fmt"
 
-type BadRelationshipChainError struct {
+type RelationshipChainError struct {
 	Table1  string
 	Column1 string
 	Value   string
@@ -10,7 +10,7 @@ type BadRelationshipChainError struct {
 	Column2 string
 }
 
-func (e *BadRelationshipChainError) Error() string {
+func (e *RelationshipChainError) Error() string {
 	if e.Value != "" {
 		return fmt.Sprintf(
 			"bad relationship chain: %s.%s <> %q",

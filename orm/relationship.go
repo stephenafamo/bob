@@ -50,12 +50,6 @@ func (r Relationship) IsToMany() bool {
 }
 
 func (r Relationship) IsRemovable() bool {
-	for _, side := range r.Sides {
-		if side.KeyNullable {
-			return true
-		}
-	}
-
 	return false
 }
 
