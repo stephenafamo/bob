@@ -16,7 +16,7 @@ for a better development experience.
 
 * Faster than comparable packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
 * Build any query. Supports the specification as closely as possible.
-* Generate models from your database schema.
+* Generate models from your database schema. [See Documentation](orm/README.md)
 
 ## Examples
 
