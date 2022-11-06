@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"fmt"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -250,17 +251,40 @@ func relSideSliceFromInterface(i any) []orm.RelSide {
 
 func relSideFromInterface(i any) orm.RelSide {
 	sideMap := cast.ToStringMap(i)
-	return orm.RelSide{
+	columnsSlice := cast.ToSlice(sideMap["columns"])
+	fromColumns := make([]string, len(columnsSlice))
+	toColumns := make([]string, len(columnsSlice))
+	for i, partsIntf := range columnsSlice {
+		part := cast.ToStringSlice(partsIntf)
+		if len(part) != 2 {
+			panic(fmt.Sprintf("relationship side columns must be of length 2. Got %v", part))
+		}
+
+		fromColumns[i] = part[0]
+		toColumns[i] = part[1]
+	}
+
+	side := orm.RelSide{
 		From:        cast.ToString(sideMap["from"]),
-		FromColumns: cast.ToStringSlice(sideMap["from_columns"]),
+		FromColumns: fromColumns,
 		To:          cast.ToString(sideMap["to"]),
-		ToColumns:   cast.ToStringSlice(sideMap["to_columns"]),
+		ToColumns:   toColumns,
 		ToKey:       cast.ToBool(sideMap["to_key"]),
 		ToUnique:    cast.ToBool(sideMap["to_unique"]),
 		KeyNullable: cast.ToBool(sideMap["key_nullable"]),
 		FromWhere:   relWhereSliceFromInterface(sideMap["from_where"]),
 		ToWhere:     relWhereSliceFromInterface(sideMap["to_where"]),
 	}
+
+	if len(side.FromColumns) == 0 &&
+		len(side.FromWhere) == 0 &&
+		len(side.ToWhere) == 0 {
+		panic(fmt.Sprintf(
+			"Columns or where clauses must be included for every relationship side:\n%#v",
+			side,
+		))
+	}
+	return side
 }
 
 func relWhereSliceFromInterface(i any) []orm.RelWhere {
