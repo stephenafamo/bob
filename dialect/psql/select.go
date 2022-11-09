@@ -24,7 +24,8 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 // https://www.postgresql.org/docs/current/sql-select.html
 type SelectQuery struct {
 	clause.With
-	clause.Select
+	clause.SelectList
+	dialect.Distinct
 	clause.From
 	clause.Where
 	clause.GroupBy
@@ -53,7 +54,16 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, withArgs...)
 
-	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
+	w.Write([]byte("SELECT "))
+
+	distinctArgs, err := bob.ExpressIf(w, d, start+len(args), s.Distinct,
+		s.Distinct.On != nil, "", " ")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, distinctArgs...)
+
+	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.SelectList, true, "\n", "")
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ func Recursive(r bool) bob.Mod[*sqlite.SelectQuery] {
 
 func Distinct() bob.Mod[*sqlite.SelectQuery] {
 	return mods.QueryModFunc[*sqlite.SelectQuery](func(q *sqlite.SelectQuery) {
-		q.Select.Modifiers = []any{"DISTINCT"}
+		q.Distinct = true
 	})
 }
 

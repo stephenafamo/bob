@@ -28,7 +28,7 @@ type SelectQuery struct {
 	into any
 
 	clause.With
-	clause.Select
+	clause.SelectList
 	clause.From
 	clause.Where
 	clause.GroupBy
@@ -53,6 +53,7 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 
 	var args []any
+	var err error
 
 	withArgs, err := bob.ExpressIf(w, d, start+len(args), s.With,
 		len(s.With.CTEs) > 0, "\n", "")
@@ -61,14 +62,23 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, withArgs...)
 
-	// Add hints as the first modifier to the select clause
-	s.Select.Modifiers = append(s.modifiers.modifiers, s.Select.Modifiers...)
+	w.Write([]byte("SELECT "))
 
-	// Add hints first if any exists
-	if len(s.hints.hints) > 0 {
-		s.Select.Modifiers = append([]any{s.hints}, s.Select.Modifiers...)
+	// no optimizer hint args
+	_, err = bob.ExpressIf(w, d, start+len(args), s.hints,
+		len(s.hints.hints) > 0, "\n", "\n")
+	if err != nil {
+		return nil, err
 	}
-	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
+
+	// no modifiers args
+	_, err = bob.ExpressIf(w, d, start+len(args), s.modifiers,
+		len(s.modifiers.modifiers) > 0, "", " ")
+	if err != nil {
+		return nil, err
+	}
+
+	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.SelectList, true, "\n", "")
 	if err != nil {
 		return nil, err
 	}

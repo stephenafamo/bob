@@ -17,10 +17,12 @@ func Recursive(r bool) bob.Mod[*psql.SelectQuery] {
 }
 
 func Distinct(on ...any) bob.Mod[*psql.SelectQuery] {
+	if on == nil {
+		on = []any{} // nil means no distinct
+	}
+
 	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.Select.Modifiers = []any{
-			dialect.Distinct{On: on},
-		}
+		q.Distinct.On = on
 	})
 }
 

@@ -54,7 +54,7 @@ func (t *View[T, Tslice]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *ViewQu
 	q.Apply(queryMods...)
 
 	// Append the table columns
-	if len(q.Expression.Select.Columns) == 0 {
+	if len(q.Expression.SelectList.Columns) == 0 {
 		q.Expression.AppendSelect(t.Columns())
 	}
 
@@ -108,12 +108,12 @@ func (f *ViewQuery[T, Tslice]) Cursor(ctx context.Context, exec bob.Executor) (s
 }
 
 func (f *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	f.BaseQuery.Expression.Select.Columns = []any{"count(1)"}
+	f.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
 	return bob.One(ctx, exec, f.BaseQuery, scan.SingleColumnMapper[int64])
 }
 
 func (f *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	f.BaseQuery.Expression.Select.Columns = []any{"count(1)"}
+	f.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
 	count, err := bob.One(ctx, exec, f.BaseQuery, scan.SingleColumnMapper[int64])
 	return count > 0, err
 }

@@ -482,7 +482,7 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 	}
 
 	// Select ONLY the primary keys
-	t.Expression.Select.Columns = pkGroup
+	t.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(upqm.Where(
 		psql.Group(pkGroup...).In(t.Expression),
@@ -507,7 +507,7 @@ func (t *TableQuery[T, Tslice, Topt]) DeleteAll(ctx context.Context, exec bob.Ex
 	}
 
 	// Select ONLY the primary keys
-	t.Expression.Select.Columns = pkGroup
+	t.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(delqm.Where(
 		psql.Group(pkGroup...).In(t.Expression),

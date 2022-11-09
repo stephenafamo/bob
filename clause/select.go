@@ -6,25 +6,16 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type Select struct {
-	Columns   []any
-	Modifiers []any
+type SelectList struct {
+	Columns []any
 }
 
-func (s *Select) AppendSelect(columns ...any) {
+func (s *SelectList) AppendSelect(columns ...any) {
 	s.Columns = append(s.Columns, columns...)
 }
 
-func (s Select) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectList) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
-
-	w.Write([]byte("SELECT "))
-
-	modArgs, err := bob.ExpressSlice(w, d, start+len(args), s.Modifiers, "", " ", " ")
-	if err != nil {
-		return nil, err
-	}
-	args = append(args, modArgs...)
 
 	if len(s.Columns) > 0 {
 		colArgs, err := bob.ExpressSlice(w, d, start+len(args), s.Columns, "", ", ", "")

@@ -18,37 +18,37 @@ func Recursive(r bool) bob.Mod[*mysql.SelectQuery] {
 
 func Distinct(on ...any) bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "DISTINCT")
+		q.AppendModifier("DISTINCT")
 	})
 }
 
 func HighPriority() bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "HIGH_PRIORITY")
+		q.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
 func Straight() bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "STRAIGHT_JOIN")
+		q.AppendModifier("STRAIGHT_JOIN")
 	})
 }
 
 func SmallResult() bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_SMALL_RESULT")
+		q.AppendModifier("SQL_SMALL_RESULT")
 	})
 }
 
 func BigResult() bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BIG_RESULT")
+		q.AppendModifier("SQL_BIG_RESULT")
 	})
 }
 
 func BufferResult() bob.Mod[*mysql.SelectQuery] {
 	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.Select.Modifiers = append(q.Select.Modifiers, "SQL_BUFFER_RESULT")
+		q.AppendModifier("SQL_BUFFER_RESULT")
 	})
 }
 

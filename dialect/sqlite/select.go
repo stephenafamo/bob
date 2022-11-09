@@ -24,7 +24,8 @@ func Select(queryMods ...bob.Mod[*SelectQuery]) bob.BaseQuery[*SelectQuery] {
 // https://www.sqlite.org/lang_select.html
 type SelectQuery struct {
 	clause.With
-	clause.Select
+	clause.SelectList
+	Distinct bool
 	clause.From
 	clause.Where
 	clause.GroupBy
@@ -51,7 +52,13 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, withArgs...)
 
-	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.Select, true, "\n", "")
+	w.Write([]byte("SELECT "))
+
+	if s.Distinct {
+		w.Write([]byte("DISTINCT "))
+	}
+
+	selArgs, err := bob.ExpressIf(w, d, start+len(args), s.SelectList, true, "\n", "")
 	if err != nil {
 		return nil, err
 	}
