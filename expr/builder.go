@@ -68,11 +68,6 @@ func (e Builder[T, B]) And(args ...any) T {
 	return e.X(Join{Exprs: args, Sep: " AND "})
 }
 
-// Concatenation `||` operator
-func (e Builder[T, B]) Concat(ss ...any) T {
-	return e.X(Join{Exprs: ss, Sep: " || "})
-}
-
 // single quoted raw string
 func (e Builder[T, B]) S(s string) T {
 	return e.X(rawString(s))

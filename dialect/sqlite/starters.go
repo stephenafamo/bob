@@ -43,7 +43,7 @@ func And(args ...any) Expression {
 }
 
 func Concat(args ...any) Expression {
-	return bmod.Concat(args...)
+	return bmod.X(expr.Join{Exprs: args, Sep: " + "})
 }
 
 func Arg(args ...any) Expression {
