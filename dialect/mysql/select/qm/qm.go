@@ -183,6 +183,38 @@ func UnionAll(q bob.Query) bob.Mod[*mysql.SelectQuery] {
 	}
 }
 
+func Intersect(q bob.Query) bob.Mod[*mysql.SelectQuery] {
+	return mods.Combine[*mysql.SelectQuery]{
+		Strategy: clause.Intersect,
+		Query:    q,
+		All:      false,
+	}
+}
+
+func IntersectAll(q bob.Query) bob.Mod[*mysql.SelectQuery] {
+	return mods.Combine[*mysql.SelectQuery]{
+		Strategy: clause.Intersect,
+		Query:    q,
+		All:      true,
+	}
+}
+
+func Except(q bob.Query) bob.Mod[*mysql.SelectQuery] {
+	return mods.Combine[*mysql.SelectQuery]{
+		Strategy: clause.Except,
+		Query:    q,
+		All:      false,
+	}
+}
+
+func ExceptAll(q bob.Query) bob.Mod[*mysql.SelectQuery] {
+	return mods.Combine[*mysql.SelectQuery]{
+		Strategy: clause.Except,
+		Query:    q,
+		All:      true,
+	}
+}
+
 func ForUpdate(tables ...string) dialect.LockChain[*mysql.SelectQuery] {
 	return dialect.LockChain[*mysql.SelectQuery](func() clause.For {
 		return clause.For{
