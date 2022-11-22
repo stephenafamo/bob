@@ -17,7 +17,7 @@ Pending features
 ### PostgreSQL
 
 ```sh
-DSN=postgres://user:pass@host:port/dbname go run github.com/go-bob/bobgen-psql@latest
+PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/go-bob/bobgen-psql@latest
 ```
 
 ## About
@@ -116,14 +116,14 @@ In the configuration file for postgresql for example you would do:
 
 ```yaml
 psql:
-  dbname: "your_database_name"
+  dsn: "postgres://user:pass@host:port/dbname"
 ```
 
 When you use an environment variable it must also be prefixed by the driver
 name:
 
 ```sh
-PSQL_DBNAME="your_database_name"
+PSQL_DSN="postgres://user:pass@host:port/dbname"
 ```
 
 The values that exist for the drivers:
