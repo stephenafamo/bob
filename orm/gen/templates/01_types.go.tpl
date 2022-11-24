@@ -55,6 +55,7 @@ type Optional{{$tAlias.UpSingular}} struct {
 	{{end -}}
 }
 
+{{if .Table.Relationships -}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
 type {{$tAlias.DownSingular}}R struct {
 	{{range .Table.Relationships -}}
@@ -66,6 +67,7 @@ type {{$tAlias.DownSingular}}R struct {
 	{{$relAlias}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
 	{{end}}{{end -}}
 }
+{{- end}}
 {{- end}}
 
 type {{$tAlias.DownSingular}}ColumnNames struct {
