@@ -82,7 +82,7 @@ Code:
 sqlite.Insert(
   qm.Into("films"),
   qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.OnConflict(nil).DoNothing(),
+  qm.OnConflict().DoNothing(),
 )
 ```
 
@@ -94,7 +94,7 @@ SQL:
 INSERT INTO distributors AS "d" ("did", "dname")
 VALUES (?1, ?2), (?3, ?4)
 ON CONFLICT (did) DO UPDATE
-SET dname = (EXCLUDED.dname || ' (formerly ' || d.dname || ')')
+SET "dname" = EXCLUDED."dname"
 WHERE (d.zipcode <> '21201')
 ```
 
@@ -112,12 +112,9 @@ sqlite.Insert(
   qm.IntoAs("distributors", "d", "did", "dname"),
   qm.Values(sqlite.Arg(8, "Anvil Distribution")),
   qm.Values(sqlite.Arg(9, "Sentry Distribution")),
-  qm.OnConflict("did").DoUpdate().Set(
-    "dname",
-    sqlite.Concat(
-      "EXCLUDED.dname", sqlite.S(" (formerly "), "d.dname", sqlite.S(")"),
-    ),
-  ).Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
+  qm.OnConflict("did").DoUpdate().
+    SetExcluded("dname").
+    Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
 )
 ```
 

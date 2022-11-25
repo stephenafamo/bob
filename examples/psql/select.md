@@ -94,14 +94,13 @@ Code:
 
 ```go
 psql.Select(
-  qm.From(
+  qm.FromFunction(
     psql.F(
       "json_to_recordset",
       psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
     ).Col("a", "INTEGER").Col("b", "TEXT"),
     psql.F("generate_series", 1, 3),
-    qm.As("x", "p", "q", "s"),
-  ),
+  ).As("x", "p", "q", "s"),
   qm.OrderBy("p"),
 )
 ```
@@ -139,7 +138,7 @@ psql.Select(
         Minus("created_date").
         As("difference")),
     qm.From("presales_presalestatus")),
-    qm.As("differnce_by_status")),
+  ).As("differnce_by_status"),
   qm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
   qm.GroupBy("status"),
 )

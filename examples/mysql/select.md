@@ -61,8 +61,7 @@ Code:
 mysql.Select(
   qm.From(
     mysql.F("generate_series", 1, 3),
-    qm.As("x", "p", "q", "s"),
-  ),
+  ).As("x", "p", "q", "s"),
   qm.OrderBy("p"),
 )
 ```
@@ -100,8 +99,7 @@ mysql.Select(
         Minus("created_date").
         As("difference")),
     qm.From("presales_presalestatus")),
-    qm.As("differnce_by_status"),
-  ),
+  ).As("differnce_by_status"),
   qm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
   qm.GroupBy("status"),
 )

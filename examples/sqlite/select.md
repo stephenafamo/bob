@@ -59,10 +59,7 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.From(
-    sqlite.F("generate_series", 1, 3),
-    qm.As("x", "p", "q", "s"),
-  ),
+  qm.From(sqlite.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
   qm.OrderBy("p"),
 )
 ```
@@ -100,8 +97,7 @@ sqlite.Select(
         Minus("created_date").
         As("difference")),
     qm.From("presales_presalestatus")),
-    qm.As("differnce_by_status"),
-  ),
+  ).As("differnce_by_status"),
   qm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
   qm.GroupBy("status"),
 )

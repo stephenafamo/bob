@@ -146,10 +146,9 @@ mysql.Insert(
   qm.Values(mysql.Arg(8, "Anvil Distribution")),
   qm.Values(mysql.Arg(9, "Sentry Distribution")),
   qm.As("new"),
-  qm.OnDuplicateKeyUpdate(
-    qm.Set("dbname", mysql.Concat(
+  qm.OnDuplicateKeyUpdate().
+    Set("dbname", mysql.Concat(
       "new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
     )),
-  ),
 )
 ```

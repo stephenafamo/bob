@@ -96,6 +96,22 @@ func (t *topVisitor) Visit(n ast.Node) ast.Visitor {
 
 		return nil
 
+	case *ast.AssignStmt:
+		if !t.blockFound {
+			return nil
+		}
+
+		if stmt.Tok != token.DEFINE {
+			return nil
+		}
+
+		// multiple declaration
+		if len(stmt.Lhs) > 1 {
+			return nil
+		}
+
+		return &valueVisitor{fset: t.fset, destination: t.destination}
+
 	case *ast.DeclStmt:
 		if !t.blockFound {
 			return nil
