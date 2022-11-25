@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -42,8 +43,7 @@ func (o OrderDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 	}
 
 	if o.Nulls != "" {
-		w.Write([]byte(" NULLS"))
-		w.Write([]byte(o.Nulls))
+		fmt.Fprintf(w, " NULLS %s", o.Nulls)
 	}
 
 	return args, nil
