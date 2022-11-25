@@ -32,24 +32,20 @@ type {{$tAlias.UpSingular}} struct {
 }
 
 {{if .Table.PKey -}}
-// Optional{{$tAlias.UpSingular}} is used for insert/upsert operations
-// Fields that have default values are optional, and do not have to be set
-// Fields without default values must be set or the zero value will be used
+// Optional{{$tAlias.UpSingular}} is used for insert/upsert/update operations
+// All values are optional, and do not have to be set
 // Generated columns are not included
 type Optional{{$tAlias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{- $colTyp := $column.Type -}}
-		{{- if and $column.Default $column.Nullable -}}
+	{{- $colTyp := "" -}}
+		{{- if $column.Nullable -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
 			{{- $colTyp = printf "omitnull.Val[%s]" $column.Type -}}
-		{{- else if $column.Default -}}
+		{{- else -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
 			{{- $colTyp = printf "omit.Val[%s]" $column.Type -}}
-		{{- else if $column.Nullable -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-			{{- $colTyp = printf "null.Val[%s]" $column.Type -}}
 		{{- end -}}
 		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}"`
 	{{end -}}

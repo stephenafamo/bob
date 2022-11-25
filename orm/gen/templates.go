@@ -287,7 +287,6 @@ func columnSetter(i Importer, tables []drivers.Table, table, column, to string, 
 		}
 
 		col := t.GetColumn(column)
-		optional = optional && col.Default != "" // without default, it is non-optional
 		switch {
 		case optional && col.Nullable:
 			i.Import("github.com/aarondl/opt/omitnull")
@@ -468,7 +467,7 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 					"%s.%s",
 					extObjVarName,
 					malias.Columns[mapp.ExternalColumn],
-				), optional && kside.TableName == foreign)
+				), shouldCreate || (optional && kside.TableName == foreign))
 
 				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 					objVarName,
@@ -505,7 +504,7 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 				"%s.%s",
 				extObjVarName,
 				malias.Columns[mapp.ExternalColumn],
-			), false)
+			), true)
 
 			mret = append(mret, fmt.Sprintf("%s: %s,",
 				oalias.Columns[mapp.Column],
