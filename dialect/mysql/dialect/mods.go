@@ -21,43 +21,123 @@ func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string)
 	})
 }
 
-func As[Q interface{ SetTableAlias(string, ...string) }](alias string, columns ...string) bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetTableAlias(alias, columns...)
+type fromable interface {
+	SetTable(any)
+	SetTableAlias(alias string, columns ...string)
+	SetLateral(bool)
+	AppendPartition(...string)
+	AppendIndexHint(clause.IndexHint)
+}
+
+func From[Q fromable](table any) FromChain[Q] {
+	return FromChain[Q](func() clause.From {
+		return clause.From{
+			Table: table,
+		}
 	})
 }
 
-func Lateral[Q interface{ SetLateral(bool) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetLateral(true)
+type FromChain[Q fromable] func() clause.From
+
+func (f FromChain[Q]) Apply(q Q) {
+	from := f()
+
+	q.SetTable(from.Table)
+	if from.Alias != "" {
+		q.SetTableAlias(from.Alias, from.Columns...)
+	}
+
+	q.SetLateral(from.Lateral)
+	q.AppendPartition(from.Partitions...)
+}
+
+func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
+	fr := f()
+	fr.Alias = alias
+	fr.Columns = columns
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 
-func UseIndex[Q interface{ AppendIndexHint(clause.IndexHint) }](first string, others ...string) *IndexHintChain[Q] {
-	return &IndexHintChain[Q]{
-		hint: clause.IndexHint{
-			Type:    "USE",
-			Indexes: append([]string{first}, others...),
-		},
-	}
+func (f FromChain[Q]) Lateral() FromChain[Q] {
+	fr := f()
+	fr.Lateral = true
+
+	return FromChain[Q](func() clause.From {
+		return fr
+	})
 }
 
-func IgnoreIndex[Q interface{ AppendIndexHint(clause.IndexHint) }](first string, others ...string) *IndexHintChain[Q] {
-	return &IndexHintChain[Q]{
-		hint: clause.IndexHint{
-			Type:    "IGNORE",
-			Indexes: append([]string{first}, others...),
-		},
-	}
+func (f FromChain[Q]) Partition(partitions ...string) FromChain[Q] {
+	fr := f()
+	fr.Partitions = append(fr.Partitions, partitions...)
+
+	return FromChain[Q](func() clause.From {
+		return fr
+	})
 }
 
-func ForceIndex[Q interface{ AppendIndexHint(clause.IndexHint) }](first string, others ...string) *IndexHintChain[Q] {
-	return &IndexHintChain[Q]{
-		hint: clause.IndexHint{
-			Type:    "FORCE",
-			Indexes: append([]string{first}, others...),
-		},
-	}
+func (f FromChain[Q]) index(Type, For, first string, others ...string) FromChain[Q] {
+	fr := f()
+	fr.IndexHints = append(fr.IndexHints, clause.IndexHint{
+		Type:    Type,
+		Indexes: append([]string{first}, others...),
+		For:     For,
+	})
+
+	return FromChain[Q](func() clause.From {
+		return fr
+	})
+}
+
+func (f FromChain[Q]) UseIndex(first string, others ...string) FromChain[Q] {
+	return f.index("USE", "", first, others...)
+}
+
+func (f FromChain[Q]) UseIndexForJoin(first string, others ...string) FromChain[Q] {
+	return f.index("USE", "JOIN", first, others...)
+}
+
+func (f FromChain[Q]) UseIndexForOrderBy(first string, others ...string) FromChain[Q] {
+	return f.index("USE", "ORDER BY", first, others...)
+}
+
+func (f FromChain[Q]) UseIndexForGroupBy(first string, others ...string) FromChain[Q] {
+	return f.index("USE", "GROUP BY", first, others...)
+}
+
+func (f FromChain[Q]) IgnoreIndex(first string, others ...string) FromChain[Q] {
+	return f.index("IGNORE", "", first, others...)
+}
+
+func (f FromChain[Q]) IgnoreIndexForJoin(first string, others ...string) FromChain[Q] {
+	return f.index("IGNORE", "JOIN", first, others...)
+}
+
+func (f FromChain[Q]) IgnoreIndexForOrderBy(first string, others ...string) FromChain[Q] {
+	return f.index("IGNORE", "ORDER BY", first, others...)
+}
+
+func (f FromChain[Q]) IgnoreIndexForGroupBy(first string, others ...string) FromChain[Q] {
+	return f.index("IGNORE", "GROUP BY", first, others...)
+}
+
+func (f FromChain[Q]) ForceIndex(first string, others ...string) FromChain[Q] {
+	return f.index("FORCE", "", first, others...)
+}
+
+func (f FromChain[Q]) ForceIndexForJoin(first string, others ...string) FromChain[Q] {
+	return f.index("FORCE", "JOIN", first, others...)
+}
+
+func (f FromChain[Q]) ForceIndexForOrderBy(first string, others ...string) FromChain[Q] {
+	return f.index("FORCE", "ORDER BY", first, others...)
+}
+
+func (f FromChain[Q]) ForceIndexForGroupBy(first string, others ...string) FromChain[Q] {
+	return f.index("FORCE", "GROUP BY", first, others...)
 }
 
 func Partition[Q interface{ AppendPartition(...string) }](partitions ...string) bob.Mod[Q] {

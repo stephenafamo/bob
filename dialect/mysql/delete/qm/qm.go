@@ -34,53 +34,27 @@ func Ignore() bob.Mod[*mysql.DeleteQuery] {
 	})
 }
 
-func UsingAs(alias string, columns ...string) bob.Mod[*mysql.DeleteQuery] {
-	return mods.QueryModFunc[*mysql.DeleteQuery](func(q *mysql.DeleteQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
-
-func Lateral() bob.Mod[*mysql.DeleteQuery] {
-	return dialect.Lateral[*mysql.DeleteQuery]()
-}
-
-func UseIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.DeleteQuery] {
-	return dialect.UseIndex[*mysql.DeleteQuery](first, others...)
-}
-
-func IgnoreIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.DeleteQuery] {
-	return dialect.UseIndex[*mysql.DeleteQuery](first, others...)
-}
-
-func ForceIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.DeleteQuery] {
-	return dialect.UseIndex[*mysql.DeleteQuery](first, others...)
-}
-
-func Partition(partitions ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Partition[*mysql.InsertQuery](partitions...)
-}
-
-func From(name any) bob.Mod[*mysql.DeleteQuery] {
+func From(name any, partitions ...string) bob.Mod[*mysql.DeleteQuery] {
 	return mods.QueryModFunc[*mysql.DeleteQuery](func(u *mysql.DeleteQuery) {
 		u.Tables = append(u.Tables, clause.Table{
 			Expression: name,
+			Partitions: partitions,
 		})
 	})
 }
 
-func FromAs(name any, alias string) bob.Mod[*mysql.DeleteQuery] {
+func FromAs(name any, alias string, partitions ...string) bob.Mod[*mysql.DeleteQuery] {
 	return mods.QueryModFunc[*mysql.DeleteQuery](func(u *mysql.DeleteQuery) {
 		u.Tables = append(u.Tables, clause.Table{
 			Expression: name,
 			Alias:      alias,
+			Partitions: partitions,
 		})
 	})
 }
 
-func Using(table any) bob.Mod[*mysql.DeleteQuery] {
-	return mods.QueryModFunc[*mysql.DeleteQuery](func(q *mysql.DeleteQuery) {
-		q.SetTable(table)
-	})
+func Using(name any) dialect.FromChain[*mysql.DeleteQuery] {
+	return dialect.From[*mysql.DeleteQuery](name)
 }
 
 func InnerJoin(e bob.Expression) dialect.JoinChain[*mysql.DeleteQuery] {

@@ -83,22 +83,59 @@ func OrRollback[Q interface{ SetOr(string) }]() bob.Mod[Q] {
 	})
 }
 
-func As[Q interface{ SetTableAlias(string, ...string) }](alias string, columns ...string) bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetTableAlias(alias, columns...)
+type fromable interface {
+	SetTable(any)
+	SetTableAlias(alias string, columns ...string)
+	SetIndexedBy(*string)
+}
+
+func From[Q fromable](table any) FromChain[Q] {
+	return FromChain[Q](func() clause.From {
+		return clause.From{
+			Table: table,
+		}
 	})
 }
 
-func NotIndexed[Q interface{ SetIndexedBy(*string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		i := ""
-		q.SetIndexedBy(&i)
+type FromChain[Q fromable] func() clause.From
+
+func (f FromChain[Q]) Apply(q Q) {
+	from := f()
+
+	q.SetTable(from.Table)
+	if from.Alias != "" {
+		q.SetTableAlias(from.Alias, from.Columns...)
+	}
+
+	q.SetIndexedBy(from.IndexedBy)
+}
+
+func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
+	fr := f()
+	fr.Alias = alias
+	fr.Columns = columns
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 
-func IndexedBy[Q interface{ SetIndexedBy(*string) }](indexName string) bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetIndexedBy(&indexName)
+func (f FromChain[Q]) NotIndexed() bob.Mod[Q] {
+	i := ""
+	fr := f()
+	fr.SetIndexedBy(&i)
+
+	return FromChain[Q](func() clause.From {
+		return fr
+	})
+}
+
+func (f FromChain[Q]) IndexedBy(indexName string) bob.Mod[Q] {
+	fr := f()
+	fr.SetIndexedBy(&indexName)
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 

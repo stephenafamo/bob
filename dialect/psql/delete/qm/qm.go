@@ -39,34 +39,8 @@ func FromAs(name any, alias string) bob.Mod[*psql.DeleteQuery] {
 	})
 }
 
-func Using(table any) bob.Mod[*psql.DeleteQuery] {
-	return mods.QueryModFunc[*psql.DeleteQuery](func(q *psql.DeleteQuery) {
-		q.SetTable(table)
-	})
-}
-
-func UsingAs(alias string, columns ...string) bob.Mod[*psql.DeleteQuery] {
-	return mods.QueryModFunc[*psql.DeleteQuery](func(q *psql.DeleteQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
-
-func UsingOnly() bob.Mod[*psql.DeleteQuery] {
-	return mods.QueryModFunc[*psql.DeleteQuery](func(q *psql.DeleteQuery) {
-		q.SetOnly(true)
-	})
-}
-
-func Lateral() bob.Mod[*psql.DeleteQuery] {
-	return mods.QueryModFunc[*psql.DeleteQuery](func(q *psql.DeleteQuery) {
-		q.SetLateral(true)
-	})
-}
-
-func WithOrdinality() bob.Mod[*psql.DeleteQuery] {
-	return mods.QueryModFunc[*psql.DeleteQuery](func(q *psql.DeleteQuery) {
-		q.SetWithOrdinality(true)
-	})
+func Using(table any) dialect.FromChain[*psql.DeleteQuery] {
+	return dialect.From[*psql.DeleteQuery](table)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*psql.DeleteQuery] {

@@ -26,34 +26,71 @@ func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string)
 	})
 }
 
-type FromItemMod[Q interface {
+type fromable interface {
+	SetTable(any)
 	SetTableAlias(alias string, columns ...string)
 	SetOnly(bool)
 	SetLateral(bool)
 	SetWithOrdinality(bool)
-}] struct{}
+}
 
-func As[Q interface{ SetTableAlias(string, ...string) }](alias string, columns ...string) bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetTableAlias(alias, columns...)
+func From[Q fromable](table any) FromChain[Q] {
+	return FromChain[Q](func() clause.From {
+		return clause.From{
+			Table: table,
+		}
 	})
 }
 
-func (FromItemMod[Q]) Only() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetOnly(true)
+type FromChain[Q fromable] func() clause.From
+
+func (f FromChain[Q]) Apply(q Q) {
+	from := f()
+
+	q.SetTable(from.Table)
+	if from.Alias != "" {
+		q.SetTableAlias(from.Alias, from.Columns...)
+	}
+
+	q.SetOnly(from.Only)
+	q.SetLateral(from.Lateral)
+	q.SetWithOrdinality(from.WithOrdinality)
+}
+
+func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
+	fr := f()
+	fr.Alias = alias
+	fr.Columns = columns
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 
-func (FromItemMod[Q]) Lateral() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetLateral(true)
+func (f FromChain[Q]) Only() FromChain[Q] {
+	fr := f()
+	fr.Only = true
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 
-func (FromItemMod[Q]) WithOrdinality() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
-		q.SetWithOrdinality(true)
+func (f FromChain[Q]) Lateral() FromChain[Q] {
+	fr := f()
+	fr.Lateral = true
+
+	return FromChain[Q](func() clause.From {
+		return fr
+	})
+}
+
+func (f FromChain[Q]) WithOrdinality() FromChain[Q] {
+	fr := f()
+	fr.WithOrdinality = true
+
+	return FromChain[Q](func() clause.From {
+		return fr
 	})
 }
 

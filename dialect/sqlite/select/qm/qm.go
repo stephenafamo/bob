@@ -26,22 +26,8 @@ func Columns(clauses ...any) bob.Mod[*sqlite.SelectQuery] {
 	return mods.Select[*sqlite.SelectQuery](clauses)
 }
 
-func From(table any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.QueryModFunc[*sqlite.SelectQuery](func(q *sqlite.SelectQuery) {
-		q.SetTable(table)
-	})
-}
-
-func As(alias string, columns ...string) bob.Mod[*sqlite.SelectQuery] {
-	return dialect.As[*sqlite.SelectQuery](alias, columns...)
-}
-
-func NotIndexed() bob.Mod[*sqlite.SelectQuery] {
-	return dialect.NotIndexed[*sqlite.SelectQuery]()
-}
-
-func IndexedBy(index string) bob.Mod[*sqlite.SelectQuery] {
-	return dialect.IndexedBy[*sqlite.SelectQuery](index)
+func From(table any) dialect.FromChain[*sqlite.SelectQuery] {
+	return dialect.From[*sqlite.SelectQuery](table)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*sqlite.SelectQuery] {

@@ -30,48 +30,22 @@ func Columns(clauses ...any) bob.Mod[*psql.SelectQuery] {
 	return mods.Select[*psql.SelectQuery](clauses)
 }
 
-func From(table any) bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.SetTable(table)
-	})
+func From(table any) dialect.FromChain[*psql.SelectQuery] {
+	return dialect.From[*psql.SelectQuery](table)
 }
 
-func FromFunction(funcs ...*dialect.Function) bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		if len(funcs) == 0 {
-			return
-		}
-		if len(funcs) == 1 {
-			q.SetTable(funcs[0])
-			return
-		}
+func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*psql.SelectQuery] {
+	var table any
 
-		q.SetTable(dialect.Functions(funcs))
-	})
-}
+	if len(funcs) == 1 {
+		table = funcs[0]
+	}
 
-func As(alias string, columns ...string) bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
+	if len(funcs) > 1 {
+		table = dialect.Functions(funcs)
+	}
 
-func Only() bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.SetOnly(true)
-	})
-}
-
-func Lateral() bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.SetLateral(true)
-	})
-}
-
-func WithOrdinality() bob.Mod[*psql.SelectQuery] {
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
-		q.SetWithOrdinality(true)
-	})
+	return dialect.From[*psql.SelectQuery](table)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*psql.SelectQuery] {

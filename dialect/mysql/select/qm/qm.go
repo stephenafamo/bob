@@ -56,36 +56,8 @@ func Columns(clauses ...any) bob.Mod[*mysql.SelectQuery] {
 	return mods.Select[*mysql.SelectQuery](clauses)
 }
 
-func From(table any) bob.Mod[*mysql.SelectQuery] {
-	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.SetTable(table)
-	})
-}
-
-func As(alias string, columns ...string) bob.Mod[*mysql.SelectQuery] {
-	return mods.QueryModFunc[*mysql.SelectQuery](func(q *mysql.SelectQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
-
-func Lateral() bob.Mod[*mysql.SelectQuery] {
-	return dialect.Lateral[*mysql.SelectQuery]()
-}
-
-func UseIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.SelectQuery] {
-	return dialect.UseIndex[*mysql.SelectQuery](first, others...)
-}
-
-func IgnoreIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.SelectQuery] {
-	return dialect.UseIndex[*mysql.SelectQuery](first, others...)
-}
-
-func ForceIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.SelectQuery] {
-	return dialect.UseIndex[*mysql.SelectQuery](first, others...)
-}
-
-func Partition(partitions ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Partition[*mysql.InsertQuery](partitions...)
+func From(table any) dialect.FromChain[*mysql.SelectQuery] {
+	return dialect.From[*mysql.SelectQuery](table)
 }
 
 func InnerJoin(e bob.Expression) dialect.JoinChain[*mysql.DeleteQuery] {

@@ -29,47 +29,8 @@ func Ignore() bob.Mod[*mysql.UpdateQuery] {
 	})
 }
 
-func Table(name any) bob.Mod[*mysql.UpdateQuery] {
-	return mods.QueryModFunc[*mysql.UpdateQuery](func(u *mysql.UpdateQuery) {
-		u.Table = clause.Table{
-			Expression: name,
-		}
-	})
-}
-
-func TableAs(name any, alias string) bob.Mod[*mysql.UpdateQuery] {
-	return mods.QueryModFunc[*mysql.UpdateQuery](func(u *mysql.UpdateQuery) {
-		u.Table = clause.Table{
-			Expression: name,
-			Alias:      alias,
-		}
-	})
-}
-
-func As(alias string, columns ...string) bob.Mod[*mysql.UpdateQuery] {
-	return mods.QueryModFunc[*mysql.UpdateQuery](func(q *mysql.UpdateQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
-
-func Lateral() bob.Mod[*mysql.UpdateQuery] {
-	return dialect.Lateral[*mysql.UpdateQuery]()
-}
-
-func UseIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.UpdateQuery] {
-	return dialect.UseIndex[*mysql.UpdateQuery](first, others...)
-}
-
-func IgnoreIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.UpdateQuery] {
-	return dialect.UseIndex[*mysql.UpdateQuery](first, others...)
-}
-
-func ForceIndex(first string, others ...string) *dialect.IndexHintChain[*mysql.UpdateQuery] {
-	return dialect.UseIndex[*mysql.UpdateQuery](first, others...)
-}
-
-func Partition(partitions ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Partition[*mysql.InsertQuery](partitions...)
+func Table(name any) dialect.FromChain[*mysql.UpdateQuery] {
+	return dialect.From[*mysql.UpdateQuery](name)
 }
 
 func Set(a string, b any) bob.Mod[*mysql.UpdateQuery] {

@@ -27,7 +27,6 @@ type DeleteQuery struct {
 
 	clause.With
 	modifiers[string]
-	partitions
 	Tables []clause.Table
 	clause.From
 	clause.Where

@@ -48,48 +48,22 @@ func SetArg(a string, b any) bob.Mod[*psql.UpdateQuery] {
 	return mods.Set[*psql.UpdateQuery]{expr.OP("=", psql.Quote(a), psql.Arg(b))}
 }
 
-func From(table any) bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		q.SetTable(table)
-	})
+func From(table any) dialect.FromChain[*psql.UpdateQuery] {
+	return dialect.From[*psql.UpdateQuery](table)
 }
 
-func FromFunction(funcs ...*dialect.Function) bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		if len(funcs) == 0 {
-			return
-		}
-		if len(funcs) == 1 {
-			q.SetTable(funcs[0])
-			return
-		}
+func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*psql.UpdateQuery] {
+	var table any
 
-		q.SetTable(dialect.Functions(funcs))
-	})
-}
+	if len(funcs) == 1 {
+		table = funcs[0]
+	}
 
-func FromAs(alias string, columns ...string) bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		q.SetTableAlias(alias, columns...)
-	})
-}
+	if len(funcs) > 1 {
+		table = dialect.Functions(funcs)
+	}
 
-func FromOnly() bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		q.SetOnly(true)
-	})
-}
-
-func Lateral() bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		q.SetLateral(true)
-	})
-}
-
-func WithOrdinality() bob.Mod[*psql.UpdateQuery] {
-	return mods.QueryModFunc[*psql.UpdateQuery](func(q *psql.UpdateQuery) {
-		q.SetWithOrdinality(true)
-	})
+	return dialect.From[*psql.UpdateQuery](table)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*psql.UpdateQuery] {

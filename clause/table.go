@@ -10,6 +10,8 @@ type Table struct {
 	Expression any
 	Alias      string
 	Columns    []string
+
+	Partitions []string // MySQL
 }
 
 func (t Table) As(alias string, columns ...string) Table {
@@ -40,6 +42,11 @@ func (t Table) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			d.WriteQuoted(w, cAlias)
 		}
 		w.Write([]byte(")"))
+	}
+
+	_, err = bob.ExpressSlice(w, d, start, t.Partitions, " PARTITION (", ", ", ")")
+	if err != nil {
+		return nil, err
 	}
 
 	return args, nil

@@ -70,22 +70,8 @@ func SetArg(a string, b any) bob.Mod[*sqlite.UpdateQuery] {
 	return mods.Set[*sqlite.UpdateQuery]{expr.OP("=", sqlite.Quote(a), sqlite.Arg(b))}
 }
 
-func From(table any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.QueryModFunc[*sqlite.UpdateQuery](func(q *sqlite.UpdateQuery) {
-		q.SetTable(table)
-	})
-}
-
-func FromAlias(alias string, columns ...string) bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.As[*sqlite.UpdateQuery](alias, columns...)
-}
-
-func FromNotIndexed() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.NotIndexed[*sqlite.UpdateQuery]()
-}
-
-func FromIndexedBy(index string) bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.IndexedBy[*sqlite.UpdateQuery](index)
+func From(table any) dialect.FromChain[*sqlite.UpdateQuery] {
+	return dialect.From[*sqlite.UpdateQuery](table)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*sqlite.UpdateQuery] {
