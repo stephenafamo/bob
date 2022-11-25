@@ -121,7 +121,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 		return nil, err
 	}
 
-	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, true, "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, wr.def.From != "", "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
