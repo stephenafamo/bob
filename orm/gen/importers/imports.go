@@ -6,25 +6,31 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"golang.org/x/tools/go/packages"
 )
 
 //nolint:gochecknoglobals
 var (
-	standardPackages = make(map[string]struct{})
 	pkgRgx           = regexp.MustCompile(`"([^"]+)"`)
+	standardPackages = make(map[string]struct{})
+	stdPkgOnce       sync.Once
 )
 
-func init() {
-	pkgs, err := packages.Load(nil, "std")
-	if err != nil {
-		panic(err)
-	}
+func getStandardPackages() map[string]struct{} {
+	stdPkgOnce.Do(func() {
+		pkgs, err := packages.Load(nil, "std")
+		if err != nil {
+			panic(err)
+		}
 
-	for _, p := range pkgs {
-		standardPackages[p.PkgPath] = struct{}{}
-	}
+		for _, p := range pkgs {
+			standardPackages[p.PkgPath] = struct{}{}
+		}
+	})
+
+	return standardPackages
 }
 
 // List of imports
@@ -58,7 +64,7 @@ func (l List) GetSorted() (List, List) {
 			pkgName = pkgSlice[1]
 		}
 
-		if _, ok := standardPackages[pkgName]; ok {
+		if _, ok := getStandardPackages()[pkgName]; ok {
 			std = append(std, pkg)
 			continue
 		}
