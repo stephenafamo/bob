@@ -342,10 +342,13 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	q := psql.Insert(
 		inqm.Into(t.Name(), columns...),
-		inqm.Values(values[0]...),
 		inqm.Returning("*"),
 		conflictQM,
 	)
+
+	for _, val := range values {
+		q.Apply(inqm.Values(val...))
+	}
 
 	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
 	if err != nil {
