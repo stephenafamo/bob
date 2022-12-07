@@ -8,8 +8,6 @@ Pending features
   * [x] Add
   * [x] Attach
   * [ ] Remove
-* Find
-* Exists (by PK)
 * Back-Referencing when loading/adding relationships
 
 ## Usage

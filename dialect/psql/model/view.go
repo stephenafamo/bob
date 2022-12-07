@@ -113,7 +113,6 @@ func (f *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (in
 }
 
 func (f *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	f.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
-	count, err := bob.One(ctx, exec, f.BaseQuery, scan.SingleColumnMapper[int64])
+	count, err := f.Count(ctx, exec)
 	return count > 0, err
 }
