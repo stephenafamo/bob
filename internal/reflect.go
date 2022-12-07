@@ -39,6 +39,7 @@ type Mapping struct {
 }
 
 func (c Mapping) Columns(table ...string) orm.Columns {
+	// to make sure we don't modify the passed slice
 	cols := make([]string, 0, len(c.All))
 	for _, col := range c.All {
 		if col == "" {
@@ -50,7 +51,7 @@ func (c Mapping) Columns(table ...string) orm.Columns {
 
 	copy(cols, c.All)
 
-	return orm.NewColumns(cols).WithParent(table...)
+	return orm.NewColumns(cols...).WithParent(table...)
 }
 
 type colProperties struct {

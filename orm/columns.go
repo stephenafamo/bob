@@ -14,7 +14,7 @@ func sliceToMap[T comparable](s []T) map[T]int {
 	return m
 }
 
-func NewColumns(names []string) Columns {
+func NewColumns(names ...string) Columns {
 	return Columns{
 		names: names,
 	}
