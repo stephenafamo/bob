@@ -106,12 +106,13 @@
           return fmt.Errorf("inserting related objects: %w", err)
       }
 			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, newRels...)
-    {{else -}}
-      newRels := rels
     {{- end}}
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}
     {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      {{if $rel.InsertEarly -}}
+        newRels := rels
+      {{- end}}
       for _, rel := range newRels {
         {{if $invRel.IsToMany -}}
           rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
