@@ -228,6 +228,12 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		return err
 	}
 
+	{{if .IsToMany -}}
+		for _, o := range os {
+			o.R.{{$relAlias}} = nil
+		}
+	{{- end}}
+
 	for _, rel := range {{$ftable.DownPlural}} {
 		for _, o := range os {
 			{{range $index, $local := $side.FromColumns -}}
@@ -318,6 +324,12 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
 	}
+
+	{{if .IsToMany -}}
+		for _, o := range os {
+			o.R.{{$relAlias}} = nil
+		}
+	{{- end}}
 
 	for _, rel := range {{$ftable.DownPlural}} {
 		for _, o := range os {
