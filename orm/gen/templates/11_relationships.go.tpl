@@ -4,6 +4,7 @@
 {{range $rel := $table.Relationships -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
+{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
   func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related *Optional{{$ftable.UpSingular}}) error {
     {{if $rel.InsertEarly -}}
@@ -31,6 +32,15 @@
 			o.R.{{$relAlias}} = inserted
     {{end}}
 
+    {{if and (not $.NoBackReferencing) $invRel.Name -}}
+    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      {{if $invRel.IsToMany -}}
+        o.R.{{$relAlias}}.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+      {{else -}}
+        o.R.{{$relAlias}}.R.{{$invAlias}} = o
+      {{- end}}
+    {{- end}}
+
     return nil
   }
 
@@ -49,6 +59,15 @@
         return fmt.Errorf("inserting related objects: %w", err)
     }
     o.R.{{$relAlias}} = rel
+
+    {{if and (not $.NoBackReferencing) $invRel.Name -}}
+    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      {{if $invRel.IsToMany -}}
+        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+      {{else -}}
+        rel.R.{{$invAlias}} = o
+      {{- end}}
+    {{- end}}
 
     return nil
   }
@@ -82,12 +101,25 @@
     {{insertDeps $.Aliases $rel true}}
 
     {{if not $rel.InsertEarly -}}
-      inserted, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
+      newRels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
-			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, inserted...)
-    {{end}}
+			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, newRels...)
+    {{else -}}
+      newRels := rels
+    {{- end}}
+
+    {{if and (not $.NoBackReferencing) $invRel.Name -}}
+    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      for _, rel := range newRels {
+        {{if $invRel.IsToMany -}}
+          rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+        {{else -}}
+          rel.R.{{$invAlias}} = o
+        {{- end}}
+      }
+    {{- end}}
 
     return nil
   }
@@ -117,6 +149,18 @@
     {{end}}
 
 		o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, related...)
+
+    {{if and (not $.NoBackReferencing) $invRel.Name -}}
+    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      for _, rel := range related {
+        {{if $invRel.IsToMany -}}
+          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+        {{else -}}
+          rel.R.{{$invAlias}} = o
+        {{- end}}
+      }
+    {{- end}}
+
     return nil
   }
 
