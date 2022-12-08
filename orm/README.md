@@ -8,7 +8,6 @@ Pending features
   * [x] Add
   * [x] Attach
   * [ ] Remove
-* Back-Referencing when loading/adding relationships
 
 ## Usage
 
