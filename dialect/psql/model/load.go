@@ -204,7 +204,11 @@ func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*psql.Se
 					}
 				}
 
-				if !v.IsRecording() && len(opt.extraLoader.Fs) > 0 {
+				if v.IsRecording() {
+					return nil
+				}
+
+				if len(opt.extraLoader.Fs) > 0 {
 					if err = opt.extraLoader.Collect(t); err != nil {
 						return err
 					}
