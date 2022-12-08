@@ -68,6 +68,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{range $rel := $table.Relationships -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
+{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
@@ -186,6 +187,24 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 		return err
 	}
 
+	{{if and (not $.NoBackReferencing) $invRel.Name -}}
+	{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+	{{if $rel.IsToMany -}}
+		for _, rel := range related {
+			{{if $invRel.IsToMany -}}
+				rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+			{{else -}}
+				rel.R.{{$invAlias}} =  o
+			{{- end}}
+		}
+	{{else -}}
+		{{if $invRel.IsToMany -}}
+			related.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+		{{else -}}
+			related.R.{{$invAlias}} =  o
+		{{- end}}
+	{{- end}}
+	{{- end}}
 
 	o.R.{{$relAlias}} = related
 	return nil
@@ -245,11 +264,20 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			}
 			{{- end}}
 
+			{{if and (not $.NoBackReferencing) $invRel.Name -}}
+			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+				{{if $invRel.IsToMany -}}
+					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+				{{else -}}
+					rel.R.{{$invAlias}} =  o
+				{{- end}}
+			{{- end}}
+
 			{{if .IsToMany -}}
-			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
+				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
 			{{else -}}
-			o.R.{{$relAlias}} =  rel
-			break
+				o.R.{{$relAlias}} =  rel
+				break
 			{{end -}}
 		}
 	}
@@ -339,6 +367,16 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			  continue
 			}
 			{{- end}}
+
+			{{if and (not $.NoBackReferencing) $invRel.Name -}}
+			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+				{{if $invRel.IsToMany -}}
+					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+				{{else -}}
+					rel.R.{{$invAlias}} =  o
+				{{- end}}
+			{{- end}}
+
 
 			{{if .IsToMany -}}
 				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$ftable.UpSingular}})
