@@ -16,19 +16,46 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 	{{range $table.Relationships -}}
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
+	{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 	case "{{$relAlias}}":
 		{{if .IsToMany -}}
-		if rel, ok := retrieved.({{$ftable.UpSingular}}Slice); ok {
-			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel...)
+			rels, ok := retrieved.({{$ftable.UpSingular}}Slice)
+			if !ok {
+				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
+			}
+
+			o.R.{{$relAlias}} = rels
+
+			{{if and (not $.NoBackReferencing) $invRel.Name -}}
+			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+			for _, rel := range rels {
+				{{if $invRel.IsToMany -}}
+					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+				{{else -}}
+					rel.R.{{$invAlias}} =  o
+				{{- end}}
+			}
+			{{- end}}
+
 			return nil
-		}
 		{{else -}}
-		if rel, ok := retrieved.(*{{$ftable.UpSingular}}); ok {
+			rel, ok := retrieved.(*{{$ftable.UpSingular}})
+			if !ok {
+				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
+			}
+
 			o.R.{{$relAlias}} = rel
+
+			{{if and (not $.NoBackReferencing) $invRel.Name -}}
+			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+				{{if $invRel.IsToMany -}}
+					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+				{{else -}}
+					rel.R.{{$invAlias}} =  o
+				{{- end}}
+			{{- end}}
 			return nil
-		}
 		{{end -}}
-		return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
 
 	{{end -}}
 	default:

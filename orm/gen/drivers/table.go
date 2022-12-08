@@ -59,6 +59,30 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 	return false
 }
 
+// GetRelationshipInverse returns the Relationship of the other side
+func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Relationship {
+	var fTable Table
+	for _, t := range tables {
+		if t.Name == r.Foreign() {
+			fTable = t
+			break
+		}
+	}
+
+	// No foreign table matched
+	if fTable.Name == "" {
+		return orm.Relationship{}
+	}
+
+	for _, r2 := range fTable.Relationships {
+		if r.Name == r2.Name {
+			return r2
+		}
+	}
+
+	return orm.Relationship{}
+}
+
 // TablesFromList takes a whitelist or blacklist and returns
 // the table names.
 func TablesFromList(list []string) []string {

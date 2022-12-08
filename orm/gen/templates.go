@@ -70,8 +70,6 @@ type templateData[T any] struct {
 	AddEnumTypes      bool
 	EnumNullPrefix    string
 	NoTests           bool
-	NoHooks           bool
-	NoAutoTimestamps  bool
 	NoBackReferencing bool
 
 	// Tags control which tags are added to the struct
