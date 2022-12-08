@@ -74,10 +74,14 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
   * Can configure relationships based on static column values. For example, (`WHERE object_type = 'car' AND object_id = cars.id`)
   * Support for `has-one-through` and `has-many-through`.
 
-### Missing features
+### Ignored features
 
-* No automatic timestamps (createdAt/UpdatedAt)
-* No soft delete support
+* Automatic timestamps (createdAt/UpdatedAt)
+    While convenient to have this in the ORM, it is much better to implement this at the DB level.
+    Therefore, there are no plans to implement this in Bob. It isn't worth the additional complexity.
+* Soft deletes
+    There are no immediate plans for this.
+    The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
 
 ## Supported Databases
 
