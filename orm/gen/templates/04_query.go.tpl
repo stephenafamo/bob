@@ -25,7 +25,6 @@ func {{$tAlias.UpPlural}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) *model.Ta
 {{end -}}
 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect)}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 // Find{{$tAlias.UpSingular}} retrieves a single record by primary key
 // If cols is empty Find will return all columns.
 func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArgs}} cols ...string) (*{{$tAlias.UpSingular}}, error) {
@@ -43,7 +42,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}
-		qm.Columns(orm.NewColumns(cols...)),
+		qm.Columns({{$tAlias.UpPlural}}Table.Columns().Only(cols...)),
 	).One(ctx, exec)
 }
 
