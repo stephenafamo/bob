@@ -30,9 +30,7 @@ func (q commonQueryer[T]) QueryContext(ctx context.Context, query string, args .
 // An interface that *sql.DB, *sql.Tx and *sql.Conn satisfy
 type StdInterface interface {
 	StdQueryer
-	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 }
 
 // New wraps an StdInterface to make it comply with Queryer
@@ -42,6 +40,13 @@ func New[T StdInterface](wrapped T) common[T] {
 	return common[T]{commonQueryer[T]{wrapped: wrapped}}
 }
 
+// To make sure it works
+var (
+	_ Executor = common[*sql.DB]{}
+	_ Executor = common[*sql.Tx]{}
+	_ Executor = common[*sql.Conn]{}
+)
+
 type common[T StdInterface] struct {
 	commonQueryer[T]
 }
@@ -49,18 +54,6 @@ type common[T StdInterface] struct {
 // ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
 func (q common[T]) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	return q.wrapped.ExecContext(ctx, query, args...)
-}
-
-// QueryRowContext executes a query that is expected to return at most one row. QueryRowContext always returns a non-nil value. Errors are deferred until Row's Scan method is called. If the query selects no rows, the *Row's Scan will return ErrNoRows. Otherwise, the *Row's Scan scans the first selected row and discards the rest.
-func (q common[T]) QueryRowContext(ctx context.Context, query string, args ...any) scan.Row {
-	return q.wrapped.QueryRowContext(ctx, query, args...)
-}
-
-// PrepareContext creates a prepared statement for later queries or executions. Multiple queries or executions may be run concurrently from the returned statement. The caller must call the statement's Close method when the statement is no longer needed.
-//
-// The provided context is used for the preparation of the statement, not for the execution of the statement.
-func (q common[T]) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
-	return q.wrapped.PrepareContext(ctx, query)
 }
 
 // Open works just like [sql.Open], but converts the returned [*sql.DB] to [DB]
