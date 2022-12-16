@@ -166,31 +166,29 @@ There exists the ability to override types that the driver has inferred.
 The way to accomplish this is through the config file.
 
 ```yaml
-types:
-  # Tables is used to limit the replacement to only specific tables
-  # if not present, it will match in all tables
-  tables: ["users", "authors"]
+replacements:
+  - tables: ["table_name"] # What tables to look inside. Matches all tables if empty
 
-  # The match is a drivers.Column struct, and matches on almost all fields.
-  # Notable exception for the unique bool. Matches are done
-  # with "logical and" meaning it must match all specified matchers.
-  # Boolean values are only checked if all the string specifiers match first,
-  # and they must always match.
-  #
-  # Not shown here: db_type is the database type and a very useful matcher
-  #
-  # Note there is precedence for types.match, more specific things should appear
-  # further down in the config as once a matching rule is found it is executed
-  # immediately.
-  match:
-    type: "null.String"
+    # The match is a drivers.Column struct, and matches on almost all fields.
+    # Notable exception for the unique bool. Matches are done
+    # with "logical and" meaning it must match all specified matchers.
+    # Boolean values are only checked if all the string specifiers match first,
+    # and they must always match.
+    #
+    # Not shown here: db_type is the database type and a very useful matcher
+    #
+    # Note there is precedence for types.match, more specific things should appear
+    # further down in the config as once a matching rule is found it is executed
+    # immediately.
+    match:
+      name: "column_name" # column name
 
-  # The replace is what we replace the strings with. You cannot modify any
-  # boolean values in here. But we could change the Go type (the most useful thing)
-  # or the DBType or FullDBType etc. if for some reason we needed to.
-  replace:
-    type: "mynull.String"
-    imports: ['"github.com/me/mynull"']
+    # The replace is what we replace the strings with. You cannot modify any
+    # boolean values in here. But we could change the Go type (the most useful thing)
+    # or the DBType or FullDBType etc. if for some reason we needed to.
+    replace:
+      type: "mynull.String"
+      imports: ['"github.com/me/mynull"']
 ```
 
 #### Relationships
