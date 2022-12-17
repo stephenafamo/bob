@@ -403,79 +403,55 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 		objVarName := getVarName(aliases, kside.TableName, local, foreign, false)
 		oalias := aliases.Tables[kside.TableName]
 
-		switch shouldSetObjs(kside.TableName, local, needed) {
-		case false:
-			i.Import("github.com/stephenafamo/bob/orm")
-			for _, mapp := range kside.Mapped {
-				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
+		objVarNamePlural := getVarName(aliases, kside.TableName, local, foreign, true)
+		shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
+		if shouldCreate && inLoop {
+			mret = append(mret, fmt.Sprintf("%s := %s[i]",
+				objVarName, objVarNamePlural,
+			))
+		}
 
-				if mapp.Value != "" {
+		for _, mapp := range kside.Mapped {
+			oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
+
+			if mapp.Value != "" {
+				if kside.TableName == r.Local() {
+					i.Import("github.com/stephenafamo/bob/orm")
 					mret = append(mret, fmt.Sprintf(`if %s.%s != %s {
-						return &orm.RelationshipChainError{
-						    Table1: %q, Column1: %q, Value: %q,
-						}
-					}`,
+								return &orm.RelationshipChainError{
+									Table1: %q, Column1: %q, Value: %q,
+								}
+							}`,
 						objVarName, oGetter, mapp.Value,
 						kside.TableName, mapp.Column, mapp.Value,
 					))
 					continue
 				}
 
-				extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
-				malias := aliases.Tables[mapp.ExternalTable]
-
-				mGetter := columnGetter(tables, mapp.ExternalTable, malias, mapp.ExternalColumn)
-
-				mret = append(mret, fmt.Sprintf(`if %s.%s != %s.%s {
-						return &orm.RelationshipChainError{
-						    Table1: %q, Column1: %q,
-						    Table2: %q, Column2: %q,
-						}
-					}`,
-					objVarName, oGetter,
-					extObjVarName, mGetter,
-					kside.TableName, mapp.Column,
-					mapp.ExternalTable, mapp.ExternalColumn,
-				))
-			}
-
-			ret = append(ret, strings.Join(mret, "\n"))
-		case true:
-			objVarNamePlural := getVarName(aliases, kside.TableName, local, foreign, true)
-			shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
-			if shouldCreate && inLoop {
-				mret = append(mret, fmt.Sprintf("%s := %s[i]",
-					objVarName, objVarNamePlural,
-				))
-			}
-
-			for _, mapp := range kside.Mapped {
-				if mapp.Value != "" {
-					mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
-						objVarName,
-						oalias.Columns[mapp.Column],
-						mapp.Value,
-					))
-					continue
-				}
-
-				extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
-				malias := aliases.Tables[mapp.ExternalTable]
-				oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
-					"%s.%s",
-					extObjVarName,
-					malias.Columns[mapp.ExternalColumn],
-				), shouldCreate || (optional && kside.TableName == foreign))
-
 				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 					objVarName,
 					oalias.Columns[mapp.Column],
-					oSetter,
+					mapp.Value,
 				))
+				continue
 			}
 
-			ret = append(ret, strings.Join(mret, "\n"))
+			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
+			malias := aliases.Tables[mapp.ExternalTable]
+			oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
+				"%s.%s",
+				extObjVarName,
+				malias.Columns[mapp.ExternalColumn],
+			), shouldCreate || (optional && kside.TableName == foreign))
+
+			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
+				objVarName,
+				oalias.Columns[mapp.Column],
+				oSetter,
+			))
 		}
+
+		ret = append(ret, strings.Join(mret, "\n"))
 	}
 
 	return strings.Join(ret, "\n")
@@ -534,20 +510,6 @@ func getVarName(aliases Aliases, tableName, local, foreign string, many bool) st
 		}
 		return alias.DownSingular
 	}
-}
-
-func shouldSetObjs(tableName, local string, needed []string) bool {
-	if tableName == local {
-		return false
-	}
-
-	for _, n := range needed {
-		if tableName == n {
-			return false
-		}
-	}
-
-	return true
 }
 
 func shouldCreateObjs(tableName, local, foreign string, needed []string) bool {
