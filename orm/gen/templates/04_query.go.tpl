@@ -2,21 +2,16 @@
 {{$tAlias := .Aliases.Table .Table.Name -}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 
-
-{{if not .Table.PKey -}}
-
 // {{$tAlias.UpPlural}} begins a query on {{.Table.Name}}
-func {{$tAlias.UpPlural}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) *model.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice] {
+func {{$tAlias.UpPlural}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) {{$tAlias.UpPlural}}Query {
+	{{if not .Table.PKey -}}
 	return {{$tAlias.UpPlural}}View.Query(mods...)
-}
-
-{{- else -}}
-
-// {{$tAlias.UpPlural}} begins a query on {{.Table.Name}}
-func {{$tAlias.UpPlural}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) *model.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}] {
+	{{else -}}
 	return {{$tAlias.UpPlural}}Table.Query(mods...)
+	{{end -}}
 }
 
+{{if .Table.PKey -}}
 {{$pkArgs := ""}}
 {{range $colName := $table.PKey.Columns -}}
 {{- $column := $table.GetColumn $colName -}}

@@ -14,12 +14,12 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 
 	switch name {
 	{{range $table.Relationships -}}
-	{{- $ftable := $.Aliases.Table .Foreign -}}
+	{{- $fAlias := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 	case "{{$relAlias}}":
 		{{if .IsToMany -}}
-			rels, ok := retrieved.({{$ftable.UpSingular}}Slice)
+			rels, ok := retrieved.({{$fAlias.UpSingular}}Slice)
 			if !ok {
 				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
 			}
@@ -27,7 +27,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 			o.R.{{$relAlias}} = rels
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 			for _, rel := range rels {
 				{{if $invRel.IsToMany -}}
 					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
@@ -39,7 +39,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 
 			return nil
 		{{else -}}
-			rel, ok := retrieved.(*{{$ftable.UpSingular}})
+			rel, ok := retrieved.(*{{$fAlias.UpSingular}})
 			if !ok {
 				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
 			}
@@ -47,7 +47,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 			o.R.{{$relAlias}} = rel
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 				{{if $invRel.IsToMany -}}
 					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 				{{else -}}
@@ -66,13 +66,13 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 
 
 {{range $rel := $table.Relationships -}}
-{{- $ftable := $.Aliases.Table $rel.Foreign -}}
+{{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
-	return model.Preload[*{{$ftable.UpSingular}}, {{$ftable.UpSingular}}Slice](orm.Relationship{
+	return model.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",
 			Sides:  []orm.RelSide{
 				{{range $side := $rel.Sides -}}
@@ -122,7 +122,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 				},
 				{{- end}}
 			},
-		}, {{$ftable.UpPlural}}Table.Columns(), opts...)
+		}, {{$fAlias.UpPlural}}Table.Columns(), opts...)
 }
 {{- end}}
 
@@ -139,56 +139,19 @@ func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*{{$.Diale
 	})
 }
 
+// Load{{$tAlias.UpSingular}}{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
 func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error {
-	q := {{$ftable.UpPlural}}(mods...)
-	q.Apply(
-		{{- range $index := until (len $rel.Sides) | reverse -}}
-		{{/* Index counts down */}}
-		{{/* This also flips the meaning of $from and $to */}}
-		{{- $side := index $rel.Sides $index -}}
-		{{- $from := $.Aliases.Table $side.From -}}
-		{{- $to := $.Aliases.Table $side.To -}}
-		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
-		{{end -}}
-			{{range $i, $local := $side.FromColumns -}}
-				{{- $fromCol := index $from.Columns $local -}}
-				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
-				{{- if gt $index 0 -}}
-				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
-				{{- else -}}
-				qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
-				{{- end -}}
-			{{- end}}
-			{{- range $where := $side.FromWhere}}
-				{{- $fromCol := index $from.Columns $where.Column}}
-				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}})),
-				{{- if eq $index 0 -}}),{{- end -}}
-			{{- end}}
-			{{- range $where := $side.ToWhere}}
-				{{- $toCol := index $to.Columns $where.Column}}
-				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}),
-				{{- if eq $index 0 -}}),{{- end -}}
-			{{- end}}
-		{{- if gt $index 0 -}}
-		),
-		{{- end -}}
-		{{- end}}
-	)
-
-	{{if $rel.IsToMany}}
-	related, err := q.All(ctx, exec)
-	{{- else}}
-	related, err := q.One(ctx, exec)
-	{{- end}}
+	{{if $rel.IsToMany -}}
+	related, err := o.{{$relAlias}}(mods...).All(ctx, exec)
+	{{else -}}
+	related, err := o.{{$relAlias}}(mods...).One(ctx, exec)
+	{{end -}}
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
 	}
 
 	{{if and (not $.NoBackReferencing) $invRel.Name -}}
-	{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+	{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 	{{if $rel.IsToMany -}}
 		for _, rel := range related {
 			{{if $invRel.IsToMany -}}
@@ -210,50 +173,25 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 	return nil
 }
 
+// Load{{$tAlias.UpSingular}}{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
 {{if le (len $rel.Sides) 1 -}}
 func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error {
 	{{- $side := (index $rel.Sides 0) -}}
 	{{- $fromAlias := $.Aliases.Table $side.From -}}
 	{{- $toAlias := $.Aliases.Table $side.To -}}
 
-	{{range $index, $local := $side.FromColumns -}}
-		{{- $fromCol := index $fromAlias.Columns $local -}}
-		{{$fromCol}}Args := make([]any, 0, len(os))
-		for _, o := range os {
-			{{$fromCol}}Args = append({{$fromCol}}Args, {{$.Dialect}}.Arg(o.{{$fromCol}}))
-		}
-	{{- end}}
-
-	q := {{$ftable.UpPlural}}(mods...)
-	q.Apply(
-		{{range $index, $local := $side.FromColumns -}}
-			{{- $fromCol := index $fromAlias.Columns $local -}}
-			{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
-			qm.Where({{$ftable.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
-		{{- end}}
-		{{- range $where := $side.FromWhere}}
-			{{- $fromCol := index $fromAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
-		{{- end}}
-		{{- range $where := $side.ToWhere}}
-			{{- $toCol := index $toAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
-		{{- end}}
-	)
-
-
-	{{$ftable.DownPlural}}, err := q.All(ctx, exec)
+	{{$fAlias.DownPlural}}, err := os.{{$relAlias}}(mods...).All(ctx, exec)
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
 	}
 
-	{{if .IsToMany -}}
+	{{if $rel.IsToMany -}}
 		for _, o := range os {
 			o.R.{{$relAlias}} = nil
 		}
 	{{- end}}
 
-	for _, rel := range {{$ftable.DownPlural}} {
+	for _, rel := range {{$fAlias.DownPlural}} {
 		for _, o := range os {
 			{{range $index, $local := $side.FromColumns -}}
 			{{- $foreign := index $side.ToColumns $index -}}
@@ -265,7 +203,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 				{{if $invRel.IsToMany -}}
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
@@ -273,7 +211,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 				{{- end}}
 			{{- end}}
 
-			{{if .IsToMany -}}
+			{{if $rel.IsToMany -}}
 				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
 			{{else -}}
 				o.R.{{$relAlias}} =  rel
@@ -291,58 +229,18 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- $firstFrom := $.Aliases.Table $firstSide.From -}}
 	{{- $firstTo := $.Aliases.Table $firstSide.To -}}
 
-	{{- $lastSide := (index $rel.Sides (sub (len $rel.Sides) 1)) -}}
-	{{- $lastFrom := $.Aliases.Table $lastSide.From -}}
-	{{- $lastTo := $.Aliases.Table $lastSide.To -}}
-
-	{{range $index, $local := $firstSide.FromColumns -}}
-		{{- $fromCol := index $firstFrom.Columns $local -}}
-		{{$fromCol}}Args := make([]any, 0, len(os))
-		for _, o := range os {
-			{{$fromCol}}Args = append({{$fromCol}}Args, {{$.Dialect}}.Arg(o.{{$fromCol}}))
-		}
-	{{- end}}
-
-	q := {{$ftable.UpPlural}}(mods...)
+	q := os.{{$relAlias}}(mods...)
 	q.Apply(
-		{{- range $index := until (len $rel.Sides) | reverse -}}
-		{{/* Index counts down */}}
-		{{/* This also flips the meaning of $from and $to */}}
-		{{- $side := index $rel.Sides $index -}}
-		{{- $from := $.Aliases.Table $side.From -}}
-		{{- $to := $.Aliases.Table $side.To -}}
-		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
-		{{end -}}
-			{{range $i, $local := $side.FromColumns -}}
-				{{- $foreign := index $side.ToColumns $i -}}
-				{{- $fromCol := index $from.Columns $local -}}
-				{{- $toCol := index $to.Columns $foreign -}}
-				{{- if gt $index 0 -}}
-				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
-				{{- else -}}
-					qm.Columns({{$to.UpSingular}}Columns.{{$toCol}}.As("related_{{$side.From}}.{{$fromCol}}")),
-					qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
-				{{- end}}
-			{{- end}}
-			{{- range $where := $side.FromWhere}}
-				{{- $fromCol := index $from.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
-			{{- end}}
-			{{- range $where := $side.ToWhere}}
-				{{- $toCol := index $to.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
-			{{- end}}
-		{{- if gt $index 0}}
-		),
-		{{- end -}}
+		{{range $index, $local := $firstSide.FromColumns -}}
+			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
+			{{- $fromCol := index $firstFrom.Columns $local -}}
+			qm.Columns({{$firstTo.UpSingular}}Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
 		{{- end}}
 	)
 
-
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
-	{{$ftable.DownPlural}}, err := bob.All(ctx, exec, q, scan.StructMapper[*struct{
-	  {{$ftable.UpSingular}}
+	{{$fAlias.DownPlural}}, err := bob.All(ctx, exec, q, scan.StructMapper[*struct{
+	  {{$fAlias.UpSingular}}
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromColAlias := index $firstFrom.Columns $local -}}
 			{{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
@@ -353,13 +251,13 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		return err
 	}
 
-	{{if .IsToMany -}}
+	{{if $rel.IsToMany -}}
 		for _, o := range os {
 			o.R.{{$relAlias}} = nil
 		}
 	{{- end}}
 
-	for _, rel := range {{$ftable.DownPlural}} {
+	for _, rel := range {{$fAlias.DownPlural}} {
 		for _, o := range os {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
@@ -369,7 +267,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
+			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 				{{if $invRel.IsToMany -}}
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
@@ -378,10 +276,10 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- end}}
 
 
-			{{if .IsToMany -}}
-				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$ftable.UpSingular}})
+			{{if $rel.IsToMany -}}
+				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$fAlias.UpSingular}})
 			{{else -}}
-				o.R.{{$relAlias}} =  &rel.{{$ftable.UpSingular}}
+				o.R.{{$relAlias}} =  &rel.{{$fAlias.UpSingular}}
 				break
 			{{end -}}
 		}

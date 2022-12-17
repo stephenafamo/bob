@@ -4,8 +4,10 @@
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/model" $.Dialect)}}
 {{if not $table.PKey -}}
 	var {{$tAlias.UpPlural}}View = model.NewView[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]({{quoteAndJoin .Schema $table.Name}})
+	type {{$tAlias.UpPlural}}Query = *model.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 var {{$tAlias.UpPlural}}Table = model.NewTable[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]({{quoteAndJoin .Schema $table.Name}})
+	type {{$tAlias.UpPlural}}Query = *model.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]
 {{- end}}
 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
