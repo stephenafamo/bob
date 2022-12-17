@@ -50,8 +50,8 @@ var (
 )
 
 type executeTemplateData[T any] struct {
-	state *State[T]
-	data  *templateData[T]
+	output *Output
+	data   *templateData[T]
 
 	templates     *templateList
 	dirExtensions dirExtMap
@@ -61,22 +61,22 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](state *State[T], dirExts dirExtMap, data *templateData[T]) error {
+func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
 	return executeTemplates(executeTemplateData[T]{
-		state:                state,
+		output:               o,
 		data:                 data,
-		templates:            state.Templates,
+		templates:            o.templates,
 		combineImportsOnType: true,
 		dirExtensions:        dirExts,
 	})
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](state *State[T], dirExts dirExtMap, data *templateData[T]) error {
+func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
 	return executeTemplates(executeTemplateData[T]{
-		state:                state,
+		output:               o,
 		data:                 data,
-		templates:            state.TestTemplates,
+		templates:            o.testTemplates,
 		combineImportsOnType: false,
 		isTest:               true,
 		dirExtensions:        dirExts,
@@ -85,21 +85,21 @@ func generateTestOutput[T any](state *State[T], dirExts dirExtMap, data *templat
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](state *State[T], data *templateData[T]) error {
+func generateSingletonOutput[T any](o *Output, data *templateData[T]) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
-		state:     state,
+		output:    o,
 		data:      data,
-		templates: state.Templates,
+		templates: o.templates,
 	})
 }
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](state *State[T], data *templateData[T]) error {
+func generateSingletonTestOutput[T any](o *Output, data *templateData[T]) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
-		state:     state,
+		output:    o,
 		data:      data,
-		templates: state.TestTemplates,
+		templates: o.testTemplates,
 		isTest:    true,
 	})
 }
@@ -130,13 +130,13 @@ func executeTemplates[T any](e executeTemplateData[T]) error {
 
 			// Skip writing the file if the content is empty
 			if out.Len()-prevLen < 1 {
-				fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.state.Config.OutFolder, fName)
+				fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.output.OutFolder, fName)
 				continue
 			}
 
 			imps := e.data.Importer.ToList()
 			if isGo {
-				pkgName := e.state.Config.PkgName
+				pkgName := e.output.PkgName
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
@@ -145,7 +145,7 @@ func executeTemplates[T any](e executeTemplateData[T]) error {
 				writeImports(headerOut, imps)
 			}
 
-			if err := writeFile(e.state.Config.OutFolder, fName, io.MultiReader(headerOut, out), isGo); err != nil {
+			if err := writeFile(e.output.OutFolder, fName, io.MultiReader(headerOut, out), isGo); err != nil {
 				return err
 			}
 		}
@@ -176,7 +176,7 @@ func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
 		if isGo {
 			imps := e.data.Importer.ToList()
 
-			pkgName := e.state.Config.PkgName
+			pkgName := e.output.PkgName
 			if !usePkg {
 				pkgName = filepath.Base(dir)
 			}
@@ -185,7 +185,7 @@ func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
 			writeImports(headerOut, imps)
 		}
 
-		if err := writeFile(e.state.Config.OutFolder, normalized, io.MultiReader(headerOut, out), isGo); err != nil {
+		if err := writeFile(e.output.OutFolder, normalized, io.MultiReader(headerOut, out), isGo); err != nil {
 			return err
 		}
 	}

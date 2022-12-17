@@ -72,21 +72,23 @@ func testNew(t *testing.T, aliases Aliases) {
 	// Defer cleanup of the tmp folder
 	defer func() {
 		if t.Failed() {
-			t.Log("template test output:", state.Config.OutFolder)
+			t.Log("template test output:", state.Config.Outputs[0].OutFolder)
 			return
 		}
-		os.RemoveAll(state.Config.OutFolder)
+		os.RemoveAll(state.Config.Outputs[0].OutFolder)
 	}()
 
 	config := &Config[any]{
 		Driver:    &mocks.MockDriver{},
-		PkgName:   "models",
-		OutFolder: out,
 		NoTests:   true,
 		TagIgnore: []string{"pass"},
 		Aliases:   aliases,
 		Generator: "BobGen",
-		Templates: []fs.FS{Templates},
+		Outputs: []*Output{{
+			PkgName:   "models",
+			OutFolder: out,
+			Templates: []fs.FS{Templates},
+		}},
 	}
 
 	state, err = New("psql", config)
@@ -107,43 +109,43 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	cmd = exec.Command("go", "mod", "init", "github.com/stephenafamo/bob/orm/bob-gen-test")
-	cmd.Dir = state.Config.OutFolder
+	cmd.Dir = state.Config.Outputs[0].OutFolder
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod init cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.OutFolder)
+		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
 		fmt.Println()
 	}
 
 	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(string(goModFilePath))))
-	cmd.Dir = state.Config.OutFolder
+	cmd.Dir = state.Config.Outputs[0].OutFolder
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod init cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.OutFolder)
+		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
 		fmt.Println()
 	}
 
 	// From go1.16 dependencies are not auto downloaded
 	cmd = exec.Command("go", "mod", "tidy")
-	cmd.Dir = state.Config.OutFolder
+	cmd.Dir = state.Config.Outputs[0].OutFolder
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod tidy cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.OutFolder)
+		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
 		fmt.Println()
 	}
 
 	cmd = exec.Command("go", "test", "-c")
-	cmd.Dir = state.Config.OutFolder
+	cmd.Dir = state.Config.Outputs[0].OutFolder
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go test cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.OutFolder)
+		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
 		fmt.Println()
 	}
 }

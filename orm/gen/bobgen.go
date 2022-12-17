@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/bob/orm/gen/drivers"
@@ -30,9 +31,6 @@ type State[T any] struct {
 	Schema    string
 	Tables    []drivers.Table
 	ExtraInfo T
-
-	Templates     *templateList
-	TestTemplates *templateList
 }
 
 // New creates a new state based off of the config
@@ -60,14 +58,16 @@ func New[T any](dialect string, config *Config[T]) (*State[T], error) {
 	s.processTypeReplacements()
 	s.processRelationshipConfig()
 
-	templates, err = s.initTemplates()
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize templates: %w", err)
-	}
+	for _, o := range s.Config.Outputs {
+		templates, err = o.initTemplates(s.Config.CustomTemplateFuncs, s.Config.NoTests)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize templates: %w", err)
+		}
 
-	err = s.initOutFolders(templates)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize the output folders: %w", err)
+		err = o.initOutFolders(templates, s.Config.Wipe)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize the output folders: %w", err)
+		}
 	}
 
 	err = s.initTags(config.Tags)
@@ -83,56 +83,58 @@ func New[T any](dialect string, config *Config[T]) (*State[T], error) {
 // Run executes the templates and outputs them to files based on the
 // state given.
 func (s *State[T]) Run() error {
-	data := &templateData[T]{
-		Dialect:           s.Dialect,
-		Tables:            s.Tables,
-		ExtraInfo:         s.ExtraInfo,
-		Aliases:           s.Config.Aliases,
-		PkgName:           s.Config.PkgName,
-		NoTests:           s.Config.NoTests,
-		NoBackReferencing: s.Config.NoBackReferencing,
-		StructTagCasing:   s.Config.StructTagCasing,
-		TagIgnore:         make(map[string]struct{}),
-		Tags:              s.Config.Tags,
-		RelationTag:       s.Config.RelationTag,
-		Schema:            s.Schema,
-	}
-
-	for _, v := range s.Config.TagIgnore {
-		if !rgxValidTableColumn.MatchString(v) {
-			return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
-		}
-		data.TagIgnore[v] = struct{}{}
-	}
-
-	if err := generateSingletonOutput(s, data); err != nil {
-		return fmt.Errorf("singleton template output: %w", err)
-	}
-
-	if !s.Config.NoTests {
-		if err := generateSingletonTestOutput(s, data); err != nil {
-			return fmt.Errorf("unable to generate singleton test template output: %w", err)
-		}
-	}
-
-	var regularDirExtMap, testDirExtMap dirExtMap
-	regularDirExtMap = groupTemplates(s.Templates)
-	if !s.Config.NoTests {
-		testDirExtMap = groupTemplates(s.TestTemplates)
-	}
-
-	for _, table := range s.Tables {
-		data.Table = table
-
-		// Generate the regular templates
-		if err := generateOutput(s, regularDirExtMap, data); err != nil {
-			return fmt.Errorf("unable to generate output: %w", err)
+	for _, o := range s.Config.Outputs {
+		data := &templateData[T]{
+			Dialect:           s.Dialect,
+			Tables:            s.Tables,
+			ExtraInfo:         s.ExtraInfo,
+			Aliases:           s.Config.Aliases,
+			PkgName:           o.PkgName,
+			NoTests:           s.Config.NoTests,
+			NoBackReferencing: s.Config.NoBackReferencing,
+			StructTagCasing:   s.Config.StructTagCasing,
+			TagIgnore:         make(map[string]struct{}),
+			Tags:              s.Config.Tags,
+			RelationTag:       s.Config.RelationTag,
+			Schema:            s.Schema,
 		}
 
-		// Generate the test templates
+		for _, v := range s.Config.TagIgnore {
+			if !rgxValidTableColumn.MatchString(v) {
+				return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
+			}
+			data.TagIgnore[v] = struct{}{}
+		}
+
+		if err := generateSingletonOutput(o, data); err != nil {
+			return fmt.Errorf("singleton template output: %w", err)
+		}
+
 		if !s.Config.NoTests {
-			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
-				return fmt.Errorf("unable to generate test output: %w", err)
+			if err := generateSingletonTestOutput(o, data); err != nil {
+				return fmt.Errorf("unable to generate singleton test template output: %w", err)
+			}
+		}
+
+		var regularDirExtMap, testDirExtMap dirExtMap
+		regularDirExtMap = groupTemplates(o.templates)
+		if !s.Config.NoTests {
+			testDirExtMap = groupTemplates(o.testTemplates)
+		}
+
+		for _, table := range s.Tables {
+			data.Table = table
+
+			// Generate the regular templates
+			if err := generateOutput(o, regularDirExtMap, data); err != nil {
+				return fmt.Errorf("unable to generate output: %w", err)
+			}
+
+			// Generate the test templates
+			if !s.Config.NoTests {
+				if err := generateTestOutput(o, testDirExtMap, data); err != nil {
+					return fmt.Errorf("unable to generate test output: %w", err)
+				}
 			}
 		}
 	}
@@ -158,15 +160,15 @@ func (s *State[T]) Cleanup() error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (s *State[T]) initTemplates() ([]lazyTemplate, error) {
+func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
-	if len(s.Config.Templates) == 0 {
+	if len(o.Templates) == 0 {
 		return nil, errors.New("No templates defined")
 	}
 
-	for _, tempFS := range s.Config.Templates {
+	for _, tempFS := range o.Templates {
 		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -203,13 +205,13 @@ func (s *State[T]) initTemplates() ([]lazyTemplate, error) {
 		})
 	}
 
-	s.Templates, err = loadTemplates(lazyTemplates, false, s.Config.CustomTemplateFuncs)
+	o.templates, err = loadTemplates(lazyTemplates, false, funcs)
 	if err != nil {
 		return nil, err
 	}
 
-	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(lazyTemplates, true, s.Config.CustomTemplateFuncs)
+	if !notests {
+		o.testTemplates, err = loadTemplates(lazyTemplates, true, funcs)
 		if err != nil {
 			return nil, err
 		}
@@ -444,9 +446,9 @@ func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
 }
 
 // initOutFolders creates the folders that will hold the generated output.
-func (s *State[T]) initOutFolders(lazyTemplates []lazyTemplate) error {
-	if s.Config.Wipe {
-		if err := os.RemoveAll(s.Config.OutFolder); err != nil {
+func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
+	if wipe {
+		if err := os.RemoveAll(o.OutFolder); err != nil {
 			return err
 		}
 	}
@@ -471,12 +473,12 @@ func (s *State[T]) initOutFolders(lazyTemplates []lazyTemplate) error {
 		newDirs[strings.Join(fragments, string(os.PathSeparator))] = struct{}{}
 	}
 
-	if err := os.MkdirAll(s.Config.OutFolder, os.ModePerm); err != nil {
+	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
 		return err
 	}
 
 	for d := range newDirs {
-		if err := os.MkdirAll(filepath.Join(s.Config.OutFolder, d), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Join(o.OutFolder, d), os.ModePerm); err != nil {
 			return err
 		}
 	}

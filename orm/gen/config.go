@@ -3,8 +3,6 @@ package gen
 import (
 	"fmt"
 	"io/fs"
-	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/spf13/cast"
@@ -16,8 +14,6 @@ import (
 type Config[T any] struct {
 	Driver drivers.Interface[T] `toml:"driver,omitempty" json:"driver,omitempty"`
 
-	PkgName           string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
-	OutFolder         string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
 	Tags              []string `toml:"tags,omitempty" json:"tags,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
@@ -26,15 +22,23 @@ type Config[T any] struct {
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
-	Templates           []fs.FS          `toml:"-" json:"-"`
-	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
-
 	Aliases       Aliases                       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	Replacements  []Replace                     `toml:"replacements,omitempty" json:"replacements,omitempty"`
 	Relationships map[string][]orm.Relationship `toml:"relationships,omitempty" json:"relationships,omitempty"`
 	Inflections   Inflections                   `toml:"inflections,omitempty" json:"inflections,omitempty"`
 
-	Generator string `toml:"generator" json:"generator"`
+	Generator           string           `toml:"generator" json:"generator"`
+	Outputs             []*Output        `toml:"package" json:"package"`
+	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
+}
+
+type Output struct {
+	PkgName   string  `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
+	OutFolder string  `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
+	Templates []fs.FS `toml:"-" json:"-"`
+
+	templates     *templateList
+	testTemplates *templateList
 }
 
 // Replace replaces a column type with something else
@@ -50,16 +54,6 @@ type Inflections struct {
 	Singular      map[string]string
 	SingularExact map[string]string
 	Irregular     map[string]string
-}
-
-// OutputDirDepth returns depth of output directory
-func (c *Config[T]) OutputDirDepth() int {
-	d := filepath.ToSlash(filepath.Clean(c.OutFolder))
-	if d == "." {
-		return 0
-	}
-
-	return strings.Count(d, "/") + 1
 }
 
 // ConvertAliases is necessary because viper
