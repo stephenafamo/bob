@@ -63,17 +63,16 @@ func TestOutputFilenameParts(t *testing.T) {
 	tests := []struct {
 		Filename string
 
-		FirstDir    string
 		Normalized  string
 		IsSingleton bool
 		IsGo        bool
 		UsePkg      bool
 	}{
-		{"templates/00_struct.go.tpl", "templates", "struct.go", false, true, true},
-		{"templates/singleton/00_struct.go.tpl", "templates", "struct.go", true, true, true},
-		{"templates/notpkg/00_struct.go.tpl", "templates", "notpkg/struct.go", false, true, false},
-		{"templates/js/singleton/00_struct.js.tpl", "templates", "js/struct.js", true, false, false},
-		{"templates/js/00_struct.js.tpl", "templates", "js/struct.js", false, false, false},
+		{"00_struct.go.tpl", "struct.go", false, true, true},
+		{"singleton/00_struct.go.tpl", "struct.go", true, true, true},
+		{"notpkg/00_struct.go.tpl", "notpkg/struct.go", false, true, false},
+		{"js/singleton/00_struct.js.tpl", "js/struct.js", true, false, false},
+		{"js/00_struct.js.tpl", "js/struct.js", false, false, false},
 	}
 
 	for i, test := range tests {

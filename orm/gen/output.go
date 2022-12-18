@@ -353,7 +353,7 @@ func stringSliceToMap(slice []string) map[string]struct{} {
 //nolint:nonamedreturns
 func outputFilenameParts(filename string) (normalized string, isSingleton, isGo, usePkg bool) {
 	fragments := strings.Split(filename, string(os.PathSeparator))
-	isSingleton = fragments[0] == "singleton"
+	isSingleton = len(fragments) > 1 && fragments[len(fragments)-2] == "singleton"
 
 	var remainingFragments []string
 	for _, f := range fragments {

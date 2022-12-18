@@ -87,7 +87,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		Outputs: []*Output{{
 			PkgName:   "models",
 			OutFolder: out,
-			Templates: []fs.FS{Templates},
+			Templates: []fs.FS{ModelTemplates},
 		}},
 	}
 
