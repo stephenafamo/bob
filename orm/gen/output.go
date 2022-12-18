@@ -353,10 +353,10 @@ func stringSliceToMap(slice []string) map[string]struct{} {
 //nolint:nonamedreturns
 func outputFilenameParts(filename string) (normalized string, isSingleton, isGo, usePkg bool) {
 	fragments := strings.Split(filename, string(os.PathSeparator))
-	isSingleton = fragments[len(fragments)-2] == "singleton"
+	isSingleton = fragments[0] == "singleton"
 
 	var remainingFragments []string
-	for _, f := range fragments[1:] {
+	for _, f := range fragments {
 		if f != "singleton" {
 			remainingFragments = append(remainingFragments, f)
 		}

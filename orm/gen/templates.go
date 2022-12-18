@@ -18,7 +18,20 @@ import (
 )
 
 //go:embed templates
-var Templates embed.FS
+var templates embed.FS
+
+//nolint:gochecknoglobals
+var (
+	ModelTemplates   fs.FS
+)
+
+func init() {
+	var err error
+	ModelTemplates, err = fs.Sub(templates, "templates/models")
+	if err != nil {
+		panic(err)
+	}
+}
 
 type Importer map[string]struct{}
 

@@ -171,7 +171,7 @@ func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemp
 	for _, tempFS := range o.Templates {
 		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
-				return err
+				return fmt.Errorf("in walk err: %w", err)
 			}
 
 			if entry.IsDir() {
@@ -186,7 +186,7 @@ func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemp
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("after walk err: %w", err)
 		}
 	}
 
@@ -207,13 +207,13 @@ func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemp
 
 	o.templates, err = loadTemplates(lazyTemplates, false, funcs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loading templates: %w", err)
 	}
 
 	if !notests {
 		o.testTemplates, err = loadTemplates(lazyTemplates, true, funcs)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("loading test templates: %w", err)
 		}
 	}
 
@@ -455,13 +455,13 @@ func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 
 	newDirs := make(map[string]struct{})
 	for _, t := range lazyTemplates {
-		// templates/js/00_struct.js.tpl
-		// templates/js/singleton/00_struct.js.tpl
+		// js/00_struct.js.tpl
+		// js/singleton/00_struct.js.tpl
 		// we want the js part only
 		fragments := strings.Split(t.Name, string(os.PathSeparator))
 
-		// Throw away the root dir and filename
-		fragments = fragments[1 : len(fragments)-1]
+		// Throw away the filename
+		fragments = fragments[0 : len(fragments)-1]
 		if len(fragments) != 0 && fragments[len(fragments)-1] == "singleton" {
 			fragments = fragments[:len(fragments)-1]
 		}
