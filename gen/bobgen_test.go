@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -78,17 +79,26 @@ func testNew(t *testing.T, aliases Aliases) {
 		os.RemoveAll(state.Config.Outputs[0].OutFolder)
 	}()
 
+	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
 	config := &Config[any]{
 		Driver:    &mocks.MockDriver{},
 		NoTests:   true,
 		TagIgnore: []string{"pass"},
 		Aliases:   aliases,
 		Generator: "BobGen",
-		Outputs: []*Output{{
-			PkgName:   "models",
-			OutFolder: out,
-			Templates: []fs.FS{ModelTemplates},
-		}},
+		Outputs: []*Output{
+			{
+				PkgName:   "models",
+				OutFolder: filepath.Join(out, "models"),
+				Templates: []fs.FS{ModelTemplates},
+			},
+			{
+				PkgName:   "factory",
+				OutFolder: filepath.Join(out, "factory"),
+				Templates: []fs.FS{FactoryTemplates},
+			},
+		},
+		ModelsPackage: path.Join(module, "models"),
 	}
 
 	state, err = New("psql", config)
@@ -108,7 +118,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		t.Fatalf("go env GOMOD cmd execution failed: %s", err)
 	}
 
-	cmd = exec.Command("go", "mod", "init", "github.com/stephenafamo/bob/orm/bob-gen-test")
+	cmd = exec.Command("go", "mod", "init", module)
 	cmd.Dir = state.Config.Outputs[0].OutFolder
 	cmd.Stderr = buf
 
