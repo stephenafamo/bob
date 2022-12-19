@@ -27,9 +27,7 @@ func (j JSON[T]) Get() T {
 
 // Value implements the driver Valuer interface.
 func (j JSON[T]) Value() (driver.Value, error) {
-	buf := &bytes.Buffer{}
-	err := json.NewEncoder(buf).Encode(j)
-	return buf.Bytes(), err
+	return json.Marshal(j)
 }
 
 // Scan implements the Scanner interface.
