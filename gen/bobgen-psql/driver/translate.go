@@ -24,17 +24,15 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 	case "smallint", "smallserial":
 		c.Type = "int16"
 	case "decimal", "numeric":
-		c.Type = "types.Decimal"
+		c.Type = "decimal.Decimal"
 	case "double precision":
 		c.Type = "float64"
 	case "real":
 		c.Type = "float32"
 	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 		c.Type = "string"
-	case `"char"`:
-		c.Type = "types.Byte"
 	case "json", "jsonb":
-		c.Type = "types.JSON"
+		c.Type = "types.JSON[string]"
 	case "bytea":
 		c.Type = "[]byte"
 	case "boolean":
@@ -60,7 +58,8 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 		if _, ok := p.enums[c.UDTName[1:]]; ok {
 			enumName := c.UDTName[1:]
 			dbType = fmt.Sprintf("enum.%s", enumName)
-			c.Type = fmt.Sprintf("EnumArray[%s]", strmangle.TitleCase(enumName))
+			c.Type = fmt.Sprintf("parray.EnumArray[%s]", strmangle.TitleCase(enumName))
+			c.Imports = append(c.Imports, typMap["parray"]...)
 		} else {
 			c.Type, dbType = getArrayType(c)
 		}
@@ -85,7 +84,7 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 		}
 	}
 
-	c.Imports = typMap[c.Type]
+	c.Imports = append(c.Imports, typMap[c.Type]...)
 	return c
 }
 
@@ -101,36 +100,40 @@ func getArrayType(c drivers.Column) (string, string) {
 	if c.ArrType != nil {
 		switch *c.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "types.Int64Array", *c.ArrType
+			return "pq.Int64Array", *c.ArrType
 		case "bytea":
-			return "types.BytesArray", *c.ArrType
+			return "pq.ByteaArray", *c.ArrType
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
-			return "types.StringArray", *c.ArrType
+			return "pq.StringArray", *c.ArrType
 		case "boolean":
-			return "types.BoolArray", *c.ArrType
+			return "pq.BoolArray", *c.ArrType
 		case "decimal", "numeric":
-			return "types.DecimalArray", *c.ArrType
+			c.Imports = append(c.Imports, typMap["parray"]...)
+			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
+			return "types.GenericArray[decimal.Decimal]", *c.ArrType
 		case "double precision", "real":
-			return "types.Float64Array", *c.ArrType
+			return "pq.Float64Array", *c.ArrType
 		default:
-			return "types.StringArray", *c.ArrType
+			return "pq.StringArray", *c.ArrType
 		}
 	} else {
 		switch c.UDTName {
 		case "_int4", "_int8":
-			return "types.Int64Array", c.UDTName
+			return "pq.Int64Array", c.UDTName
 		case "_bytea":
-			return "types.BytesArray", c.UDTName
+			return "pq.ByteaArray", c.UDTName
 		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
-			return "types.StringArray", c.UDTName
+			return "pq.StringArray", c.UDTName
 		case "_bool":
-			return "types.BoolArray", c.UDTName
+			return "pq.BoolArray", c.UDTName
 		case "_numeric":
-			return "types.DecimalArray", c.UDTName
+			c.Imports = append(c.Imports, typMap["parray"]...)
+			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
+			return "types.GenericArray[decimal.Decimal]", c.UDTName
 		case "_float4", "_float8":
-			return "types.Float64Array", c.UDTName
+			return "pq.Float64Array", c.UDTName
 		default:
-			return "types.StringArray", c.UDTName
+			return "pq.StringArray", c.UDTName
 		}
 	}
 }
@@ -138,19 +141,19 @@ func getArrayType(c drivers.Column) (string, string) {
 //nolint:gochecknoglobals
 var typMap = map[string]importers.List{
 	"time.Time":          {`"time"`},
-	"types.JSON":         {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.Decimal":      {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.BytesArray":   {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.Int64Array":   {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.Float64Array": {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.BoolArray":    {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.StringArray":  {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.DecimalArray": {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"types.HStore":       {`"github.com/volatiletech/sqlboiler/v4/types"`},
-	"pgeo.Point":         {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
-	"pgeo.Line":          {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
-	"pgeo.Lseg":          {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
-	"pgeo.Box":           {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
-	"pgeo.Path":          {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
-	"pgeo.Polygon":       {`"github.com/volatiletech/sqlboiler/v4/types/pgeo"`},
+	"types.JSON[string]": {`"github.com/stephenafamo/bob/types"`},
+	"decimal.Decimal":    {`"github.com/shopspring/decimal"`},
+	"types.HStore":       {`"github.com/stephenafamo/bob/types"`},
+	"pgeo.Point":         {`"github.com/saulortega/pgeo"`},
+	"pgeo.Line":          {`"github.com/saulortega/pgeo"`},
+	"pgeo.Lseg":          {`"github.com/saulortega/pgeo"`},
+	"pgeo.Box":           {`"github.com/saulortega/pgeo"`},
+	"pgeo.Path":          {`"github.com/saulortega/pgeo"`},
+	"pgeo.Polygon":       {`"github.com/saulortega/pgeo"`},
+	"pq.ByteaArray":      {`"github.com/lib/pq"`},
+	"pq.Int64Array":      {`"github.com/lib/pq"`},
+	"pq.Float64Array":    {`"github.com/lib/pq"`},
+	"pq.BoolArray":       {`"github.com/lib/pq"`},
+	"pq.StringArray":     {`"github.com/lib/pq"`},
+	"parray":             {`"github.com/stephenafamo/bob/types/parray"`},
 }
