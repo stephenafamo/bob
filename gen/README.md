@@ -14,7 +14,7 @@ Pending features
 ### PostgreSQL
 
 ```sh
-PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bob/gen/psql@latest
+PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bob/gen/bobgen-psql@latest
 ```
 
 ## About
