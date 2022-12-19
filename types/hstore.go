@@ -61,7 +61,7 @@ func hQuote(s interface{}) string {
 // hstore column's database value is NULL, then h is set to nil instead.
 func (h *HStore) Scan(value interface{}) error {
 	if value == nil {
-		h = nil
+		h = nil //nolint:ineffassign
 		return nil
 	}
 	*h = make(map[string]null.Val[string])
