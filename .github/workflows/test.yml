@@ -7,7 +7,7 @@ jobs:
       postgres:
         image: postgres:14
         env:
-          POSTGRES_DB: postgres
+          POSTGRES_DB: droppable
           POSTGRES_USER: user
           POSTGRES_PASSWORD: pass
         ports:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Run tests
         env:
-          DRIVER_TEST_DSN: postgresql://user:pass@postgres/postgres?sslmode=disable
+          DRIVER_TEST_DSN: postgresql://user:pass@postgres/droppable?sslmode=disable
         run: go test -race -covermode atomic -coverprofile=covprofile.out ./...
 
       - name: Send coverage
