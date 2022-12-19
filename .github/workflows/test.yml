@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:13
         env:
           POSTGRES_DB: droppable
           POSTGRES_USER: user
