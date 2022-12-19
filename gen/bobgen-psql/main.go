@@ -94,8 +94,8 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
-	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
-	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
+	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output the models package to")
+	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated models package")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
@@ -104,6 +104,11 @@ func main() {
 	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
 	rootCmd.PersistentFlags().IntP("concurrency", "", 10, "How many tables to fetch in parallel")
 	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
+
+	// For factory
+	rootCmd.PersistentFlags().Bool("with-factory", false, "Also generate factory for models.")
+	rootCmd.PersistentFlags().String("factory-output", "factory", "The name of the folder to output the factory package to")
+	rootCmd.PersistentFlags().String("factory-pkgname", "factory", "The name you wish to assign to your generated factory package")
 
 	// Driver config flags
 	rootCmd.PersistentFlags().StringP("psql.dsn", "d", "", "The database connection string")
@@ -153,9 +158,26 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if dsn == "" {
 		return errors.New("database dsn is not set")
 	}
+
 	modelsPkg, err := gen.ModelsPackage(viper.GetString("output"))
 	if err != nil {
 		return fmt.Errorf("getting models package: %w", err)
+	}
+
+	outputs := []*gen.Output{
+		{
+			OutFolder: viper.GetString("output"),
+			PkgName:   viper.GetString("pkgname"),
+			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+		},
+	}
+
+	if viper.GetBool("with-factory") {
+		outputs = append(outputs, &gen.Output{
+			OutFolder: viper.GetString("factory-output"),
+			PkgName:   viper.GetString("factory-pkgname"),
+			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
+		})
 	}
 
 	cmdConfig = &gen.Config[driver.Extra]{
@@ -166,13 +188,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Excludes:    viper.GetStringSlice("psql.blacklist"),
 			Concurrency: viper.GetInt("concurrency"),
 		}),
-		Outputs: []*gen.Output{
-			{
-				OutFolder: viper.GetString("output"),
-				PkgName:   viper.GetString("pkgname"),
-				Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
-			},
-		},
+		Outputs:           outputs,
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),

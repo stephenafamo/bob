@@ -21,7 +21,8 @@ var templates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates, _ = fs.Sub(templates, "templates/models")
+	ModelTemplates, _   = fs.Sub(templates, "templates/models")
+	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
 )
 
 type (

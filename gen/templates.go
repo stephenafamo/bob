@@ -22,16 +22,9 @@ var templates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates fs.FS
+	ModelTemplates, _   = fs.Sub(templates, "templates/models")
+	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
 )
-
-func init() {
-	var err error
-	ModelTemplates, err = fs.Sub(templates, "templates/models")
-	if err != nil {
-		panic(err)
-	}
-}
 
 type Importer map[string]struct{}
 
