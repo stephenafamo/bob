@@ -11,9 +11,9 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/bob/orm"
-	"github.com/stephenafamo/bob/orm/gen/drivers"
-	"github.com/stephenafamo/bob/orm/gen/importers"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -22,7 +22,7 @@ var templates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates   fs.FS
+	ModelTemplates fs.FS
 )
 
 func init() {
@@ -95,7 +95,8 @@ type templateData[T any] struct {
 	TagIgnore map[string]struct{}
 
 	// Supplied by the driver
-	ExtraInfo T
+	ExtraInfo     T
+	ModelsPackage string
 }
 
 func (t *templateData[T]) ResetImports() {

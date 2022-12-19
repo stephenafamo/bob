@@ -1,4 +1,4 @@
-# Bob ORM
+# Bob Code Generator (ORM, Factory)
 
 Generate an ORM based on your database schema
 
@@ -14,7 +14,7 @@ Pending features
 ### PostgreSQL
 
 ```sh
-PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/go-bob/bobgen-psql@latest
+PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bob/gen/psql@latest
 ```
 
 ## About
@@ -87,7 +87,7 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
 
 | Database          | Driver Location |
 | ----------------- | --------------- |
-| PostgreSQL        | <https://github.com/go-bob/bobgen-psql> |
+| PostgreSQL        | [LINK][gen/psql] |
 
 ## Configuration
 

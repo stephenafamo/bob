@@ -3,7 +3,7 @@ package drivers
 import (
 	"strings"
 
-	"github.com/stephenafamo/bob/orm/gen/importers"
+	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/volatiletech/strmangle"
 )
 

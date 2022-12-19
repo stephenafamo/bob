@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/stephenafamo/bob/orm/gen/drivers"
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
 

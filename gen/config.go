@@ -1,13 +1,20 @@
 package gen
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
+	"os/exec"
+	"path"
+	"strings"
 	"text/template"
 
 	"github.com/spf13/cast"
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
-	"github.com/stephenafamo/bob/orm/gen/drivers"
+	"golang.org/x/mod/modfile"
 )
 
 // Config for the running of the commands
@@ -30,6 +37,7 @@ type Config[T any] struct {
 	Generator           string           `toml:"generator" json:"generator"`
 	Outputs             []*Output        `toml:"package" json:"package"`
 	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
+	ModelsPackage       string           `toml:"models_package" json:"models_package"`
 }
 
 type Output struct {
@@ -227,6 +235,61 @@ func ConvertRelationships(i interface{}) map[string][]orm.Relationship {
 	}
 
 	return relationships
+}
+
+func ModelsPackage(relPath string) (string, error) {
+	modFile, err := goModInfo()
+	if err != nil {
+		return "", fmt.Errorf("getting mod details: %w", err)
+	}
+
+	return path.Join(modFile.Module.Mod.Path, relPath), nil
+}
+
+// goModInfo returns the main module's root directory
+// and the parsed contents of the go.mod file.
+func goModInfo() (*modfile.File, error) {
+	goModPath, err := findGoMod()
+	if err != nil {
+		return nil, fmt.Errorf("cannot find main module: %w", err)
+	}
+
+	data, err := ioutil.ReadFile(goModPath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read main go.mod file: %w", err)
+	}
+
+	modf, err := modfile.Parse(goModPath, data, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse go.mod: %w", err)
+	}
+
+	return modf, nil
+}
+
+func findGoMod() (string, error) {
+	var outData, errData bytes.Buffer
+
+	c := exec.Command("go", "env", "GOMOD")
+	c.Stdout = &outData
+	c.Stderr = &errData
+	c.Dir = "."
+	err := c.Run()
+	if err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) && errData.Len() > 0 {
+			return "", errors.New(strings.TrimSpace(errData.String()))
+		}
+
+		return "", fmt.Errorf("cannot run go env GOMOD: %w", err)
+	}
+
+	out := strings.TrimSpace(outData.String())
+	if out == "" {
+		return "", errors.New("no go.mod file found in any parent directory")
+	}
+
+	return out, nil
 }
 
 func relSideSliceFromInterface(i any) []orm.RelSide {

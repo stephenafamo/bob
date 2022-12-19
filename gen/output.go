@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/stephenafamo/bob/orm/gen/importers"
+	"github.com/stephenafamo/bob/gen/importers"
 )
 
 // Copied from the go source

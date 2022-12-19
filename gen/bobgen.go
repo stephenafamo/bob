@@ -11,8 +11,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
-	"github.com/stephenafamo/bob/orm/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -97,6 +97,7 @@ func (s *State[T]) Run() error {
 			Tags:              s.Config.Tags,
 			RelationTag:       s.Config.RelationTag,
 			Schema:            s.Schema,
+			ModelsPackage:     s.Config.ModelsPackage,
 		}
 
 		for _, v := range s.Config.TagIgnore {

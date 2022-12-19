@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stephenafamo/bob/orm/gen/drivers"
-	"github.com/stephenafamo/bob/orm/gen/drivers/mocks"
+	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/drivers/mocks"
 )
 
 var (
