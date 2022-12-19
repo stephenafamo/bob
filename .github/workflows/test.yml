@@ -33,7 +33,7 @@ jobs:
 
       - name: Run tests
         env:
-          DRIVER_TEST_DSN: postgresql://user:pass@postgres/droppable?sslmode=disable
+          DRIVER_TEST_DSN: postgresql://user:pass@localhost:5432/droppable?sslmode=disable
         run: go test -race -covermode atomic -coverprofile=covprofile.out ./...
 
       - name: Send coverage
