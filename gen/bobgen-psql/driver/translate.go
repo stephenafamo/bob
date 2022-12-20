@@ -61,7 +61,9 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 			c.Type = fmt.Sprintf("parray.EnumArray[%s]", strmangle.TitleCase(enumName))
 			c.Imports = append(c.Imports, typMap["parray"]...)
 		} else {
-			c.Type, dbType = getArrayType(c)
+			var imports importers.List
+			c.Type, dbType, imports = getArrayType(c)
+			c.Imports = append(c.Imports, imports...)
 		}
 		// Make DBType something like ARRAYinteger for parsing with randomize.Struct
 		c.DBType += dbType
@@ -89,7 +91,7 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 }
 
 // getArrayType returns the correct Array type for each database type
-func getArrayType(c drivers.Column) (string, string) {
+func getArrayType(c drivers.Column) (string, string, importers.List) {
 	// If a domain is created with a statement like this: "CREATE DOMAIN
 	// text_array AS TEXT[] CHECK ( ... )" then the array type will be null,
 	// but the udt name will be whatever the underlying type is with a leading
@@ -100,40 +102,42 @@ func getArrayType(c drivers.Column) (string, string) {
 	if c.ArrType != nil {
 		switch *c.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "pq.Int64Array", *c.ArrType
+			return "pq.Int64Array", *c.ArrType, nil
 		case "bytea":
-			return "pq.ByteaArray", *c.ArrType
+			return "pq.ByteaArray", *c.ArrType, nil
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
-			return "pq.StringArray", *c.ArrType
+			return "pq.StringArray", *c.ArrType, nil
 		case "boolean":
-			return "pq.BoolArray", *c.ArrType
+			return "pq.BoolArray", *c.ArrType, nil
 		case "decimal", "numeric":
-			c.Imports = append(c.Imports, typMap["parray"]...)
-			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
-			return "types.GenericArray[decimal.Decimal]", *c.ArrType
+			var imports importers.List
+			imports = append(imports, typMap["parray"]...)
+			imports = append(imports, typMap["decimal.Decimal"]...)
+			return "parray.GenericArray[decimal.Decimal]", *c.ArrType, imports
 		case "double precision", "real":
-			return "pq.Float64Array", *c.ArrType
+			return "pq.Float64Array", *c.ArrType, nil
 		default:
-			return "pq.StringArray", *c.ArrType
+			return "pq.StringArray", *c.ArrType, nil
 		}
 	} else {
 		switch c.UDTName {
 		case "_int4", "_int8":
-			return "pq.Int64Array", c.UDTName
+			return "pq.Int64Array", c.UDTName, nil
 		case "_bytea":
-			return "pq.ByteaArray", c.UDTName
+			return "pq.ByteaArray", c.UDTName, nil
 		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
-			return "pq.StringArray", c.UDTName
+			return "pq.StringArray", c.UDTName, nil
 		case "_bool":
-			return "pq.BoolArray", c.UDTName
+			return "pq.BoolArray", c.UDTName, nil
 		case "_numeric":
-			c.Imports = append(c.Imports, typMap["parray"]...)
-			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
-			return "types.GenericArray[decimal.Decimal]", c.UDTName
+			var imports importers.List
+			imports = append(imports, typMap["parray"]...)
+			imports = append(imports, typMap["decimal.Decimal"]...)
+			return "parray.GenericArray[decimal.Decimal]", c.UDTName, imports
 		case "_float4", "_float8":
-			return "pq.Float64Array", c.UDTName
+			return "pq.Float64Array", c.UDTName, nil
 		default:
-			return "pq.StringArray", c.UDTName
+			return "pq.StringArray", c.UDTName, nil
 		}
 	}
 }
