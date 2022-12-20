@@ -10,7 +10,7 @@ PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bo
 
 ### Driver Configuration
 
-#### [Link to general configuration](gen/README.md)
+#### [Link to general configuration](..)
 
 The configuration for the postgres driver must all be prefixed by the driver name.  
 You must use a configuration file or environment variables for configuring the database driver;  
