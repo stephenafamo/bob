@@ -286,7 +286,10 @@ func columnGetter(tables []drivers.Table, table string, a TableAlias, column str
 	panic("unknown table " + table)
 }
 
-func columnSetter(i Importer, tables []drivers.Table, table, column, to string, optional bool) string {
+func columnSetter(i Importer, tables []drivers.Table, table, column, to string, fromOpt, toOpt bool) string {
+	if toOpt {
+		to += ".MustGet()"
+	}
 	for _, t := range tables {
 		if t.Name != table {
 			continue
@@ -294,16 +297,16 @@ func columnSetter(i Importer, tables []drivers.Table, table, column, to string, 
 
 		col := t.GetColumn(column)
 		switch {
-		case optional && col.Nullable:
+		case fromOpt && col.Nullable:
 			i.Import("github.com/aarondl/opt/omitnull")
 			return fmt.Sprintf("omitnull.From(%s)", to)
-		case optional && !col.Nullable:
+		case fromOpt && !col.Nullable:
 			i.Import("github.com/aarondl/opt/omit")
 			return fmt.Sprintf("omit.From(%s)", to)
-		case !optional && col.Nullable:
+		case !fromOpt && col.Nullable:
 			i.Import("github.com/aarondl/opt/null")
 			return fmt.Sprintf("null.From(%s)", to)
-		case !optional && !col.Nullable:
+		case !fromOpt && !col.Nullable:
 			return to
 		}
 	}
@@ -408,7 +411,7 @@ func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
 	return strings.Join(insert, "\n")
 }
 
-func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign, inLoop, optional bool) string {
+func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, inLoop, fromOpt, toOpt bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()
@@ -416,10 +419,6 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 
 	ret := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
-		if skipForeign && kside.TableName == foreign {
-			continue
-		}
-
 		mret := make([]string, 0, len(kside.Mapped))
 		objVarName := getVarName(aliases, kside.TableName, local, foreign, false)
 		oalias := aliases.Tables[kside.TableName]
@@ -463,7 +462,7 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 				"%s.%s",
 				extObjVarName,
 				malias.Columns[mapp.ExternalColumn],
-			), shouldCreate || (optional && kside.TableName == foreign))
+			), shouldCreate || (fromOpt && kside.TableName == foreign), toOpt)
 
 			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 				objVarName,
@@ -499,7 +498,7 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 				"%s.%s",
 				extObjVarName,
 				malias.Columns[mapp.ExternalColumn],
-			), true)
+			), true, false)
 
 			mret = append(mret, fmt.Sprintf("%s: %s,",
 				oalias.Columns[mapp.Column],

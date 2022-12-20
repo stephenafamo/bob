@@ -11,7 +11,7 @@
 func (m {{$tAlias.UpSingular}}) With{{$relAlias}}(related {{$type}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
     for _, rel := range related {
-      {{setDeps $.Importer $.Tables $.Aliases . false true false}}
+      {{setDeps $.Importer $.Tables $.Aliases . true true true}}
     }
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}
@@ -60,7 +60,7 @@ func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, number int, mod
 func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}(related {{$type}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
     for _, rel := range related {
-      {{setDeps $.Importer $.Tables $.Aliases . false true false}}
+      {{setDeps $.Importer $.Tables $.Aliases . true true true}}
     }
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}

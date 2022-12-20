@@ -9,7 +9,7 @@
 
 func (m {{$tAlias.UpSingular}}) With{{$relAlias}}(rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
-    {{setDeps $.Importer $.Tables $.Aliases . false false false}}
+    {{setDeps $.Importer $.Tables $.Aliases . false true true}}
 
 		o.r.{{$relAlias}} = omit.From(rel)
 
