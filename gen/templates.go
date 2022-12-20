@@ -286,39 +286,68 @@ func columnGetter(tables []drivers.Table, table string, a TableAlias, column str
 	panic("unknown table " + table)
 }
 
-func columnSetter(i Importer, tables []drivers.Table, table, column, to string, fromOpt, toOpt bool) string {
-	if toOpt {
-		to += ".MustGet()"
-	}
-	for _, t := range tables {
-		if t.Name != table {
-			continue
+func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
+	fromTable := drivers.GetTable(tables, fromTName)
+	fromCol := fromTable.GetColumn(fromColName)
+
+	toTable := drivers.GetTable(tables, toTName)
+	toCol := toTable.GetColumn(toColName)
+	to := fmt.Sprintf("%s.%s", varName, aliases.Tables[toTName].Columns[toColName])
+
+	switch {
+	case (fromOpt == toOpt) && (toCol.Nullable == fromCol.Nullable):
+		// If both type match, return it plainly
+		return to
+
+	case !fromOpt && !fromCol.Nullable:
+		// if from is concrete, then use MustGet()
+		return fmt.Sprintf("%s.MustGet()", to)
+
+	case fromOpt && fromCol.Nullable && !toOpt && !toCol.Nullable:
+		i.Import("github.com/aarondl/opt/omitnull")
+		return fmt.Sprintf("omitnull.From(%s)", to)
+
+	case fromOpt && fromCol.Nullable && !toOpt && toCol.Nullable:
+		i.Import("github.com/aarondl/opt/omitnull")
+		return fmt.Sprintf("omitnull.FromNull(%s)", to)
+
+	case fromOpt && fromCol.Nullable && toOpt && !toCol.Nullable:
+		i.Import("github.com/aarondl/opt/omitnull")
+		return fmt.Sprintf("omitnull.FromOmit(%s)", to)
+
+	default:
+		// from is either omit or null
+		val := "omit"
+		if fromCol.Nullable {
+			val = "null"
 		}
 
-		col := t.GetColumn(column)
+		i.Import(fmt.Sprintf("github.com/aarondl/opt/%s", val))
+
 		switch {
-		case fromOpt && col.Nullable:
-			i.Import("github.com/aarondl/opt/omitnull")
-			return fmt.Sprintf("omitnull.From(%s)", to)
-		case fromOpt && !col.Nullable:
-			i.Import("github.com/aarondl/opt/omit")
-			return fmt.Sprintf("omit.From(%s)", to)
-		case !fromOpt && col.Nullable:
-			i.Import("github.com/aarondl/opt/null")
-			return fmt.Sprintf("null.From(%s)", to)
-		case !fromOpt && !col.Nullable:
-			return to
+		case !toOpt && !toCol.Nullable:
+			return fmt.Sprintf("%s.From(%s)", val, to)
+
+		default:
+			return fmt.Sprintf("%s.FromCond(%s.GetOrZero(), %s.IsSet())", val, to, to)
 		}
 	}
-
-	panic("unknown table " + table)
 }
 
-func relDependencies(aliases Aliases, r orm.Relationship) string {
+func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) string {
+	var prefix, suffix string
+	if len(preSuf) > 0 {
+		prefix = preSuf[0]
+	}
+	if len(preSuf) > 1 {
+		suffix = preSuf[1]
+	}
 	ma := []string{}
 	for _, need := range r.NeededColumns() {
 		alias := aliases.Tables[need]
-		ma = append(ma, fmt.Sprintf("%s *%s,", alias.DownSingular, alias.UpSingular))
+		ma = append(ma, fmt.Sprintf(
+			"%s *%s%s%s,", alias.DownSingular, alias.UpSingular, prefix, suffix,
+		))
 	}
 
 	return strings.Join(ma, "")
@@ -457,12 +486,10 @@ func setDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relation
 			}
 
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
-			malias := aliases.Tables[mapp.ExternalTable]
-			oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
-				"%s.%s",
-				extObjVarName,
-				malias.Columns[mapp.ExternalColumn],
-			), shouldCreate || (fromOpt && kside.TableName == foreign), toOpt)
+			oSetter := columnSetter(i, aliases, tables,
+				kside.TableName, mapp.ExternalTable,
+				mapp.Column, mapp.ExternalColumn,
+				extObjVarName, shouldCreate || (fromOpt && kside.TableName == foreign), toOpt)
 
 			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 				objVarName,
@@ -491,14 +518,12 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 
 		mret := make([]string, 0, len(kside.Mapped))
 		for _, mapp := range kside.Mapped {
-			malias := aliases.Tables[mapp.ExternalTable]
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 
-			oSetter := columnSetter(i, tables, kside.TableName, mapp.Column, fmt.Sprintf(
-				"%s.%s",
-				extObjVarName,
-				malias.Columns[mapp.ExternalColumn],
-			), true, false)
+			oSetter := columnSetter(i, aliases, tables,
+				kside.TableName, mapp.ExternalTable,
+				mapp.Column, mapp.ExternalColumn,
+				extObjVarName, true, false)
 
 			mret = append(mret, fmt.Sprintf("%s: %s,",
 				oalias.Columns[mapp.Column],
