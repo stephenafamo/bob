@@ -17,6 +17,10 @@ var (
 	encodingTextUnmarshalerIntf = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 )
 
+func NewJSON[T any](val T) JSON[T] {
+	return JSON[T]{Val: val}
+}
+
 type JSON[T any] struct {
 	Val T
 }
