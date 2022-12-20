@@ -18,14 +18,14 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}(related {{$type}}) {{$tAlias.U
     {{- $invAlias := $ftable.Relationship $invRel.Name -}}
       for _, rel := range related {
         {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, omit.From(o))
+          rel.r.{{$invAlias}} = append(rel.r.{{$invAlias}}, omit.From(o))
         {{else -}}
-          rel.R.{{$invAlias}} = omit.From(o)
+          rel.r.{{$invAlias}} = omit.From(o)
         {{- end}}
       }
     {{- end}}
 
-		o.R.{{$relAlias}} = omit.From(related)
+		o.r.{{$relAlias}} = omit.From(related)
 
 		return nil
 	})
@@ -67,14 +67,14 @@ func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}(related {{$type}}) {{$tAlias.Up
     {{- $invAlias := $ftable.Relationship $invRel.Name -}}
       for _, rel := range related {
         {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, omit.From(o))
+          rel.r.{{$invAlias}} = append(rel.r.{{$invAlias}}, omit.From(o))
         {{else -}}
-          rel.R.{{$invAlias}} = omit.From(o)
+          rel.r.{{$invAlias}} = omit.From(o)
         {{- end}}
       }
     {{- end}}
 
-		o.R.{{$relAlias}} = omit.From(append(o.R.{{$relAlias}}.GetOrZero(), related...))
+		o.r.{{$relAlias}} = omit.From(append(o.r.{{$relAlias}}.GetOrZero(), related...))
 
 		return nil
 	})

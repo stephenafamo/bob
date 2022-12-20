@@ -46,22 +46,24 @@ type {{$tAlias.UpSingular}}Template struct {
 		{{$colAlias}} {{$colTyp}}
 	{{end -}}
 
-	{{- if .Table.Relationships}}
-	{{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-
-	R struct {
-		{{range .Table.Relationships -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
-		{{- $relAlias := $tAlias.Relationship .Name -}}
-		{{if .IsToMany -}}
-			{{$relAlias}} omit.Val[{{$ftable.UpSingular}}TemplateSlice]
-		{{else -}}
-			{{$relAlias}} omit.Val[*{{$ftable.UpSingular}}Template]
-		{{end}}{{end -}}
-	}
+	{{if .Table.Relationships}}
+		r {{$tAlias.DownSingular}}R
 	{{end -}}
 }
 
+{{if .Table.Relationships}}
+{{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+type {{$tAlias.DownSingular}}R struct {
+	{{range .Table.Relationships -}}
+	{{- $ftable := $.Aliases.Table .Foreign -}}
+	{{- $relAlias := $tAlias.Relationship .Name -}}
+	{{if .IsToMany -}}
+		{{$relAlias}} omit.Val[{{$ftable.UpSingular}}TemplateSlice]
+	{{else -}}
+		{{$relAlias}} omit.Val[*{{$ftable.UpSingular}}Template]
+	{{end}}{{end -}}
+}
+{{end -}}
 
 func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) error {
   for _, mod := range mods {

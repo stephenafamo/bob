@@ -11,14 +11,14 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}(rel *{{$ftable.UpSingular}}Tem
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
     {{setDeps $.Importer $.Tables $.Aliases . false false false}}
 
-		o.R.{{$relAlias}} = omit.From(rel)
+		o.r.{{$relAlias}} = omit.From(rel)
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}
     {{- $invAlias := $ftable.Relationship $invRel.Name -}}
       {{if $invRel.IsToMany -}}
-        o.R.{{$relAlias}}.MustGet().R.{{$invAlias}} = omit.From({{$tAlias.UpSingular}}TemplateSlice{o})
+        o.r.{{$relAlias}}.MustGet().r.{{$invAlias}} = omit.From({{$tAlias.UpSingular}}TemplateSlice{o})
       {{else -}}
-        o.R.{{$relAlias}}.MustGet().R.{{$invAlias}} = omit.From(o)
+        o.r.{{$relAlias}}.MustGet().r.{{$invAlias}} = omit.From(o)
       {{- end}}
     {{- end}}
 
