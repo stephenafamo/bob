@@ -18,11 +18,7 @@ var (
 )
 
 type JSON[T any] struct {
-	value T
-}
-
-func (j JSON[T]) Get() T {
-	return j.value
+	Val T
 }
 
 // Value implements the driver Valuer interface.
@@ -51,24 +47,24 @@ func (j *JSON[T]) Scan(value interface{}) error {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *JSON[T]) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &j.value)
+	return json.Unmarshal(data, &j.Val)
 }
 
 // MarshalJSON implements json.Marshaler.
 func (j JSON[T]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(j.value)
+	return json.Marshal(j.Val)
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (j JSON[T]) MarshalText() ([]byte, error) {
-	refVal := reflect.ValueOf(j.value)
+	refVal := reflect.ValueOf(j.Val)
 	if refVal.Type().Implements(encodingTextMarshalerIntf) {
 		valuer := refVal.Interface().(encoding.TextMarshaler)
 		return valuer.MarshalText()
 	}
 
 	var text string
-	if err := opt.ConvertAssign(&text, j.value); err != nil {
+	if err := opt.ConvertAssign(&text, j.Val); err != nil {
 		return nil, err
 	}
 	return []byte(text), nil
@@ -76,7 +72,7 @@ func (j JSON[T]) MarshalText() ([]byte, error) {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (j *JSON[T]) UnmarshalText(text []byte) error {
-	refVal := reflect.ValueOf(&j.value)
+	refVal := reflect.ValueOf(&j.Val)
 	if refVal.Type().Implements(encodingTextUnmarshalerIntf) {
 		valuer := refVal.Interface().(encoding.TextUnmarshaler)
 		if err := valuer.UnmarshalText(text); err != nil {
@@ -85,7 +81,7 @@ func (j *JSON[T]) UnmarshalText(text []byte) error {
 		return nil
 	}
 
-	if err := opt.ConvertAssign(&j.value, string(text)); err != nil {
+	if err := opt.ConvertAssign(&j.Val, string(text)); err != nil {
 		return err
 	}
 
