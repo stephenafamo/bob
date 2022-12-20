@@ -73,7 +73,7 @@ func testNew(t *testing.T, aliases Aliases) {
 	// Defer cleanup of the tmp folder
 	defer func() {
 		if t.Failed() {
-			t.Log("template test output:", state.Config.Outputs[0].OutFolder)
+			t.Log("template test output:", out)
 			return
 		}
 		os.RemoveAll(state.Config.Outputs[0].OutFolder)
@@ -119,43 +119,43 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	cmd = exec.Command("go", "mod", "init", module)
-	cmd.Dir = state.Config.Outputs[0].OutFolder
+	cmd.Dir = out
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod init cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
+		outputCompileErrors(buf, out)
 		fmt.Println()
 	}
 
 	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(string(goModFilePath))))
-	cmd.Dir = state.Config.Outputs[0].OutFolder
+	cmd.Dir = out
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod init cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
+		outputCompileErrors(buf, out)
 		fmt.Println()
 	}
 
 	// From go1.16 dependencies are not auto downloaded
 	cmd = exec.Command("go", "mod", "tidy")
-	cmd.Dir = state.Config.Outputs[0].OutFolder
+	cmd.Dir = out
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod tidy cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
+		outputCompileErrors(buf, out)
 		fmt.Println()
 	}
 
-	cmd = exec.Command("go", "test", "-c")
-	cmd.Dir = state.Config.Outputs[0].OutFolder
+	cmd = exec.Command("go", "test", "-run", "xxxxxxx", "./...")
+	cmd.Dir = out
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go test cmd execution failed: %s", err)
-		outputCompileErrors(buf, state.Config.Outputs[0].OutFolder)
+		outputCompileErrors(buf, out)
 		fmt.Println()
 	}
 }
@@ -173,7 +173,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 	bufLines := bytes.Split(buf.Bytes(), []byte{'\n'})
 	for i := 0; i < len(bufLines); i++ {
 		lineBuf.Reset()
-		if !bytes.HasPrefix(bufLines[i], []byte("./")) {
+		if !bytes.Contains(bufLines[i], []byte(".go:")) {
 			continue
 		}
 
