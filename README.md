@@ -12,11 +12,15 @@ for a better development experience.
 
 **Bob** can be progressively adopted from raw SQL query strings, to fully typed queries and models generated for your database.
 
+## [Query Builder](#query-builder-documentation) | [ORM Generator](gen/README.md)
+
+# Query Builder Documentation
+
 ## Features
 
 * Faster than comparable packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
 * Build any query. Supports the specification as closely as possible.
-* Generate models from your database schema. [See Documentation](orm/README.md)
+* Generate models from your database schema. [See Documentation](gen/README.md)
 
 ## Examples
 

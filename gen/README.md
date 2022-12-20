@@ -87,7 +87,7 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
 
 | Database          | Driver Location |
 | ----------------- | --------------- |
-| PostgreSQL        | [LINK][gen/psql] |
+| PostgreSQL        | [LINK](gen/psql) |
 
 ## Configuration
 
