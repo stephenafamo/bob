@@ -249,6 +249,7 @@ var templateFunctions = template.FuncMap{
 		return fmt.Sprintf("%q, %q", s1, s2)
 	},
 	"relDependencies":     relDependencies,
+	"relDependenciesTyp":  relDependenciesTyp,
 	"createDeps":          createDeps,
 	"insertDeps":          insertDeps,
 	"setDeps":             setDeps,
@@ -318,6 +319,19 @@ func relDependencies(aliases Aliases, r orm.Relationship) string {
 	}
 
 	return strings.Join(ma, "")
+}
+
+func relDependenciesTyp(aliases Aliases, r orm.Relationship, typ string) string {
+	ma := []string{"struct {"}
+	ma = append(ma, fmt.Sprintf("o %s", typ))
+
+	for _, need := range r.NeededColumns() {
+		alias := aliases.Tables[need]
+		ma = append(ma, fmt.Sprintf("%s *%s", alias.DownSingular, alias.UpSingular))
+	}
+	ma = append(ma, "}")
+
+	return strings.Join(ma, "\n")
 }
 
 func createDeps(aliases Aliases, r orm.Relationship, many bool) string {

@@ -51,19 +51,34 @@ type {{$tAlias.UpSingular}}Template struct {
 	{{end -}}
 }
 
-{{if .Table.Relationships}}
+{{if .Table.Relationships -}}
 {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
 type {{$tAlias.DownSingular}}R struct {
 	{{range .Table.Relationships -}}
-	{{- $ftable := $.Aliases.Table .Foreign -}}
-	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{if .IsToMany -}}
-		{{$relAlias}} omit.Val[{{$ftable.UpSingular}}TemplateSlice]
-	{{else -}}
-		{{$relAlias}} omit.Val[*{{$ftable.UpSingular}}Template]
-	{{end}}{{end -}}
+		{{- $ftable := $.Aliases.Table .Foreign -}}
+		{{- $relAlias := $tAlias.Relationship .Name -}}
+		{{- $relTyp := printf "*%sTemplate" $ftable.UpSingular -}}
+		{{- if .IsToMany -}}
+			{{$relTyp = printf "%sTemplateSlice" $ftable.UpSingular}}
+		{{- end -}}
+		{{- if  .NeededColumns -}}
+			{{$relTyp = printf "%s%sR" $tAlias.DownSingular $relAlias}}
+		{{- end -}}
+
+		{{$relAlias}} omit.Val[{{$relTyp}}]
+	{{end -}}
 }
-{{end -}}
+{{- end}}
+
+{{range .Table.Relationships}}{{if .NeededColumns -}}
+{{- $ftable := $.Aliases.Table .Foreign -}}
+{{- $relAlias := $tAlias.Relationship .Name -}}
+{{- $relTyp := printf "*%sTemplate" $ftable.UpSingular -}}
+{{- if .IsToMany -}}
+	{{$relTyp = printf "%sTemplateSlice" $ftable.UpSingular}}
+{{- end -}}
+type {{$tAlias.DownSingular}}{{$relAlias}}R {{relDependenciesTyp $.Aliases . $relTyp}}
+{{end}}{{end}}
 
 func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) error {
   for _, mod := range mods {
