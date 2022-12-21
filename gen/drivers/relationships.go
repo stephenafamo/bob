@@ -79,7 +79,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 		r1, r2 := rels[0], rels[1]
 
 		relationships[r1.Sides[0].To] = append(relationships[r1.Sides[0].To], orm.Relationship{
-			Name:        r2.Name,
+			Name:        r1.Name + r2.Name,
 			ByJoinTable: true,
 			Sides: []orm.RelSide{
 				{
@@ -103,7 +103,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 			},
 		})
 		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], orm.Relationship{
-			Name:        r1.Name,
+			Name:        r1.Name + r2.Name,
 			ByJoinTable: true,
 			Sides: []orm.RelSide{
 				{
