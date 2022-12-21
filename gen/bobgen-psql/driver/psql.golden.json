@@ -86,7 +86,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_video_id_fkey",
+					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -2417,8 +2417,11 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
@@ -2432,8 +2435,11 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
@@ -2942,7 +2948,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_tag_id_fkey",
+					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -5317,8 +5323,11 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
@@ -5332,8 +5341,11 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
@@ -7837,8 +7849,11 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
@@ -7852,8 +7867,11 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.GenericArray[decimal.Decimal]",
-					"imports": null,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
 					"domain_name": null,
