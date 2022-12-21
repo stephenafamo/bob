@@ -20,7 +20,7 @@
     {{$create := createDeps $.Aliases $rel false}}
     {{$create}}
 
-    {{setDeps $.Importer $.Tables $.Aliases $rel false true false}}
+    {{setModelDeps $.Importer $.Tables $.Aliases $rel false true}}
 
     {{insertDeps $.Aliases $rel false}}
 
@@ -50,7 +50,7 @@
     {{$create := createDeps $.Aliases $rel false}}
     {{$create}}
 
-    {{setDeps $.Importer $.Tables $.Aliases $rel false false false}}
+    {{setModelDeps $.Importer $.Tables $.Aliases $rel false false}}
 
     {{insertDeps $.Aliases $rel false}}
 
@@ -95,7 +95,7 @@
     {{$create}}
 
     for {{if $create}}i{{else}}_{{end}}, rel := range rels {
-      {{setDeps $.Importer $.Tables $.Aliases $rel true true false}}
+      {{setModelDeps $.Importer $.Tables $.Aliases $rel true true}}
     }
 
     {{insertDeps $.Aliases $rel true}}
@@ -132,7 +132,7 @@
     {{$create}}
 
     for {{if $create}}i{{else}}_{{end}}, rel := range related {
-      {{setDeps $.Importer $.Tables $.Aliases $rel true false false}}
+      {{setModelDeps $.Importer $.Tables $.Aliases $rel true false}}
     }
 
     {{insertDeps $.Aliases $rel true}}

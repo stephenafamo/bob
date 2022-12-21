@@ -62,10 +62,13 @@ type {{$tAlias.DownSingular}}R struct {
 			{{$relTyp = printf "%sTemplateSlice" $ftable.UpSingular}}
 		{{- end -}}
 		{{- if  .NeededColumns -}}
-			{{$relTyp = printf "%s%sR" $tAlias.DownSingular $relAlias}}
+			{{$relTyp = printf "*%s%sR" $tAlias.DownSingular $relAlias}}
+		{{- end -}}
+		{{- if  and .IsToMany .NeededColumns -}}
+			{{$relTyp = printf "[]*%s%sR" $tAlias.DownSingular $relAlias}}
 		{{- end -}}
 
-		{{$relAlias}} omit.Val[{{$relTyp}}]
+		{{$relAlias}} {{$relTyp}}
 	{{end -}}
 }
 {{- end}}
