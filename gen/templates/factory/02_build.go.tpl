@@ -21,11 +21,23 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlia
 
 	return m
 }
+
+// BuildOptional returns an []*models.Optional{{$tAlias.UpSingular}}
+// this does nothing with the relationship templates
+func (o {{$tAlias.UpSingular}}TemplateSlice) BuildOptional() []*models.Optional{{$tAlias.UpSingular}} {
+	m := make([]*models.Optional{{$tAlias.UpSingular}}, len(o))
+
+	for i, o := range o {
+	  m[i] = o.BuildOptional()
+	}
+
+	return m
+}
 {{- end}}
 
 // Build returns an *models.{{$tAlias.UpSingular}}
 // Related objects are also created and placed in the .R field
-// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.Insert
+// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.Create
 func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 	m := o.toModel()
 	o.setModelRelationships(m)
@@ -35,7 +47,7 @@ func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 
 // Build returns an models.{{$tAlias.UpSingular}}Slice
 // Related objects are also created and placed in the .R field
-// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}TemplateSlice.Insert
+// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}TemplateSlice.Create
 func (o {{$tAlias.UpSingular}}TemplateSlice) Build() models.{{$tAlias.UpSingular}}Slice {
 	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
 
