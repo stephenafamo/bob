@@ -25,6 +25,9 @@ func (mods {{$tAlias.UpSingular}}Mods) Apply(n *{{$tAlias.UpSingular}}Template) 
 	return nil
 }
 
+// {{$tAlias.UpSingular}} has methods that act as mods for the {{$tAlias.UpSingular}}Template
+type {{$tAlias.UpSingular}} struct {}
+
 // {{$tAlias.UpSingular}}TemplateSlice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
 // This should almost always be used instead of []{{$tAlias.UpSingular}}Template.
 type {{$tAlias.UpSingular}}TemplateSlice []*{{$tAlias.UpSingular}}Template
@@ -83,6 +86,7 @@ type {{$tAlias.DownSingular}}R struct {
 type {{$tAlias.DownSingular}}{{$relAlias}}R {{relDependenciesTyp $.Aliases . $relTyp}}
 {{end}}{{end}}
 
+// Apply mods to the {{$tAlias.UpSingular}}Template
 func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) error {
   for _, mod := range mods {
 		if err := mod.Apply(o); err != nil {
@@ -93,7 +97,9 @@ func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod
 	return nil
 }
 
-func (o {{$tAlias.UpSingular}}Template) ToModel() (*models.{{$tAlias.UpSingular}}) {
+// toModel returns an *models.{{$tAlias.UpSingular}}
+// this does nothing with the relationship templates
+func (o {{$tAlias.UpSingular}}Template) toModel() (*models.{{$tAlias.UpSingular}}) {
 	m := &models.{{$tAlias.UpSingular}}{}
 
 	{{range $column := .Table.Columns -}}
@@ -110,24 +116,88 @@ func (o {{$tAlias.UpSingular}}Template) ToModel() (*models.{{$tAlias.UpSingular}
 	return m
 }
 
-{{if .Table.PKey -}}
-func (o {{$tAlias.UpSingular}}Template) ToOptional() (*models.Optional{{$tAlias.UpSingular}}) {
-	m := &models.Optional{{$tAlias.UpSingular}}{}
+// toModel returns an models.{{$tAlias.UpSingular}}Slice
+// this does nothing with the relationship templates
+func (o {{$tAlias.UpSingular}}TemplateSlice) toModel() (models.{{$tAlias.UpSingular}}Slice) {
+	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
 
-	{{range $column := .Table.Columns -}}
-	{{- if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !o.{{$colAlias}}.IsUnset() {
-			{{if $column.Nullable -}}
-			m.{{$colAlias}} = o.{{$colAlias}}
-			{{else -}}
-			m.{{$colAlias}} = o.{{$colAlias}}
-			{{end -}}
-		}
-	{{end}}
+	for i, o := range o {
+	  m[i] = o.toModel()
+	}
 
 	return m
 }
-{{- end}}
 
-type {{$tAlias.UpSingular}} struct {}
+// setModelRelationships creates and sets the relationships on *models.{{$tAlias.UpSingular}}
+// according to the relationships in the template. Nothing is inserted into the db
+func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlias.UpSingular}}) {
+	{{- range $index, $rel := .Table.Relationships -}}
+		{{- $relAlias := $tAlias.Relationship .Name -}}
+		{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
+		{{- $invAlias := "" -}}
+    {{- if and (not $.NoBackReferencing) $invRel.Name -}}
+			{{- $invAlias = $ftable.Relationship $invRel.Name}}
+		{{- end -}}
+
+		{{if not .IsToMany -}}
+			{{- if not .NeededColumns}}
+				rel{{$index}} := o.r.{{$relAlias}}.toModel()
+			{{- else}}
+				rel{{$index}} := o.r.{{$relAlias}}.o.toModel()
+			{{- end}}
+			{{- if and (not $.NoBackReferencing) $invRel.Name}}
+				{{- if not $invRel.IsToMany}}
+					rel{{$index}}.R.{{$invAlias}} = m
+				{{- else}}
+					rel{{$index}}.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
+				{{- end}}
+			{{- end}}
+		{{else}}
+			rel{{$index}} := models.{{$ftable.UpSingular}}Slice{}
+			for _, r := range o.r.{{$relAlias}} {
+				{{- if .NeededColumns}} for _, r := range r.o { {{- end}}
+				relM := r.toModel()
+				{{- if and (not $.NoBackReferencing) $invRel.Name}}
+					rel{{$index}} = append(rel{{$index}}, relM)
+					{{- if not $invRel.IsToMany}}
+						relM.R.{{$invAlias}} = m
+					{{- else}}
+						relM.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
+					{{- end}}
+				{{- end}}
+				{{- if .NeededColumns}} } {{- end}}
+			}
+		{{end -}}
+		m.R.{{$relAlias}} = rel{{$index}}
+	{{end -}}
+}
+
+func (f Factory) Get{{$tAlias.UpSingular}}Template(mods ...{{$tAlias.UpSingular}}Mod) (*{{$tAlias.UpSingular}}Template, error) {
+	o := &{{$tAlias.UpSingular}}Template{}
+
+	if err := f.base{{$tAlias.UpSingular}}Mods.Apply(o); err != nil {
+		return nil, err
+	}
+
+	if err := {{$tAlias.UpSingular}}Mods(mods).Apply(o); err != nil {
+	  return nil, err
+	}
+
+	return o, nil
+}
+
+func (f Factory) Get{{$tAlias.UpSingular}}TemplateSlice(length int, mods ...{{$tAlias.UpSingular}}Mod) ({{$tAlias.UpSingular}}TemplateSlice, error) {
+	var err error
+  var templates = make({{$tAlias.UpSingular}}TemplateSlice, length)
+
+  for i := 0; i < length; i++ {
+		templates[i], err = f.Get{{$tAlias.UpSingular}}Template(mods...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return templates, nil
+}
+
