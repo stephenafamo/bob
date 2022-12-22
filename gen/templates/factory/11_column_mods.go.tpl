@@ -10,17 +10,14 @@
 {{- end -}}
 
 func (m {{$tAlias.UpSingular}}) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		o.{{$colAlias}} = val
-		return nil
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) {{$colAlias}}Func(f func() ({{$colTyp}}, error)) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
-		var err error
-		o.{{$colAlias}}, err = f()
-		return err
+func (m {{$tAlias.UpSingular}}) {{$colAlias}}Func(f func() ({{$colTyp}})) {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+		o.{{$colAlias}} = f()
 	})
 }
 

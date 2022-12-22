@@ -8,7 +8,7 @@
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 
 func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
     {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
 
 		{{if  .NeededColumns -}}
@@ -42,42 +42,28 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . 
 				{{- end -}}
 			{{- end}}
 		{{- end}}
-
-		return nil
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ *{{$ftable.UpSingular}}Template, _ error)) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
-		{{relArgs $.Aliases .}} related, err := f()
-		if err != nil {
-			return err
-		}
-
-		return m.With{{$relAlias}}({{relArgs $.Aliases .}} related).Apply(o)
+func (m {{$tAlias.UpSingular}}) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ *{{$ftable.UpSingular}}Template)) {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+		m.With{{$relAlias}}(f()).Apply(o)
 	})
 }
 
 func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) error {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 	  if f == nil {
 		  f = defaultFactory
 		}
 
 		{{range .NeededColumns -}}
 			{{$alias := $.Aliases.Table . -}}
-			{{$alias.DownSingular}}, err := f.Get{{$alias.UpSingular}}Template()
-			if err != nil {
-			return err
-			}
+			{{$alias.DownSingular}} := f.Get{{$alias.UpSingular}}Template()
 		{{- end}}
+	  related := f.Get{{$ftable.UpSingular}}Template(mods...)
 
-	  related, err := f.Get{{$ftable.UpSingular}}Template(mods...)
-		if err != nil {
-			return err
-		}
-
-		return m.With{{$relAlias}}({{relArgs $.Aliases .}} related).Apply(o)
+		m.With{{$relAlias}}({{relArgs $.Aliases .}} related).Apply(o)
 	})
 }
 

@@ -3,26 +3,21 @@
 {{$tAlias := .Aliases.Table .Table.Name -}}
 
 type {{$tAlias.UpSingular}}Mod interface {
-	Apply(*{{$tAlias.UpSingular}}Template) error
+	Apply(*{{$tAlias.UpSingular}}Template)
 }
 
-type {{$tAlias.UpSingular}}ModFunc func(*{{$tAlias.UpSingular}}Template) error
+type {{$tAlias.UpSingular}}ModFunc func(*{{$tAlias.UpSingular}}Template)
 
-func (f {{$tAlias.UpSingular}}ModFunc) Apply(n *{{$tAlias.UpSingular}}Template) error {
-	return f(n)
+func (f {{$tAlias.UpSingular}}ModFunc) Apply(n *{{$tAlias.UpSingular}}Template) {
+	f(n)
 }
 
 type {{$tAlias.UpSingular}}Mods []{{$tAlias.UpSingular}}Mod
 
-func (mods {{$tAlias.UpSingular}}Mods) Apply(n *{{$tAlias.UpSingular}}Template) error {
+func (mods {{$tAlias.UpSingular}}Mods) Apply(n *{{$tAlias.UpSingular}}Template) {
 	for _, f := range mods {
-		err := f.Apply(n)
-		if err != nil {
-			return err
-		}
+		 f.Apply(n)
 	}
-
-	return nil
 }
 
 // {{$tAlias.UpSingular}} has methods that act as mods for the {{$tAlias.UpSingular}}Template
@@ -87,14 +82,10 @@ type {{$tAlias.DownSingular}}{{$relAlias}}R {{relDependenciesTyp $.Aliases . $re
 {{end}}{{end}}
 
 // Apply mods to the {{$tAlias.UpSingular}}Template
-func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) error {
+func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) {
   for _, mod := range mods {
-		if err := mod.Apply(o); err != nil {
-			return err
-		}
+		mod.Apply(o)
 	}
-
-	return nil
 }
 
 // toModel returns an *models.{{$tAlias.UpSingular}}
@@ -173,31 +164,22 @@ func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlia
 	{{end -}}
 }
 
-func (f Factory) Get{{$tAlias.UpSingular}}Template(mods ...{{$tAlias.UpSingular}}Mod) (*{{$tAlias.UpSingular}}Template, error) {
+func (f Factory) Get{{$tAlias.UpSingular}}Template(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{}
 
-	if err := f.base{{$tAlias.UpSingular}}Mods.Apply(o); err != nil {
-		return nil, err
-	}
+	f.base{{$tAlias.UpSingular}}Mods.Apply(o)
+ {{$tAlias.UpSingular}}Mods(mods).Apply(o)
 
-	if err := {{$tAlias.UpSingular}}Mods(mods).Apply(o); err != nil {
-	  return nil, err
-	}
-
-	return o, nil
+	return o
 }
 
-func (f Factory) Get{{$tAlias.UpSingular}}TemplateSlice(length int, mods ...{{$tAlias.UpSingular}}Mod) ({{$tAlias.UpSingular}}TemplateSlice, error) {
-	var err error
+func (f Factory) Get{{$tAlias.UpSingular}}TemplateSlice(length int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
   var templates = make({{$tAlias.UpSingular}}TemplateSlice, length)
 
   for i := 0; i < length; i++ {
-		templates[i], err = f.Get{{$tAlias.UpSingular}}Template(mods...)
-		if err != nil {
-			return nil, err
-		}
+		templates[i] = f.Get{{$tAlias.UpSingular}}Template(mods...)
 	}
 
-	return templates, nil
+	return templates
 }
 

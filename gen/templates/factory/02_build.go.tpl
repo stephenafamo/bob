@@ -27,7 +27,7 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() (*models.Optional{{$tAli
 
 // Build returns an *models.{{$tAlias.UpSingular}}
 // Related objects are also created and placed in the .R field
-// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}.Insert
+// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.Insert
 func (o {{$tAlias.UpSingular}}Template) Build() (*models.{{$tAlias.UpSingular}}) {
 	m := o.toModel()
 	o.setModelRelationships(m)
@@ -35,35 +35,32 @@ func (o {{$tAlias.UpSingular}}Template) Build() (*models.{{$tAlias.UpSingular}})
 	return m
 }
 
+// Build returns an models.{{$tAlias.UpSingular}}Slice
+// Related objects are also created and placed in the .R field
+// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}TemplateSlice.Insert
+func (o {{$tAlias.UpSingular}}TemplateSlice) Build() (models.{{$tAlias.UpSingular}}Slice) {
+	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
 
-func Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) (*models.{{$tAlias.UpSingular}}, error) {
+	for i, o := range o {
+	  m[i] = o.Build()
+	}
+
+	return m
+}
+
+func Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *models.{{$tAlias.UpSingular}} {
 	return defaultFactory.Build{{$tAlias.UpSingular}}(mods...)
 }
 
-func (f Factory) Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) (*models.{{$tAlias.UpSingular}}, error) {
-	o, err := f.Get{{$tAlias.UpSingular}}Template(mods...)
-	if err != nil {
-	  return nil, err
-	}
-
-	return o.Build(), err
+func (f Factory) Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *models.{{$tAlias.UpSingular}} {
+	return f.Get{{$tAlias.UpSingular}}Template(mods...).Build()
 }
 
-func Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) (models.{{$tAlias.UpSingular}}Slice, error) {
+func Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) models.{{$tAlias.UpSingular}}Slice {
 	return defaultFactory.Build{{$tAlias.UpPlural}}(number, mods...)
 }
 
-func (f Factory) Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) (models.{{$tAlias.UpSingular}}Slice, error) {
-	var err error
-  var built = make(models.{{$tAlias.UpSingular}}Slice, number)
-
-  for i := 0; i < number; i++ {
-		built[i], err = f.Build{{$tAlias.UpSingular}}(mods...)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return built, nil
+func (f Factory) Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) models.{{$tAlias.UpSingular}}Slice {
+	return f.Get{{$tAlias.UpSingular}}TemplateSlice(number, mods...).Build()
 }
 
