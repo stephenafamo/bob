@@ -24,32 +24,6 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . 
 		{{else -}}
 			o.r.{{$relAlias}} = related
 		{{- end}}
-
-
-		{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
-			for _, rel := range related {
-			{{- if not .NeededColumns -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} = append(rel.r.{{$invAlias}}, o)
-				{{- else -}}
-					rel.r.{{$invAlias}} = o
-				{{- end -}}
-			{{- else -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} =  append(rel.r.{{$invAlias}}, &{{$ftable.DownSingular}}{{$invAlias}}R{
-					o: {{$tAlias.UpSingular}}TemplateSlice{o},
-						{{relDependenciesTypSet $.Aliases .}}
-					})
-				{{- else -}}
-					rel.r.{{$invAlias}} = &{{$ftable.DownSingular}}{{$invAlias}}R{
-						o: o,
-						{{relDependenciesTypSet $.Aliases .}}
-					}
-				{{- end -}}
-			{{- end}}
-			}
-		{{- end}}
 	})
 }
 
@@ -91,31 +65,6 @@ func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}({{relDependencies $.Aliases . "
 			})
 		{{else -}}
 			o.r.{{$relAlias}} = append(o.r.{{$relAlias}}, related...)
-		{{- end}}
-
-		{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
-			for _, rel := range related {
-			{{- if not .NeededColumns -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} = append(rel.r.{{$invAlias}}, o)
-				{{- else -}}
-					rel.r.{{$invAlias}} = o
-				{{- end -}}
-			{{- else -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} =  append(rel.r.{{$invAlias}}, &{{$ftable.DownSingular}}{{$invAlias}}R{
-					o: {{$tAlias.UpSingular}}TemplateSlice{o},
-						{{relDependenciesTypSet $.Aliases .}}
-					})
-				{{- else -}}
-					rel.r.{{$invAlias}} = &{{$ftable.DownSingular}}{{$invAlias}}R{
-						o: o,
-						{{relDependenciesTypSet $.Aliases .}}
-					}
-				{{- end -}}
-			{{- end}}
-			}
 		{{- end}}
 	})
 }

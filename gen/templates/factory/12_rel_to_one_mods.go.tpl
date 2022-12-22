@@ -19,29 +19,6 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . 
 		{{else -}}
 			o.r.{{$relAlias}} = rel
 		{{- end}}
-
-		{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $ftable.Relationship $invRel.Name -}}
-			{{- if not .NeededColumns -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} = append(rel.r.{{$invAlias}}, o)
-				{{- else -}}
-					rel.r.{{$invAlias}} = o
-				{{- end -}}
-			{{else -}}
-				{{- if $invRel.IsToMany -}}
-					rel.r.{{$invAlias}} =  append(rel.r.{{$invAlias}}, &{{$ftable.DownSingular}}{{$invAlias}}R{
-					o: {{$tAlias.UpSingular}}TemplateSlice{o},
-						{{relDependenciesTypSet $.Aliases .}}
-					})
-				{{- else -}}
-					rel.r.{{$invAlias}} = &{{$ftable.DownSingular}}{{$invAlias}}R{
-						o: o,
-						{{relDependenciesTypSet $.Aliases .}}
-					}
-				{{- end -}}
-			{{- end}}
-		{{- end}}
 	})
 }
 
