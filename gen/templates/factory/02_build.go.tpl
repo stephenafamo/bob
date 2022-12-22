@@ -4,7 +4,7 @@
 {{if .Table.PKey -}}
 // BuildOptional returns an *models.Optional{{$tAlias.UpSingular}}
 // this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}Template) BuildOptional() (*models.Optional{{$tAlias.UpSingular}}) {
+func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlias.UpSingular}} {
 	m := &models.Optional{{$tAlias.UpSingular}}{}
 
 	{{range $column := .Table.Columns -}}
@@ -26,7 +26,7 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() (*models.Optional{{$tAli
 // Build returns an *models.{{$tAlias.UpSingular}}
 // Related objects are also created and placed in the .R field
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.Insert
-func (o {{$tAlias.UpSingular}}Template) Build() (*models.{{$tAlias.UpSingular}}) {
+func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 	m := o.toModel()
 	o.setModelRelationships(m)
 
@@ -36,7 +36,7 @@ func (o {{$tAlias.UpSingular}}Template) Build() (*models.{{$tAlias.UpSingular}})
 // Build returns an models.{{$tAlias.UpSingular}}Slice
 // Related objects are also created and placed in the .R field
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}TemplateSlice.Insert
-func (o {{$tAlias.UpSingular}}TemplateSlice) Build() (models.{{$tAlias.UpSingular}}Slice) {
+func (o {{$tAlias.UpSingular}}TemplateSlice) Build() models.{{$tAlias.UpSingular}}Slice {
 	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
 
 	for i, o := range o {
