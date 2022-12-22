@@ -59,9 +59,9 @@ func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, mods ...{{$ftab
 
 		{{range .NeededColumns -}}
 			{{$alias := $.Aliases.Table . -}}
-			{{$alias.DownSingular}} := f.Get{{$alias.UpSingular}}Template()
+			{{$alias.DownSingular}} := f.New{{$alias.UpSingular}}()
 		{{- end}}
-	  related := f.Get{{$ftable.UpSingular}}Template(mods...)
+	  related := f.New{{$ftable.UpSingular}}(mods...)
 
 		m.With{{$relAlias}}({{relArgs $.Aliases .}} related).Apply(o)
 	})

@@ -20,9 +20,6 @@ func (mods {{$tAlias.UpSingular}}Mods) Apply(n *{{$tAlias.UpSingular}}Template) 
 	}
 }
 
-// {{$tAlias.UpSingular}} has methods that act as mods for the {{$tAlias.UpSingular}}Template
-type {{$tAlias.UpSingular}} struct {}
-
 // {{$tAlias.UpSingular}}TemplateSlice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
 // This should almost always be used instead of []{{$tAlias.UpSingular}}Template.
 type {{$tAlias.UpSingular}}TemplateSlice []*{{$tAlias.UpSingular}}Template
@@ -150,36 +147,17 @@ func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlia
 				{{- if .NeededColumns}} for _, r := range r.o { {{- end}}
 				relM := r.toModel()
 				{{- if and (not $.NoBackReferencing) $invRel.Name}}
-					rel{{$index}} = append(rel{{$index}}, relM)
 					{{- if not $invRel.IsToMany}}
 						relM.R.{{$invAlias}} = m
 					{{- else}}
 						relM.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
 					{{- end}}
+					rel{{$index}} = append(rel{{$index}}, relM)
 				{{- end}}
 				{{- if .NeededColumns}} } {{- end}}
 			}
 		{{end -}}
 		m.R.{{$relAlias}} = rel{{$index}}
 	{{end -}}
-}
-
-func (f Factory) Get{{$tAlias.UpSingular}}Template(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
-	o := &{{$tAlias.UpSingular}}Template{}
-
-	f.base{{$tAlias.UpSingular}}Mods.Apply(o)
- {{$tAlias.UpSingular}}Mods(mods).Apply(o)
-
-	return o
-}
-
-func (f Factory) Get{{$tAlias.UpSingular}}TemplateSlice(length int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
-  var templates = make({{$tAlias.UpSingular}}TemplateSlice, length)
-
-  for i := 0; i < length; i++ {
-		templates[i] = f.Get{{$tAlias.UpSingular}}Template(mods...)
-	}
-
-	return templates
 }
 

@@ -1,7 +1,6 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{ $tAlias := .Aliases.Table .Table.Name -}}
 
-
 {{if .Table.PKey -}}
 // BuildOptional returns an *models.Optional{{$tAlias.UpSingular}}
 // this does nothing with the relationship templates
@@ -23,7 +22,6 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() (*models.Optional{{$tAli
 	return m
 }
 {{- end}}
-
 
 // Build returns an *models.{{$tAlias.UpSingular}}
 // Related objects are also created and placed in the .R field
@@ -47,20 +45,3 @@ func (o {{$tAlias.UpSingular}}TemplateSlice) Build() (models.{{$tAlias.UpSingula
 
 	return m
 }
-
-func Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *models.{{$tAlias.UpSingular}} {
-	return defaultFactory.Build{{$tAlias.UpSingular}}(mods...)
-}
-
-func (f Factory) Build{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *models.{{$tAlias.UpSingular}} {
-	return f.Get{{$tAlias.UpSingular}}Template(mods...).Build()
-}
-
-func Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) models.{{$tAlias.UpSingular}}Slice {
-	return defaultFactory.Build{{$tAlias.UpPlural}}(number, mods...)
-}
-
-func (f Factory) Build{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) models.{{$tAlias.UpSingular}}Slice {
-	return f.Get{{$tAlias.UpSingular}}TemplateSlice(number, mods...).Build()
-}
-

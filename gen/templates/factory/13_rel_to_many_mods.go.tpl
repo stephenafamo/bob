@@ -68,10 +68,10 @@ func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, number int, mod
 
 		{{range .NeededColumns -}}
 			{{$alias := $.Aliases.Table . -}}
-			{{$alias.DownSingular}} := f.Get{{$alias.UpSingular}}Template()
+			{{$alias.DownSingular}} := f.New{{$alias.UpSingular}}()
 		{{- end}}
 
-		related := f.Get{{$ftable.UpSingular}}TemplateSlice(number, mods...)
+		related := f.New{{$ftable.UpPlural}}(number, mods...)
 		m.With{{$relAlias}}({{relArgs $.Aliases .}} related...).Apply(o)
 	})
 }
@@ -135,10 +135,10 @@ func (m {{$tAlias.UpSingular}}) AddNew{{$relAlias}}(f *Factory, number int, mods
 
 		{{range .NeededColumns -}}
 			{{$alias := $.Aliases.Table . -}}
-			{{$alias.DownSingular}} := f.Get{{$alias.UpSingular}}Template()
+			{{$alias.DownSingular}} := f.New{{$alias.UpSingular}}()
 		{{- end}}
 
-		related := f.Get{{$ftable.UpSingular}}TemplateSlice(number, mods...)
+		related := f.New{{$ftable.UpPlural}}(number, mods...)
 		m.Add{{$relAlias}}({{relArgs $.Aliases .}} related...).Apply(o)
 	})
 }

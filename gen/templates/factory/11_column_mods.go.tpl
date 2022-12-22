@@ -1,5 +1,8 @@
 {{ $tAlias := .Aliases.Table .Table.Name -}}
 
+// {{$tAlias.UpSingular}} has methods that act as mods for the {{$tAlias.UpSingular}}Template
+type {{$tAlias.UpSingular}} struct {}
+
 {{range $column := .Table.Columns}}
 {{$colAlias := $tAlias.Column $column.Name -}}
 {{- $colTyp := "" -}}
