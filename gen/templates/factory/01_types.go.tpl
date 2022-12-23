@@ -152,8 +152,8 @@ func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlia
 					{{- else}}
 						relM.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
 					{{- end}}
-					rel{{$index}} = append(rel{{$index}}, relM)
 				{{- end}}
+				rel{{$index}} = append(rel{{$index}}, relM)
 				{{- if .NeededColumns}} } {{- end}}
 			}
 		{{end -}}
