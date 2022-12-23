@@ -36,48 +36,25 @@ type contextKey string
 var (
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Name -}}
-    {{$tAlias.UpSingular}}Ctx = NewKey[contextKey, *models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
+    {{$tAlias.DownSingular}}Ctx = newContextual[*models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
     {{- end}}
 )
 
-type Key[K comparable, V any] struct {
-  key K
+type contextual[V any] struct {
+  key contextKey
 }
 
 // This could be weird because of type inference not handling `K` due to `V` having to be manual.
-func NewKey[K comparable, V any](key K) Key[K, V] {
-  return Key[K, V]{key: key}
+func newContextual[V any](key string) contextual[V] {
+  return contextual[V]{key: contextKey(key)}
 }
 
-func (k Key[K, V]) WithValue(ctx context.Context, val V) context.Context {
+func (k contextual[V]) WithValue(ctx context.Context, val V) context.Context {
   return context.WithValue(ctx, k.key, val)
 }
 
-func (k Key[K, V]) Value(ctx context.Context) (V, bool) {
+func (k contextual[V]) Value(ctx context.Context) (V, bool) {
   v, ok := ctx.Value(k.key).(V)
   return v, ok
-}
-
-func inContextKey(ctx context.Context, key contextKey, val string) bool {
-  vals, _ := ctx.Value(key).(map[string]struct{})
-  if vals == nil {
-      return false
-  }
-
-  _, ok := vals[val]
-  return ok
-}
-
-func addToContextKey(ctx context.Context, key contextKey, val string) context.Context {
-  vals, _ := ctx.Value(key).(map[string]struct{})
-  if vals == nil {
-      vals = map[string]struct{}{
-          val: {},
-      }
-  } else {
-      vals[val] = struct{}{}
-  }
-
-  return context.WithValue(ctx, key, vals)
 }
 

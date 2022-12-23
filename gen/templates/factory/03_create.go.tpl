@@ -110,7 +110,7 @@ func (f *Factory) Create{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Exe
 		var rel{{$index}} *models.{{$ftable.UpSingular}}
 		if o.r.{{$relAlias}} == nil {
 			var ok bool
-			rel{{$index}}, ok = {{$ftable.UpSingular}}Ctx.Value(ctx)
+			rel{{$index}}, ok = {{$ftable.DownSingular}}Ctx.Value(ctx)
 			if !ok {
 				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}(f).Apply(o)
 			}
@@ -136,7 +136,7 @@ func (f *Factory) Create{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Exe
 	if err != nil {
 	  return ctx, nil, err
 	}
-	ctx = {{$tAlias.UpSingular}}Ctx.WithValue(ctx, m)
+	ctx = {{$tAlias.DownSingular}}Ctx.WithValue(ctx, m)
 
 
 	{{range $index, $rel := $table.Relationships -}}
