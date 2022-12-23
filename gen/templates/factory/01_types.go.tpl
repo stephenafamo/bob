@@ -129,36 +129,39 @@ func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlia
 			{{- $invAlias = $ftable.Relationship $invRel.Name}}
 		{{- end -}}
 
-		{{if not .IsToMany -}}
-			{{- if not .NeededColumns}}
-				rel{{$index}} := o.r.{{$relAlias}}.toModel()
-			{{- else}}
-				rel{{$index}} := o.r.{{$relAlias}}.o.toModel()
-			{{- end}}
-			{{- if and (not $.NoBackReferencing) $invRel.Name}}
-				{{- if not $invRel.IsToMany}}
-					rel{{$index}}.R.{{$invAlias}} = m
+		if o.r.{{$relAlias}} != nil {
+			{{- if not .IsToMany}}
+				{{- if not .NeededColumns}}
+					rel{{$index}} := o.r.{{$relAlias}}.toModel()
 				{{- else}}
-					rel{{$index}}.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
+					rel{{$index}} := o.r.{{$relAlias}}.o.toModel()
 				{{- end}}
-			{{- end}}
-		{{else}}
-			rel{{$index}} := models.{{$ftable.UpSingular}}Slice{}
-			for _, r := range o.r.{{$relAlias}} {
-				{{- if .NeededColumns}} for _, r := range r.o { {{- end}}
-				relM := r.toModel()
 				{{- if and (not $.NoBackReferencing) $invRel.Name}}
 					{{- if not $invRel.IsToMany}}
-						relM.R.{{$invAlias}} = m
+						rel{{$index}}.R.{{$invAlias}} = m
 					{{- else}}
-						relM.R.{{$invAlias}} = models.{{$tAlias.UpSingular}}Slice{m}
+						rel{{$index}}.R.{{$invAlias}} = append(rel{{$index}}.R.{{$invAlias}}, m)
 					{{- end}}
 				{{- end}}
-				rel{{$index}} = append(rel{{$index}}, relM)
-				{{- if .NeededColumns}} } {{- end}}
-			}
-		{{end -}}
-		m.R.{{$relAlias}} = rel{{$index}}
+			{{- else}}
+				rel{{$index}} := models.{{$ftable.UpSingular}}Slice{}
+				for _, r := range o.r.{{$relAlias}} {
+					{{- if .NeededColumns}} for _, r := range r.o { {{- end}}
+					relM := r.toModel()
+					{{- if and (not $.NoBackReferencing) $invRel.Name}}
+						{{- if not $invRel.IsToMany}}
+							relM.R.{{$invAlias}} = m
+						{{- else}}
+							relM.R.{{$invAlias}} = append(relM.R.{{$invAlias}}, m)
+						{{- end}}
+					{{- end}}
+					rel{{$index}} = append(rel{{$index}}, relM)
+					{{- if .NeededColumns}} } {{- end}}
+				}
+			{{- end}}
+			m.R.{{$relAlias}} = rel{{$index}}
+		}
+
 	{{end -}}
 }
 
