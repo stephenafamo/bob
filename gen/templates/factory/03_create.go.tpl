@@ -9,7 +9,7 @@
 // according to the relationships in the template. 
 // one-relationships that already exist on the model are skipped
 // many-relationships that already exist on the model are added to
-func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec bob.Executor, o *{{$tAlias.UpSingular}}Template, m *models.{{$tAlias.UpSingular}}) (context.Context,error) {
+func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec bob.Executor, m *models.{{$tAlias.UpSingular}}) (context.Context,error) {
 	var err error
 
 	{{range $index, $rel := .Table.Relationships -}}
@@ -26,7 +26,7 @@ func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec 
 		{{- if not .NeededColumns -}}
 			{{if not .IsToMany}}
 				var rel{{$index}} *models.{{$ftable.UpSingular}}
-				ctx, rel{{$index}}, err = f.Create{{$ftable.UpSingular}}(ctx, exec, o.r.{{$relAlias}})
+				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.Create(ctx, exec)
 				if err != nil {
 					return ctx, err
 				}
@@ -36,7 +36,7 @@ func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec 
 				}
 			{{else}}
 				var rel{{$index}} models.{{$ftable.UpSingular}}Slice
-				ctx, rel{{$index}}, err = f.Create{{$ftable.UpPlural}}(ctx, exec, o.r.{{$relAlias}}...)
+				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.Create(ctx, exec)
 				if err != nil {
 					return ctx, err
 				}
@@ -50,14 +50,14 @@ func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec 
 				{{- range .NeededColumns -}}
 					{{$alias := $.Aliases.Table . -}}
 					var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
-					ctx, {{$alias.DownSingular}}, err = f.Create{{$alias.UpSingular}}(ctx, exec, o.r.{{$relAlias}}.{{$alias.DownSingular}})
+					ctx, {{$alias.DownSingular}}, err = o.r.{{$relAlias}}.{{$alias.DownSingular}}.Create(ctx, exec)
 					if err != nil {
 						return ctx, err
 					}
 				{{- end}}
 
 				var rel{{$index}} *models.{{$ftable.UpSingular}}
-				ctx, rel{{$index}}, err = f.Create{{$ftable.UpSingular}}(ctx, exec, o.r.{{$relAlias}}.o)
+				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
 				if err != nil {
 					return ctx, err
 				}
@@ -70,14 +70,14 @@ func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec 
 					{{- range .NeededColumns -}}
 						{{$alias := $.Aliases.Table . -}}
 						var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
-						ctx, {{$alias.DownSingular}}, err = f.Create{{$alias.UpSingular}}(ctx, exec, r.{{$alias.DownSingular}})
+						ctx, {{$alias.DownSingular}}, err = r.{{$alias.DownSingular}}.Create(ctx, exec)
 						if err != nil {
 							return ctx, err
 						}
 					{{- end}}
 
 					var rel{{$index}} models.{{$ftable.UpSingular}}Slice
-					ctx, rel{{$index}}, err = f.Create{{$ftable.UpPlural}}(ctx, exec, r.o...)
+					ctx, rel{{$index}}, err = r.o.Create(ctx, exec)
 					if err != nil {
 						return ctx, err
 					}
@@ -99,7 +99,7 @@ func (f *Factory) insertOpt{{$tAlias.UpSingular}}Rels(ctx context.Context, exec 
 
 // Create builds a {{$tAlias.DownSingular}} and inserts it into the database
 // Relations objects are also inserted and placed in the .R field
-func (f *Factory) Create{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, o *{{$tAlias.UpSingular}}Template) (context.Context, *models.{{$tAlias.UpSingular}}, error) {
+func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Executor) (context.Context, *models.{{$tAlias.UpSingular}}, error) {
 	var err error
 	opt := o.BuildOptional()
 
@@ -112,11 +112,11 @@ func (f *Factory) Create{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Exe
 			var ok bool
 			rel{{$index}}, ok = {{$ftable.DownSingular}}Ctx.Value(ctx)
 			if !ok {
-				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}(f).Apply(o)
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(o)
 			}
 		}
 		if o.r.{{$relAlias}} != nil {
-			ctx, rel{{$index}}, err = f.Create{{$ftable.UpSingular}}(ctx, exec, o.r.{{$relAlias}})
+			ctx, rel{{$index}}, err = o.r.{{$relAlias}}.Create(ctx, exec)
 			if err != nil {
 				return ctx, nil, err
 			}
@@ -146,18 +146,18 @@ func (f *Factory) Create{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Exe
 		m.R.{{$relAlias}} = rel{{$index}}
 	{{end}}
 
-  ctx, err = f.insertOpt{{$tAlias.UpSingular}}Rels(ctx, exec, o, m)
+  ctx, err = o.insertOptRels(ctx, exec, m)
 	return ctx, m, err
 }
 
 // Create builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field
-func (f *Factory) Create{{$tAlias.UpPlural}}(ctx context.Context, exec bob.Executor, o ...*{{$tAlias.UpSingular}}Template) (context.Context, models.{{$tAlias.UpSingular}}Slice, error) {
+func (o {{$tAlias.UpSingular}}TemplateSlice) Create(ctx context.Context, exec bob.Executor) (context.Context, models.{{$tAlias.UpSingular}}Slice, error) {
 	var err error
 	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
 
 	for i, o := range o {
-	  ctx, m[i], err = f.Create{{$tAlias.UpSingular}}(ctx, exec, o)
+	  ctx, m[i], err = o.Create(ctx, exec)
 		if err != nil {
 			return ctx, nil, err
 		}

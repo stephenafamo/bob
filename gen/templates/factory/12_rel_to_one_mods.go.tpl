@@ -28,8 +28,9 @@ func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}Func(f func() ({{relDepen
 	})
 }
 
-func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(f *Factory, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+		f := o.f
 	  if f == nil {
 		  f = defaultFactory
 		}

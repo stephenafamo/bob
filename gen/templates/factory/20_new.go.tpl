@@ -4,8 +4,8 @@ func New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpS
 	return defaultFactory.New{{$tAlias.UpSingular}}(mods...)
 }
 
-func (f Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
-	o := &{{$tAlias.UpSingular}}Template{}
+func (f *Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
+	o := &{{$tAlias.UpSingular}}Template{f: f}
 
 	f.base{{$tAlias.UpSingular}}Mods.Apply(o)
  {{$tAlias.UpSingular}}ModSlice(mods).Apply(o)
@@ -17,7 +17,7 @@ func New{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) {{$t
 	return defaultFactory.New{{$tAlias.UpPlural}}(number, mods...)
 }
 
-func (f Factory) New{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
+func (f *Factory) New{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
   var templates = make({{$tAlias.UpSingular}}TemplateSlice, number)
 
   for i := 0; i < number; i++ {

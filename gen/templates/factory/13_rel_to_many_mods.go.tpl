@@ -34,8 +34,9 @@ func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}Func(f func() ({{relDepen
 	})
 }
 
-func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+	  f := o.f
 	  if f == nil {
 		  f = defaultFactory
 		}
@@ -76,8 +77,9 @@ func (m {{$tAlias.DownSingular}}Mods) Add{{$relAlias}}Func(f func() ({{relDepend
 	})
 }
 
-func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+	  f := o.f
 	  if f == nil {
 		  f = defaultFactory
 		}

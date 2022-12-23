@@ -41,9 +41,10 @@ type {{$tAlias.UpSingular}}Template struct {
 		{{$colAlias}} {{$colTyp}}
 	{{end -}}
 
-	{{if .Table.Relationships}}
+	{{if .Table.Relationships -}}
 		r {{$tAlias.DownSingular}}R
-	{{end -}}
+	{{- end}}
+	f *Factory
 }
 
 {{if .Table.Relationships -}}
