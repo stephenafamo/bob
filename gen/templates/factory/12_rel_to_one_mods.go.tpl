@@ -7,7 +7,7 @@
 {{- $relAlias := $tAlias.Relationship .Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 
-func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
     {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
 
@@ -22,13 +22,13 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . 
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ *{{$ftable.UpSingular}}Template)) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ *{{$ftable.UpSingular}}Template)) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		m.With{{$relAlias}}(f()).Apply(o)
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(f *Factory, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 	  if f == nil {
 		  f = defaultFactory

@@ -8,7 +8,7 @@ func (f Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{
 	o := &{{$tAlias.UpSingular}}Template{}
 
 	f.base{{$tAlias.UpSingular}}Mods.Apply(o)
- {{$tAlias.UpSingular}}Mods(mods).Apply(o)
+ {{$tAlias.UpSingular}}ModSlice(mods).Apply(o)
 
 	return o
 }

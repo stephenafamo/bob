@@ -1,7 +1,7 @@
 type Factory struct {
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Name -}}
-		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}Mods
+		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
     {{- end}}
 }
 

@@ -12,9 +12,9 @@ func (f {{$tAlias.UpSingular}}ModFunc) Apply(n *{{$tAlias.UpSingular}}Template) 
 	f(n)
 }
 
-type {{$tAlias.UpSingular}}Mods []{{$tAlias.UpSingular}}Mod
+type {{$tAlias.UpSingular}}ModSlice []{{$tAlias.UpSingular}}Mod
 
-func (mods {{$tAlias.UpSingular}}Mods) Apply(n *{{$tAlias.UpSingular}}Template) {
+func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Template) {
 	for _, f := range mods {
 		 f.Apply(n)
 	}

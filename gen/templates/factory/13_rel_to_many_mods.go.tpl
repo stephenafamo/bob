@@ -8,7 +8,7 @@
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- $type := printf "...*%sTemplate" $ftable.UpSingular -}}
 
-func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} related {{$type}}) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} related {{$type}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
     {{with setFactoryDeps $.Importer $.Tables $.Aliases . true -}}
 			for _, rel := range related {
@@ -27,14 +27,14 @@ func (m {{$tAlias.UpSingular}}) With{{$relAlias}}({{relDependencies $.Aliases . 
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ {{$ftable.UpSingular}}TemplateSlice)) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ {{$ftable.UpSingular}}TemplateSlice)) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		{{relArgs $.Aliases .}} related := f()
 		m.With{{$relAlias}}({{relArgs $.Aliases .}} related...).Apply(o)
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 	  if f == nil {
 		  f = defaultFactory
@@ -50,7 +50,7 @@ func (m {{$tAlias.UpSingular}}) WithNew{{$relAlias}}(f *Factory, number int, mod
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} related {{$type}}) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) Add{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} related {{$type}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
     {{with setFactoryDeps $.Importer $.Tables $.Aliases . true -}}
 			for _, rel := range related {
@@ -69,14 +69,14 @@ func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}({{relDependencies $.Aliases . "
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) Add{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ {{$ftable.UpSingular}}TemplateSlice)) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) Add{{$relAlias}}Func(f func() ({{relDependencies $.Aliases . "" "Template"}} _ {{$ftable.UpSingular}}TemplateSlice)) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		{{relArgs $.Aliases .}} related := f()
 		m.Add{{$relAlias}}({{relArgs $.Aliases .}} related...).Apply(o)
 	})
 }
 
-func (m {{$tAlias.UpSingular}}) AddNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(f *Factory, number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 	  if f == nil {
 		  f = defaultFactory
