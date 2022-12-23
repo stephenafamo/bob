@@ -30,19 +30,34 @@ f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods
 
 {{end}}{{- end}}
 
-{{$.Importer.Import "reflect"}}
-func isZero(value interface{}) bool {
-	val := reflect.Indirect(reflect.ValueOf(value))
-	typ := val.Type()
+{{$.Importer.Import "context"}}
+{{$.Importer.Import "models" $.ModelsPackage}}
+type contextKey string
+var (
+    {{range $table := .Tables}}
+    {{ $tAlias := $.Aliases.Table $table.Name -}}
+    {{$tAlias.UpSingular}}Ctx = NewKey[contextKey, *models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
+    {{- end}}
+)
 
-	zero := reflect.Zero(typ)
-	return reflect.DeepEqual(zero.Interface(), val.Interface())
+type Key[K comparable, V any] struct {
+  key K
 }
 
+// This could be weird because of type inference not handling `K` due to `V` having to be manual.
+func NewKey[K comparable, V any](key K) Key[K, V] {
+  return Key[K, V]{key: key}
+}
 
-type contextKey string
+func (k Key[K, V]) WithValue(ctx context.Context, val V) context.Context {
+  return context.WithValue(ctx, k.key, val)
+}
 
-{{$.Importer.Import "context"}}
+func (k Key[K, V]) Value(ctx context.Context) (V, bool) {
+  v, ok := ctx.Value(k.key).(V)
+  return v, ok
+}
+
 func inContextKey(ctx context.Context, key contextKey, val string) bool {
   vals, _ := ctx.Value(key).(map[string]struct{})
   if vals == nil {
@@ -66,13 +81,3 @@ func addToContextKey(ctx context.Context, key contextKey, val string) context.Co
   return context.WithValue(ctx, key, vals)
 }
 
-{{$.Importer.Import "fmt"}}
-func stringifyVal(val ...interface{}) string {
-  strVal := ""
-
-  for _, v := range val {
-      strVal += fmt.Sprintf("%v", v)
-  }
-
-  return strVal
-}

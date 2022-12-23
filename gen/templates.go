@@ -252,6 +252,7 @@ var templateFunctions = template.FuncMap{
 	"relDependencies":       relDependencies,
 	"relDependenciesTyp":    relDependenciesTyp,
 	"relDependenciesTypSet": relDependenciesTypSet,
+	"relIsRequired":         relIsRequired,
 	"createDeps":            createDeps,
 	"insertDeps":            insertDeps,
 	"setModelDeps":          setModelDeps,
@@ -337,10 +338,35 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 	}
 }
 
-func relArgs(aliases Aliases, r orm.Relationship) string {
+func relIsRequired(t drivers.Table, r orm.Relationship) bool {
+	firstSide := r.Sides[0]
+	if firstSide.ToKey {
+		return false
+	}
+
+	for _, colName := range firstSide.FromColumns {
+		if t.GetColumn(colName).Nullable {
+			return false
+		}
+	}
+
+	return true
+}
+
+func relArgs(aliases Aliases, r orm.Relationship, preSuf ...string) string {
+	var prefix, suffix string
+	if len(preSuf) > 0 {
+		prefix = preSuf[0]
+	}
+	if len(preSuf) > 1 {
+		suffix = preSuf[1]
+	}
+
 	ma := []string{}
 	for _, need := range r.NeededColumns() {
-		ma = append(ma, aliases.Tables[need].DownSingular+",")
+		ma = append(ma, fmt.Sprintf(
+			"%s%s%s,", aliases.Tables[need].DownSingular, prefix, suffix,
+		))
 	}
 
 	return strings.Join(ma, "")
