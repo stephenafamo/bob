@@ -1713,8 +1713,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -1730,8 +1731,9 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -1747,8 +1749,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -1764,8 +1767,9 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -4619,8 +4623,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -4636,8 +4641,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -4653,8 +4659,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -4670,8 +4677,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -7145,8 +7153,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -7162,8 +7171,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -7179,8 +7189,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
@@ -7196,8 +7207,9 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "types.JSON[string]",
+					"type": "types.JSON[json.RawMessage]",
 					"imports": [
+						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
 					"arr_type": null,
