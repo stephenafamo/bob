@@ -13,9 +13,14 @@ func NewFactory() *factory {
       {{range $column := $table.Columns -}}
         {{if .Default}}{{continue}}{{end -}}
         {{$.Importer.ImportList $column.Imports -}}
+        {{- $colTyp := $column.Type -}}
+        {{- if $column.Nullable -}}
+          {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
+          {{- $colTyp = printf "null.Val[%s]" $column.Type -}}
+        {{- end -}}
         {{$colAlias := $tAlias.Column $column.Name -}}
-        {{$tAlias.UpSingular}}Mods.{{$colAlias}}Func(func() {{$column.Type}} {
-          var zero {{$column.Type}}
+        {{$tAlias.UpSingular}}Mods.{{$colAlias}}Func(func() {{$colTyp}} {
+          var zero {{$colTyp}}
           return zero
         }),
       {{- end}}
