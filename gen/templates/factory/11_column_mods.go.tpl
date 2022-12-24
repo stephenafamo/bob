@@ -32,4 +32,10 @@ func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{
 	})
 }
 
+func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+		o.{{$colAlias}}.Unset()
+	})
+}
+
 {{end}}
