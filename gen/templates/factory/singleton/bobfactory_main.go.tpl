@@ -1,11 +1,30 @@
-type Factory struct {
+type factory struct {
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Name -}}
 		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
     {{- end}}
 }
 
-var defaultFactory = new(Factory)
+func NewFactory() *factory {
+  return &factory{
+    {{range $table := .Tables -}}
+    {{ $tAlias := $.Aliases.Table $table.Name -}}
+    base{{$tAlias.UpSingular}}Mods: {{$tAlias.UpSingular}}ModSlice{
+      {{range $column := $table.Columns -}}
+        {{if .Default}}{{continue}}{{end -}}
+        {{$.Importer.ImportList $column.Imports -}}
+        {{$colAlias := $tAlias.Column $column.Name -}}
+        {{$tAlias.UpSingular}}Mods.{{$colAlias}}Func(func() {{$column.Type}} {
+          var zero {{$column.Type}}
+          return zero
+        }),
+      {{- end}}
+    },
+    {{- end}}
+  }
+}
+
+var defaultFactory = NewFactory()
 
 {{range $table := .Tables}}{{if not $table.IsJoinTable -}}
 {{ $tAlias := $.Aliases.Table $table.Name -}}
@@ -14,7 +33,7 @@ func ClearBase{{$tAlias.UpSingular}}Mods() {
 }
 
 {{ $tAlias := $.Aliases.Table $table.Name -}}
-func (f *Factory) ClearBase{{$tAlias.UpSingular}}Mods() {
+func (f *factory) ClearBase{{$tAlias.UpSingular}}Mods() {
     f.base{{$tAlias.UpSingular}}Mods = nil
 }
 
@@ -24,7 +43,7 @@ func AddBase{{$tAlias.UpSingular}}Mods(mods ...{{$tAlias.UpSingular}}Mod) {
 }
 
 {{ $tAlias := $.Aliases.Table $table.Name -}}
-func (f *Factory) AddBase{{$tAlias.UpSingular}}Mod(mods ...{{$tAlias.UpSingular}}Mod) {
+func (f *factory) AddBase{{$tAlias.UpSingular}}Mod(mods ...{{$tAlias.UpSingular}}Mod) {
 f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods...)
 }
 

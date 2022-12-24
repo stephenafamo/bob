@@ -8,6 +8,7 @@ type {{$tAlias.DownSingular}}Mods struct {}
 {{$colAlias := $tAlias.Column $column.Name -}}
 {{- $colTyp := $column.Type -}}
 {{- if $column.Nullable -}}
+	{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
 	{{- $colTyp = printf "null.Val[%s]" $column.Type -}}
 {{- end -}}
 
@@ -21,9 +22,13 @@ func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.U
 	})
 }
 
-func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() ({{$colTyp}})) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		o.{{$colAlias}} = f()
+		{{- if $column.Nullable -}}
+			o.{{$colAlias}} = omitnull.FromNull(f())
+		{{- else -}}
+			o.{{$colAlias}} = omit.From(f())
+		{{- end -}}
 	})
 }
 
