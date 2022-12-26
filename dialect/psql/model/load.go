@@ -220,8 +220,6 @@ func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*psql.Se
 	}
 }
 
-var _ scan.RowValidator = rowValidator
-
 func rowValidator(vals map[string]reflect.Value) bool {
 	for _, v := range vals {
 		v, ok := v.Interface().(wrapper)
@@ -256,8 +254,6 @@ func (v *wrapper) Scan(value any) error {
 
 	return opt.ConvertAssign(v.V, value)
 }
-
-var _ scan.TypeConverter = typeConverter{}
 
 type typeConverter struct{}
 
