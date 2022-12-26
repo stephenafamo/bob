@@ -64,7 +64,7 @@ func testDebugExecutor(t *testing.T, f func(Executor, string, ...any) error) {
 
 	err := f(exec, sql, args...)
 	if err != nil {
-		t.Fatal("error running QueryContext")
+		t.Fatal(err)
 	}
 
 	debugsql, debugArgsStr, found := strings.Cut(dest.String(), "\n0:")
