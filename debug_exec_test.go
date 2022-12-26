@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,6 +12,22 @@ import (
 )
 
 var reArgs = regexp.MustCompile(`\n\d+\:`)
+
+func TestDebugExecutorDefaultWriter(t *testing.T) {
+	d, ok := DebugExecutor(NoopExecutor{}, nil).(debugExecutor)
+	if !ok {
+		t.Fatal("DebugExecutor does not return an instance of debugExecutor")
+	}
+
+	debugFile, ok := d.w.(*os.File)
+	if !ok {
+		t.Fatal("writer for debugExecutor is not an *os.File")
+	}
+
+	if debugFile != os.Stdout {
+		t.Fatal("writer for debugExecutor is not os.Stdout")
+	}
+}
 
 func TestDebugExecutor(t *testing.T) {
 	t.Run("QueryContext", func(t *testing.T) {
