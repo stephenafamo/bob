@@ -44,7 +44,7 @@ func Express(w io.Writer, d Dialect, start int, e any) ([]any, error) {
 		w.Write([]byte(v))
 		return nil, nil
 	case []byte:
-		w.Write([]byte(v))
+		w.Write(v)
 		return nil, nil
 	case sql.NamedArg:
 		dn, ok := d.(DialectWithNamed)
