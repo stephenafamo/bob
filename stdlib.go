@@ -155,5 +155,5 @@ type stdStmt struct {
 }
 
 func (s stdStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
-	return s.QueryContext(ctx, args...)
+	return s.Stmt.QueryContext(ctx, args...)
 }
