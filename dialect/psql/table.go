@@ -1,4 +1,4 @@
-package model
+package psql
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql"
 	delqm "github.com/stephenafamo/bob/dialect/psql/delete/qm"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	inqm "github.com/stephenafamo/bob/dialect/psql/insert/qm"
 	upqm "github.com/stephenafamo/bob/dialect/psql/update/qm"
 	"github.com/stephenafamo/bob/internal"
@@ -70,7 +70,7 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 		return zero, fmt.Errorf("get insert values: %w", err)
 	}
 
-	q := psql.Insert(
+	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
 		inqm.Returning("*"),
@@ -114,7 +114,7 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	q := psql.Insert(
+	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
 		inqm.Returning("*"),
@@ -144,7 +144,7 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	q := psql.Update(upqm.Table(t.Name()))
+	q := Update(upqm.Table(t.Name()))
 
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
 	if err != nil {
@@ -160,7 +160,7 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 	}
 
 	for i, pk := range pks {
-		q.Apply(upqm.Where(psql.Quote(pk).EQ(pkVals[0][i])))
+		q.Apply(upqm.Where(Quote(pk).EQ(pkVals[0][i])))
 	}
 
 	for i, col := range columns {
@@ -199,7 +199,7 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	q := psql.Update(upqm.Table(t.Name()))
+	q := Update(upqm.Table(t.Name()))
 
 	for i, col := range columns {
 		q.Apply(upqm.Set(col, values[0][i]))
@@ -213,16 +213,16 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 
 	pkPairs := make([]any, len(pkVals))
 	for i, pair := range pkVals {
-		pkPairs[i] = psql.Group(pair...)
+		pkPairs[i] = Group(pair...)
 	}
 
 	pkGroup := make([]any, len(pks))
 	for i, pk := range pks {
-		pkGroup[i] = psql.Quote(pk)
+		pkGroup[i] = Quote(pk)
 	}
 
 	q.Apply(upqm.Where(
-		psql.Group(pkGroup...).In(pkPairs...),
+		Group(pkGroup...).In(pkPairs...),
 	))
 
 	rowsAff, err := bob.Exec(ctx, exec, q)
@@ -262,7 +262,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 		conflictCols = t.optPkCols.Names()
 	}
 
-	var conflictQM bob.Mod[*psql.InsertQuery]
+	var conflictQM bob.Mod[*dialect.InsertQuery]
 	if !updateOnConflict {
 		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).DoNothing()
 	} else {
@@ -275,7 +275,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 			SetExcluded(excludeSetCols...)
 	}
 
-	q := psql.Insert(
+	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
 		inqm.Returning("*"),
@@ -327,7 +327,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 		conflictCols = t.optPkCols.Names()
 	}
 
-	var conflictQM bob.Mod[*psql.InsertQuery]
+	var conflictQM bob.Mod[*dialect.InsertQuery]
 	if !updateOnConflict {
 		conflictQM = inqm.OnConflict(toAnySlice(conflictCols)...).DoNothing()
 	} else {
@@ -340,7 +340,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 			SetExcluded(excludeSetCols...)
 	}
 
-	q := psql.Insert(
+	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Returning("*"),
 		conflictQM,
@@ -373,7 +373,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	q := psql.Delete(delqm.From(t.Name()))
+	q := Delete(delqm.From(t.Name()))
 
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
 	if err != nil {
@@ -381,7 +381,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 	}
 
 	for i, pk := range pks {
-		q.Apply(delqm.Where(psql.Quote(pk).EQ(pkVals[0][i])))
+		q.Apply(delqm.Where(Quote(pk).EQ(pkVals[0][i])))
 	}
 
 	rowsAff, err := bob.Exec(ctx, exec, q)
@@ -407,7 +407,7 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	q := psql.Delete(delqm.From(t.Name()))
+	q := Delete(delqm.From(t.Name()))
 
 	// Find a set the PKs
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
@@ -417,16 +417,16 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 
 	pkPairs := make([]any, len(pkVals))
 	for i, pair := range pkVals {
-		pkPairs[i] = psql.Group(pair...)
+		pkPairs[i] = Group(pair...)
 	}
 
 	pkGroup := make([]any, len(pks))
 	for i, pk := range pks {
-		pkGroup[i] = psql.Quote(pk)
+		pkGroup[i] = Quote(pk)
 	}
 
 	q.Apply(delqm.Where(
-		psql.Group(pkGroup...).In(pkPairs...),
+		Group(pkGroup...).In(pkPairs...),
 	))
 
 	rowsAff, err := bob.Exec(ctx, exec, q)
@@ -445,7 +445,7 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 }
 
 // Adds table name et al
-func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*psql.SelectQuery]) *TableQuery[T, Tslice, Topt] {
+func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Topt] {
 	vq := t.View.Query(queryMods...)
 	return &TableQuery[T, Tslice, Topt]{
 		ViewQuery:  *vq,
@@ -473,7 +473,7 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 		return 0, ErrNothingToUpdate
 	}
 
-	q := psql.Update(upqm.Table(psql.Quote(t.name...)))
+	q := Update(upqm.Table(Quote(t.name...)))
 
 	for i, col := range columns {
 		q.Apply(upqm.Set(col, values[0][i]))
@@ -481,14 +481,14 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 
 	pkGroup := make([]any, len(t.pkCols.Names()))
 	for i, pk := range t.pkCols.Names() {
-		pkGroup[i] = psql.Quote(pk)
+		pkGroup[i] = Quote(pk)
 	}
 
 	// Select ONLY the primary keys
 	t.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(upqm.Where(
-		psql.Group(pkGroup...).In(t.Expression),
+		Group(pkGroup...).In(t.Expression),
 	))
 
 	rowsAff, err := bob.Exec(ctx, exec, q)
@@ -502,18 +502,18 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 // DeleteAll deletes all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
 func (t *TableQuery[T, Tslice, Topt]) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
-	q := psql.Delete(delqm.From(psql.Quote(t.name...)))
+	q := Delete(delqm.From(Quote(t.name...)))
 
 	pkGroup := make([]any, len(t.pkCols.Names()))
 	for i, pk := range t.pkCols.Names() {
-		pkGroup[i] = psql.Quote(pk)
+		pkGroup[i] = Quote(pk)
 	}
 
 	// Select ONLY the primary keys
 	t.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(delqm.Where(
-		psql.Group(pkGroup...).In(t.Expression),
+		Group(pkGroup...).In(t.Expression),
 	))
 
 	rowsAff, err := bob.Exec(ctx, exec, q)

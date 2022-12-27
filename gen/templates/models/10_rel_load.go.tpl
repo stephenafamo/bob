@@ -71,8 +71,8 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
-func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) model.EagerLoader {
-	return model.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
+func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.EagerLoadOption) {{$.Dialect}}.EagerLoader {
+	return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",
 			Sides:  []orm.RelSide{
 				{{range $side := $rel.Sides -}}
@@ -126,10 +126,10 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...model.EagerLoadOption) m
 }
 {{- end}}
 
-func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) model.Loader {
-	return model.Loader(func(ctx context.Context, exec bob.Executor, retrieved any) error {
+func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*dialect.SelectQuery]) {{$.Dialect}}.Loader {
+	return {{$.Dialect}}.Loader(func(ctx context.Context, exec bob.Executor, retrieved any) error {
 		loader, isLoader := retrieved.(interface{
-			Load{{$tAlias.UpSingular}}{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error
+			Load{{$tAlias.UpSingular}}{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[*dialect.SelectQuery]) error
 		})
 		if !isLoader {
 			return fmt.Errorf("object %T cannot load {{$tAlias.UpSingular}}{{$relAlias}}", retrieved)
@@ -140,7 +140,7 @@ func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*{{$.Diale
 }
 
 // Load{{$tAlias.UpSingular}}{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
-func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error {
+func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	{{if $rel.IsToMany -}}
 	related, err := o.{{$relAlias}}(mods...).All(ctx, exec)
 	{{else -}}
@@ -175,7 +175,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 
 // Load{{$tAlias.UpSingular}}{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
 {{if le (len $rel.Sides) 1 -}}
-func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error {
+func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	{{- $side := (index $rel.Sides 0) -}}
 	{{- $fromAlias := $.Aliases.Table $side.From -}}
 	{{- $toAlias := $.Aliases.Table $side.To -}}
@@ -224,7 +224,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 }
 
 {{else -}}
-func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) error {
+func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	{{- $firstSide := (index $rel.Sides 0) -}}
 	{{- $firstFrom := $.Aliases.Table $firstSide.From -}}
 	{{- $firstTo := $.Aliases.Table $firstSide.To -}}

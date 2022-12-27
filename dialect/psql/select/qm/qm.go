@@ -3,38 +3,38 @@ package qm
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*psql.SelectQuery] {
-	return dialect.With[*psql.SelectQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*dialect.SelectQuery] {
+	return dialect.With[*dialect.SelectQuery](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*psql.SelectQuery] {
-	return mods.Recursive[*psql.SelectQuery](r)
+func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
+	return mods.Recursive[*dialect.SelectQuery](r)
 }
 
-func Distinct(on ...any) bob.Mod[*psql.SelectQuery] {
+func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
 	if on == nil {
 		on = []any{} // nil means no distinct
 	}
 
-	return mods.QueryModFunc[*psql.SelectQuery](func(q *psql.SelectQuery) {
+	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.Distinct.On = on
 	})
 }
 
-func Columns(clauses ...any) bob.Mod[*psql.SelectQuery] {
-	return mods.Select[*psql.SelectQuery](clauses)
+func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Select[*dialect.SelectQuery](clauses)
 }
 
-func From(table any) dialect.FromChain[*psql.SelectQuery] {
-	return dialect.From[*psql.SelectQuery](table)
+func From(table any) dialect.FromChain[*dialect.SelectQuery] {
+	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*psql.SelectQuery] {
+func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*dialect.SelectQuery] {
 	var table any
 
 	if len(funcs) == 1 {
@@ -45,143 +45,143 @@ func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*psql.SelectQuer
 		table = dialect.Functions(funcs)
 	}
 
-	return dialect.From[*psql.SelectQuery](table)
+	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*psql.SelectQuery] {
-	return dialect.InnerJoin[*psql.SelectQuery](e)
+func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.InnerJoin[*dialect.SelectQuery](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*psql.SelectQuery] {
-	return dialect.LeftJoin[*psql.SelectQuery](e)
+func LeftJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.LeftJoin[*dialect.SelectQuery](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*psql.SelectQuery] {
-	return dialect.RightJoin[*psql.SelectQuery](e)
+func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.RightJoin[*dialect.SelectQuery](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*psql.SelectQuery] {
-	return dialect.FullJoin[*psql.SelectQuery](e)
+func FullJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.FullJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*psql.SelectQuery] {
-	return dialect.CrossJoin[*psql.SelectQuery](e)
+func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
+	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*psql.SelectQuery] {
-	return mods.Where[*psql.SelectQuery]{e}
+func Where(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return mods.Where[*dialect.SelectQuery]{e}
 }
 
-func WhereClause(clause string, args ...any) bob.Mod[*psql.SelectQuery] {
-	return mods.Where[*psql.SelectQuery]{psql.Raw(clause, args...)}
+func WhereClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Where[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
-func Having(e bob.Expression) bob.Mod[*psql.SelectQuery] {
-	return mods.Having[*psql.SelectQuery]{e}
+func Having(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return mods.Having[*dialect.SelectQuery]{e}
 }
 
-func HavingClause(clause string, args ...any) bob.Mod[*psql.SelectQuery] {
-	return mods.Having[*psql.SelectQuery]{psql.Raw(clause, args...)}
+func HavingClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Having[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
-func GroupBy(e any) bob.Mod[*psql.SelectQuery] {
-	return mods.GroupBy[*psql.SelectQuery]{
+func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
+	return mods.GroupBy[*dialect.SelectQuery]{
 		E: e,
 	}
 }
 
-func GroupByDistinct(distinct bool) bob.Mod[*psql.SelectQuery] {
-	return mods.GroupByDistinct[*psql.SelectQuery](distinct)
+func GroupByDistinct(distinct bool) bob.Mod[*dialect.SelectQuery] {
+	return mods.GroupByDistinct[*dialect.SelectQuery](distinct)
 }
 
-func Window(name string) dialect.WindowMod[*psql.SelectQuery] {
-	m := dialect.WindowMod[*psql.SelectQuery]{
+func Window(name string) dialect.WindowMod[*dialect.SelectQuery] {
+	m := dialect.WindowMod[*dialect.SelectQuery]{
 		Name: name,
 	}
 
-	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*psql.SelectQuery]]{
+	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*dialect.SelectQuery]]{
 		Wrap: &m,
 	}
 	return m
 }
 
-func OrderBy(e any) dialect.OrderBy[*psql.SelectQuery] {
-	return dialect.OrderBy[*psql.SelectQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
+	return dialect.OrderBy[*dialect.SelectQuery](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count int64) bob.Mod[*psql.SelectQuery] {
-	return mods.Limit[*psql.SelectQuery]{
+func Limit(count int64) bob.Mod[*dialect.SelectQuery] {
+	return mods.Limit[*dialect.SelectQuery]{
 		Count: count,
 	}
 }
 
-func Offset(count int64) bob.Mod[*psql.SelectQuery] {
-	return mods.Offset[*psql.SelectQuery]{
+func Offset(count int64) bob.Mod[*dialect.SelectQuery] {
+	return mods.Offset[*dialect.SelectQuery]{
 		Count: count,
 	}
 }
 
-func Fetch(count int64, withTies bool) bob.Mod[*psql.SelectQuery] {
-	return mods.Fetch[*psql.SelectQuery]{
+func Fetch(count int64, withTies bool) bob.Mod[*dialect.SelectQuery] {
+	return mods.Fetch[*dialect.SelectQuery]{
 		Count:    &count,
 		WithTies: withTies,
 	}
 }
 
-func Union(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func Union(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func UnionAll(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func UnionAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Intersect(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func Intersect(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func IntersectAll(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func IntersectAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Except(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func Except(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func ExceptAll(q bob.Query) bob.Mod[*psql.SelectQuery] {
-	return mods.Combine[*psql.SelectQuery]{
+func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func ForUpdate(tables ...string) dialect.LockChain[*psql.SelectQuery] {
-	return dialect.LockChain[*psql.SelectQuery](func() clause.For {
+func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
 		return clause.For{
 			Strength: clause.LockStrengthUpdate,
 			Tables:   tables,
@@ -189,8 +189,8 @@ func ForUpdate(tables ...string) dialect.LockChain[*psql.SelectQuery] {
 	})
 }
 
-func ForNoKeyUpdate(tables ...string) dialect.LockChain[*psql.SelectQuery] {
-	return dialect.LockChain[*psql.SelectQuery](func() clause.For {
+func ForNoKeyUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
 		return clause.For{
 			Strength: clause.LockStrengthNoKeyUpdate,
 			Tables:   tables,
@@ -198,8 +198,8 @@ func ForNoKeyUpdate(tables ...string) dialect.LockChain[*psql.SelectQuery] {
 	})
 }
 
-func ForShare(tables ...string) dialect.LockChain[*psql.SelectQuery] {
-	return dialect.LockChain[*psql.SelectQuery](func() clause.For {
+func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
 		return clause.For{
 			Strength: clause.LockStrengthShare,
 			Tables:   tables,
@@ -207,8 +207,8 @@ func ForShare(tables ...string) dialect.LockChain[*psql.SelectQuery] {
 	})
 }
 
-func ForKeyShare(tables ...string) dialect.LockChain[*psql.SelectQuery] {
-	return dialect.LockChain[*psql.SelectQuery](func() clause.For {
+func ForKeyShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
 		return clause.For{
 			Strength: clause.LockStrengthKeyShare,
 			Tables:   tables,

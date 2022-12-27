@@ -27,16 +27,16 @@ var ColumnNames = struct {
 	{{end -}}
 }
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
-	SelectWhere = Where[*{{$.Dialect}}.SelectQuery]()
-	InsertWhere = Where[*{{$.Dialect}}.InsertQuery]()
-	UpdateWhere = Where[*{{$.Dialect}}.UpdateQuery]()
-	DeleteWhere = Where[*{{$.Dialect}}.DeleteQuery]()
+	SelectWhere = Where[*dialect.SelectQuery]()
+	InsertWhere = Where[*dialect.InsertQuery]()
+	UpdateWhere = Where[*dialect.UpdateQuery]()
+	DeleteWhere = Where[*dialect.DeleteQuery]()
 )
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/model" $.Dialect)}}
-func Where[Q model.Filterable]() struct {
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+func Where[Q {{$.Dialect}}.Filterable]() struct {
 	{{range $table := .Tables -}}
 	{{$tAlias := $.Aliases.Table $table.Name -}}
 	{{$tAlias.UpPlural}} {{$tAlias.DownSingular}}Where[Q]

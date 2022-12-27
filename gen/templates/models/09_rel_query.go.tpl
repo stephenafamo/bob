@@ -6,7 +6,7 @@
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
-func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	q := {{$fAlias.UpPlural}}(mods...)
 	q.Apply(
 		{{- range $index := until (len $rel.Sides) | reverse -}}
@@ -53,7 +53,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*{{$.Dialect}}.Se
 {{$fromAlias := $.Aliases.Table $side.From -}}
 {{$toAlias := $.Aliases.Table $side.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	{{range $index, $local := $side.FromColumns -}}
 		{{- $fromCol := index $fromAlias.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))
@@ -90,7 +90,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*{{$.Dialect
 {{$lastFrom := $.Aliases.Table $lastSide.From -}}
 {{$lastTo := $.Aliases.Table $lastSide.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	{{range $index, $local := $firstSide.FromColumns -}}
 		{{- $fromCol := index $firstFrom.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))

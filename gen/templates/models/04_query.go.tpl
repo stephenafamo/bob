@@ -3,7 +3,7 @@
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 
 // {{$tAlias.UpPlural}} begins a query on {{.Table.Name}}
-func {{$tAlias.UpPlural}}(mods ...bob.Mod[*{{$.Dialect}}.SelectQuery]) {{$tAlias.UpPlural}}Query {
+func {{$tAlias.UpPlural}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$tAlias.UpPlural}}Query {
 	{{if not .Table.PKey -}}
 	return {{$tAlias.UpPlural}}View.Query(mods...)
 	{{else -}}

@@ -1,4 +1,4 @@
-package model
+package psql
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/aarondl/opt"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/select/qm"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/orm"
@@ -22,7 +22,7 @@ var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
 type Loader bob.LoadFunc
 
-func (l Loader) Apply(q *psql.SelectQuery) {
+func (l Loader) Apply(q *dialect.SelectQuery) {
 	q.AppendLoader(l)
 }
 
@@ -30,9 +30,9 @@ func (l Loader) ModifyEagerLoader(s *eagerLoadSettings) {
 	s.extraLoader.AppendLoader(l)
 }
 
-type EagerLoader func(ctx context.Context) (bob.Mod[*psql.SelectQuery], scan.MapperMod, []bob.ExtraLoader)
+type EagerLoader func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.ExtraLoader)
 
-func (l EagerLoader) Apply(q *psql.SelectQuery) {
+func (l EagerLoader) Apply(q *dialect.SelectQuery) {
 	m, f, exl := l(context.Background()) // top level eager load has blank context
 	q.AppendEagerLoadMod(m)
 	q.AppendMapperMod(f)
@@ -102,43 +102,43 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 		o.ModifyEagerLoader(&settings)
 	}
 
-	return eagerLoader[T](func(ctx context.Context) (string, mods.QueryMods[*psql.SelectQuery]) {
+	return eagerLoader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
 		parent, _ := ctx.Value(orm.CtxLoadParentAlias).(string)
 		if parent == "" {
 			parent = rel.Sides[0].From
 		}
 
 		var alias string
-		var queryMods mods.QueryMods[*psql.SelectQuery]
+		var queryMods mods.QueryMods[*dialect.SelectQuery]
 
 		for _, side := range rel.Sides {
 			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
 			on := make([]any, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
 				toCol := side.ToColumns[i]
-				on = append(on, psql.X(
-					psql.Quote(parent, fromCol),
+				on = append(on, X(
+					Quote(parent, fromCol),
 					"=",
-					psql.Quote(alias, toCol),
+					Quote(alias, toCol),
 				))
 			}
 			for _, from := range side.FromWhere {
-				on = append(on, psql.X(
-					psql.Quote(parent, from.Column),
+				on = append(on, X(
+					Quote(parent, from.Column),
 					"=",
 					from.Value,
 				))
 			}
 			for _, to := range side.ToWhere {
-				on = append(on, psql.X(
-					psql.Quote(alias, to.Column),
+				on = append(on, X(
+					Quote(alias, to.Column),
 					"=",
 					to.Value,
 				))
 			}
 
 			queryMods = append(queryMods, qm.
-				LeftJoin(psql.Quote(side.To)).
+				LeftJoin(Quote(side.To)).
 				As(alias).
 				On(on...))
 		}
@@ -150,8 +150,8 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 	}, rel.Name, settings)
 }
 
-func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*psql.SelectQuery]), name string, opt eagerLoadSettings) EagerLoader {
-	return func(ctx context.Context) (bob.Mod[*psql.SelectQuery], scan.MapperMod, []bob.ExtraLoader) {
+func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt eagerLoadSettings) EagerLoader {
+	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.ExtraLoader) {
 		alias, queryMods := f(ctx)
 		prefix := alias + "."
 
