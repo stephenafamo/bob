@@ -201,6 +201,8 @@ github.com/spf13/viper v1.14.0/go.mod h1:WT//axPky3FdvXHzGw33dNdXXXfFQqmEalje+eg
 github.com/stephenafamo/fakedb v0.0.0-20220823001843-60de746ea4b1 h1:mJcvTaBX3gmKTK34fLMkfsWmYGkBevD2GtEXV1vakYI=
 github.com/stephenafamo/scan v0.0.0-20220903213716-8307e83853ef h1:SnrmuVQuRjpXEGonG/hUb3TIAd8vkYpZQ0mpotYzKKU=
 github.com/stephenafamo/scan v0.0.0-20220903213716-8307e83853ef/go.mod h1:jzTuAw6fanK9SKgNYem8LIAUMq4AcwKxkWSf10bPyq4=
+github.com/stephenafamo/scan v0.1.2-0.20221227214649-97519a3ab86f h1:uJwn6s/ZcHCloM/slAcw18aRB3JAkv4p+BiEWoh9Gtw=
+github.com/stephenafamo/scan v0.1.2-0.20221227214649-97519a3ab86f/go.mod h1:lWFwq4xmsQ6E5wR6KvO8SWBalb4ESRihqvffGcPFKOo=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

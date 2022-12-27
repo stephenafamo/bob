@@ -6,19 +6,15 @@ import (
 	"database/sql/driver"
 
 	"github.com/stephenafamo/scan"
+	"github.com/stephenafamo/scan/stdscan"
 )
 
-// A Queryer that returns the concrete type *sql.Rows
-type StdQueryer interface {
-	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
-}
-
-// NewQueryer wraps an StdQueryer and makes it a Queryer
-func NewQueryer[T StdQueryer](wrapped T) scan.Queryer {
+// NewQueryer wraps an [stdscan.Queryer] and makes it a [scan.Queryer]
+func NewQueryer[T stdscan.Queryer](wrapped T) scan.Queryer {
 	return commonQueryer[T]{wrapped: wrapped}
 }
 
-type commonQueryer[T StdQueryer] struct {
+type commonQueryer[T stdscan.Queryer] struct {
 	wrapped T
 }
 
@@ -27,28 +23,28 @@ func (q commonQueryer[T]) QueryContext(ctx context.Context, query string, args .
 	return q.wrapped.QueryContext(ctx, query, args...)
 }
 
-// An interface that *sql.DB, *sql.Tx and *sql.Conn satisfy
+// StdInterface is an interface that *sql.DB, *sql.Tx and *sql.Conn satisfy
 type StdInterface interface {
-	StdQueryer
+	stdscan.Queryer
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 }
 
-// New wraps an StdInterface to make it comply with Queryer
+// New wraps an stdInterface to make it comply with Queryer
 // It also includes a number of other methods that are often used with
 // *sql.DB, *sql.Tx and *sql.Conn
 func New[T StdInterface](wrapped T) common[T] {
 	return common[T]{commonQueryer[T]{wrapped: wrapped}}
 }
 
-// To make sure it works
-var (
-	_ Executor = common[*sql.DB]{}
-	_ Executor = common[*sql.Tx]{}
-	_ Executor = common[*sql.Conn]{}
-)
-
 type common[T StdInterface] struct {
 	commonQueryer[T]
+}
+
+// PrepareContext creates a prepared statement for later queries or executions
+func (c common[T]) PrepareContext(ctx context.Context, query string) (Statement, error) {
+	s, err := c.wrapped.PrepareContext(ctx, query)
+	return stdStmt{s}, err
 }
 
 // ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
@@ -79,12 +75,17 @@ type DB struct {
 	common[*sql.DB]
 }
 
-// Close works the same as [sql.DB.Close()]
+// PingContext verifies a connection to the database is still alive, establishing a connection if necessary.
+func (d DB) PingContext(ctx context.Context) error {
+	return d.wrapped.PingContext(ctx)
+}
+
+// Close works the same as [*sql.DB.Close]
 func (d DB) Close() error {
 	return d.wrapped.Close()
 }
 
-// BeginTx is similar to [sql.DB.BeginTx()], but return a transaction that
+// BeginTx is similar to [*sql.DB.BeginTx], but return a transaction that
 // implements [Queryer]
 func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
 	tx, err := d.wrapped.BeginTx(ctx, opts)
@@ -107,12 +108,12 @@ type Tx struct {
 	common[*sql.Tx]
 }
 
-// Commit works the same as [*sql.Tx.Commit()]
+// Commit works the same as [*sql.Tx.Commit]
 func (t Tx) Commit() error {
 	return t.wrapped.Commit()
 }
 
-// Rollback works the same as [*sql.Tx.Rollback()]
+// Rollback works the same as [*sql.Tx.Rollback]
 func (t Tx) Rollback() error {
 	return t.wrapped.Rollback()
 }
@@ -126,4 +127,33 @@ func NewConn(conn *sql.Conn) Conn {
 // Conn is similar to *sql.Conn but implements [Queryer]
 type Conn struct {
 	common[*sql.Conn]
+}
+
+// PingContext verifies a connection to the database is still alive, establishing a connection if necessary.
+func (c Conn) PingContext(ctx context.Context) error {
+	return c.wrapped.PingContext(ctx)
+}
+
+// Close works the same as [*sql.Conn.Close]
+func (c Conn) Close() error {
+	return c.wrapped.Close()
+}
+
+// BeginTx is similar to [*sql.Conn.BeginTx], but return a transaction that
+// implements [Queryer]
+func (c Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
+	tx, err := c.wrapped.BeginTx(ctx, opts)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	return NewTx(tx), nil
+}
+
+type stdStmt struct {
+	*sql.Stmt
+}
+
+func (s stdStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
+	return s.QueryContext(ctx, args...)
 }
