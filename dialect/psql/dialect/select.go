@@ -24,11 +24,11 @@ type SelectQuery struct {
 	clause.Offset
 	clause.Fetch
 	clause.For
-	clause.Load[*SelectQuery]
+	bob.Load[*SelectQuery]
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	for _, l := range s.Load.EagerLoadMods {
+	for _, l := range s.Load.PreloadMods {
 		l.Apply(&s)
 	}
 

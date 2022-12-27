@@ -2,6 +2,7 @@ package orm
 
 import "fmt"
 
+// RelationshipChainError is the error returned when a wrong value is encountered in a relationship chain
 type RelationshipChainError struct {
 	Table1  string
 	Column1 string

@@ -7,7 +7,7 @@
 {{$.Importer.Import "database/sql" -}}
 {{$.Importer.Import "errors" -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect) -}}
-func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
+func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	if o == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ func (o *{{$tAlias.UpSingular}}) EagerLoad(name string, retrieved any) error {
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
-func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.EagerLoadOption) {{$.Dialect}}.EagerLoader {
+func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOption) {{$.Dialect}}.Preloader {
 	return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",
 			Sides:  []orm.RelSide{

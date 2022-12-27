@@ -46,17 +46,9 @@ func (b BaseQuery[E]) Clone() BaseQuery[E] {
 	return *b2
 }
 
-func (b BaseQuery[E]) GetLoaders() []LoadFunc {
+func (b BaseQuery[E]) GetLoaders() []Loader {
 	if l, ok := any(b.Expression).(Loadable); ok {
 		return l.GetLoaders()
-	}
-
-	return nil
-}
-
-func (b BaseQuery[E]) GetExtraLoaders() []ExtraLoader {
-	if l, ok := any(b.Expression).(Loadable); ok {
-		return l.GetExtraLoaders()
 	}
 
 	return nil

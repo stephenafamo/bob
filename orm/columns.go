@@ -14,6 +14,7 @@ func sliceToMap[T comparable](s []T) map[T]int {
 	return m
 }
 
+// NewColumns returns a [Columns] object with the given column names
 func NewColumns(names ...string) Columns {
 	return Columns{
 		names: names,
@@ -27,6 +28,7 @@ type Columns struct {
 	aliasPrefix string
 }
 
+// Names returns the names of the columns
 func (c Columns) Names() []string {
 	names := make([]string, len(c.names))
 	copy(names, c.names)
@@ -38,16 +40,19 @@ func (c Columns) WithAggFunc(a, b string) Columns {
 	return c
 }
 
+// WithPrefix sets the parent of the columns
 func (c Columns) WithParent(p ...string) Columns {
 	c.parent = p
 	return c
 }
 
+// WithPrefix sets the prefix of the aliases of the column set
 func (c Columns) WithPrefix(prefix string) Columns {
 	c.aliasPrefix = prefix
 	return c
 }
 
+// Only drops other column names from the column set
 func (c Columns) Only(cols ...string) Columns {
 	filtered := make([]string, 0, len(cols)) // max capacity is the only list
 
@@ -67,6 +72,7 @@ func (c Columns) Only(cols ...string) Columns {
 	return c
 }
 
+// Except drops the given column names from the column set
 func (c Columns) Except(cols ...string) Columns {
 	filtered := make([]string, 0, len(c.names)) // max capacity is current capacity
 

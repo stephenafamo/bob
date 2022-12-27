@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/select/qm"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -20,58 +21,61 @@ import (
 //nolint:gochecknoglobals,gosec
 var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
-type Loader bob.LoadFunc
+type Loader func(ctx context.Context, exec bob.Executor, retrieved any) error
+
+func (l Loader) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
+	return l(ctx, exec, retrieved)
+}
 
 func (l Loader) Apply(q *dialect.SelectQuery) {
 	q.AppendLoader(l)
 }
 
-func (l Loader) ModifyEagerLoader(s *eagerLoadSettings) {
+func (l Loader) modifyPreloader(s *preloadSettings) {
 	s.extraLoader.AppendLoader(l)
 }
 
-type EagerLoader func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.ExtraLoader)
+// Preloader must be a preload option to be able to have subloaders
+var _ PreloadOption = Preloader(nil)
 
-func (l EagerLoader) Apply(q *dialect.SelectQuery) {
-	m, f, exl := l(context.Background()) // top level eager load has blank context
-	q.AppendEagerLoadMod(m)
+type Preloader func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader)
+
+func (l Preloader) Apply(q *dialect.SelectQuery) {
+	m, f, exl := l(context.Background()) // top level pre load has blank context
+
+	q.AppendPreloadMod(m)
 	q.AppendMapperMod(f)
-	q.AppendExtraLoader(exl...)
+	q.AppendLoader(exl...)
 }
 
-func (l EagerLoader) ModifyEagerLoader(s *eagerLoadSettings) {
+func (l Preloader) modifyPreloader(s *preloadSettings) {
 	s.subLoaders = append(s.subLoaders, l)
 }
 
-type canEagerLoad interface {
-	EagerLoad(name string, rel any) error
+type canPreload interface {
+	Preload(name string, rel any) error
 }
 
-func NewEagerLoadSettings[T any, Ts ~[]T](cols orm.Columns) eagerLoadSettings {
-	var one T
-	var slice Ts
-	return eagerLoadSettings{
-		columns: cols,
-		extraLoader: &orm.ExtraLoader{
-			OneType:   reflect.TypeOf(one),
-			SliceType: reflect.TypeOf(slice),
-		},
+func newPreloadSettings[T any, Ts ~[]T](cols orm.Columns) preloadSettings {
+	return preloadSettings{
+		columns:     cols,
+		extraLoader: internal.NewAfterPreloader[T, Ts](),
 	}
 }
 
-type eagerLoadSettings struct {
+type preloadSettings struct {
 	columns     orm.Columns
-	subLoaders  []EagerLoader
-	extraLoader *orm.ExtraLoader
+	subLoaders  []Preloader
+	extraLoader *internal.AfterPreloader
 }
 
-type EagerLoadOption interface {
-	ModifyEagerLoader(*eagerLoadSettings)
+type PreloadOption interface {
+	modifyPreloader(*preloadSettings)
 }
 
 type onlyColumnsOpt []string
 
-func (c onlyColumnsOpt) ModifyEagerLoader(el *eagerLoadSettings) {
+func (c onlyColumnsOpt) modifyPreloader(el *preloadSettings) {
 	if len(c) > 0 {
 		el.columns = el.columns.Only(c...)
 	}
@@ -79,7 +83,7 @@ func (c onlyColumnsOpt) ModifyEagerLoader(el *eagerLoadSettings) {
 
 type exceptColumnsOpt []string
 
-func (c exceptColumnsOpt) ModifyEagerLoader(el *eagerLoadSettings) {
+func (c exceptColumnsOpt) modifyPreloader(el *preloadSettings) {
 	if len(c) > 0 {
 		el.columns = el.columns.Except(c...)
 	}
@@ -93,16 +97,16 @@ func LoadExceptColumns(cols ...string) exceptColumnsOpt {
 	return exceptColumnsOpt(cols)
 }
 
-func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...EagerLoadOption) EagerLoader {
-	settings := NewEagerLoadSettings[T, Ts](cols)
+func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...PreloadOption) Preloader {
+	settings := newPreloadSettings[T, Ts](cols)
 	for _, o := range opts {
 		if o == nil {
 			continue
 		}
-		o.ModifyEagerLoader(&settings)
+		o.modifyPreloader(&settings)
 	}
 
-	return eagerLoader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
+	return preloader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
 		parent, _ := ctx.Value(orm.CtxLoadParentAlias).(string)
 		if parent == "" {
 			parent = rel.Sides[0].From
@@ -150,13 +154,13 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Eag
 	}, rel.Name, settings)
 }
 
-func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt eagerLoadSettings) EagerLoader {
-	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.ExtraLoader) {
+func preloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt preloadSettings) Preloader {
+	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(ctx)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
-		extraLoaders := []bob.ExtraLoader{opt.extraLoader}
+		extraLoaders := []bob.Loader{opt.extraLoader}
 
 		ctx = context.WithValue(ctx, orm.CtxLoadParentAlias, alias)
 		for _, l := range opt.subLoaders {
@@ -188,9 +192,9 @@ func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*dialect
 			}
 
 			return func(v *scan.Values, retrieved any) error {
-				loader, isLoader := retrieved.(canEagerLoad)
+				loader, isLoader := retrieved.(canPreload)
 				if !isLoader {
-					return fmt.Errorf("object %T cannot eager load", retrieved)
+					return fmt.Errorf("object %T cannot pre load", retrieved)
 				}
 
 				t, err := f1(v)
@@ -208,13 +212,11 @@ func eagerLoader[T any](f func(context.Context) (string, mods.QueryMods[*dialect
 					return nil
 				}
 
-				if len(opt.extraLoader.Fs) > 0 {
-					if err = opt.extraLoader.Collect(t); err != nil {
-						return err
-					}
+				if err = opt.extraLoader.Collect(t); err != nil {
+					return err
 				}
 
-				return loader.EagerLoad(name, t)
+				return loader.Preload(name, t)
 			}
 		}, extraLoaders
 	}

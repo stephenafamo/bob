@@ -12,17 +12,6 @@ type (
 		GetMapperMods() []scan.MapperMod
 	}
 
-	LoadFunc = func(ctx context.Context, exec Executor, retrieved any) error
-	Loadable interface {
-		GetLoaders() []LoadFunc
-		GetExtraLoaders() []ExtraLoader
-	}
-
-	ExtraLoader interface {
-		LoadOne(context.Context, Executor) error
-		LoadMany(context.Context, Executor) error
-	}
-
 	ExecSettings[T any] struct {
 		AfterSelect func(ctx context.Context, retrieved []T) error
 	}
@@ -47,8 +36,8 @@ func Exec(ctx context.Context, exec Executor, q Query) (int64, error) {
 	}
 
 	if l, ok := q.(Loadable); ok {
-		for _, loader := range l.GetExtraLoaders() {
-			if err := loader.LoadOne(ctx, exec); err != nil {
+		for _, loader := range l.GetLoaders() {
+			if err := loader.Load(ctx, exec, nil); err != nil {
 				return 0, err
 			}
 		}
@@ -83,12 +72,7 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 
 	if l, ok := q.(Loadable); ok {
 		for _, loader := range l.GetLoaders() {
-			if err := loader(ctx, exec, t); err != nil {
-				return t, err
-			}
-		}
-		for _, loader := range l.GetExtraLoaders() {
-			if err := loader.LoadOne(ctx, exec); err != nil {
+			if err := loader.Load(ctx, exec, t); err != nil {
 				return t, err
 			}
 		}
@@ -136,12 +120,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 
 	if l, ok := q.(Loadable); ok {
 		for _, loader := range l.GetLoaders() {
-			if err := loader(ctx, exec, typedSlice); err != nil {
-				return typedSlice, err
-			}
-		}
-		for _, loader := range l.GetExtraLoaders() {
-			if err := loader.LoadMany(ctx, exec); err != nil {
+			if err := loader.Load(ctx, exec, typedSlice); err != nil {
 				return typedSlice, err
 			}
 		}
@@ -188,13 +167,8 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 			}
 
 			for _, loader := range l.GetLoaders() {
-				err = loader(ctx, exec, t)
+				err = loader.Load(ctx, exec, t)
 				if err != nil {
-					return t, err
-				}
-			}
-			for _, loader := range l.GetExtraLoaders() {
-				if err := loader.LoadOne(ctx, exec); err != nil {
 					return t, err
 				}
 			}
