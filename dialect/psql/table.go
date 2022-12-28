@@ -278,7 +278,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
-		inqm.Returning("*"),
+		inqm.Returning(t.Columns()),
 		conflictQM,
 	)
 
@@ -342,7 +342,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
-		inqm.Returning("*"),
+		inqm.Returning(t.Columns()),
 		conflictQM,
 	)
 
