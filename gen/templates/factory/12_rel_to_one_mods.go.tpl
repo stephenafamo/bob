@@ -5,20 +5,19 @@
 {{- if .IsToMany -}}{{continue}}{{end -}}
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
-{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+
+func (m {{$tAlias.DownSingular}}Mods) Without{{$relAlias}}() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+			o.r.{{$relAlias}} = nil
+	})
+}
 
 func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-    {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
-
-		{{if  .NeededColumns -}}
-			o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}{{$relAlias}}R{
-				o: rel,
-				{{relDependenciesTypSet $.Aliases .}}
-			}
-		{{else -}}
-			o.r.{{$relAlias}} = rel
-		{{- end}}
+		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}{{$relAlias}}R{
+			o: rel,
+			{{relDependenciesTypSet $.Aliases .}}
+		}
 	})
 }
 

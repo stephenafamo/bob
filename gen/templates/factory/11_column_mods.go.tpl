@@ -14,27 +14,19 @@ type {{$tAlias.DownSingular}}Mods struct {}
 
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{- if $column.Nullable -}}
-			o.{{$colAlias}} = omitnull.FromNull(val)
-		{{- else -}}
-			o.{{$colAlias}} = omit.From(val)
-		{{- end -}}
+		o.{{$colAlias}} = func() {{$colTyp}} { return val }
 	})
 }
 
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{- if $column.Nullable -}}
-			o.{{$colAlias}} = omitnull.FromNull(f())
-		{{- else -}}
-			o.{{$colAlias}} = omit.From(f())
-		{{- end -}}
+			o.{{$colAlias}} = f
 	})
 }
 
 func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		o.{{$colAlias}}.Unset()
+		o.{{$colAlias}} = nil
 	})
 }
 

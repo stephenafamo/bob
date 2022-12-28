@@ -13,17 +13,3 @@ func (f *factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *
 	return o
 }
 
-func New{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
-	return defaultFactory.New{{$tAlias.UpPlural}}(number, mods...)
-}
-
-func (f *factory) New{{$tAlias.UpPlural}}(number int, mods ...{{$tAlias.UpSingular}}Mod) {{$tAlias.UpSingular}}TemplateSlice {
-  var templates = make({{$tAlias.UpSingular}}TemplateSlice, number)
-
-  for i := 0; i < number; i++ {
-		templates[i] = f.New{{$tAlias.UpSingular}}(mods...)
-	}
-
-	return templates
-}
-

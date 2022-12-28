@@ -391,15 +391,13 @@ func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) stri
 	return strings.Join(ma, "")
 }
 
-func relDependenciesTyp(aliases Aliases, r orm.Relationship, typ string) string {
-	ma := []string{"struct {"}
-	ma = append(ma, fmt.Sprintf("o %s", typ))
+func relDependenciesTyp(aliases Aliases, r orm.Relationship) string {
+	ma := []string{}
 
 	for _, need := range r.NeededColumns() {
 		alias := aliases.Tables[need]
 		ma = append(ma, fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular))
 	}
-	ma = append(ma, "}")
 
 	return strings.Join(ma, "\n")
 }
@@ -509,16 +507,72 @@ func setModelDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Rel
 }
 
 func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, inLoop bool) string {
-	return setDeps(setDepsOptions{
-		i:           i,
-		tables:      tables,
-		aliases:     aliases,
-		r:           r,
-		inLoop:      inLoop,
-		fromOpt:     func(side orm.RelSetDetails) bool { return true },
-		toOpt:       true,
-		skipCreated: true,
-	})
+	local := r.Local()
+	foreign := r.Foreign()
+	ksides := r.ValuedSides()
+
+	ret := make([]string, 0, len(ksides))
+	for _, kside := range ksides {
+		switch kside.TableName {
+		case local, foreign:
+		default:
+			continue
+		}
+
+		mret := make([]string, 0, len(kside.Mapped))
+
+		for _, mapp := range kside.Mapped {
+			switch mapp.ExternalTable {
+			case local, foreign:
+			default:
+				continue
+			}
+
+			oalias := aliases.Tables[kside.TableName]
+			objVarName := getVarName(aliases, kside.TableName, local, foreign, false)
+
+			if mapp.Value != "" {
+				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
+
+				if kside.TableName == r.Local() {
+					i.Import("github.com/stephenafamo/bob/orm")
+					mret = append(mret, fmt.Sprintf(`if %s.%s != %s {
+								return &orm.RelationshipChainError{
+									Table1: %q, Column1: %q, Value: %q,
+								}
+							}`,
+						objVarName, oGetter, mapp.Value,
+						kside.TableName, mapp.Column, mapp.Value,
+					))
+					continue
+				}
+
+				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
+					objVarName,
+					oalias.Columns[mapp.Column],
+					mapp.Value,
+				))
+				continue
+			}
+
+			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
+
+			oSetter := columnSetter(i, aliases, tables,
+				kside.TableName, mapp.ExternalTable,
+				mapp.Column, mapp.ExternalColumn,
+				extObjVarName, false, false)
+
+			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
+				objVarName,
+				oalias.Columns[mapp.Column],
+				oSetter,
+			))
+		}
+
+		ret = append(ret, strings.Join(mret, "\n"))
+	}
+
+	return strings.Join(ret, "\n")
 }
 
 type setDepsOptions struct {
@@ -583,10 +637,12 @@ func setDeps(o setDepsOptions) string {
 			}
 
 			extObjVarName := getVarName(o.aliases, mapp.ExternalTable, local, foreign, false)
+			fromOpt := shouldCreate || (o.fromOpt != nil && o.fromOpt(kside))
+
 			oSetter := columnSetter(o.i, o.aliases, o.tables,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
-				extObjVarName, shouldCreate || (o.fromOpt != nil && o.fromOpt(kside)), o.toOpt)
+				extObjVarName, fromOpt, o.toOpt)
 
 			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 				objVarName,

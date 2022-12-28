@@ -10,11 +10,13 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlia
 	{{range $column := .Table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !o.{{$colAlias}}.IsUnset() {
+		if o.{{$colAlias}} != nil {
 			{{if $column.Nullable -}}
-			m.{{$colAlias}} = o.{{$colAlias}}
+			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+			m.{{$colAlias}} = omitnull.FromNull(o.{{$colAlias}}())
 			{{else -}}
-			m.{{$colAlias}} = o.{{$colAlias}}
+			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
+			m.{{$colAlias}} = omit.From(o.{{$colAlias}}())
 			{{end -}}
 		}
 	{{end}}
@@ -22,12 +24,12 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlia
 	return m
 }
 
-// BuildOptional returns an []*models.Optional{{$tAlias.UpSingular}}
+// BuildManyOptional returns an []*models.Optional{{$tAlias.UpSingular}}
 // this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}TemplateSlice) BuildOptional() []*models.Optional{{$tAlias.UpSingular}} {
-	m := make([]*models.Optional{{$tAlias.UpSingular}}, len(o))
+func (o {{$tAlias.UpSingular}}Template) BuildManyOptional(number int) []*models.Optional{{$tAlias.UpSingular}} {
+	m := make([]*models.Optional{{$tAlias.UpSingular}}, number)
 
-	for i, o := range o {
+	for i := range m {
 	  m[i] = o.BuildOptional()
 	}
 
@@ -45,13 +47,13 @@ func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 	return m
 }
 
-// Build returns an models.{{$tAlias.UpSingular}}Slice
+// BuildMany returns an models.{{$tAlias.UpSingular}}Slice
 // Related objects are also created and placed in the .R field
-// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}TemplateSlice.Create
-func (o {{$tAlias.UpSingular}}TemplateSlice) Build() models.{{$tAlias.UpSingular}}Slice {
-	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
+// NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.CreateMany
+func (o {{$tAlias.UpSingular}}Template) BuildMany(number int) models.{{$tAlias.UpSingular}}Slice {
+	m := make(models.{{$tAlias.UpSingular}}Slice, number)
 
-	for i, o := range o {
+	for i := range m {
 	  m[i] = o.Build()
 	}
 

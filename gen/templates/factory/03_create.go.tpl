@@ -5,10 +5,9 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table .Table.Name}}
 
-// insert{{$tAlias.UpSingular}}Relationships creates and inserts the relationships on *models.{{$tAlias.UpSingular}}
+// insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. 
-// one-relationships that already exist on the model are skipped
-// many-relationships that already exist on the model are added to
+// any required relationship should have already exist on the model
 func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec bob.Executor, m *models.{{$tAlias.UpSingular}}) (context.Context,error) {
 	var err error
 
@@ -23,49 +22,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		{{- end -}}
 
 		if o.r.{{$relAlias}} != nil {
-		{{- if not .NeededColumns -}}
-			{{if not .IsToMany}}
-				var rel{{$index}} *models.{{$ftable.UpSingular}}
-				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.create(ctx, exec)
-				if err != nil {
-					return ctx, err
-				}
-				err = m.Attach{{$relAlias}}(ctx, exec, rel{{$index}})
-				if err != nil {
-					return ctx, err
-				}
-			{{else}}
-				var rel{{$index}} models.{{$ftable.UpSingular}}Slice
-				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.create(ctx, exec)
-				if err != nil {
-					return ctx, err
-				}
-				err = m.Attach{{$relAlias}}(ctx, exec, rel{{$index}}...)
-				if err != nil {
-					return ctx, err
-				}
-			{{end}}
-		{{- else -}}
-			{{if not .IsToMany}}
-				{{- range .NeededColumns -}}
-					{{$alias := $.Aliases.Table . -}}
-					var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
-					ctx, {{$alias.DownSingular}}, err = o.r.{{$relAlias}}.{{$alias.DownSingular}}.create(ctx, exec)
-					if err != nil {
-						return ctx, err
-					}
-				{{- end}}
-
-				var rel{{$index}} *models.{{$ftable.UpSingular}}
-				ctx, rel{{$index}}, err = o.r.{{$relAlias}}.o.create(ctx, exec)
-				if err != nil {
-					return ctx, err
-				}
-				err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} rel{{$index}})
-				if err != nil {
-					return ctx, err
-				}
-			{{else}}
+		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
 					{{- range .NeededColumns -}}
 						{{$alias := $.Aliases.Table . -}}
@@ -74,10 +31,10 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 						if err != nil {
 							return ctx, err
 						}
-					{{- end}}
+					{{end -}}
 
 					var rel{{$index}} models.{{$ftable.UpSingular}}Slice
-					ctx, rel{{$index}}, err = r.o.create(ctx, exec)
+					ctx, rel{{$index}}, err = r.o.createMany(ctx, exec, r.number)
 					if err != nil {
 						return ctx, err
 					}
@@ -87,7 +44,25 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 						return ctx, err
 					}
 				}
-			{{end}}
+		{{- else -}}
+			{{- range .NeededColumns -}}
+				{{$alias := $.Aliases.Table . -}}
+				var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
+				ctx, {{$alias.DownSingular}}, err = o.r.{{$relAlias}}.{{$alias.DownSingular}}.create(ctx, exec)
+				if err != nil {
+					return ctx, err
+				}
+			{{end -}}
+
+			var rel{{$index}} *models.{{$ftable.UpSingular}}
+			ctx, rel{{$index}}, err = o.r.{{$relAlias}}.o.create(ctx, exec)
+			if err != nil {
+				return ctx, err
+			}
+			err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} rel{{$index}})
+			if err != nil {
+				return ctx, err
+			}
 		{{end -}}
 		}
 
@@ -125,7 +100,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			}
 		}
 		if o.r.{{$relAlias}} != nil {
-			ctx, rel{{$index}}, err = o.r.{{$relAlias}}.create(ctx, exec)
+			ctx, rel{{$index}}, err = o.r.{{$relAlias}}.o.create(ctx, exec)
 			if err != nil {
 				return ctx, nil, err
 			}
@@ -134,6 +109,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			{{- if ne .TableName $table.Name}}{{continue}}{{end -}}
 			{{range .Mapped}}
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+				{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
 				{{- $toColA := index $ftable.Columns .ExternalColumn -}}
 				opt.{{$fromColA}} = omit.From(rel{{$index}}.{{$toColA}})
@@ -159,22 +135,23 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 	return ctx, m, err
 }
 
-// Create builds multiple {{$tAlias.DownPlural}} and inserts them into the database
+
+// CreateMany builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field
-func (o {{$tAlias.UpSingular}}TemplateSlice) Create(ctx context.Context, exec bob.Executor) (models.{{$tAlias.UpSingular}}Slice, error) {
-  _, m, err := o.create(ctx, exec)
+func (o {{$tAlias.UpSingular}}Template) CreateMany(ctx context.Context, exec bob.Executor, number int) (models.{{$tAlias.UpSingular}}Slice, error) {
+  _, m, err := o.createMany(ctx, exec, number)
 	return m, err
 }
 
 
-// create builds multiple {{$tAlias.DownPlural}} and inserts them into the database
+// createMany builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field
 // this returns a context that includes the newly inserted models
-func (o {{$tAlias.UpSingular}}TemplateSlice) create(ctx context.Context, exec bob.Executor) (context.Context, models.{{$tAlias.UpSingular}}Slice, error) {
+func (o {{$tAlias.UpSingular}}Template) createMany(ctx context.Context, exec bob.Executor, number int) (context.Context, models.{{$tAlias.UpSingular}}Slice, error) {
 	var err error
-	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
+	m := make(models.{{$tAlias.UpSingular}}Slice, number)
 
-	for i, o := range o {
+	for i := range m {
 	  ctx, m[i], err = o.create(ctx, exec)
 		if err != nil {
 			return ctx, nil, err
@@ -183,6 +160,5 @@ func (o {{$tAlias.UpSingular}}TemplateSlice) create(ctx context.Context, exec bo
 
 	return ctx, m, nil
 }
-
 
 {{end}}

@@ -3,165 +3,147 @@
 {{$tAlias := .Aliases.Table .Table.Name -}}
 
 type {{$tAlias.UpSingular}}Mod interface {
-	Apply(*{{$tAlias.UpSingular}}Template)
+    Apply(*{{$tAlias.UpSingular}}Template)
 }
 
 type {{$tAlias.UpSingular}}ModFunc func(*{{$tAlias.UpSingular}}Template)
 
 func (f {{$tAlias.UpSingular}}ModFunc) Apply(n *{{$tAlias.UpSingular}}Template) {
-	f(n)
+    f(n)
 }
 
 type {{$tAlias.UpSingular}}ModSlice []{{$tAlias.UpSingular}}Mod
 
 func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Template) {
-	for _, f := range mods {
-		 f.Apply(n)
-	}
+    for _, f := range mods {
+         f.Apply(n)
+    }
 }
-
-// {{$tAlias.UpSingular}}TemplateSlice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
-// This should almost always be used instead of []{{$tAlias.UpSingular}}Template.
-type {{$tAlias.UpSingular}}TemplateSlice []*{{$tAlias.UpSingular}}Template
 
 // {{$tAlias.UpSingular}}Template is an object representing the database table.
 // all columns are optional and should be set by mods
 type {{$tAlias.UpSingular}}Template struct {
-	{{- range $column := .Table.Columns -}}
-		{{- $.Importer.ImportList $column.Imports -}}
-		{{- $colAlias := $tAlias.Column $column.Name -}}
-		{{- $colTyp := "" -}}
-		{{- if $column.Nullable -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-			{{- $colTyp = printf "omitnull.Val[%s]" $column.Type -}}
-		{{- else -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
-			{{- $colTyp = printf "omit.Val[%s]" $column.Type -}}
-		{{- end -}}
-		{{$colAlias}} {{$colTyp}}
-	{{end -}}
+    {{- range $column := .Table.Columns -}}
+        {{- $.Importer.ImportList $column.Imports -}}
+        {{- $colAlias := $tAlias.Column $column.Name -}}
+        {{- $colTyp := $column.Type -}}
+        {{- if $column.Nullable -}}
+            {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
+            {{- $colTyp = printf "null.Val[%s]" $column.Type -}}
+        {{- end -}}
+        {{$colAlias}} func() {{$colTyp}}
+    {{end -}}
 
-	{{if .Table.Relationships -}}
-		r {{$tAlias.DownSingular}}R
-	{{- end}}
-	f *factory
+    {{if .Table.Relationships -}}
+        r {{$tAlias.DownSingular}}R
+    {{- end}}
+    f *factory
 }
 
 {{if .Table.Relationships -}}
-{{$.Importer.Import "github.com/aarondl/opt/omit" -}}
 type {{$tAlias.DownSingular}}R struct {
-	{{range .Table.Relationships -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
-		{{- $relAlias := $tAlias.Relationship .Name -}}
-		{{- $relTyp := printf "*%sTemplate" $ftable.UpSingular -}}
-		{{- if .IsToMany -}}
-			{{$relTyp = printf "%sTemplateSlice" $ftable.UpSingular}}
-		{{- end -}}
-		{{- if  .NeededColumns -}}
-			{{$relTyp = printf "*%s%sR" $tAlias.DownSingular $relAlias}}
-		{{- end -}}
-		{{- if  and .IsToMany .NeededColumns -}}
-			{{$relTyp = printf "[]*%s%sR" $tAlias.DownSingular $relAlias}}
-		{{- end -}}
+    {{range .Table.Relationships -}}
+        {{- $ftable := $.Aliases.Table .Foreign -}}
+        {{- $relAlias := $tAlias.Relationship .Name -}}
+        {{- $relTyp := printf "*%s%sR" $tAlias.DownSingular $relAlias -}}
+        {{- if .IsToMany -}}
+            {{$relTyp = printf "[]*%s%sR" $tAlias.DownSingular $relAlias}}
+        {{- end -}}
 
-		{{$relAlias}} {{$relTyp}}
-	{{end -}}
+        {{$relAlias}} {{$relTyp}}
+    {{end -}}
 }
 {{- end}}
 
-{{range .Table.Relationships}}{{if .NeededColumns -}}
+{{range .Table.Relationships}}
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
-{{- $relTyp := printf "*%sTemplate" $ftable.UpSingular -}}
-{{- if .IsToMany -}}
-	{{$relTyp = printf "%sTemplateSlice" $ftable.UpSingular}}
-{{- end -}}
-type {{$tAlias.DownSingular}}{{$relAlias}}R {{relDependenciesTyp $.Aliases . $relTyp}}
-{{end}}{{end}}
+type {{$tAlias.DownSingular}}{{$relAlias}}R struct{
+    {{- if .IsToMany}}
+        number int
+    {{- end}}
+    o *{{$ftable.UpSingular}}Template
+    {{relDependenciesTyp $.Aliases .}}
+}
+{{end}}
 
 // Apply mods to the {{$tAlias.UpSingular}}Template
 func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) {
   for _, mod := range mods {
-		mod.Apply(o)
-	}
+        mod.Apply(o)
+    }
 }
 
 // toModel returns an *models.{{$tAlias.UpSingular}}
 // this does nothing with the relationship templates
 func (o {{$tAlias.UpSingular}}Template) toModel() (*models.{{$tAlias.UpSingular}}) {
-	m := &models.{{$tAlias.UpSingular}}{}
+    m := &models.{{$tAlias.UpSingular}}{}
 
-	{{range $column := .Table.Columns -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !o.{{$colAlias}}.IsUnset() {
-			{{if $column.Nullable -}}
-			m.{{$colAlias}} = o.{{$colAlias}}.MustGetNull()
-			{{else -}}
-			m.{{$colAlias}} = o.{{$colAlias}}.MustGet()
-			{{end -}}
-		}
-	{{end}}
+    {{range $column := .Table.Columns -}}
+    {{$colAlias := $tAlias.Column $column.Name -}}
+        if o.{{$colAlias}} != nil {
+            m.{{$colAlias}} = o.{{$colAlias}}()
+        }
+    {{end}}
 
-	return m
+    return m
 }
 
-// toModel returns an models.{{$tAlias.UpSingular}}Slice
+// toModels returns an models.{{$tAlias.UpSingular}}Slice
 // this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}TemplateSlice) toModel() (models.{{$tAlias.UpSingular}}Slice) {
-	m := make(models.{{$tAlias.UpSingular}}Slice, len(o))
+func (o {{$tAlias.UpSingular}}Template) toModels(number int) (models.{{$tAlias.UpSingular}}Slice) {
+    m := make(models.{{$tAlias.UpSingular}}Slice, number)
 
-	for i, o := range o {
-	  m[i] = o.toModel()
-	}
+    for i := range m {
+      m[i] = o.toModel()
+    }
 
-	return m
+    return m
 }
 
 // setModelRelationships creates and sets the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. Nothing is inserted into the db
-func (o {{$tAlias.UpSingular}}Template) setModelRelationships(m *models.{{$tAlias.UpSingular}}) {
-	{{- range $index, $rel := .Table.Relationships -}}
-		{{- $relAlias := $tAlias.Relationship .Name -}}
-		{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
-		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
-		{{- $invAlias := "" -}}
+func (t {{$tAlias.UpSingular}}Template) setModelRelationships(o *models.{{$tAlias.UpSingular}}) {
+    {{- range $index, $rel := .Table.Relationships -}}
+        {{- $relAlias := $tAlias.Relationship .Name -}}
+        {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+        {{- $ftable := $.Aliases.Table $rel.Foreign -}}
+        {{- $invAlias := "" -}}
     {{- if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias = $ftable.Relationship $invRel.Name}}
-		{{- end -}}
+            {{- $invAlias = $ftable.Relationship $invRel.Name}}
+        {{- end -}}
 
-		if o.r.{{$relAlias}} != nil {
-			{{- if not .IsToMany}}
-				{{- if not .NeededColumns}}
-					rel{{$index}} := o.r.{{$relAlias}}.toModel()
-				{{- else}}
-					rel{{$index}} := o.r.{{$relAlias}}.o.toModel()
-				{{- end}}
-				{{- if and (not $.NoBackReferencing) $invRel.Name}}
-					{{- if not $invRel.IsToMany}}
-						rel{{$index}}.R.{{$invAlias}} = m
-					{{- else}}
-						rel{{$index}}.R.{{$invAlias}} = append(rel{{$index}}.R.{{$invAlias}}, m)
-					{{- end}}
-				{{- end}}
-			{{- else}}
-				rel{{$index}} := models.{{$ftable.UpSingular}}Slice{}
-				for _, r := range o.r.{{$relAlias}} {
-					{{- if .NeededColumns}} for _, r := range r.o { {{- end}}
-					relM := r.toModel()
-					{{- if and (not $.NoBackReferencing) $invRel.Name}}
-						{{- if not $invRel.IsToMany}}
-							relM.R.{{$invAlias}} = m
-						{{- else}}
-							relM.R.{{$invAlias}} = append(relM.R.{{$invAlias}}, m)
-						{{- end}}
-					{{- end}}
-					rel{{$index}} = append(rel{{$index}}, relM)
-					{{- if .NeededColumns}} } {{- end}}
-				}
-			{{- end}}
-			m.R.{{$relAlias}} = rel{{$index}}
-		}
+        if t.r.{{$relAlias}} != nil {
+            {{- if not .IsToMany}}
+                rel := t.r.{{$relAlias}}.o.toModel()
+                {{- if and (not $.NoBackReferencing) $invRel.Name}}
+                    {{- if not $invRel.IsToMany}}
+                        rel.R.{{$invAlias}} = o
+                    {{- else}}
+                        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+                    {{- end}}
+                {{- end}}
+                {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+            {{- else -}}
+                rel := models.{{$ftable.UpSingular}}Slice{}
+                for _, r := range t.r.{{$relAlias}} {
+                  related := r.o.toModels(r.number)
+                  for _, rel := range related {
+                    {{- setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                    {{- if and (not $.NoBackReferencing) $invRel.Name}}
+                        {{- if not $invRel.IsToMany}}
+                            rel.R.{{$invAlias}} = o
+                        {{- else}}
+                            rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+                        {{- end}}
+                    {{- end}}
+                  }
+                  rel = append(rel, related...)
+                }
+            {{- end}}
+            o.R.{{$relAlias}} = rel
+        }
 
-	{{end -}}
+    {{end -}}
 }
 
