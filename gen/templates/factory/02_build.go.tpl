@@ -1,5 +1,52 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
+{{ $table := .Table}}
 {{ $tAlias := .Aliases.Table .Table.Name -}}
+
+// setModelRels creates and sets the relationships on *models.{{$tAlias.UpSingular}}
+// according to the relationships in the template. Nothing is inserted into the db
+func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingular}}) {
+    {{- range $index, $rel := .Table.Relationships -}}
+        {{- $relAlias := $tAlias.Relationship .Name -}}
+        {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+        {{- $ftable := $.Aliases.Table $rel.Foreign -}}
+        {{- $invAlias := "" -}}
+    {{- if and (not $.NoBackReferencing) $invRel.Name -}}
+            {{- $invAlias = $ftable.Relationship $invRel.Name}}
+        {{- end -}}
+
+        if t.r.{{$relAlias}} != nil {
+            {{- if not .IsToMany}}
+                rel := t.r.{{$relAlias}}.o.toModel()
+                {{- if and (not $.NoBackReferencing) $invRel.Name}}
+                    {{- if not $invRel.IsToMany}}
+                        rel.R.{{$invAlias}} = o
+                    {{- else}}
+                        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+                    {{- end}}
+                {{- end}}
+                {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+            {{- else -}}
+                rel := models.{{$ftable.UpSingular}}Slice{}
+                for _, r := range t.r.{{$relAlias}} {
+                  related := r.o.toModels(r.number)
+                  for _, rel := range related {
+                    {{- setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                    {{- if and (not $.NoBackReferencing) $invRel.Name}}
+                        {{- if not $invRel.IsToMany}}
+                            rel.R.{{$invAlias}} = o
+                        {{- else}}
+                            rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+                        {{- end}}
+                    {{- end}}
+                  }
+                  rel = append(rel, related...)
+                }
+            {{- end}}
+            o.R.{{$relAlias}} = rel
+        }
+
+    {{end -}}
+}
 
 {{if .Table.PKey -}}
 // BuildOptional returns an *models.Optional{{$tAlias.UpSingular}}
@@ -42,7 +89,7 @@ func (o {{$tAlias.UpSingular}}Template) BuildManyOptional(number int) []*models.
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.Create
 func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 	m := o.toModel()
-	o.setModelRelationships(m)
+	o.setModelRels(m)
 
 	return m
 }
