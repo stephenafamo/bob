@@ -116,3 +116,7 @@ func (f *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (b
 	count, err := f.Count(ctx, exec)
 	return count > 0, err
 }
+
+func (f *ViewQuery[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer) (bob.QueryStmt[T, Tslice], error) {
+	return bob.PrepareQueryx[T, Tslice](ctx, f, scan.StructMapper[T](), exec)
+}
