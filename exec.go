@@ -158,10 +158,10 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		return scan.Cursor(ctx, exec, m, sql, args...)
 	}
 
-	m2 := scan.Mapper[T](func(ctx context.Context, c map[string]int) func(*scan.Values) (T, error) {
-		mapFunc := m(ctx, c)
-		return func(v *scan.Values) (T, error) {
-			t, err := mapFunc(v)
+	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
+		before, after := m(ctx, c)
+		return before, func(link any) (T, error) {
+			t, err := after(link)
 			if err != nil {
 				return t, err
 			}

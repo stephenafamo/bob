@@ -179,37 +179,23 @@ func preloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.S
 			}
 		}
 
-		return queryMods, func(ctx context.Context, cols map[string]int) func(v *scan.Values, retrieved any) error {
-			f1 := scan.StructMapper[T](
+		return queryMods, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+			before, after := scan.StructMapper[T](
 				scan.WithStructTagPrefix(prefix),
 				scan.WithTypeConverter(typeConverter{}),
 				scan.WithRowValidator(rowValidator),
+				scan.WithMapperMods(mapperMods...),
 			)(ctx, cols)
 
-			fs := make([]scan.MapperModFunc, len(mapperMods))
-			for i, m := range mapperMods {
-				fs[i] = m(ctx, cols)
-			}
-
-			return func(v *scan.Values, retrieved any) error {
+			return before, func(link, retrieved any) error {
 				loader, isLoader := retrieved.(canPreload)
 				if !isLoader {
 					return fmt.Errorf("object %T cannot pre load", retrieved)
 				}
 
-				t, err := f1(v)
+				t, err := after(link)
 				if err != nil {
 					return err
-				}
-
-				for _, fx := range fs {
-					if err := fx(v, t); err != nil {
-						return err
-					}
-				}
-
-				if v.IsRecording() {
-					return nil
 				}
 
 				if err = opt.extraLoader.Collect(t); err != nil {
@@ -222,9 +208,10 @@ func preloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.S
 	}
 }
 
-func rowValidator(vals map[string]reflect.Value) bool {
+// the row is valid if at least one column is not null
+func rowValidator(_ []string, vals []reflect.Value) bool {
 	for _, v := range vals {
-		v, ok := v.Interface().(wrapper)
+		v, ok := v.Interface().(*wrapper)
 		if !ok {
 			return false
 		}
@@ -259,7 +246,7 @@ func (v *wrapper) Scan(value any) error {
 
 type typeConverter struct{}
 
-func (d typeConverter) ConvertType(typ reflect.Type) reflect.Value {
+func (typeConverter) TypeToDestination(typ reflect.Type) reflect.Value {
 	val := reflect.ValueOf(&wrapper{
 		V: reflect.New(typ).Interface(),
 	})
@@ -267,6 +254,6 @@ func (d typeConverter) ConvertType(typ reflect.Type) reflect.Value {
 	return val
 }
 
-func (d typeConverter) OriginalValue(val reflect.Value) reflect.Value {
-	return val.FieldByName("V").Elem().Elem()
+func (typeConverter) ValueFromDestination(val reflect.Value) reflect.Value {
+	return val.Elem().FieldByName("V").Elem().Elem()
 }

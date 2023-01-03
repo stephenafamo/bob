@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/aarondl/opt v0.0.0-20220611032941-846a5a057d8c
+	github.com/aarondl/opt v0.0.0-20221129170750-3d40c96d9bb8
 	github.com/friendsofgo/errors v0.9.2
 	github.com/google/go-cmp v0.5.9
 	github.com/jackc/pgx/v5 v5.2.0
@@ -13,7 +13,7 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.14.0
-	github.com/stephenafamo/scan v0.1.2-0.20221227214649-97519a3ab86f
+	github.com/stephenafamo/scan v0.4.0
 	github.com/stretchr/testify v1.8.1
 	github.com/volatiletech/strmangle v0.0.4
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
@@ -23,6 +23,7 @@ require (
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect

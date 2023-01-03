@@ -29,14 +29,15 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
 			for _, rel := range rels {
-				{{if $invRel.IsToMany -}}
-					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
-				{{else -}}
-					rel.R.{{$invAlias}} =  o
-				{{- end}}
+				if rel != nil {
+					{{if $invRel.IsToMany -}}
+						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+					{{- else -}}
+						rel.R.{{$invAlias}} =  o
+					{{- end}}
+				}
 			}
 			{{- end}}
-
 			return nil
 		{{else -}}
 			rel, ok := retrieved.(*{{$fAlias.UpSingular}})
@@ -48,11 +49,13 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
-				{{if $invRel.IsToMany -}}
-					rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
-				{{else -}}
-					rel.R.{{$invAlias}} =  o
-				{{- end}}
+				if rel != nil {
+					{{if $invRel.IsToMany -}}
+						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
+					{{- else -}}
+						rel.R.{{$invAlias}} =  o
+					{{- end}}
+				}
 			{{- end}}
 			return nil
 		{{end -}}
@@ -141,6 +144,10 @@ func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*dialect.S
 
 // Load{{$tAlias.UpSingular}}{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
 func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+  if o == nil {
+	  return nil
+	}
+
 	{{if $rel.IsToMany -}}
 	related, err := o.{{$relAlias}}(mods...).All(ctx, exec)
 	{{else -}}
@@ -179,6 +186,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- $side := (index $rel.Sides 0) -}}
 	{{- $fromAlias := $.Aliases.Table $side.From -}}
 	{{- $toAlias := $.Aliases.Table $side.To -}}
+  if len(os) == 0 {
+	  return nil
+	}
 
 	{{$fAlias.DownPlural}}, err := os.{{$relAlias}}(mods...).All(ctx, exec)
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
@@ -228,6 +238,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- $firstSide := (index $rel.Sides 0) -}}
 	{{- $firstFrom := $.Aliases.Table $firstSide.From -}}
 	{{- $firstTo := $.Aliases.Table $firstSide.To -}}
+  if len(os) == 0 {
+	  return nil
+	}
 
 	q := os.{{$relAlias}}(mods...)
 	q.Apply(
