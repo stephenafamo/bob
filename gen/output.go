@@ -167,10 +167,17 @@ func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
 
 		headerOut.Reset()
 		out.Reset()
+		prevLen := out.Len()
 
 		e.data.ResetImports()
 		if err := executeTemplate(out, e.templates.Template, tplName, e.data); err != nil {
 			return err
+		}
+
+		// Skip writing the file if the content is empty
+		if out.Len()-prevLen < 1 {
+			fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.output.OutFolder, normalized)
+			continue
 		}
 
 		if isGo {

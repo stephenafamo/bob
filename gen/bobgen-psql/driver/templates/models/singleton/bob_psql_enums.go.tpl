@@ -1,4 +1,4 @@
-{{range $enum := $.ExtraInfo.Enums}}
+{{- range $enum := $.ExtraInfo.Enums}}
 	{{$allvals := "\n"}}
 	type {{$enum.Type}} string
 
@@ -14,4 +14,5 @@
 	func All{{$enum.Type}}() []{{$enum.Type}} {
 		return []{{$enum.Type}}{ {{$allvals}} }
 	}
-{{end}}
+
+{{end -}}
