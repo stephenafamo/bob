@@ -114,11 +114,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return errors.New("database dsn is not set")
 	}
 
-	modelsPkg, err := helpers.ModelsPackage(viper.GetString("output"))
-	if err != nil {
-		return fmt.Errorf("getting models package: %w", err)
-	}
-
 	outputs := []*gen.Output{
 		{
 			OutFolder: viper.GetString("output"),
@@ -135,37 +130,19 @@ func preRun(cmd *cobra.Command, args []string) error {
 		})
 	}
 
-	cmdConfig = &gen.Config[driver.Extra]{
-		Driver: driver.New(driver.Config{
-			Dsn:         dsn,
-			Schema:      viper.GetString("psql.schema"),
-			Includes:    viper.GetStringSlice("psql.whitelist"),
-			Excludes:    viper.GetStringSlice("psql.blacklist"),
-			Concurrency: viper.GetInt("concurrency"),
-		}),
-		Outputs:           outputs,
-		Wipe:              viper.GetBool("wipe"),
-		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
-		TagIgnore:         viper.GetStringSlice("tag-ignore"),
-		RelationTag:       viper.GetString("relation-tag"),
-		NoBackReferencing: viper.GetBool("no-back-referencing"),
-
-		Aliases:       gen.ConvertAliases(viper.Get("aliases")),
-		Replacements:  gen.ConvertReplacements(viper.Get("replacements")),
-		Relationships: gen.ConvertRelationships(viper.Get("relationships")),
-		Inflections: gen.Inflections{
-			Plural:        viper.GetStringMapString("inflections.plural"),
-			PluralExact:   viper.GetStringMapString("inflections.plural_exact"),
-			Singular:      viper.GetStringMapString("inflections.singular"),
-			SingularExact: viper.GetStringMapString("inflections.singular_exact"),
-			Irregular:     viper.GetStringMapString("inflections.irregular"),
-		},
-
-		Generator:     "BobGen Psql " + helpers.Version(),
-		ModelsPackage: modelsPkg,
+	cmdConfig, err = helpers.NewConfig("Psql", driver.New(driver.Config{
+		Dsn:         dsn,
+		Schema:      viper.GetString("psql.schema"),
+		Includes:    viper.GetStringSlice("psql.whitelist"),
+		Excludes:    viper.GetStringSlice("psql.blacklist"),
+		Concurrency: viper.GetInt("concurrency"),
+	}), outputs)
+	if err != nil {
+		return err
 	}
 
 	cmdState, err = gen.New("psql", cmdConfig)
+
 	return err
 }
 
