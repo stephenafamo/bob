@@ -1,0 +1,2623 @@
+{
+	"schema": "public",
+	"tables": [
+		{
+			"name": "sponsors",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_sponsors",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": null,
+			"unique": null,
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "sponsorsTovideos",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "sponsors",
+							"FromColumns": [
+								"id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"sponsor_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "tags",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_tags",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": null,
+			"unique": null,
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "tagsTovideo_tagsvideo_tagsTovideos",
+					"ByJoinTable": true,
+					"Sides": [
+						{
+							"From": "tags",
+							"FromColumns": [
+								"id"
+							],
+							"To": "video_tags",
+							"ToColumns": [
+								"tag_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"video_id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "type_monsters",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "enum_use",
+					"db_type": "workday",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "Workday",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "enum_nullable",
+					"db_type": "workday",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "Workday",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_zero",
+					"db_type": "Boolean",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_one",
+					"db_type": "Boolean",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_two",
+					"db_type": "Boolean",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_three",
+					"db_type": "Boolean",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_four",
+					"db_type": "Boolean",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_five",
+					"db_type": "Boolean",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bool_six",
+					"db_type": "Boolean",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_zero",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_one",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_two",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_three",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_four",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_five",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_six",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_seven",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_eight",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_nine",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_ten",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "string_eleven",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_zero",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_one",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_two",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_three",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_four",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_five",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_six",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_seven",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_eight",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "nonbyte_nine",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byte_zero",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byte_one",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byte_two",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byte_three",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byte_four",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_zero",
+					"db_type": "BigInt",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_one",
+					"db_type": "BigInt",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_two",
+					"db_type": "BigInt",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_three",
+					"db_type": "BigInt",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_four",
+					"db_type": "BigInt",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_five",
+					"db_type": "BigInt",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "big_int_six",
+					"db_type": "BigInt",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_zero",
+					"db_type": "Int",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_one",
+					"db_type": "Int",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_two",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_three",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_four",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_five",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "int_six",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_zero",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_one",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_two",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_three",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_four",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_five",
+					"db_type": "Decimal",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_six",
+					"db_type": "Decimal",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_seven",
+					"db_type": "Decimal",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_eight",
+					"db_type": "Decimal",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "float_nine",
+					"db_type": "Decimal",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_zero",
+					"db_type": "Bytes",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_one",
+					"db_type": "Bytes",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_two",
+					"db_type": "Bytes",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_three",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_four",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_five",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_six",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_seven",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "bytea_eight",
+					"db_type": "Bytes",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_zero",
+					"db_type": "DateTime",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_one",
+					"db_type": "DateTime",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_two",
+					"db_type": "DateTime",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_three",
+					"db_type": "DateTime",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_four",
+					"db_type": "DateTime",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_five",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_six",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_seven",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_eight",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_nine",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_ten",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_eleven",
+					"db_type": "DateTime",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_twelve",
+					"db_type": "DateTime",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_thirteen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_fourteen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_fifteen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_sixteen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_seventeen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "time_eighteen",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_zero",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_one",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_two",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_three",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_four",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "uuid_five",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "integer_default",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "varchar_default",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "timestamp_notz",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "timestamp_tz",
+					"db_type": "DateTime",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "json_null",
+					"db_type": "Json",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "json_nnull",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonb_null",
+					"db_type": "Json",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonb_nnull",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "double_prec_null",
+					"db_type": "Float",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "double_prec_nnull",
+					"db_type": "Float",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "inet_null",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "inet_nnull",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "money_null",
+					"db_type": "Decimal",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "money_nnull",
+					"db_type": "Decimal",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "xml_null",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "xml_nnull",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "intarr_null",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.Int64Array",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Int[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "intarr_nnull",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.Int64Array",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Int[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "boolarr_null",
+					"db_type": "Boolean",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.BoolArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Boolean[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "boolarr_nnull",
+					"db_type": "Boolean",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.BoolArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Boolean[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "varchararr_null",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.StringArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "String[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "varchararr_nnull",
+					"db_type": "String",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.StringArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "String[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "decimalarr_null",
+					"db_type": "Decimal",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "Decimal[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "decimalarr_nnull",
+					"db_type": "Decimal",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[decimal.Decimal]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "Decimal[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byteaarr_null",
+					"db_type": "Bytes",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.ByteaArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Bytes[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "byteaarr_nnull",
+					"db_type": "Bytes",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.ByteaArray",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Bytes[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonbarr_null",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"time\""
+					],
+					"arr_type": "Json[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonbarr_nnull",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"time\""
+					],
+					"arr_type": "Json[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonarr_null",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"time\""
+					],
+					"arr_type": "Json[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "jsonarr_nnull",
+					"db_type": "Json",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\"",
+						"\"time\""
+					],
+					"arr_type": "Json[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "customarr_null",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.Int64Array",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Int[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "customarr_nnull",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "pq.Int64Array",
+					"imports": [
+						"\"github.com/lib/pq\""
+					],
+					"arr_type": "Int[]",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "domainuint3_nnull",
+					"db_type": "Decimal",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "decimal.Decimal",
+					"imports": [
+						"\"github.com/shopspring/decimal\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "base",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "generated_nnull",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "generated_null",
+					"db_type": "String",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_type_monsters",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": null,
+			"unique": null,
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"name": "users",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "email_validated",
+					"db_type": "Boolean",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "primary_email",
+					"db_type": "String",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_users",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": null,
+			"unique": [
+				{
+					"name": "unique_users_primary_email",
+					"columns": [
+						"primary_email"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "usersTovideos",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "users",
+							"FromColumns": [
+								"id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"user_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "video_tags",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "video_id",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "tag_id",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_video_tags",
+				"columns": [
+					"video_id",
+					"tag_id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "tagsTovideo_tags",
+					"columns": [
+						"tag_id"
+					],
+					"foreign_table": "tags",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "video_tagsTovideos",
+					"columns": [
+						"video_id"
+					],
+					"foreign_table": "videos",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": null,
+			"is_join_table": true,
+			"relationship": [
+				{
+					"Name": "tagsTovideo_tags",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "video_tagsTovideos",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"video_id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "videos",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "Int",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "user_id",
+					"db_type": "Int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "Int",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"domain_name": "",
+					"full_db_type": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_videos",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "sponsorsTovideos",
+					"columns": [
+						"sponsor_id"
+					],
+					"foreign_table": "sponsors",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "usersTovideos",
+					"columns": [
+						"user_id"
+					],
+					"foreign_table": "users",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [
+				{
+					"name": "unique_videos_sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "tagsTovideo_tagsvideo_tagsTovideos",
+					"ByJoinTable": true,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"id"
+							],
+							"To": "video_tags",
+							"ToColumns": [
+								"video_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "sponsorsTovideos",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"sponsor_id"
+							],
+							"To": "sponsors",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "usersTovideos",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"user_id"
+							],
+							"To": "users",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		}
+	],
+	"extra_info": {
+		"Provider": {
+			"DriverName": "",
+			"DriverPkg": "",
+			"DriverSource": "",
+			"DriverENVSource": ""
+		},
+		"Enums": [
+			{
+				"Name": "workday",
+				"Type": "Workday",
+				"Values": [
+					"monday",
+					"tuesday",
+					"wednesday",
+					"thursday",
+					"friday"
+				]
+			}
+		]
+	}
+}

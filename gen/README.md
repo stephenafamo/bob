@@ -83,11 +83,12 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
     There are no immediate plans for this.
     The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
 
-## Supported Databases
+## Avaialable Drivers
 
-| Database          | Driver Location |
-| ----------------- | --------------- |
-| PostgreSQL        | [LINK](bobgen-psql) |
+| Database          | Driver Location       |
+| ----------------- | --------------------- |
+| PostgreSQL        | [LINK](bobgen-psql)   |
+| Prisma            | [LINK](bobgen-prisma) |
 
 ## Configuration
 
