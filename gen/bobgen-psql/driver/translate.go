@@ -99,25 +99,25 @@ func getArrayType(c drivers.Column) (string, string, importers.List) {
 	// the possibities. Notably, an array of a user-defined type ("CREATE
 	// DOMAIN my_array AS my_type[]") will be treated as an array of strings,
 	// which is not guaranteed to be correct.
-	if c.ArrType != nil {
-		switch *c.ArrType {
+	if c.ArrType != "" {
+		switch c.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "pq.Int64Array", *c.ArrType, nil
+			return "pq.Int64Array", c.ArrType, nil
 		case "bytea":
-			return "pq.ByteaArray", *c.ArrType, nil
+			return "pq.ByteaArray", c.ArrType, nil
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
-			return "pq.StringArray", *c.ArrType, nil
+			return "pq.StringArray", c.ArrType, nil
 		case "boolean":
-			return "pq.BoolArray", *c.ArrType, nil
+			return "pq.BoolArray", c.ArrType, nil
 		case "decimal", "numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.GenericArray[decimal.Decimal]", *c.ArrType, imports
+			return "parray.GenericArray[decimal.Decimal]", c.ArrType, imports
 		case "double precision", "real":
-			return "pq.Float64Array", *c.ArrType, nil
+			return "pq.Float64Array", c.ArrType, nil
 		default:
-			return "pq.StringArray", *c.ArrType, nil
+			return "pq.StringArray", c.ArrType, nil
 		}
 	} else {
 		switch c.UDTName {

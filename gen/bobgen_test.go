@@ -260,7 +260,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Type:       "int",
 					DBType:     "numeric",
 					Default:    "some db nonsense",
-					DomainName: &domainStr,
+					DomainName: domainStr,
 					Nullable:   false,
 				},
 			},
@@ -311,7 +311,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 		{
 			Match: drivers.Column{
-				DomainName: &domainStr,
+				DomainName: domainStr,
 			},
 			Replace: drivers.Column{
 				Type:    "big.Int",

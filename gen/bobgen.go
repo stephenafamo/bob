@@ -329,10 +329,10 @@ func matchColumn(c, m drivers.Column) bool {
 	if !matches(m.FullDBType, c.FullDBType) {
 		return false
 	}
-	if m.ArrType != nil && (c.ArrType == nil || !matches(*m.ArrType, *c.ArrType)) {
+	if m.ArrType != "" && (c.ArrType == "" || !matches(m.ArrType, c.ArrType)) {
 		return false
 	}
-	if m.DomainName != nil && (c.DomainName == nil || !matches(*m.DomainName, *c.DomainName)) {
+	if m.DomainName != "" && (c.DomainName == "" || !matches(m.DomainName, c.DomainName)) {
 		return false
 	}
 
@@ -371,9 +371,8 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	if len(src.FullDBType) != 0 {
 		ret.FullDBType = src.FullDBType
 	}
-	if src.ArrType != nil && len(*src.ArrType) != 0 {
-		ret.ArrType = new(string)
-		*ret.ArrType = *src.ArrType
+	if len(src.ArrType) != 0 {
+		ret.ArrType = src.ArrType
 	}
 
 	return ret

@@ -15,9 +15,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				}
 			],
@@ -69,9 +69,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				}
 			],
@@ -138,9 +138,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -153,9 +153,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -168,9 +168,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -183,9 +183,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -198,9 +198,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -213,9 +213,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -228,9 +228,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -243,9 +243,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -258,9 +258,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -273,9 +273,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -288,9 +288,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -303,9 +303,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -318,9 +318,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -333,9 +333,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -348,9 +348,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -363,9 +363,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -378,9 +378,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -393,9 +393,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -408,9 +408,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -423,9 +423,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -438,9 +438,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -453,9 +453,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -468,9 +468,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -483,9 +483,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -498,9 +498,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -513,9 +513,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -528,9 +528,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -543,9 +543,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -558,9 +558,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -573,9 +573,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -588,9 +588,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -603,9 +603,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -618,9 +618,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -633,9 +633,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -648,9 +648,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -663,9 +663,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -678,9 +678,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -693,9 +693,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -708,9 +708,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -723,9 +723,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -738,9 +738,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -753,9 +753,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -768,9 +768,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -783,9 +783,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -798,9 +798,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -813,9 +813,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -828,9 +828,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -843,9 +843,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -858,9 +858,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -873,9 +873,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -888,9 +888,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -905,9 +905,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -922,9 +922,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -939,9 +939,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -956,9 +956,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -973,9 +973,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -990,9 +990,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -1007,9 +1007,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -1024,9 +1024,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -1041,9 +1041,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -1058,9 +1058,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -1073,9 +1073,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1088,9 +1088,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1103,9 +1103,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1118,9 +1118,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1133,9 +1133,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1148,9 +1148,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1163,9 +1163,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1178,9 +1178,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1193,9 +1193,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -1210,9 +1210,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1227,9 +1227,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1244,9 +1244,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1261,9 +1261,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1278,9 +1278,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1295,9 +1295,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1312,9 +1312,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1329,9 +1329,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1346,9 +1346,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1363,9 +1363,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1380,9 +1380,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1397,9 +1397,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1414,9 +1414,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1431,9 +1431,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1448,9 +1448,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1465,9 +1465,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1482,9 +1482,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1499,9 +1499,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1516,9 +1516,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -1531,9 +1531,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1546,9 +1546,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1561,9 +1561,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1576,9 +1576,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1591,9 +1591,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1606,9 +1606,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -1621,9 +1621,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -1636,9 +1636,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -1653,9 +1653,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -1670,9 +1670,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamptz",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamptz"
 				},
 				{
@@ -1685,9 +1685,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -1700,9 +1700,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -1718,9 +1718,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -1736,9 +1736,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -1754,9 +1754,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -1772,9 +1772,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -1789,9 +1789,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -1806,9 +1806,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -1821,9 +1821,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -1836,9 +1836,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -1851,9 +1851,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -1866,9 +1866,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -1881,9 +1881,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -1896,9 +1896,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -1911,9 +1911,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -1926,9 +1926,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -1943,9 +1943,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -1960,9 +1960,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -1977,9 +1977,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -1994,9 +1994,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -2009,9 +2009,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -2024,9 +2024,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -2039,9 +2039,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -2054,9 +2054,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -2071,9 +2071,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -2088,9 +2088,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -2103,9 +2103,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -2118,9 +2118,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -2135,9 +2135,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -2152,9 +2152,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -2169,9 +2169,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -2186,9 +2186,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -2201,9 +2201,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -2216,9 +2216,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -2231,9 +2231,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -2246,9 +2246,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -2261,9 +2261,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -2276,9 +2276,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -2291,9 +2291,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -2306,9 +2306,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -2325,7 +2325,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -2342,7 +2342,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -2359,7 +2359,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -2376,7 +2376,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -2393,7 +2393,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -2410,7 +2410,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -2428,7 +2428,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -2446,7 +2446,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -2463,7 +2463,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -2480,7 +2480,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -2497,7 +2497,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -2514,7 +2514,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -2531,7 +2531,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -2548,7 +2548,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -2563,7 +2563,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -2580,7 +2580,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -2597,7 +2597,7 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
 					"domain_name": "uint3",
 					"full_db_type": "numeric"
@@ -2612,9 +2612,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -2627,9 +2627,9 @@
 					"generated": true,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -2642,9 +2642,9 @@
 					"generated": true,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				}
 			],
@@ -2673,9 +2673,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -2688,9 +2688,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -2703,9 +2703,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(100)"
 				}
 			],
@@ -2764,9 +2764,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -2779,9 +2779,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				}
 			],
@@ -2877,9 +2877,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -2892,9 +2892,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -2907,9 +2907,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				}
 			],
@@ -3048,9 +3048,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3063,9 +3063,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -3078,9 +3078,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -3093,9 +3093,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3108,9 +3108,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3123,9 +3123,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3138,9 +3138,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3153,9 +3153,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3168,9 +3168,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3183,9 +3183,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -3198,9 +3198,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -3213,9 +3213,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -3228,9 +3228,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -3243,9 +3243,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -3258,9 +3258,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -3273,9 +3273,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3288,9 +3288,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3303,9 +3303,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3318,9 +3318,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3333,9 +3333,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3348,9 +3348,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3363,9 +3363,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -3378,9 +3378,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -3393,9 +3393,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -3408,9 +3408,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -3423,9 +3423,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -3438,9 +3438,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -3453,9 +3453,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -3468,9 +3468,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -3483,9 +3483,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -3498,9 +3498,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -3513,9 +3513,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -3528,9 +3528,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -3543,9 +3543,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -3558,9 +3558,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -3573,9 +3573,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -3588,9 +3588,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -3603,9 +3603,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3618,9 +3618,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3633,9 +3633,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3648,9 +3648,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3663,9 +3663,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3678,9 +3678,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3693,9 +3693,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -3708,9 +3708,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3723,9 +3723,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3738,9 +3738,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3753,9 +3753,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3768,9 +3768,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3783,9 +3783,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3798,9 +3798,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -3815,9 +3815,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3832,9 +3832,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3849,9 +3849,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3866,9 +3866,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3883,9 +3883,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3900,9 +3900,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3917,9 +3917,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3934,9 +3934,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3951,9 +3951,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3968,9 +3968,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -3983,9 +3983,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -3998,9 +3998,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4013,9 +4013,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4028,9 +4028,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4043,9 +4043,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4058,9 +4058,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4073,9 +4073,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4088,9 +4088,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4103,9 +4103,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -4120,9 +4120,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4137,9 +4137,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4154,9 +4154,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4171,9 +4171,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4188,9 +4188,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4205,9 +4205,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4222,9 +4222,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4239,9 +4239,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4256,9 +4256,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4273,9 +4273,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4290,9 +4290,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4307,9 +4307,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4324,9 +4324,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4341,9 +4341,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4358,9 +4358,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4375,9 +4375,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4392,9 +4392,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4409,9 +4409,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4426,9 +4426,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -4441,9 +4441,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4456,9 +4456,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4471,9 +4471,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4486,9 +4486,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4501,9 +4501,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4516,9 +4516,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -4531,9 +4531,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -4546,9 +4546,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -4563,9 +4563,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -4580,9 +4580,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamptz",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamptz"
 				},
 				{
@@ -4595,9 +4595,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -4610,9 +4610,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -4628,9 +4628,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -4646,9 +4646,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -4664,9 +4664,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -4682,9 +4682,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -4699,9 +4699,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -4716,9 +4716,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -4731,9 +4731,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -4746,9 +4746,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -4761,9 +4761,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -4776,9 +4776,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -4791,9 +4791,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -4806,9 +4806,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -4821,9 +4821,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -4836,9 +4836,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -4853,9 +4853,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -4870,9 +4870,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -4887,9 +4887,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -4904,9 +4904,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -4919,9 +4919,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -4934,9 +4934,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -4949,9 +4949,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -4964,9 +4964,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -4981,9 +4981,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -4998,9 +4998,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -5013,9 +5013,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -5028,9 +5028,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -5045,9 +5045,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -5062,9 +5062,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -5079,9 +5079,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -5096,9 +5096,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -5111,9 +5111,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -5126,9 +5126,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -5141,9 +5141,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -5156,9 +5156,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -5171,9 +5171,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -5186,9 +5186,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -5201,9 +5201,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -5216,9 +5216,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -5235,7 +5235,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -5252,7 +5252,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -5269,7 +5269,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -5286,7 +5286,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -5303,7 +5303,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -5320,7 +5320,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -5338,7 +5338,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -5356,7 +5356,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -5373,7 +5373,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -5390,7 +5390,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -5407,7 +5407,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -5424,7 +5424,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -5441,7 +5441,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -5458,7 +5458,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -5473,7 +5473,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -5490,7 +5490,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -5507,7 +5507,7 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
 					"domain_name": "uint3",
 					"full_db_type": "numeric"
@@ -5522,9 +5522,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -5537,9 +5537,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -5552,9 +5552,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				}
 			],
@@ -5578,9 +5578,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -5593,9 +5593,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -5608,9 +5608,9 @@
 					"generated": false,
 					"type": "Workday",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "workday"
 				},
 				{
@@ -5623,9 +5623,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5638,9 +5638,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5653,9 +5653,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5668,9 +5668,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5683,9 +5683,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5698,9 +5698,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5713,9 +5713,9 @@
 					"generated": false,
 					"type": "bool",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bool"
 				},
 				{
@@ -5728,9 +5728,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -5743,9 +5743,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -5758,9 +5758,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -5773,9 +5773,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -5788,9 +5788,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1)"
 				},
 				{
@@ -5803,9 +5803,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5818,9 +5818,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5833,9 +5833,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5848,9 +5848,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5863,9 +5863,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5878,9 +5878,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5893,9 +5893,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -5908,9 +5908,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -5923,9 +5923,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -5938,9 +5938,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -5953,9 +5953,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -5968,9 +5968,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1)"
 				},
 				{
@@ -5983,9 +5983,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -5998,9 +5998,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -6013,9 +6013,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -6028,9 +6028,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -6043,9 +6043,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character(1000)"
 				},
 				{
@@ -6058,9 +6058,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -6073,9 +6073,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -6088,9 +6088,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -6103,9 +6103,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -6118,9 +6118,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "char"
 				},
 				{
@@ -6133,9 +6133,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6148,9 +6148,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6163,9 +6163,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6178,9 +6178,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6193,9 +6193,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6208,9 +6208,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6223,9 +6223,9 @@
 					"generated": false,
 					"type": "int64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int8"
 				},
 				{
@@ -6238,9 +6238,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6253,9 +6253,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6268,9 +6268,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6283,9 +6283,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6298,9 +6298,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6313,9 +6313,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6328,9 +6328,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -6345,9 +6345,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6362,9 +6362,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6379,9 +6379,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6396,9 +6396,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6413,9 +6413,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6430,9 +6430,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6447,9 +6447,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6464,9 +6464,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6481,9 +6481,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6498,9 +6498,9 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "numeric"
 				},
 				{
@@ -6513,9 +6513,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6528,9 +6528,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6543,9 +6543,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6558,9 +6558,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6573,9 +6573,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6588,9 +6588,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6603,9 +6603,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6618,9 +6618,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6633,9 +6633,9 @@
 					"generated": false,
 					"type": "[]byte",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "bytea"
 				},
 				{
@@ -6650,9 +6650,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6667,9 +6667,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6684,9 +6684,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6701,9 +6701,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6718,9 +6718,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6735,9 +6735,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6752,9 +6752,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6769,9 +6769,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6786,9 +6786,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6803,9 +6803,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6820,9 +6820,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -6837,9 +6837,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6854,9 +6854,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6871,9 +6871,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6888,9 +6888,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6905,9 +6905,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6922,9 +6922,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6939,9 +6939,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6956,9 +6956,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "date"
 				},
 				{
@@ -6971,9 +6971,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -6986,9 +6986,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -7001,9 +7001,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -7016,9 +7016,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -7031,9 +7031,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -7046,9 +7046,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "uuid"
 				},
 				{
@@ -7061,9 +7061,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -7076,9 +7076,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "character varying(1000)"
 				},
 				{
@@ -7093,9 +7093,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamp"
 				},
 				{
@@ -7110,9 +7110,9 @@
 					"imports": [
 						"\"time\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "timestamptz",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "timestamptz"
 				},
 				{
@@ -7125,9 +7125,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -7140,9 +7140,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "interval"
 				},
 				{
@@ -7158,9 +7158,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -7176,9 +7176,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "json"
 				},
 				{
@@ -7194,9 +7194,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -7212,9 +7212,9 @@
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "jsonb"
 				},
 				{
@@ -7229,9 +7229,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -7246,9 +7246,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "box"
 				},
 				{
@@ -7261,9 +7261,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -7276,9 +7276,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "cidr"
 				},
 				{
@@ -7291,9 +7291,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -7306,9 +7306,9 @@
 					"generated": false,
 					"type": "pgeo.Circle",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "circle"
 				},
 				{
@@ -7321,9 +7321,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -7336,9 +7336,9 @@
 					"generated": false,
 					"type": "float64",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "float8"
 				},
 				{
@@ -7351,9 +7351,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -7366,9 +7366,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "inet"
 				},
 				{
@@ -7383,9 +7383,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -7400,9 +7400,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "line"
 				},
 				{
@@ -7417,9 +7417,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -7434,9 +7434,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "lseg"
 				},
 				{
@@ -7449,9 +7449,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -7464,9 +7464,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "macaddr"
 				},
 				{
@@ -7479,9 +7479,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -7494,9 +7494,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "money"
 				},
 				{
@@ -7511,9 +7511,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -7528,9 +7528,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "path"
 				},
 				{
@@ -7543,9 +7543,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -7558,9 +7558,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "pg_lsn"
 				},
 				{
@@ -7575,9 +7575,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -7592,9 +7592,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "point"
 				},
 				{
@@ -7609,9 +7609,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -7626,9 +7626,9 @@
 					"imports": [
 						"\"github.com/saulortega/pgeo\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "polygon"
 				},
 				{
@@ -7641,9 +7641,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -7656,9 +7656,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsquery"
 				},
 				{
@@ -7671,9 +7671,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -7686,9 +7686,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "tsvector"
 				},
 				{
@@ -7701,9 +7701,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -7716,9 +7716,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "txid_snapshot"
 				},
 				{
@@ -7731,9 +7731,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -7746,9 +7746,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "xml"
 				},
 				{
@@ -7765,7 +7765,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -7782,7 +7782,7 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_int4"
 				},
 				{
@@ -7799,7 +7799,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -7816,7 +7816,7 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bool"
 				},
 				{
@@ -7833,7 +7833,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -7850,7 +7850,7 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_varchar"
 				},
 				{
@@ -7868,7 +7868,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -7886,7 +7886,7 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_numeric"
 				},
 				{
@@ -7903,7 +7903,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -7920,7 +7920,7 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_bytea"
 				},
 				{
@@ -7937,7 +7937,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -7954,7 +7954,7 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_jsonb"
 				},
 				{
@@ -7971,7 +7971,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -7988,7 +7988,7 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "_json"
 				},
 				{
@@ -8003,7 +8003,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -8020,7 +8020,7 @@
 					"imports": [
 						"\"github.com/lib/pq\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "_int4",
 					"domain_name": "my_int_array",
 					"full_db_type": "_int4"
@@ -8037,7 +8037,7 @@
 					"imports": [
 						"\"github.com/shopspring/decimal\""
 					],
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "numeric",
 					"domain_name": "uint3",
 					"full_db_type": "numeric"
@@ -8052,9 +8052,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -8067,9 +8067,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				},
 				{
@@ -8082,9 +8082,9 @@
 					"generated": false,
 					"type": "string",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "text"
 				}
 			],
@@ -8108,9 +8108,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -8123,9 +8123,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				},
 				{
@@ -8138,9 +8138,9 @@
 					"generated": false,
 					"type": "int",
 					"imports": null,
-					"arr_type": null,
+					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": null,
+					"domain_name": "",
 					"full_db_type": "int4"
 				}
 			],

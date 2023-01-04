@@ -190,7 +190,7 @@ func TestConvertTypeReplace(t *testing.T) {
 		if c.FullDBType != "e" {
 			t.Error("value was wrong:", c.FullDBType)
 		}
-		if *c.ArrType != "f" {
+		if c.ArrType != "f" {
 			t.Error("value was wrong:", c.ArrType)
 		}
 		if c.Generated != true {

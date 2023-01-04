@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"runtime/debug"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stephenafamo/bob/gen"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 )
 
@@ -30,48 +30,12 @@ var (
 	cmdConfig      *gen.Config[driver.Extra]
 )
 
-func initConfig() {
-	if len(flagConfigFile) != 0 {
-		viper.SetConfigFile(flagConfigFile)
-		if err := viper.ReadInConfig(); err != nil {
-			fmt.Println("Can't read config:", err)
-			os.Exit(1)
-		}
-		return
-	}
-
-	var err error
-	viper.SetConfigName("bobgen")
-
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	homePath := os.Getenv("HOME")
-	wd, err := os.Getwd()
-	if err != nil {
-		wd = "."
-	}
-
-	configPaths := []string{wd}
-	if len(configHome) > 0 {
-		configPaths = append(configPaths, filepath.Join(configHome, "bobgen"))
-	} else {
-		configPaths = append(configPaths, filepath.Join(homePath, ".config/bobgen"))
-	}
-
-	for _, p := range configPaths {
-		viper.AddConfigPath(p)
-	}
-
-	// Ignore errors here, fallback to other validation methods.
-	// Users can use environment variables if a config is not found.
-	_ = viper.ReadInConfig()
-}
-
 func main() {
 	// Too much happens between here and cobra's argument handling, for
 	// something so simple just do it immediately.
 	for _, arg := range os.Args {
 		if arg == "--version" {
-			fmt.Println("BobGen Psql v" + version)
+			fmt.Println("BobGen Psql v" + helpers.Version())
 			return
 		}
 	}
@@ -90,7 +54,7 @@ func main() {
 		SilenceUsage:  true,
 	}
 
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(func() { helpers.ReadConfig(flagConfigFile) })
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
@@ -159,7 +123,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return errors.New("database dsn is not set")
 	}
 
-	modelsPkg, err := gen.ModelsPackage(viper.GetString("output"))
+	modelsPkg, err := helpers.ModelsPackage(viper.GetString("output"))
 	if err != nil {
 		return fmt.Errorf("getting models package: %w", err)
 	}
@@ -206,7 +170,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Irregular:     viper.GetStringMapString("inflections.irregular"),
 		},
 
-		Generator:     "BobGen Psql " + version,
+		Generator:     "BobGen Psql " + helpers.Version(),
 		ModelsPackage: modelsPkg,
 	}
 

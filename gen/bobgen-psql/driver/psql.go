@@ -473,14 +473,21 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 			Name:       colName,
 			DBType:     colType,
 			FullDBType: colFullType,
-			ArrType:    arrayType,
-			DomainName: domainName,
 			UDTName:    udtName,
 			Comment:    comment,
 			Nullable:   nullable,
 			Generated:  generated,
 			Unique:     unique,
 		}
+
+		if arrayType != nil {
+			column.ArrType = *arrayType
+		}
+
+		if domainName != nil {
+			column.DomainName = *domainName
+		}
+
 		if defaultValue != nil {
 			column.Default = *defaultValue
 		}
