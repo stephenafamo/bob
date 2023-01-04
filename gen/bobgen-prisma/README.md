@@ -138,7 +138,7 @@ The values that exist for the drivers:
 
 | Name      | Required  | Prisma Default |
 | --------- | --------- | -------------- |
-| schema    | no        | "public"       |
+| schema    | no        | ""             |
 | whitelist | no        | []             |
 | blacklist | no        | []             |
 

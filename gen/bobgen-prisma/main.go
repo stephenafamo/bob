@@ -162,7 +162,6 @@ func generate(root root) error {
 	viper.SetDefault("struct-tag-casing", "snake")
 	viper.SetDefault("relation-tag", "-")
 	viper.SetDefault("concurrency", 10)
-	viper.SetDefault("prisma.schema", "public")
 
 	outputs := []*gen.Output{
 		{
