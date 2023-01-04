@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"runtime/debug"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,14 +13,6 @@ import (
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 )
-
-var version = func() string {
-	if info, ok := debug.ReadBuildInfo(); ok {
-		return info.Main.Version
-	}
-
-	return ""
-}()
 
 //nolint:gochecknoglobals
 var (
