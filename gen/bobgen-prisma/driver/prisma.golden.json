@@ -33,7 +33,7 @@
 			"relationship": [
 				{
 					"Name": "sponsorsTovideos",
-					"Alias": "",
+					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2294,7 +2294,7 @@
 			"relationship": [
 				{
 					"Name": "usersTovideos",
-					"Alias": "",
+					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2386,7 +2386,7 @@
 			"relationship": [
 				{
 					"Name": "tagsTovideo_tags",
-					"Alias": "",
+					"Alias": "Tags",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2409,7 +2409,7 @@
 				},
 				{
 					"Name": "video_tagsTovideos",
-					"Alias": "",
+					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2560,7 +2560,7 @@
 				},
 				{
 					"Name": "sponsorsTovideos",
-					"Alias": "",
+					"Alias": "Sponsors",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2583,7 +2583,7 @@
 				},
 				{
 					"Name": "usersTovideos",
-					"Alias": "",
+					"Alias": "Users",
 					"ByJoinTable": false,
 					"Sides": [
 						{

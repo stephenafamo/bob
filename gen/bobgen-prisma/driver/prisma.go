@@ -119,6 +119,43 @@ func (d *Driver) tables() []drivers.Table {
 		tables[i].Relationships = relationships[t.Name]
 	}
 
+	// This just sets the default Alias of relationships based on the field name
+	// we do this after building the relationships based on the keys
+	for _, model := range models {
+		if skip(model.TableName(), tableInclude, tableExclude) {
+			continue
+		}
+
+		var tableIndex int
+		var table drivers.Table
+		for i, t := range tables {
+			if t.Name == model.TableName() {
+				tableIndex = i
+				table = t
+				break
+			}
+		}
+
+		tableName := model.TableName()
+		allfilter := colFilter["*"]
+		filter := colFilter[tableName]
+		include := append(allfilter.Include, filter.Include...)
+		exclude := append(allfilter.Exclude, filter.Exclude...)
+		for _, field := range model.Fields {
+			if skip(field.Name, include, exclude) {
+				continue
+			}
+
+			if field.Kind == FieldKindObject {
+				for i, rel := range table.Relationships {
+					if rel.Name == field.RelationName {
+						tables[tableIndex].Relationships[i].Alias = strcase.ToCamel(field.Name)
+					}
+				}
+			}
+		}
+	}
+
 	return tables
 }
 
