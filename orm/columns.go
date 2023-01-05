@@ -6,14 +6,6 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-func sliceToMap[T comparable](s []T) map[T]int {
-	m := make(map[T]int, len(s))
-	for k, v := range s {
-		m[v] = k
-	}
-	return m
-}
-
 // NewColumns returns a [Columns] object with the given column names
 func NewColumns(names ...string) Columns {
 	return Columns{
