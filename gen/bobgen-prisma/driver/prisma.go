@@ -379,7 +379,11 @@ func skip(name string, include, exclude []string) bool {
 	}
 }
 
-func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (pk *drivers.PrimaryKey, uniques []drivers.Constraint, fks []drivers.ForeignKey) {
+func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
+	var pk *drivers.PrimaryKey
+	var uniques []drivers.Constraint
+	var fks []drivers.ForeignKey
+
 	tableName := model.TableName()
 	allfilter := colFilter["*"]
 	filter := colFilter[tableName]
@@ -466,5 +470,5 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (pk *drive
 		}
 	}
 
-	return
+	return pk, uniques, fks
 }
