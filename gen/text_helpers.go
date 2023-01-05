@@ -12,6 +12,11 @@ func relAlias(t drivers.Table) map[string]string {
 	aliases := map[string]string{}
 
 	for _, rel := range t.Relationships {
+		if rel.Alias != "" {
+			aliases[rel.Name] = rel.Alias
+			continue
+		}
+
 		// When not a direct relationship we just use the table name
 		if len(rel.Sides) > 1 {
 			aliases[rel.Name] = formatRelAlias(rel, rel.Sides[len(rel.Sides)-1].To)

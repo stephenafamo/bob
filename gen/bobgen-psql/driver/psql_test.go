@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"testing"
 
@@ -87,6 +88,10 @@ func TestAssemble(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			sort.Slice(info.Tables, func(i, j int) bool {
+				return info.Tables[i].Name < info.Tables[j].Name
+			})
 
 			got, err := json.MarshalIndent(info, "", "\t")
 			if err != nil {

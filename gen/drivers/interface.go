@@ -131,7 +131,7 @@ func tables(c Constructor, concurrency int, names []string, filter ColumnFilter)
 // table returns columns info for a given table
 func table(c Constructor, name string, filter ColumnFilter) (Table, error) {
 	var err error
-	t := &Table{
+	t := Table{
 		Name: name,
 	}
 
@@ -139,7 +139,7 @@ func table(c Constructor, name string, filter ColumnFilter) (Table, error) {
 		return Table{}, fmt.Errorf("unable to fetch table column info (%s): %w", name, err)
 	}
 
-	return *t, nil
+	return t, nil
 }
 
 // views returns the metadata for all views, minus the views

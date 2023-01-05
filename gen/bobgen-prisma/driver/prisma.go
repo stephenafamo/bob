@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"sort"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -56,7 +57,7 @@ type Driver struct {
 }
 
 // Assemble all the information we need to provide back to the driver
-func (p *Driver) Assemble() (*DBInfo, error) {
+func (d *Driver) Assemble() (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
@@ -67,29 +68,64 @@ func (p *Driver) Assemble() (*DBInfo, error) {
 		}
 	}()
 
-	dbinfo = &DBInfo{Schema: p.config.Schema}
-
 	// drivers.Tables call translateColumnType which uses Enums
-	p.loadEnums()
+	d.loadEnums()
 
-	dbinfo.Tables, err = drivers.Tables(p, p.config.Concurrency, p.config.Includes, p.config.Excludes)
-	if err != nil {
-		return nil, err
-	}
-
-	dbinfo.ExtraInfo.Provider = p.config.Provider
-	dbinfo.ExtraInfo.Enums, err = p.Enums(p.config.Schema)
-	if err != nil {
-		return nil, err
+	dbinfo = &DBInfo{
+		Schema: d.config.Schema,
+		Tables: d.tables(),
+		ExtraInfo: Extra{
+			Provider: d.config.Provider,
+			Enums:    d.getEnums(),
+		},
 	}
 
 	return dbinfo, err
 }
 
-// TableNames connects to the postgres database and
+func (d *Driver) tables() []drivers.Table {
+	models := d.config.Datamodel.Models
+	tables := make([]drivers.Table, 0, len(models))
+
+	tableInclude := drivers.TablesFromList(d.config.Includes)
+	tableExclude := drivers.TablesFromList(d.config.Excludes)
+
+	colFilter := drivers.ParseColumnFilter(d.tableNames(drivers.Filter{
+		Include: tableInclude,
+		Exclude: tableExclude,
+	}), d.config.Includes, d.config.Excludes)
+
+	for _, model := range models {
+		if skip(model.TableName(), tableInclude, tableExclude) {
+			continue
+		}
+
+		pk, uniques, fks := d.getKeys(model, colFilter)
+
+		table := drivers.Table{
+			Name:    model.TableName(),
+			Columns: d.tableColumns(model, colFilter),
+			PKey:    pk,
+			Uniques: uniques,
+			FKeys:   fks,
+		}
+		table.IsJoinTable = drivers.IsJoinTable(table)
+
+		tables = append(tables, table)
+	}
+
+	relationships := drivers.BuildRelationships(tables)
+	for i, t := range tables {
+		tables[i].Relationships = relationships[t.Name]
+	}
+
+	return tables
+}
+
+// tableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) TableNames(tableFilter drivers.Filter) ([]string, error) {
+func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
 	models := d.config.Datamodel.Models
 	names := make([]string, 0, len(models))
 
@@ -101,14 +137,7 @@ func (d *Driver) TableNames(tableFilter drivers.Filter) ([]string, error) {
 		names = append(names, m.TableName())
 	}
 
-	return names, nil
-}
-
-// ViewNames connects to the postgres database and
-// retrieves all view names from the information_schema where the
-// view schema is schema. It uses a whitelist and blacklist.
-func (p *Driver) ViewNames(tableFilter drivers.Filter) ([]string, error) {
-	return nil, nil
+	return names
 }
 
 func (p *Driver) loadEnums() {
@@ -139,7 +168,7 @@ type Enum struct {
 	Values []string
 }
 
-func (p *Driver) Enums(schema string) ([]Enum, error) {
+func (p *Driver) getEnums() []Enum {
 	enums := make([]Enum, 0, len(p.enums))
 	for _, e := range p.enums {
 		enums = append(enums, e)
@@ -149,33 +178,12 @@ func (p *Driver) Enums(schema string) ([]Enum, error) {
 		return enums[i].Name < enums[j].Name
 	})
 
-	return enums, nil
+	return enums
 }
 
-func (p *Driver) ViewColumns(tableName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
-	return p.TableColumns(tableName, filter)
-}
-
-// TableColumns takes a table name and attempts to retrieve the table information
-// from the database information_schema.columns. It retrieves the column names
-// and column types and returns those as a []Column after translateColumnType()
-// converts the SQL types to Go types, for example: "varchar" to "string"
-func (d *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) ([]drivers.Column, error) {
-	var model Model
-	for _, m := range d.config.Datamodel.Models {
-		if m.TableName() == tableName {
-			model = m
-			break
-		}
-	}
-
-	// Not found
-	if model.Name == "" {
-		return nil, nil
-	}
-
+func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []drivers.Column {
 	allfilter := colFilter["*"]
-	filter := colFilter[tableName]
+	filter := colFilter[model.TableName()]
 	include := append(allfilter.Include, filter.Include...)
 	exclude := append(allfilter.Exclude, filter.Exclude...)
 
@@ -219,7 +227,7 @@ func (d *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 		columns = append(columns, d.translateColumnType(column))
 	}
 
-	return columns, nil
+	return columns
 }
 
 func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
@@ -332,4 +340,94 @@ func skip(name string, include, exclude []string) bool {
 	default:
 		return false
 	}
+}
+
+func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (pk *drivers.PrimaryKey, uniques []drivers.Constraint, fks []drivers.ForeignKey) {
+	tableName := model.TableName()
+	allfilter := colFilter["*"]
+	filter := colFilter[tableName]
+	include := append(allfilter.Include, filter.Include...)
+	exclude := append(allfilter.Exclude, filter.Exclude...)
+
+	// If it is a composite primary key defined on the model
+	if len(model.PrimaryKey.Fields) > 0 {
+		shouldSkip := false
+		cols := make([]string, len(model.PrimaryKey.Fields))
+
+		for i, f := range model.PrimaryKey.Fields {
+			if skip(f, include, exclude) {
+				shouldSkip = true
+			}
+			cols[i] = f
+		}
+
+		if !shouldSkip {
+			pkName := model.PrimaryKey.Name
+			if pkName == "" {
+				pkName = "pk_" + tableName
+			}
+			pk = &drivers.Constraint{
+				Name:    pkName,
+				Columns: cols,
+			}
+		}
+	}
+
+	for _, unique := range model.UniqueIndexes {
+		shouldSkip := false
+		cols := make([]string, len(unique.Fields))
+
+		for i, f := range unique.Fields {
+			if skip(f, include, exclude) {
+				shouldSkip = true
+			}
+			cols[i] = f
+		}
+
+		if !shouldSkip {
+			keyName := unique.InternalName
+			if keyName == "" {
+				keyName = fmt.Sprintf("unique_%s_%s", tableName, strings.Join(cols, "_"))
+			}
+
+			uniques = append(uniques, drivers.Constraint{
+				Name:    keyName,
+				Columns: cols,
+			})
+		}
+	}
+
+	// If one of the fields has an @id attribute
+	for _, field := range model.Fields {
+		if skip(field.Name, include, exclude) {
+			continue
+		}
+
+		if field.IsID {
+			pk = &drivers.Constraint{
+				Name:    "pk_" + tableName,
+				Columns: []string{field.Name},
+			}
+		}
+
+		if field.IsUnique {
+			uniques = append(uniques, drivers.Constraint{
+				Name:    fmt.Sprintf("unique_%s_%s", tableName, field.Name),
+				Columns: []string{field.Name},
+			})
+		}
+
+		if field.Kind == FieldKindObject && len(field.RelationFromFields) > 0 {
+			fks = append(fks, drivers.ForeignKey{
+				Constraint: drivers.Constraint{
+					Name:    field.RelationName,
+					Columns: field.RelationFromFields,
+				},
+				ForeignTable:   d.config.Datamodel.ModelByName(field.Type).TableName(),
+				ForeignColumns: field.RelationToFields,
+			})
+		}
+	}
+
+	return
 }

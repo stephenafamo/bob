@@ -33,6 +33,7 @@
 			"relationship": [
 				{
 					"Name": "videos_sponsor_id_fkey",
+					"Alias": "",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -87,6 +88,7 @@
 			"relationship": [
 				{
 					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"Alias": "",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -2658,381 +2660,6 @@
 			"unique": null,
 			"is_join_table": false,
 			"relationship": null
-		},
-		{
-			"name": "users",
-			"schema_name": "",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "integer",
-					"default": "nextval('users_id_seq'::regclass)",
-					"comment": "",
-					"nullable": false,
-					"unique": true,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "email_validated",
-					"db_type": "boolean",
-					"default": "false",
-					"comment": "Has the email address been tested?",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "primary_email",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "The user's preferred email address.\n\nUse this to send emails to the user.",
-					"nullable": true,
-					"unique": true,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(100)"
-				}
-			],
-			"p_key": {
-				"name": "users_pkey",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": null,
-			"unique": [
-				{
-					"name": "users_primary_email_key",
-					"columns": [
-						"primary_email"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "videos_user_id_fkey",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "users",
-							"FromColumns": [
-								"id"
-							],
-							"To": "videos",
-							"ToColumns": [
-								"user_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false
-				}
-			]
-		},
-		{
-			"name": "video_tags",
-			"schema_name": "",
-			"columns": [
-				{
-					"name": "video_id",
-					"db_type": "integer",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "tag_id",
-					"db_type": "integer",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				}
-			],
-			"p_key": {
-				"name": "video_tags_pkey",
-				"columns": [
-					"video_id",
-					"tag_id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "video_tags_tag_id_fkey",
-					"columns": [
-						"tag_id"
-					],
-					"foreign_table": "tags",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "video_tags_video_id_fkey",
-					"columns": [
-						"video_id"
-					],
-					"foreign_table": "videos",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": null,
-			"is_join_table": true,
-			"relationship": [
-				{
-					"Name": "video_tags_tag_id_fkey",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "video_tags",
-							"FromColumns": [
-								"tag_id"
-							],
-							"To": "tags",
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false
-				},
-				{
-					"Name": "video_tags_video_id_fkey",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "video_tags",
-							"FromColumns": [
-								"video_id"
-							],
-							"To": "videos",
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false
-				}
-			]
-		},
-		{
-			"name": "videos",
-			"schema_name": "",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "integer",
-					"default": "nextval('videos_id_seq'::regclass)",
-					"comment": "The ID of the video",
-					"nullable": false,
-					"unique": true,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "user_id",
-					"db_type": "integer",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "sponsor_id",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": true,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				}
-			],
-			"p_key": {
-				"name": "videos_pkey",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "videos_sponsor_id_fkey",
-					"columns": [
-						"sponsor_id"
-					],
-					"foreign_table": "sponsors",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "videos_user_id_fkey",
-					"columns": [
-						"user_id"
-					],
-					"foreign_table": "users",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [
-				{
-					"name": "videos_sponsor_id_key",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
-					"ByJoinTable": true,
-					"Sides": [
-						{
-							"From": "videos",
-							"FromColumns": [
-								"id"
-							],
-							"To": "video_tags",
-							"ToColumns": [
-								"video_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						},
-						{
-							"From": "video_tags",
-							"FromColumns": [
-								"tag_id"
-							],
-							"To": "tags",
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false
-				},
-				{
-					"Name": "videos_sponsor_id_fkey",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"FromColumns": [
-								"sponsor_id"
-							],
-							"To": "sponsors",
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false
-				},
-				{
-					"Name": "videos_user_id_fkey",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"FromColumns": [
-								"user_id"
-							],
-							"To": "users",
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false
-				}
-			]
 		},
 		{
 			"name": "type_monsters_mv",
@@ -8149,6 +7776,387 @@
 			"unique": null,
 			"is_join_table": false,
 			"relationship": null
+		},
+		{
+			"name": "users",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "integer",
+					"default": "nextval('users_id_seq'::regclass)",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				},
+				{
+					"name": "email_validated",
+					"db_type": "boolean",
+					"default": "false",
+					"comment": "Has the email address been tested?",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "bool",
+					"domain_name": "",
+					"full_db_type": "bool"
+				},
+				{
+					"name": "primary_email",
+					"db_type": "character varying",
+					"default": "NULL",
+					"comment": "The user's preferred email address.\n\nUse this to send emails to the user.",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "varchar",
+					"domain_name": "",
+					"full_db_type": "character varying(100)"
+				}
+			],
+			"p_key": {
+				"name": "users_pkey",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": null,
+			"unique": [
+				{
+					"name": "users_primary_email_key",
+					"columns": [
+						"primary_email"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "videos_user_id_fkey",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "users",
+							"FromColumns": [
+								"id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"user_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "video_tags",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "video_id",
+					"db_type": "integer",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				},
+				{
+					"name": "tag_id",
+					"db_type": "integer",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				}
+			],
+			"p_key": {
+				"name": "video_tags_pkey",
+				"columns": [
+					"video_id",
+					"tag_id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "video_tags_tag_id_fkey",
+					"columns": [
+						"tag_id"
+					],
+					"foreign_table": "tags",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "video_tags_video_id_fkey",
+					"columns": [
+						"video_id"
+					],
+					"foreign_table": "videos",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": null,
+			"is_join_table": true,
+			"relationship": [
+				{
+					"Name": "video_tags_tag_id_fkey",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "video_tags_video_id_fkey",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"video_id"
+							],
+							"To": "videos",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"name": "videos",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "integer",
+					"default": "nextval('videos_id_seq'::regclass)",
+					"comment": "The ID of the video",
+					"nullable": false,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				},
+				{
+					"name": "user_id",
+					"db_type": "integer",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "int",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "int4",
+					"domain_name": "",
+					"full_db_type": "int4"
+				}
+			],
+			"p_key": {
+				"name": "videos_pkey",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "videos_sponsor_id_fkey",
+					"columns": [
+						"sponsor_id"
+					],
+					"foreign_table": "sponsors",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "videos_user_id_fkey",
+					"columns": [
+						"user_id"
+					],
+					"foreign_table": "users",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [
+				{
+					"name": "videos_sponsor_id_key",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"Alias": "",
+					"ByJoinTable": true,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"id"
+							],
+							"To": "video_tags",
+							"ToColumns": [
+								"video_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "videos_sponsor_id_fkey",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"sponsor_id"
+							],
+							"To": "sponsors",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "videos_user_id_fkey",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "videos",
+							"FromColumns": [
+								"user_id"
+							],
+							"To": "users",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
 		}
 	],
 	"extra_info": {

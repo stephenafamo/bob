@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"os"
+	"sort"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -45,6 +46,10 @@ func TestAssemble(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			sort.Slice(info.Tables, func(i, j int) bool {
+				return info.Tables[i].Name < info.Tables[j].Name
+			})
 
 			got, err := json.MarshalIndent(info, "", "\t")
 			if err != nil {

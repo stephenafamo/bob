@@ -25,6 +25,7 @@ type RelSide struct {
 
 type Relationship struct {
 	Name        string
+	Alias       string // if present is used instead of computing from the columns
 	ByJoinTable bool
 	Sides       []RelSide
 
