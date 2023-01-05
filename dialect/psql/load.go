@@ -56,7 +56,7 @@ type canPreload interface {
 	Preload(name string, rel any) error
 }
 
-func newPreloadSettings[T any, Ts ~[]T](cols orm.Columns) preloadSettings {
+func newPreloadSettings[T any, Ts ~[]T](cols []string) preloadSettings {
 	return preloadSettings{
 		columns:     cols,
 		extraLoader: internal.NewAfterPreloader[T, Ts](),
@@ -64,7 +64,7 @@ func newPreloadSettings[T any, Ts ~[]T](cols orm.Columns) preloadSettings {
 }
 
 type preloadSettings struct {
-	columns     orm.Columns
+	columns     []string
 	subLoaders  []Preloader
 	extraLoader *internal.AfterPreloader
 }
@@ -77,7 +77,7 @@ type onlyColumnsOpt []string
 
 func (c onlyColumnsOpt) modifyPreloader(el *preloadSettings) {
 	if len(c) > 0 {
-		el.columns = el.columns.Only(c...)
+		el.columns = orm.Only(el.columns, c...)
 	}
 }
 
@@ -85,7 +85,7 @@ type exceptColumnsOpt []string
 
 func (c exceptColumnsOpt) modifyPreloader(el *preloadSettings) {
 	if len(c) > 0 {
-		el.columns = el.columns.Except(c...)
+		el.columns = orm.Except(el.columns, c...)
 	}
 }
 
@@ -97,7 +97,7 @@ func LoadExceptColumns(cols ...string) exceptColumnsOpt {
 	return exceptColumnsOpt(cols)
 }
 
-func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...PreloadOption) Preloader {
+func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {
 	settings := newPreloadSettings[T, Ts](cols)
 	for _, o := range opts {
 		if o == nil {
@@ -148,7 +148,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols orm.Columns, opts ...Pre
 		}
 
 		queryMods = append(queryMods, qm.Columns(
-			settings.columns.WithParent(alias).WithPrefix(alias+"."),
+			orm.NewColumns(settings.columns...).WithParent(alias).WithPrefix(alias+"."),
 		))
 		return alias, queryMods
 	}, rel.Name, settings)

@@ -54,41 +54,13 @@ func (c Columns) WithPrefix(prefix string) Columns {
 
 // Only drops other column names from the column set
 func (c Columns) Only(cols ...string) Columns {
-	filtered := make([]string, 0, len(cols)) // max capacity is the only list
-
-	filteredMap := sliceToMap(cols)
-	for _, basecol := range c.names {
-		if len(basecol) == 0 {
-			continue
-		}
-		if _, ok := filteredMap[basecol]; !ok {
-			continue
-		}
-
-		filtered = append(filtered, basecol)
-	}
-
-	c.names = filtered
+	c.names = Only(c.names, cols...)
 	return c
 }
 
 // Except drops the given column names from the column set
 func (c Columns) Except(cols ...string) Columns {
-	filtered := make([]string, 0, len(c.names)) // max capacity is current capacity
-
-	filteredMap := sliceToMap(cols)
-	for _, basecol := range c.names {
-		if len(basecol) == 0 {
-			continue
-		}
-		if _, ok := filteredMap[basecol]; ok {
-			continue
-		}
-
-		filtered = append(filtered, basecol)
-	}
-
-	c.names = filtered
+	c.names = Except(c.names, cols...)
 	return c
 }
 
@@ -105,6 +77,9 @@ func (c Columns) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) 
 
 		w.Write([]byte(c.aggFunc[0]))
 		for _, part := range c.parent {
+			if part == "" {
+				continue
+			}
 			d.WriteQuoted(w, part)
 			w.Write([]byte("."))
 		}
@@ -117,4 +92,47 @@ func (c Columns) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) 
 	}
 
 	return nil, nil
+}
+
+// Only drops other column names from the column set
+func Only(cols []string, includes ...string) []string {
+	filtered := make([]string, 0, len(includes)) // max capacity is the only list
+
+Outer:
+	for _, basecol := range cols {
+		if len(basecol) == 0 {
+			continue
+		}
+
+		for _, include := range includes {
+			if include == basecol {
+				filtered = append(filtered, basecol)
+				continue Outer
+			}
+		}
+	}
+
+	return filtered
+}
+
+// Except drops the given column names from the column set
+func Except(cols []string, excludes ...string) []string {
+	filtered := make([]string, 0, len(cols)) // max capacity is current capacity
+
+Outer:
+	for _, basecol := range cols {
+		if len(basecol) == 0 {
+			continue
+		}
+
+		for _, exclude := range excludes {
+			if exclude == basecol {
+				continue Outer
+			}
+		}
+
+		filtered = append(filtered, basecol)
+	}
+
+	return filtered
 }

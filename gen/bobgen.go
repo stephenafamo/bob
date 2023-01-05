@@ -96,7 +96,6 @@ func (s *State[T]) Run() error {
 			TagIgnore:         make(map[string]struct{}),
 			Tags:              s.Config.Tags,
 			RelationTag:       s.Config.RelationTag,
-			Schema:            s.Schema,
 			ModelsPackage:     s.Config.ModelsPackage,
 		}
 

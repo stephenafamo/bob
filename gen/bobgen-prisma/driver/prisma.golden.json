@@ -3,7 +3,7 @@
 	"tables": [
 		{
 			"name": "sponsors",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -58,7 +58,7 @@
 		},
 		{
 			"name": "tags",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -128,7 +128,7 @@
 		},
 		{
 			"name": "type_monsters",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -2227,7 +2227,7 @@
 		},
 		{
 			"name": "users",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -2319,7 +2319,7 @@
 		},
 		{
 			"name": "video_tags",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "video_id",
@@ -2434,7 +2434,7 @@
 		},
 		{
 			"name": "videos",
-			"schema_name": "",
+			"schema": "",
 			"columns": [
 				{
 					"name": "id",

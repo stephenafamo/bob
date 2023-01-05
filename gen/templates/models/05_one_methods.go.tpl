@@ -21,11 +21,12 @@ func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) 
 // Reload refreshes the {{$tAlias.UpSingular}} using the executor
 func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) error {
 	o2, err := {{$tAlias.UpPlural}}Table.Query(
+		ctx, exec,
 		{{range $column := $table.PKey.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ(o.{{$colAlias}}),
 		{{end -}}
-	).One(ctx, exec)
+	).One()
 	if err != nil {
 		return err
 	}

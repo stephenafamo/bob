@@ -17,7 +17,7 @@ func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Exe
 }
 
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
-	q := {{$tAlias.UpPlural}}()
+  var mods []bob.Mod[*dialect.SelectQuery]
 
 	{{range $column := $table.PKey.Columns -}}
 	{{- $colAlias := $tAlias.Column $column -}}
@@ -25,11 +25,11 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 		for i, o := range o {
 			{{$colAlias}}PK[i] = o.{{$colAlias}}
 		}
-		q.Apply(qm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.In({{$colAlias}}PK...)))
+		mods = append(mods, qm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.In({{$colAlias}}PK...)))
 
 	{{end}}
 
-	o2, err := q.All(ctx, exec)
+	o2, err := {{$tAlias.UpPlural}}(ctx, exec, mods...).All()
 	if err != nil {
 		return err
 	}

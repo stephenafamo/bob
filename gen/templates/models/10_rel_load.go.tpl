@@ -125,7 +125,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				},
 				{{- end}}
 			},
-		}, {{$fAlias.UpPlural}}Table.Columns(), opts...)
+		}, {{$fAlias.UpPlural}}Table.Columns(context.Background()).Names(), opts...)
 }
 {{- end}}
 
@@ -149,9 +149,9 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 	}
 
 	{{if $rel.IsToMany -}}
-	related, err := o.{{$relAlias}}(mods...).All(ctx, exec)
+	related, err := o.{{$relAlias}}(ctx, exec, mods...).All()
 	{{else -}}
-	related, err := o.{{$relAlias}}(mods...).One(ctx, exec)
+	related, err := o.{{$relAlias}}(ctx, exec, mods...).One()
 	{{end -}}
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
@@ -190,7 +190,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	  return nil
 	}
 
-	{{$fAlias.DownPlural}}, err := os.{{$relAlias}}(mods...).All(ctx, exec)
+	{{$fAlias.DownPlural}}, err := os.{{$relAlias}}(ctx, exec, mods...).All()
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
 	}
@@ -242,14 +242,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	  return nil
 	}
 
-	q := os.{{$relAlias}}(mods...)
-	q.Apply(
+	q := os.{{$relAlias}}(ctx, exec, append(
+		mods, 
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
 			qm.Columns({{$firstTo.UpSingular}}Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
 		{{- end}}
-	)
+	)...)
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
 	{{$fAlias.DownPlural}}, err := bob.All(ctx, exec, q, scan.StructMapper[*struct{

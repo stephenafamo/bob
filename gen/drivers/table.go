@@ -12,8 +12,8 @@ type Table struct {
 	Name string `json:"name"`
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
-	SchemaName string   `json:"schema_name"`
-	Columns    []Column `json:"columns"`
+	Schema  string   `json:"schema"`
+	Columns []Column `json:"columns"`
 
 	PKey    *PrimaryKey  `json:"p_key"`
 	FKeys   []ForeignKey `json:"foreign_keys"`

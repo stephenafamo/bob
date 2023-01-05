@@ -69,7 +69,6 @@ type templateData[T any] struct {
 
 	// Controls what names are output
 	PkgName string
-	Schema  string
 
 	// Control various generation features
 	AddSoftDeletes    bool

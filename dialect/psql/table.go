@@ -18,15 +18,15 @@ import (
 
 var ErrNothingToUpdate = errors.New("nothing to update")
 
-func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table[T, Tslice, Topt] {
+func NewTable[T any, Tslice ~[]T, Topt any](schema, tableName string) *Table[T, Tslice, Topt] {
 	var zeroOpt Topt
 
 	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))
-	view := NewView[T, Tslice](name0, nameX...)
-	return Table[T, Tslice, Topt]{
-		View:       &view,
+	view, mappings := newView[T, Tslice](schema, tableName)
+	return &Table[T, Tslice, Topt]{
+		View:       view,
+		pkCols:     filterNonZero(mappings.PKs),
 		optMapping: optMapping,
-		optPkCols:  optMapping.Columns(view.name...).Only(optMapping.PKs...),
 	}
 }
 
@@ -34,7 +34,7 @@ func NewTable[T any, Tslice ~[]T, Topt any](name0 string, nameX ...string) Table
 // caches ???
 type Table[T any, Tslice ~[]T, Topt any] struct {
 	*View[T, Tslice]
-	optPkCols  orm.Columns
+	pkCols     []string
 	optMapping internal.Mapping
 
 	BeforeInsertHooks orm.Hooks[Topt]
@@ -48,11 +48,6 @@ type Table[T any, Tslice ~[]T, Topt any] struct {
 
 	BeforeDeleteHooks orm.Hooks[T]
 	AfterDeleteHooks  orm.Hooks[T]
-}
-
-// Returns a column list
-func (t *Table[T, Tslice, Topt]) PKColumns() orm.Columns {
-	return t.pkCols
 }
 
 // Insert inserts a row into the table with only the set columns in Topt
@@ -73,7 +68,7 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
-		inqm.Returning("*"),
+		inqm.Returning(t.Columns(ctx)),
 	)
 
 	val, err := bob.One(ctx, exec, q, scan.StructMapper[T]())
@@ -117,7 +112,7 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
-		inqm.Returning("*"),
+		inqm.Returning(t.Columns(ctx)),
 	)
 
 	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
@@ -259,7 +254,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	}
 
 	if len(conflictCols) == 0 {
-		conflictCols = t.optPkCols.Names()
+		conflictCols = t.pkCols
 	}
 
 	var conflictQM bob.Mod[*dialect.InsertQuery]
@@ -278,7 +273,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
 		inqm.Rows(values...),
-		inqm.Returning(t.Columns()),
+		inqm.Returning(t.Columns(ctx)),
 		conflictQM,
 	)
 
@@ -324,7 +319,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	if len(conflictCols) == 0 {
-		conflictCols = t.optPkCols.Names()
+		conflictCols = t.pkCols
 	}
 
 	var conflictQM bob.Mod[*dialect.InsertQuery]
@@ -342,7 +337,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	q := Insert(
 		inqm.Into(t.Name(), columns...),
-		inqm.Returning(t.Columns()),
+		inqm.Returning(t.Columns(ctx)),
 		conflictQM,
 	)
 
@@ -445,8 +440,8 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 }
 
 // Adds table name et al
-func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Topt] {
-	vq := t.View.Query(queryMods...)
+func (t *Table[T, Tslice, Topt]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Topt] {
+	vq := t.View.Query(ctx, exec, queryMods...)
 	return &TableQuery[T, Tslice, Topt]{
 		ViewQuery:  *vq,
 		name:       t.name,
@@ -457,14 +452,14 @@ func (t *Table[T, Tslice, Topt]) Query(queryMods ...bob.Mod[*dialect.SelectQuery
 
 type TableQuery[T any, Ts ~[]T, Topt any] struct {
 	ViewQuery[T, Ts]
-	name       []string
-	pkCols     orm.Columns
+	name       [2]string
+	pkCols     []string
 	optMapping internal.Mapping
 }
 
 // UpdateAll updates all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Executor, vals Topt) (int64, error) {
+func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
 	columns, values, err := internal.GetColumnValues(t.optMapping, nil, vals)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
@@ -473,25 +468,25 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 		return 0, ErrNothingToUpdate
 	}
 
-	q := Update(upqm.Table(Quote(t.name...)))
+	q := Update(upqm.Table(Quote(t.name[:]...)))
 
 	for i, col := range columns {
 		q.Apply(upqm.Set(col, values[0][i]))
 	}
 
-	pkGroup := make([]any, len(t.pkCols.Names()))
-	for i, pk := range t.pkCols.Names() {
+	pkGroup := make([]any, len(t.pkCols))
+	for i, pk := range t.pkCols {
 		pkGroup[i] = Quote(pk)
 	}
 
 	// Select ONLY the primary keys
-	t.Expression.SelectList.Columns = pkGroup
+	t.q.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(upqm.Where(
-		Group(pkGroup...).In(t.Expression),
+		Group(pkGroup...).In(t.q.Expression),
 	))
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	rowsAff, err := bob.Exec(t.ctx, t.exec, q)
 	if err != nil {
 		return 0, err
 	}
@@ -501,22 +496,22 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(ctx context.Context, exec bob.Ex
 
 // DeleteAll deletes all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Topt]) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
-	q := Delete(delqm.From(Quote(t.name...)))
+func (t *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
+	q := Delete(delqm.From(Quote(t.name[:]...)))
 
-	pkGroup := make([]any, len(t.pkCols.Names()))
-	for i, pk := range t.pkCols.Names() {
+	pkGroup := make([]any, len(t.pkCols))
+	for i, pk := range t.pkCols {
 		pkGroup[i] = Quote(pk)
 	}
 
 	// Select ONLY the primary keys
-	t.Expression.SelectList.Columns = pkGroup
+	t.q.Expression.SelectList.Columns = pkGroup
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(delqm.Where(
-		Group(pkGroup...).In(t.Expression),
+		Group(pkGroup...).In(t.q.Expression),
 	))
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	rowsAff, err := bob.Exec(t.ctx, t.exec, q)
 	if err != nil {
 		return 0, err
 	}
@@ -542,4 +537,18 @@ func firstNonEmpty[T comparable, Ts ~[]T](slice Ts) T {
 	}
 
 	return zero
+}
+
+func filterNonZero[T comparable](s []T) []T {
+	var zero T
+	filtered := make([]T, 0, len(s))
+
+	for _, v := range s {
+		if v == zero {
+			continue
+		}
+		filtered = append(filtered, v)
+	}
+
+	return filtered
 }

@@ -1,10 +1,6 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Name -}}
 
-// {{$tAlias.UpSingular}}Slice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
-// This should almost always be used instead of []{{$tAlias.UpSingular}}.
-type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
-
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
@@ -31,7 +27,40 @@ type {{$tAlias.UpSingular}} struct {
 	{{end -}}
 }
 
+// {{$tAlias.UpSingular}}Slice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
+// This should almost always be used instead of []{{$tAlias.UpSingular}}.
+type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
+
+{{if not $table.PKey -}}
+	// {{$tAlias.UpPlural}}View contains methods to work with the {{$table.Name}} view
+	var {{$tAlias.UpPlural}}View = {{$.Dialect}}.NewView[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
+	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} view
+	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
+{{- else -}}
+	// {{$tAlias.UpPlural}}Table contains methods to work with the {{$table.Name}} table
+	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTable[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]("{{$table.Schema}}","{{$table.Name}}")
+	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
+	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]
+{{- end}}
+
+// {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
+type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
+
 {{if .Table.PKey -}}
+{{if .Table.Relationships -}}
+// {{$tAlias.DownSingular}}R is where relationships are stored.
+type {{$tAlias.DownSingular}}R struct {
+	{{range .Table.Relationships -}}
+	{{- $ftable := $.Aliases.Table .Foreign -}}
+	{{- $relAlias := $tAlias.Relationship .Name -}}
+	{{if .IsToMany -}}
+	{{$relAlias}} {{$ftable.UpSingular}}Slice `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
+	{{else -}}
+	{{$relAlias}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
+	{{end}}{{end -}}
+}
+{{- end}}
+
 // Optional{{$tAlias.UpSingular}} is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
@@ -51,19 +80,6 @@ type Optional{{$tAlias.UpSingular}} struct {
 	{{end -}}
 }
 
-{{if .Table.Relationships -}}
-// {{$tAlias.DownSingular}}R is where relationships are stored.
-type {{$tAlias.DownSingular}}R struct {
-	{{range .Table.Relationships -}}
-	{{- $ftable := $.Aliases.Table .Foreign -}}
-	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{if .IsToMany -}}
-	{{$relAlias}} {{$ftable.UpSingular}}Slice `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
-	{{else -}}
-	{{$relAlias}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias}}db:"{{$relAlias}}" json:"{{$relAlias}}" toml:"{{$relAlias}}" yaml:"{{$relAlias}}"`
-	{{end}}{{end -}}
-}
-{{- end}}
 {{- end}}
 
 type {{$tAlias.DownSingular}}ColumnNames struct {
@@ -72,3 +88,41 @@ type {{$tAlias.DownSingular}}ColumnNames struct {
 	{{$colAlias}} string
   {{end -}}
 }
+
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+var {{$tAlias.UpSingular}}Columns = struct {
+	{{range $column := $table.Columns -}}
+	{{- $colAlias := $tAlias.Column $column.Name -}}
+	{{$colAlias}} {{$.Dialect}}.Expression
+	{{end -}}
+}{
+	{{range $column := $table.Columns -}}
+	{{- $colAlias := $tAlias.Column $column.Name -}}
+	{{$colAlias}}: {{$.Dialect}}.Quote("{{$table.Name}}", "{{$column.Name}}"),
+	{{end -}}
+}
+
+type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
+	{{range $column := $table.Columns -}}
+	{{- $colAlias := $tAlias.Column $column.Name -}}
+		{{- if $column.Nullable -}}
+			{{$colAlias}} {{$.Dialect}}.WhereNullMod[Q, {{$column.Type}}]
+		{{- else -}}
+			{{$colAlias}} {{$.Dialect}}.WhereMod[Q, {{$column.Type}}]
+		{{- end}}
+  {{end -}}
+}
+
+func {{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable]() {{$tAlias.DownSingular}}Where[Q] {
+	return {{$tAlias.DownSingular}}Where[Q]{
+			{{range $column := $table.Columns -}}
+			{{- $colAlias := $tAlias.Column $column.Name -}}
+				{{- if $column.Nullable -}}
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$.Dialect}}.Quote("{{$table.Name}}", "{{$column.Name}}")),
+				{{- else -}}
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$.Dialect}}.Quote({{quote $table.Name}}, {{quote $column.Name}})),
+				{{- end}}
+			{{end -}}
+	}
+}
+

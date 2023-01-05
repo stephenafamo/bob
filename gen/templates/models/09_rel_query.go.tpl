@@ -6,9 +6,8 @@
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
-func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
-	q := {{$fAlias.UpPlural}}(mods...)
-	q.Apply(
+func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
@@ -43,9 +42,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQu
 		),
 		{{- end -}}
 		{{- end}}
-	)
-
-	return q
+	)...)
 }
 
 {{if le (len $rel.Sides) 1 -}}
@@ -53,7 +50,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQu
 {{$fromAlias := $.Aliases.Table $side.From -}}
 {{$toAlias := $.Aliases.Table $side.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	{{range $index, $local := $side.FromColumns -}}
 		{{- $fromCol := index $fromAlias.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))
@@ -62,8 +59,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.Sel
 		}
 	{{- end}}
 
-	q := {{$fAlias.UpPlural}}(mods...)
-	q.Apply(
+	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
 		{{range $index, $local := $side.FromColumns -}}
 			{{- $fromCol := index $fromAlias.Columns $local -}}
 			{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
@@ -77,9 +73,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.Sel
 			{{- $toCol := index $toAlias.Columns $where.Column}}
 			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
 		{{- end}}
-	)
-
-	return q
+	)...)
 }
 {{else -}}
 {{$firstSide := (index $rel.Sides 0) -}}
@@ -90,7 +84,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.Sel
 {{$lastFrom := $.Aliases.Table $lastSide.From -}}
 {{$lastTo := $.Aliases.Table $lastSide.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	{{range $index, $local := $firstSide.FromColumns -}}
 		{{- $fromCol := index $firstFrom.Columns $local -}}
 		{{$fromCol}}Args := make([]any, 0, len(os))
@@ -99,8 +93,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.Sel
 		}
 	{{- end}}
 
-	q := {{$fAlias.UpPlural}}(mods...)
-	q.Apply(
+	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
@@ -132,9 +125,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(mods ...bob.Mod[*dialect.Sel
 		),
 		{{- end -}}
 		{{- end}}
-	)
-
-	return q
+	)...)
 }
 {{end -}}
 
