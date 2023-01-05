@@ -152,3 +152,9 @@ prisma:
     # cause problems.
     blacklist: ["migrations", "addresses.name", "*.secret_col"]
 ```
+
+## Known Issues
+
+### `@map` attributes on columns are ignored
+
+This is because `@map` information is currently not given to generators by the `prisma` command. [See Issues #3998](https://github.com/prisma/prisma/issues/3998)

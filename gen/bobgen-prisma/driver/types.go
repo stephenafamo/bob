@@ -25,6 +25,16 @@ type Datamodel struct {
 	} `json:"enums"`
 }
 
+func (d Datamodel) ModelByName(name string) Model {
+	for _, m := range d.Models {
+		if name == m.Name {
+			return m
+		}
+	}
+
+	return Model{}
+}
+
 type PrimaryKey struct {
 	Name   string   `json:"name"`
 	Fields []string `json:"fields"`
@@ -37,14 +47,20 @@ type UniqueIndex struct {
 
 // Model describes a Prisma type model, which usually maps to a database table or collection.
 type Model struct {
-	// Name describes the singular name of the model.
-	Name       string `json:"name"`
-	IsEmbedded bool   `json:"isEmbedded"`
-	// DBName (optional)
+	Name          string        `json:"name"`
+	IsEmbedded    bool          `json:"isEmbedded"`
 	DBName        string        `json:"dbName"`
 	Fields        []Field       `json:"fields"`
 	UniqueIndexes []UniqueIndex `json:"uniqueIndexes"`
 	PrimaryKey    PrimaryKey    `json:"primaryKey"`
+}
+
+func (m Model) TableName() string {
+	if m.DBName != "" {
+		return m.DBName
+	}
+
+	return m.Name
 }
 
 // Field describes properties of a single model field.

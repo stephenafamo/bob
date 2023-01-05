@@ -94,11 +94,11 @@ func (d *Driver) TableNames(tableFilter drivers.Filter) ([]string, error) {
 	names := make([]string, 0, len(models))
 
 	for _, m := range models {
-		if skip(m.Name, tableFilter.Include, tableFilter.Exclude) {
+		if skip(m.TableName(), tableFilter.Include, tableFilter.Exclude) {
 			continue
 		}
 
-		names = append(names, m.Name)
+		names = append(names, m.TableName())
 	}
 
 	return names, nil
@@ -163,10 +163,15 @@ func (p *Driver) ViewColumns(tableName string, filter drivers.ColumnFilter) ([]d
 func (d *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) ([]drivers.Column, error) {
 	var model Model
 	for _, m := range d.config.Datamodel.Models {
-		if m.Name == tableName {
+		if m.TableName() == tableName {
 			model = m
 			break
 		}
+	}
+
+	// Not found
+	if model.Name == "" {
+		return nil, nil
 	}
 
 	allfilter := colFilter["*"]

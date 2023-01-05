@@ -17,7 +17,8 @@ func (d *Driver) Constraints(colFilter drivers.ColumnFilter) (drivers.DBConstrai
 	allfilter := colFilter["*"]
 
 	for _, model := range d.config.Datamodel.Models {
-		filter := colFilter[model.Name]
+		tableName := model.TableName()
+		filter := colFilter[tableName]
 		include := append(allfilter.Include, filter.Include...)
 		exclude := append(allfilter.Exclude, filter.Exclude...)
 
@@ -36,9 +37,9 @@ func (d *Driver) Constraints(colFilter drivers.ColumnFilter) (drivers.DBConstrai
 			if !shouldSkip {
 				pkName := model.PrimaryKey.Name
 				if pkName == "" {
-					pkName = "pk_" + model.Name
+					pkName = "pk_" + tableName
 				}
-				ret.PKs[model.Name] = &drivers.Constraint{
+				ret.PKs[tableName] = &drivers.Constraint{
 					Name:    pkName,
 					Columns: cols,
 				}
@@ -59,10 +60,10 @@ func (d *Driver) Constraints(colFilter drivers.ColumnFilter) (drivers.DBConstrai
 			if !shouldSkip {
 				keyName := unique.InternalName
 				if keyName == "" {
-					keyName = fmt.Sprintf("unique_%s_%s", model.Name, strings.Join(cols, "_"))
+					keyName = fmt.Sprintf("unique_%s_%s", tableName, strings.Join(cols, "_"))
 				}
 
-				ret.Uniques[model.Name] = append(ret.Uniques[model.Name], drivers.Constraint{
+				ret.Uniques[tableName] = append(ret.Uniques[tableName], drivers.Constraint{
 					Name:    keyName,
 					Columns: cols,
 				})
@@ -76,26 +77,26 @@ func (d *Driver) Constraints(colFilter drivers.ColumnFilter) (drivers.DBConstrai
 			}
 
 			if field.IsID {
-				ret.PKs[model.Name] = &drivers.Constraint{
-					Name:    "pk_" + model.Name,
+				ret.PKs[tableName] = &drivers.Constraint{
+					Name:    "pk_" + tableName,
 					Columns: []string{field.Name},
 				}
 			}
 
 			if field.IsUnique {
-				ret.Uniques[model.Name] = append(ret.Uniques[model.Name], drivers.Constraint{
-					Name:    fmt.Sprintf("unique_%s_%s", model.Name, field.Name),
+				ret.Uniques[tableName] = append(ret.Uniques[tableName], drivers.Constraint{
+					Name:    fmt.Sprintf("unique_%s_%s", tableName, field.Name),
 					Columns: []string{field.Name},
 				})
 			}
 
 			if field.Kind == FieldKindObject && len(field.RelationFromFields) > 0 {
-				ret.FKs[model.Name] = append(ret.FKs[model.Name], drivers.ForeignKey{
+				ret.FKs[tableName] = append(ret.FKs[tableName], drivers.ForeignKey{
 					Constraint: drivers.Constraint{
 						Name:    field.RelationName,
 						Columns: field.RelationFromFields,
 					},
-					ForeignTable:   field.Type,
+					ForeignTable:   d.config.Datamodel.ModelByName(field.Type).TableName(),
 					ForeignColumns: field.RelationToFields,
 				})
 			}

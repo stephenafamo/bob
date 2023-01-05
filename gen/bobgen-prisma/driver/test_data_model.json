@@ -29,8 +29,8 @@
   ],
   "models": [
     {
-      "name": "users",
-      "dbName": null,
+      "name": "User",
+      "dbName": "users",
       "fields": [
         {
           "name": "id",
@@ -2227,7 +2227,7 @@
           "isId": false,
           "isReadOnly": false,
           "hasDefaultValue": false,
-          "type": "users",
+          "type": "User",
           "relationName": "usersTovideos",
           "relationFromFields": [
             "user_id"
