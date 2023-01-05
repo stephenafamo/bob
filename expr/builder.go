@@ -95,9 +95,12 @@ func (e Builder[T, B]) Group(exps ...any) T {
 
 // quoted and joined... something like "users"."id"
 func (e Builder[T, B]) Quote(aa ...string) T {
-	ss := make([]any, len(aa))
-	for k, v := range aa {
-		ss[k] = v
+	ss := make([]any, 0, len(aa))
+	for _, v := range aa {
+		if v == "" {
+			continue
+		}
+		ss = append(ss, v)
 	}
 
 	return e.X(quoted(ss))
