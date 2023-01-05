@@ -32,10 +32,6 @@ type Mapping struct {
 	NonPKs       []string
 	Generated    []string
 	NonGenerated []string
-
-	CreatedAtCol int
-	UpdatedAtCol int
-	DeletedAtCol int
 }
 
 func (c Mapping) Columns(table ...string) orm.Columns {
