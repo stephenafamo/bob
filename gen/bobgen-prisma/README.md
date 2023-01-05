@@ -60,7 +60,7 @@ import (
     "encoding/json"
     "fmt"
 
-    db "random/prisma/bob"
+    "random/prisma"
 
     "github.com/aarondl/opt/omit"
     "github.com/aarondl/opt/omitnull"
@@ -73,14 +73,14 @@ func main() {
 }
 
 func run(ctx context.Context) error {
-    client, err := db.New()
+    client, err := prisma.New()
     if err != nil {
         return err
     }
     defer client.Close()
 
     // create a post
-    createdPost, err := db.PostsTable.Insert(ctx, client, &db.OptionalPost{
+    createdPost, err := prisma.PostsTable.Insert(ctx, client, &prisma.OptionalPost{
         Title:     omit.From("Hi from Prisma!"),
         Published: omit.From(true),
         Desc:      omitnull.From("Prisma is a database toolkit and makes databases easy."),
@@ -93,7 +93,7 @@ func run(ctx context.Context) error {
     fmt.Printf("created post: %s\n", result)
 
     // find a single post
-    post, err := db.FindPost(ctx, client, createdPost.ID)
+    post, err := prisma.FindPost(ctx, client, createdPost.ID)
     if err != nil {
         return err
     }

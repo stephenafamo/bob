@@ -157,7 +157,7 @@ func generate(root root) error {
 	}
 
 	helpers.ReadConfig(root.Generator.Config.ConfigFile)
-	viper.SetDefault("pkgname", "db")
+	viper.SetDefault("pkgname", "prisma")
 	viper.SetDefault("factory-pkgname", "factory")
 	viper.SetDefault("struct-tag-casing", "snake")
 	viper.SetDefault("relation-tag", "-")
