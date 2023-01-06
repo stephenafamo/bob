@@ -2,7 +2,6 @@ package psql
 
 import (
 	"context"
-	"errors"
 	"io"
 	"reflect"
 
@@ -13,8 +12,6 @@ import (
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
-
-var ErrNotPreparer = errors.New("executor provided is not a bob.Preparer")
 
 func NewView[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 	v, _ := newView[T, Tslice](schema, tableName)
