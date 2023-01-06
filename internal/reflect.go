@@ -148,14 +148,9 @@ func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]stri
 
 	allvalues = append(allvalues, vals1)
 
-	colMap := map[string]struct{}{}
-	for _, c := range cols {
-		colMap[c] = struct{}{}
-	}
-
 	for index, obj := range objs[1:] {
 		refVal := reflect.ValueOf(obj)
-		values, err := getObjVals(mapping, colMap, refVal)
+		values, err := getObjVals(mapping, cols, refVal)
 		if err != nil {
 			return nil, nil, fmt.Errorf("row %d: %w", index+2, err)
 		}
@@ -206,7 +201,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 	return cols, values, nil
 }
 
-func getObjVals(mapping Mapping, colMap map[string]struct{}, val reflect.Value) ([]any, error) {
+func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]any, error) {
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return nil, errors.New("object is nil")
@@ -214,19 +209,20 @@ func getObjVals(mapping Mapping, colMap map[string]struct{}, val reflect.Value) 
 		val = val.Elem()
 	}
 
-	values := make([]any, 0, len(colMap))
+	values := make([]any, 0, len(cols))
 
 	for index, name := range mapping.NonGenerated {
 		if name == "" {
 			continue
 		}
 
-		if _, ok := colMap[name]; !ok {
-			continue
+		for _, c := range cols {
+			if name == c {
+				field := val.Field(index)
+				values = append(values, expr.Arg(field.Interface()))
+				break
+			}
 		}
-
-		field := val.Field(index)
-		values = append(values, expr.Arg(field.Interface()))
 	}
 
 	return values, nil
