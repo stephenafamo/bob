@@ -1,5 +1,4 @@
 {
-	"schema": "public",
 	"tables": [
 		{
 			"name": "sponsors",

@@ -28,7 +28,6 @@ type State[T any] struct {
 	Config *Config[T]
 
 	Dialect   string
-	Schema    string
 	Tables    []drivers.Table
 	ExtraInfo T
 }
@@ -264,7 +263,6 @@ func (s *State[T]) initDBInfo() error {
 		return errors.New("no tables found in database")
 	}
 
-	s.Schema = dbInfo.Schema
 	s.Tables = dbInfo.Tables
 	s.ExtraInfo = dbInfo.ExtraInfo
 

@@ -11,7 +11,7 @@ type MockDriver struct{}
 // Assemble the DBInfo
 func (m *MockDriver) Assemble() (*drivers.DBInfo[any], error) {
 	var err error
-	dbinfo := &drivers.DBInfo[any]{Schema: "public"}
+	dbinfo := &drivers.DBInfo[any]{}
 
 	defer func() {
 		if r := recover(); r != nil && err == nil {

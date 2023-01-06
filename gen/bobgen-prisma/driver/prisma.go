@@ -72,7 +72,6 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 	d.loadEnums()
 
 	dbinfo = &DBInfo{
-		Schema: d.config.Schema,
 		Tables: d.tables(),
 		ExtraInfo: Extra{
 			Provider: d.config.Provider,

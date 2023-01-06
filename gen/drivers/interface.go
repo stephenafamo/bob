@@ -18,7 +18,6 @@ type Interface[T any] interface {
 
 // DBInfo is the database's table data and dialect.
 type DBInfo[T any] struct {
-	Schema    string  `json:"schema"`
 	Tables    []Table `json:"tables"`
 	ExtraInfo T       `json:"extra_info"`
 }

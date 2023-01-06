@@ -92,7 +92,7 @@ func (p *Driver) Assemble() (*DBInfo, error) {
 		return nil, errors.Wrap(err, "failed to get database version")
 	}
 
-	dbinfo = &DBInfo{Schema: p.config.Schema}
+	dbinfo = &DBInfo{}
 
 	if err := p.loadUniqueColumns(); err != nil {
 		return nil, errors.Wrapf(err, "unable to load unique data")
