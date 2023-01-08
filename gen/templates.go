@@ -613,6 +613,7 @@ func setDeps(o setDepsOptions) string {
 
 		for _, mapp := range kside.Mapped {
 			oGetter := columnGetter(o.tables, kside.TableName, oalias, mapp.Column)
+			fromOpt := shouldCreate || (o.fromOpt != nil && o.fromOpt(kside))
 
 			if mapp.Value != "" {
 				if kside.TableName == o.r.Local() {
@@ -628,16 +629,20 @@ func setDeps(o setDepsOptions) string {
 					continue
 				}
 
+				oSetter := mapp.Value
+				if fromOpt {
+					oSetter = fmt.Sprintf("omit.From(%s)", oSetter)
+				}
+
 				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 					objVarName,
 					oalias.Columns[mapp.Column],
-					mapp.Value,
+					oSetter,
 				))
 				continue
 			}
 
 			extObjVarName := getVarName(o.aliases, mapp.ExternalTable, local, foreign, false)
-			fromOpt := shouldCreate || (o.fromOpt != nil && o.fromOpt(kside))
 
 			oSetter := columnSetter(o.i, o.aliases, o.tables,
 				kside.TableName, mapp.ExternalTable,
@@ -671,6 +676,14 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 
 		mret := make([]string, 0, len(kside.Mapped))
 		for _, mapp := range kside.Mapped {
+			if mapp.Value != "" {
+				mret = append(mret, fmt.Sprintf("%s: omit.From(%s),",
+					oalias.Columns[mapp.Column],
+					mapp.Value,
+				))
+				continue
+			}
+
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
 
 			oSetter := columnSetter(i, aliases, tables,

@@ -29,13 +29,13 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
 				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}})),
+				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
 				{{if eq $index 0 -}}qm.Where({{end -}}
-				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}),
+				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 		{{- if gt $index 0 -}}
@@ -67,11 +67,11 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		{{- end}}
 		{{- range $where := $side.FromWhere}}
 			{{- $fromCol := index $fromAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
+			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}})),
 		{{- end}}
 		{{- range $where := $side.ToWhere}}
 			{{- $toCol := index $toAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
+			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}})),
 		{{- end}}
 	)...)
 }
@@ -115,11 +115,11 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
+				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$where.Value}})),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$.Dialect}}.Arg({{$where.Value}}))),
+				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$where.Value}})),
 			{{- end}}
 		{{- if gt $index 0}}
 		),

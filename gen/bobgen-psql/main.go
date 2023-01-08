@@ -108,6 +108,11 @@ func (c commandError) Error() string {
 
 func preRun(cmd *cobra.Command, args []string) error {
 	var err error
+	schemas := viper.GetStringSlice("psql.schemas")
+	if len(schemas) == 0 {
+		return fmt.Errorf("no schemas to generate for")
+	}
+	viper.SetDefault("psql.shared_schema", schemas[0])
 
 	dsn := viper.GetString("psql.dsn")
 	if dsn == "" {

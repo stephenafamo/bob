@@ -26,7 +26,6 @@ var (
 )
 
 func TestAssemble(t *testing.T) {
-	return
 	if dsn == "" {
 		t.Fatalf("No environment variable DRIVER_TEST_DSN")
 	}

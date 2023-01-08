@@ -7,8 +7,9 @@ import (
 )
 
 type RelWhere struct {
-	Column string
-	Value  string
+	Column  string
+	Value   string
+	GoValue string
 }
 
 type RelSide struct {
@@ -29,7 +30,7 @@ type RelSide struct {
 	KeyNullable bool
 
 	// Kinda hacky, used for preloading
-	ToExpr func(context.Context) bob.Expression `json:"-"`
+	ToExpr func(context.Context) bob.Expression `json:"-" yaml:"-"`
 }
 
 type Relationship struct {
@@ -112,46 +113,6 @@ type RelSetMapping struct {
 	ExternalColumn string
 }
 
-func (r Relationship) StaticSides() []struct {
-	Table   string
-	Columns [][2]string
-} {
-	x := make(map[string][][2]string, len(r.Sides))
-	for _, side := range r.Sides {
-		if len(side.FromWhere) > 0 {
-			columns := make([][2]string, 0, len(side.FromWhere))
-			for _, f := range side.FromWhere {
-				columns = append(columns, [2]string{f.Column, f.Value})
-			}
-			x[side.From] = append(x[side.From], columns...)
-		}
-
-		if len(side.ToWhere) > 0 {
-			columns := make([][2]string, 0, len(side.ToWhere))
-			for _, f := range side.ToWhere {
-				columns = append(columns, [2]string{f.Column, f.Value})
-			}
-			x[side.To] = append(x[side.To], columns...)
-		}
-	}
-
-	x2 := make([]struct {
-		Table   string
-		Columns [][2]string
-	}, 0, len(x))
-
-	for table, columns := range x {
-		x2 = append(x2, struct {
-			Table   string
-			Columns [][2]string
-		}{
-			Table:   table,
-			Columns: columns,
-		})
-	}
-	return x2
-}
-
 func (r Relationship) ValuedSides() []RelSetDetails {
 	x := make([]RelSetDetails, 0, len(r.Sides))
 
@@ -170,7 +131,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			for _, f := range side.FromWhere {
 				fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
 					Column: f.Column,
-					Value:  f.Value,
+					Value:  f.GoValue,
 				})
 			}
 		}
@@ -179,7 +140,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			for _, f := range side.ToWhere {
 				toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
 					Column: f.Column,
-					Value:  f.Value,
+					Value:  f.GoValue,
 				})
 			}
 		}

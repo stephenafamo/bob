@@ -1,8 +1,9 @@
 {
 	"tables": [
 		{
+			"key": "public.sponsors",
+			"schema": "public",
 			"name": "sponsors",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -16,8 +17,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -36,11 +37,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "sponsors",
+							"From": "public.sponsors",
 							"FromColumns": [
 								"id"
 							],
-							"To": "videos",
+							"To": "public.videos",
 							"ToColumns": [
 								"sponsor_id"
 							],
@@ -56,8 +57,9 @@
 			]
 		},
 		{
+			"key": "public.tags",
+			"schema": "public",
 			"name": "tags",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -71,8 +73,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -91,11 +93,11 @@
 					"ByJoinTable": true,
 					"Sides": [
 						{
-							"From": "tags",
+							"From": "public.tags",
 							"FromColumns": [
 								"id"
 							],
-							"To": "video_tags",
+							"To": "public.video_tags",
 							"ToColumns": [
 								"tag_id"
 							],
@@ -106,11 +108,11 @@
 							"KeyNullable": false
 						},
 						{
-							"From": "video_tags",
+							"From": "public.video_tags",
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "videos",
+							"To": "public.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -126,8 +128,9 @@
 			]
 		},
 		{
+			"key": "public.type_monsters",
+			"schema": "public",
 			"name": "type_monsters",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -141,38 +144,38 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_use",
-					"db_type": "enum.workday",
+					"db_type": "ENUM",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
 					"generated": false,
-					"type": "Workday",
+					"type": "PublicWorkday",
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_nullable",
-					"db_type": "enum.workday",
+					"db_type": "ENUM",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "Workday",
+					"type": "PublicWorkday",
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_zero",
@@ -186,8 +189,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_one",
@@ -201,8 +204,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_two",
@@ -216,8 +219,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_three",
@@ -231,8 +234,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_four",
@@ -246,8 +249,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_five",
@@ -261,8 +264,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_six",
@@ -276,8 +279,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_zero",
@@ -291,8 +294,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_one",
@@ -306,8 +309,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_two",
@@ -321,8 +324,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_three",
@@ -336,8 +339,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_four",
@@ -351,8 +354,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_five",
@@ -366,8 +369,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_six",
@@ -381,8 +384,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_seven",
@@ -396,8 +399,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eight",
@@ -411,8 +414,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_nine",
@@ -426,8 +429,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_ten",
@@ -441,8 +444,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eleven",
@@ -456,8 +459,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_zero",
@@ -471,8 +474,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_one",
@@ -486,8 +489,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_two",
@@ -501,8 +504,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_three",
@@ -516,8 +519,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_four",
@@ -531,8 +534,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_five",
@@ -546,8 +549,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_six",
@@ -561,8 +564,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_seven",
@@ -576,8 +579,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_eight",
@@ -591,8 +594,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_nine",
@@ -606,8 +609,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_zero",
@@ -621,8 +624,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_one",
@@ -636,8 +639,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_two",
@@ -651,8 +654,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_three",
@@ -666,8 +669,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_four",
@@ -681,8 +684,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_zero",
@@ -696,8 +699,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_one",
@@ -711,8 +714,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_two",
@@ -726,8 +729,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_three",
@@ -741,8 +744,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_four",
@@ -756,8 +759,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_five",
@@ -771,8 +774,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_six",
@@ -786,8 +789,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_zero",
@@ -801,8 +804,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_one",
@@ -816,8 +819,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_two",
@@ -831,8 +834,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_three",
@@ -846,8 +849,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_four",
@@ -861,8 +864,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_five",
@@ -876,8 +879,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_six",
@@ -891,8 +894,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_zero",
@@ -908,8 +911,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_one",
@@ -925,8 +928,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_two",
@@ -942,8 +945,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_three",
@@ -959,8 +962,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_four",
@@ -976,8 +979,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_five",
@@ -993,8 +996,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_six",
@@ -1010,8 +1013,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_seven",
@@ -1027,8 +1030,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_eight",
@@ -1044,8 +1047,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_nine",
@@ -1061,8 +1064,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_zero",
@@ -1076,8 +1079,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_one",
@@ -1091,8 +1094,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_two",
@@ -1106,8 +1109,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_three",
@@ -1121,8 +1124,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_four",
@@ -1136,8 +1139,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_five",
@@ -1151,8 +1154,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_six",
@@ -1166,8 +1169,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_seven",
@@ -1181,8 +1184,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_eight",
@@ -1196,8 +1199,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_zero",
@@ -1213,8 +1216,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_one",
@@ -1230,8 +1233,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_two",
@@ -1247,8 +1250,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_three",
@@ -1264,8 +1267,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_four",
@@ -1281,8 +1284,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_five",
@@ -1298,8 +1301,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_six",
@@ -1315,8 +1318,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seven",
@@ -1332,8 +1335,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eight",
@@ -1349,8 +1352,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_nine",
@@ -1366,8 +1369,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_ten",
@@ -1383,8 +1386,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eleven",
@@ -1400,8 +1403,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_twelve",
@@ -1417,8 +1420,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_thirteen",
@@ -1434,8 +1437,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fourteen",
@@ -1451,8 +1454,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fifteen",
@@ -1468,8 +1471,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_sixteen",
@@ -1485,8 +1488,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seventeen",
@@ -1502,8 +1505,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eighteen",
@@ -1519,8 +1522,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_zero",
@@ -1534,8 +1537,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_one",
@@ -1549,8 +1552,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_two",
@@ -1564,8 +1567,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_three",
@@ -1579,8 +1582,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_four",
@@ -1594,8 +1597,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_five",
@@ -1609,8 +1612,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "integer_default",
@@ -1624,8 +1627,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchar_default",
@@ -1639,8 +1642,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_notz",
@@ -1656,8 +1659,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_tz",
@@ -1673,8 +1676,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamptz",
-					"domain_name": "",
-					"full_db_type": "timestamptz"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "interval_nnull",
@@ -1688,8 +1691,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "interval_null",
@@ -1703,8 +1706,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "json_null",
@@ -1721,8 +1724,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "json_nnull",
@@ -1739,8 +1742,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_null",
@@ -1757,8 +1760,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_nnull",
@@ -1775,8 +1778,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "box_null",
@@ -1792,8 +1795,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "box_nnull",
@@ -1809,8 +1812,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "cidr_null",
@@ -1824,8 +1827,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "cidr_nnull",
@@ -1839,8 +1842,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "circle_null",
@@ -1854,8 +1857,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "circle_nnull",
@@ -1869,8 +1872,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_null",
@@ -1884,8 +1887,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_nnull",
@@ -1899,8 +1902,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_null",
@@ -1914,8 +1917,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_nnull",
@@ -1929,8 +1932,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "line_null",
@@ -1946,8 +1949,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "line_nnull",
@@ -1963,8 +1966,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "lseg_null",
@@ -1980,8 +1983,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "lseg_nnull",
@@ -1997,8 +2000,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "macaddr_null",
@@ -2012,8 +2015,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "macaddr_nnull",
@@ -2027,8 +2030,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "money_null",
@@ -2042,8 +2045,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "money_nnull",
@@ -2057,8 +2060,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "path_null",
@@ -2074,8 +2077,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "path_nnull",
@@ -2091,8 +2094,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "pg_lsn_null",
@@ -2106,8 +2109,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "pg_lsn_nnull",
@@ -2121,8 +2124,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "point_null",
@@ -2138,8 +2141,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "point_nnull",
@@ -2155,8 +2158,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "polygon_null",
@@ -2172,8 +2175,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "polygon_nnull",
@@ -2189,8 +2192,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsquery_null",
@@ -2204,8 +2207,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsquery_nnull",
@@ -2219,8 +2222,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsvector_null",
@@ -2234,8 +2237,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsvector_nnull",
@@ -2249,8 +2252,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "txid_null",
@@ -2264,8 +2267,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "txid_nnull",
@@ -2279,8 +2282,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_null",
@@ -2294,8 +2297,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_nnull",
@@ -2309,8 +2312,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_null",
@@ -2326,8 +2329,8 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_nnull",
@@ -2343,8 +2346,8 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_null",
@@ -2360,8 +2363,8 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_nnull",
@@ -2377,8 +2380,8 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_null",
@@ -2394,8 +2397,8 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_nnull",
@@ -2411,8 +2414,8 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_null",
@@ -2429,8 +2432,8 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -2447,8 +2450,8 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_null",
@@ -2464,8 +2467,8 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_nnull",
@@ -2481,8 +2484,8 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_null",
@@ -2498,8 +2501,8 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_nnull",
@@ -2515,8 +2518,8 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_null",
@@ -2532,8 +2535,8 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_nnull",
@@ -2549,8 +2552,42 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
+				},
+				{
+					"name": "enumarr_null",
+					"db_type": "ARRAY_workday",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "parray.EnumArray[PublicWorkday]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\""
+					],
+					"arr_type": "USER-DEFINED",
+					"udt_name": "_workday",
+					"udt_schema": "public",
+					"domain_name": ""
+				},
+				{
+					"name": "enumarr_nnull",
+					"db_type": "ARRAY_workday",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "parray.EnumArray[PublicWorkday]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\""
+					],
+					"arr_type": "USER-DEFINED",
+					"udt_name": "_workday",
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "customarr_null",
@@ -2566,8 +2603,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": "my_int_array"
 				},
 				{
 					"name": "customarr_nnull",
@@ -2583,8 +2620,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": "my_int_array"
 				},
 				{
 					"name": "domainuint3_nnull",
@@ -2600,8 +2637,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "uint3",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": "uint3"
 				},
 				{
 					"name": "base",
@@ -2615,8 +2652,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_nnull",
@@ -2630,8 +2667,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_null",
@@ -2645,8 +2682,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -2661,2529 +2698,10 @@
 			"relationship": null
 		},
 		{
+			"key": "public.type_monsters_mv",
+			"schema": "public",
 			"name": "type_monsters_mv",
-			"schema": "",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "enum_use",
-					"db_type": "enum.workday",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "Workday",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
-				},
-				{
-					"name": "enum_nullable",
-					"db_type": "enum.workday",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "Workday",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
-				},
-				{
-					"name": "bool_zero",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_one",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_two",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_three",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_four",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_five",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "bool_six",
-					"db_type": "boolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
-				},
-				{
-					"name": "string_zero",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
-				},
-				{
-					"name": "string_one",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
-				},
-				{
-					"name": "string_two",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
-				},
-				{
-					"name": "string_three",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
-				},
-				{
-					"name": "string_four",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
-				},
-				{
-					"name": "string_five",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_six",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_seven",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_eight",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_nine",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_ten",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "string_eleven",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "nonbyte_zero",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
-				},
-				{
-					"name": "nonbyte_one",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
-				},
-				{
-					"name": "nonbyte_two",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
-				},
-				{
-					"name": "nonbyte_three",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
-				},
-				{
-					"name": "nonbyte_four",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
-				},
-				{
-					"name": "nonbyte_five",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
-				},
-				{
-					"name": "nonbyte_six",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
-				},
-				{
-					"name": "nonbyte_seven",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
-				},
-				{
-					"name": "nonbyte_eight",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
-				},
-				{
-					"name": "nonbyte_nine",
-					"db_type": "character",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
-				},
-				{
-					"name": "byte_zero",
-					"db_type": "\"char\"",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
-				},
-				{
-					"name": "byte_one",
-					"db_type": "\"char\"",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
-				},
-				{
-					"name": "byte_two",
-					"db_type": "\"char\"",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
-				},
-				{
-					"name": "byte_three",
-					"db_type": "\"char\"",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
-				},
-				{
-					"name": "byte_four",
-					"db_type": "\"char\"",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
-				},
-				{
-					"name": "big_int_zero",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_one",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_two",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_three",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_four",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_five",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "big_int_six",
-					"db_type": "bigint",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
-				},
-				{
-					"name": "int_zero",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_one",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_two",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_three",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_four",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_five",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "int_six",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "float_zero",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_one",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_two",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_three",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_four",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_five",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_six",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_seven",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_eight",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "float_nine",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "bytea_zero",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_one",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_two",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_three",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_four",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_five",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_six",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_seven",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "bytea_eight",
-					"db_type": "bytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
-				},
-				{
-					"name": "time_zero",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_one",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_two",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_three",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_four",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_five",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_six",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_seven",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_eight",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_nine",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_ten",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "time_eleven",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_twelve",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_thirteen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_fourteen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_fifteen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_sixteen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_seventeen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "time_eighteen",
-					"db_type": "date",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
-				},
-				{
-					"name": "uuid_zero",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "uuid_one",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "uuid_two",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "uuid_three",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "uuid_four",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "uuid_five",
-					"db_type": "uuid",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
-				},
-				{
-					"name": "integer_default",
-					"db_type": "integer",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
-				},
-				{
-					"name": "varchar_default",
-					"db_type": "character varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
-				},
-				{
-					"name": "timestamp_notz",
-					"db_type": "timestamp without time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
-				},
-				{
-					"name": "timestamp_tz",
-					"db_type": "timestamp with time zone",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "timestamptz",
-					"domain_name": "",
-					"full_db_type": "timestamptz"
-				},
-				{
-					"name": "interval_nnull",
-					"db_type": "interval",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
-				},
-				{
-					"name": "interval_null",
-					"db_type": "interval",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
-				},
-				{
-					"name": "json_null",
-					"db_type": "json",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
-				},
-				{
-					"name": "json_nnull",
-					"db_type": "json",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
-				},
-				{
-					"name": "jsonb_null",
-					"db_type": "jsonb",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
-				},
-				{
-					"name": "jsonb_nnull",
-					"db_type": "jsonb",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
-				},
-				{
-					"name": "box_null",
-					"db_type": "box",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Box",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
-				},
-				{
-					"name": "box_nnull",
-					"db_type": "box",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Box",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
-				},
-				{
-					"name": "cidr_null",
-					"db_type": "cidr",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
-				},
-				{
-					"name": "cidr_nnull",
-					"db_type": "cidr",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
-				},
-				{
-					"name": "circle_null",
-					"db_type": "circle",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Circle",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
-				},
-				{
-					"name": "circle_nnull",
-					"db_type": "circle",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Circle",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
-				},
-				{
-					"name": "double_prec_null",
-					"db_type": "double precision",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
-				},
-				{
-					"name": "double_prec_nnull",
-					"db_type": "double precision",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
-				},
-				{
-					"name": "inet_null",
-					"db_type": "inet",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
-				},
-				{
-					"name": "inet_nnull",
-					"db_type": "inet",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
-				},
-				{
-					"name": "line_null",
-					"db_type": "line",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Line",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
-				},
-				{
-					"name": "line_nnull",
-					"db_type": "line",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Line",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
-				},
-				{
-					"name": "lseg_null",
-					"db_type": "lseg",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Lseg",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
-				},
-				{
-					"name": "lseg_nnull",
-					"db_type": "lseg",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Lseg",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
-				},
-				{
-					"name": "macaddr_null",
-					"db_type": "macaddr",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
-				},
-				{
-					"name": "macaddr_nnull",
-					"db_type": "macaddr",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
-				},
-				{
-					"name": "money_null",
-					"db_type": "money",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
-				},
-				{
-					"name": "money_nnull",
-					"db_type": "money",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
-				},
-				{
-					"name": "path_null",
-					"db_type": "path",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Path",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
-				},
-				{
-					"name": "path_nnull",
-					"db_type": "path",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Path",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
-				},
-				{
-					"name": "pg_lsn_null",
-					"db_type": "pg_lsn",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
-				},
-				{
-					"name": "pg_lsn_nnull",
-					"db_type": "pg_lsn",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
-				},
-				{
-					"name": "point_null",
-					"db_type": "point",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Point",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
-				},
-				{
-					"name": "point_nnull",
-					"db_type": "point",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Point",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
-				},
-				{
-					"name": "polygon_null",
-					"db_type": "polygon",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Polygon",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
-				},
-				{
-					"name": "polygon_nnull",
-					"db_type": "polygon",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pgeo.Polygon",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					],
-					"arr_type": "",
-					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
-				},
-				{
-					"name": "tsquery_null",
-					"db_type": "tsquery",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
-				},
-				{
-					"name": "tsquery_nnull",
-					"db_type": "tsquery",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
-				},
-				{
-					"name": "tsvector_null",
-					"db_type": "tsvector",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
-				},
-				{
-					"name": "tsvector_nnull",
-					"db_type": "tsvector",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
-				},
-				{
-					"name": "txid_null",
-					"db_type": "txid_snapshot",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
-				},
-				{
-					"name": "txid_nnull",
-					"db_type": "txid_snapshot",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
-				},
-				{
-					"name": "xml_null",
-					"db_type": "xml",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
-				},
-				{
-					"name": "xml_nnull",
-					"db_type": "xml",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
-				},
-				{
-					"name": "intarr_null",
-					"db_type": "ARRAYinteger",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "integer",
-					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
-				},
-				{
-					"name": "intarr_nnull",
-					"db_type": "ARRAYinteger",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "integer",
-					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
-				},
-				{
-					"name": "boolarr_null",
-					"db_type": "ARRAYboolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.BoolArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "boolean",
-					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
-				},
-				{
-					"name": "boolarr_nnull",
-					"db_type": "ARRAYboolean",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.BoolArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "boolean",
-					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
-				},
-				{
-					"name": "varchararr_null",
-					"db_type": "ARRAYcharacter varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "character varying",
-					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
-				},
-				{
-					"name": "varchararr_nnull",
-					"db_type": "ARRAYcharacter varying",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "character varying",
-					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
-				},
-				{
-					"name": "decimalarr_null",
-					"db_type": "ARRAYnumeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
-					"imports": [
-						"\"github.com/stephenafamo/bob/types/parray\"",
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "numeric",
-					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
-				},
-				{
-					"name": "decimalarr_nnull",
-					"db_type": "ARRAYnumeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
-					"imports": [
-						"\"github.com/stephenafamo/bob/types/parray\"",
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "numeric",
-					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
-				},
-				{
-					"name": "byteaarr_null",
-					"db_type": "ARRAYbytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.ByteaArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "bytea",
-					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
-				},
-				{
-					"name": "byteaarr_nnull",
-					"db_type": "ARRAYbytea",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.ByteaArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "bytea",
-					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
-				},
-				{
-					"name": "jsonbarr_null",
-					"db_type": "ARRAYjsonb",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "jsonb",
-					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
-				},
-				{
-					"name": "jsonbarr_nnull",
-					"db_type": "ARRAYjsonb",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "jsonb",
-					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
-				},
-				{
-					"name": "jsonarr_null",
-					"db_type": "ARRAYjson",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "json",
-					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
-				},
-				{
-					"name": "jsonarr_nnull",
-					"db_type": "ARRAYjson",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "json",
-					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
-				},
-				{
-					"name": "customarr_null",
-					"db_type": "ARRAY_int4",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "",
-					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
-				},
-				{
-					"name": "customarr_nnull",
-					"db_type": "ARRAY_int4",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					],
-					"arr_type": "",
-					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
-				},
-				{
-					"name": "domainuint3_nnull",
-					"db_type": "numeric",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "numeric",
-					"domain_name": "uint3",
-					"full_db_type": "numeric"
-				},
-				{
-					"name": "base",
-					"db_type": "text",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
-				},
-				{
-					"name": "generated_nnull",
-					"db_type": "text",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
-				},
-				{
-					"name": "generated_null",
-					"db_type": "text",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"generated": false,
-					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
-				}
-			],
+			"columns": null,
 			"p_key": null,
 			"foreign_keys": null,
 			"unique": null,
@@ -5191,8 +2709,9 @@
 			"relationship": null
 		},
 		{
+			"key": "public.type_monsters_v",
+			"schema": "public",
 			"name": "type_monsters_v",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -5206,38 +2725,38 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_use",
-					"db_type": "enum.workday",
+					"db_type": "ENUM",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "Workday",
+					"type": "PublicWorkday",
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_nullable",
-					"db_type": "enum.workday",
+					"db_type": "ENUM",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
 					"generated": false,
-					"type": "Workday",
+					"type": "PublicWorkday",
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "workday",
-					"domain_name": "",
-					"full_db_type": "workday"
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_zero",
@@ -5251,8 +2770,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_one",
@@ -5266,8 +2785,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_two",
@@ -5281,8 +2800,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_three",
@@ -5296,8 +2815,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_four",
@@ -5311,8 +2830,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_five",
@@ -5326,8 +2845,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_six",
@@ -5341,8 +2860,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_zero",
@@ -5356,8 +2875,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_one",
@@ -5371,8 +2890,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_two",
@@ -5386,8 +2905,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_three",
@@ -5401,8 +2920,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_four",
@@ -5416,8 +2935,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_five",
@@ -5431,8 +2950,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_six",
@@ -5446,8 +2965,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_seven",
@@ -5461,8 +2980,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eight",
@@ -5476,8 +2995,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_nine",
@@ -5491,8 +3010,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_ten",
@@ -5506,8 +3025,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eleven",
@@ -5521,8 +3040,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_zero",
@@ -5536,8 +3055,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_one",
@@ -5551,8 +3070,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_two",
@@ -5566,8 +3085,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_three",
@@ -5581,8 +3100,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_four",
@@ -5596,8 +3115,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_five",
@@ -5611,8 +3130,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_six",
@@ -5626,8 +3145,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_seven",
@@ -5641,8 +3160,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_eight",
@@ -5656,8 +3175,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_nine",
@@ -5671,8 +3190,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bpchar",
-					"domain_name": "",
-					"full_db_type": "character(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_zero",
@@ -5686,8 +3205,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_one",
@@ -5701,8 +3220,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_two",
@@ -5716,8 +3235,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_three",
@@ -5731,8 +3250,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_four",
@@ -5746,8 +3265,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "char",
-					"domain_name": "",
-					"full_db_type": "char"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_zero",
@@ -5761,8 +3280,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_one",
@@ -5776,8 +3295,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_two",
@@ -5791,8 +3310,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_three",
@@ -5806,8 +3325,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_four",
@@ -5821,8 +3340,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_five",
@@ -5836,8 +3355,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_six",
@@ -5851,8 +3370,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int8",
-					"domain_name": "",
-					"full_db_type": "int8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_zero",
@@ -5866,8 +3385,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_one",
@@ -5881,8 +3400,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_two",
@@ -5896,8 +3415,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_three",
@@ -5911,8 +3430,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_four",
@@ -5926,8 +3445,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_five",
@@ -5941,8 +3460,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "int_six",
@@ -5956,8 +3475,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_zero",
@@ -5973,8 +3492,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_one",
@@ -5990,8 +3509,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_two",
@@ -6007,8 +3526,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_three",
@@ -6024,8 +3543,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_four",
@@ -6041,8 +3560,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_five",
@@ -6058,8 +3577,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_six",
@@ -6075,8 +3594,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_seven",
@@ -6092,8 +3611,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_eight",
@@ -6109,8 +3628,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "float_nine",
@@ -6126,8 +3645,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_zero",
@@ -6141,8 +3660,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_one",
@@ -6156,8 +3675,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_two",
@@ -6171,8 +3690,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_three",
@@ -6186,8 +3705,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_four",
@@ -6201,8 +3720,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_five",
@@ -6216,8 +3735,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_six",
@@ -6231,8 +3750,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_seven",
@@ -6246,8 +3765,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_eight",
@@ -6261,8 +3780,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bytea",
-					"domain_name": "",
-					"full_db_type": "bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_zero",
@@ -6278,8 +3797,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_one",
@@ -6295,8 +3814,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_two",
@@ -6312,8 +3831,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_three",
@@ -6329,8 +3848,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_four",
@@ -6346,8 +3865,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_five",
@@ -6363,8 +3882,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_six",
@@ -6380,8 +3899,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seven",
@@ -6397,8 +3916,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eight",
@@ -6414,8 +3933,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_nine",
@@ -6431,8 +3950,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_ten",
@@ -6448,8 +3967,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eleven",
@@ -6465,8 +3984,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_twelve",
@@ -6482,8 +4001,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_thirteen",
@@ -6499,8 +4018,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fourteen",
@@ -6516,8 +4035,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fifteen",
@@ -6533,8 +4052,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_sixteen",
@@ -6550,8 +4069,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seventeen",
@@ -6567,8 +4086,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eighteen",
@@ -6584,8 +4103,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "date",
-					"domain_name": "",
-					"full_db_type": "date"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_zero",
@@ -6599,8 +4118,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_one",
@@ -6614,8 +4133,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_two",
@@ -6629,8 +4148,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_three",
@@ -6644,8 +4163,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_four",
@@ -6659,8 +4178,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_five",
@@ -6674,8 +4193,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "uuid",
-					"domain_name": "",
-					"full_db_type": "uuid"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "integer_default",
@@ -6689,8 +4208,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchar_default",
@@ -6704,8 +4223,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(1000)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_notz",
@@ -6721,8 +4240,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamp",
-					"domain_name": "",
-					"full_db_type": "timestamp"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_tz",
@@ -6738,8 +4257,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "timestamptz",
-					"domain_name": "",
-					"full_db_type": "timestamptz"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "interval_nnull",
@@ -6753,8 +4272,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "interval_null",
@@ -6768,8 +4287,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "interval",
-					"domain_name": "",
-					"full_db_type": "interval"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "json_null",
@@ -6786,8 +4305,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "json_nnull",
@@ -6804,8 +4323,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "json",
-					"domain_name": "",
-					"full_db_type": "json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_null",
@@ -6822,8 +4341,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_nnull",
@@ -6840,8 +4359,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "jsonb",
-					"domain_name": "",
-					"full_db_type": "jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "box_null",
@@ -6857,8 +4376,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "box_nnull",
@@ -6874,8 +4393,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "box",
-					"domain_name": "",
-					"full_db_type": "box"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "cidr_null",
@@ -6889,8 +4408,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "cidr_nnull",
@@ -6904,8 +4423,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "cidr",
-					"domain_name": "",
-					"full_db_type": "cidr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "circle_null",
@@ -6919,8 +4438,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "circle_nnull",
@@ -6934,8 +4453,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "circle",
-					"domain_name": "",
-					"full_db_type": "circle"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_null",
@@ -6949,8 +4468,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_nnull",
@@ -6964,8 +4483,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "float8",
-					"domain_name": "",
-					"full_db_type": "float8"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_null",
@@ -6979,8 +4498,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_nnull",
@@ -6994,8 +4513,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "inet",
-					"domain_name": "",
-					"full_db_type": "inet"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "line_null",
@@ -7011,8 +4530,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "line_nnull",
@@ -7028,8 +4547,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "line",
-					"domain_name": "",
-					"full_db_type": "line"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "lseg_null",
@@ -7045,8 +4564,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "lseg_nnull",
@@ -7062,8 +4581,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "lseg",
-					"domain_name": "",
-					"full_db_type": "lseg"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "macaddr_null",
@@ -7077,8 +4596,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "macaddr_nnull",
@@ -7092,8 +4611,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "macaddr",
-					"domain_name": "",
-					"full_db_type": "macaddr"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "money_null",
@@ -7107,8 +4626,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "money_nnull",
@@ -7122,8 +4641,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "money",
-					"domain_name": "",
-					"full_db_type": "money"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "path_null",
@@ -7139,8 +4658,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "path_nnull",
@@ -7156,8 +4675,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "path",
-					"domain_name": "",
-					"full_db_type": "path"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "pg_lsn_null",
@@ -7171,8 +4690,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "pg_lsn_nnull",
@@ -7186,8 +4705,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "pg_lsn",
-					"domain_name": "",
-					"full_db_type": "pg_lsn"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "point_null",
@@ -7203,8 +4722,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "point_nnull",
@@ -7220,8 +4739,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "point",
-					"domain_name": "",
-					"full_db_type": "point"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "polygon_null",
@@ -7237,8 +4756,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "polygon_nnull",
@@ -7254,8 +4773,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "polygon",
-					"domain_name": "",
-					"full_db_type": "polygon"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsquery_null",
@@ -7269,8 +4788,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsquery_nnull",
@@ -7284,8 +4803,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsquery",
-					"domain_name": "",
-					"full_db_type": "tsquery"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsvector_null",
@@ -7299,8 +4818,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tsvector_nnull",
@@ -7314,8 +4833,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "tsvector",
-					"domain_name": "",
-					"full_db_type": "tsvector"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "txid_null",
@@ -7329,8 +4848,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "txid_nnull",
@@ -7344,8 +4863,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "txid_snapshot",
-					"domain_name": "",
-					"full_db_type": "txid_snapshot"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_null",
@@ -7359,8 +4878,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_nnull",
@@ -7374,8 +4893,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "xml",
-					"domain_name": "",
-					"full_db_type": "xml"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_null",
@@ -7391,8 +4910,8 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_nnull",
@@ -7408,8 +4927,8 @@
 					],
 					"arr_type": "integer",
 					"udt_name": "_int4",
-					"domain_name": "",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_null",
@@ -7425,8 +4944,8 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_nnull",
@@ -7442,8 +4961,8 @@
 					],
 					"arr_type": "boolean",
 					"udt_name": "_bool",
-					"domain_name": "",
-					"full_db_type": "_bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_null",
@@ -7459,8 +4978,8 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_nnull",
@@ -7476,8 +4995,8 @@
 					],
 					"arr_type": "character varying",
 					"udt_name": "_varchar",
-					"domain_name": "",
-					"full_db_type": "_varchar"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_null",
@@ -7494,8 +5013,8 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -7512,8 +5031,8 @@
 					],
 					"arr_type": "numeric",
 					"udt_name": "_numeric",
-					"domain_name": "",
-					"full_db_type": "_numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_null",
@@ -7529,8 +5048,8 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_nnull",
@@ -7546,8 +5065,8 @@
 					],
 					"arr_type": "bytea",
 					"udt_name": "_bytea",
-					"domain_name": "",
-					"full_db_type": "_bytea"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_null",
@@ -7563,8 +5082,8 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_nnull",
@@ -7580,8 +5099,8 @@
 					],
 					"arr_type": "jsonb",
 					"udt_name": "_jsonb",
-					"domain_name": "",
-					"full_db_type": "_jsonb"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_null",
@@ -7597,8 +5116,8 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_nnull",
@@ -7614,8 +5133,42 @@
 					],
 					"arr_type": "json",
 					"udt_name": "_json",
-					"domain_name": "",
-					"full_db_type": "_json"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
+				},
+				{
+					"name": "enumarr_null",
+					"db_type": "ARRAY_workday",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "parray.EnumArray[PublicWorkday]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\""
+					],
+					"arr_type": "USER-DEFINED",
+					"udt_name": "_workday",
+					"udt_schema": "public",
+					"domain_name": ""
+				},
+				{
+					"name": "enumarr_nnull",
+					"db_type": "ARRAY_workday",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "parray.EnumArray[PublicWorkday]",
+					"imports": [
+						"\"github.com/stephenafamo/bob/types/parray\""
+					],
+					"arr_type": "USER-DEFINED",
+					"udt_name": "_workday",
+					"udt_schema": "public",
+					"domain_name": ""
 				},
 				{
 					"name": "customarr_null",
@@ -7631,8 +5184,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": "my_int_array"
 				},
 				{
 					"name": "customarr_nnull",
@@ -7648,8 +5201,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "_int4",
-					"domain_name": "my_int_array",
-					"full_db_type": "_int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": "my_int_array"
 				},
 				{
 					"name": "domainuint3_nnull",
@@ -7665,8 +5218,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "numeric",
-					"domain_name": "uint3",
-					"full_db_type": "numeric"
+					"udt_schema": "pg_catalog",
+					"domain_name": "uint3"
 				},
 				{
 					"name": "base",
@@ -7680,8 +5233,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_nnull",
@@ -7695,8 +5248,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_null",
@@ -7710,8 +5263,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "text",
-					"domain_name": "",
-					"full_db_type": "text"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": null,
@@ -7721,8 +5274,9 @@
 			"relationship": null
 		},
 		{
+			"key": "public.user_videos",
+			"schema": "public",
 			"name": "user_videos",
-			"schema": "",
 			"columns": [
 				{
 					"name": "user_id",
@@ -7736,8 +5290,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "video_id",
@@ -7751,8 +5305,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "sponsor_id",
@@ -7766,8 +5320,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": null,
@@ -7777,8 +5331,9 @@
 			"relationship": null
 		},
 		{
+			"key": "public.users",
+			"schema": "public",
 			"name": "users",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -7792,8 +5347,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "email_validated",
@@ -7807,8 +5362,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "bool",
-					"domain_name": "",
-					"full_db_type": "bool"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "primary_email",
@@ -7822,8 +5377,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "varchar",
-					"domain_name": "",
-					"full_db_type": "character varying(100)"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -7849,11 +5404,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "users",
+							"From": "public.users",
 							"FromColumns": [
 								"id"
 							],
-							"To": "videos",
+							"To": "public.videos",
 							"ToColumns": [
 								"user_id"
 							],
@@ -7869,8 +5424,9 @@
 			]
 		},
 		{
+			"key": "public.video_tags",
+			"schema": "public",
 			"name": "video_tags",
-			"schema": "",
 			"columns": [
 				{
 					"name": "video_id",
@@ -7884,8 +5440,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "tag_id",
@@ -7899,8 +5455,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -7916,7 +5472,7 @@
 					"columns": [
 						"tag_id"
 					],
-					"foreign_table": "tags",
+					"foreign_table": "public.tags",
 					"foreign_columns": [
 						"id"
 					]
@@ -7926,7 +5482,7 @@
 					"columns": [
 						"video_id"
 					],
-					"foreign_table": "videos",
+					"foreign_table": "public.videos",
 					"foreign_columns": [
 						"id"
 					]
@@ -7941,11 +5497,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "video_tags",
+							"From": "public.video_tags",
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "tags",
+							"To": "public.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -7964,11 +5520,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "video_tags",
+							"From": "public.video_tags",
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "videos",
+							"To": "public.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -7984,8 +5540,9 @@
 			]
 		},
 		{
+			"key": "public.videos",
+			"schema": "public",
 			"name": "videos",
-			"schema": "",
 			"columns": [
 				{
 					"name": "id",
@@ -7999,8 +5556,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "user_id",
@@ -8014,8 +5571,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				},
 				{
 					"name": "sponsor_id",
@@ -8029,8 +5586,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "int4",
-					"domain_name": "",
-					"full_db_type": "int4"
+					"udt_schema": "pg_catalog",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -8045,7 +5602,7 @@
 					"columns": [
 						"sponsor_id"
 					],
-					"foreign_table": "sponsors",
+					"foreign_table": "public.sponsors",
 					"foreign_columns": [
 						"id"
 					]
@@ -8055,7 +5612,7 @@
 					"columns": [
 						"user_id"
 					],
-					"foreign_table": "users",
+					"foreign_table": "public.users",
 					"foreign_columns": [
 						"id"
 					]
@@ -8077,11 +5634,11 @@
 					"ByJoinTable": true,
 					"Sides": [
 						{
-							"From": "videos",
+							"From": "public.videos",
 							"FromColumns": [
 								"id"
 							],
-							"To": "video_tags",
+							"To": "public.video_tags",
 							"ToColumns": [
 								"video_id"
 							],
@@ -8092,11 +5649,11 @@
 							"KeyNullable": false
 						},
 						{
-							"From": "video_tags",
+							"From": "public.video_tags",
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "tags",
+							"To": "public.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -8115,11 +5672,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "videos",
+							"From": "public.videos",
 							"FromColumns": [
 								"sponsor_id"
 							],
-							"To": "sponsors",
+							"To": "public.sponsors",
 							"ToColumns": [
 								"id"
 							],
@@ -8138,11 +5695,11 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "videos",
+							"From": "public.videos",
 							"FromColumns": [
 								"user_id"
 							],
-							"To": "users",
+							"To": "public.users",
 							"ToColumns": [
 								"id"
 							],
@@ -8161,8 +5718,9 @@
 	"extra_info": {
 		"Enums": [
 			{
+				"Schema": "public",
 				"Name": "workday",
-				"Type": "Workday",
+				"Type": "PublicWorkday",
 				"Values": [
 					"monday",
 					"tuesday",
