@@ -200,6 +200,7 @@ func (a assetLoader) String() string {
 //
 //nolint:gochecknoglobals
 var templateFunctions = template.FuncMap{
+	"getTable":           drivers.GetTable,
 	"titleCase":          strmangle.TitleCase,
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
@@ -261,7 +262,7 @@ var templateFunctions = template.FuncMap{
 
 func getColumn(t []drivers.Table, table string, a TableAlias, column string) drivers.Column {
 	for _, t := range t {
-		if t.Name != table {
+		if t.Key != table {
 			continue
 		}
 
@@ -273,7 +274,7 @@ func getColumn(t []drivers.Table, table string, a TableAlias, column string) dri
 
 func columnGetter(tables []drivers.Table, table string, a TableAlias, column string) string {
 	for _, t := range tables {
-		if t.Name != table {
+		if t.Key != table {
 			continue
 		}
 

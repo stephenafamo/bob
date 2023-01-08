@@ -8,6 +8,12 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+// returns the last part of a dot.separated.string
+func last(s string) string {
+	ss := strings.Split(s, ".")
+	return ss[len(ss)-1]
+}
+
 func relAlias(t drivers.Table) map[string]string {
 	aliases := map[string]string{}
 
@@ -19,7 +25,7 @@ func relAlias(t drivers.Table) map[string]string {
 
 		// When not a direct relationship we just use the table name
 		if len(rel.Sides) > 1 {
-			aliases[rel.Name] = formatRelAlias(rel, rel.Sides[len(rel.Sides)-1].To)
+			aliases[rel.Name] = formatRelAlias(rel, last(rel.Sides[len(rel.Sides)-1].To))
 			continue
 		}
 
@@ -27,7 +33,7 @@ func relAlias(t drivers.Table) map[string]string {
 
 		// Just cop out and use the table name if there are multiple colummns
 		if len(rel.Sides[0].FromColumns) > 1 {
-			aliases[rel.Name] = formatRelAlias(rel, side.To)
+			aliases[rel.Name] = formatRelAlias(rel, last(side.To))
 			continue
 		}
 		var lcol, fcol string
@@ -39,11 +45,11 @@ func relAlias(t drivers.Table) map[string]string {
 		lcolTrimmed := strmangle.Singular(trimSuffixes(lcol))
 		fcolTrimmed := strmangle.Singular(trimSuffixes(fcol))
 
-		singularLocalTable := strmangle.Singular(side.From)
-		singularForeignTable := strmangle.Singular(side.To)
+		singularLocalTable := strmangle.Singular(last(side.From))
+		singularForeignTable := strmangle.Singular(last(side.To))
 
 		if lcolTrimmed == singularForeignTable || fcolTrimmed == singularLocalTable {
-			aliases[rel.Name] = formatRelAlias(rel, side.To)
+			aliases[rel.Name] = formatRelAlias(rel, last(side.To))
 			continue
 		}
 
@@ -60,7 +66,7 @@ func relAlias(t drivers.Table) map[string]string {
 			continue
 		}
 
-		aliases[rel.Name] = formatRelAlias(rel, colToUse+"_"+side.To)
+		aliases[rel.Name] = formatRelAlias(rel, colToUse+"_"+last(side.To))
 	}
 
 	return aliases

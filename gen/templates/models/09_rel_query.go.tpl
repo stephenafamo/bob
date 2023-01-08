@@ -1,5 +1,5 @@
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 
 {{range $rel := $table.Relationships -}}
@@ -15,7 +15,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
+		qm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -101,7 +101,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name()).On(
+		qm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}

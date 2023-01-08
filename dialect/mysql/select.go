@@ -48,10 +48,6 @@ func (s *SelectQuery) SetInto(i any) {
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	for _, l := range s.Load.PreloadMods {
-		l.Apply(&s)
-	}
-
 	var args []any
 	var err error
 

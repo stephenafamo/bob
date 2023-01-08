@@ -97,16 +97,24 @@ func TestGetOutputFilename(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		TableName string
-		IsTest    bool
-		IsGo      bool
-		Expected  string
+		SchemaName string
+		TableName  string
+		IsTest     bool
+		IsGo       bool
+		Expected   string
 	}{
 		"regular": {
 			TableName: "hello",
 			IsTest:    false,
 			IsGo:      true,
 			Expected:  "hello",
+		},
+		"with schema": {
+			SchemaName: "schema",
+			TableName:  "hello",
+			IsTest:     false,
+			IsGo:       true,
+			Expected:   "hello.schema",
 		},
 		"begins with underscore": {
 			TableName: "_hello",
@@ -148,12 +156,12 @@ func TestGetOutputFilename(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			notTest := getOutputFilename(tc.TableName, false, tc.IsGo)
+			notTest := getOutputFilename(tc.SchemaName, tc.TableName, false, tc.IsGo)
 			if diff := cmp.Diff(tc.Expected, notTest); diff != "" {
 				t.Fatalf(diff)
 			}
 
-			isTest := getOutputFilename(tc.TableName, true, tc.IsGo)
+			isTest := getOutputFilename(tc.SchemaName, tc.TableName, true, tc.IsGo)
 			if diff := cmp.Diff(tc.Expected+"_test", isTest); diff != "" {
 				t.Fatalf(diff)
 			}

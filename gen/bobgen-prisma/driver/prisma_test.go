@@ -48,7 +48,7 @@ func TestAssemble(t *testing.T) {
 			}
 
 			sort.Slice(info.Tables, func(i, j int) bool {
-				return info.Tables[i].Name < info.Tables[j].Name
+				return info.Tables[i].Key < info.Tables[j].Key
 			})
 
 			got, err := json.MarshalIndent(info, "", "\t")

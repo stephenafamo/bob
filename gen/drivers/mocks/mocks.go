@@ -2,7 +2,6 @@ package mocks
 
 import (
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/volatiletech/strmangle"
 )
 
 // MockDriver is a mock implementation of the bdb driver Interface
@@ -29,24 +28,26 @@ func (m *MockDriver) Assemble() (*drivers.DBInfo[any], error) {
 }
 
 // TableNames returns a list of mock table names
-func (m *MockDriver) TableNames(filter drivers.Filter) ([]string, error) {
-	if len(filter.Include) > 0 {
-		return filter.Include, nil
-	}
-	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
-	return strmangle.SetComplement(tables, filter.Exclude), nil
+func (m *MockDriver) TablesInfo(filter drivers.Filter) (drivers.TablesInfo, error) {
+	return []drivers.TableInfo{
+		{Key: "pilots", Name: "pilots"},
+		{Key: "schema.jets", Schema: "schema", Name: "jets"},
+		{Key: "airports", Name: "airports"},
+		{Key: "licenses", Name: "licenses"},
+		{Key: "hangars", Name: "hangars"},
+		{Key: "languages", Name: "languages"},
+		{Key: "pilot_languages", Name: "pilot_languages"},
+	}, nil
 }
 
-func (m *MockDriver) ViewNames(filter drivers.Filter) ([]string, error) {
-	if len(filter.Include) > 0 {
-		return filter.Include, nil
-	}
-	tables := []string{"pilots_with_jets"}
-	return strmangle.SetComplement(tables, filter.Exclude), nil
+func (m *MockDriver) ViewsInfo(filter drivers.Filter) (drivers.TablesInfo, error) {
+	return []drivers.TableInfo{
+		{Name: "pilots_with_jets"},
+	}, nil
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
+func (m *MockDriver) TableColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var cols []drivers.Column //nolint:prealloc
 
 	for _, col := range map[string][]drivers.Column{
@@ -58,7 +59,7 @@ func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter)
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "size", Type: "int", DBType: "integer", Nullable: true},
 		},
-		"jets": {
+		"schema.jets": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "pilot_id", Type: "int", DBType: "integer", Nullable: true, Unique: true},
 			{Name: "airport_id", Type: "int", DBType: "integer"},
@@ -85,29 +86,35 @@ func (m *MockDriver) TableColumns(tableName string, filter drivers.ColumnFilter)
 			{Name: "pilot_id", Type: "int", DBType: "integer"},
 			{Name: "language_id", Type: "int", DBType: "integer"},
 		},
-	}[tableName] {
+	}[info.Key] {
 		cols = append(cols, m.translateColumnType(col))
 	}
 
-	return cols, nil
+	return info.Schema, info.Name, cols, nil
 }
 
 // ViewColumns returns a list of mock columns
-func (m *MockDriver) ViewColumns(viewName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
-	return map[string][]drivers.Column{
+func (m *MockDriver) ViewColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+	var cols []drivers.Column //nolint:prealloc
+
+	for _, col := range map[string][]drivers.Column{
 		"pilots_with_jets": {
 			{Name: "pilot_name", Type: "string", DBType: "character"},
 			{Name: "jet_name", Type: "string", DBType: "character", Nullable: false},
 			{Name: "jet_color", Type: "string", DBType: "character", Nullable: true},
 		},
-	}[viewName], nil
+	}[info.Key] {
+		cols = append(cols, m.translateColumnType(col))
+	}
+
+	return info.Schema, info.Name, cols, nil
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
 func (m *MockDriver) Constraints(drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	return drivers.DBConstraints{
 		PKs: map[string]*drivers.PrimaryKey{
-			"jets":            {Name: "jets_pkey", Columns: []string{"id"}},
+			"schema.jets":     {Name: "jets_pkey", Columns: []string{"id"}},
 			"airports":        {Name: "airports_pkey", Columns: []string{"id"}},
 			"pilots":          {Name: "pilots_pkey", Columns: []string{"id"}},
 			"languages":       {Name: "languages_pkey", Columns: []string{"id"}},
@@ -116,7 +123,7 @@ func (m *MockDriver) Constraints(drivers.ColumnFilter) (drivers.DBConstraints, e
 			"hangars":         {Name: "hangars_pkey", Columns: []string{"id"}},
 		},
 		FKs: map[string][]drivers.ForeignKey{
-			"jets": {
+			"schema.jets": {
 				{
 					Constraint: drivers.Constraint{
 						Name:    "jets_pilot_id_fk",
@@ -191,43 +198,3 @@ func (m *MockDriver) translateColumnType(c drivers.Column) drivers.Column {
 
 	return c
 }
-
-// PrimaryKeyInfo returns mock primary key info for the passed in table name
-func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.PrimaryKey, error) {
-	return map[string]*drivers.PrimaryKey{
-		"pilots": {
-			Name:    "pilot_id_pkey",
-			Columns: []string{"id"},
-		},
-		"airports": {
-			Name:    "airport_id_pkey",
-			Columns: []string{"id"},
-		},
-		"jets": {
-			Name:    "jet_id_pkey",
-			Columns: []string{"id"},
-		},
-		"licenses": {
-			Name:    "license_id_pkey",
-			Columns: []string{"id"},
-		},
-		"hangars": {
-			Name:    "hangar_id_pkey",
-			Columns: []string{"id"},
-		},
-		"languages": {
-			Name:    "language_id_pkey",
-			Columns: []string{"id"},
-		},
-		"pilot_languages": {
-			Name:    "pilot_languages_pkey",
-			Columns: []string{"pilot_id", "language_id"},
-		},
-	}[tableName], nil
-}
-
-// Open mimics a database open call and returns nil for no error
-func (m *MockDriver) Open() error { return nil }
-
-// Close mimics a database close call
-func (m *MockDriver) Close() {}

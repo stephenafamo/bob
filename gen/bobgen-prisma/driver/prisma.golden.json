@@ -1,8 +1,9 @@
 {
 	"tables": [
 		{
-			"name": "sponsors",
+			"key": "sponsors",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "id",
@@ -16,8 +17,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -56,8 +57,9 @@
 			]
 		},
 		{
-			"name": "tags",
+			"key": "tags",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "id",
@@ -71,8 +73,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -126,8 +128,9 @@
 			]
 		},
 		{
-			"name": "type_monsters",
+			"key": "type_monsters",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "id",
@@ -141,8 +144,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_use",
@@ -156,8 +159,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "enum_nullable",
@@ -171,8 +174,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_zero",
@@ -186,8 +189,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_one",
@@ -201,8 +204,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_two",
@@ -216,8 +219,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_three",
@@ -231,8 +234,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_four",
@@ -246,8 +249,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_five",
@@ -261,8 +264,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bool_six",
@@ -276,8 +279,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_zero",
@@ -291,8 +294,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_one",
@@ -306,8 +309,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_two",
@@ -321,8 +324,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_three",
@@ -336,8 +339,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_four",
@@ -351,8 +354,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_five",
@@ -366,8 +369,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_six",
@@ -381,8 +384,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_seven",
@@ -396,8 +399,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eight",
@@ -411,8 +414,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_nine",
@@ -426,8 +429,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_ten",
@@ -441,8 +444,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "string_eleven",
@@ -456,8 +459,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_zero",
@@ -471,8 +474,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_one",
@@ -486,8 +489,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_two",
@@ -501,8 +504,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_three",
@@ -516,8 +519,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_four",
@@ -531,8 +534,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_five",
@@ -546,8 +549,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_six",
@@ -561,8 +564,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_seven",
@@ -576,8 +579,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_eight",
@@ -591,8 +594,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "nonbyte_nine",
@@ -606,8 +609,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_zero",
@@ -621,8 +624,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_one",
@@ -636,8 +639,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_two",
@@ -651,8 +654,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_three",
@@ -666,8 +669,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byte_four",
@@ -681,8 +684,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_zero",
@@ -696,8 +699,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_one",
@@ -711,8 +714,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_two",
@@ -726,8 +729,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_three",
@@ -741,8 +744,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_four",
@@ -756,8 +759,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_five",
@@ -771,8 +774,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "big_int_six",
@@ -786,8 +789,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_zero",
@@ -801,8 +804,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_one",
@@ -816,8 +819,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_two",
@@ -831,8 +834,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_three",
@@ -846,8 +849,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_four",
@@ -861,8 +864,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_five",
@@ -876,8 +879,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "int_six",
@@ -891,8 +894,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_zero",
@@ -908,8 +911,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_one",
@@ -925,8 +928,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_two",
@@ -942,8 +945,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_three",
@@ -959,8 +962,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_four",
@@ -976,8 +979,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_five",
@@ -993,8 +996,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_six",
@@ -1010,8 +1013,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_seven",
@@ -1027,8 +1030,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_eight",
@@ -1044,8 +1047,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "float_nine",
@@ -1061,8 +1064,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_zero",
@@ -1076,8 +1079,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_one",
@@ -1091,8 +1094,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_two",
@@ -1106,8 +1109,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_three",
@@ -1121,8 +1124,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_four",
@@ -1136,8 +1139,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_five",
@@ -1151,8 +1154,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_six",
@@ -1166,8 +1169,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_seven",
@@ -1181,8 +1184,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "bytea_eight",
@@ -1196,8 +1199,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_zero",
@@ -1213,8 +1216,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_one",
@@ -1230,8 +1233,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_two",
@@ -1247,8 +1250,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_three",
@@ -1264,8 +1267,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_four",
@@ -1281,8 +1284,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_five",
@@ -1298,8 +1301,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_six",
@@ -1315,8 +1318,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seven",
@@ -1332,8 +1335,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eight",
@@ -1349,8 +1352,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_nine",
@@ -1366,8 +1369,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_ten",
@@ -1383,8 +1386,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eleven",
@@ -1400,8 +1403,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_twelve",
@@ -1417,8 +1420,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_thirteen",
@@ -1434,8 +1437,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fourteen",
@@ -1451,8 +1454,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_fifteen",
@@ -1468,8 +1471,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_sixteen",
@@ -1485,8 +1488,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_seventeen",
@@ -1502,8 +1505,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "time_eighteen",
@@ -1519,8 +1522,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_zero",
@@ -1534,8 +1537,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_one",
@@ -1549,8 +1552,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_two",
@@ -1564,8 +1567,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_three",
@@ -1579,8 +1582,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_four",
@@ -1594,8 +1597,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "uuid_five",
@@ -1609,8 +1612,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "integer_default",
@@ -1624,8 +1627,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "varchar_default",
@@ -1639,8 +1642,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_notz",
@@ -1656,8 +1659,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "timestamp_tz",
@@ -1673,8 +1676,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "json_null",
@@ -1691,8 +1694,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "json_nnull",
@@ -1709,8 +1712,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_null",
@@ -1727,8 +1730,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonb_nnull",
@@ -1745,8 +1748,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_null",
@@ -1760,8 +1763,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "double_prec_nnull",
@@ -1775,8 +1778,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_null",
@@ -1790,8 +1793,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "inet_nnull",
@@ -1805,8 +1808,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "money_null",
@@ -1822,8 +1825,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "money_nnull",
@@ -1839,8 +1842,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_null",
@@ -1854,8 +1857,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "xml_nnull",
@@ -1869,8 +1872,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_null",
@@ -1886,8 +1889,8 @@
 					],
 					"arr_type": "Int[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "intarr_nnull",
@@ -1903,8 +1906,8 @@
 					],
 					"arr_type": "Int[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_null",
@@ -1920,8 +1923,8 @@
 					],
 					"arr_type": "Boolean[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "boolarr_nnull",
@@ -1937,8 +1940,8 @@
 					],
 					"arr_type": "Boolean[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_null",
@@ -1954,8 +1957,8 @@
 					],
 					"arr_type": "String[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "varchararr_nnull",
@@ -1971,8 +1974,8 @@
 					],
 					"arr_type": "String[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_null",
@@ -1989,8 +1992,8 @@
 					],
 					"arr_type": "Decimal[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -2007,8 +2010,8 @@
 					],
 					"arr_type": "Decimal[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_null",
@@ -2024,8 +2027,8 @@
 					],
 					"arr_type": "Bytes[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "byteaarr_nnull",
@@ -2041,8 +2044,8 @@
 					],
 					"arr_type": "Bytes[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_null",
@@ -2059,8 +2062,8 @@
 					],
 					"arr_type": "Json[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonbarr_nnull",
@@ -2077,8 +2080,8 @@
 					],
 					"arr_type": "Json[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_null",
@@ -2095,8 +2098,8 @@
 					],
 					"arr_type": "Json[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "jsonarr_nnull",
@@ -2113,8 +2116,8 @@
 					],
 					"arr_type": "Json[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "customarr_null",
@@ -2130,8 +2133,8 @@
 					],
 					"arr_type": "Int[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "customarr_nnull",
@@ -2147,8 +2150,8 @@
 					],
 					"arr_type": "Int[]",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "domainuint3_nnull",
@@ -2164,8 +2167,8 @@
 					],
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "base",
@@ -2179,8 +2182,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_nnull",
@@ -2194,8 +2197,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "generated_null",
@@ -2209,8 +2212,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -2225,8 +2228,9 @@
 			"relationship": null
 		},
 		{
-			"name": "users",
+			"key": "users",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "id",
@@ -2240,8 +2244,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "email_validated",
@@ -2255,8 +2259,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "primary_email",
@@ -2270,8 +2274,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -2317,8 +2321,9 @@
 			]
 		},
 		{
-			"name": "video_tags",
+			"key": "video_tags",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "video_id",
@@ -2332,8 +2337,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "tag_id",
@@ -2347,8 +2352,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {
@@ -2432,8 +2437,9 @@
 			]
 		},
 		{
-			"name": "videos",
+			"key": "videos",
 			"schema": "",
+			"name": "",
 			"columns": [
 				{
 					"name": "id",
@@ -2447,8 +2453,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "user_id",
@@ -2462,8 +2468,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				},
 				{
 					"name": "sponsor_id",
@@ -2477,8 +2483,8 @@
 					"imports": null,
 					"arr_type": "",
 					"udt_name": "",
-					"domain_name": "",
-					"full_db_type": ""
+					"udt_schema": "",
+					"domain_name": ""
 				}
 			],
 			"p_key": {

@@ -1,10 +1,10 @@
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table .Table.Name -}}
+{{$tAlias := .Aliases.Table .Table.Key -}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
-// {{$tAlias.UpPlural}} begins a query on {{.Table.Name}}
+// {{$tAlias.UpPlural}} begins a query on {{$table.Name}}
 func {{$tAlias.UpPlural}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$tAlias.UpPlural}}Query {
 	{{if not .Table.PKey -}}
 	return {{$tAlias.UpPlural}}View.Query(ctx, exec, mods...)
@@ -41,7 +41,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}
-		qm.Columns({{$tAlias.UpPlural}}Table.Columns(ctx).Only(cols...)),
+		qm.Columns({{$tAlias.UpPlural}}Table.Columns().Only(cols...)),
 	).One()
 }
 

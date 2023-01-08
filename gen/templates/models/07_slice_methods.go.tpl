@@ -1,7 +1,7 @@
 {{if .Table.PKey -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect)}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
 	return {{$tAlias.UpPlural}}Table.DeleteMany(ctx, exec, o...)

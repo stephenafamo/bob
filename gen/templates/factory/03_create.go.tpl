@@ -3,7 +3,7 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table .Table.Name}}
+{{$tAlias := .Aliases.Table .Table.Key}}
 
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. 
@@ -106,7 +106,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			}
 		}
 		{{range $rel.ValuedSides -}}
-			{{- if ne .TableName $table.Name}}{{continue}}{{end -}}
+			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}

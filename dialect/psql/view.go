@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"reflect"
 
@@ -13,6 +14,12 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
+// UseSchema modifies a context to add a schema that will be used when
+// a tablle/view was generated with an empty schema
+func UseSchema(ctx context.Context, schema string) context.Context {
+	return context.WithValue(ctx, orm.CtxUseSchema, schema)
+}
+
 func NewView[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 	v, _ := newView[T, Tslice](schema, tableName)
 	return v
@@ -21,19 +28,27 @@ func NewView[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], internal.Mapping) {
 	var zero T
 
-	names := [2]string{schema, tableName}
 	mappings := internal.GetMappings(reflect.TypeOf(zero))
-	allCols := mappings.Columns(names[:]...)
+	alias := tableName
+	if schema != "" {
+		alias = fmt.Sprintf("%s.%s", schema, tableName)
+	}
+
+	allCols := mappings.Columns(alias)
 
 	return &View[T, Tslice]{
-		name:    names,
+		schema:  schema,
+		name:    tableName,
+		alias:   alias,
 		mapping: mappings,
 		allCols: allCols,
 	}, mappings
 }
 
 type View[T any, Tslice ~[]T] struct {
-	name [2]string
+	schema string
+	name   string
+	alias  string
 
 	mapping internal.Mapping
 	allCols orm.Columns
@@ -41,24 +56,47 @@ type View[T any, Tslice ~[]T] struct {
 	AfterSelectHooks orm.Hooks[T]
 }
 
-func (v *View[T, Tslice]) Name() Expression {
-	return Quote(v.name[:]...)
+func (v *View[T, Tslice]) Name(ctx context.Context) bob.Expression {
+	// schema is not empty, never override
+	if v.schema != "" {
+		return Quote(v.schema, v.name)
+	}
+
+	schema, _ := ctx.Value(orm.CtxUseSchema).(string)
+	return Quote(schema, v.name)
+}
+
+func (v *View[T, Tslice]) NameAs(ctx context.Context) bob.Expression {
+	return v.Name(ctx).(Expression).As(v.alias)
 }
 
 // Returns a column list
-func (v *View[T, Tslice]) Columns(ctx context.Context) orm.Columns {
+func (v *View[T, Tslice]) Columns() orm.Columns {
 	// get the schema
 	return v.allCols
 }
 
 // Adds table name et al
 func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := Select(qm.From(t.Name()))
-	q.Apply(queryMods...)
+	q := Select(qm.From(t.NameAs(ctx)))
+
+	preloadMods := make([]preloader, 0, len(queryMods))
+	for _, m := range queryMods {
+		if preloader, ok := m.(preloader); ok {
+			preloadMods = append(preloadMods, preloader)
+			continue
+		}
+		q.Apply(m)
+	}
 
 	// Append the table columns
 	if len(q.Expression.SelectList.Columns) == 0 {
-		q.Expression.AppendSelect(t.Columns(ctx))
+		q.Expression.AppendSelect(t.Columns())
+	}
+
+	// Do this after attaching table columns if necessary
+	for _, p := range preloadMods {
+		p.ApplyPreload(ctx, q.Expression)
 	}
 
 	return &ViewQuery[T, Tslice]{

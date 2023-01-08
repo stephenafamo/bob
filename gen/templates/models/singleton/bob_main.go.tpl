@@ -1,23 +1,23 @@
 var TableNames = struct {
 	{{range $table := .Tables -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
 	{{$tAlias.UpPlural}} string
 	{{end -}}
 }{
 	{{range $table := .Tables -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
 	{{$tAlias.UpPlural}}: {{quote $table.Name}},
 	{{end -}}
 }
 
 var ColumnNames = struct {
 	{{range $table := .Tables -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
 	{{$tAlias.UpPlural}} {{$tAlias.DownSingular}}ColumnNames
 	{{end -}}
 }{
 	{{range $table := .Tables -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
 	{{$tAlias.UpPlural}}: {{$tAlias.DownSingular}}ColumnNames{
 		{{range $column := $table.Columns -}}
 		{{- $colAlias := $tAlias.Column $column.Name -}}
@@ -38,18 +38,18 @@ var (
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 func Where[Q {{$.Dialect}}.Filterable]() struct {
 	{{range $table := .Tables -}}
-	{{$tAlias := $.Aliases.Table $table.Name -}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
 	{{$tAlias.UpPlural}} {{$tAlias.DownSingular}}Where[Q]
 	{{end -}}
 } {
 	return struct {
 		{{range $table := .Tables -}}
-		{{$tAlias := $.Aliases.Table $table.Name -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
 		{{$tAlias.UpPlural}} {{$tAlias.DownSingular}}Where[Q]
 		{{end -}}
 	}{
 		{{range $table := .Tables -}}
-		{{$tAlias := $.Aliases.Table $table.Name -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
 		{{$tAlias.UpPlural}}: {{$tAlias.UpSingular}}Where[Q](),
 		{{end -}}
 	}

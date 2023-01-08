@@ -1,6 +1,6 @@
 type factory struct {
     {{range $table := .Tables}}
-    {{ $tAlias := $.Aliases.Table $table.Name -}}
+    {{ $tAlias := $.Aliases.Table $table.Key -}}
 		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
     {{- end}}
 }
@@ -8,7 +8,7 @@ type factory struct {
 func NewFactory() *factory {
   return &factory{
     {{range $table := .Tables -}}
-    {{ $tAlias := $.Aliases.Table $table.Name -}}
+    {{ $tAlias := $.Aliases.Table $table.Key -}}
     base{{$tAlias.UpSingular}}Mods: {{$tAlias.UpSingular}}ModSlice{
       {{range $column := $table.Columns -}}
         {{if .Default}}{{continue}}{{end -}}
@@ -32,22 +32,19 @@ func NewFactory() *factory {
 var defaultFactory = NewFactory()
 
 {{range $table := .Tables}}{{if not $table.IsJoinTable -}}
-{{ $tAlias := $.Aliases.Table $table.Name -}}
+{{ $tAlias := $.Aliases.Table $table.Key -}}
 func ClearBase{{$tAlias.UpSingular}}Mods() {
     defaultFactory.ClearBase{{$tAlias.UpSingular}}Mods()
 }
 
-{{ $tAlias := $.Aliases.Table $table.Name -}}
 func (f *factory) ClearBase{{$tAlias.UpSingular}}Mods() {
     f.base{{$tAlias.UpSingular}}Mods = nil
 }
 
-{{ $tAlias := $.Aliases.Table $table.Name -}}
 func AddBase{{$tAlias.UpSingular}}Mods(mods ...{{$tAlias.UpSingular}}Mod) {
     defaultFactory.AddBase{{$tAlias.UpSingular}}Mod(mods...)
 }
 
-{{ $tAlias := $.Aliases.Table $table.Name -}}
 func (f *factory) AddBase{{$tAlias.UpSingular}}Mod(mods ...{{$tAlias.UpSingular}}Mod) {
 f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods...)
 }
@@ -59,7 +56,7 @@ f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods
 type contextKey string
 var (
     {{range $table := .Tables}}
-    {{ $tAlias := $.Aliases.Table $table.Name -}}
+    {{ $tAlias := $.Aliases.Table $table.Key -}}
     {{$tAlias.DownSingular}}Ctx = newContextual[*models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
     {{- end}}
 )

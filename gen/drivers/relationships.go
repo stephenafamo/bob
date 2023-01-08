@@ -9,7 +9,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 
 	tableNameMap := make(map[string]Table, len(tables))
 	for _, t := range tables {
-		tableNameMap[t.Name] = t
+		tableNameMap[t.Key] = t
 	}
 
 	for _, t1 := range tables {
@@ -38,12 +38,12 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				pair2[foreignCol] = localCol
 			}
 
-			relationships[t1.Name] = append(relationships[t1.Name], orm.Relationship{
+			relationships[t1.Key] = append(relationships[t1.Key], orm.Relationship{
 				Name: fk.Name,
 				Sides: []orm.RelSide{{
-					From:        t1.Name,
+					From:        t1.Key,
 					FromColumns: fk.Columns,
-					To:          t2.Name,
+					To:          t2.Key,
 					ToColumns:   fk.ForeignColumns,
 					ToKey:       false,
 					ToUnique:    foreignUnique,
@@ -51,13 +51,13 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				}},
 			})
 
-			if !t1.IsJoinTable && t1.Name != t2.Name {
-				relationships[t2.Name] = append(relationships[t2.Name], orm.Relationship{
+			if !t1.IsJoinTable && t1.Key != t2.Key {
+				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
 					Name: fk.Name,
 					Sides: []orm.RelSide{{
-						From:        t2.Name,
+						From:        t2.Key,
 						FromColumns: fk.ForeignColumns,
-						To:          t1.Name,
+						To:          t1.Key,
 						ToColumns:   fk.Columns,
 						ToKey:       true,
 						ToUnique:    localUnique,
@@ -72,7 +72,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 		}
 
 		// Build ManyToMany
-		rels := relationships[t1.Name]
+		rels := relationships[t1.Key]
 		if len(rels) != 2 {
 			panic("join table does not have 2 relationships")
 		}
@@ -85,14 +85,14 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				{
 					From:        r1.Sides[0].To,
 					FromColumns: r1.Sides[0].ToColumns,
-					To:          t1.Name,
+					To:          t1.Key,
 					ToColumns:   r1.Sides[0].FromColumns,
 					ToKey:       true,
 					ToUnique:    fkUniqueMap[r1.Name][0],
 					KeyNullable: fkNullableMap[r1.Name],
 				},
 				{
-					From:        t1.Name,
+					From:        t1.Key,
 					FromColumns: r2.Sides[0].FromColumns,
 					To:          r2.Sides[0].To,
 					ToColumns:   r2.Sides[0].ToColumns,
@@ -109,14 +109,14 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				{
 					From:        r2.Sides[0].To,
 					FromColumns: r2.Sides[0].ToColumns,
-					To:          t1.Name,
+					To:          t1.Key,
 					ToColumns:   r2.Sides[0].FromColumns,
 					ToKey:       true,
 					ToUnique:    fkUniqueMap[r2.Name][0],
 					KeyNullable: fkNullableMap[r2.Name],
 				},
 				{
-					From:        t1.Name,
+					From:        t1.Key,
 					FromColumns: r1.Sides[0].FromColumns,
 					To:          r1.Sides[0].To,
 					ToColumns:   r1.Sides[0].ToColumns,

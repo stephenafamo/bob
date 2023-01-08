@@ -1,6 +1,6 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{ $table := .Table}}
-{{ $tAlias := .Aliases.Table .Table.Name -}}
+{{ $tAlias := .Aliases.Table .Table.Key -}}
 
 // setModelRels creates and sets the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. Nothing is inserted into the db

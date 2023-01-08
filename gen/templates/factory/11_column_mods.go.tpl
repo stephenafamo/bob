@@ -1,4 +1,4 @@
-{{ $tAlias := .Aliases.Table .Table.Name -}}
+{{ $tAlias := .Aliases.Table .Table.Key -}}
 
 // {{$tAlias.UpSingular}} has methods that act as mods for the {{$tAlias.UpSingular}}Template
 var {{$tAlias.UpSingular}}Mods {{$tAlias.DownSingular}}Mods

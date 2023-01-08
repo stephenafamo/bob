@@ -323,7 +323,7 @@ func matchColumn(c, m drivers.Column) bool {
 	if !matches(m.UDTName, c.UDTName) {
 		return false
 	}
-	if !matches(m.FullDBType, c.FullDBType) {
+	if !matches(m.UDTSchema, c.UDTSchema) {
 		return false
 	}
 	if m.ArrType != "" && (c.ArrType == "" || !matches(m.ArrType, c.ArrType)) {
@@ -365,8 +365,8 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	if len(src.UDTName) != 0 {
 		ret.UDTName = src.UDTName
 	}
-	if len(src.FullDBType) != 0 {
-		ret.FullDBType = src.FullDBType
+	if len(src.UDTSchema) != 0 {
+		ret.UDTSchema = src.UDTSchema
 	}
 	if len(src.ArrType) != 0 {
 		ret.ArrType = src.ArrType
@@ -383,7 +383,7 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 	}
 
 	for _, replaceInTable := range r.Tables {
-		if replaceInTable == t.Name {
+		if replaceInTable == t.Key {
 			return true
 		}
 	}
@@ -398,7 +398,7 @@ func (s *State[T]) processRelationshipConfig() {
 	}
 
 	for i, t := range s.Tables {
-		rels, ok := s.Config.Relationships[t.Name]
+		rels, ok := s.Config.Relationships[t.Key]
 		if !ok {
 			continue
 		}

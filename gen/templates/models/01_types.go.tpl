@@ -1,5 +1,5 @@
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
@@ -15,7 +15,7 @@ type {{$tAlias.UpSingular}} struct {
 	{{- if trim $column.Comment}}{{range $column.Comment | splitList "\n"}}
 		// {{ . }}
 	{{- end}}{{end -}}
-	{{- if ignore $table.Name $orig_col_name $.TagIgnore}}
+	{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
 	{{$colAlias}} {{$colTyp}} `{{generateIgnoreTags $.Tags}}db:"{{dbTag $table $column}}" json:"-" toml:"-" yaml:"-"`
 	{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
 		{{$colAlias}} {{$colTyp}} `{{generateTags $.Tags $tagName}}db:"{{dbTag $table $column}}" json:"{{$tagName}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$tagName}}" yaml:"{{$tagName}}{{if $column.Nullable}},omitempty{{end}}"`
@@ -46,7 +46,6 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 // {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
 type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 
-{{if .Table.PKey -}}
 {{if .Table.Relationships -}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
 type {{$tAlias.DownSingular}}R struct {
@@ -61,6 +60,7 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
+{{if .Table.PKey -}}
 // Optional{{$tAlias.UpSingular}} is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
@@ -98,7 +98,7 @@ var {{$tAlias.UpSingular}}Columns = struct {
 }{
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{$colAlias}}: {{$.Dialect}}.Quote("{{$table.Name}}", "{{$column.Name}}"),
+	{{$colAlias}}: {{$.Dialect}}.Quote("{{$table.Key}}", "{{$column.Name}}"),
 	{{end -}}
 }
 
@@ -118,9 +118,9 @@ func {{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable]() {{$tAlias.DownSin
 			{{range $column := $table.Columns -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}
 				{{- if $column.Nullable -}}
-					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$.Dialect}}.Quote("{{$table.Name}}", "{{$column.Name}}")),
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$.Dialect}}.Quote("{{$table.Key}}", "{{$column.Name}}")),
 				{{- else -}}
-					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$.Dialect}}.Quote({{quote $table.Name}}, {{quote $column.Name}})),
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$.Dialect}}.Quote({{quote $table.Key}}, {{quote $column.Name}})),
 				{{- end}}
 			{{end -}}
 	}

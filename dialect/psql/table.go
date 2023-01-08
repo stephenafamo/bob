@@ -66,9 +66,9 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 	}
 
 	q := Insert(
-		inqm.Into(t.Name(), columns...),
+		inqm.Into(t.NameAs(ctx), columns...),
 		inqm.Rows(values...),
-		inqm.Returning(t.Columns(ctx)),
+		inqm.Returning(t.Columns()),
 	)
 
 	val, err := bob.One(ctx, exec, q, scan.StructMapper[T]())
@@ -110,9 +110,9 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		inqm.Into(t.Name(), columns...),
+		inqm.Into(t.NameAs(ctx), columns...),
 		inqm.Rows(values...),
-		inqm.Returning(t.Columns(ctx)),
+		inqm.Returning(t.Columns()),
 	)
 
 	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
@@ -133,13 +133,13 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 // Updates the given model
 // if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
-func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, cols []string, row T) (int64, error) {
+func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, row T, cols ...string) (int64, error) {
 	_, err := t.BeforeUpdateHooks.Do(ctx, exec, row)
 	if err != nil {
 		return 0, err
 	}
 
-	q := Update(upqm.Table(t.Name()))
+	q := Update(upqm.Table(t.NameAs(ctx)))
 
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
 	if err != nil {
@@ -194,7 +194,7 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	q := Update(upqm.Table(t.Name()))
+	q := Update(upqm.Table(t.NameAs(ctx)))
 
 	for i, col := range columns {
 		q.Apply(upqm.Set(col, values[0][i]))
@@ -271,9 +271,9 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	}
 
 	q := Insert(
-		inqm.Into(t.Name(), columns...),
+		inqm.Into(t.NameAs(ctx), columns...),
 		inqm.Rows(values...),
-		inqm.Returning(t.Columns(ctx)),
+		inqm.Returning(t.Columns()),
 		conflictQM,
 	)
 
@@ -336,8 +336,8 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		inqm.Into(t.Name(), columns...),
-		inqm.Returning(t.Columns(ctx)),
+		inqm.Into(t.NameAs(ctx), columns...),
+		inqm.Returning(t.Columns()),
 		conflictQM,
 	)
 
@@ -368,7 +368,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	q := Delete(delqm.From(t.Name()))
+	q := Delete(delqm.From(t.NameAs(ctx)))
 
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
 	if err != nil {
@@ -402,7 +402,7 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	q := Delete(delqm.From(t.Name()))
+	q := Delete(delqm.From(t.NameAs(ctx)))
 
 	// Find a set the PKs
 	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
@@ -444,7 +444,7 @@ func (t *Table[T, Tslice, Topt]) Query(ctx context.Context, exec bob.Executor, q
 	vq := t.View.Query(ctx, exec, queryMods...)
 	return &TableQuery[T, Tslice, Topt]{
 		ViewQuery:  *vq,
-		name:       t.name,
+		nameExpr:   t.NameAs,
 		pkCols:     t.pkCols,
 		optMapping: t.optMapping,
 	}
@@ -452,7 +452,7 @@ func (t *Table[T, Tslice, Topt]) Query(ctx context.Context, exec bob.Executor, q
 
 type TableQuery[T any, Ts ~[]T, Topt any] struct {
 	ViewQuery[T, Ts]
-	name       [2]string
+	nameExpr   func(context.Context) bob.Expression // to prevent calling it prematurely
 	pkCols     []string
 	optMapping internal.Mapping
 }
@@ -468,7 +468,7 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
 		return 0, ErrNothingToUpdate
 	}
 
-	q := Update(upqm.Table(Quote(t.name[:]...)))
+	q := Update(upqm.Table(t.nameExpr(t.ctx)))
 
 	for i, col := range columns {
 		q.Apply(upqm.Set(col, values[0][i]))
@@ -497,7 +497,7 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
 // DeleteAll deletes all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
 func (t *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
-	q := Delete(delqm.From(Quote(t.name[:]...)))
+	q := Delete(delqm.From(t.nameExpr(t.ctx)))
 
 	pkGroup := make([]any, len(t.pkCols))
 	for i, pk := range t.pkCols {

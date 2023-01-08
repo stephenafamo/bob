@@ -67,7 +67,7 @@ func main() {
 
 	// Driver config flags
 	rootCmd.PersistentFlags().StringP("psql.dsn", "d", "", "The database connection string")
-	rootCmd.PersistentFlags().StringP("psql.schema", "s", "public", "The database schema to use")
+	rootCmd.PersistentFlags().StringP("psql.schemas", "s", "public", "The database schemas to generate models for")
 	rootCmd.PersistentFlags().StringSliceP("psql.whitelist", "", nil, "List of tables that will be included. Others are ignored")
 	rootCmd.PersistentFlags().StringSliceP("psql.blacklist", "", nil, "List of tables that will be should be ignored")
 
@@ -131,11 +131,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdConfig, err = helpers.NewConfig("Psql", driver.New(driver.Config{
-		Dsn:         dsn,
-		Schema:      viper.GetString("psql.schema"),
-		Includes:    viper.GetStringSlice("psql.whitelist"),
-		Excludes:    viper.GetStringSlice("psql.blacklist"),
-		Concurrency: viper.GetInt("concurrency"),
+		Dsn:          dsn,
+		SharedSchema: viper.GetString("psql.shared_schema"),
+		Schemas:      viper.GetStringSlice("psql.schemas"),
+		Includes:     viper.GetStringSlice("psql.whitelist"),
+		Excludes:     viper.GetStringSlice("psql.blacklist"),
+		Concurrency:  viper.GetInt("concurrency"),
 	}), outputs)
 	if err != nil {
 		return err

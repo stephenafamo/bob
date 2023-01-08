@@ -4,7 +4,6 @@ package drivers
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"sync"
 )
@@ -22,20 +21,36 @@ type DBInfo[T any] struct {
 	ExtraInfo T       `json:"extra_info"`
 }
 
+type TablesInfo []TableInfo
+
+type TableInfo struct {
+	Key    string
+	Schema string
+	Name   string
+}
+
+func (t TablesInfo) Keys() []string {
+	keys := make([]string, len(t))
+	for i, info := range t {
+		keys[i] = info.Key
+	}
+	return keys
+}
+
 // Constructor breaks down the functionality required to implement a driver
 // such that the drivers.Tables method can be used to reduce duplication in driver
 // implementations.
 type Constructor interface {
-	// Load all constraints in the database, keyed by table
+	// Load all constraints in the database, keyed by TableInfo.Key
 	Constraints(ColumnFilter) (DBConstraints, error)
 
 	// For tables
-	TableNames(Filter) ([]string, error)
-	TableColumns(tableName string, filter ColumnFilter) ([]Column, error)
+	TablesInfo(Filter) (TablesInfo, error)
+	TableColumns(info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
 
 	// For views
-	ViewNames(Filter) ([]string, error)
-	ViewColumns(tableName string, filter ColumnFilter) ([]Column, error)
+	ViewsInfo(Filter) (TablesInfo, error)
+	ViewColumns(info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
 }
 
 // TablesConcurrently is a concurrent version of Tables. It returns the
@@ -53,23 +68,23 @@ func Tables(c Constructor, concurrency int, includes, excludes []string) ([]Tabl
 		Exclude: TablesFromList(excludes),
 	}
 
-	var tableNames, viewNames []string
-	if tableNames, err = c.TableNames(tableFilter); err != nil {
+	var tablesInfo, viewsInfo TablesInfo
+	if tablesInfo, err = c.TablesInfo(tableFilter); err != nil {
 		return nil, fmt.Errorf("unable to get table names: %w", err)
 	}
 
-	if viewNames, err = c.ViewNames(tableFilter); err != nil {
+	if viewsInfo, err = c.ViewsInfo(tableFilter); err != nil {
 		return nil, fmt.Errorf("unable to get view names: %w", err)
 	}
 
-	colFilter := ParseColumnFilter(append(tableNames, viewNames...), includes, excludes)
+	colFilter := ParseColumnFilter(append(tablesInfo.Keys(), viewsInfo.Keys()...), includes, excludes)
 
-	ret, err = tables(c, concurrency, tableNames, colFilter)
+	ret, err = tables(c, concurrency, tablesInfo, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load tables: %w", err)
 	}
 
-	v, err := views(c, concurrency, viewNames, colFilter)
+	v, err := views(c, concurrency, viewsInfo, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load views: %w", err)
 	}
@@ -81,34 +96,37 @@ func Tables(c Constructor, concurrency int, includes, excludes []string) ([]Tabl
 		return nil, fmt.Errorf("unable to load constraints: %w", err)
 	}
 	for i, t := range ret {
-		ret[i].PKey = constraints.PKs[t.Name]
-		ret[i].FKeys = constraints.FKs[t.Name]
-		ret[i].Uniques = constraints.Uniques[t.Name]
+		ret[i].PKey = constraints.PKs[t.Key]
+		ret[i].FKeys = constraints.FKs[t.Key]
+		ret[i].Uniques = constraints.Uniques[t.Key]
 		ret[i].IsJoinTable = IsJoinTable(ret[i])
 	}
 
 	relationships := BuildRelationships(ret)
 	for i, t := range ret {
-		ret[i].Relationships = relationships[t.Name]
+		ret[i].Relationships = relationships[t.Key]
 	}
 
 	return ret, nil
 }
 
-func tables(c Constructor, concurrency int, names []string, filter ColumnFilter) ([]Table, error) {
-	sort.Strings(names)
-	ret := make([]Table, len(names))
+func tables(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].Key < infos[j].Key
+	})
+
+	ret := make([]Table, len(infos))
 
 	limiter := newConcurrencyLimiter(concurrency)
 	wg := sync.WaitGroup{}
-	errs := make(chan error, len(names))
-	for i, name := range names {
+	errs := make(chan error, len(infos))
+	for i, name := range infos {
 		wg.Add(1)
 		limiter.get()
-		go func(i int, name string) {
+		go func(i int, info TableInfo) {
 			defer wg.Done()
 			defer limiter.put()
-			t, err := table(c, name, filter)
+			t, err := table(c, info, filter)
 			if err != nil {
 				errs <- err
 				return
@@ -128,14 +146,14 @@ func tables(c Constructor, concurrency int, names []string, filter ColumnFilter)
 }
 
 // table returns columns info for a given table
-func table(c Constructor, name string, filter ColumnFilter) (Table, error) {
+func table(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 	var err error
 	t := Table{
-		Name: name,
+		Key: info.Key,
 	}
 
-	if t.Columns, err = c.TableColumns(name, filter); err != nil {
-		return Table{}, fmt.Errorf("unable to fetch table column info (%s): %w", name, err)
+	if t.Schema, t.Name, t.Columns, err = c.TableColumns(info, filter); err != nil {
+		return Table{}, fmt.Errorf("unable to fetch table column info (%s): %w", info.Key, err)
 	}
 
 	return t, nil
@@ -143,27 +161,29 @@ func table(c Constructor, name string, filter ColumnFilter) (Table, error) {
 
 // views returns the metadata for all views, minus the views
 // specified in the excludes.
-func views(c Constructor, concurrency int, names []string, filter ColumnFilter) ([]Table, error) {
-	sort.Strings(names)
+func views(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].Key < infos[j].Key
+	})
 
-	ret := make([]Table, len(names))
+	ret := make([]Table, len(infos))
 
 	limiter := newConcurrencyLimiter(concurrency)
 	wg := sync.WaitGroup{}
-	errs := make(chan error, len(names))
-	for i, name := range names {
+	errs := make(chan error, len(infos))
+	for i, info := range infos {
 		wg.Add(1)
 		limiter.get()
-		go func(i int, name string) {
+		go func(i int, info TableInfo) {
 			defer wg.Done()
 			defer limiter.put()
-			t, err := view(c, name, filter)
+			t, err := view(c, info, filter)
 			if err != nil {
 				errs <- err
 				return
 			}
 			ret[i] = t
-		}(i, name)
+		}(i, info)
 	}
 
 	wg.Wait()
@@ -177,14 +197,16 @@ func views(c Constructor, concurrency int, names []string, filter ColumnFilter) 
 }
 
 // view returns columns info for a given view
-func view(c Constructor, name string, filter ColumnFilter) (Table, error) {
+func view(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 	var err error
 	t := Table{
-		Name: name,
+		Key:    info.Key,
+		Schema: info.Schema,
+		Name:   info.Name,
 	}
 
-	if t.Columns, err = c.ViewColumns(name, filter); err != nil {
-		return Table{}, fmt.Errorf("unable to fetch view column info (%s): %w", name, err)
+	if t.Schema, t.Name, t.Columns, err = c.ViewColumns(info, filter); err != nil {
+		return Table{}, fmt.Errorf("unable to fetch view column info (%s): %w", info.Key, err)
 	}
 
 	return t, nil
@@ -210,12 +232,25 @@ func (c concurrencyLimiter) put() {
 	c <- struct{}{}
 }
 
-// DefaultEnv grabs a value from the environment or a default.
-// This is shared by drivers to get config for testing.
-func DefaultEnv(key, def string) string {
-	val := os.Getenv(key)
-	if len(val) == 0 {
-		val = def
+func Skip(name string, include, exclude []string) bool {
+	switch {
+	case len(include) > 0:
+		for _, i := range include {
+			if i == name {
+				return false
+			}
+		}
+		return true
+
+	case len(exclude) > 0:
+		for _, i := range exclude {
+			if i == name {
+				return true
+			}
+		}
+		return false
+
+	default:
+		return false
 	}
-	return val
 }

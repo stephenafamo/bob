@@ -1,5 +1,5 @@
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 {{if $table.Relationships -}}
 {{$.Importer.Import "fmt" -}}
@@ -82,8 +82,9 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				{{- $from := $.Aliases.Table $side.From -}}
 				{{- $to := $.Aliases.Table $side.To -}}
 				{
-					From:   TableNames.{{$from.UpPlural}},
+					From: {{quote $table.Key}},
 					To: TableNames.{{$to.UpPlural}},
+					ToExpr: {{$to.UpPlural}}Table.Name,
 					{{if $side.FromColumns -}}
 					FromColumns: []string{
 						{{range $name := $side.FromColumns -}}
@@ -125,7 +126,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				},
 				{{- end}}
 			},
-		}, {{$fAlias.UpPlural}}Table.Columns(context.Background()).Names(), opts...)
+		}, {{$fAlias.UpPlural}}Table.Columns().Names(), opts...)
 }
 {{- end}}
 

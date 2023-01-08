@@ -331,8 +331,8 @@ func columnFromInterface(i interface{}) drivers.Column {
 	if s := m["udt_name"]; s != nil {
 		col.UDTName = s.(string)
 	}
-	if s := m["full_db_type"]; s != nil {
-		col.FullDBType = s.(string)
+	if s := m["udt_schema"]; s != nil {
+		col.UDTSchema = s.(string)
 	}
 	if s := m["arr_type"]; s != nil {
 		col.ArrType = s.(string)

@@ -21,38 +21,62 @@ import (
 //nolint:gochecknoglobals,gosec
 var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
+// Loader builds a query mod that makes an extra query after the object is retrieved
+// it can be used to prevent N+1 queries by loading relationships in batches
 type Loader func(ctx context.Context, exec bob.Executor, retrieved any) error
 
+// Load is called after the original object is retrieved
 func (l Loader) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
 	return l(ctx, exec, retrieved)
 }
 
+// Apply satisfies the bob.Mod[*dialect.SelectQuery] interface
 func (l Loader) Apply(q *dialect.SelectQuery) {
 	q.AppendLoader(l)
 }
 
+// modifyPreloader makes a Loader also work as a mod for a [Preloader]
 func (l Loader) modifyPreloader(s *preloadSettings) {
 	s.extraLoader.AppendLoader(l)
 }
 
 // Preloader must be a preload option to be able to have subloaders
 var _ PreloadOption = Preloader(nil)
+var _ preloader = Preloader(nil)
 
+// Preloader builds a query mod that modifies the original query to retrieve related fields
+// while it can be used as a queryMod, it does not have any direct effect.
+// if using manually, the ApplyPreload method should be called
+// with the query's context AFTER other mods have been applied
 type Preloader func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader)
 
-func (l Preloader) Apply(q *dialect.SelectQuery) {
-	m, f, exl := l(context.Background()) // top level pre load has blank context
+// ApplyPreload does a few things to enable preloading
+// 1. It modifies the query to join the preloading table and the extra columns to retrieve
+// 2. It modifies the mapper to scan the new columns.
+// 3. It calls the original object's Preload method with the loaded object
+func (l Preloader) ApplyPreload(ctx context.Context, q *dialect.SelectQuery) {
+	mod, mapperMod, afterLoaders := l(ctx)
 
-	q.AppendPreloadMod(m)
-	q.AppendMapperMod(f)
-	q.AppendLoader(exl...)
+	mod.Apply(q)
+	q.AppendMapperMod(mapperMod)
+	q.AppendLoader(afterLoaders...)
 }
 
+// Apply satisfies bob.Mod[*dialect.SelectQuery].
+// included for convenience, does not have any effect by itself
+// to preload with custom queries, the ApplyPreload method should be used
+func (l Preloader) Apply(s *dialect.SelectQuery) {}
+
+// modifyPreloader makes a Loader also work as a mod for a [Preloader]
 func (l Preloader) modifyPreloader(s *preloadSettings) {
 	s.subLoaders = append(s.subLoaders, l)
 }
 
-type canPreload interface {
+type preloader interface {
+	ApplyPreload(context.Context, *dialect.SelectQuery)
+}
+
+type preloadable interface {
 	Preload(name string, rel any) error
 }
 
@@ -106,7 +130,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		o.modifyPreloader(&settings)
 	}
 
-	return preloader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
+	return buildPreloader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
 		parent, _ := ctx.Value(orm.CtxLoadParentAlias).(string)
 		if parent == "" {
 			parent = rel.Sides[0].From
@@ -142,7 +166,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			}
 
 			queryMods = append(queryMods, qm.
-				LeftJoin(Quote(side.To)).
+				LeftJoin(side.ToExpr(ctx)).
 				As(alias).
 				On(on...))
 		}
@@ -154,7 +178,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 	}, rel.Name, settings)
 }
 
-func preloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt preloadSettings) Preloader {
+func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt preloadSettings) Preloader {
 	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(ctx)
 		prefix := alias + "."
@@ -188,7 +212,7 @@ func preloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.S
 			)(ctx, cols)
 
 			return before, func(link, retrieved any) error {
-				loader, isLoader := retrieved.(canPreload)
+				loader, isLoader := retrieved.(preloadable)
 				if !isLoader {
 					return fmt.Errorf("object %T cannot pre load", retrieved)
 				}

@@ -154,7 +154,7 @@ func TestConvertTypeReplace(t *testing.T) {
 		"type":           "b",
 		"db_type":        "c",
 		"udt_name":       "d",
-		"full_db_type":   "e",
+		"udt_schema":     "e",
 		"arr_type":       "f",
 		"tables":         []string{"g", "h"},
 		"auto_generated": true,
@@ -187,8 +187,8 @@ func TestConvertTypeReplace(t *testing.T) {
 		if c.UDTName != "d" {
 			t.Error("value was wrong:", c.UDTName)
 		}
-		if c.FullDBType != "e" {
-			t.Error("value was wrong:", c.FullDBType)
+		if c.UDTSchema != "e" {
+			t.Error("value was wrong:", c.UDTSchema)
 		}
 		if c.ArrType != "f" {
 			t.Error("value was wrong:", c.ArrType)

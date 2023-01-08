@@ -1,4 +1,4 @@
-{{$tAlias := .Aliases.Table .Table.Name -}}
+{{$tAlias := .Aliases.Table .Table.Key -}}
 
 func New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
 	return defaultFactory.New{{$tAlias.UpSingular}}(mods...)

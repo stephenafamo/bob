@@ -42,19 +42,19 @@ func New(config Config) Interface {
 type Driver struct {
 	config Config
 
-	conn    *sql.DB
-	version int
+	conn *sql.DB
 
-	enums         map[string]Enum
+	enums         []Enum
 	uniqueColumns map[columnIdentifier]struct{}
 }
 
 type Config struct {
-	Dsn         string
-	Schema      string
-	Includes    []string
-	Excludes    []string
-	Concurrency int
+	Dsn          string
+	Schemas      pq.StringArray
+	SharedSchema string
+	Includes     []string
+	Excludes     []string
+	Concurrency  int
 }
 
 type columnIdentifier struct {
@@ -64,7 +64,7 @@ type columnIdentifier struct {
 }
 
 // Assemble all the information we need to provide back to the driver
-func (p *Driver) Assemble() (*DBInfo, error) {
+func (d *Driver) Assemble() (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
@@ -75,40 +75,35 @@ func (p *Driver) Assemble() (*DBInfo, error) {
 		}
 	}()
 
-	p.conn, err = sql.Open("postgres", p.config.Dsn)
+	d.conn, err = sql.Open("postgres", d.config.Dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to database")
 	}
 
 	defer func() {
-		if e := p.conn.Close(); e != nil {
+		if e := d.conn.Close(); e != nil {
 			dbinfo = nil
 			err = e
 		}
 	}()
 
-	p.version, err = p.getVersion()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get database version")
-	}
-
 	dbinfo = &DBInfo{}
 
-	if err := p.loadUniqueColumns(); err != nil {
+	if err := d.loadUniqueColumns(); err != nil {
 		return nil, errors.Wrapf(err, "unable to load unique data")
 	}
 
 	// drivers.Tables call translateColumnType which uses Enums
-	if err := p.loadEnums(); err != nil {
+	if err := d.loadEnums(); err != nil {
 		return nil, errors.Wrapf(err, "unable to load enums")
 	}
 
-	dbinfo.Tables, err = drivers.Tables(p, p.config.Concurrency, p.config.Includes, p.config.Excludes)
+	dbinfo.Tables, err = drivers.Tables(d, d.config.Concurrency, d.config.Includes, d.config.Excludes)
 	if err != nil {
 		return nil, err
 	}
 
-	dbinfo.ExtraInfo.Enums, err = p.Enums(p.config.Schema)
+	dbinfo.ExtraInfo.Enums, err = d.Enums()
 	if err != nil {
 		return nil, err
 	}
@@ -116,25 +111,36 @@ func (p *Driver) Assemble() (*DBInfo, error) {
 	return dbinfo, err
 }
 
+const keyClause = "(CASE WHEN table_schema <> $1 THEN table_schema|| '.'  ELSE '' END || table_name)"
+
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
-func (p *Driver) TableNames(tableFilter drivers.Filter) ([]string, error) {
-	query := `select table_name from information_schema.tables where table_schema = $1 and table_type = 'BASE TABLE'`
-	args := []interface{}{p.config.Schema}
+func (d *Driver) TablesInfo(tableFilter drivers.Filter) (drivers.TablesInfo, error) {
+	query := fmt.Sprintf(`SELECT
+	  %s AS "key" ,
+	  table_schema AS "schema",
+	  table_name AS "name"
+	FROM
+	  information_schema.tables
+	WHERE
+	  table_schema = ANY($2)
+	  AND table_type = 'BASE TABLE'`, keyClause)
+
+	args := []any{d.config.SharedSchema, d.config.Schemas}
 
 	include := tableFilter.Include
 	exclude := tableFilter.Exclude
 
 	if len(include) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(include), 2, 1))
+		query += fmt.Sprintf(" and %s in (%s)", keyClause, strmangle.Placeholders(true, len(include), 3, 1))
 		for _, w := range include {
 			args = append(args, w)
 		}
 	}
 
 	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(exclude), 2+len(include), 1))
+		query += fmt.Sprintf(" and %s not in (%s)", keyClause, strmangle.Placeholders(true, len(exclude), 3+len(include), 1))
 		for _, w := range exclude {
 			args = append(args, w)
 		}
@@ -143,40 +149,45 @@ func (p *Driver) TableNames(tableFilter drivers.Filter) ([]string, error) {
 	query += ` order by table_name;`
 
 	ctx := context.Background()
-	return stdscan.All(ctx, p.conn, scan.SingleColumnMapper[string], query, args...)
+	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
 }
 
 // ViewNames connects to the postgres database and
 // retrieves all view names from the information_schema where the
 // view schema is schema. It uses a whitelist and blacklist.
-func (p *Driver) ViewNames(tableFilter drivers.Filter) ([]string, error) {
-	query := `select 
-		table_name 
-	from (
-			select 
-				table_name, 
-				table_schema 
-			from information_schema.views
-			UNION
-			select 
-				matviewname as table_name, 
-				schemaname as table_schema 
-			from pg_matviews 
-	) as v where v.table_schema= $1`
-	args := []interface{}{p.config.Schema}
+func (d *Driver) ViewsInfo(tableFilter drivers.Filter) (drivers.TablesInfo, error) {
+	query := fmt.Sprintf(`SELECT
+	  %s AS "key" ,
+	  table_schema AS "schema",
+	  table_name AS "name"
+	FROM (
+	  SELECT
+		table_name,
+		table_schema
+	  FROM
+		information_schema.views
+	  UNION
+	  SELECT
+		matviewname AS table_name,
+		schemaname AS table_schema
+	  FROM
+		pg_matviews) AS v
+	WHERE
+	  v.table_schema = ANY ($2)`, keyClause)
+	args := []any{d.config.SharedSchema, d.config.Schemas}
 
 	include := tableFilter.Include
 	exclude := tableFilter.Exclude
 
 	if len(include) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(include), 2, 1))
+		query += fmt.Sprintf(" and %s in (%s)", keyClause, strmangle.Placeholders(true, len(include), 3, 1))
 		for _, w := range include {
 			args = append(args, w)
 		}
 	}
 
 	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(exclude), 2+len(include), 1))
+		query += fmt.Sprintf(" and %s not in (%s)", keyClause, strmangle.Placeholders(true, len(exclude), 3+len(include), 1))
 		for _, w := range exclude {
 			args = append(args, w)
 		}
@@ -185,54 +196,61 @@ func (p *Driver) ViewNames(tableFilter drivers.Filter) ([]string, error) {
 	query += ` order by table_name;`
 
 	ctx := context.Background()
-	return stdscan.All(ctx, p.conn, scan.SingleColumnMapper[string], query, args...)
+	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
 }
 
-func (p *Driver) loadEnums() error {
-	if p.enums != nil {
+func (d *Driver) loadEnums() error {
+	if d.enums != nil {
 		return nil
 	}
-	p.enums = map[string]Enum{}
 
-	query := `SELECT pg_type.typname AS type, array_agg(pg_enum.enumlabel order by pg_enum.enumsortorder) AS values
+	query := `SELECT pg_namespace.nspname AS schema, pg_type.typname AS name, array_agg(pg_enum.enumlabel order by pg_enum.enumsortorder) AS values
 		FROM pg_type
 		JOIN pg_enum ON pg_enum.enumtypid = pg_type.oid
 		JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
-		WHERE pg_namespace.nspname = $1
-		GROUP BY type`
+		WHERE pg_namespace.nspname = ANY($1)
+		GROUP BY schema, name`
 
-	rows, err := p.conn.Query(query, p.config.Schema)
+	var err error
+	d.enums, err = stdscan.All(
+		context.Background(), d.conn,
+		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
+			return func(r *scan.Row) (link any, err error) {
+					var e Enum
+					r.ScheduleScan("schema", &e.Schema)
+					r.ScheduleScan("name", &e.Name)
+					r.ScheduleScan("values", &e.Values)
+					return &e, nil
+				}, func(a any) (Enum, error) {
+					e := a.(*Enum)
+					if e.Schema != "" && e.Schema != d.config.SharedSchema {
+						e.Type = strmangle.TitleCase(e.Schema + "_" + e.Name)
+					} else {
+						e.Type = strmangle.TitleCase(e.Name)
+					}
+
+					return *e, nil
+				}
+		},
+		query, d.config.Schemas,
+	)
 	if err != nil {
 		return err
-	}
-
-	defer rows.Close()
-	for rows.Next() {
-		var name string
-		var values pq.StringArray
-		if err := rows.Scan(&name, &values); err != nil {
-			return err
-		}
-
-		p.enums[name] = Enum{
-			Name:   name,
-			Type:   strmangle.TitleCase(name),
-			Values: values,
-		}
 	}
 
 	return nil
 }
 
 type Enum struct {
+	Schema string
 	Name   string
 	Type   string
-	Values []string
+	Values pq.StringArray
 }
 
-func (p *Driver) Enums(schema string) ([]Enum, error) {
-	enums := make([]Enum, 0, len(p.enums))
-	for _, e := range p.enums {
+func (d *Driver) Enums() ([]Enum, error) {
+	enums := make([]Enum, 0, len(d.enums))
+	for _, e := range d.enums {
 		enums = append(enums, e)
 	}
 
@@ -243,109 +261,24 @@ func (p *Driver) Enums(schema string) ([]Enum, error) {
 	return enums, nil
 }
 
-func (p *Driver) ViewColumns(tableName string, filter drivers.ColumnFilter) ([]drivers.Column, error) {
-	return p.TableColumns(tableName, filter)
+func (d *Driver) ViewColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+	return d.TableColumns(info, filter)
 }
 
 // TableColumns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after translateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) ([]drivers.Column, error) {
+func (d *Driver) TableColumns(info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var columns []drivers.Column
-	args := []interface{}{p.config.Schema, tableName}
-
-	matviewQuery := `WITH cte_pg_attribute AS (
-		SELECT
-			pg_catalog.format_type(a.atttypid, NULL) LIKE '%[]' = TRUE as is_array,
-			pg_catalog.format_type(a.atttypid, a.atttypmod) as column_full_type,
-			a.*
-		FROM pg_attribute a
-	), cte_pg_namespace AS (
-		SELECT
-			n.nspname NOT IN ('pg_catalog', 'information_schema') = TRUE as is_user_defined,
-			n.oid
-		FROM pg_namespace n
-	), cte_information_schema_domains AS (
-		SELECT
-			domain_name IS NOT NULL = TRUE as is_domain,
-			data_type LIKE '%[]' = TRUE as is_array,
-			domain_name,
-			udt_name,
-			data_type
-		FROM information_schema.domains
-	)
-	SELECT 
-		a.attnum as ordinal_position,
-		a.attname as column_name,
-		(
-			case 
-			when t.typtype = 'e'
-			then 'enum.' || t.typname
-			when a.is_array OR d.is_array
-			then 'ARRAY'
-			when d.is_domain
-			then d.data_type
-			when tn.is_user_defined
-			then 'USER-DEFINED'
-			else pg_catalog.format_type(a.atttypid, NULL)
-			end
-		) as column_type,
-		(
-			case 
-			when d.is_domain
-			then d.udt_name		
-			when a.column_full_type LIKE '%(%)%' AND t.typcategory IN ('S', 'V')
-			then a.column_full_type
-			else t.typname
-			end
-		) as column_full_type,
-		(
-			case 
-			when d.is_domain
-			then d.udt_name		
-			else t.typname
-			end
-		) as udt_name,
-		(
-			case when a.is_array
-			then
-				case when tn.is_user_defined
-				then 'USER-DEFINED'
-				else RTRIM(pg_catalog.format_type(a.atttypid, NULL), '[]')
-				end
-			else NULL
-			end
-		) as array_type,
-		d.domain_name,
-		NULL as column_default,
-		'' as column_comment,
-		a.attnotnull = FALSE as is_nullable,
-		FALSE as is_generated,
-		a.attidentity <> '' as is_identity
-	FROM cte_pg_attribute a
-		JOIN pg_class c on a.attrelid = c.oid
-		JOIN pg_namespace cn on c.relnamespace = cn.oid
-		JOIN pg_type t ON t.oid = a.atttypid
-		LEFT JOIN cte_pg_namespace tn ON t.typnamespace = tn.oid
-		LEFT JOIN cte_information_schema_domains d ON d.domain_name = pg_catalog.format_type(a.atttypid, NULL)
-		WHERE a.attnum > 0 
-		AND c.relkind = 'm'
-		AND NOT a.attisdropped
-		AND c.relname = $2
-		AND cn.nspname = $1`
+	args := []interface{}{info.Schema, info.Name}
 
 	tableQuery := `
 	SELECT
 		c.ordinal_position,
 		c.column_name,
 		ct.column_type,
-		(
-			CASE WHEN c.character_maximum_length != 0 THEN
-				(ct.column_type || '(' || c.character_maximum_length || ')')
-			ELSE
-				c.udt_name
-			END) AS column_full_type,
+		c.udt_schema,
 		c.udt_name,
 		(
 			SELECT
@@ -400,7 +333,7 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 				SELECT
 					(
 						CASE WHEN pgt.typtype = 'e' THEN
-							'enum.' || pgt.typname
+							'ENUM'
 						ELSE
 							c.data_type
 						END) AS column_type) ct
@@ -410,7 +343,7 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 	query := fmt.Sprintf(`SELECT 
 		column_name,
 		column_type,
-		column_full_type,
+		udt_schema,
 		udt_name,
 		array_type,
 		domain_name,
@@ -421,12 +354,10 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 		is_identity
 	FROM (
 		%s
-		UNION
-		%s
-	) AS c`, matviewQuery, tableQuery)
+	) AS c`, tableQuery) // matviewQuery, tableQuery)
 
 	allfilter := colFilter["*"]
-	filter := colFilter[tableName]
+	filter := colFilter[info.Key]
 	include := append(allfilter.Include, filter.Include...)
 	exclude := append(allfilter.Exclude, filter.Exclude...)
 
@@ -454,30 +385,30 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 
 	query += ` order by c.ordinal_position;`
 
-	rows, err := p.conn.Query(query, args...)
+	rows, err := d.conn.Query(query, args...)
 	if err != nil {
-		return nil, err
+		return "", "", nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colFullType, udtName, comment string
+		var colName, colType, udtSchema, udtName, comment string
 		var defaultValue, arrayType, domainName *string
 		var nullable, generated, identity bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
-			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
+		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
+			return "", "", nil, errors.Wrapf(err, "unable to scan for table %s", info.Key)
 		}
 
-		_, unique := p.uniqueColumns[columnIdentifier{p.config.Schema, tableName, colName}]
+		_, unique := d.uniqueColumns[columnIdentifier{info.Schema, info.Name, colName}]
 		column := drivers.Column{
-			Name:       colName,
-			DBType:     colType,
-			FullDBType: colFullType,
-			UDTName:    udtName,
-			Comment:    comment,
-			Nullable:   nullable,
-			Generated:  generated,
-			Unique:     unique,
+			Name:      colName,
+			DBType:    colType,
+			UDTSchema: udtSchema,
+			UDTName:   udtName,
+			Comment:   comment,
+			Nullable:  nullable,
+			Generated: generated,
+			Unique:    unique,
 		}
 
 		if arrayType != nil {
@@ -506,23 +437,13 @@ func (p *Driver) TableColumns(tableName string, colFilter drivers.ColumnFilter) 
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, p.translateColumnType(column))
+		columns = append(columns, d.translateColumnType(column))
 	}
 
-	return columns, nil
-}
-
-// getVersion gets the version of underlying database
-func (p *Driver) getVersion() (int, error) {
-	type versionInfoType struct {
-		ServerVersionNum int `json:"server_version_num"`
-	}
-	versionInfo := &versionInfoType{}
-
-	row := p.conn.QueryRow("SHOW server_version_num")
-	if err := row.Scan(&versionInfo.ServerVersionNum); err != nil {
-		return 0, err
+	schema := info.Schema
+	if schema == d.config.SharedSchema {
+		schema = ""
 	}
 
-	return versionInfo.ServerVersionNum, nil
+	return schema, info.Name, columns, nil
 }

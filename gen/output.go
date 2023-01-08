@@ -122,7 +122,7 @@ func executeTemplates[T any](e executeTemplateData[T]) error {
 				}
 			}
 
-			fName := getOutputFilename(e.data.Table.Name, e.isTest, isGo)
+			fName := getOutputFilename(e.data.Table.Schema, e.data.Table.Name, e.isTest, isGo)
 			fName += ext
 			if len(dir) != 0 {
 				fName = filepath.Join(dir, fName)
@@ -302,20 +302,25 @@ func getLongExt(filename string) string {
 	return filename[index:]
 }
 
-func getOutputFilename(tableName string, isTest, isGo bool) string {
-	if strings.HasPrefix(tableName, "_") {
-		tableName = "und" + tableName
+func getOutputFilename(schema, tableName string, isTest, isGo bool) string {
+	output := tableName
+	if strings.HasPrefix(output, "_") {
+		output = "und" + output
 	}
 
-	if isGo && endsWithSpecialSuffix(tableName) {
-		tableName += "_model"
+	if isGo && endsWithSpecialSuffix(output) {
+		output += "_model"
+	}
+
+	if schema != "" {
+		output += "." + schema
 	}
 
 	if isTest {
-		tableName += "_test"
+		output += "_test"
 	}
 
-	return tableName
+	return output
 }
 
 // See: https://pkg.go.dev/cmd/go#hdr-Build_constraints

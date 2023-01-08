@@ -9,10 +9,11 @@ import (
 
 // Table metadata from the database schema.
 type Table struct {
-	Name string `json:"name"`
+	Key string `json:"key"`
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
 	Schema  string   `json:"schema"`
+	Name    string   `json:"name"`
 	Columns []Column `json:"columns"`
 
 	PKey    *PrimaryKey  `json:"p_key"`
@@ -27,7 +28,7 @@ type Table struct {
 // GetTable by name. Panics if not found (for use in templates mostly).
 func GetTable(tables []Table, name string) Table {
 	for _, t := range tables {
-		if t.Name == name {
+		if t.Key == name {
 			return t
 		}
 	}
@@ -43,7 +44,7 @@ func (t Table) GetColumn(name string) Column {
 		}
 	}
 
-	panic(fmt.Sprintf("could not find column name: %s", name))
+	panic(fmt.Sprintf("could not find column name: %s in %#v", name, t.Columns))
 }
 
 func (t Table) CanSoftDelete(deleteColumn string) bool {
@@ -63,14 +64,14 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Relationship {
 	var fTable Table
 	for _, t := range tables {
-		if t.Name == r.Foreign() {
+		if t.Key == r.Foreign() {
 			fTable = t
 			break
 		}
 	}
 
 	// No foreign table matched
-	if fTable.Name == "" {
+	if fTable.Key == "" {
 		return orm.Relationship{}
 	}
 

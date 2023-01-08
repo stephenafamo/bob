@@ -1,5 +1,11 @@
 package orm
 
+import (
+	"context"
+
+	"github.com/stephenafamo/bob"
+)
+
 type RelWhere struct {
 	Column string
 	Value  string
@@ -21,6 +27,9 @@ type RelSide struct {
 	// If the key is nullable. We need this to know if we can remove the
 	// relationship without deleting it
 	KeyNullable bool
+
+	// Kinda hacky, used for preloading
+	ToExpr func(context.Context) bob.Expression `json:"-"`
 }
 
 type Relationship struct {

@@ -1,11 +1,11 @@
 {{if .Table.PKey -}}
 {{$.Importer.Import "context"}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 // Update uses an executor to update the {{$tAlias.UpSingular}}
-func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, cols []string) (int64, error) {
-	rowsAff, err := {{$tAlias.UpPlural}}Table.Update(ctx, exec, cols, o)
+func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, cols ...string) (int64, error) {
+	rowsAff, err := {{$tAlias.UpPlural}}Table.Update(ctx, exec, o, cols...)
 	if err != nil {
 		return rowsAff, err
 	}

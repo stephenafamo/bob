@@ -28,7 +28,6 @@ type (
 type Load[Q any] struct {
 	LoadFuncs         []Loader
 	PreloadMapperMods []scan.MapperMod
-	PreloadMods       []Mod[Q]
 }
 
 // GetMapperMods implements the [MapperModder] interface
@@ -49,10 +48,4 @@ func (l *Load[Q]) GetLoaders() []Loader {
 // AppendLoader add to the query's loaders
 func (l *Load[Q]) AppendLoader(f ...Loader) {
 	l.LoadFuncs = append(l.LoadFuncs, f...)
-}
-
-// AppendPreloadMod adds a preload mod to the query
-// PreloadMods are applied just before expressing
-func (l *Load[Q]) AppendPreloadMod(m Mod[Q]) {
-	l.PreloadMods = append(l.PreloadMods, m)
 }

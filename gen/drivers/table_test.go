@@ -9,12 +9,12 @@ func TestGetTable(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		{Name: "one"},
+		{Key: "one"},
 	}
 
 	tbl := GetTable(tables, "one")
 
-	if tbl.Name != "one" {
+	if tbl.Key != "one" {
 		t.Error("didn't get column")
 	}
 }
@@ -23,7 +23,7 @@ func TestGetTableMissing(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		{Name: "one"},
+		{Key: "one"},
 	}
 
 	defer func() {

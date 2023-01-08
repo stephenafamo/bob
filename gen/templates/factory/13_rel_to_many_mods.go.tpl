@@ -1,5 +1,5 @@
 {{$table := .Table}}
-{{ $tAlias := .Aliases.Table .Table.Name -}}
+{{ $tAlias := .Aliases.Table .Table.Key -}}
 
 {{range .Table.Relationships -}}
 {{- if not .IsToMany -}}{{continue}}{{end -}}

@@ -1,6 +1,6 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table .Table.Name -}}
+{{$tAlias := .Aliases.Table .Table.Key -}}
 
 type {{$tAlias.UpSingular}}Mod interface {
     Apply(*{{$tAlias.UpSingular}}Template)

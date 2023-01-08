@@ -95,14 +95,14 @@ func (d *Driver) tables() []drivers.Table {
 	}), d.config.Includes, d.config.Excludes)
 
 	for _, model := range models {
-		if skip(model.TableName(), tableInclude, tableExclude) {
+		if drivers.Skip(model.TableName(), tableInclude, tableExclude) {
 			continue
 		}
 
 		pk, uniques, fks := d.getKeys(model, colFilter)
 
 		table := drivers.Table{
-			Name:    model.TableName(),
+			Key:     model.TableName(),
 			Columns: d.tableColumns(model, colFilter),
 			PKey:    pk,
 			Uniques: uniques,
@@ -115,20 +115,20 @@ func (d *Driver) tables() []drivers.Table {
 
 	relationships := drivers.BuildRelationships(tables)
 	for i, t := range tables {
-		tables[i].Relationships = relationships[t.Name]
+		tables[i].Relationships = relationships[t.Key]
 	}
 
 	// This just sets the default Alias of relationships based on the field name
 	// we do this after building the relationships based on the keys
 	for _, model := range models {
-		if skip(model.TableName(), tableInclude, tableExclude) {
+		if drivers.Skip(model.TableName(), tableInclude, tableExclude) {
 			continue
 		}
 
 		var tableIndex int
 		var table drivers.Table
 		for i, t := range tables {
-			if t.Name == model.TableName() {
+			if t.Key == model.TableName() {
 				tableIndex = i
 				table = t
 				break
@@ -141,7 +141,7 @@ func (d *Driver) tables() []drivers.Table {
 		include := append(allfilter.Include, filter.Include...)
 		exclude := append(allfilter.Exclude, filter.Exclude...)
 		for _, field := range model.Fields {
-			if skip(field.Name, include, exclude) {
+			if drivers.Skip(field.Name, include, exclude) {
 				continue
 			}
 
@@ -166,7 +166,7 @@ func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
 	names := make([]string, 0, len(models))
 
 	for _, m := range models {
-		if skip(m.TableName(), tableFilter.Include, tableFilter.Exclude) {
+		if drivers.Skip(m.TableName(), tableFilter.Include, tableFilter.Exclude) {
 			continue
 		}
 
@@ -225,7 +225,7 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 
 	columns := make([]drivers.Column, 0, len(model.Fields))
 	for _, field := range model.Fields {
-		if skip(field.Name, include, exclude) {
+		if drivers.Skip(field.Name, include, exclude) {
 			continue
 		}
 
@@ -355,29 +355,6 @@ var typMap = map[string]importers.List{
 	"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
 }
 
-func skip(name string, include, exclude []string) bool {
-	switch {
-	case len(include) > 0:
-		for _, i := range include {
-			if i == name {
-				return false
-			}
-		}
-		return true
-
-	case len(exclude) > 0:
-		for _, i := range exclude {
-			if i == name {
-				return true
-			}
-		}
-		return false
-
-	default:
-		return false
-	}
-}
-
 func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
 	var pk *drivers.PrimaryKey
 	var uniques []drivers.Constraint
@@ -395,7 +372,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 		cols := make([]string, len(model.PrimaryKey.Fields))
 
 		for i, f := range model.PrimaryKey.Fields {
-			if skip(f, include, exclude) {
+			if drivers.Skip(f, include, exclude) {
 				shouldSkip = true
 			}
 			cols[i] = f
@@ -418,7 +395,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 		cols := make([]string, len(unique.Fields))
 
 		for i, f := range unique.Fields {
-			if skip(f, include, exclude) {
+			if drivers.Skip(f, include, exclude) {
 				shouldSkip = true
 			}
 			cols[i] = f
@@ -439,7 +416,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 
 	// If one of the fields has an @id attribute
 	for _, field := range model.Fields {
-		if skip(field.Name, include, exclude) {
+		if drivers.Skip(field.Name, include, exclude) {
 			continue
 		}
 

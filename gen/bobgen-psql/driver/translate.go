@@ -3,17 +3,15 @@ package driver
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 // translateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
+func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 	switch c.DBType {
 	case "bigint", "bigserial":
 		c.Type = "int64"
@@ -53,18 +51,18 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 		c.Type = "pgeo.Polygon"
 	case "circle":
 		c.Type = "pgeo.Circle"
+	case "ENUM":
+		c.Type = "string"
+		for _, e := range d.enums {
+			if e.Schema == c.UDTSchema && e.Name == c.UDTName {
+				c.Type = e.Type
+			}
+		}
 	case "ARRAY":
 		var dbType string
-		if _, ok := p.enums[c.UDTName[1:]]; ok {
-			enumName := c.UDTName[1:]
-			dbType = fmt.Sprintf("enum.%s", enumName)
-			c.Type = fmt.Sprintf("parray.EnumArray[%s]", strmangle.TitleCase(enumName))
-			c.Imports = append(c.Imports, typMap["parray"]...)
-		} else {
-			var imports importers.List
-			c.Type, dbType, imports = getArrayType(c)
-			c.Imports = append(c.Imports, imports...)
-		}
+		var imports importers.List
+		c.Type, dbType, imports = d.getArrayType(c)
+		c.Imports = append(c.Imports, imports...)
 		// Make DBType something like ARRAYinteger for parsing with randomize.Struct
 		c.DBType += dbType
 	case "USER-DEFINED":
@@ -79,11 +77,7 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 			fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 		}
 	default:
-		if strings.HasPrefix(c.DBType, "enum.") {
-			c.Type = strmangle.TitleCase(strings.TrimPrefix(c.DBType, "enum."))
-		} else {
-			c.Type = "string"
-		}
+		c.Type = "string"
 	}
 
 	c.Imports = append(c.Imports, typMap[c.Type]...)
@@ -91,7 +85,17 @@ func (p *Driver) translateColumnType(c drivers.Column) drivers.Column {
 }
 
 // getArrayType returns the correct Array type for each database type
-func getArrayType(c drivers.Column) (string, string, importers.List) {
+func (d *Driver) getArrayType(c drivers.Column) (string, string, importers.List) {
+	if c.ArrType == "USER-DEFINED" {
+		name := c.UDTName[1:] // postgres prefixes with an underscore
+		for _, e := range d.enums {
+			if e.Schema == c.UDTSchema && e.Name == name {
+				return fmt.Sprintf("parray.EnumArray[%s]", e.Type), c.UDTName, typMap["parray"]
+			}
+		}
+		return "pq.StringArray", c.ArrType, nil
+	}
+
 	// If a domain is created with a statement like this: "CREATE DOMAIN
 	// text_array AS TEXT[] CHECK ( ... )" then the array type will be null,
 	// but the udt name will be whatever the underlying type is with a leading

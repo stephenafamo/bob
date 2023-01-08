@@ -4,14 +4,13 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/friendsofgo/errors"
 	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
 )
 
-func (p *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, error) {
+func (d *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	ret := drivers.DBConstraints{
 		PKs:     map[string]*drivers.Constraint{},
 		FKs:     map[string][]drivers.ForeignKey{},
@@ -19,9 +18,11 @@ func (p *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, err
 	}
 
 	query := `SELECT 
-		rel.relname as table
+		nsp.nspname as schema
+		, rel.relname as table
 		, con.conname as name
 		, con.contype as type
+		, max(fnsp.nspname) as foreign_schema
 		, max(out.relname) as foreign_table
 		, array_agg(local_cols.column_name) as columns
 		, (
@@ -30,56 +31,76 @@ func (p *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, err
 			else array[]::text[] end
 		) as foreign_columns
 	FROM pg_catalog.pg_constraint con
+	
 	INNER JOIN pg_catalog.pg_class rel
 		ON rel.oid = con.conrelid
+		
 	LEFT JOIN pg_catalog.pg_class out
 		ON out.oid = con.confrelid
+		
 	INNER JOIN pg_catalog.pg_namespace nsp
-		ON nsp.oid = connamespace
+		ON nsp.oid = rel.relnamespace
+		
+	LEFT JOIN pg_catalog.pg_namespace fnsp
+		ON fnsp.oid = out.relnamespace
+		
 	LEFT JOIN information_schema.columns local_cols
 		ON local_cols.table_schema = nsp.nspname 
 		AND local_cols.table_name = rel.relname 
 		AND local_cols.ordinal_position = ANY(con.conkey)
+		
 	LEFT JOIN information_schema.columns foreign_cols
-		ON foreign_cols.table_schema = nsp.nspname 
+		ON foreign_cols.table_schema = fnsp.nspname 
 		AND foreign_cols.table_name = out.relname 
 		AND foreign_cols.ordinal_position = ANY(con.confkey)
-	WHERE nsp.nspname = $1
+		
+	WHERE nsp.nspname = ANY($1)
 	AND con.contype IN ('p', 'f', 'u')
-	GROUP BY rel.relname, name, con.contype`
+	GROUP BY nsp.nspname, rel.relname, name, con.contype`
 
 	ctx := context.Background()
-	constraints, err := stdscan.All(ctx, p.conn, scan.StructMapper[struct {
+	constraints, err := stdscan.All(ctx, d.conn, scan.StructMapper[struct {
+		Schema         string
 		Table          string
 		Name           string
 		Type           string
 		Columns        pq.StringArray
+		ForeignSchema  sql.NullString
 		ForeignTable   sql.NullString
 		ForeignColumns pq.StringArray
-	}](), query, p.config.Schema)
+	}](), query, d.config.Schemas)
 	if err != nil {
 		return ret, err
 	}
 
 	for _, c := range constraints {
+		key := c.Table
+		if c.Schema != "" && c.Schema != d.config.SharedSchema {
+			key = c.Schema + "." + c.Table
+		}
+
 		switch c.Type {
 		case "p":
-			ret.PKs[c.Table] = &drivers.Constraint{
+			ret.PKs[key] = &drivers.Constraint{
 				Name:    c.Name,
 				Columns: c.Columns,
 			}
 		case "u":
-			ret.Uniques[c.Table] = append(ret.Uniques[c.Table], drivers.Constraint{
+			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint{
 				Name:    c.Name,
 				Columns: c.Columns,
 			})
 		case "f":
-			ret.FKs[c.Table] = append(ret.FKs[c.Table], drivers.ForeignKey{
+			fkey := c.ForeignTable.String
+			if c.ForeignSchema.Valid && c.ForeignSchema.String != d.config.SharedSchema {
+				fkey = c.ForeignSchema.String + "." + c.ForeignTable.String
+			}
+			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey{
 				Constraint: drivers.Constraint{
 					Name:    c.Name,
 					Columns: c.Columns,
 				},
-				ForeignTable:   c.ForeignTable.String,
+				ForeignTable:   fkey,
 				ForeignColumns: c.ForeignColumns,
 			})
 		}
@@ -92,17 +113,19 @@ func (p *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, err
 // for every table or view column that is made unique by an index or constraint.
 // This information is queried once, rather than for each table, for performance
 // reasons.
-func (p *Driver) loadUniqueColumns() error {
-	if p.uniqueColumns != nil {
+func (d *Driver) loadUniqueColumns() error {
+	if d.uniqueColumns != nil {
 		return nil
 	}
-	p.uniqueColumns = map[columnIdentifier]struct{}{}
+
+	d.uniqueColumns = map[columnIdentifier]struct{}{}
+
 	query := `with
 method_a as (
     select
-        tc.table_schema as schema_name,
-        ccu.table_name as table_name,
-        ccu.column_name as column_name
+        tc.table_schema as schema,
+        ccu.table_name as table,
+        ccu.column_name as column
     from information_schema.table_constraints tc
     inner join information_schema.constraint_column_usage as ccu
         on tc.constraint_name = ccu.constraint_name
@@ -116,9 +139,9 @@ method_a as (
 ),
 method_b as (
     select
-        pgix.schemaname as schema_name,
-        pgix.tablename as table_name,
-        pga.attname as column_name
+        pgix.schemaname as schema,
+        pgix.tablename as table,
+        pga.attname as column
     from pg_indexes pgix
     inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i' and pgc.relnatts = 1
     inner join pg_index pgi on pgi.indexrelid = pgc.oid
@@ -130,20 +153,20 @@ results as (
     union
     select * from method_b
 )
-select * from results;
+select * from results where schema = ANY($1);
 `
-	rows, err := p.conn.Query(query)
+	ctx := context.Background()
+	colIds, err := stdscan.All(
+		ctx, d.conn,
+		scan.StructMapper[columnIdentifier](),
+		query, d.config.Schemas,
+	)
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		var c columnIdentifier
-		if err := rows.Scan(&c.Schema, &c.Table, &c.Column); err != nil {
-			return errors.Wrapf(err, "unable to scan unique entry row")
-		}
-		p.uniqueColumns[c] = struct{}{}
+	for _, c := range colIds {
+		d.uniqueColumns[c] = struct{}{}
 	}
 	return nil
 }

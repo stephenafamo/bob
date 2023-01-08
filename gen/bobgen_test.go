@@ -41,7 +41,11 @@ func TestNewWithAliases(t *testing.T) {
 			DownPlural:   fmt.Sprintf("alias%vThings", i),
 			DownSingular: fmt.Sprintf("alias%vThing", i),
 		}
-		columns, err := mockDriver.TableColumns(table.Name, drivers.ColumnFilter{})
+		_, _, columns, err := mockDriver.TableColumns(drivers.TableInfo{
+			Key:    table.Key,
+			Schema: table.Schema,
+			Name:   table.Name,
+		}, drivers.ColumnFilter{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -51,7 +55,7 @@ func TestNewWithAliases(t *testing.T) {
 		}
 		tableAlias.Relationships = make(map[string]string)
 
-		aliases.Tables[table.Name] = tableAlias
+		aliases.Tables[table.Key] = tableAlias
 	}
 
 	testNew(t, aliases)
@@ -266,7 +270,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 			},
 		},
 		{
-			Name: "named_table",
+			Key: "named_table",
 			Columns: []drivers.Column{
 				{
 					Name:     "id",

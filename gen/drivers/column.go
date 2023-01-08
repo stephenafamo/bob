@@ -25,17 +25,12 @@ type Column struct {
 	// ArrType is the underlying data type of the Postgres
 	// ARRAY type. See here:
 	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
-	ArrType string `json:"arr_type" toml:"arr_type"`
-	UDTName string `json:"udt_name" toml:"udt_name"`
+	ArrType   string `json:"arr_type" toml:"arr_type"`
+	UDTName   string `json:"udt_name" toml:"udt_name"`
+	UDTSchema string `json:"udt_schema" toml:"udt_schema"`
 	// DomainName is the domain type name associated to the column. See here:
 	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
 	DomainName string `json:"domain_name" toml:"domain_name"`
-
-	// MySQL only bits
-	// Used to get full type, ex:
-	// tinyint(1) instead of tinyint
-	// Used for "tinyint-as-bool" flag
-	FullDBType string `json:"full_db_type" toml:"full_db_type"`
 }
 
 // ColumnNames of the columns.

@@ -43,7 +43,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 	}
 
 	for _, t := range tables {
-		table := a.Tables[t.Name]
+		table := a.Tables[t.Key]
 
 		if len(table.UpPlural) == 0 {
 			table.UpPlural = strmangle.TitleCase(strmangle.Plural(t.Name))
@@ -83,7 +83,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 			}
 		}
 
-		a.Tables[t.Name] = table
+		a.Tables[t.Key] = table
 	}
 }
 

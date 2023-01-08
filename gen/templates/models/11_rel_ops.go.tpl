@@ -1,5 +1,5 @@
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Name -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 {{range $rel := $table.Relationships -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
@@ -54,7 +54,7 @@
 
     {{insertDeps $.Aliases $rel false}}
 
-    _, err = rel.Update(ctx, exec, nil)
+    _, err = rel.Update(ctx, exec)
     if err != nil {
         return fmt.Errorf("inserting related objects: %w", err)
     }

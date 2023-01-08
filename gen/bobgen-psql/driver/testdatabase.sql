@@ -244,6 +244,9 @@ create table type_monsters (
 	jsonarr_null     json[] null,
 	jsonarr_nnull    json[] not null,
 
+    enumarr_null   workday[] null,
+	enumarr_nnull  workday[] not null,
+
 	customarr_null   my_int_array null,
 	customarr_nnull  my_int_array not null,
 
