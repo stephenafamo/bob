@@ -49,12 +49,29 @@ type Driver struct {
 }
 
 type Config struct {
-	Dsn          string
-	Schemas      pq.StringArray
+	// The database connection string
+	Dsn string
+	// The database schemas to generate models for
+	Schemas pq.StringArray
+	// The name of this schema will not be included in the generated models
+	// a context value can then be used ot set the schema at runtime
+	// useful for multi-tenant setups
 	SharedSchema string
-	Includes     []string
-	Excludes     []string
-	Concurrency  int
+	// List of tables that will be included. Others are ignored
+	Only []string
+	// List of tables that will be should be ignored. Others are included
+	Except   map[string][]string
+	Excludes []string
+	// How many tables to fetch in parallel
+	Concurrency int
+
+	// Used in main.go
+
+	// The name of the folder to output the models package to
+	Output string
+	// The name you wish to assign to your generated models package
+	Pkgname   string
+	NoFactory bool `yaml:"no_factory"`
 }
 
 type columnIdentifier struct {
@@ -98,7 +115,7 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 		return nil, errors.Wrapf(err, "unable to load enums")
 	}
 
-	dbinfo.Tables, err = drivers.Tables(d, d.config.Concurrency, d.config.Includes, d.config.Excludes)
+	dbinfo.Tables, err = drivers.Tables(d, d.config.Concurrency, d.config.Only, d.config.Excludes)
 	if err != nil {
 		return nil, err
 	}

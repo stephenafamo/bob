@@ -36,24 +36,30 @@ type (
 		Enums    []Enum
 	}
 	Config struct {
-		Provider    Provider
-		Datamodel   Datamodel
-		Schema      string
-		Includes    []string
-		Excludes    []string
-		Concurrency int
+		Includes []string
+		Excludes []string
+
+		// The name you wish to assign to your generated models package
+		Pkgname   string
+		NoFactory bool `yaml:"no_factory"`
 	}
 )
 
-func New(config Config) Interface {
-	return &Driver{config: config}
+func New(config Config, provider Provider, datamodel Datamodel) Interface {
+	return &Driver{
+		config:    config,
+		provider:  provider,
+		datamodel: datamodel,
+	}
 }
 
 // Driver holds the database connection string and a handle
 // to the database connection.
 type Driver struct {
-	config Config
-	enums  map[string]Enum
+	config    Config
+	enums     map[string]Enum
+	provider  Provider
+	datamodel Datamodel
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -74,7 +80,7 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 	dbinfo = &DBInfo{
 		Tables: d.tables(),
 		ExtraInfo: Extra{
-			Provider: d.config.Provider,
+			Provider: d.provider,
 			Enums:    d.getEnums(),
 		},
 	}
@@ -83,7 +89,7 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 }
 
 func (d *Driver) tables() []drivers.Table {
-	models := d.config.Datamodel.Models
+	models := d.datamodel.Models
 	tables := make([]drivers.Table, 0, len(models))
 
 	tableInclude := drivers.TablesFromList(d.config.Includes)
@@ -103,6 +109,7 @@ func (d *Driver) tables() []drivers.Table {
 
 		table := drivers.Table{
 			Key:     model.TableName(),
+			Name:    model.TableName(),
 			Columns: d.tableColumns(model, colFilter),
 			PKey:    pk,
 			Uniques: uniques,
@@ -162,7 +169,7 @@ func (d *Driver) tables() []drivers.Table {
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
 func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
-	models := d.config.Datamodel.Models
+	models := d.datamodel.Models
 	names := make([]string, 0, len(models))
 
 	for _, m := range models {
@@ -182,7 +189,7 @@ func (p *Driver) loadEnums() {
 	}
 	p.enums = map[string]Enum{}
 
-	enums := p.config.Datamodel.Enums
+	enums := p.datamodel.Enums
 	for _, enum := range enums {
 		name := enum.Name
 		values := make([]string, len(enum.Values))
@@ -440,7 +447,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 					Name:    field.RelationName,
 					Columns: field.RelationFromFields,
 				},
-				ForeignTable:   d.config.Datamodel.ModelByName(field.Type).TableName(),
+				ForeignTable:   d.datamodel.ModelByName(field.Type).TableName(),
 				ForeignColumns: field.RelationToFields,
 			})
 		}

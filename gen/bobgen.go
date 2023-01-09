@@ -25,68 +25,63 @@ var (
 
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
-	Config *Config[T]
+	Config              *Config
+	Dialect             string
+	Outputs             []*Output
+	ModelsPkg           string
+	CustomTemplateFuncs template.FuncMap
 
-	Dialect   string
-	Tables    []drivers.Table
-	ExtraInfo T
+	tables    []drivers.Table
+	extraInfo T
 }
 
-// New creates a new state based off of the config
-func New[T any](dialect string, config *Config[T]) (*State[T], error) {
-	s := &State[T]{
-		Config:  config,
-		Dialect: dialect,
+// Run executes the templates and outputs them to files based on the
+// state given.
+func (s *State[T]) Run(driver drivers.Interface[T]) error {
+	if s.Dialect == "" {
+		return fmt.Errorf("no dialect specified")
 	}
-
 	var templates []lazyTemplate
 
-	if len(config.Generator) > 0 {
+	if len(s.Config.Generator) > 0 {
 		noEditDisclaimer = []byte(
-			fmt.Sprintf(noEditDisclaimerFmt, " by "+config.Generator),
+			fmt.Sprintf(noEditDisclaimerFmt, " by "+s.Config.Generator),
 		)
 	}
 
 	s.initInflections()
 
-	err := s.initDBInfo()
+	err := s.initDBInfo(driver)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize tables: %w", err)
+		return fmt.Errorf("unable to initialize tables: %w", err)
 	}
 
 	s.processTypeReplacements()
 	s.processRelationshipConfig()
 
-	for _, o := range s.Config.Outputs {
-		templates, err = o.initTemplates(s.Config.CustomTemplateFuncs, s.Config.NoTests)
+	for _, o := range s.Outputs {
+		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
-			return nil, fmt.Errorf("unable to initialize templates: %w", err)
+			return fmt.Errorf("unable to initialize templates: %w", err)
 		}
 
 		err = o.initOutFolders(templates, s.Config.Wipe)
 		if err != nil {
-			return nil, fmt.Errorf("unable to initialize the output folders: %w", err)
+			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
 	}
 
-	err = s.initTags(config.Tags)
+	err = s.initTags(s.Config.Tags)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize struct tags: %w", err)
+		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
-	s.initAliases(&config.Aliases)
-
-	return s, nil
-}
-
-// Run executes the templates and outputs them to files based on the
-// state given.
-func (s *State[T]) Run() error {
-	for _, o := range s.Config.Outputs {
+	s.initAliases(&s.Config.Aliases)
+	for _, o := range s.Outputs {
 		data := &templateData[T]{
 			Dialect:           s.Dialect,
-			Tables:            s.Tables,
-			ExtraInfo:         s.ExtraInfo,
+			Tables:            s.tables,
+			ExtraInfo:         s.extraInfo,
 			Aliases:           s.Config.Aliases,
 			PkgName:           o.PkgName,
 			NoTests:           s.Config.NoTests,
@@ -95,7 +90,7 @@ func (s *State[T]) Run() error {
 			TagIgnore:         make(map[string]struct{}),
 			Tags:              s.Config.Tags,
 			RelationTag:       s.Config.RelationTag,
-			ModelsPackage:     s.Config.ModelsPackage,
+			ModelsPackage:     s.ModelsPkg,
 		}
 
 		for _, v := range s.Config.TagIgnore {
@@ -121,7 +116,7 @@ func (s *State[T]) Run() error {
 			testDirExtMap = groupTemplates(o.testTemplates)
 		}
 
-		for _, table := range s.Tables {
+		for _, table := range s.tables {
 			data.Table = table
 
 			// Generate the regular templates
@@ -138,12 +133,6 @@ func (s *State[T]) Run() error {
 		}
 	}
 
-	return nil
-}
-
-// Cleanup closes any resources that must be closed
-func (s *State[T]) Cleanup() error {
-	// Nothing here atm, used to close the driver
 	return nil
 }
 
@@ -253,8 +242,8 @@ func groupTemplates(templates *templateList) dirExtMap {
 }
 
 // initDBInfo retrieves information about the database
-func (s *State[T]) initDBInfo() error {
-	dbInfo, err := s.Config.Driver.Assemble()
+func (s *State[T]) initDBInfo(driver drivers.Interface[T]) error {
+	dbInfo, err := driver.Assemble()
 	if err != nil {
 		return fmt.Errorf("unable to fetch table data: %w", err)
 	}
@@ -263,8 +252,8 @@ func (s *State[T]) initDBInfo() error {
 		return errors.New("no tables found in database")
 	}
 
-	s.Tables = dbInfo.Tables
-	s.ExtraInfo = dbInfo.ExtraInfo
+	s.tables = dbInfo.Tables
+	s.extraInfo = dbInfo.ExtraInfo
 
 	return nil
 }
@@ -273,8 +262,8 @@ func (s *State[T]) initDBInfo() error {
 // and performs them.
 func (s *State[T]) processTypeReplacements() {
 	for _, r := range s.Config.Replacements {
-		for i := range s.Tables {
-			t := s.Tables[i]
+		for i := range s.tables {
+			t := s.tables[i]
 
 			if !shouldReplaceInTable(t, r) {
 				continue
@@ -393,17 +382,17 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
 func (s *State[T]) processRelationshipConfig() {
-	if len(s.Tables) == 0 {
+	if len(s.tables) == 0 {
 		return
 	}
 
-	for i, t := range s.Tables {
+	for i, t := range s.tables {
 		rels, ok := s.Config.Relationships[t.Key]
 		if !ok {
 			continue
 		}
 
-		s.Tables[i].Relationships = mergeRelationships(s.Tables[i].Relationships, rels)
+		s.tables[i].Relationships = mergeRelationships(s.tables[i].Relationships, rels)
 	}
 }
 
@@ -520,7 +509,7 @@ func (s *State[T]) initTags(tags []string) error {
 }
 
 func (s *State[T]) initAliases(a *Aliases) {
-	FillAliases(a, s.Tables)
+	FillAliases(a, s.tables)
 }
 
 // normalizeSlashes takes a path that was made on linux or windows and converts it

@@ -11,77 +11,57 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
 	"github.com/stephenafamo/bob/gen"
-	"github.com/stephenafamo/bob/gen/drivers"
 	"golang.org/x/mod/modfile"
 )
 
-func ReadConfig(configFile string) {
-	if len(configFile) != 0 {
-		viper.SetConfigFile(configFile)
-		if err := viper.ReadInConfig(); err != nil {
-			fmt.Println("Can't read config:", err)
-			os.Exit(1)
+func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[string]any) (gen.Config, T, error) {
+	var config gen.Config
+	var driverConfig T
+
+	k := koanf.New(".")
+
+	// Add some defaults
+	k.Load(confmap.Provider(map[string]any{
+		"wipe":              true,
+		"struct_tag_casing": "snake",
+		"relation_tag":      "-",
+		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
+		driverConfigKey:     driverDefaults,
+	}, "."), nil)
+
+	if configPath != "" {
+		// Load YAML config and merge into the previously loaded config (because we can).
+		err := k.Load(file.Provider(configPath), yaml.Parser())
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return config, driverConfig, err
+			}
+
+			fmt.Printf("No such file: %q\n", configPath)
 		}
-		return
 	}
 
-	var err error
-	viper.SetConfigName("bobgen")
+	// Load env variables for ONLY driver config
+	envKey := strings.ToUpper(driverConfigKey) + "_"
+	k.Load(env.Provider(envKey, ".", func(s string) string {
+		return strings.Replace(strings.ToLower(s), "_", ".", -1)
+	}), nil)
 
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	homePath := os.Getenv("HOME")
-	wd, err := os.Getwd()
-	if err != nil {
-		wd = "."
+	if err := k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
+		return config, driverConfig, err
 	}
 
-	configPaths := []string{wd}
-	if len(configHome) > 0 {
-		configPaths = append(configPaths, filepath.Join(configHome, "bobgen"))
-	} else {
-		configPaths = append(configPaths, filepath.Join(homePath, ".config/bobgen"))
+	if err := k.UnmarshalWithConf(driverConfigKey, &driverConfig, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
+		return config, driverConfig, err
 	}
 
-	for _, p := range configPaths {
-		viper.AddConfigPath(p)
-	}
-
-	// Ignore errors here, fallback to other validation methods.
-	// Users can use environment variables if a config is not found.
-	_ = viper.ReadInConfig()
-}
-
-func NewConfig[T any](name string, driver drivers.Interface[T], outputs []*gen.Output) (*gen.Config[T], error) {
-	modelsPkg, err := modelsPackage(viper.GetString("output"))
-	if err != nil {
-		return nil, fmt.Errorf("getting models package: %w", err)
-	}
-
-	return &gen.Config[T]{
-		Driver:            driver,
-		Outputs:           outputs,
-		Wipe:              viper.GetBool("wipe"),
-		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
-		TagIgnore:         viper.GetStringSlice("tag-ignore"),
-		RelationTag:       viper.GetString("relation-tag"),
-		NoBackReferencing: viper.GetBool("no-back-referencing"),
-
-		Aliases:       gen.ConvertAliases(viper.Get("aliases")),
-		Replacements:  gen.ConvertReplacements(viper.Get("replacements")),
-		Relationships: gen.ConvertRelationships(viper.Get("relationships")),
-		Inflections: gen.Inflections{
-			Plural:        viper.GetStringMapString("inflections.plural"),
-			PluralExact:   viper.GetStringMapString("inflections.plural_exact"),
-			Singular:      viper.GetStringMapString("inflections.singular"),
-			SingularExact: viper.GetStringMapString("inflections.singular_exact"),
-			Irregular:     viper.GetStringMapString("inflections.irregular"),
-		},
-
-		Generator:     fmt.Sprintf("BobGen %s %s", name, Version()),
-		ModelsPackage: modelsPkg,
-	}, nil
+	return config, driverConfig, nil
 }
 
 func Version() string {
@@ -92,8 +72,8 @@ func Version() string {
 	return ""
 }
 
-func modelsPackage(modelsFolder string) (string, error) {
-	modRoot, modFile, err := goModInfo()
+func ModelsPackage(modelsFolder string) (string, error) {
+	modRoot, modFile, err := GoModInfo()
 	if err != nil {
 		return "", fmt.Errorf("getting mod details: %w", err)
 	}
@@ -106,9 +86,9 @@ func modelsPackage(modelsFolder string) (string, error) {
 	return path.Join(modFile.Module.Mod.Path, relPath), nil
 }
 
-// goModInfo returns the main module's root directory
+// GoModInfo returns the main module's root directory
 // and the parsed contents of the go.mod file.
-func goModInfo() (string, *modfile.File, error) {
+func GoModInfo() (string, *modfile.File, error) {
 	goModPath, err := findGoMod()
 	if err != nil {
 		return "", nil, fmt.Errorf("cannot find main module: %w", err)

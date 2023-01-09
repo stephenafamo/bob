@@ -3,7 +3,7 @@
 		{
 			"key": "sponsors",
 			"schema": "",
-			"name": "",
+			"name": "sponsors",
 			"columns": [
 				{
 					"name": "id",
@@ -59,7 +59,7 @@
 		{
 			"key": "tags",
 			"schema": "",
-			"name": "",
+			"name": "tags",
 			"columns": [
 				{
 					"name": "id",
@@ -130,7 +130,7 @@
 		{
 			"key": "type_monsters",
 			"schema": "",
-			"name": "",
+			"name": "type_monsters",
 			"columns": [
 				{
 					"name": "id",
@@ -2230,7 +2230,7 @@
 		{
 			"key": "users",
 			"schema": "",
-			"name": "",
+			"name": "users",
 			"columns": [
 				{
 					"name": "id",
@@ -2323,7 +2323,7 @@
 		{
 			"key": "video_tags",
 			"schema": "",
-			"name": "",
+			"name": "video_tags",
 			"columns": [
 				{
 					"name": "video_id",
@@ -2439,7 +2439,7 @@
 		{
 			"key": "videos",
 			"schema": "",
-			"name": "",
+			"name": "videos",
 			"columns": [
 				{
 					"name": "id",

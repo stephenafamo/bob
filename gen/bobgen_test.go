@@ -74,43 +74,48 @@ func testNew(t *testing.T, aliases Aliases) {
 		t.Fatalf("unable to create tempdir: %s", err)
 	}
 
+	outputs := []*Output{
+		{
+			PkgName:   "models",
+			OutFolder: filepath.Join(out, "models"),
+			Templates: []fs.FS{ModelTemplates},
+		},
+		{
+			PkgName:   "factory",
+			OutFolder: filepath.Join(out, "factory"),
+			Templates: []fs.FS{FactoryTemplates},
+		},
+	}
 	// Defer cleanup of the tmp folder
 	defer func() {
 		if t.Failed() {
 			t.Log("template test output:", out)
 			return
 		}
-		os.RemoveAll(state.Config.Outputs[0].OutFolder)
+		for _, o := range outputs {
+			os.RemoveAll(o.OutFolder)
+		}
 	}()
 
 	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
-	config := &Config[any]{
-		Driver:    &mocks.MockDriver{},
+	config := &Config{
 		NoTests:   true,
 		TagIgnore: []string{"pass"},
 		Aliases:   aliases,
 		Generator: "BobGen",
-		Outputs: []*Output{
-			{
-				PkgName:   "models",
-				OutFolder: filepath.Join(out, "models"),
-				Templates: []fs.FS{ModelTemplates},
-			},
-			{
-				PkgName:   "factory",
-				OutFolder: filepath.Join(out, "factory"),
-				Templates: []fs.FS{FactoryTemplates},
-			},
-		},
-		ModelsPackage: path.Join(module, "models"),
 	}
 
-	state, err = New("psql", config)
+	state := &State[any]{
+		Dialect:   "psql",
+		Config:    config,
+		Outputs:   outputs,
+		ModelsPkg: path.Join(module, "models"),
+	}
 	if err != nil {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}
 
-	if err = state.Run(); err != nil {
+	if err = state.Run(&mocks.MockDriver{}); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 
@@ -240,9 +245,9 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 
 func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State[any])
-	s.Config = &Config[any]{}
+	s.Config = &Config{}
 	domainStr := "a_domain"
-	s.Tables = []drivers.Table{
+	s.tables = []drivers.Table{
 		{
 			Columns: []drivers.Column{
 				{
@@ -326,31 +331,31 @@ func TestProcessTypeReplacements(t *testing.T) {
 
 	s.processTypeReplacements()
 
-	if typ := s.Tables[0].Columns[0].Type; typ != "excellent.Type" {
+	if typ := s.tables[0].Columns[0].Type; typ != "excellent.Type" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.Tables[0].Columns[0].Imports[0]; i != `"rock.com/excellent"` {
+	if i := s.tables[0].Columns[0].Imports[0]; i != `"rock.com/excellent"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.Tables[0].Columns[1].Type; typ != "int" {
+	if typ := s.tables[0].Columns[1].Type; typ != "int" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.Tables[0].Columns[1].Imports[0]; i != `"context"` {
+	if i := s.tables[0].Columns[1].Imports[0]; i != `"context"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.Tables[0].Columns[2].Type; typ != "big.Int" {
+	if typ := s.tables[0].Columns[2].Type; typ != "big.Int" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.Tables[0].Columns[2].Imports[0]; i != `"math/big"` {
+	if i := s.tables[0].Columns[2].Imports[0]; i != `"math/big"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.Tables[1].Columns[0].Type; typ != "excellent.NamedType" {
+	if typ := s.tables[1].Columns[0].Type; typ != "excellent.NamedType" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.Tables[1].Columns[0].Imports[0]; i != `"rock.com/excellent-name"` {
+	if i := s.tables[1].Columns[0].Imports[0]; i != `"rock.com/excellent-name"` {
 		t.Error("imports were not adjusted")
 	}
 }

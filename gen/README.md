@@ -92,20 +92,8 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
 
 ## Configuration
 
-Configuration is done in a bobgen.yaml (also supports toml and json) file in the same directory.
+Configuration is done in a `bobgen.yaml` file in the same directory.
 A different configuration file can be passed with the `-c` or `--config` flag.
-
-Create a configuration file. Because the project uses [viper](https://github.com/spf13/viper), TOML, JSON and YAML are all usable.  
-Environment variables are also able to be used, but certain configuration options cannot be properly expressed using environmental variables.
-
-The configuration file should be named `bobgen.yaml` and is searched for in
-the following directories in this order:
-
-* `./`
-* `$XDG_CONFIG_HOME/bobgen/`
-* `$HOME/.config/bobgen/`
-
-We will assume YAML for the rest of the documentation.
 
 ### Database Driver Configuration
 

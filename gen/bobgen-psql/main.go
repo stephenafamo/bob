@@ -1,161 +1,102 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
-	"strings"
+	"os/signal"
+	"path"
+	"syscall"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver"
-)
-
-//nolint:gochecknoglobals
-var (
-	flagConfigFile string
-	cmdState       *gen.State[driver.Extra]
-	cmdConfig      *gen.Config[driver.Extra]
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	// Too much happens between here and cobra's argument handling, for
-	// something so simple just do it immediately.
-	for _, arg := range os.Args {
-		if arg == "--version" {
-			fmt.Println("BobGen Psql v" + helpers.Version())
-			return
-		}
-	}
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer cancel()
 
-	// Set up the cobra root command
-	rootCmd := &cobra.Command{
-		Use:   "bobgen-psql [flags]",
-		Short: "BobGen Psql generates models for your postgres database.",
-		Long: "BobGen Psql generates models for your postgres database.\n" +
-			`Complete documentation is available at http://github.com/stephenafamo/bob/gen/psql`,
-		Example:       `bobgen-psql`,
-		PreRunE:       preRun,
-		RunE:          run,
-		PostRunE:      postRun,
-		SilenceErrors: true,
-		SilenceUsage:  true,
-	}
-
-	cobra.OnInitialize(func() { helpers.ReadConfig(flagConfigFile) })
-
-	// Set up the cobra root command flags
-	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
-	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output the models package to")
-	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated models package")
-	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
-	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
-	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
-	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
-	rootCmd.PersistentFlags().StringP("relation-tag", "r", "-", "Relationship struct tag name")
-	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
-	rootCmd.PersistentFlags().IntP("concurrency", "", 10, "How many tables to fetch in parallel")
-	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
-
-	// For factory
-	rootCmd.PersistentFlags().Bool("with-factory", false, "Also generate factory for models.")
-	rootCmd.PersistentFlags().String("factory-output", "factory", "The name of the folder to output the factory package to")
-	rootCmd.PersistentFlags().String("factory-pkgname", "factory", "The name you wish to assign to your generated factory package")
-
-	// Driver config flags
-	rootCmd.PersistentFlags().StringP("psql.dsn", "d", "", "The database connection string")
-	rootCmd.PersistentFlags().StringP("psql.schemas", "s", "public", "The database schemas to generate models for")
-	rootCmd.PersistentFlags().StringSliceP("psql.whitelist", "", nil, "List of tables that will be included. Others are ignored")
-	rootCmd.PersistentFlags().StringSliceP("psql.blacklist", "", nil, "List of tables that will be should be ignored")
-
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	viper.AutomaticEnv()
-
-	// hide flags not recommended for use
-	if err := rootCmd.PersistentFlags().MarkHidden("no-tests"); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := rootCmd.Execute(); err != nil {
-		var cmdErr commandError
-		if errors.As(err, &cmdErr) {
-			fmt.Printf("Error: %v\n\n", string(cmdErr))
-			rootCmd.Help() //nolint:errcheck
-		} else if !viper.GetBool("debug") {
-			fmt.Printf("Error: %v\n", err)
-		} else {
-			fmt.Printf("Error: %+v\n", err)
-		}
-
-		os.Exit(1)
-	}
-}
-
-type commandError string
-
-func (c commandError) Error() string {
-	return string(c)
-}
-
-func preRun(cmd *cobra.Command, args []string) error {
-	var err error
-	schemas := viper.GetStringSlice("psql.schemas")
-	if len(schemas) == 0 {
-		return fmt.Errorf("no schemas to generate for")
-	}
-	viper.SetDefault("psql.shared_schema", schemas[0])
-
-	dsn := viper.GetString("psql.dsn")
-	if dsn == "" {
-		return errors.New("database dsn is not set")
-	}
-
-	outputs := []*gen.Output{
-		{
-			OutFolder: viper.GetString("output"),
-			PkgName:   viper.GetString("pkgname"),
-			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+	app := &cli.App{
+		Name:      "bobgen-psql",
+		Usage:     "Generate models and factories from your PostgreSQL database",
+		UsageText: "bobgen-psql [-c FILE]",
+		Version:   helpers.Version(),
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Value:   "./bobgen.yaml",
+				Usage:   "Load configuration from `FILE`",
+			},
 		},
+		Action: run,
 	}
 
-	if viper.GetBool("with-factory") {
-		outputs = append(outputs, &gen.Output{
-			OutFolder: viper.GetString("factory-output"),
-			PkgName:   viper.GetString("factory-pkgname"),
-			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
-		})
+	if err := app.RunContext(ctx, os.Args); err != nil {
+		log.Fatal(err)
 	}
+}
 
-	cmdConfig, err = helpers.NewConfig("Psql", driver.New(driver.Config{
-		Dsn:          dsn,
-		SharedSchema: viper.GetString("psql.shared_schema"),
-		Schemas:      viper.GetStringSlice("psql.schemas"),
-		Includes:     viper.GetStringSlice("psql.whitelist"),
-		Excludes:     viper.GetStringSlice("psql.blacklist"),
-		Concurrency:  viper.GetInt("concurrency"),
-	}), outputs)
+func run(c *cli.Context) error {
+	configFile := c.String("config")
+
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "psql", map[string]any{
+		"schemas":     "public",
+		"output":      "models",
+		"pkgname":     "models",
+		"no_factory":  false,
+		"concurrency": 10,
+	})
 	if err != nil {
 		return err
 	}
 
-	cmdState, err = gen.New("psql", cmdConfig)
+	if driverConfig.Dsn == "" {
+		return errors.New("database dsn is not set")
+	}
 
-	return err
-}
+	if driverConfig.SharedSchema == "" {
+		driverConfig.SharedSchema = driverConfig.Schemas[0]
+	}
 
-func run(cmd *cobra.Command, args []string) error {
-	return cmdState.Run()
-}
+	outputs := []*gen.Output{
+		{
+			OutFolder: driverConfig.Output,
+			PkgName:   driverConfig.Pkgname,
+			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+		},
+	}
 
-func postRun(cmd *cobra.Command, args []string) error {
-	return cmdState.Cleanup()
+	if !config.NoFactory {
+		outputs = append(outputs, &gen.Output{
+			OutFolder: path.Join(driverConfig.Output, "factory"),
+			PkgName:   "factory",
+			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
+		})
+	}
+
+	modPkg, err := helpers.ModelsPackage(driverConfig.Output)
+	if err != nil {
+		return fmt.Errorf("getting models pkg details: %w", err)
+	}
+
+	d := driver.New(driverConfig)
+
+	cmdState := &gen.State[driver.Extra]{
+		Config:    &config,
+		Dialect:   "psql",
+		Outputs:   outputs,
+		ModelsPkg: modPkg,
+	}
+
+	return cmdState.Run(d)
 }

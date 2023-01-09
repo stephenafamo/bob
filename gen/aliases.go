@@ -11,25 +11,18 @@ import (
 
 // Aliases defines aliases for the generation run
 type Aliases struct {
-	Tables map[string]TableAlias `toml:"tables,omitempty" json:"tables,omitempty"`
+	Tables map[string]TableAlias `yaml:"tables,omitempty" toml:"tables,omitempty" json:"tables,omitempty"`
 }
 
 // TableAlias defines the spellings for a table name in Go
 type TableAlias struct {
-	UpPlural     string `toml:"up_plural,omitempty" json:"up_plural,omitempty"`
-	UpSingular   string `toml:"up_singular,omitempty" json:"up_singular,omitempty"`
-	DownPlural   string `toml:"down_plural,omitempty" json:"down_plural,omitempty"`
-	DownSingular string `toml:"down_singular,omitempty" json:"down_singular,omitempty"`
+	UpPlural     string `yaml:"up_plural,omitempty" toml:"up_plural,omitempty" json:"up_plural,omitempty"`
+	UpSingular   string `yaml:"up_singular,omitempty" toml:"up_singular,omitempty" json:"up_singular,omitempty"`
+	DownPlural   string `yaml:"down_plural,omitempty" toml:"down_plural,omitempty" json:"down_plural,omitempty"`
+	DownSingular string `yaml:"down_singular,omitempty" toml:"down_singular,omitempty" json:"down_singular,omitempty"`
 
-	Columns       map[string]string `toml:"columns,omitempty" json:"columns,omitempty"`
-	Relationships map[string]string `toml:"relationships,omitempty" json:"relationships,omitempty"`
-}
-
-// RelationshipAlias defines the naming for both sides of
-// a foreign key.
-type RelationshipAlias struct {
-	Local   string `toml:"local,omitempty" json:"local,omitempty"`
-	Foreign string `toml:"foreign,omitempty" json:"foreign,omitempty"`
+	Columns       map[string]string `yaml:"columns,omitempty" toml:"columns,omitempty" json:"columns,omitempty"`
+	Relationships map[string]string `yaml:"relationships,omitempty" toml:"relationships,omitempty" json:"relationships,omitempty"`
 }
 
 // FillAliases takes the table information from the driver

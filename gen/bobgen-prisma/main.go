@@ -15,7 +15,6 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/spf13/viper"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-prisma/driver"
@@ -151,57 +150,64 @@ func generate(root root) error {
 		return fmt.Errorf("Unsupported datasource provider %q", datasource.Provider)
 	}
 
-	output := root.Generator.Output.Value
-	if output == "" {
-		output = viper.GetString("output")
+	config, driverConfig, err := helpers.GetConfig[driver.Config](root.Generator.Config.ConfigFile, "prisma", map[string]any{
+		"schemas": "public",
+		"pkgname": "prisma",
+	})
+	if err != nil {
+		return err
 	}
 
-	helpers.ReadConfig(root.Generator.Config.ConfigFile)
-	viper.SetDefault("pkgname", "prisma")
-	viper.SetDefault("factory-pkgname", "factory")
-	viper.SetDefault("struct-tag-casing", "snake")
-	viper.SetDefault("relation-tag", "-")
-	viper.SetDefault("concurrency", 10)
+	output := root.Generator.Output.Value
+	if output == "" {
+		return fmt.Errorf("no output folder configured")
+	}
 
 	outputs := []*gen.Output{
 		{
 			OutFolder: output,
-			PkgName:   viper.GetString("pkgname"),
+			PkgName:   driverConfig.Pkgname,
 			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
 		},
 	}
 
-	if viper.GetBool("with-factory") {
+	if !config.NoFactory {
 		outputs = append(outputs, &gen.Output{
 			OutFolder: path.Join(output, "factory"),
-			PkgName:   viper.GetString("factory-pkgname"),
+			PkgName:   "factory",
 			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
 		})
 	}
 
-	cmdConfig, err := helpers.NewConfig("Prisma", driver.New(driver.Config{
-		Datamodel:   root.DMMF.Datamodel,
-		Schema:      viper.GetString("prisma.schema"),
-		Includes:    viper.GetStringSlice("prisma.whitelist"),
-		Excludes:    viper.GetStringSlice("prisma.blacklist"),
-		Concurrency: viper.GetInt("concurrency"),
-		Provider: driver.Provider{
+	d := driver.New(
+		driverConfig,
+		driver.Provider{
 			DriverName:      driverName,
 			DriverPkg:       driverPkg,
 			DriverSource:    datasource.URL.Value,
 			DriverENVSource: datasource.URL.FromEnvVar,
 		},
-	}), outputs)
+		root.DMMF.Datamodel,
+	)
+
+	modPkg, err := helpers.ModelsPackage(output)
 	if err != nil {
+		return fmt.Errorf("getting models pkg details: %w", err)
+	}
+
+	state := &gen.State[driver.Extra]{
+		Config:    &config,
+		Dialect:   dialect,
+		Outputs:   outputs,
+		ModelsPkg: modPkg,
+	}
+
+	if err := state.Run(d); err != nil {
+		fmt.Println(err) // makes the error print better
 		return err
 	}
 
-	cmdState, err := gen.New(dialect, cmdConfig)
-	if err != nil {
-		return fmt.Errorf("could not create new state: %w", err)
-	}
-
-	return cmdState.Run()
+	return nil
 }
 
 // Root describes the generator output root.

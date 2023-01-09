@@ -27,21 +27,20 @@ func TestAssemble(t *testing.T) {
 	tests := []struct {
 		name       string
 		config     Config
+		datamodel  Datamodel
 		goldenJson string
 	}{
 		{
-			name: "default",
-			config: Config{
-				Datamodel: dataModel,
-				Schema:    "public",
-			},
+			name:       "default",
+			config:     Config{},
+			datamodel:  dataModel,
 			goldenJson: "prisma.golden.json",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Driver{config: tt.config}
+			p := &Driver{config: tt.config, datamodel: tt.datamodel}
 			info, err := p.Assemble()
 			if err != nil {
 				t.Fatal(err)
