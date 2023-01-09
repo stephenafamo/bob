@@ -41,8 +41,10 @@ func (l Loader) modifyPreloader(s *preloadSettings) {
 }
 
 // Preloader must be a preload option to be able to have subloaders
-var _ PreloadOption = Preloader(nil)
-var _ preloader = Preloader(nil)
+var (
+	_ PreloadOption = Preloader(nil)
+	_ preloader     = Preloader(nil)
+)
 
 // Preloader builds a query mod that modifies the original query to retrieve related fields
 // while it can be used as a queryMod, it does not have any direct effect.

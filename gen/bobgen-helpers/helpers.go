@@ -27,13 +27,15 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 	k := koanf.New(".")
 
 	// Add some defaults
-	k.Load(confmap.Provider(map[string]any{
+	if err := k.Load(confmap.Provider(map[string]any{
 		"wipe":              true,
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
 		driverConfigKey:     driverDefaults,
-	}, "."), nil)
+	}, "."), nil); err != nil {
+		return config, driverConfig, err
+	}
 
 	if configPath != "" {
 		// Load YAML config and merge into the previously loaded config (because we can).
@@ -49,9 +51,11 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 
 	// Load env variables for ONLY driver config
 	envKey := strings.ToUpper(driverConfigKey) + "_"
-	k.Load(env.Provider(envKey, ".", func(s string) string {
+	if err := k.Load(env.Provider(envKey, ".", func(s string) string {
 		return strings.Replace(strings.ToLower(s), "_", ".", -1)
-	}), nil)
+	}), nil); err != nil {
+		return config, driverConfig, err
+	}
 
 	if err := k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
 		return config, driverConfig, err

@@ -232,7 +232,7 @@ func (d *Driver) loadEnums() error {
 	d.enums, err = stdscan.All(
 		context.Background(), d.conn,
 		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
-			return func(r *scan.Row) (link any, err error) {
+			return func(r *scan.Row) (any, error) {
 					var e Enum
 					r.ScheduleScan("schema", &e.Schema)
 					r.ScheduleScan("name", &e.Name)
@@ -266,10 +266,8 @@ type Enum struct {
 }
 
 func (d *Driver) Enums() ([]Enum, error) {
-	enums := make([]Enum, 0, len(d.enums))
-	for _, e := range d.enums {
-		enums = append(enums, e)
-	}
+	enums := make([]Enum, len(d.enums))
+	copy(enums, d.enums)
 
 	sort.Slice(enums, func(i, j int) bool {
 		return enums[i].Name < enums[j].Name

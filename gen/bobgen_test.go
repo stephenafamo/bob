@@ -17,10 +17,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers/mocks"
 )
 
-var (
-	state        *State[any]
-	rgxHasSpaces = regexp.MustCompile(`^\s+`)
-)
+var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func TestNew(t *testing.T) {
 	testNew(t, Aliases{})
