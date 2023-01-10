@@ -97,5 +97,3 @@ func TestCanSoftDelete(t *testing.T) {
 		}
 	}
 }
-
-
