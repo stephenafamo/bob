@@ -16,9 +16,9 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Columns("id", "name"),
-  qm.From("users"),
-  qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 )
 ```
 
@@ -40,10 +40,10 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Columns("id", "name"),
-  qm.Distinct(),
-  qm.From("users"),
-  qm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
+  sm.Columns("id", "name"),
+  sm.Distinct(),
+  sm.From("users"),
+  sm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 )
 ```
 
@@ -59,8 +59,8 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.From(sqlite.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
-  qm.OrderBy("p"),
+  sm.From(sqlite.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
+  sm.OrderBy("p"),
 )
 ```
 
@@ -86,9 +86,9 @@ Code:
 
 ```go
 sqlite.Select(
-  qm.Columns("status", sqlite.F("avg", "difference")),
-  qm.From(sqlite.Select(
-    qm.Columns(
+  sm.Columns("status", sqlite.F("avg", "difference")),
+  sm.From(sqlite.Select(
+    sm.Columns(
       "status",
       sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
         Over("").
@@ -96,9 +96,9 @@ sqlite.Select(
         OrderBy("created_date").
         Minus("created_date").
         As("difference")),
-    qm.From("presales_presalestatus")),
+    sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
-  qm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
-  qm.GroupBy("status"),
+  sm.Where(sqlite.X("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
+  sm.GroupBy("status"),
 )
 ```

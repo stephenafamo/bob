@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/mysql"
-	"github.com/stephenafamo/bob/dialect/mysql/select/qm"
+	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -14,27 +14,27 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN (?, ?, ?))",
 			ExpectedArgs: []any{100, 200, 300},
 			Query: mysql.Select(
-				qm.Columns("id", "name"),
-				qm.From("users"),
-				qm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
 			),
 		},
 		"select distinct": {
 			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (id IN (?, ?, ?))",
 			ExpectedArgs: []any{100, 200, 300},
 			Query: mysql.Select(
-				qm.Columns("id", "name"),
-				qm.Distinct(),
-				qm.From("users"),
-				qm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+				sm.Columns("id", "name"),
+				sm.Distinct(),
+				sm.From("users"),
+				sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
 			Query: mysql.Select(
-				qm.From(
+				sm.From(
 					mysql.F("generate_series", 1, 3),
 				).As("x", "p", "q", "s"),
-				qm.OrderBy("p"),
+				sm.OrderBy("p"),
 			),
 			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS ` + "`x`" + ` (` + "`p`" + `, ` + "`q`" + `, ` + "`s`" + `) ORDER BY p`,
 			ExpectedArgs: nil,
@@ -52,9 +52,9 @@ func TestSelect(t *testing.T) {
 					WHERE (status IN ('A', 'B', 'C'))
 					GROUP BY status`,
 			Query: mysql.Select(
-				qm.Columns("status", mysql.F("avg", "difference")),
-				qm.From(mysql.Select(
-					qm.Columns(
+				sm.Columns("status", mysql.F("avg", "difference")),
+				sm.From(mysql.Select(
+					sm.Columns(
 						"status",
 						mysql.F("LEAD", "created_date", 1, mysql.F("NOW")).
 							Over("").
@@ -62,10 +62,10 @@ func TestSelect(t *testing.T) {
 							OrderBy("created_date").
 							Minus("created_date").
 							As("difference")),
-					qm.From("presales_presalestatus")),
+					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
-				qm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
-				qm.GroupBy("status"),
+				sm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
+				sm.GroupBy("status"),
 			),
 		},
 	}

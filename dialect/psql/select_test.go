@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/psql"
-	"github.com/stephenafamo/bob/dialect/psql/select/qm"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -15,42 +15,42 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id IN ($1, $2, $3))",
 			ExpectedArgs: []any{100, 200, 300},
 			Query: psql.Select(
-				qm.Columns("id", "name"),
-				qm.From("users"),
-				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"select distinct": {
 			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (id IN ($1, $2, $3))",
 			ExpectedArgs: []any{100, 200, 300},
 			Query: psql.Select(
-				qm.Columns("id", "name"),
-				qm.Distinct(),
-				qm.From("users"),
-				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Columns("id", "name"),
+				sm.Distinct(),
+				sm.From("users"),
+				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"select distinct on": {
 			ExpectedSQL:  "SELECT DISTINCT ON(id) id, name FROM users WHERE (id IN ($1, $2, $3))",
 			ExpectedArgs: []any{100, 200, 300},
 			Query: psql.Select(
-				qm.Columns("id", "name"),
-				qm.Distinct("id"),
-				qm.From("users"),
-				qm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Columns("id", "name"),
+				sm.Distinct("id"),
+				sm.From("users"),
+				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(
-				qm.FromFunction(
+				sm.FromFunction(
 					psql.F(
 						"json_to_recordset",
 						psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
 					).Col("a", "INTEGER").Col("b", "TEXT"),
 					psql.F("generate_series", 1, 3),
 				).As("x", "p", "q", "s"),
-				qm.OrderBy("p"),
+				sm.OrderBy("p"),
 			),
 			ExpectedSQL: `SELECT *
 				FROM ROWS FROM
@@ -75,9 +75,9 @@ func TestSelect(t *testing.T) {
 					WHERE (status IN ('A', 'B', 'C'))
 					GROUP BY status`,
 			Query: psql.Select(
-				qm.Columns("status", psql.F("avg", "difference")),
-				qm.From(psql.Select(
-					qm.Columns(
+				sm.Columns("status", psql.F("avg", "difference")),
+				sm.From(psql.Select(
+					sm.Columns(
 						"status",
 						psql.F("LEAD", "created_date", 1, psql.F("NOW")).
 							Over("").
@@ -85,10 +85,10 @@ func TestSelect(t *testing.T) {
 							OrderBy("created_date").
 							Minus("created_date").
 							As("difference")),
-					qm.From("presales_presalestatus")),
+					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
-				qm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
-				qm.GroupBy("status"),
+				sm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
+				sm.GroupBy("status"),
 			),
 		},
 	}

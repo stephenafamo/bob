@@ -14,7 +14,7 @@ Code:
 
 ```go
 sqlite.Delete(
-  qm.From("films"),
-  qm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
+  dm.From("films"),
+  dm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
 )
 ```

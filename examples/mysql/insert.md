@@ -19,8 +19,8 @@ Code:
 
 ```go
 mysql.Insert(
-  qm.Into("films"),
-  qm.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -53,9 +53,9 @@ Code:
 
 ```go
 mysql.Insert(
-  qm.Into("films"),
-  qm.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -80,10 +80,10 @@ Code:
 
 ```go
 mysql.Insert(
-  qm.Into("films"),
-  qm.HighPriority(),
-  qm.Ignore(),
-  qm.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.HighPriority(),
+  im.Ignore(),
+  im.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -112,10 +112,10 @@ Code:
 
 ```go
 mysql.Insert(
-  qm.Into("films"),
-  qm.MaxExecutionTime(1000),
-  qm.SetVar("cte_max_recursion_depth = 1M"),
-  qm.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.MaxExecutionTime(1000),
+  im.SetVar("cte_max_recursion_depth = 1M"),
+  im.Values(mysql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -142,11 +142,11 @@ Code:
 
 ```go
 mysql.Insert(
-  qm.Into("distributors", "did", "dname"),
-  qm.Values(mysql.Arg(8, "Anvil Distribution")),
-  qm.Values(mysql.Arg(9, "Sentry Distribution")),
-  qm.As("new"),
-  qm.OnDuplicateKeyUpdate().
+  im.Into("distributors", "did", "dname"),
+  im.Values(mysql.Arg(8, "Anvil Distribution")),
+  im.Values(mysql.Arg(9, "Sentry Distribution")),
+  im.As("new"),
+  im.OnDuplicateKeyUpdate().
     Set("dbname", mysql.Concat(
       "new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
     )),

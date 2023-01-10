@@ -11,7 +11,7 @@ import (
 	"github.com/aarondl/opt"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/select/qm"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/orm"
@@ -167,13 +167,13 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 				))
 			}
 
-			queryMods = append(queryMods, qm.
+			queryMods = append(queryMods, sm.
 				LeftJoin(side.ToExpr(ctx)).
 				As(alias).
 				On(on...))
 		}
 
-		queryMods = append(queryMods, qm.Columns(
+		queryMods = append(queryMods, sm.Columns(
 			orm.NewColumns(settings.columns...).WithParent(alias).WithPrefix(alias+"."),
 		))
 		return alias, queryMods

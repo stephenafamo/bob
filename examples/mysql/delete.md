@@ -14,8 +14,8 @@ Code:
 
 ```go
 mysql.Delete(
-  qm.From("films"),
-  qm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.From("films"),
+  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
 )
 ```
 
@@ -35,9 +35,9 @@ Code:
 
 ```go
 mysql.Delete(
-  qm.From("films"),
-  qm.From("actors"),
-  qm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.From("films"),
+  dm.From("actors"),
+  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
 )
 ```
 
@@ -57,10 +57,10 @@ Code:
 
 ```go
 mysql.Delete(
-  qm.From("films"),
-  qm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
-  qm.Limit(10),
-  qm.OrderBy("producer").Desc(),
+  dm.From("films"),
+  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.Limit(10),
+  dm.OrderBy("producer").Desc(),
 )
 ```
 
@@ -82,9 +82,9 @@ Code:
 
 ```go
 mysql.Delete(
-  qm.From("employees"),
-  qm.Using("accounts"),
-  qm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
-  qm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
+  dm.From("employees"),
+  dm.Using("accounts"),
+  dm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
+  dm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
 )
 ```

@@ -19,8 +19,8 @@ Code:
 
 ```go
 psql.Insert(
-  qm.Into("films"),
-  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -53,9 +53,9 @@ Code:
 
 ```go
 psql.Insert(
-  qm.Into("films"),
-  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -82,10 +82,10 @@ Code:
 
 ```go
 psql.Insert(
-  qm.IntoAs("distributors", "d", "did", "dname"),
-  qm.Values(psql.Arg(8, "Anvil Distribution")),
-  qm.Values(psql.Arg(9, "Sentry Distribution")),
-  qm.OnConflict("did").DoUpdate().
+  im.IntoAs("distributors", "d", "did", "dname"),
+  im.Values(psql.Arg(8, "Anvil Distribution")),
+  im.Values(psql.Arg(9, "Sentry Distribution")),
+  im.OnConflict("did").DoUpdate().
     Set("dname", psql.Concat(
       "EXCLUDED.dname", psql.S(" (formerly "), "d.dname", psql.S(")"),
     )).
@@ -116,10 +116,10 @@ Code:
 
 ```go
 psql.Insert(
-  qm.IntoAs("distributors", "d", "did", "dname"),
-  qm.Values(psql.Arg(8, "Anvil Distribution")),
-  qm.Values(psql.Arg(9, "Sentry Distribution")),
-  qm.OnConflictOnConstraint("distributors_pkey").
+  im.IntoAs("distributors", "d", "did", "dname"),
+  im.Values(psql.Arg(8, "Anvil Distribution")),
+  im.Values(psql.Arg(9, "Sentry Distribution")),
+  im.OnConflictOnConstraint("distributors_pkey").
     DoUpdate().
     SetExcluded("dname").
     Where(psql.X("d.zipcode").NE(psql.S("21201"))),
@@ -147,8 +147,8 @@ Code:
 
 ```go
 psql.Insert(
-  qm.Into("films"),
-  qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.OnConflict().DoNothing(),
+  im.Into("films"),
+  im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.OnConflict().DoNothing(),
 )
 ```

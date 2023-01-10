@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/mysql"
-	selectQM "github.com/stephenafamo/bob/dialect/mysql/select/qm"
-	"github.com/stephenafamo/bob/dialect/mysql/update/qm"
+	"github.com/stephenafamo/bob/dialect/mysql/sm"
+	"github.com/stephenafamo/bob/dialect/mysql/um"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -13,19 +13,19 @@ func TestUpdate(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple": {
 			Query: mysql.Update(
-				qm.Table("films"),
-				qm.SetArg("kind", "Dramatic"),
-				qm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+				um.Table("films"),
+				um.SetArg("kind", "Dramatic"),
+				um.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET ` + "`kind`" + ` = ? WHERE (kind = ?)`,
 			ExpectedArgs: []any{"Dramatic", "Drama"},
 		},
 		"update multiple tables": {
 			Query: mysql.Update(
-				qm.Table("employees, accounts"),
-				qm.Set("sales_count", "sales_count + 1"),
-				qm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
-				qm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
+				um.Table("employees, accounts"),
+				um.Set("sales_count", "sales_count + 1"),
+				um.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
+				um.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
 			),
 			ExpectedSQL: `UPDATE employees, accounts
 			  SET ` + "`sales_count`" + ` = sales_count + 1 
@@ -38,12 +38,12 @@ func TestUpdate(t *testing.T) {
 				  (SELECT sales_person FROM accounts WHERE (name = ?)))`,
 			ExpectedArgs: []any{"Acme Corporation"},
 			Query: mysql.Update(
-				qm.Table("employees"),
-				qm.Set("sales_count", "sales_count + 1"),
-				qm.Where(mysql.X("id").EQ(mysql.P(mysql.Select(
-					selectQM.Columns("sales_person"),
-					selectQM.From("accounts"),
-					selectQM.Where(mysql.X("name").EQ(mysql.Arg("Acme Corporation"))),
+				um.Table("employees"),
+				um.Set("sales_count", "sales_count + 1"),
+				um.Where(mysql.X("id").EQ(mysql.P(mysql.Select(
+					sm.Columns("sales_person"),
+					sm.From("accounts"),
+					sm.Where(mysql.X("name").EQ(mysql.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

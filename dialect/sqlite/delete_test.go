@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/delete/qm"
+	"github.com/stephenafamo/bob/dialect/sqlite/dm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -12,8 +12,8 @@ func TestDelete(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple": {
 			Query: sqlite.Delete(
-				qm.From("films"),
-				qm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
+				dm.From("films"),
+				dm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
 			),
 			ExpectedSQL:  `DELETE FROM films WHERE (kind = ?1)`,
 			ExpectedArgs: []any{"Drama"},

@@ -117,23 +117,23 @@ However, if using an unspported mod, the error will be displayed at compile time
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
 
 ```go
-import "github.com/stephenafamo/bob/dialect/psql/select/qm"
+import "github.com/stephenafamo/bob/dialect/psql/sm"
 cte := psql.Select(
-    qm.From("users"),
-    qm.Where(psql.X("age").GTE(21)),
+    sm.From("users"),
+    sm.Where(psql.X("age").GTE(21)),
 )
 
 var cte query.Query
 psql.Select(
-    qm.With("adults").As(cte), // works
-    qm.From("projects"),
+    sm.With("adults").As(cte), // works
+    sm.From("projects"),
 )
 
-import "github.com/stephenafamo/bob/dialect/psql/insert/qm"
+import "github.com/stephenafamo/bob/dialect/psql/insert/im"
 psql.Insert(
-    qm.With("adults").As(cte), // works as well
-    qm.From("projects"), // ERROR: Does not compile!!!
-    qm.Into("projects"), // works
+    im.With("adults").As(cte), // works as well
+    im.From("projects"), // ERROR: Does not compile!!!
+    im.Into("projects"), // works
 )
 ```
 
@@ -143,12 +143,12 @@ For conditional queries, the query object have an `Apply()` method which can be 
 
 ```go
 q := psql.Select(
-    qm.From("projects"),
+    sm.From("projects"),
 ) // SELECT * FROM projects
 
 if !user.IsAdmin {
     q.Apply(
-        qm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
+        sm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
     ) // SELECT * FROM projects WHERE user_id = $1
 }
 ```
@@ -263,9 +263,9 @@ This will write the placeholder correctly in the generated sql, and return the v
 // MySQL: SELECT * from users WHERE id = ? AND name = ?
 // SQL Server: SELECT * from users WHERE id = @p1 AND name = @p2
 psql.Select(
-    qm.From("users"),
-    qm.Where(psql.X("id").EQ(psql.Arg(100))),
-    qm.Where(psql.X("name".EQ(psql.Arg("Stephen"))),
+    sm.From("users"),
+    sm.Where(psql.X("id").EQ(psql.Arg(100))),
+    sm.Where(psql.X("name".EQ(psql.Arg("Stephen"))),
 )
 ```
 
@@ -285,8 +285,8 @@ psql.RawQuery(`SELECT * FROM USERS WHERE id = ? and name = ?`, 100, "Stephen")
 // OR
 // -----
 psql.Select(
-    qm.From("users"),
-    qm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
+    sm.From("users"),
+    sm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
 )
 ```
 

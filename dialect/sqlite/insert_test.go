@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/insert/qm"
+	"github.com/stephenafamo/bob/dialect/sqlite/im"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -12,17 +12,17 @@ func TestInsert(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple insert": {
 			Query: sqlite.Insert(
-				qm.Into("films"),
-				qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Into("films"),
+				im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
 		},
 		"bulk insert": {
 			Query: sqlite.Insert(
-				qm.Into("films"),
-				qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Into("films"),
+				im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			ExpectedSQL: `INSERT INTO films VALUES
 				(?1, ?2, ?3, ?4, ?5, ?6),
@@ -34,19 +34,19 @@ func TestInsert(t *testing.T) {
 		},
 		"on conflict do nothing": {
 			Query: sqlite.Insert(
-				qm.Into("films"),
-				qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.OnConflict().DoNothing(),
+				im.Into("films"),
+				im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.OnConflict().DoNothing(),
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT DO NOTHING",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
 		},
 		"upsert": {
 			Query: sqlite.Insert(
-				qm.IntoAs("distributors", "d", "did", "dname"),
-				qm.Values(sqlite.Arg(8, "Anvil Distribution")),
-				qm.Values(sqlite.Arg(9, "Sentry Distribution")),
-				qm.OnConflict("did").DoUpdate().
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(sqlite.Arg(8, "Anvil Distribution")),
+				im.Values(sqlite.Arg(9, "Sentry Distribution")),
+				im.OnConflict("did").DoUpdate().
 					SetExcluded("dname").
 					Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
 			),
@@ -59,10 +59,10 @@ func TestInsert(t *testing.T) {
 		},
 		"or replace": {
 			Query: sqlite.Insert(
-				qm.OrReplace(),
-				qm.Into("distributors", "did", "dname"),
-				qm.Values(sqlite.Arg(8, "Anvil Distribution")),
-				qm.Values(sqlite.Arg(9, "Sentry Distribution")),
+				im.OrReplace(),
+				im.Into("distributors", "did", "dname"),
+				im.Values(sqlite.Arg(8, "Anvil Distribution")),
+				im.Values(sqlite.Arg(9, "Sentry Distribution")),
 			),
 			ExpectedSQL: `INSERT OR REPLACE INTO distributors ("did", "dname")
 				VALUES (?1, ?2), (?3, ?4)`,

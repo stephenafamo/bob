@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/psql"
-	"github.com/stephenafamo/bob/dialect/psql/insert/qm"
+	"github.com/stephenafamo/bob/dialect/psql/im"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -12,17 +12,17 @@ func TestInsert(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple insert": {
 			Query: psql.Insert(
-				qm.Into("films"),
-				qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Into("films"),
+				im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6)",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
 		},
 		"bulk insert": {
 			Query: psql.Insert(
-				qm.Into("films"),
-				qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Into("films"),
+				im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 			),
 			ExpectedSQL: `INSERT INTO films VALUES
 				($1, $2, $3, $4, $5, $6),
@@ -34,10 +34,10 @@ func TestInsert(t *testing.T) {
 		},
 		"upsert": {
 			Query: psql.Insert(
-				qm.IntoAs("distributors", "d", "did", "dname"),
-				qm.Values(psql.Arg(8, "Anvil Distribution")),
-				qm.Values(psql.Arg(9, "Sentry Distribution")),
-				qm.OnConflict("did").DoUpdate().
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.Values(psql.Arg(9, "Sentry Distribution")),
+				im.OnConflict("did").DoUpdate().
 					Set("dname", psql.Concat(
 						"EXCLUDED.dname", psql.S(" (formerly "), "d.dname", psql.S(")"),
 					)).
@@ -52,10 +52,10 @@ func TestInsert(t *testing.T) {
 		},
 		"upsert on constraint": {
 			Query: psql.Insert(
-				qm.IntoAs("distributors", "d", "did", "dname"),
-				qm.Values(psql.Arg(8, "Anvil Distribution")),
-				qm.Values(psql.Arg(9, "Sentry Distribution")),
-				qm.OnConflictOnConstraint("distributors_pkey").
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.Values(psql.Arg(9, "Sentry Distribution")),
+				im.OnConflictOnConstraint("distributors_pkey").
 					DoUpdate().
 					SetExcluded("dname").
 					Where(psql.X("d.zipcode").NE(psql.S("21201"))),
@@ -70,9 +70,9 @@ func TestInsert(t *testing.T) {
 		"on conflict do nothing": {
 			Doc: "Upsert DO NOTHING",
 			Query: psql.Insert(
-				qm.Into("films"),
-				qm.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-				qm.OnConflict().DoNothing(),
+				im.Into("films"),
+				im.Values(psql.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+				im.OnConflict().DoNothing(),
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},

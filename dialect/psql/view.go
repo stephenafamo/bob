@@ -8,7 +8,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/select/qm"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -78,7 +78,7 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 
 // Adds table name et al
 func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := Select(qm.From(t.NameAs(ctx)))
+	q := Select(sm.From(t.NameAs(ctx)))
 
 	preloadMods := make([]preloader, 0, len(queryMods))
 	for _, m := range queryMods {

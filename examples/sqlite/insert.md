@@ -19,8 +19,8 @@ Code:
 
 ```go
 sqlite.Insert(
-  qm.Into("films"),
-  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -53,9 +53,9 @@ Code:
 
 ```go
 sqlite.Insert(
-  qm.Into("films"),
-  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Into("films"),
+  im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
 )
 ```
 
@@ -80,9 +80,9 @@ Code:
 
 ```go
 sqlite.Insert(
-  qm.Into("films"),
-  qm.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
-  qm.OnConflict().DoNothing(),
+  im.Into("films"),
+  im.Values(sqlite.Arg("UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins")),
+  im.OnConflict().DoNothing(),
 )
 ```
 
@@ -94,7 +94,7 @@ SQL:
 INSERT INTO distributors AS "d" ("did", "dname")
 VALUES (?1, ?2), (?3, ?4)
 ON CONFLICT (did) DO UPDATE
-SET "dname" = EXCLUDED."dname"
+SET "dname" = EXCLUDED. "dname"
 WHERE (d.zipcode <> '21201')
 ```
 
@@ -109,10 +109,10 @@ Code:
 
 ```go
 sqlite.Insert(
-  qm.IntoAs("distributors", "d", "did", "dname"),
-  qm.Values(sqlite.Arg(8, "Anvil Distribution")),
-  qm.Values(sqlite.Arg(9, "Sentry Distribution")),
-  qm.OnConflict("did").DoUpdate().
+  im.IntoAs("distributors", "d", "did", "dname"),
+  im.Values(sqlite.Arg(8, "Anvil Distribution")),
+  im.Values(sqlite.Arg(9, "Sentry Distribution")),
+  im.OnConflict("did").DoUpdate().
     SetExcluded("dname").
     Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
 )
@@ -138,9 +138,9 @@ Code:
 
 ```go
 sqlite.Insert(
-  qm.OrReplace(),
-  qm.Into("distributors", "did", "dname"),
-  qm.Values(sqlite.Arg(8, "Anvil Distribution")),
-  qm.Values(sqlite.Arg(9, "Sentry Distribution")),
+  im.OrReplace(),
+  im.Into("distributors", "did", "dname"),
+  im.Values(sqlite.Arg(8, "Anvil Distribution")),
+  im.Values(sqlite.Arg(9, "Sentry Distribution")),
 )
 ```

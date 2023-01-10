@@ -16,9 +16,9 @@ Code:
 
 ```go
 mysql.Select(
-  qm.Columns("id", "name"),
-  qm.From("users"),
-  qm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
 )
 ```
 
@@ -40,10 +40,10 @@ Code:
 
 ```go
 mysql.Select(
-  qm.Columns("id", "name"),
-  qm.Distinct(),
-  qm.From("users"),
-  qm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+  sm.Columns("id", "name"),
+  sm.Distinct(),
+  sm.From("users"),
+  sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
 )
 ```
 
@@ -59,10 +59,10 @@ Code:
 
 ```go
 mysql.Select(
-  qm.From(
+  sm.From(
     mysql.F("generate_series", 1, 3),
   ).As("x", "p", "q", "s"),
-  qm.OrderBy("p"),
+  sm.OrderBy("p"),
 )
 ```
 
@@ -88,9 +88,9 @@ Code:
 
 ```go
 mysql.Select(
-  qm.Columns("status", mysql.F("avg", "difference")),
-  qm.From(mysql.Select(
-    qm.Columns(
+  sm.Columns("status", mysql.F("avg", "difference")),
+  sm.From(mysql.Select(
+    sm.Columns(
       "status",
       mysql.F("LEAD", "created_date", 1, mysql.F("NOW")).
         Over("").
@@ -98,9 +98,9 @@ mysql.Select(
         OrderBy("created_date").
         Minus("created_date").
         As("difference")),
-    qm.From("presales_presalestatus")),
+    sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
-  qm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
-  qm.GroupBy("status"),
+  sm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
+  sm.GroupBy("status"),
 )
 ```

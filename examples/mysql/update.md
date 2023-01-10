@@ -15,9 +15,9 @@ Code:
 
 ```go
 mysql.Update(
-  qm.Table("films"),
-  qm.SetArg("kind", "Dramatic"),
-  qm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  um.Table("films"),
+  um.SetArg("kind", "Dramatic"),
+  um.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
 )
 ```
 
@@ -40,10 +40,10 @@ Code:
 
 ```go
 mysql.Update(
-  qm.Table("employees, accounts"),
-  qm.Set("sales_count", "sales_count + 1"),
-  qm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
-  qm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
+  um.Table("employees, accounts"),
+  um.Set("sales_count", "sales_count + 1"),
+  um.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
+  um.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
 )
 ```
 
@@ -64,12 +64,12 @@ Code:
 
 ```go
 mysql.Update(
-  qm.Table("employees"),
-  qm.Set("sales_count", "sales_count + 1"),
-  qm.Where(mysql.X("id").EQ(mysql.P(mysql.Select(
-    selectQM.Columns("sales_person"),
-    selectQM.From("accounts"),
-    selectQM.Where(mysql.X("name").EQ(mysql.Arg("Acme Corporation"))),
+  um.Table("employees"),
+  um.Set("sales_count", "sales_count + 1"),
+  um.Where(mysql.X("id").EQ(mysql.P(mysql.Select(
+    sm.Columns("sales_person"),
+    sm.From("accounts"),
+    sm.Where(mysql.X("name").EQ(mysql.Arg("Acme Corporation"))),
   )))),
 )
 ```
