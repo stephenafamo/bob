@@ -37,8 +37,10 @@ type (
 		Enums    []Enum
 	}
 	Config struct {
-		Includes []string
-		Excludes []string
+		// List of tables that will be included. Others are ignored
+		Only map[string][]string
+		// List of tables that will be should be ignored. Others are included
+		Except map[string][]string
 
 		// The name you wish to assign to your generated models package
 		Pkgname   string
@@ -93,16 +95,15 @@ func (d *Driver) tables() []drivers.Table {
 	models := d.datamodel.Models
 	tables := make([]drivers.Table, 0, len(models))
 
-	tableInclude := drivers.TablesFromList(d.config.Includes)
-	tableExclude := drivers.TablesFromList(d.config.Excludes)
+	tblFilter := drivers.ParseTableFilter(d.config.Only, d.config.Except)
 
 	colFilter := drivers.ParseColumnFilter(d.tableNames(drivers.Filter{
-		Include: tableInclude,
-		Exclude: tableExclude,
-	}), d.config.Includes, d.config.Excludes)
+		Only:   tblFilter.Only,
+		Except: tblFilter.Except,
+	}), d.config.Only, d.config.Except)
 
 	for _, model := range models {
-		if drivers.Skip(model.TableName(), tableInclude, tableExclude) {
+		if drivers.Skip(model.TableName(), tblFilter.Only, tblFilter.Except) {
 			continue
 		}
 
@@ -129,7 +130,7 @@ func (d *Driver) tables() []drivers.Table {
 	// This just sets the default Alias of relationships based on the field name
 	// we do this after building the relationships based on the keys
 	for _, model := range models {
-		if drivers.Skip(model.TableName(), tableInclude, tableExclude) {
+		if drivers.Skip(model.TableName(), tblFilter.Only, tblFilter.Except) {
 			continue
 		}
 
@@ -146,8 +147,8 @@ func (d *Driver) tables() []drivers.Table {
 		tableName := model.TableName()
 		allfilter := colFilter["*"]
 		filter := colFilter[tableName]
-		include := append(allfilter.Include, filter.Include...)
-		exclude := append(allfilter.Exclude, filter.Exclude...)
+		include := append(allfilter.Only, filter.Only...)
+		exclude := append(allfilter.Except, filter.Except...)
 		for _, field := range model.Fields {
 			if drivers.Skip(field.Name, include, exclude) {
 				continue
@@ -174,7 +175,7 @@ func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
 	names := make([]string, 0, len(models))
 
 	for _, m := range models {
-		if drivers.Skip(m.TableName(), tableFilter.Include, tableFilter.Exclude) {
+		if drivers.Skip(m.TableName(), tableFilter.Only, tableFilter.Except) {
 			continue
 		}
 
@@ -228,8 +229,8 @@ func (p *Driver) getEnums() []Enum {
 func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []drivers.Column {
 	allfilter := colFilter["*"]
 	filter := colFilter[model.TableName()]
-	include := append(allfilter.Include, filter.Include...)
-	exclude := append(allfilter.Exclude, filter.Exclude...)
+	include := append(allfilter.Only, filter.Only...)
+	exclude := append(allfilter.Except, filter.Except...)
 
 	columns := make([]drivers.Column, 0, len(model.Fields))
 	for _, field := range model.Fields {
@@ -371,8 +372,8 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 	tableName := model.TableName()
 	allfilter := colFilter["*"]
 	filter := colFilter[tableName]
-	include := append(allfilter.Include, filter.Include...)
-	exclude := append(allfilter.Exclude, filter.Exclude...)
+	include := append(allfilter.Only, filter.Only...)
+	exclude := append(allfilter.Except, filter.Except...)
 
 	// If it is a composite primary key defined on the model
 	if len(model.PrimaryKey.Fields) > 0 {

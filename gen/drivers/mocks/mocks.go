@@ -21,7 +21,7 @@ func (m *MockDriver) Assemble(ctx context.Context) (*drivers.DBInfo[any], error)
 		}
 	}()
 
-	dbinfo.Tables, err = drivers.Tables(ctx, m, 1, nil, []string{"hangars"})
+	dbinfo.Tables, err = drivers.Tables(ctx, m, 1, nil, map[string][]string{"hangars": nil})
 	if err != nil {
 		return nil, err
 	}
@@ -39,17 +39,12 @@ func (m *MockDriver) TablesInfo(_ context.Context, filter drivers.Filter) (drive
 		{Key: "hangars", Name: "hangars"},
 		{Key: "languages", Name: "languages"},
 		{Key: "pilot_languages", Name: "pilot_languages"},
-	}, nil
-}
-
-func (m *MockDriver) ViewsInfo(_ context.Context, filter drivers.Filter) (drivers.TablesInfo, error) {
-	return []drivers.TableInfo{
-		{Name: "pilots_with_jets"},
+		{Key: "pilots_with_jets", Name: "pilots_with_jets"},
 	}, nil
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) TableColumns(_ context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+func (m *MockDriver) TableDetails(_ context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var cols []drivers.Column //nolint:prealloc
 
 	for _, col := range map[string][]drivers.Column{
@@ -88,18 +83,6 @@ func (m *MockDriver) TableColumns(_ context.Context, info drivers.TableInfo, fil
 			{Name: "pilot_id", Type: "int", DBType: "integer"},
 			{Name: "language_id", Type: "int", DBType: "integer"},
 		},
-	}[info.Key] {
-		cols = append(cols, m.translateColumnType(col))
-	}
-
-	return info.Schema, info.Name, cols, nil
-}
-
-// ViewColumns returns a list of mock columns
-func (m *MockDriver) ViewColumns(_ context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
-	var cols []drivers.Column //nolint:prealloc
-
-	for _, col := range map[string][]drivers.Column{
 		"pilots_with_jets": {
 			{Name: "pilot_name", Type: "string", DBType: "character"},
 			{Name: "jet_name", Type: "string", DBType: "character", Nullable: false},

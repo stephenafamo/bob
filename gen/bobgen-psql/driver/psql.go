@@ -65,10 +65,9 @@ type Config struct {
 	// useful for multi-tenant setups
 	SharedSchema string
 	// List of tables that will be included. Others are ignored
-	Only []string
+	Only map[string][]string
 	// List of tables that will be should be ignored. Others are included
-	Except   map[string][]string
-	Excludes []string
+	Except map[string][]string
 	// How many tables to fetch in parallel
 	Concurrency int
 
@@ -116,7 +115,7 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, errors.Wrapf(err, "unable to load enums")
 	}
 
-	dbinfo.Tables, err = drivers.Tables(ctx, d, d.config.Concurrency, d.config.Only, d.config.Excludes)
+	dbinfo.Tables, err = drivers.Tables(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
 	if err != nil {
 		return nil, err
 	}
@@ -157,8 +156,8 @@ func (d *Driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 	  v.table_schema = ANY ($2)`, keyClause)
 	args := []any{d.config.SharedSchema, d.config.Schemas}
 
-	include := tableFilter.Include
-	exclude := tableFilter.Exclude
+	include := tableFilter.Only
+	exclude := tableFilter.Except
 
 	if len(include) > 0 {
 		query += fmt.Sprintf(" and %s in (%s)", keyClause, strmangle.Placeholders(true, len(include), 3, 1))
@@ -269,8 +268,8 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	allfilter := colFilter["*"]
 	filter := colFilter[info.Key]
-	include := append(allfilter.Include, filter.Include...)
-	exclude := append(allfilter.Exclude, filter.Exclude...)
+	include := append(allfilter.Only, filter.Only...)
+	exclude := append(allfilter.Except, filter.Except...)
 
 	if len(include) > 0 || len(exclude) > 0 {
 		query += " where "

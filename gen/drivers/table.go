@@ -2,7 +2,6 @@ package drivers
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/stephenafamo/bob/orm"
 )
@@ -84,72 +83,38 @@ func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Re
 	return orm.Relationship{}
 }
 
-// TablesFromList takes a whitelist or blacklist and returns
-// the table names.
-func TablesFromList(list []string) []string {
-	if len(list) == 0 {
-		return nil
-	}
-
-	var tables []string
-	for _, i := range list {
-		splits := strings.Split(i, ".")
-
-		if len(splits) == 1 {
-			tables = append(tables, splits[0])
-		}
-	}
-
-	return tables
-}
-
 type Filter struct {
-	Include []string
-	Exclude []string
+	Only   []string
+	Except []string
 }
 
 type ColumnFilter map[string]Filter
 
-// This takes a list of table names with the includes and excludes
-func ParseColumnFilter(tables, includes, excludes []string) ColumnFilter {
-	colFilter := make(ColumnFilter, len(tables)+1)
-
-	if len(tables) == 0 {
-		return colFilter
-	}
-	colFilter["*"] = Filter{
-		Include: columnsFromList(includes, "*"),
-		Exclude: columnsFromList(excludes, "*"),
+func ParseTableFilter(only, except map[string][]string) Filter {
+	var filter Filter
+	for name := range only {
+		filter.Only = append(filter.Only, name)
 	}
 
-	for _, t := range tables {
-		colFilter[t] = Filter{
-			Include: columnsFromList(includes, t),
-			Exclude: columnsFromList(excludes, t),
-		}
+	for name := range except {
+		filter.Except = append(filter.Except, name)
 	}
 
-	return colFilter
+	return filter
 }
 
-// like ColumnsFromList, but does not include wildcard columns
-func columnsFromList(list []string, tablename string) []string {
-	if len(list) == 0 {
-		return nil
+func ParseColumnFilter(tables []string, only, except map[string][]string) ColumnFilter {
+	global := Filter{
+		Only:   only["*"],
+		Except: except["*"],
 	}
 
-	var columns []string
-	for _, i := range list {
-		splits := strings.Split(i, ".")
-
-		if len(splits) != 2 {
-			continue
-		}
-
-		if splits[0] == tablename {
-			columns = append(columns, splits[1])
+	colFilter := make(ColumnFilter, len(tables))
+	for _, t := range tables {
+		colFilter[t] = Filter{
+			Only:   append(global.Only, only[t]...),
+			Except: append(global.Except, except[t]...),
 		}
 	}
-
-	return columns
+	return colFilter
 }

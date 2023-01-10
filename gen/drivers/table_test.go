@@ -1,7 +1,6 @@
 package drivers
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -99,14 +98,4 @@ func TestCanSoftDelete(t *testing.T) {
 	}
 }
 
-func TestTablesFromList(t *testing.T) {
-	t.Parallel()
 
-	if TablesFromList(nil) != nil {
-		t.Error("expected a shortcut to getting nil back")
-	}
-
-	if got := TablesFromList([]string{"a.b", "b", "c.d"}); !reflect.DeepEqual(got, []string{"b"}) {
-		t.Error("list was wrong:", got)
-	}
-}

@@ -53,7 +53,7 @@ type Constructor interface {
 
 // TablesConcurrently is a concurrent version of Tables. It returns the
 // metadata for all tables, minus the tables specified in the excludes.
-func Tables(ctx context.Context, c Constructor, concurrency int, includes, excludes []string) ([]Table, error) {
+func Tables(ctx context.Context, c Constructor, concurrency int, only, except map[string][]string) ([]Table, error) {
 	var err error
 	var ret []Table
 
@@ -61,17 +61,14 @@ func Tables(ctx context.Context, c Constructor, concurrency int, includes, exclu
 		concurrency = 1
 	}
 
-	tableFilter := Filter{
-		Include: TablesFromList(includes),
-		Exclude: TablesFromList(excludes),
-	}
+	tableFilter := ParseTableFilter(only, except)
 
 	var tablesInfo TablesInfo
 	if tablesInfo, err = c.TablesInfo(ctx, tableFilter); err != nil {
 		return nil, fmt.Errorf("unable to get table names: %w", err)
 	}
 
-	colFilter := ParseColumnFilter(tablesInfo.Keys(), includes, excludes)
+	colFilter := ParseColumnFilter(tablesInfo.Keys(), only, except)
 
 	ret, err = tables(ctx, c, concurrency, tablesInfo, colFilter)
 	if err != nil {

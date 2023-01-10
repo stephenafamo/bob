@@ -40,7 +40,7 @@ func TestNewWithAliases(t *testing.T) {
 			DownPlural:   fmt.Sprintf("alias%vThings", i),
 			DownSingular: fmt.Sprintf("alias%vThing", i),
 		}
-		_, _, columns, err := mockDriver.TableColumns(ctx, drivers.TableInfo{
+		_, _, columns, err := mockDriver.TableDetails(ctx, drivers.TableInfo{
 			Key:    table.Key,
 			Schema: table.Schema,
 			Name:   table.Name,
