@@ -136,11 +136,7 @@ func (d Driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 		return table, err
 	}
 
-	table.PKey, err = d.primaryKey(ctx, schema, name, tinfo)
-	if err != nil {
-		return table, err
-	}
-
+	table.PKey = d.primaryKey(schema, name, tinfo)
 	table.FKeys, err = d.foreignKeys(ctx, schema, name)
 	if err != nil {
 		return table, err
@@ -159,7 +155,7 @@ func (d Driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []info) ([]drivers.Column, error) {
-	var columns []drivers.Column
+	var columns []drivers.Column //nolint:prealloc
 
 	// get all indexes
 	uniques, err := d.uniques(ctx, schema, tableName)
@@ -167,6 +163,7 @@ func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 		return nil, err
 	}
 
+	//nolint:gosec
 	query := fmt.Sprintf("SELECT 1 FROM '%s'.sqlite_master WHERE type = 'table' AND name = ? AND sql LIKE '%%AUTOINCREMENT%%'", schema)
 	result, err := d.conn.Query(query, tableName)
 	if err != nil {
@@ -256,7 +253,7 @@ func (s Driver) tableInfo(ctx context.Context, schema, tableName string) ([]info
 }
 
 // primaryKey looks up the primary key for a table.
-func (s Driver) primaryKey(ctx context.Context, schema, tableName string, tinfo []info) (*drivers.PrimaryKey, error) {
+func (s Driver) primaryKey(schema, tableName string, tinfo []info) *drivers.PrimaryKey {
 	var cols []string
 	for _, c := range tinfo {
 		if c.Pk == 1 {
@@ -265,13 +262,13 @@ func (s Driver) primaryKey(ctx context.Context, schema, tableName string, tinfo 
 	}
 
 	if len(cols) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	return &drivers.PrimaryKey{
 		Name:    fmt.Sprintf("pk_%s_%s", schema, tableName),
 		Columns: cols,
-	}, nil
+	}
 }
 
 // foreignKeys retrieves the foreign keys for a given table name.
