@@ -33,6 +33,13 @@ type (
 	}
 )
 
+type Enum struct {
+	Schema string
+	Name   string
+	Type   string
+	Values pq.StringArray
+}
+
 func New(config Config) Interface {
 	return &Driver{config: config}
 }
@@ -114,10 +121,12 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	dbinfo.ExtraInfo.Enums, err = d.Enums()
-	if err != nil {
-		return nil, err
-	}
+	dbinfo.ExtraInfo.Enums = make([]Enum, len(d.enums))
+	copy(dbinfo.ExtraInfo.Enums, d.enums)
+
+	sort.Slice(dbinfo.ExtraInfo.Enums, func(i, j int) bool {
+		return dbinfo.ExtraInfo.Enums[i].Name < dbinfo.ExtraInfo.Enums[j].Name
+	})
 
 	return dbinfo, err
 }
@@ -132,50 +141,12 @@ func (d *Driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 	  %s AS "key" ,
 	  table_schema AS "schema",
 	  table_name AS "name"
-	FROM
-	  information_schema.tables
-	WHERE
-	  table_schema = ANY($2)
-	  AND table_type = 'BASE TABLE'`, keyClause)
-
-	args := []any{d.config.SharedSchema, d.config.Schemas}
-
-	include := tableFilter.Include
-	exclude := tableFilter.Exclude
-
-	if len(include) > 0 {
-		query += fmt.Sprintf(" and %s in (%s)", keyClause, strmangle.Placeholders(true, len(include), 3, 1))
-		for _, w := range include {
-			args = append(args, w)
-		}
-	}
-
-	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and %s not in (%s)", keyClause, strmangle.Placeholders(true, len(exclude), 3+len(include), 1))
-		for _, w := range exclude {
-			args = append(args, w)
-		}
-	}
-
-	query += ` order by table_name;`
-
-	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
-}
-
-// ViewNames connects to the postgres database and
-// retrieves all view names from the information_schema where the
-// view schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) ViewsInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {
-	query := fmt.Sprintf(`SELECT
-	  %s AS "key" ,
-	  table_schema AS "schema",
-	  table_name AS "name"
 	FROM (
 	  SELECT
 		table_name,
 		table_schema
 	  FROM
-		information_schema.views
+		information_schema.tables
 	  UNION
 	  SELECT
 		matviewname AS table_name,
@@ -208,75 +179,8 @@ func (d *Driver) ViewsInfo(ctx context.Context, tableFilter drivers.Filter) (dri
 	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
 }
 
-func (d *Driver) loadEnums(ctx context.Context) error {
-	if d.enums != nil {
-		return nil
-	}
-
-	query := `SELECT pg_namespace.nspname AS schema, pg_type.typname AS name, array_agg(pg_enum.enumlabel order by pg_enum.enumsortorder) AS values
-		FROM pg_type
-		JOIN pg_enum ON pg_enum.enumtypid = pg_type.oid
-		JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
-		WHERE pg_namespace.nspname = ANY($1)
-		GROUP BY schema, name`
-
-	var err error
-	d.enums, err = stdscan.All(
-		ctx, d.conn,
-		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
-			return func(r *scan.Row) (any, error) {
-					var e Enum
-					r.ScheduleScan("schema", &e.Schema)
-					r.ScheduleScan("name", &e.Name)
-					r.ScheduleScan("values", &e.Values)
-					return &e, nil
-				}, func(a any) (Enum, error) {
-					e := a.(*Enum)
-					if e.Schema != "" && e.Schema != d.config.SharedSchema {
-						e.Type = strmangle.TitleCase(e.Schema + "_" + e.Name)
-					} else {
-						e.Type = strmangle.TitleCase(e.Name)
-					}
-
-					return *e, nil
-				}
-		},
-		query, d.config.Schemas,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type Enum struct {
-	Schema string
-	Name   string
-	Type   string
-	Values pq.StringArray
-}
-
-func (d *Driver) Enums() ([]Enum, error) {
-	enums := make([]Enum, len(d.enums))
-	copy(enums, d.enums)
-
-	sort.Slice(enums, func(i, j int) bool {
-		return enums[i].Name < enums[j].Name
-	})
-
-	return enums, nil
-}
-
-func (d *Driver) ViewColumns(ctx context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
-	return d.TableColumns(ctx, info, filter)
-}
-
-// TableColumns takes a table name and attempts to retrieve the table information
-// from the database information_schema.columns. It retrieves the column names
-// and column types and returns those as a []Column after translateColumnType()
-// converts the SQL types to Go types, for example: "varchar" to "string"
-func (d *Driver) TableColumns(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+// Load details about a single table
+func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var columns []drivers.Column
 	args := []interface{}{info.Schema, info.Name}
 
@@ -453,4 +357,46 @@ func (d *Driver) TableColumns(ctx context.Context, info drivers.TableInfo, colFi
 	}
 
 	return schema, info.Name, columns, nil
+}
+
+func (d *Driver) loadEnums(ctx context.Context) error {
+	if d.enums != nil {
+		return nil
+	}
+
+	query := `SELECT pg_namespace.nspname AS schema, pg_type.typname AS name, array_agg(pg_enum.enumlabel order by pg_enum.enumsortorder) AS values
+		FROM pg_type
+		JOIN pg_enum ON pg_enum.enumtypid = pg_type.oid
+		JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
+		WHERE pg_namespace.nspname = ANY($1)
+		GROUP BY schema, name`
+
+	var err error
+	d.enums, err = stdscan.All(
+		ctx, d.conn,
+		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
+			return func(r *scan.Row) (any, error) {
+					var e Enum
+					r.ScheduleScan("schema", &e.Schema)
+					r.ScheduleScan("name", &e.Name)
+					r.ScheduleScan("values", &e.Values)
+					return &e, nil
+				}, func(a any) (Enum, error) {
+					e := a.(*Enum)
+					if e.Schema != "" && e.Schema != d.config.SharedSchema {
+						e.Type = strmangle.TitleCase(e.Schema + "_" + e.Name)
+					} else {
+						e.Type = strmangle.TitleCase(e.Name)
+					}
+
+					return *e, nil
+				}
+		},
+		query, d.config.Schemas,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
