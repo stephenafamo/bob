@@ -211,7 +211,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			if o.{{$fromColGet}} != rel.{{$toColGet}} {
 			  continue
 			}
-			{{- end}}
+			{{end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}

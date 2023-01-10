@@ -57,7 +57,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		for _, o := range os {
 			{{$fromCol}}Args = append({{$fromCol}}Args, {{$.Dialect}}.Arg(o.{{$fromCol}}))
 		}
-	{{- end}}
+	{{end}}
 
 	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
 		{{range $index, $local := $side.FromColumns -}}
