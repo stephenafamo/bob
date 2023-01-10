@@ -2,67 +2,66 @@ package im
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func Into(name any, columns ...string) bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Table = name
 		i.Columns = columns
 	})
 }
 
-func LowPriority() bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func LowPriority() bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func HighPriority() bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func HighPriority() bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
-func Ignore() bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func Ignore() bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func Partition(partitions ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Partition[*mysql.InsertQuery](partitions...)
+func Partition(partitions ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.Partition[*dialect.InsertQuery](partitions...)
 }
 
-func Values(clauses ...any) bob.Mod[*mysql.InsertQuery] {
-	return mods.Values[*mysql.InsertQuery](clauses)
+func Values(clauses ...any) bob.Mod[*dialect.InsertQuery] {
+	return mods.Values[*dialect.InsertQuery](clauses)
 }
 
-func Rows(rows ...[]any) bob.Mod[*mysql.InsertQuery] {
-	return mods.Rows[*mysql.InsertQuery](rows)
+func Rows(rows ...[]any) bob.Mod[*dialect.InsertQuery] {
+	return mods.Rows[*dialect.InsertQuery](rows)
 }
 
 // Insert from a query
-func Query(q bob.Query) bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Query = q
 	})
 }
 
 // Insert with Set a = b
-func Set(col string, val any) bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
-		i.Sets = append(i.Sets, mysql.Set{
+func Set(col string, val any) bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+		i.Sets = append(i.Sets, dialect.Set{
 			Col: col,
 			Val: val,
 		})
 	})
 }
 
-func As(rowAlias string, colAlias ...string) bob.Mod[*mysql.InsertQuery] {
-	return mods.QueryModFunc[*mysql.InsertQuery](func(i *mysql.InsertQuery) {
+func As(rowAlias string, colAlias ...string) bob.Mod[*dialect.InsertQuery] {
+	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.RowAlias = rowAlias
 		i.ColumnAlias = colAlias
 	})
@@ -73,14 +72,14 @@ func OnDuplicateKeyUpdate() *dupKeyUpdater {
 }
 
 type dupKeyUpdater struct {
-	sets []mysql.Set
+	sets []dialect.Set
 }
 
-func (s dupKeyUpdater) Apply(q *mysql.InsertQuery) {
+func (s dupKeyUpdater) Apply(q *dialect.InsertQuery) {
 	q.DuplicateKeyUpdate = append(q.DuplicateKeyUpdate, s.sets...)
 }
 
 func (s *dupKeyUpdater) Set(col string, val any) *dupKeyUpdater {
-	s.sets = append(s.sets, mysql.Set{Col: col, Val: val})
+	s.sets = append(s.sets, dialect.Set{Col: col, Val: val})
 	return s
 }

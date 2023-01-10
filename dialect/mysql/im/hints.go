@@ -2,154 +2,153 @@ package im
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
-func QBName(name string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.QBName[*mysql.InsertQuery](name)
+func QBName(name string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.QBName[*dialect.InsertQuery](name)
 }
 
-func SetVar(statement string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.SetVar[*mysql.InsertQuery](statement)
+func SetVar(statement string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.SetVar[*dialect.InsertQuery](statement)
 }
 
-func MaxExecutionTime(n int) bob.Mod[*mysql.InsertQuery] {
-	return dialect.MaxExecutionTime[*mysql.InsertQuery](n)
+func MaxExecutionTime(n int) bob.Mod[*dialect.InsertQuery] {
+	return dialect.MaxExecutionTime[*dialect.InsertQuery](n)
 }
 
-func ResourceGroup(name string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.ResourceGroup[*mysql.InsertQuery](name)
+func ResourceGroup(name string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.ResourceGroup[*dialect.InsertQuery](name)
 }
 
-func BKA(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.BKA[*mysql.InsertQuery](tables...)
+func BKA(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.BKA[*dialect.InsertQuery](tables...)
 }
 
-func NoBKA(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoBKA[*mysql.InsertQuery](tables...)
+func NoBKA(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoBKA[*dialect.InsertQuery](tables...)
 }
 
-func BNL(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.BNL[*mysql.InsertQuery](tables...)
+func BNL(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.BNL[*dialect.InsertQuery](tables...)
 }
 
-func NoBNL(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoBNL[*mysql.InsertQuery](tables...)
+func NoBNL(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoBNL[*dialect.InsertQuery](tables...)
 }
 
-func DerivedConditionPushdown(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.DerivedConditionPushdown[*mysql.InsertQuery](tables...)
+func DerivedConditionPushdown(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.DerivedConditionPushdown[*dialect.InsertQuery](tables...)
 }
 
-func NoDerivedConditionPushdown(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoDerivedConditionPushdown[*mysql.InsertQuery](tables...)
+func NoDerivedConditionPushdown(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoDerivedConditionPushdown[*dialect.InsertQuery](tables...)
 }
 
-func HashJoin(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.HashJoin[*mysql.InsertQuery](tables...)
+func HashJoin(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.HashJoin[*dialect.InsertQuery](tables...)
 }
 
-func NoHashJoin(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoHashJoin[*mysql.InsertQuery](tables...)
+func NoHashJoin(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoHashJoin[*dialect.InsertQuery](tables...)
 }
 
-func Merge(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Merge[*mysql.InsertQuery](tables...)
+func Merge(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.Merge[*dialect.InsertQuery](tables...)
 }
 
-func NoMerge(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoMerge[*mysql.InsertQuery](tables...)
+func NoMerge(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoMerge[*dialect.InsertQuery](tables...)
 }
 
-func Index(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Index[*mysql.InsertQuery](tables...)
+func Index(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.Index[*dialect.InsertQuery](tables...)
 }
 
-func NoIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoIndex[*mysql.InsertQuery](tables...)
+func NoIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoIndex[*dialect.InsertQuery](tables...)
 }
 
-func GroupIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.GroupIndex[*mysql.InsertQuery](tables...)
+func GroupIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.GroupIndex[*dialect.InsertQuery](tables...)
 }
 
-func NoGroupIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoGroupIndex[*mysql.InsertQuery](tables...)
+func NoGroupIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoGroupIndex[*dialect.InsertQuery](tables...)
 }
 
-func JoinIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.JoinIndex[*mysql.InsertQuery](tables...)
+func JoinIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.JoinIndex[*dialect.InsertQuery](tables...)
 }
 
-func NoJoinIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoJoinIndex[*mysql.InsertQuery](tables...)
+func NoJoinIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoJoinIndex[*dialect.InsertQuery](tables...)
 }
 
-func OrderIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.OrderIndex[*mysql.InsertQuery](tables...)
+func OrderIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.OrderIndex[*dialect.InsertQuery](tables...)
 }
 
-func NoOrderIndex(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoOrderIndex[*mysql.InsertQuery](tables...)
+func NoOrderIndex(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoOrderIndex[*dialect.InsertQuery](tables...)
 }
 
-func IndexMerge(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.IndexMerge[*mysql.InsertQuery](tables...)
+func IndexMerge(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.IndexMerge[*dialect.InsertQuery](tables...)
 }
 
-func NoIndexMerge(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoIndexMerge[*mysql.InsertQuery](tables...)
+func NoIndexMerge(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoIndexMerge[*dialect.InsertQuery](tables...)
 }
 
-func MRR(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.MRR[*mysql.InsertQuery](tables...)
+func MRR(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.MRR[*dialect.InsertQuery](tables...)
 }
 
-func NoMRR(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoMRR[*mysql.InsertQuery](tables...)
+func NoMRR(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoMRR[*dialect.InsertQuery](tables...)
 }
 
-func NoICP(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoICP[*mysql.InsertQuery](tables...)
+func NoICP(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoICP[*dialect.InsertQuery](tables...)
 }
 
-func NoRangeOptimazation(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoRangeOptimazation[*mysql.InsertQuery](tables...)
+func NoRangeOptimazation(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoRangeOptimazation[*dialect.InsertQuery](tables...)
 }
 
-func SkipScan(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.SkipScan[*mysql.InsertQuery](tables...)
+func SkipScan(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.SkipScan[*dialect.InsertQuery](tables...)
 }
 
-func NoSkipScan(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoSkipScan[*mysql.InsertQuery](tables...)
+func NoSkipScan(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoSkipScan[*dialect.InsertQuery](tables...)
 }
 
-func Semijoin(strategy ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Semijoin[*mysql.InsertQuery](strategy...)
+func Semijoin(strategy ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.Semijoin[*dialect.InsertQuery](strategy...)
 }
 
-func NoSemijoin(strategy ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.NoSemijoin[*mysql.InsertQuery](strategy...)
+func NoSemijoin(strategy ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.NoSemijoin[*dialect.InsertQuery](strategy...)
 }
 
-func Subquery(strategy string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.Subquery[*mysql.InsertQuery](strategy)
+func Subquery(strategy string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.Subquery[*dialect.InsertQuery](strategy)
 }
 
-func JoinFixedOrder(name string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.JoinFixedOrder[*mysql.InsertQuery](name)
+func JoinFixedOrder(name string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.JoinFixedOrder[*dialect.InsertQuery](name)
 }
 
-func JoinOrder(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.JoinOrder[*mysql.InsertQuery](tables...)
+func JoinOrder(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.JoinOrder[*dialect.InsertQuery](tables...)
 }
 
-func JoinPrefix(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.JoinPrefix[*mysql.InsertQuery](tables...)
+func JoinPrefix(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.JoinPrefix[*dialect.InsertQuery](tables...)
 }
 
-func JoinSuffix(tables ...string) bob.Mod[*mysql.InsertQuery] {
-	return dialect.JoinSuffix[*mysql.InsertQuery](tables...)
+func JoinSuffix(tables ...string) bob.Mod[*dialect.InsertQuery] {
+	return dialect.JoinSuffix[*dialect.InsertQuery](tables...)
 }

@@ -1,4 +1,4 @@
-package mysql
+package dialect
 
 import (
 	"io"
@@ -25,7 +25,7 @@ type Set struct {
 }
 
 func (s Set) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.Express(w, d, start, expr.OP("=", Quote(s.Col), s.Val))
+	return bob.Express(w, d, start, expr.OP("=", expr.Quote(s.Col), s.Val))
 }
 
 type partitions struct {

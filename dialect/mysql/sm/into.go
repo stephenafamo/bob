@@ -5,14 +5,14 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/mysql"
+	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
 type intoChain struct {
 	into into
 }
 
-func (i *intoChain) Apply(q *mysql.SelectQuery) {
+func (i *intoChain) Apply(q *dialect.SelectQuery) {
 	q.SetInto(i.into)
 }
 

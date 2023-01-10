@@ -2,11 +2,24 @@ package dialect
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/mods"
 )
+
+type hints struct {
+	hints []string
+}
+
+func (h *hints) AppendHint(hint string) {
+	h.hints = append(h.hints, hint)
+}
+
+func (h hints) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(w, d, start, h.hints, "/*+ ", "\n    ", " */")
+}
 
 type hintable interface{ AppendHint(string) }
 
