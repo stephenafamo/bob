@@ -81,7 +81,7 @@ type columnIdentifier struct {
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble() (*DBInfo, error) {
+func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
@@ -96,13 +96,7 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to database")
 	}
-
-	defer func() {
-		if e := d.conn.Close(); e != nil {
-			dbinfo = nil
-			err = e
-		}
-	}()
+	defer d.conn.Close()
 
 	dbinfo = &DBInfo{}
 
@@ -111,11 +105,11 @@ func (d *Driver) Assemble() (*DBInfo, error) {
 	}
 
 	// drivers.Tables call translateColumnType which uses Enums
-	if err := d.loadEnums(); err != nil {
+	if err := d.loadEnums(ctx); err != nil {
 		return nil, errors.Wrapf(err, "unable to load enums")
 	}
 
-	dbinfo.Tables, err = drivers.Tables(d, d.config.Concurrency, d.config.Only, d.config.Excludes)
+	dbinfo.Tables, err = drivers.Tables(ctx, d, d.config.Concurrency, d.config.Only, d.config.Excludes)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +127,7 @@ const keyClause = "(CASE WHEN table_schema <> $1 THEN table_schema|| '.'  ELSE '
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) TablesInfo(tableFilter drivers.Filter) (drivers.TablesInfo, error) {
+func (d *Driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {
 	query := fmt.Sprintf(`SELECT
 	  %s AS "key" ,
 	  table_schema AS "schema",
@@ -165,14 +159,13 @@ func (d *Driver) TablesInfo(tableFilter drivers.Filter) (drivers.TablesInfo, err
 
 	query += ` order by table_name;`
 
-	ctx := context.Background()
 	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
 }
 
 // ViewNames connects to the postgres database and
 // retrieves all view names from the information_schema where the
 // view schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) ViewsInfo(tableFilter drivers.Filter) (drivers.TablesInfo, error) {
+func (d *Driver) ViewsInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {
 	query := fmt.Sprintf(`SELECT
 	  %s AS "key" ,
 	  table_schema AS "schema",
@@ -212,11 +205,10 @@ func (d *Driver) ViewsInfo(tableFilter drivers.Filter) (drivers.TablesInfo, erro
 
 	query += ` order by table_name;`
 
-	ctx := context.Background()
 	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
 }
 
-func (d *Driver) loadEnums() error {
+func (d *Driver) loadEnums(ctx context.Context) error {
 	if d.enums != nil {
 		return nil
 	}
@@ -230,7 +222,7 @@ func (d *Driver) loadEnums() error {
 
 	var err error
 	d.enums, err = stdscan.All(
-		context.Background(), d.conn,
+		ctx, d.conn,
 		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
 			return func(r *scan.Row) (any, error) {
 					var e Enum
@@ -276,15 +268,15 @@ func (d *Driver) Enums() ([]Enum, error) {
 	return enums, nil
 }
 
-func (d *Driver) ViewColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
-	return d.TableColumns(info, filter)
+func (d *Driver) ViewColumns(ctx context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+	return d.TableColumns(ctx, info, filter)
 }
 
 // TableColumns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after translateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (d *Driver) TableColumns(info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+func (d *Driver) TableColumns(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var columns []drivers.Column
 	args := []interface{}{info.Schema, info.Name}
 

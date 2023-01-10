@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -202,7 +203,7 @@ func generate(root root) error {
 		ModelsPkg: modPkg,
 	}
 
-	if err := state.Run(d); err != nil {
+	if err := state.Run(context.Background(), d); err != nil {
 		fmt.Println(err) // makes the error print better
 		return err
 	}

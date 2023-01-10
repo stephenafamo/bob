@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"flag"
@@ -41,7 +42,7 @@ func TestAssemble(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := &Driver{config: tt.config, datamodel: tt.datamodel}
-			info, err := p.Assemble()
+			info, err := p.Assemble(context.Background())
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -10,7 +10,7 @@ import (
 	"github.com/stephenafamo/scan/stdscan"
 )
 
-func (d *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, error) {
+func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	ret := drivers.DBConstraints{
 		PKs:     map[string]*drivers.Constraint{},
 		FKs:     map[string][]drivers.ForeignKey{},
@@ -58,7 +58,6 @@ func (d *Driver) Constraints(_ drivers.ColumnFilter) (drivers.DBConstraints, err
 	AND con.contype IN ('p', 'f', 'u')
 	GROUP BY nsp.nspname, rel.relname, name, con.contype`
 
-	ctx := context.Background()
 	constraints, err := stdscan.All(ctx, d.conn, scan.StructMapper[struct {
 		Schema         string
 		Table          string

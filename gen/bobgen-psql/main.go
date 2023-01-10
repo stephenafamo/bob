@@ -98,5 +98,5 @@ func run(c *cli.Context) error {
 		ModelsPkg: modPkg,
 	}
 
-	return cmdState.Run(d)
+	return cmdState.Run(c.Context, d)
 }

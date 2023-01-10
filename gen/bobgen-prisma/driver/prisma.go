@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -63,7 +64,7 @@ type Driver struct {
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble() (*DBInfo, error) {
+func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 

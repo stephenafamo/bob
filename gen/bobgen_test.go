@@ -3,6 +3,7 @@ package gen
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -24,9 +25,10 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewWithAliases(t *testing.T) {
+	ctx := context.Background()
 	aliases := Aliases{Tables: make(map[string]TableAlias)}
 	mockDriver := mocks.MockDriver{}
-	info, err := mockDriver.Assemble()
+	info, err := mockDriver.Assemble(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +40,7 @@ func TestNewWithAliases(t *testing.T) {
 			DownPlural:   fmt.Sprintf("alias%vThings", i),
 			DownSingular: fmt.Sprintf("alias%vThing", i),
 		}
-		_, _, columns, err := mockDriver.TableColumns(drivers.TableInfo{
+		_, _, columns, err := mockDriver.TableColumns(ctx, drivers.TableInfo{
 			Key:    table.Key,
 			Schema: table.Schema,
 			Name:   table.Name,
@@ -112,7 +114,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}
 
-	if err = state.Run(&mocks.MockDriver{}); err != nil {
+	if err = state.Run(context.Background(), &mocks.MockDriver{}); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 

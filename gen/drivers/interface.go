@@ -3,6 +3,7 @@
 package drivers
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -12,7 +13,7 @@ import (
 // that is called in order to produce the data required for generation.
 type Interface[T any] interface {
 	// Assemble the database information into a nice struct
-	Assemble() (*DBInfo[T], error)
+	Assemble(ctx context.Context) (*DBInfo[T], error)
 }
 
 // DBInfo is the database's table data and dialect.
@@ -42,20 +43,20 @@ func (t TablesInfo) Keys() []string {
 // implementations.
 type Constructor interface {
 	// Load all constraints in the database, keyed by TableInfo.Key
-	Constraints(ColumnFilter) (DBConstraints, error)
+	Constraints(context.Context, ColumnFilter) (DBConstraints, error)
 
 	// For tables
-	TablesInfo(Filter) (TablesInfo, error)
-	TableColumns(info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
+	TablesInfo(context.Context, Filter) (TablesInfo, error)
+	TableColumns(ctx context.Context, info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
 
 	// For views
-	ViewsInfo(Filter) (TablesInfo, error)
-	ViewColumns(info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
+	ViewsInfo(context.Context, Filter) (TablesInfo, error)
+	ViewColumns(ctx context.Context, info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
 }
 
 // TablesConcurrently is a concurrent version of Tables. It returns the
 // metadata for all tables, minus the tables specified in the excludes.
-func Tables(c Constructor, concurrency int, includes, excludes []string) ([]Table, error) {
+func Tables(ctx context.Context, c Constructor, concurrency int, includes, excludes []string) ([]Table, error) {
 	var err error
 	var ret []Table
 
@@ -69,29 +70,29 @@ func Tables(c Constructor, concurrency int, includes, excludes []string) ([]Tabl
 	}
 
 	var tablesInfo, viewsInfo TablesInfo
-	if tablesInfo, err = c.TablesInfo(tableFilter); err != nil {
+	if tablesInfo, err = c.TablesInfo(ctx, tableFilter); err != nil {
 		return nil, fmt.Errorf("unable to get table names: %w", err)
 	}
 
-	if viewsInfo, err = c.ViewsInfo(tableFilter); err != nil {
+	if viewsInfo, err = c.ViewsInfo(ctx, tableFilter); err != nil {
 		return nil, fmt.Errorf("unable to get view names: %w", err)
 	}
 
 	colFilter := ParseColumnFilter(append(tablesInfo.Keys(), viewsInfo.Keys()...), includes, excludes)
 
-	ret, err = tables(c, concurrency, tablesInfo, colFilter)
+	ret, err = tables(ctx, c, concurrency, tablesInfo, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load tables: %w", err)
 	}
 
-	v, err := views(c, concurrency, viewsInfo, colFilter)
+	v, err := views(ctx, c, concurrency, viewsInfo, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load views: %w", err)
 	}
 
 	ret = append(ret, v...)
 
-	constraints, err := c.Constraints(colFilter)
+	constraints, err := c.Constraints(ctx, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load constraints: %w", err)
 	}
@@ -110,7 +111,7 @@ func Tables(c Constructor, concurrency int, includes, excludes []string) ([]Tabl
 	return ret, nil
 }
 
-func tables(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
+func tables(ctx context.Context, c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
 	sort.Slice(infos, func(i, j int) bool {
 		return infos[i].Key < infos[j].Key
 	})
@@ -126,7 +127,7 @@ func tables(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilte
 		go func(i int, info TableInfo) {
 			defer wg.Done()
 			defer limiter.put()
-			t, err := table(c, info, filter)
+			t, err := table(ctx, c, info, filter)
 			if err != nil {
 				errs <- err
 				return
@@ -146,13 +147,13 @@ func tables(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilte
 }
 
 // table returns columns info for a given table
-func table(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
+func table(ctx context.Context, c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 	var err error
 	t := Table{
 		Key: info.Key,
 	}
 
-	if t.Schema, t.Name, t.Columns, err = c.TableColumns(info, filter); err != nil {
+	if t.Schema, t.Name, t.Columns, err = c.TableColumns(ctx, info, filter); err != nil {
 		return Table{}, fmt.Errorf("unable to fetch table column info (%s): %w", info.Key, err)
 	}
 
@@ -161,7 +162,7 @@ func table(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 
 // views returns the metadata for all views, minus the views
 // specified in the excludes.
-func views(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
+func views(ctx context.Context, c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table, error) {
 	sort.Slice(infos, func(i, j int) bool {
 		return infos[i].Key < infos[j].Key
 	})
@@ -177,7 +178,7 @@ func views(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter
 		go func(i int, info TableInfo) {
 			defer wg.Done()
 			defer limiter.put()
-			t, err := view(c, info, filter)
+			t, err := view(ctx, c, info, filter)
 			if err != nil {
 				errs <- err
 				return
@@ -197,7 +198,7 @@ func views(c Constructor, concurrency int, infos TablesInfo, filter ColumnFilter
 }
 
 // view returns columns info for a given view
-func view(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
+func view(ctx context.Context, c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 	var err error
 	t := Table{
 		Key:    info.Key,
@@ -205,7 +206,7 @@ func view(c Constructor, info TableInfo, filter ColumnFilter) (Table, error) {
 		Name:   info.Name,
 	}
 
-	if t.Schema, t.Name, t.Columns, err = c.ViewColumns(info, filter); err != nil {
+	if t.Schema, t.Name, t.Columns, err = c.ViewColumns(ctx, info, filter); err != nil {
 		return Table{}, fmt.Errorf("unable to fetch view column info (%s): %w", info.Key, err)
 	}
 

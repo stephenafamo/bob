@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"context"
+
 	"github.com/stephenafamo/bob/gen/drivers"
 )
 
@@ -8,7 +10,7 @@ import (
 type MockDriver struct{}
 
 // Assemble the DBInfo
-func (m *MockDriver) Assemble() (*drivers.DBInfo[any], error) {
+func (m *MockDriver) Assemble(ctx context.Context) (*drivers.DBInfo[any], error) {
 	var err error
 	dbinfo := &drivers.DBInfo[any]{}
 
@@ -19,7 +21,7 @@ func (m *MockDriver) Assemble() (*drivers.DBInfo[any], error) {
 		}
 	}()
 
-	dbinfo.Tables, err = drivers.Tables(m, 1, nil, []string{"hangars"})
+	dbinfo.Tables, err = drivers.Tables(ctx, m, 1, nil, []string{"hangars"})
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +30,7 @@ func (m *MockDriver) Assemble() (*drivers.DBInfo[any], error) {
 }
 
 // TableNames returns a list of mock table names
-func (m *MockDriver) TablesInfo(filter drivers.Filter) (drivers.TablesInfo, error) {
+func (m *MockDriver) TablesInfo(_ context.Context, filter drivers.Filter) (drivers.TablesInfo, error) {
 	return []drivers.TableInfo{
 		{Key: "pilots", Name: "pilots"},
 		{Key: "schema.jets", Schema: "schema", Name: "jets"},
@@ -40,14 +42,14 @@ func (m *MockDriver) TablesInfo(filter drivers.Filter) (drivers.TablesInfo, erro
 	}, nil
 }
 
-func (m *MockDriver) ViewsInfo(filter drivers.Filter) (drivers.TablesInfo, error) {
+func (m *MockDriver) ViewsInfo(_ context.Context, filter drivers.Filter) (drivers.TablesInfo, error) {
 	return []drivers.TableInfo{
 		{Name: "pilots_with_jets"},
 	}, nil
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) TableColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+func (m *MockDriver) TableColumns(_ context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var cols []drivers.Column //nolint:prealloc
 
 	for _, col := range map[string][]drivers.Column{
@@ -94,7 +96,7 @@ func (m *MockDriver) TableColumns(info drivers.TableInfo, filter drivers.ColumnF
 }
 
 // ViewColumns returns a list of mock columns
-func (m *MockDriver) ViewColumns(info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+func (m *MockDriver) ViewColumns(_ context.Context, info drivers.TableInfo, filter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var cols []drivers.Column //nolint:prealloc
 
 	for _, col := range map[string][]drivers.Column{
@@ -111,7 +113,7 @@ func (m *MockDriver) ViewColumns(info drivers.TableInfo, filter drivers.ColumnFi
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m *MockDriver) Constraints(drivers.ColumnFilter) (drivers.DBConstraints, error) {
+func (m *MockDriver) Constraints(context.Context, drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	return drivers.DBConstraints{
 		PKs: map[string]*drivers.PrimaryKey{
 			"schema.jets":     {Name: "jets_pkey", Columns: []string{"id"}},

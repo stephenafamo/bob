@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -37,7 +38,7 @@ type State[T any] struct {
 
 // Run executes the templates and outputs them to files based on the
 // state given.
-func (s *State[T]) Run(driver drivers.Interface[T]) error {
+func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 	if s.Dialect == "" {
 		return fmt.Errorf("no dialect specified")
 	}
@@ -51,7 +52,7 @@ func (s *State[T]) Run(driver drivers.Interface[T]) error {
 
 	s.initInflections()
 
-	err := s.initDBInfo(driver)
+	err := s.initDBInfo(ctx, driver)
 	if err != nil {
 		return fmt.Errorf("unable to initialize tables: %w", err)
 	}
@@ -242,8 +243,8 @@ func groupTemplates(templates *templateList) dirExtMap {
 }
 
 // initDBInfo retrieves information about the database
-func (s *State[T]) initDBInfo(driver drivers.Interface[T]) error {
-	dbInfo, err := driver.Assemble()
+func (s *State[T]) initDBInfo(ctx context.Context, driver drivers.Interface[T]) error {
+	dbInfo, err := driver.Assemble(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to fetch table data: %w", err)
 	}
