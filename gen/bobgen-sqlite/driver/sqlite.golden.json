@@ -1,0 +1,3206 @@
+{
+	"tables": [
+		{
+			"key": "1.as_generated_columns",
+			"schema": "1",
+			"name": "as_generated_columns",
+			"columns": [
+				{
+					"name": "a",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "b",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "c",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "d",
+					"db_type": "INT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "e",
+					"db_type": "TEXT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_as_generated_columns",
+				"columns": [
+					"a"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "1.autoinckeywordtest",
+			"schema": "1",
+			"name": "autoinckeywordtest",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "b",
+					"db_type": "INTEGER",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_autoinckeywordtest",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "1.autoinctest",
+			"schema": "1",
+			"name": "autoinctest",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_autoinctest",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "1.sponsors",
+			"schema": "1",
+			"name": "sponsors",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_sponsors",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.sponsors",
+							"FromColumns": [
+								"id"
+							],
+							"To": "1.videos",
+							"ToColumns": [
+								"sponsor_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "1.tags",
+			"schema": "1",
+			"name": "tags",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_tags",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.tags",
+							"FromColumns": [
+								"id"
+							],
+							"To": "1.video_tags",
+							"ToColumns": [
+								"tag_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "1.user_videos",
+			"schema": "1",
+			"name": "user_videos",
+			"columns": [
+				{
+					"name": "user_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "video_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": null,
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "1.users",
+			"schema": "1",
+			"name": "users",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_users",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.users",
+							"FromColumns": [
+								"id"
+							],
+							"To": "1.videos",
+							"ToColumns": [
+								"user_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "1.video_tags",
+			"schema": "1",
+			"name": "video_tags",
+			"columns": [
+				{
+					"name": "video_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tag_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_video_tags",
+				"columns": [
+					"video_id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "FK_0",
+					"columns": [
+						"tag_id"
+					],
+					"foreign_table": "1.tags",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "FK_1",
+					"columns": [
+						"video_id"
+					],
+					"foreign_table": "1.videos",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "1.tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.video_tags",
+							"FromColumns": [
+								"video_id"
+							],
+							"To": "1.videos",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "1.videos",
+			"schema": "1",
+			"name": "videos",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "user_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_1_videos",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "FK_0",
+					"columns": [
+						"sponsor_id"
+					],
+					"foreign_table": "1.sponsors",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "FK_1",
+					"columns": [
+						"user_id"
+					],
+					"foreign_table": "1.users",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [
+				{
+					"name": "sqlite_autoindex_videos_2",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.videos",
+							"FromColumns": [
+								"id"
+							],
+							"To": "1.video_tags",
+							"ToColumns": [
+								"video_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.videos",
+							"FromColumns": [
+								"sponsor_id"
+							],
+							"To": "1.sponsors",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "1.videos",
+							"FromColumns": [
+								"user_id"
+							],
+							"To": "1.users",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.autoinckeywordtest",
+			"schema": "main",
+			"name": "autoinckeywordtest",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "user_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "something",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "another",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_autoinckeywordtest",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "FK_0",
+					"columns": [
+						"user_id",
+						"sponsor_id"
+					],
+					"foreign_table": "main.videos",
+					"foreign_columns": [
+						"user_id",
+						"sponsor_id"
+					]
+				}
+			],
+			"unique": [
+				{
+					"name": "sqlite_autoindex_autoinckeywordtest_2",
+					"columns": [
+						"something",
+						"another"
+					]
+				},
+				{
+					"name": "sqlite_autoindex_autoinckeywordtest_1",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.autoinckeywordtest",
+							"FromColumns": [
+								"user_id",
+								"sponsor_id"
+							],
+							"To": "main.videos",
+							"ToColumns": [
+								"user_id",
+								"sponsor_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.autoinctest",
+			"schema": "main",
+			"name": "autoinctest",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_autoinctest",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "main.has_generated_columns",
+			"schema": "main",
+			"name": "has_generated_columns",
+			"columns": [
+				{
+					"name": "a",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "b",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "c",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "d",
+					"db_type": "INT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "e",
+					"db_type": "TEXT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": true,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_has_generated_columns",
+				"columns": [
+					"a"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "main.sponsors",
+			"schema": "main",
+			"name": "sponsors",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_sponsors",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.sponsors",
+							"FromColumns": [
+								"id"
+							],
+							"To": "main.videos",
+							"ToColumns": [
+								"sponsor_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.tags",
+			"schema": "main",
+			"name": "tags",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_tags",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.tags",
+							"FromColumns": [
+								"id"
+							],
+							"To": "main.video_tags",
+							"ToColumns": [
+								"tag_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.type_monsters",
+			"schema": "main",
+			"name": "type_monsters",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "id_two",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "id_three",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_zero",
+					"db_type": "BOOL",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_one",
+					"db_type": "BOOL",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_two",
+					"db_type": "BOOL",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_three",
+					"db_type": "BOOL",
+					"default": "false",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_four",
+					"db_type": "BOOL",
+					"default": "true",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_five",
+					"db_type": "BOOL",
+					"default": "false",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bool_six",
+					"db_type": "BOOL",
+					"default": "true",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_zero",
+					"db_type": "VARCHAR(1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_one",
+					"db_type": "VARCHAR(1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_two",
+					"db_type": "VARCHAR(1)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_three",
+					"db_type": "VARCHAR(1)",
+					"default": "'a'",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_four",
+					"db_type": "VARCHAR(1)",
+					"default": "'b'",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_five",
+					"db_type": "VARCHAR(1000)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_six",
+					"db_type": "VARCHAR(1000)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_seven",
+					"db_type": "VARCHAR(1000)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_eight",
+					"db_type": "VARCHAR(1000)",
+					"default": "'abcdefgh'",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_nine",
+					"db_type": "VARCHAR(1000)",
+					"default": "'abcdefgh'",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_ten",
+					"db_type": "VARCHAR(1000)",
+					"default": "''",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "string_eleven",
+					"db_type": "VARCHAR(1000)",
+					"default": "''",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_zero",
+					"db_type": "BIGINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_one",
+					"db_type": "BIGINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_two",
+					"db_type": "BIGINT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_three",
+					"db_type": "BIGINT",
+					"default": "111111",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_four",
+					"db_type": "BIGINT",
+					"default": "222222",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_five",
+					"db_type": "BIGINT",
+					"default": "0",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "big_int_six",
+					"db_type": "BIGINT",
+					"default": "0",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_zero",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_one",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_two",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_three",
+					"db_type": "INT",
+					"default": "333333",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_four",
+					"db_type": "INT",
+					"default": "444444",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_five",
+					"db_type": "INT",
+					"default": "0",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "int_six",
+					"db_type": "INT",
+					"default": "0",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_zero",
+					"db_type": "FLOAT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_one",
+					"db_type": "FLOAT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_two",
+					"db_type": "FLOAT(2,1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_three",
+					"db_type": "FLOAT(2,1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_four",
+					"db_type": "FLOAT(2,1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_five",
+					"db_type": "FLOAT(2,1)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_six",
+					"db_type": "FLOAT(2,1)",
+					"default": "1.1",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_seven",
+					"db_type": "FLOAT(2,1)",
+					"default": "1.1",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_eight",
+					"db_type": "FLOAT(2,1)",
+					"default": "0.0",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_nine",
+					"db_type": "FLOAT(2,1)",
+					"default": "0.0",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_zero",
+					"db_type": "BINARY",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_one",
+					"db_type": "BINARY",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_two",
+					"db_type": "BINARY",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_three",
+					"db_type": "BINARY",
+					"default": "'a'",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_four",
+					"db_type": "BINARY",
+					"default": "'b'",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_five",
+					"db_type": "BINARY(100)",
+					"default": "'abcdefghabcdefghabcdefgh'",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_six",
+					"db_type": "BINARY(100)",
+					"default": "'hgfedcbahgfedcbahgfedcba'",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_seven",
+					"db_type": "BINARY",
+					"default": "''",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bytea_eight",
+					"db_type": "BINARY",
+					"default": "''",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_zero",
+					"db_type": "TIMESTAMP",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_one",
+					"db_type": "DATE",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_two",
+					"db_type": "TIMESTAMP",
+					"default": "null",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_three",
+					"db_type": "TIMESTAMP",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_five",
+					"db_type": "TIMESTAMP",
+					"default": "current_timestamp",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_nine",
+					"db_type": "TIMESTAMP",
+					"default": "current_timestamp",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_eleven",
+					"db_type": "DATE",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_twelve",
+					"db_type": "DATE",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_fifteen",
+					"db_type": "DATE",
+					"default": "'19990108'",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "time_sixteen",
+					"db_type": "DATE",
+					"default": "'1999-01-08'",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "json_null",
+					"db_type": "JSON",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "json_nnull",
+					"db_type": "JSON",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "types.JSON[json.RawMessage]",
+					"imports": [
+						"\"encoding/json\"",
+						"\"github.com/stephenafamo/bob/types\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint_null",
+					"db_type": "TINYINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int8",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint_nnull",
+					"db_type": "TINYINT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int8",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint1_null",
+					"db_type": "TINYINT(1)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint1_nnull",
+					"db_type": "TINYINT(1)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint2_null",
+					"db_type": "TINYINT(2)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyint2_nnull",
+					"db_type": "TINYINT(2)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "smallint_null",
+					"db_type": "SMALLINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int16",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "smallint_nnull",
+					"db_type": "SMALLINT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int16",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "mediumint_null",
+					"db_type": "MEDIUMINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "mediumint_nnull",
+					"db_type": "MEDIUMINT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bigint_null",
+					"db_type": "BIGINT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "bigint_nnull",
+					"db_type": "BIGINT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_null",
+					"db_type": "FLOAT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "float_nnull",
+					"db_type": "FLOAT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "float32",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "double_null",
+					"db_type": "DOUBLE",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "double_nnull",
+					"db_type": "DOUBLE",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "doubleprec_null",
+					"db_type": "DOUBLE PRECISION",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "doubleprec_nnull",
+					"db_type": "DOUBLE PRECISION",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "real_null",
+					"db_type": "REAL",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "real_nnull",
+					"db_type": "REAL",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "float64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "boolean_null",
+					"db_type": "BOOLEAN",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "boolean_nnull",
+					"db_type": "BOOLEAN",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "bool",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "date_null",
+					"db_type": "DATE",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "date_nnull",
+					"db_type": "DATE",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "datetime_null",
+					"db_type": "DATETIME",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "datetime_nnull",
+					"db_type": "DATETIME",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					],
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "timestamp_null",
+					"db_type": "TIMESTAMP",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "timestamp_nnull",
+					"db_type": "TIMESTAMP",
+					"default": "current_timestamp",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "binary_null",
+					"db_type": "BINARY",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "binary_nnull",
+					"db_type": "BINARY",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "varbinary_null",
+					"db_type": "VARBINARY(100)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "varbinary_nnull",
+					"db_type": "VARBINARY(100)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyblob_null",
+					"db_type": "TINYBLOB",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tinyblob_nnull",
+					"db_type": "TINYBLOB",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "blob_null",
+					"db_type": "BLOB",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "blob_nnull",
+					"db_type": "BLOB",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "[]byte",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "mediumblob_null",
+					"db_type": "MEDIUMBLOB",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "mediumblob_nnull",
+					"db_type": "MEDIUMBLOB",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "longblob_null",
+					"db_type": "LONGBLOB",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "longblob_nnull",
+					"db_type": "LONGBLOB",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "varchar_null",
+					"db_type": "VARCHAR(100)",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "varchar_nnull",
+					"db_type": "VARCHAR(100)",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "char_null",
+					"db_type": "CHAR",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "char_nnull",
+					"db_type": "CHAR",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "text_null",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "text_nnull",
+					"db_type": "TEXT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "string",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_type_monsters",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "main.user_videos",
+			"schema": "main",
+			"name": "user_videos",
+			"columns": [
+				{
+					"name": "user_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "video_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": null,
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": null
+		},
+		{
+			"key": "main.users",
+			"schema": "main",
+			"name": "users",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_users",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.users",
+							"FromColumns": [
+								"id"
+							],
+							"To": "main.videos",
+							"ToColumns": [
+								"user_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.video_tags",
+			"schema": "main",
+			"name": "video_tags",
+			"columns": [
+				{
+					"name": "video_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "tag_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_video_tags",
+				"columns": [
+					"video_id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "FK_0",
+					"columns": [
+						"tag_id"
+					],
+					"foreign_table": "main.tags",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "FK_1",
+					"columns": [
+						"video_id"
+					],
+					"foreign_table": "main.videos",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.video_tags",
+							"FromColumns": [
+								"tag_id"
+							],
+							"To": "main.tags",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.video_tags",
+							"FromColumns": [
+								"video_id"
+							],
+							"To": "main.videos",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		},
+		{
+			"key": "main.videos",
+			"schema": "main",
+			"name": "videos",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "user_id",
+					"db_type": "INT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				},
+				{
+					"name": "sponsor_id",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": true,
+					"generated": false,
+					"type": "int64",
+					"imports": null,
+					"arr_type": "",
+					"udt_name": "",
+					"udt_schema": "",
+					"domain_name": ""
+				}
+			],
+			"p_key": {
+				"name": "pk_main_videos",
+				"columns": [
+					"id"
+				]
+			},
+			"foreign_keys": [
+				{
+					"name": "FK_0",
+					"columns": [
+						"sponsor_id"
+					],
+					"foreign_table": "main.sponsors",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "FK_1",
+					"columns": [
+						"user_id"
+					],
+					"foreign_table": "main.users",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
+			"unique": [
+				{
+					"name": "sqlite_autoindex_videos_2",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
+			"is_join_table": false,
+			"relationship": [
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.videos",
+							"FromColumns": [
+								"user_id",
+								"sponsor_id"
+							],
+							"To": "main.autoinckeywordtest",
+							"ToColumns": [
+								"user_id",
+								"sponsor_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.videos",
+							"FromColumns": [
+								"id"
+							],
+							"To": "main.video_tags",
+							"ToColumns": [
+								"video_id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_0",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.videos",
+							"FromColumns": [
+								"sponsor_id"
+							],
+							"To": "main.sponsors",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false
+				},
+				{
+					"Name": "FK_1",
+					"Alias": "",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "main.videos",
+							"FromColumns": [
+								"user_id"
+							],
+							"To": "main.users",
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false
+				}
+			]
+		}
+	],
+	"extra_info": null
+}
