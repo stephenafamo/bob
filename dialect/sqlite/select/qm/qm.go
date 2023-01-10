@@ -3,88 +3,88 @@ package qm
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*sqlite.SelectQuery] {
-	return dialect.With[*sqlite.SelectQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*dialect.SelectQuery] {
+	return dialect.With[*dialect.SelectQuery](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Recursive[*sqlite.SelectQuery](r)
+func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
+	return mods.Recursive[*dialect.SelectQuery](r)
 }
 
-func Distinct() bob.Mod[*sqlite.SelectQuery] {
-	return mods.QueryModFunc[*sqlite.SelectQuery](func(q *sqlite.SelectQuery) {
+func Distinct() bob.Mod[*dialect.SelectQuery] {
+	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.Distinct = true
 	})
 }
 
-func Columns(clauses ...any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Select[*sqlite.SelectQuery](clauses)
+func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Select[*dialect.SelectQuery](clauses)
 }
 
-func From(table any) dialect.FromChain[*sqlite.SelectQuery] {
-	return dialect.From[*sqlite.SelectQuery](table)
+func From(table any) dialect.FromChain[*dialect.SelectQuery] {
+	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*sqlite.SelectQuery] {
-	return dialect.InnerJoin[*sqlite.SelectQuery](e)
+func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.InnerJoin[*dialect.SelectQuery](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*sqlite.SelectQuery] {
-	return dialect.LeftJoin[*sqlite.SelectQuery](e)
+func LeftJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.LeftJoin[*dialect.SelectQuery](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*sqlite.SelectQuery] {
-	return dialect.RightJoin[*sqlite.SelectQuery](e)
+func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.RightJoin[*dialect.SelectQuery](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*sqlite.SelectQuery] {
-	return dialect.FullJoin[*sqlite.SelectQuery](e)
+func FullJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.FullJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*sqlite.SelectQuery] {
-	return dialect.CrossJoin[*sqlite.SelectQuery](e)
+func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
+	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Where[*sqlite.SelectQuery]{e}
+func Where(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return mods.Where[*dialect.SelectQuery]{e}
 }
 
-func WhereClause(clause string, args ...any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Where[*sqlite.SelectQuery]{sqlite.Raw(clause, args...)}
+func WhereClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Where[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
-func Having(e bob.Expression) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Having[*sqlite.SelectQuery]{e}
+func Having(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return mods.Having[*dialect.SelectQuery]{e}
 }
 
-func HavingClause(clause string, args ...any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Having[*sqlite.SelectQuery]{sqlite.Raw(clause, args...)}
+func HavingClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Having[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
-func GroupBy(e any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.GroupBy[*sqlite.SelectQuery]{
+func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
+	return mods.GroupBy[*dialect.SelectQuery]{
 		E: e,
 	}
 }
 
-func Window(name string) dialect.WindowMod[*sqlite.SelectQuery] {
-	m := dialect.WindowMod[*sqlite.SelectQuery]{
+func Window(name string) dialect.WindowMod[*dialect.SelectQuery] {
+	m := dialect.WindowMod[*dialect.SelectQuery]{
 		Name: name,
 	}
 
-	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*sqlite.SelectQuery]]{
+	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*dialect.SelectQuery]]{
 		Wrap: &m,
 	}
 	return m
 }
 
-func OrderBy(e any) dialect.OrderBy[*sqlite.SelectQuery] {
-	return dialect.OrderBy[*sqlite.SelectQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
+	return dialect.OrderBy[*dialect.SelectQuery](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
@@ -92,45 +92,45 @@ func OrderBy(e any) dialect.OrderBy[*sqlite.SelectQuery] {
 }
 
 // Sqlite can use an clauseession for the limit
-func Limit(count any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Limit[*sqlite.SelectQuery]{
+func Limit(count any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Limit[*dialect.SelectQuery]{
 		Count: count,
 	}
 }
 
 // Sqlite can use an clauseession for the offset
-func Offset(count any) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Offset[*sqlite.SelectQuery]{
+func Offset(count any) bob.Mod[*dialect.SelectQuery] {
+	return mods.Offset[*dialect.SelectQuery]{
 		Count: count,
 	}
 }
 
-func Union(q bob.Query) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Combine[*sqlite.SelectQuery]{
+func Union(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func UnionAll(q bob.Query) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Combine[*sqlite.SelectQuery]{
+func UnionAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Intersect(q bob.Query) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Combine[*sqlite.SelectQuery]{
+func Intersect(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func Except(q bob.Query) bob.Mod[*sqlite.SelectQuery] {
-	return mods.Combine[*sqlite.SelectQuery]{
+func Except(q bob.Query) bob.Mod[*dialect.SelectQuery] {
+	return mods.Combine[*dialect.SelectQuery]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      false,

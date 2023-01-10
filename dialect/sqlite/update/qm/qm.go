@@ -2,106 +2,105 @@ package qm
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*sqlite.UpdateQuery] {
-	return dialect.With[*sqlite.UpdateQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[*dialect.UpdateQuery] {
+	return dialect.With[*dialect.UpdateQuery](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Recursive[*sqlite.UpdateQuery](r)
+func Recursive(r bool) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Recursive[*dialect.UpdateQuery](r)
 }
 
-func OrAbort() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.OrAbort[*sqlite.UpdateQuery]()
+func OrAbort() bob.Mod[*dialect.UpdateQuery] {
+	return dialect.OrAbort[*dialect.UpdateQuery]()
 }
 
-func OrFail() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.OrFail[*sqlite.UpdateQuery]()
+func OrFail() bob.Mod[*dialect.UpdateQuery] {
+	return dialect.OrFail[*dialect.UpdateQuery]()
 }
 
-func OrIgnore() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.OrIgnore[*sqlite.UpdateQuery]()
+func OrIgnore() bob.Mod[*dialect.UpdateQuery] {
+	return dialect.OrIgnore[*dialect.UpdateQuery]()
 }
 
-func OrReplace() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.OrReplace[*sqlite.UpdateQuery]()
+func OrReplace() bob.Mod[*dialect.UpdateQuery] {
+	return dialect.OrReplace[*dialect.UpdateQuery]()
 }
 
-func OrRollback() bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.OrRollback[*sqlite.UpdateQuery]()
+func OrRollback() bob.Mod[*dialect.UpdateQuery] {
+	return dialect.OrRollback[*dialect.UpdateQuery]()
 }
 
-func Table(name any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.QueryModFunc[*sqlite.UpdateQuery](func(q *sqlite.UpdateQuery) {
+func Table(name any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		q.Table.Table = name
 	})
 }
 
-func TableAs(name any, alias string) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.QueryModFunc[*sqlite.UpdateQuery](func(q *sqlite.UpdateQuery) {
+func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		q.Table.Table = name
 		q.Table.Alias = alias
 	})
 }
 
-func TableIndexedBy(i string) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.QueryModFunc[*sqlite.UpdateQuery](func(q *sqlite.UpdateQuery) {
+func TableIndexedBy(i string) bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		q.Table.IndexedBy = &i
 	})
 }
 
-func TableNotIndexed() bob.Mod[*sqlite.UpdateQuery] {
-	return mods.QueryModFunc[*sqlite.UpdateQuery](func(q *sqlite.UpdateQuery) {
+func TableNotIndexed() bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		var s string
 		q.Table.IndexedBy = &s
 	})
 }
 
-func Set(a string, b any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Set[*sqlite.UpdateQuery]{expr.OP("=", sqlite.Quote(a), b)}
+func Set(a string, b any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), b)}
 }
 
-func SetArg(a string, b any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Set[*sqlite.UpdateQuery]{expr.OP("=", sqlite.Quote(a), sqlite.Arg(b))}
+func SetArg(a string, b any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), expr.Arg(b))}
 }
 
-func From(table any) dialect.FromChain[*sqlite.UpdateQuery] {
-	return dialect.From[*sqlite.UpdateQuery](table)
+func From(table any) dialect.FromChain[*dialect.UpdateQuery] {
+	return dialect.From[*dialect.UpdateQuery](table)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*sqlite.UpdateQuery] {
-	return dialect.InnerJoin[*sqlite.UpdateQuery](e)
+func InnerJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.InnerJoin[*dialect.UpdateQuery](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*sqlite.UpdateQuery] {
-	return dialect.LeftJoin[*sqlite.UpdateQuery](e)
+func LeftJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.LeftJoin[*dialect.UpdateQuery](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*sqlite.UpdateQuery] {
-	return dialect.RightJoin[*sqlite.UpdateQuery](e)
+func RightJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.RightJoin[*dialect.UpdateQuery](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*sqlite.UpdateQuery] {
-	return dialect.FullJoin[*sqlite.UpdateQuery](e)
+func FullJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.FullJoin[*dialect.UpdateQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*sqlite.UpdateQuery] {
-	return dialect.CrossJoin[*sqlite.UpdateQuery](e)
+func CrossJoin(e any) bob.Mod[*dialect.UpdateQuery] {
+	return dialect.CrossJoin[*dialect.UpdateQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Where[*sqlite.UpdateQuery]{e}
+func Where(e bob.Expression) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Where[*dialect.UpdateQuery]{e}
 }
 
-func WhereClause(clause string, args ...any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Where[*sqlite.UpdateQuery]{sqlite.Raw(clause, args...)}
+func WhereClause(clause string, args ...any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Where[*dialect.UpdateQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
-func Returning(clauses ...any) bob.Mod[*sqlite.UpdateQuery] {
-	return mods.Returning[*sqlite.UpdateQuery](clauses)
+func Returning(clauses ...any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Returning[*dialect.UpdateQuery](clauses)
 }
