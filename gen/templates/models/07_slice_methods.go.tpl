@@ -1,5 +1,5 @@
 {{if .Table.PKey -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
@@ -25,7 +25,7 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 		for i, o := range o {
 			{{$colAlias}}PK[i] = o.{{$colAlias}}
 		}
-		mods = append(mods, qm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.In({{$colAlias}}PK...)))
+		mods = append(mods, sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.In({{$colAlias}}PK...)))
 
 	{{end}}
 

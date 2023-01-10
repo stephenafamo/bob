@@ -15,7 +15,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -23,18 +23,18 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 				{{- if gt $index 0 -}}
 				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
 				{{- else -}}
-				qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
+				sm.Where({{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
 				{{- end -}}
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				{{if eq $index 0 -}}qm.Where({{end -}}
+				{{if eq $index 0 -}}sm.Where({{end -}}
 				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				{{if eq $index 0 -}}qm.Where({{end -}}
+				{{if eq $index 0 -}}sm.Where({{end -}}
 				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
@@ -63,15 +63,15 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		{{range $index, $local := $side.FromColumns -}}
 			{{- $fromCol := index $fromAlias.Columns $local -}}
 			{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
-			qm.Where({{$fAlias.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
+			sm.Where({{$fAlias.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
 		{{- end}}
 		{{- range $where := $side.FromWhere}}
 			{{- $fromCol := index $fromAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}})),
+			sm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}})),
 		{{- end}}
 		{{- range $where := $side.ToWhere}}
 			{{- $toCol := index $toAlias.Columns $where.Column}}
-			qm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}})),
+			sm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}})),
 		{{- end}}
 	)...)
 }
@@ -101,7 +101,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		qm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
@@ -110,16 +110,16 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 				{{- if gt $index 0 -}}
 				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
 				{{- else -}}
-					qm.Where({{$to.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
+					sm.Where({{$to.UpSingular}}Columns.{{$toCol}}.In({{$fromCol}}Args...)),
 				{{- end}}
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$where.Value}})),
+				sm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$where.Value}})),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				qm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$where.Value}})),
+				sm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$where.Value}})),
 			{{- end}}
 		{{- if gt $index 0}}
 		),

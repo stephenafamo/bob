@@ -70,17 +70,17 @@ FROM presales_presalestatus
 */
 
 // different ways to express "SELECT status"
-psql.Select(qm.Columns("status")) // SELECT status
-psql.Select(qm.Columns(qm.Quote("status"))) // SELECT "status"
+psql.Select(sm.Columns("status")) // SELECT status
+psql.Select(sm.Columns(sm.Quote("status"))) // SELECT "status"
 
 // Ways to express LEAD(created_date, 1, NOW())
 "LEAD(created_date, 1, NOW()"
 psql.F("LEAD", "created_date", 1, "NOW()")
-psql.F("LEAD", "created_date", 1, qm.F("NOW"))
+psql.F("LEAD", "created_date", 1, sm.F("NOW"))
 
 // Ways to express PARTITION BY presale_id ORDER BY created_date
 "PARTITION BY presale_id ORDER BY created_date"
-qm.Window("").PartitionBy("presale_id").OrderBy("created_date")
+sm.Window("").PartitionBy("presale_id").OrderBy("created_date")
 
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
@@ -91,7 +91,7 @@ psql.F("LEAD", "created_date", 1, psql.F("NOW")).
 
 // The full query
 psql.Select(
-    qm.Columns(
+    sm.Columns(
         "status",
         psql.F("LEAD", "created_date", 1, psql.F("NOW")).
             Over("").
@@ -99,7 +99,7 @@ psql.Select(
             OrderBy("created_date").
             Minus("created_date").
             As("difference")),
-    qm.From("presales_presalestatus")),
+    sm.From("presales_presalestatus")),
 )
 ```
 
@@ -159,7 +159,7 @@ if !user.IsAdmin {
 
 ## Quotes
 
-It is often required to quote identifiers in SQL queries. With `bob`  use the `qm.Quote()` where necessary.  
+It is often required to quote identifiers in SQL queries. With `bob`  use the `sm.Quote()` where necessary.  
 When building the query, the quotes are added correctly by the dialect.
 
 It can take multiple strings that need to be quoted and joined with `.`
@@ -254,7 +254,7 @@ The following expressions cannot be chained and are expected to be used at the e
 
 ## Parameters
 
-To prevent SQL injection, it is necessary to use parameters in our queries. With `bob` use `qm.Arg()` where necessary.  
+To prevent SQL injection, it is necessary to use parameters in our queries. With `bob` use `sm.Arg()` where necessary.  
 This will write the placeholder correctly in the generated sql, and return the value in the argument slice.
 
 ```go

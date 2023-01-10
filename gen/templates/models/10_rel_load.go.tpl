@@ -6,7 +6,7 @@
 {{$.Importer.Import "context" -}}
 {{$.Importer.Import "database/sql" -}}
 {{$.Importer.Import "errors" -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/select/qm" $.Dialect) -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect) -}}
 func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	if o == nil {
 		return nil
@@ -248,7 +248,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
-			qm.Columns({{$firstTo.UpSingular}}Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
+			sm.Columns({{$firstTo.UpSingular}}Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
 		{{- end}}
 	)...)
 
