@@ -185,7 +185,7 @@ func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 		column := drivers.Column{
 			Name:     colInfo.Name,
 			DBType:   strings.ToUpper(colInfo.Type),
-			Nullable: !colInfo.NotNull,
+			Nullable: !colInfo.NotNull && colInfo.Pk < 1,
 		}
 
 		// also get a correct information for Unique
@@ -294,7 +294,7 @@ func (d Driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 
 		fkeyMap[id] = drivers.ForeignKey{
 			Constraint: drivers.Constraint{
-				Name:    fmt.Sprintf("FK_%d", id),
+				Name:    fmt.Sprintf("fk_%s_%d", tableName, id),
 				Columns: append(fkeyMap[id].Columns, col),
 			},
 			ForeignTable:   d.key(schema, ftable),

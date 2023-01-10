@@ -94,9 +94,13 @@
     {{$create := createDeps $.Aliases $rel true}}
     {{$create}}
 
+    {{$set := setModelDeps $.Importer $.Tables $.Aliases $rel true true}}
+
+    {{if or $create $set}}
     for {{if $create}}i{{else}}_{{end}}, rel := range rels {
-      {{setModelDeps $.Importer $.Tables $.Aliases $rel true true}}
+      {{$set}}
     }
+    {{end}}
 
     {{insertDeps $.Aliases $rel true}}
 
@@ -126,25 +130,29 @@
   }
 
   func (o *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related ...*{{$ftable.UpSingular}}) error {
-    var err error
-
     {{$create := createDeps $.Aliases $rel true}}
-    {{$create}}
+    {{with $create}}
+      var err error
+      {{.}}
+    {{end}}
 
+    {{$set := setModelDeps $.Importer $.Tables $.Aliases $rel true false}}
+
+    {{if or $create $set}}
     for {{if $create}}i{{else}}_{{end}}, rel := range related {
-      {{setModelDeps $.Importer $.Tables $.Aliases $rel true false}}
+      {{$set}}
     }
+    {{end}}
 
     {{insertDeps $.Aliases $rel true}}
 
     {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
     {{with $relatedVals}}
-    _, err = {{$ftable.UpPlural}}Table.UpdateMany(
+    if _, err := {{$ftable.UpPlural}}Table.UpdateMany(
       ctx, exec, &Optional{{$ftable.UpSingular}}{
         {{.}}
       }, related...,
-    )
-    if err != nil {
+    ); err != nil {
         return fmt.Errorf("inserting related objects: %w", err)
     }
     {{end}}

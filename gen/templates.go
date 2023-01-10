@@ -339,6 +339,10 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 }
 
 func relIsRequired(t drivers.Table, r orm.Relationship) bool {
+	// // multi sided relationships are always non-required
+	// if len(r.Sides) > 1 {
+	// return false
+	// }
 	firstSide := r.Sides[0]
 	if firstSide.ToKey {
 		return false

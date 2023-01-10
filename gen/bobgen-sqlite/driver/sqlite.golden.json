@@ -10,7 +10,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -102,7 +102,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -149,7 +149,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -203,8 +203,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_videos_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -223,7 +222,8 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -259,8 +259,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_video_tags_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -279,7 +278,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -372,8 +372,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -392,7 +391,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -440,7 +440,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "FK_0",
+					"name": "fk_video_tags_0",
 					"columns": [
 						"tag_id"
 					],
@@ -450,7 +450,7 @@
 					]
 				},
 				{
-					"name": "FK_1",
+					"name": "fk_video_tags_1",
 					"columns": [
 						"video_id"
 					],
@@ -464,8 +464,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_video_tags_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -484,11 +483,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_video_tags_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -507,7 +506,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -570,7 +570,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "FK_0",
+					"name": "fk_videos_0",
 					"columns": [
 						"sponsor_id"
 					],
@@ -580,7 +580,7 @@
 					]
 				},
 				{
-					"name": "FK_1",
+					"name": "fk_videos_1",
 					"columns": [
 						"user_id"
 					],
@@ -601,8 +601,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_video_tags_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -621,11 +620,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_videos_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -644,11 +643,11 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -667,7 +666,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -681,7 +681,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -760,7 +760,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "FK_0",
+					"name": "fk_autoinckeywordtest_0",
 					"columns": [
 						"user_id",
 						"sponsor_id"
@@ -790,8 +790,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_autoinckeywordtest_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -812,7 +811,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -826,7 +826,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -858,7 +858,7 @@
 					"db_type": "INTEGER",
 					"default": "auto_increment",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"unique": false,
 					"generated": true,
 					"type": "int64",
@@ -972,8 +972,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_videos_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -992,7 +991,8 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -1028,8 +1028,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_video_tags_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -1048,7 +1047,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -2877,8 +2877,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2897,7 +2896,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -2945,7 +2945,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "FK_0",
+					"name": "fk_video_tags_0",
 					"columns": [
 						"tag_id"
 					],
@@ -2955,7 +2955,7 @@
 					]
 				},
 				{
-					"name": "FK_1",
+					"name": "fk_video_tags_1",
 					"columns": [
 						"video_id"
 					],
@@ -2969,8 +2969,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_video_tags_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2989,11 +2988,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_video_tags_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -3012,7 +3011,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -3075,7 +3075,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "FK_0",
+					"name": "fk_videos_0",
 					"columns": [
 						"sponsor_id"
 					],
@@ -3085,7 +3085,7 @@
 					]
 				},
 				{
-					"name": "FK_1",
+					"name": "fk_videos_1",
 					"columns": [
 						"user_id"
 					],
@@ -3106,8 +3106,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_autoinckeywordtest_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -3128,11 +3127,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_video_tags_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -3151,11 +3150,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_0",
-					"Alias": "",
+					"Name": "fk_videos_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -3174,11 +3173,11 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
-					"Name": "FK_1",
-					"Alias": "",
+					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -3197,7 +3196,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		}

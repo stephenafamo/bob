@@ -29,8 +29,10 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.toModels(r.number)
+                  {{- $setter := setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                  {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
                   for _, rel := range related {
-                    {{- setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                    {{$setter}}
                     {{- if and (not $.NoBackReferencing) $invRel.Name}}
                         {{- if not $invRel.IsToMany}}
                             rel.R.{{$invAlias}} = o
@@ -39,6 +41,7 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                         {{- end}}
                     {{- end}}
                   }
+                  {{- end}}
                   rel = append(rel, related...)
                 }
             {{- end}}

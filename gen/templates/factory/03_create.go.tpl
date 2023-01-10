@@ -96,6 +96,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			var ok bool
 			rel{{$index}}, ok = {{$ftable.DownSingular}}Ctx.Value(ctx)
 			if !ok {
+			// {{printf "%#v" $rel}}
 				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(o)
 			}
 		}

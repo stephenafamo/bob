@@ -144,7 +144,7 @@ func generate(root root) error {
 		driverName = "pgx"
 		driverPkg = "github.com/jackc/pgx/v5/stdlib"
 	case ProviderSQLite:
-		dialect = "psql"
+		dialect = "sqlite"
 		driverName = "sqlite"
 		driverPkg = "modernc.org/sqlite"
 	default:
@@ -152,7 +152,6 @@ func generate(root root) error {
 	}
 
 	config, driverConfig, err := helpers.GetConfig[driver.Config](root.Generator.Config.ConfigFile, "prisma", map[string]any{
-		"schemas": "public",
 		"pkgname": "prisma",
 	})
 	if err != nil {

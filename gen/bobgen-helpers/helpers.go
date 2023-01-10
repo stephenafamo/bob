@@ -32,7 +32,7 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
-		driverConfigKey:     driverDefaults,
+		driverConfigKey:     (any)(driverDefaults),
 	}, "."), nil); err != nil {
 		return config, driverConfig, err
 	}
@@ -44,15 +44,14 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 			if !errors.Is(err, os.ErrNotExist) {
 				return config, driverConfig, err
 			}
-
-			fmt.Printf("No such file: %q\n", configPath)
 		}
 	}
 
 	// Load env variables for ONLY driver config
 	envKey := strings.ToUpper(driverConfigKey) + "_"
 	if err := k.Load(env.Provider(envKey, ".", func(s string) string {
-		return strings.Replace(strings.ToLower(s), "_", ".", -1)
+		// replace only the first underscore to make it a flat map[string]any
+		return strings.Replace(strings.ToLower(s), "_", ".", 1)
 	}), nil); err != nil {
 		return config, driverConfig, err
 	}

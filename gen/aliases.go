@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -37,18 +38,19 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 	for _, t := range tables {
 		table := a.Tables[t.Key]
+		cleanKey := strings.ReplaceAll(t.Key, ".", "_")
 
 		if len(table.UpPlural) == 0 {
-			table.UpPlural = strmangle.TitleCase(strmangle.Plural(t.Name))
+			table.UpPlural = strmangle.TitleCase(strmangle.Plural(cleanKey))
 		}
 		if len(table.UpSingular) == 0 {
-			table.UpSingular = strmangle.TitleCase(strmangle.Singular(t.Name))
+			table.UpSingular = strmangle.TitleCase(strmangle.Singular(cleanKey))
 		}
 		if len(table.DownPlural) == 0 {
-			table.DownPlural = strmangle.CamelCase(strmangle.Plural(t.Name))
+			table.DownPlural = strmangle.CamelCase(strmangle.Plural(cleanKey))
 		}
 		if len(table.DownSingular) == 0 {
-			table.DownSingular = strmangle.CamelCase(strmangle.Singular(t.Name))
+			table.DownSingular = strmangle.CamelCase(strmangle.Singular(cleanKey))
 		}
 
 		if table.Columns == nil {

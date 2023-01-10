@@ -7,39 +7,42 @@ import (
 )
 
 type RelWhere struct {
-	Column  string
-	Value   string
-	GoValue string
+	Column  string `yaml:"column"`
+	Value   string `yaml:"value"`
+	GoValue string `yaml:"go_value"`
 }
 
 type RelSide struct {
-	From        string
-	FromColumns []string
-	To          string
-	ToColumns   []string
+	From        string   `yaml:"from"`
+	FromColumns []string `yaml:"from_columns"`
+	To          string   `yaml:"to"`
+	ToColumns   []string `yaml:"to_columns"`
 
-	FromWhere, ToWhere []RelWhere
+	FromWhere []RelWhere `yaml:"from_where"`
+	ToWhere   []RelWhere `yaml:"to_where"`
 
 	// If the destination columns contain the key
 	// if false, it means the source columns are the foreign key
-	ToKey bool
+	ToKey bool `yaml:"to_key"`
 	// if the destination is unique
-	ToUnique bool
+	ToUnique bool `yaml:"to_unique"`
 	// If the key is nullable. We need this to know if we can remove the
 	// relationship without deleting it
-	KeyNullable bool
+	KeyNullable bool `yaml:"key_nullable"`
 
 	// Kinda hacky, used for preloading
 	ToExpr func(context.Context) bob.Expression `json:"-" yaml:"-"`
 }
 
 type Relationship struct {
-	Name        string
-	Alias       string // if present is used instead of computing from the columns
-	ByJoinTable bool
-	Sides       []RelSide
+	Name        string    `yaml:"name"`
+	ByJoinTable bool      `yaml:"by_join_table"`
+	Sides       []RelSide `yaml:"sides"`
 
 	Ignored bool // Can be set through user configuration
+
+	// if present is used instead of computing from the columns
+	Alias string `yaml:"alias"`
 }
 
 func (r Relationship) Local() string {
