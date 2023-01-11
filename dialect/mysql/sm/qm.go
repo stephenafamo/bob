@@ -60,24 +60,24 @@ func From(table any) dialect.FromChain[*dialect.SelectQuery] {
 	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func InnerJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.InnerJoin[*dialect.DeleteQuery](e)
+func InnerJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.InnerJoin[*dialect.SelectQuery](e)
 }
 
-func LeftJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.LeftJoin[*dialect.DeleteQuery](e)
+func LeftJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.LeftJoin[*dialect.SelectQuery](e)
 }
 
-func RightJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.RightJoin[*dialect.DeleteQuery](e)
+func RightJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+	return dialect.RightJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
-	return dialect.CrossJoin[*dialect.DeleteQuery](e)
+func CrossJoin(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func StraightJoin(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
-	return dialect.StraightJoin[*dialect.DeleteQuery](e)
+func StraightJoin(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+	return dialect.StraightJoin[*dialect.SelectQuery](e)
 }
 
 func Where(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
