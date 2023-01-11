@@ -25,7 +25,7 @@ func NewTable[T any, Tslice ~[]T, Topt any](schema, tableName string) *Table[T, 
 	view, mappings := newView[T, Tslice](schema, tableName)
 	return &Table[T, Tslice, Topt]{
 		View:       view,
-		pkCols:     filterNonZero(mappings.PKs),
+		pkCols:     internal.FilterNonZero(mappings.PKs),
 		optMapping: optMapping,
 	}
 }
@@ -102,7 +102,7 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
-		columns = []string{firstNonEmpty(t.optMapping.All)}
+		columns = []string{internal.FirstNonEmpty(t.optMapping.All)}
 		values = make([][]any, len(rows))
 		for i := range rows {
 			values[i] = []any{"DEFAULT"}
@@ -259,13 +259,13 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 
 	var conflictQM bob.Mod[*dialect.InsertQuery]
 	if !updateOnConflict {
-		conflictQM = im.OnConflict(toAnySlice(conflictCols)...).DoNothing()
+		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).DoNothing()
 	} else {
 		excludeSetCols := columns
 		if len(excludeSetCols) == 0 {
 			excludeSetCols = t.optMapping.NonPKs
 		}
-		conflictQM = im.OnConflict(toAnySlice(conflictCols)...).
+		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).
 			DoUpdate().
 			SetExcluded(excludeSetCols...)
 	}
@@ -311,7 +311,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
-		columns = []string{firstNonEmpty(t.optMapping.All)}
+		columns = []string{internal.FirstNonEmpty(t.optMapping.All)}
 		values = make([][]any, len(rows))
 		for i := range rows {
 			values[i] = []any{"DEFAULT"}
@@ -324,13 +324,13 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	var conflictQM bob.Mod[*dialect.InsertQuery]
 	if !updateOnConflict {
-		conflictQM = im.OnConflict(toAnySlice(conflictCols)...).DoNothing()
+		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).DoNothing()
 	} else {
 		excludeSetCols := columns
 		if len(excludeSetCols) == 0 {
 			excludeSetCols = t.optMapping.NonPKs
 		}
-		conflictQM = im.OnConflict(toAnySlice(conflictCols)...).
+		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).
 			DoUpdate().
 			SetExcluded(excludeSetCols...)
 	}
@@ -517,38 +517,4 @@ func (t *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
 	}
 
 	return rowsAff, nil
-}
-
-func toAnySlice[T any, Ts ~[]T](slice Ts) []any {
-	ret := make([]any, len(slice))
-	for i, val := range slice {
-		ret[i] = val
-	}
-
-	return ret
-}
-
-func firstNonEmpty[T comparable, Ts ~[]T](slice Ts) T {
-	var zero T
-	for _, val := range slice {
-		if val != zero {
-			return val
-		}
-	}
-
-	return zero
-}
-
-func filterNonZero[T comparable](s []T) []T {
-	var zero T
-	filtered := make([]T, 0, len(s))
-
-	for _, v := range s {
-		if v == zero {
-			continue
-		}
-		filtered = append(filtered, v)
-	}
-
-	return filtered
 }
