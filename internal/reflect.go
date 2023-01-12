@@ -24,14 +24,15 @@ func snakeCase(str string) string {
 }
 
 //nolint:gochecknoglobals
-var settableTyp = reflect.TypeOf((*interface{ IsUnset() bool })(nil)).Elem()
+var unsettableTyp = reflect.TypeOf((*interface{ IsUnset() bool })(nil)).Elem()
 
 type Mapping struct {
-	All          []string
-	PKs          []string
-	NonPKs       []string
-	Generated    []string
-	NonGenerated []string
+	All           []string
+	PKs           []string
+	NonPKs        []string
+	Generated     []string
+	NonGenerated  []string
+	AutoIncrement []string
 }
 
 func (c Mapping) Columns(table ...string) orm.Columns {
@@ -51,9 +52,10 @@ func (c Mapping) Columns(table ...string) orm.Columns {
 }
 
 type colProperties struct {
-	Name        string
-	IsPK        bool
-	IsGenerated bool
+	Name          string
+	IsPK          bool
+	IsGenerated   bool
+	AutoIncrement bool
 }
 
 func getColProperties(tag string) colProperties {
@@ -71,6 +73,8 @@ func getColProperties(tag string) colProperties {
 			p.IsPK = true
 		case "generated":
 			p.IsGenerated = true
+		case "autoincr":
+			p.AutoIncrement = true
 		}
 	}
 
@@ -93,6 +97,7 @@ func GetMappings(typ reflect.Type) Mapping {
 	c.NonPKs = make([]string, typ.NumField())
 	c.Generated = make([]string, typ.NumField())
 	c.NonGenerated = make([]string, typ.NumField())
+	c.AutoIncrement = make([]string, typ.NumField())
 
 	// Go through the struct fields and populate the map.
 	// Recursively go into any child structs, adding a prefix where necessary
@@ -126,6 +131,9 @@ func GetMappings(typ reflect.Type) Mapping {
 			c.Generated[field.Index[0]] = props.Name
 		} else {
 			c.NonGenerated[field.Index[0]] = props.Name
+		}
+		if props.AutoIncrement {
+			c.AutoIncrement[field.Index[0]] = props.Name
 		}
 	}
 
@@ -186,7 +194,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 		field := val.Field(colIndex)
 
 		shoudSet := true
-		if field.Type().Implements(settableTyp) {
+		if field.Type().Implements(unsettableTyp) {
 			shoudSet = !field.MethodByName("IsUnset").Call(nil)[0].Interface().(bool)
 		}
 

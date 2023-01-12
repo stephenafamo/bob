@@ -3,6 +3,7 @@ package im
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -79,7 +80,16 @@ func (s dupKeyUpdater) Apply(q *dialect.InsertQuery) {
 	q.DuplicateKeyUpdate = append(q.DuplicateKeyUpdate, s.sets...)
 }
 
-func (s *dupKeyUpdater) Set(col string, val any) *dupKeyUpdater {
+func (s *dupKeyUpdater) SetCol(col string, val any) *dupKeyUpdater {
 	s.sets = append(s.sets, dialect.Set{Col: col, Val: val})
+	return s
+}
+
+func (s *dupKeyUpdater) Set(alias string, cols ...string) *dupKeyUpdater {
+	newCols := make([]dialect.Set, len(cols))
+	for i, c := range cols {
+		newCols[i] = dialect.Set{Col: c, Val: expr.Quote(alias, c)}
+	}
+
 	return s
 }

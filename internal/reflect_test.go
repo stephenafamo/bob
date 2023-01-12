@@ -42,7 +42,7 @@ type Blog struct {
 }
 
 type BlogWithTags struct {
-	ID          string `db:"blog_id,pk,generated"`
+	ID          string `db:"blog_id,pk,generated,autoincr"`
 	Title       string `db:"title,pk"`
 	Description string `db:"description,generated"`
 	User        User   `db:"-"`
@@ -50,43 +50,48 @@ type BlogWithTags struct {
 
 func TestGetColumns(t *testing.T) {
 	testGetColumns[User](t, Mapping{
-		All:          []string{"id", "first_name", "last_name"},
-		PKs:          make([]string, 3),
-		NonPKs:       []string{"id", "first_name", "last_name"},
-		Generated:    make([]string, 3),
-		NonGenerated: []string{"id", "first_name", "last_name"},
+		All:           []string{"id", "first_name", "last_name"},
+		PKs:           make([]string, 3),
+		NonPKs:        []string{"id", "first_name", "last_name"},
+		Generated:     make([]string, 3),
+		NonGenerated:  []string{"id", "first_name", "last_name"},
+		AutoIncrement: make([]string, 3),
 	})
 
 	testGetColumns[Timestamps](t, Mapping{
-		All:          []string{"created_at", "updated_at"},
-		PKs:          make([]string, 2),
-		NonPKs:       []string{"created_at", "updated_at"},
-		Generated:    make([]string, 2),
-		NonGenerated: []string{"created_at", "updated_at"},
+		All:           []string{"created_at", "updated_at"},
+		PKs:           make([]string, 2),
+		NonPKs:        []string{"created_at", "updated_at"},
+		Generated:     make([]string, 2),
+		NonGenerated:  []string{"created_at", "updated_at"},
+		AutoIncrement: make([]string, 2),
 	})
 
 	testGetColumns[UserWithTimestamps](t, Mapping{
-		All:          []string{"id", "first_name", "last_name", "timestamps"},
-		PKs:          make([]string, 4),
-		NonPKs:       []string{"id", "first_name", "last_name", "timestamps"},
-		Generated:    make([]string, 4),
-		NonGenerated: []string{"id", "first_name", "last_name", "timestamps"},
+		All:           []string{"id", "first_name", "last_name", "timestamps"},
+		PKs:           make([]string, 4),
+		NonPKs:        []string{"id", "first_name", "last_name", "timestamps"},
+		Generated:     make([]string, 4),
+		NonGenerated:  []string{"id", "first_name", "last_name", "timestamps"},
+		AutoIncrement: make([]string, 4),
 	})
 
 	testGetColumns[Blog](t, Mapping{
-		All:          []string{"id", "title", "description", "user"},
-		PKs:          make([]string, 4),
-		NonPKs:       []string{"id", "title", "description", "user"},
-		Generated:    make([]string, 4),
-		NonGenerated: []string{"id", "title", "description", "user"},
+		All:           []string{"id", "title", "description", "user"},
+		PKs:           make([]string, 4),
+		NonPKs:        []string{"id", "title", "description", "user"},
+		Generated:     make([]string, 4),
+		NonGenerated:  []string{"id", "title", "description", "user"},
+		AutoIncrement: make([]string, 4),
 	})
 
 	testGetColumns[BlogWithTags](t, Mapping{
-		All:          []string{"blog_id", "title", "description", ""},
-		PKs:          []string{"blog_id", "title", "", ""},
-		NonPKs:       []string{"", "", "description", ""},
-		Generated:    []string{"blog_id", "", "description", ""},
-		NonGenerated: []string{"", "title", "", ""},
+		All:           []string{"blog_id", "title", "description", ""},
+		PKs:           []string{"blog_id", "title", "", ""},
+		NonPKs:        []string{"", "", "description", ""},
+		Generated:     []string{"blog_id", "", "description", ""},
+		NonGenerated:  []string{"", "title", "", ""},
+		AutoIncrement: []string{"blog_id", "", "", ""},
 	})
 }
 
