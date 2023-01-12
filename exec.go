@@ -24,26 +24,26 @@ type Executor interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 }
 
-func Exec(ctx context.Context, exec Executor, q Query) (int64, error) {
+func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 	sql, args, err := Build(q)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if l, ok := q.(Loadable); ok {
 		for _, loader := range l.GetLoaders() {
 			if err := loader.Load(ctx, exec, nil); err != nil {
-				return 0, err
+				return nil, err
 			}
 		}
 	}
 
-	return result.RowsAffected()
+	return result, nil
 }
 
 func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (T, error) {

@@ -162,7 +162,7 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 		q.Apply(um.Set(col, values[0][i]))
 	}
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	result, err := q.Exec(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
@@ -172,7 +172,7 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }
 
 // Updates the given models
@@ -220,19 +220,19 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 		Group(pkGroup...).In(pkPairs...),
 	))
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	result, err := q.Exec(ctx, exec)
 	if err != nil {
-		return rowsAff, err
+		return 0, err
 	}
 
 	for _, row := range rows {
 		_, err = t.AfterUpdateHooks.Do(ctx, exec, row)
 		if err != nil {
-			return rowsAff, err
+			return 0, err
 		}
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }
 
 // Uses the optional columns to know what to insert
@@ -379,7 +379,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 		q.Apply(dm.Where(Quote(pk).EQ(pkVals[0][i])))
 	}
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	result, err := q.Exec(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
@@ -389,7 +389,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }
 
 // Deletes the given models
@@ -424,19 +424,19 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 		Group(pkGroup...).In(pkPairs...),
 	))
 
-	rowsAff, err := bob.Exec(ctx, exec, q)
+	result, err := q.Exec(ctx, exec)
 	if err != nil {
-		return rowsAff, err
+		return 0, err
 	}
 
 	for _, row := range rows {
 		_, err = t.AfterDeleteHooks.Do(ctx, exec, row)
 		if err != nil {
-			return rowsAff, err
+			return 0, err
 		}
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }
 
 // Adds table name et al
@@ -486,12 +486,12 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
 		Group(pkGroup...).In(t.q.Expression),
 	))
 
-	rowsAff, err := bob.Exec(t.ctx, t.exec, q)
+	result, err := q.Exec(t.ctx, t.exec)
 	if err != nil {
 		return 0, err
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }
 
 // DeleteAll deletes all rows matched by the current query
@@ -511,10 +511,10 @@ func (t *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
 		Group(pkGroup...).In(t.q.Expression),
 	))
 
-	rowsAff, err := bob.Exec(t.ctx, t.exec, q)
+	result, err := q.Exec(t.ctx, t.exec)
 	if err != nil {
 		return 0, err
 	}
 
-	return rowsAff, nil
+	return result.RowsAffected()
 }

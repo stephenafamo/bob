@@ -1,6 +1,8 @@
 package bob
 
 import (
+	"context"
+	"database/sql"
 	"io"
 
 	"github.com/jinzhu/copier"
@@ -44,6 +46,10 @@ func (b BaseQuery[E]) Clone() BaseQuery[E] {
 	})
 
 	return *b2
+}
+
+func (b BaseQuery[E]) Exec(ctx context.Context, exec Executor) (sql.Result, error) {
+	return Exec(ctx, exec, b)
 }
 
 func (b BaseQuery[E]) GetLoaders() []Loader {
