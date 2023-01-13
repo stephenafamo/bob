@@ -38,12 +38,12 @@ Examples are in the [examples folder](examples):
 
 ## Dialect Support
 
-| Dialect     | Select | Insert | Update | Delete |  ORM |
-|-------------|--------|--------|--------|--------|------|
-| Postgres    | ✅     | ✅     | ✅     | ✅     | ✅   |
-| MySQL       | ✅     | ✅     | ✅     | ✅     |      |
-| SQLite      | ✅     | ✅     | ✅     | ✅     |      |
-| SQL Server  |        |        |        |        |      |
+| Dialect       | Select | Insert | Update | Delete | Models | ORM Gen |
+|---------------|--------|--------|--------|--------|--------|---------|
+| Postgres      | ✅     | ✅     | ✅     | ✅     | ✅     | ✅      |
+| MySQL/MariaDB | ✅     | ✅     | ✅     | ✅     | ✅     |         |
+| SQLite        | ✅     | ✅     | ✅     | ✅     | ✅     | ✅      |
+| SQL Server    |        |        |        |        |        |         |
 
 ## Principles
 

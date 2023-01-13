@@ -47,20 +47,19 @@ sqlite.Select(
 )
 ```
 
-## With Rows From
+## From Function
 
 SQL:
 
 ```sql
-SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s") ORDER BY p
+SELECT * FROM generate_series(1, 3) AS "x"
 ```
 
 Code:
 
 ```go
 sqlite.Select(
-  sm.From(sqlite.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
-  sm.OrderBy("p"),
+  sm.From(sqlite.F("generate_series", 1, 3)).As("x"),
 )
 ```
 

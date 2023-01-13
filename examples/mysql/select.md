@@ -47,25 +47,6 @@ mysql.Select(
 )
 ```
 
-## With Rows From
-
-SQL:
-
-```sql
-SELECT * FROM generate_series(1, 3) AS `x` (`p`, `q`, `s`) ORDER BY p
-```
-
-Code:
-
-```go
-mysql.Select(
-  sm.From(
-    mysql.F("generate_series", 1, 3),
-  ).As("x", "p", "q", "s"),
-  sm.OrderBy("p"),
-)
-```
-
 ## With Sub-Select
 
 SQL:

@@ -72,6 +72,22 @@ psql.Select(
 )
 ```
 
+## Select From Function
+
+SQL:
+
+```sql
+SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s")
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.From(psql.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
+)
+```
+
 ## Select from group of functions. Automatically uses the `ROWS FROM` syntax
 
 SQL:
@@ -119,7 +135,7 @@ FROM (
      - created_date) AS "difference"
   FROM presales_presalestatus
 ) AS "differnce_by_status"
-WHERE (status IN ('A', 'B', 'C'))
+WHERE status IN ('A', 'B', 'C')
 GROUP BY status
 ```
 

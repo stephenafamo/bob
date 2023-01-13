@@ -147,7 +147,7 @@ mysql.Insert(
   im.Values(mysql.Arg(9, "Sentry Distribution")),
   im.As("new"),
   im.OnDuplicateKeyUpdate().
-    Set("dbname", mysql.Concat(
+    SetCol("dbname", mysql.Concat(
       "new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
     )),
 )

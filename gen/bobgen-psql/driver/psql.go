@@ -71,7 +71,7 @@ type Config struct {
 	// How many tables to fetch in parallel
 	Concurrency int
 
-	// Used in main.go
+	//-------
 
 	// The name of the folder to output the models package to
 	Output string

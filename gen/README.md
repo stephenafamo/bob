@@ -5,8 +5,8 @@ Generate an ORM based on your database schema
 Pending features
 
 * Relationship methods
-  * [x] Add
-  * [x] Attach
+  * [X] Add
+  * [X] Attach
   * [ ] Remove
 
 ## Usage
@@ -19,35 +19,14 @@ PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bo
 
 ## About
 
-This is largely based on [SQLBoiler](https://github.com/volatiletech/sqlboiler),
-however, many large scale improvements have been made.
+It is a "database-first" ORM. That means you must first create your database schema. Please use something like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migration tool to manage this part of the database's life-cycle.
 
-1. Query building is based on [Bob](https://github.com/stephenafamo/bob), which is dialect specific and allows for far more possiblites and less bugs.
-1. Composite primary keys and foreign keys are now supported.
-1. `qm.Load` is entirely reworked.
-    1. Loaders are generated specifically for each relation and can be nested to load sub-objects
-    1. `qm.Load("relationship")` is split into `PreloadPilotJets` and `ThenLoadPlotJets`. The `Preload` variants load the relationship in a single call using left joins
-       while the `ThenLoad` variants make a new query similar to how the currentl `qm.Load` works.
-1. All the Column names are now in a single top level variable similar to table names.
-1. Where helpers are in a top level global variables split down into query types. e.g. `SelectWhere.Pilot.ID.EQ(10)`
-1. Enums types are generated for every enum in the schema, whether or not they were used in a column.
-1. Enums are properly detected even if they are used only as an array.
-1. Nullable types are now just their concrete type with a generic wrapper. Individual null type variants are no longer needed
-1. Inserts and Upserts are not done with the concrete model type, but with an `Optional` version where every field has to be explicitly set. Removes the need for `boil.Infer()`
-1. Column lists are generated for every table, which can be filtered with `Only` or `Except` and are built to the correctly quoted versions.
-1. Hooks now return a context which will be chained and eventually passed to the query.
-1. AutoTimestamps are not implemented.
-1. Soft Deletes are not implemented.
-1. Simplified configuration for relationship aliases. No more need for foreign/local.
-
-Like SQLBoiler this is a tool to generate a Go ORM tailored to your database schema.
-
-It is a "database-first" ORM.  That means you must first create your database schema. Please use something
-like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migration tool to manage this part of the database's life-cycle.
+There is also a generator for other schema definitions like [Prisma's schmea](https://www.prisma.io/docs/concepts/components/prisma-schema0).
 
 ## Features
 
 * Full model generation
+* Generates **factories** for easy testing
 * Extremely fast code generation
 * High performance through generation & intelligent caching
 * Uses bob.Executor (simple interface, sql.DB, sql.Tx, sqlx.DB etc. compatible)
@@ -76,83 +55,68 @@ like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migratio
 
 ### Ignored features
 
-* Automatic timestamps (createdAt/UpdatedAt)
-    While convenient to have this in the ORM, it is much better to implement this at the DB level.
-    Therefore, there are no plans to implement this in Bob. It isn't worth the additional complexity.
-* Soft deletes
-    There are no immediate plans for this.
-    The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
+* Automatic timestamps (createdAt/UpdatedAt) While convenient to have this in the ORM, it is much better to implement this at the DB level. Therefore, there are no plans to implement this in Bob. It isn't worth the additional complexity.
+* Soft deletes There are no immediate plans for this. The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
 
 ## Avaialable Drivers
 
-| Database          | Driver Location       |
-| ----------------- | --------------------- |
-| PostgreSQL        | [LINK](bobgen-psql)   |
-| Prisma            | [LINK](bobgen-prisma) |
+| Sources    | Driver                |
+|------------|-----------------------|
+| PostgreSQL | [LINK](bobgen-psql)   |
+| SQLite     | [LINK](bobgen-sqlite) |
+| Prisma     | [LINK](bobgen-prisma) |
 
 ## Configuration
 
-Configuration is done in a `bobgen.yaml` file in the same directory.
-A different configuration file can be passed with the `-c` or `--config` flag.
+> Driver specific configuration option and instructions can be found on their individual pages.
 
-### Database Driver Configuration
+Configuration is done in a `bobgen.yaml` file in the same directory. A different configuration file can be passed with the `-c` or `--config` flag.
 
-The configuration for a specific driver (in these examples we'll use `psql`)
-must all be prefixed by the driver name. You must use a configuration file or
-environment variables for configuring the database driver; there are no
-command-line options for providing driver-specific configuration.
+The configuration is marshalled in to the [Config struct](https://pkg.go.dev/github.com/stephenafamo/bob/gen#Config).
 
-In the configuration file for postgresql for example you would do:
+```go
+// Config for the running of the commands
+type Config struct {
+	// Additional struct tags to generate (including json, yaml and toml)
+	Tags []string `yaml:"tags"`
+	// Disable generating factory for models.
+	NoFactory bool `yaml:"no_factory"`
+	// Disable generated go test files
+	NoTests bool `yaml:"no_tests"`
+	// Disable back referencing in the loaded relationship structs
+	NoBackReferencing bool `yaml:"no_back_referencing"`
+	// Delete the output folder (rm -rf) before generation to ensure sanity
+	Wipe bool `yaml:"wipe"`
+	// Decides the casing for go structure tag names. camel, title or snake (default snake)
+	StructTagCasing string `yaml:"struct_tag_casing"`
+	// Relationship struct tag name
+	RelationTag string `yaml:"relation_tag"`
+	// List of column names that should have tags values set to '-' (ignored during parsing)
+	TagIgnore []string `yaml:"tag_ignore"`
 
-```yaml
-psql:
-  dsn: "postgres://user:pass@host:port/dbname"
+	Aliases       Aliases       `yaml:"aliases"`
+	Replacements  []Replace     `yaml:"replacements"`
+	Relationships relationships `yaml:"relationships"`
+	Inflections   Inflections   `yaml:"inflections"`
+
+	// Customize the generator name in the top level comment of generated files
+	// >>   Code generated by **GENERATOR NAME**. DO NOT EDIT.
+	// defaults to "BobGen [plugin] [version]"
+	Generator string `yaml:"generator" toml:"generator" json:"generator"`
+}
+
+type relationships = map[string][]orm.Relationship
 ```
 
-When you use an environment variable it must also be prefixed by the driver
-name:
+| Name         | Description                                                  | Default                 |
+|--------------|--------------------------------------------------------------|-------------------------|
+| tag_ignore   | List of column names that should have tags values set to '-' | []                      |
+| relation_tag | Struct tag for the relationship object                       | "-"                     |
+| tags         | Struct tags to generate                                      | ["json", "yaml", "toml" |
 
-```sh
-PSQL_DSN="postgres://user:pass@host:port/dbname"
-```
+### Type Replacements
 
-The values that exist for the drivers:
-
-| Name | Required | Postgres Default |
-| ---- | -------- | ---------------- |
-| schema    | no        | "public"  |
-| dsn       | yes       | none      |
-| whitelist | no        | []        |
-| blacklist | no        | []        |
-
-Example of whitelist/blacklist:
-
-```yaml
-psql:
-    # Removes migrations table, the name column from the addresses table, and
-    # secret_col of any table from being generated. Foreign keys that reference tables
-    # or columns that are no longer generated because of whitelists or blacklists may
-    # cause problems.
-    blacklist: ["migrations", "addresses.name", "*.secret_col"]
-```
-
-### General configuration options
-
-You can also pass in these top level configuration values if you would prefer
-not to pass them through the command line or environment variables:
-
-| Name                | Defaults  | Description |
-| ------------------- | --------- | ----------- |
-| pkgname             | "models"  | The package name for the generated models |
-| output              | "models"  | The relative path of the output folder |
-| concurrency         | 10        | How many tables to fetch in parallel |
-| tag-ignore          | []        | List of column names that should have tags values set to '-' |
-| relation-tag        | "-"       | Struct tag for the relationship object |
-
-#### Type Replacements
-
-There exists the ability to override types that the driver has inferred.
-The way to accomplish this is through the config file.
+There exists the ability to override types that the driver has inferred. The way to accomplish this is through the config file.
 
 ```yaml
 replacements:
@@ -180,10 +144,9 @@ replacements:
       imports: ['"github.com/me/mynull"']
 ```
 
-#### Relationships
+### Relationships
 
-Relationships are automatically inferred from foreign keys.
-However, in certain cases, it is either not possible or not desireable to add a foreign key relationship.
+Relationships are automatically inferred from foreign keys. However, in certain cases, it is either not possible or not desireable to add a foreign key relationship.
 
 We can manually describe relationships in the configuration:
 
@@ -209,13 +172,11 @@ relationships:
           to_key: true
 ```
 
-##### Related Through
+#### Related Through
 
-The configuration also allows us to describe relationships that span multiple tables.  
-We achieve this by having multiple `sides`.
+The configuration also allows us to describe relationships that span multiple tables. We achieve this by having multiple `sides`.
 
-In this example configuration, we add a relationship of users to videos through teams.  
-The generated user model with have a `Videos` relation.
+In this example configuration, we add a relationship of users to videos through teams. The generated user model with have a `Videos` relation.
 
 ```yaml
 relationships:
@@ -234,10 +195,9 @@ relationships:
           to_key: true
 ```
 
-##### Related Where
+#### Related Where
 
-The configuration also allows us to describe relationships that are not only based on matching columns but also columns with static values.  
-For example, we may want to add a relationship to teams for verified members.
+The configuration also allows us to describe relationships that are not only based on matching columns but also columns with static values. For example, we may want to add a relationship to teams for verified members.
 
 ```yaml
 relationships:
@@ -254,17 +214,11 @@ relationships:
               value: "true"
 ```
 
-#### Aliases
+### Aliases
 
-Names are automatically generated for you. If you name your
-database entities properly you will likely have descriptive names generated in
-the end. However in the case where the names in your database are bad AND
-unchangeable, or bob's inference doesn't understand the names you do have
-(even though they are good and correct) you can use aliases to change the name
-of your tables, columns and relationships in the generated Go code.
+Names are automatically generated for you. If you name your database entities properly you will likely have descriptive names generated in the end. However in the case where the names in your database are bad AND unchangeable, or bob's inference doesn't understand the names you do have (even though they are good and correct) you can use aliases to change the name of your tables, columns and relationships in the generated Go code.
 
-*Note: It is not required to provide all parts of all names. Anything left out
-will be inferred as it was in the past.*
+*Note: It is not required to provide all parts of all names. Anything left out will be inferred as it was in the past.*
 
 ```yaml
 # Although team_names works fine without configuration, we use it here for illustrative purposes
@@ -281,7 +235,7 @@ aliases:
         team_id_fkey: "Owner"
 ```
 
-#### Inflections
+### Inflections
 
 With inflections, you can control the rules used to generate singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not wnat to create aliases for every instance.
 
@@ -298,3 +252,24 @@ inflections:
   irregular: # Singular -> plural mappings of exact words that don't follow conventional rules
     radius: "radii"
 ```
+
+## Acknowledgements
+
+This is largely based on [SQLBoiler](https://github.com/volatiletech/sqlboiler), however, many large scale improvements have been made.
+
+1. Query building is based on [Bob](https://github.com/stephenafamo/bob), which is dialect specific and allows for far more possiblites and less bugs.
+2. Composite primary keys and foreign keys are now supported.
+3. `qm.Load` is entirely reworked.
+   1. Loaders are generated specifically for each relation and can be nested to load sub-objects
+   2. `qm.Load("relationship")` is split into `PreloadPilotJets` and `ThenLoadPlotJets`. The `Preload` variants load the relationship in a single call using left joins while the `ThenLoad` variants make a new query similar to how the currentl `qm.Load` works.
+4. All the Column names are now in a single top level variable similar to table names.
+5. Where helpers are in a top level global variables split down into query types. e.g. `SelectWhere.Pilot.ID.EQ(10)`
+6. Enums types are generated for every enum in the schema, whether or not they were used in a column.
+7. Enums are properly detected even if they are used only as an array.
+8. Nullable types are now just their concrete type with a generic wrapper. Individual null type variants are no longer needed
+9. Inserts and Upserts are not done with the concrete model type, but with an `Optional` version where every field has to be explicitly set. Removes the need for `boil.Infer()`
+10. Column lists are generated for every table, which can be filtered with `Only` or `Except` and are built to the correctly quoted versions.
+11. Hooks now return a context which will be chained and eventually passed to the query.
+12. AutoTimestamps are not implemented.
+13. Soft Deletes are not implemented.
+14. Simplified configuration for relationship aliases. No more need for foreign/local.
