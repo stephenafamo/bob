@@ -51,6 +51,5 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	// Does not understand multiple tables syntax
 	testutils.RunTests(t, examples, nil)
 }

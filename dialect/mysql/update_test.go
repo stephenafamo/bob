@@ -49,5 +49,5 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, formatter)
+	testutils.RunTests(t, examples, nil)
 }

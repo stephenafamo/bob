@@ -1,12 +1,11 @@
 package mysql_test
 
 import (
-	"bytes"
 	"testing"
 
-	"github.com/pingcap/tidb/parser"
-	"github.com/pingcap/tidb/parser/format"
-	_ "github.com/pingcap/tidb/types/parser_driver"
+	// "github.com/pingcap/tidb/parser"
+	// "github.com/pingcap/tidb/parser/format"
+	// _ "github.com/pingcap/tidb/types/parser_driver"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
@@ -64,23 +63,32 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, formatter)
+	testutils.RunTests(t, examples, nil)
 }
 
-var p = parser.New()
+// some bugs to work out for use
+//  1. Does not understand multiple tables syntax
+//  2. Does not understand aliases in upsert
+// In general, TIDB's parser is not updated for MySQL 8.0
 
-// some bugs to work out for use in insert/delete
-func formatter(s string) (string, error) {
-	node, err := p.ParseOneStmt(s, "", "")
-	if err != nil {
-		return "", err
-	}
+// require (
+// github.com/pingcap/tidb v1.1.0-beta.0.20221227032819-706c3fa3c526
+// github.com/pingcap/tidb/parser v0.0.0-20221227032819-706c3fa3c526
+// )
 
-	var buf bytes.Buffer
-	err = node.Restore(format.NewRestoreCtx(format.DefaultRestoreFlags, &buf))
-	if err != nil {
-		return "", err
-	}
+// var p = parser.New()
 
-	return buf.String(), nil
-}
+// func formatter(s string) (string, error) {
+// node, err := p.ParseOneStmt(s, "", "")
+// if err != nil {
+// return "", err
+// }
+
+// var buf bytes.Buffer
+// err = node.Restore(format.NewRestoreCtx(format.DefaultRestoreFlags, &buf))
+// if err != nil {
+// return "", err
+// }
+
+// return buf.String(), nil
+// }
