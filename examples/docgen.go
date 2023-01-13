@@ -19,6 +19,7 @@ import (
 )
 
 var (
+	rgxExampleFiles  = regexp.MustCompile(`^(select|update|insert|delete)_test.go`)
 	rgxTabs          = regexp.MustCompile(`\t`)
 	rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
 	rgxBacktics      = regexp.MustCompile(`\x60 \+ "(\x60\w*\x60)" \+ \x60`)
@@ -46,7 +47,7 @@ func genDialect(path string) {
 
 	// Parse src but stop after processing the imports.
 	dir, err := parser.ParseDir(fset, path, func(fi fs.FileInfo) bool {
-		return strings.HasSuffix(fi.Name(), "_test.go")
+		return rgxExampleFiles.MatchString(fi.Name())
 	}, parser.AllErrors)
 	if err != nil {
 		fmt.Println(err)
