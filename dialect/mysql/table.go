@@ -21,12 +21,12 @@ var (
 	ErrCannotRetrieveRow = errors.New("cannot retrieve inserted row")
 )
 
-func NewTable[T any, Tslice ~[]T, Topt any](schema, tableName string, uniques ...[]string) *Table[T, Tslice, Topt] {
+func NewTable[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]string) *Table[T, Tslice, Topt] {
 	var zeroOpt Topt
 
 	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))
 
-	view, mappings := newView[T, Tslice](schema, tableName)
+	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Topt]{
 		View:       view,
 		pkCols:     internal.FilterNonZero(mappings.PKs),
