@@ -141,6 +141,10 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 	}
 
 	val, err := q2.One()
+	if err != nil {
+		return zero, err
+	}
+
 	_, err = t.AfterInsertOneHooks.Do(ctx, exec, val)
 	if err != nil {
 		return val, err
@@ -357,6 +361,10 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	}
 
 	val, err := q2.One()
+	if err != nil {
+		return zero, err
+	}
+
 	_, err = t.AfterUpsertOneHooks.Do(ctx, exec, val)
 	if err != nil {
 		return val, err
