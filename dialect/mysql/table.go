@@ -137,7 +137,7 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 
 	q2 := t.Query(ctx, exec)
 	for i := range uCols {
-		q2.Apply(sm.Where(Quote(uCols[i]).EQ(Arg(uArgs[i]))))
+		sm.Where(Quote(uCols[i]).EQ(Arg(uArgs[i]))).Apply(q2.Expression)
 	}
 
 	val, err := q2.One()
@@ -357,7 +357,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 
 	q2 := t.Query(ctx, exec)
 	for i := range uCols {
-		q2.Apply(sm.Where(Quote(uCols[i]).EQ(Arg(uArgs[i]))))
+		sm.Where(Quote(uCols[i]).EQ(Arg(uArgs[i]))).Apply(q2.Expression)
 	}
 
 	val, err := q2.One()
