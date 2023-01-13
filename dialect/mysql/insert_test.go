@@ -76,5 +76,7 @@ func TestInsert(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples)
+	// Cannot use the formatter for upsert with alias
+	// https://github.com/pingcap/tidb/issues/29259
+	testutils.RunTests(t, examples, nil)
 }

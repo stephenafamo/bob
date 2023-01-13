@@ -1,11 +1,14 @@
 package sqlite_test
 
 import (
+	"database/sql"
+	"strings"
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
+	_ "modernc.org/sqlite"
 )
 
 func TestSelect(t *testing.T) {
@@ -29,7 +32,7 @@ func TestSelect(t *testing.T) {
 				sm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 			),
 		},
-		"select from function": {
+		"from function": {
 			Query: sqlite.Select(
 				sm.From(sqlite.F("generate_series", 1, 3)).As("x"),
 			),
@@ -67,5 +70,16 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples)
+	testutils.RunTests(t, examples, formatter)
+}
+
+var db, _ = sql.Open("sqlite", ":memory:")
+
+func formatter(s string) (string, error) {
+	_, err := db.Exec(s)
+
+	if strings.Contains(err.Error(), "syntax error") {
+		return "", err
+	}
+	return testutils.Clean(s), nil
 }

@@ -20,5 +20,5 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples)
+	testutils.RunTests(t, examples, formatter)
 }

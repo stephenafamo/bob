@@ -3,6 +3,7 @@ package psql_test
 import (
 	"testing"
 
+	pg_query "github.com/pganalyze/pg_query_go/v2"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
@@ -40,6 +41,13 @@ func TestSelect(t *testing.T) {
 				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
+		"select from function": {
+			Query: psql.Select(
+				sm.From(psql.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
+			),
+			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s")`,
+			ExpectedArgs: nil,
+		},
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(
@@ -72,7 +80,7 @@ func TestSelect(t *testing.T) {
 							 - created_date) AS "difference"
 						FROM presales_presalestatus
 					) AS "differnce_by_status"
-					WHERE (status IN ('A', 'B', 'C'))
+					WHERE status IN ('A', 'B', 'C')
 					GROUP BY status`,
 			Query: psql.Select(
 				sm.Columns("status", psql.F("avg", "difference")),
@@ -93,5 +101,14 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples)
+	testutils.RunTests(t, examples, formatter)
+}
+
+func formatter(s string) (string, error) {
+	aTree, err := pg_query.Parse(s)
+	if err != nil {
+		return "", err
+	}
+
+	return pg_query.Deparse(aTree)
 }

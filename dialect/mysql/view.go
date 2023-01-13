@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"reflect"
 
@@ -20,24 +19,19 @@ func UseSchema(ctx context.Context, schema string) context.Context {
 	return context.WithValue(ctx, orm.CtxUseSchema, schema)
 }
 
-func NewView[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
-	v, _ := newView[T, Tslice](schema, tableName)
+func NewView[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
+	v, _ := newView[T, Tslice](tableName)
 	return v
 }
 
-func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], internal.Mapping) {
+func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], internal.Mapping) {
 	var zero T
 
 	mappings := internal.GetMappings(reflect.TypeOf(zero))
 	alias := tableName
-	if schema != "" {
-		alias = fmt.Sprintf("%s.%s", schema, tableName)
-	}
-
 	allCols := mappings.Columns(alias)
 
 	return &View[T, Tslice]{
-		schema:  schema,
 		name:    tableName,
 		alias:   alias,
 		mapping: mappings,
@@ -46,9 +40,8 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], in
 }
 
 type View[T any, Tslice ~[]T] struct {
-	schema string
-	name   string
-	alias  string
+	name  string
+	alias string
 
 	mapping internal.Mapping
 	allCols orm.Columns
@@ -57,13 +50,7 @@ type View[T any, Tslice ~[]T] struct {
 }
 
 func (v *View[T, Tslice]) Name(ctx context.Context) bob.Expression {
-	// schema is not empty, never override
-	if v.schema != "" {
-		return Quote(v.schema, v.name)
-	}
-
-	schema, _ := ctx.Value(orm.CtxUseSchema).(string)
-	return Quote(schema, v.name)
+	return Quote(v.name)
 }
 
 func (v *View[T, Tslice]) NameAs(ctx context.Context) bob.Expression {

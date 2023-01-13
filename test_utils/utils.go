@@ -32,8 +32,26 @@ func Clean(s string) string {
 	return s
 }
 
-func QueryDiff(a, b string) string {
-	return cmp.Diff(Clean(a), Clean(b))
+type FormatFunc = func(string) (string, error)
+
+func QueryDiff(a, b string, clean FormatFunc) (string, error) {
+	if clean == nil {
+		clean = func(s string) (string, error) { return Clean(s), nil }
+	}
+
+	cleanA, err := clean(a)
+	if err != nil {
+		return "", fmt.Errorf("%s\n%w", a, err)
+	}
+
+	cleanB, err := clean(b)
+	if err != nil {
+		return "", fmt.Errorf("%s\n%w", b, err)
+	}
+
+	// fmt.Printf("AC: %s\n", cleanA)
+	// fmt.Printf("BC: %s\n", cleanB)
+	return cmp.Diff(cleanA, cleanB), nil
 }
 
 func ArgsDiff(a, b []any) string {
@@ -44,7 +62,7 @@ func ErrDiff(a, b error) string {
 	return cmp.Diff(a, b)
 }
 
-func RunTests(t *testing.T, cases Testcases) {
+func RunTests(t *testing.T, cases Testcases, format FormatFunc) {
 	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -52,7 +70,11 @@ func RunTests(t *testing.T, cases Testcases) {
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
-			if diff := QueryDiff(tc.ExpectedSQL, sql); diff != "" {
+			diff, err := QueryDiff(tc.ExpectedSQL, sql, format)
+			if err != nil {
+				t.Fatalf("error: %v", err)
+			}
+			if diff != "" {
 				fmt.Println(sql)
 				fmt.Println(args)
 				t.Fatalf("diff: %s", diff)
@@ -86,7 +108,7 @@ func RunExpressionTests(t *testing.T, d bob.Dialect, cases ExpressionTestcases) 
 			if diff := ErrDiff(tc.ExpectedError, err); diff != "" {
 				t.Fatalf("diff: %s", diff)
 			}
-			if diff := QueryDiff(tc.ExpectedSQL, sql); diff != "" {
+			if diff, _ := QueryDiff(tc.ExpectedSQL, sql, nil); diff != "" {
 				fmt.Println(sql)
 				fmt.Println(args)
 				t.Fatalf("diff: %s", diff)

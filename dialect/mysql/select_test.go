@@ -1,8 +1,12 @@
 package mysql_test
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/pingcap/tidb/parser"
+	"github.com/pingcap/tidb/parser/format"
+	_ "github.com/pingcap/tidb/types/parser_driver"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
@@ -28,16 +32,6 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
 			),
-		},
-		"with rows from": {
-			Query: mysql.Select(
-				sm.From(
-					mysql.F("generate_series", 1, 3),
-				).As("x", "p", "q", "s"),
-				sm.OrderBy("p"),
-			),
-			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS ` + "`x`" + ` (` + "`p`" + `, ` + "`q`" + `, ` + "`s`" + `) ORDER BY p`,
-			ExpectedArgs: nil,
 		},
 		"with sub-select": {
 			ExpectedSQL: `SELECT status, avg(difference)
@@ -70,5 +64,23 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples)
+	testutils.RunTests(t, examples, formatter)
+}
+
+var p = parser.New()
+
+// some bugs to work out for use in insert/delete
+func formatter(s string) (string, error) {
+	node, err := p.ParseOneStmt(s, "", "")
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	err = node.Restore(format.NewRestoreCtx(format.DefaultRestoreFlags, &buf))
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }
