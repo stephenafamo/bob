@@ -29,12 +29,11 @@ func TestSelect(t *testing.T) {
 				sm.Where(sqlite.X("id").In(sqlite.Arg(100, 200, 300))),
 			),
 		},
-		"with rows from": {
+		"select from function": {
 			Query: sqlite.Select(
-				sm.From(sqlite.F("generate_series", 1, 3)).As("x", "p", "q", "s"),
-				sm.OrderBy("p"),
+				sm.From(sqlite.F("generate_series", 1, 3)).As("x"),
 			),
-			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s") ORDER BY p`,
+			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x"`,
 			ExpectedArgs: nil,
 		},
 		"with sub-select": {

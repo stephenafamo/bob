@@ -110,10 +110,9 @@ func (f FromChain[Q]) Apply(q Q) {
 	q.SetIndexedBy(from.IndexedBy)
 }
 
-func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
+func (f FromChain[Q]) As(alias string) FromChain[Q] {
 	fr := f()
 	fr.Alias = alias
-	fr.Columns = columns
 
 	return FromChain[Q](func() clause.From {
 		return fr
