@@ -30,6 +30,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+          cache: true
 
       - name: Install Dependencies
         run: go mod download
