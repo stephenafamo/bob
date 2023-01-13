@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -311,6 +312,10 @@ func (d Driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 	for _, fkey := range fkeyMap {
 		fkeys = append(fkeys, fkey)
 	}
+
+	sort.Slice(fkeys, func(i, j int) bool {
+		return fkeys[i].Name < fkeys[j].Name
+	})
 
 	return fkeys, nil
 }
