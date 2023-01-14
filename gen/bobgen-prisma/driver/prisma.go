@@ -257,10 +257,6 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 			Unique:    field.IsID || field.IsUnique,
 		}
 
-		if field.IsList {
-			column.ArrType = column.DBType + "[]"
-		}
-
 		if field.HasDefaultValue {
 			column.Default = "DEFAULT"
 		}
@@ -275,15 +271,15 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, d.translateColumnType(column))
+		columns = append(columns, d.translateColumnType(column, field.IsList))
 	}
 
 	return columns
 }
 
-func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
-	switch c.ArrType == "" {
-	case true: // not an array
+func (d *Driver) translateColumnType(c drivers.Column, isArray bool) drivers.Column {
+	switch isArray {
+	case false: // not an array
 		switch c.DBType {
 		case "String":
 			c.Type = "string"
@@ -311,7 +307,7 @@ func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 			}
 		}
 
-	case false: // Is an array
+	case true: // Is an array
 		switch c.DBType {
 		case "String":
 			c.Type = "pq.StringArray"
@@ -343,6 +339,7 @@ func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 				c.Type = "pq.StringArray"
 			}
 		}
+		c.DBType += "[]"
 	}
 
 	// fallback to other drivers?

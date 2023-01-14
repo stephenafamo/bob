@@ -312,20 +312,22 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		column := drivers.Column{
 			Name:      colName,
 			DBType:    colType,
-			UDTSchema: udtSchema,
-			UDTName:   udtName,
 			Comment:   comment,
 			Nullable:  nullable,
 			Generated: generated,
 			Unique:    unique,
 		}
+		info := colInfo{
+			UDTSchema: udtSchema,
+			UDTName:   udtName,
+		}
 
 		if arrayType != nil {
-			column.ArrType = *arrayType
+			info.ArrType = *arrayType
 		}
 
 		if domainName != nil {
-			column.DomainName = *domainName
+			info.DomainName = *domainName
 		}
 
 		if defaultValue != nil {
@@ -346,7 +348,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, d.translateColumnType(column))
+		columns = append(columns, d.translateColumnType(column, info))
 	}
 
 	schema := info.Schema

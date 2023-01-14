@@ -311,18 +311,6 @@ func matchColumn(c, m drivers.Column) bool {
 	if !matches(m.DBType, c.DBType) {
 		return false
 	}
-	if !matches(m.UDTName, c.UDTName) {
-		return false
-	}
-	if !matches(m.UDTSchema, c.UDTSchema) {
-		return false
-	}
-	if m.ArrType != "" && (c.ArrType == "" || !matches(m.ArrType, c.ArrType)) {
-		return false
-	}
-	if m.DomainName != "" && (c.DomainName == "" || !matches(m.DomainName, c.DomainName)) {
-		return false
-	}
 
 	if !matchedSomething {
 		return false
@@ -352,15 +340,6 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	}
 	if len(src.DBType) != 0 {
 		ret.DBType = src.DBType
-	}
-	if len(src.UDTName) != 0 {
-		ret.UDTName = src.UDTName
-	}
-	if len(src.UDTSchema) != 0 {
-		ret.UDTSchema = src.UDTSchema
-	}
-	if len(src.ArrType) != 0 {
-		ret.ArrType = src.ArrType
 	}
 
 	return ret

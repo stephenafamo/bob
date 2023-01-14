@@ -20,17 +20,6 @@ type Column struct {
 
 	Type    string         `json:"type" yaml:"type" toml:"type"`
 	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`
-
-	// Postgres only extension bits
-	// ArrType is the underlying data type of the Postgres
-	// ARRAY type. See here:
-	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
-	ArrType   string `json:"arr_type" yaml:"arr_type" toml:"arr_type"`
-	UDTName   string `json:"udt_name" yaml:"udt_name" toml:"udt_name"`
-	UDTSchema string `json:"udt_schema" yaml:"udt_schema" toml:"udt_schema"`
-	// DomainName is the domain type name associated to the column. See here:
-	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
-	DomainName string `json:"domain_name" toml:"domain_name"`
 }
 
 // ColumnNames of the columns.

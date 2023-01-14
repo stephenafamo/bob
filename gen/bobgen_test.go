@@ -245,7 +245,6 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State[any])
 	s.Config = &Config{}
-	domainStr := "a_domain"
 	s.tables = []drivers.Table{
 		{
 			Columns: []drivers.Column{
@@ -264,12 +263,11 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Nullable: true,
 				},
 				{
-					Name:       "domain",
-					Type:       "int",
-					DBType:     "numeric",
-					Default:    "some db nonsense",
-					DomainName: domainStr,
-					Nullable:   false,
+					Name:     "by_named",
+					Type:     "int",
+					DBType:   "numeric",
+					Default:  "some db nonsense",
+					Nullable: false,
 				},
 			},
 		},
@@ -319,7 +317,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 		{
 			Match: drivers.Column{
-				DomainName: domainStr,
+				Name: "by_named",
 			},
 			Replace: drivers.Column{
 				Type:    "big.Int",

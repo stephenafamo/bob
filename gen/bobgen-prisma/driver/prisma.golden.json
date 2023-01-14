@@ -14,11 +14,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -33,7 +29,6 @@
 			"relationship": [
 				{
 					"Name": "sponsorsTovideos",
-					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -52,7 +47,8 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Videos"
 				}
 			]
 		},
@@ -70,11 +66,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -89,7 +81,6 @@
 			"relationship": [
 				{
 					"Name": "tagsTovideo_tagsvideo_tagsTovideos",
-					"Alias": "",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -123,7 +114,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		},
@@ -141,11 +133,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "enum_use",
@@ -156,11 +144,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "Workday",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "enum_nullable",
@@ -171,11 +155,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "Workday",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_zero",
@@ -186,11 +166,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_one",
@@ -201,11 +177,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_two",
@@ -216,11 +188,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_three",
@@ -231,11 +199,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_four",
@@ -246,11 +210,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_five",
@@ -261,11 +221,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_six",
@@ -276,11 +232,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_zero",
@@ -291,11 +243,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_one",
@@ -306,11 +254,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_two",
@@ -321,11 +265,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_three",
@@ -336,11 +276,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_four",
@@ -351,11 +287,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_five",
@@ -366,11 +298,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_six",
@@ -381,11 +309,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_seven",
@@ -396,11 +320,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_eight",
@@ -411,11 +331,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_nine",
@@ -426,11 +342,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_ten",
@@ -441,11 +353,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_eleven",
@@ -456,11 +364,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_zero",
@@ -471,11 +375,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_one",
@@ -486,11 +386,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_two",
@@ -501,11 +397,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_three",
@@ -516,11 +408,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_four",
@@ -531,11 +419,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_five",
@@ -546,11 +430,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_six",
@@ -561,11 +441,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_seven",
@@ -576,11 +452,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_eight",
@@ -591,11 +463,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "nonbyte_nine",
@@ -606,11 +474,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "byte_zero",
@@ -621,11 +485,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "byte_one",
@@ -636,11 +496,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "byte_two",
@@ -651,11 +507,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "byte_three",
@@ -666,11 +518,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "byte_four",
@@ -681,11 +529,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_zero",
@@ -696,11 +540,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_one",
@@ -711,11 +551,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_two",
@@ -726,11 +562,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_three",
@@ -741,11 +573,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_four",
@@ -756,11 +584,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_five",
@@ -771,11 +595,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_six",
@@ -786,11 +606,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_zero",
@@ -801,11 +617,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_one",
@@ -816,11 +628,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_two",
@@ -831,11 +639,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_three",
@@ -846,11 +650,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_four",
@@ -861,11 +661,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_five",
@@ -876,11 +672,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_six",
@@ -891,11 +683,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_zero",
@@ -908,11 +696,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_one",
@@ -925,11 +709,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_two",
@@ -942,11 +722,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_three",
@@ -959,11 +735,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_four",
@@ -976,11 +748,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_five",
@@ -993,11 +761,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_six",
@@ -1010,11 +774,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_seven",
@@ -1027,11 +787,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_eight",
@@ -1044,11 +800,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "float_nine",
@@ -1061,11 +813,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "bytea_zero",
@@ -1076,11 +824,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_one",
@@ -1091,11 +835,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_two",
@@ -1106,11 +846,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_three",
@@ -1121,11 +857,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_four",
@@ -1136,11 +868,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_five",
@@ -1151,11 +879,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_six",
@@ -1166,11 +890,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_seven",
@@ -1181,11 +901,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_eight",
@@ -1196,11 +912,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_zero",
@@ -1213,11 +925,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_one",
@@ -1230,11 +938,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_two",
@@ -1247,11 +951,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_three",
@@ -1264,11 +964,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_four",
@@ -1281,11 +977,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_five",
@@ -1298,11 +990,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_six",
@@ -1315,11 +1003,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_seven",
@@ -1332,11 +1016,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_eight",
@@ -1349,11 +1029,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_nine",
@@ -1366,11 +1042,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_ten",
@@ -1383,11 +1055,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_eleven",
@@ -1400,11 +1068,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_twelve",
@@ -1417,11 +1081,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_thirteen",
@@ -1434,11 +1094,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_fourteen",
@@ -1451,11 +1107,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_fifteen",
@@ -1468,11 +1120,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_sixteen",
@@ -1485,11 +1133,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_seventeen",
@@ -1502,11 +1146,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_eighteen",
@@ -1519,11 +1159,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "uuid_zero",
@@ -1534,11 +1170,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "uuid_one",
@@ -1549,11 +1181,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "uuid_two",
@@ -1564,11 +1192,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "uuid_three",
@@ -1579,11 +1203,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "uuid_four",
@@ -1594,11 +1214,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "uuid_five",
@@ -1609,11 +1225,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "integer_default",
@@ -1624,11 +1236,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "varchar_default",
@@ -1639,11 +1247,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "timestamp_notz",
@@ -1656,11 +1260,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "timestamp_tz",
@@ -1673,11 +1273,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "json_null",
@@ -1691,11 +1287,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "json_nnull",
@@ -1709,11 +1301,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonb_null",
@@ -1727,11 +1315,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonb_nnull",
@@ -1745,11 +1329,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "double_prec_null",
@@ -1760,11 +1340,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "double_prec_nnull",
@@ -1775,11 +1351,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "inet_null",
@@ -1790,11 +1362,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "inet_nnull",
@@ -1805,11 +1373,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "money_null",
@@ -1822,11 +1386,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "money_nnull",
@@ -1839,11 +1399,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "xml_null",
@@ -1854,11 +1410,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "xml_nnull",
@@ -1869,15 +1421,11 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "intarr_null",
-					"db_type": "Int",
+					"db_type": "Int[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1886,15 +1434,11 @@
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Int[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "intarr_nnull",
-					"db_type": "Int",
+					"db_type": "Int[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1903,15 +1447,11 @@
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Int[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "boolarr_null",
-					"db_type": "Boolean",
+					"db_type": "Boolean[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1920,15 +1460,11 @@
 					"type": "pq.BoolArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Boolean[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "boolarr_nnull",
-					"db_type": "Boolean",
+					"db_type": "Boolean[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1937,15 +1473,11 @@
 					"type": "pq.BoolArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Boolean[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "varchararr_null",
-					"db_type": "String",
+					"db_type": "String[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1954,15 +1486,11 @@
 					"type": "pq.StringArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "String[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "varchararr_nnull",
-					"db_type": "String",
+					"db_type": "String[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1971,15 +1499,11 @@
 					"type": "pq.StringArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "String[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "decimalarr_null",
-					"db_type": "Decimal",
+					"db_type": "Decimal[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1989,15 +1513,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "Decimal[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "decimalarr_nnull",
-					"db_type": "Decimal",
+					"db_type": "Decimal[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2007,15 +1527,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "Decimal[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "byteaarr_null",
-					"db_type": "Bytes",
+					"db_type": "Bytes[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2024,15 +1540,11 @@
 					"type": "pq.ByteaArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Bytes[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "byteaarr_nnull",
-					"db_type": "Bytes",
+					"db_type": "Bytes[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2041,15 +1553,11 @@
 					"type": "pq.ByteaArray",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Bytes[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonbarr_null",
-					"db_type": "Json",
+					"db_type": "Json[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2059,15 +1567,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
-					],
-					"arr_type": "Json[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonbarr_nnull",
-					"db_type": "Json",
+					"db_type": "Json[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2077,15 +1581,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
-					],
-					"arr_type": "Json[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonarr_null",
-					"db_type": "Json",
+					"db_type": "Json[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2095,15 +1595,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
-					],
-					"arr_type": "Json[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "jsonarr_nnull",
-					"db_type": "Json",
+					"db_type": "Json[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2113,15 +1609,11 @@
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
-					],
-					"arr_type": "Json[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "customarr_null",
-					"db_type": "Int",
+					"db_type": "Int[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2130,15 +1622,11 @@
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Int[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "customarr_nnull",
-					"db_type": "Int",
+					"db_type": "Int[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2147,11 +1635,7 @@
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
-					],
-					"arr_type": "Int[]",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "domainuint3_nnull",
@@ -2164,11 +1648,7 @@
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "base",
@@ -2179,11 +1659,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "generated_nnull",
@@ -2194,11 +1670,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "generated_null",
@@ -2209,11 +1681,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2241,11 +1709,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "email_validated",
@@ -2256,11 +1720,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "primary_email",
@@ -2271,11 +1731,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2297,7 +1753,6 @@
 			"relationship": [
 				{
 					"Name": "usersTovideos",
-					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2316,7 +1771,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Videos"
 				}
 			]
 		},
@@ -2334,11 +1790,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tag_id",
@@ -2349,11 +1801,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2390,7 +1838,6 @@
 			"relationship": [
 				{
 					"Name": "tagsTovideo_tags",
-					"Alias": "Tags",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2409,11 +1856,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Tags"
 				},
 				{
 					"Name": "video_tagsTovideos",
-					"Alias": "Videos",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2432,7 +1879,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Videos"
 				}
 			]
 		},
@@ -2450,11 +1898,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "user_id",
@@ -2465,11 +1909,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -2480,11 +1920,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2527,7 +1963,6 @@
 			"relationship": [
 				{
 					"Name": "tagsTovideo_tagsvideo_tagsTovideos",
-					"Alias": "",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -2561,11 +1996,11 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": ""
 				},
 				{
 					"Name": "sponsorsTovideos",
-					"Alias": "Sponsors",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2584,11 +2019,11 @@
 							"KeyNullable": true
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Sponsors"
 				},
 				{
 					"Name": "usersTovideos",
-					"Alias": "Users",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2607,7 +2042,8 @@
 							"KeyNullable": false
 						}
 					],
-					"Ignored": false
+					"Ignored": false,
+					"Alias": "Users"
 				}
 			]
 		}

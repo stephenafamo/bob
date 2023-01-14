@@ -14,11 +14,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "b",
@@ -29,11 +25,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "c",
@@ -44,11 +36,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "d",
@@ -59,11 +47,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "e",
@@ -74,11 +58,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -106,11 +86,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "b",
@@ -121,11 +97,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -153,11 +125,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -185,11 +153,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -241,11 +205,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -297,11 +257,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "video_id",
@@ -312,11 +268,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -327,11 +279,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": null,
@@ -354,11 +302,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -410,11 +354,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tag_id",
@@ -425,11 +365,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -525,11 +461,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "user_id",
@@ -540,11 +472,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -555,11 +483,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -685,11 +609,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "user_id",
@@ -700,11 +620,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -715,11 +631,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "something",
@@ -730,11 +642,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "another",
@@ -745,11 +653,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -830,11 +734,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -862,11 +762,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "b",
@@ -877,11 +773,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "c",
@@ -892,11 +784,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "d",
@@ -907,11 +795,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "e",
@@ -922,11 +806,7 @@
 					"unique": false,
 					"generated": true,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -954,11 +834,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -1010,11 +886,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -1066,11 +938,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "id_two",
@@ -1081,11 +949,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "id_three",
@@ -1096,11 +960,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_zero",
@@ -1111,11 +971,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_one",
@@ -1126,11 +982,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_two",
@@ -1141,11 +993,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_three",
@@ -1156,11 +1004,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_four",
@@ -1171,11 +1015,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_five",
@@ -1186,11 +1026,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bool_six",
@@ -1201,11 +1037,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_zero",
@@ -1216,11 +1048,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_one",
@@ -1231,11 +1059,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_two",
@@ -1246,11 +1070,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_three",
@@ -1261,11 +1081,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_four",
@@ -1276,11 +1092,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_five",
@@ -1291,11 +1103,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_six",
@@ -1306,11 +1114,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_seven",
@@ -1321,11 +1125,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_eight",
@@ -1336,11 +1136,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_nine",
@@ -1351,11 +1147,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_ten",
@@ -1366,11 +1158,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "string_eleven",
@@ -1381,11 +1169,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_zero",
@@ -1396,11 +1180,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_one",
@@ -1411,11 +1191,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_two",
@@ -1426,11 +1202,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_three",
@@ -1441,11 +1213,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_four",
@@ -1456,11 +1224,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_five",
@@ -1471,11 +1235,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "big_int_six",
@@ -1486,11 +1246,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_zero",
@@ -1501,11 +1257,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_one",
@@ -1516,11 +1268,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_two",
@@ -1531,11 +1279,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_three",
@@ -1546,11 +1290,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_four",
@@ -1561,11 +1301,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_five",
@@ -1576,11 +1312,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "int_six",
@@ -1591,11 +1323,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_zero",
@@ -1606,11 +1334,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_one",
@@ -1621,11 +1345,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_two",
@@ -1636,11 +1356,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_three",
@@ -1651,11 +1367,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_four",
@@ -1666,11 +1378,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_five",
@@ -1681,11 +1389,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_six",
@@ -1696,11 +1400,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_seven",
@@ -1711,11 +1411,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_eight",
@@ -1726,11 +1422,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_nine",
@@ -1741,11 +1433,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_zero",
@@ -1756,11 +1444,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_one",
@@ -1771,11 +1455,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_two",
@@ -1786,11 +1466,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_three",
@@ -1801,11 +1477,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_four",
@@ -1816,11 +1488,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_five",
@@ -1831,11 +1499,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_six",
@@ -1846,11 +1510,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_seven",
@@ -1861,11 +1521,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bytea_eight",
@@ -1876,11 +1532,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_zero",
@@ -1891,11 +1543,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_one",
@@ -1908,11 +1556,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_two",
@@ -1923,11 +1567,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_three",
@@ -1938,11 +1578,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_five",
@@ -1953,11 +1589,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_nine",
@@ -1968,11 +1600,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "time_eleven",
@@ -1985,11 +1613,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_twelve",
@@ -2002,11 +1626,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_fifteen",
@@ -2019,11 +1639,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "time_sixteen",
@@ -2036,11 +1652,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "json_null",
@@ -2054,11 +1666,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "json_nnull",
@@ -2072,11 +1680,7 @@
 					"imports": [
 						"\"encoding/json\"",
 						"\"github.com/stephenafamo/bob/types\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "tinyint_null",
@@ -2087,11 +1691,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int8",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyint_nnull",
@@ -2102,11 +1702,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int8",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyint1_null",
@@ -2117,11 +1713,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyint1_nnull",
@@ -2132,11 +1724,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyint2_null",
@@ -2147,11 +1735,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyint2_nnull",
@@ -2162,11 +1746,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "smallint_null",
@@ -2177,11 +1757,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int16",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "smallint_nnull",
@@ -2192,11 +1768,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int16",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "mediumint_null",
@@ -2207,11 +1779,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "mediumint_nnull",
@@ -2222,11 +1790,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bigint_null",
@@ -2237,11 +1801,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "bigint_nnull",
@@ -2252,11 +1812,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_null",
@@ -2267,11 +1823,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "float_nnull",
@@ -2282,11 +1834,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float32",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "double_null",
@@ -2297,11 +1845,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "double_nnull",
@@ -2312,11 +1856,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "doubleprec_null",
@@ -2327,11 +1867,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "doubleprec_nnull",
@@ -2342,11 +1878,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "real_null",
@@ -2357,11 +1889,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "real_nnull",
@@ -2372,11 +1900,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "float64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "boolean_null",
@@ -2387,11 +1911,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "boolean_nnull",
@@ -2402,11 +1922,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "bool",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "date_null",
@@ -2419,11 +1935,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "date_nnull",
@@ -2436,11 +1948,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "datetime_null",
@@ -2453,11 +1961,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "datetime_nnull",
@@ -2470,11 +1974,7 @@
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
-					],
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					]
 				},
 				{
 					"name": "timestamp_null",
@@ -2485,11 +1985,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "timestamp_nnull",
@@ -2500,11 +1996,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "binary_null",
@@ -2515,11 +2007,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "binary_nnull",
@@ -2530,11 +2018,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "varbinary_null",
@@ -2545,11 +2029,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "varbinary_nnull",
@@ -2560,11 +2040,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyblob_null",
@@ -2575,11 +2051,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tinyblob_nnull",
@@ -2590,11 +2062,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "blob_null",
@@ -2605,11 +2073,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "blob_nnull",
@@ -2620,11 +2084,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "[]byte",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "mediumblob_null",
@@ -2635,11 +2095,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "mediumblob_nnull",
@@ -2650,11 +2106,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "longblob_null",
@@ -2665,11 +2117,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "longblob_nnull",
@@ -2680,11 +2128,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "varchar_null",
@@ -2695,11 +2139,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "varchar_nnull",
@@ -2710,11 +2150,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "char_null",
@@ -2725,11 +2161,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "char_nnull",
@@ -2740,11 +2172,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "text_null",
@@ -2755,11 +2183,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "text_nnull",
@@ -2770,11 +2194,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "string",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2802,11 +2222,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "video_id",
@@ -2817,11 +2233,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -2832,11 +2244,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": null,
@@ -2859,11 +2267,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -2915,11 +2319,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "tag_id",
@@ -2930,11 +2330,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -3030,11 +2426,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "user_id",
@@ -3045,11 +2437,7 @@
 					"unique": false,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				},
 				{
 					"name": "sponsor_id",
@@ -3060,11 +2448,7 @@
 					"unique": true,
 					"generated": false,
 					"type": "int64",
-					"imports": null,
-					"arr_type": "",
-					"udt_name": "",
-					"udt_schema": "",
-					"domain_name": ""
+					"imports": null
 				}
 			],
 			"p_key": {

@@ -8,10 +8,23 @@ import (
 	"github.com/stephenafamo/bob/gen/importers"
 )
 
+type colInfo struct {
+	// Postgres only extension bits
+	// ArrType is the underlying data type of the Postgres
+	// ARRAY type. See here:
+	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
+	ArrType   string `json:"arr_type" yaml:"arr_type" toml:"arr_type"`
+	UDTName   string `json:"udt_name" yaml:"udt_name" toml:"udt_name"`
+	UDTSchema string `json:"udt_schema" yaml:"udt_schema" toml:"udt_schema"`
+	// DomainName is the domain type name associated to the column. See here:
+	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
+	DomainName string `json:"domain_name" toml:"domain_name"`
+}
+
 // translateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
+func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
 	switch c.DBType {
 	case "bigint", "bigserial":
 		c.Type = "int64"
@@ -54,19 +67,19 @@ func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 	case "ENUM":
 		c.Type = "string"
 		for _, e := range d.enums {
-			if e.Schema == c.UDTSchema && e.Name == c.UDTName {
+			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
 				c.Type = e.Type
 			}
 		}
 	case "ARRAY":
 		var dbType string
 		var imports importers.List
-		c.Type, dbType, imports = d.getArrayType(c)
+		c.Type, dbType, imports = d.getArrayType(info)
 		c.Imports = append(c.Imports, imports...)
 		// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-		c.DBType += dbType
+		c.DBType = dbType + "[]"
 	case "USER-DEFINED":
-		switch c.UDTName {
+		switch info.UDTName {
 		case "hstore":
 			c.Type = "types.HStore"
 			c.DBType = "hstore"
@@ -74,7 +87,7 @@ func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "string"
 		default:
 			c.Type = "string"
-			fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
+			fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", info.UDTName)
 		}
 	default:
 		c.Type = "string"
@@ -85,15 +98,15 @@ func (d *Driver) translateColumnType(c drivers.Column) drivers.Column {
 }
 
 // getArrayType returns the correct Array type for each database type
-func (d *Driver) getArrayType(c drivers.Column) (string, string, importers.List) {
-	if c.ArrType == "USER-DEFINED" {
-		name := c.UDTName[1:] // postgres prefixes with an underscore
+func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
+	if info.ArrType == "USER-DEFINED" {
+		name := info.UDTName[1:] // postgres prefixes with an underscore
 		for _, e := range d.enums {
-			if e.Schema == c.UDTSchema && e.Name == name {
-				return fmt.Sprintf("parray.EnumArray[%s]", e.Type), c.UDTName, typMap["parray"]
+			if e.Schema == info.UDTSchema && e.Name == name {
+				return fmt.Sprintf("parray.EnumArray[%s]", e.Type), info.UDTName, typMap["parray"]
 			}
 		}
-		return "pq.StringArray", c.ArrType, nil
+		return "pq.StringArray", info.ArrType, nil
 	}
 
 	// If a domain is created with a statement like this: "CREATE DOMAIN
@@ -103,45 +116,45 @@ func (d *Driver) getArrayType(c drivers.Column) (string, string, importers.List)
 	// the possibities. Notably, an array of a user-defined type ("CREATE
 	// DOMAIN my_array AS my_type[]") will be treated as an array of strings,
 	// which is not guaranteed to be correct.
-	if c.ArrType != "" {
-		switch c.ArrType {
+	if info.ArrType != "" {
+		switch info.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "pq.Int64Array", c.ArrType, nil
+			return "pq.Int64Array", info.ArrType, nil
 		case "bytea":
-			return "pq.ByteaArray", c.ArrType, nil
+			return "pq.ByteaArray", info.ArrType, nil
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
-			return "pq.StringArray", c.ArrType, nil
+			return "pq.StringArray", info.ArrType, nil
 		case "boolean":
-			return "pq.BoolArray", c.ArrType, nil
+			return "pq.BoolArray", info.ArrType, nil
 		case "decimal", "numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.GenericArray[decimal.Decimal]", c.ArrType, imports
+			return "parray.GenericArray[decimal.Decimal]", info.ArrType, imports
 		case "double precision", "real":
-			return "pq.Float64Array", c.ArrType, nil
+			return "pq.Float64Array", info.ArrType, nil
 		default:
-			return "pq.StringArray", c.ArrType, nil
+			return "pq.StringArray", info.ArrType, nil
 		}
 	} else {
-		switch c.UDTName {
+		switch info.UDTName {
 		case "_int4", "_int8":
-			return "pq.Int64Array", c.UDTName, nil
+			return "pq.Int64Array", info.UDTName, nil
 		case "_bytea":
-			return "pq.ByteaArray", c.UDTName, nil
+			return "pq.ByteaArray", info.UDTName, nil
 		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
-			return "pq.StringArray", c.UDTName, nil
+			return "pq.StringArray", info.UDTName, nil
 		case "_bool":
-			return "pq.BoolArray", c.UDTName, nil
+			return "pq.BoolArray", info.UDTName, nil
 		case "_numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.GenericArray[decimal.Decimal]", c.UDTName, imports
+			return "parray.GenericArray[decimal.Decimal]", info.UDTName, imports
 		case "_float4", "_float8":
-			return "pq.Float64Array", c.UDTName, nil
+			return "pq.Float64Array", info.UDTName, nil
 		default:
-			return "pq.StringArray", c.UDTName, nil
+			return "pq.StringArray", info.UDTName, nil
 		}
 	}
 }
