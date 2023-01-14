@@ -22,7 +22,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       mysql:
-        image: mysql/mysql-server:8
+        image: mysql/mysql-server:8.0
         env:
           MYSQL_ROOT_PASSWORD: pass
           MYSQL_DATABASE: droppable
