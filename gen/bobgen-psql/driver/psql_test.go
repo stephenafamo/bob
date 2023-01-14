@@ -59,11 +59,9 @@ func TestAssemble(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	fmt.Printf("migrating...")
-	for _, statement := range strings.Split(testDB, ";") {
-		_, err = db.Exec(statement)
-		if err != nil {
-			t.Fatal(err)
-		}
+	_, err = db.Exec(testDB)
+	if err != nil {
+		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")
 

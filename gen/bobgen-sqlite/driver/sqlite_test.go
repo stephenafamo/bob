@@ -5,16 +5,33 @@ import (
 	"database/sql"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	_ "modernc.org/sqlite"
 )
+
+func cleanup(t *testing.T, config Config) {
+	fmt.Printf("cleaning...")
+	err := os.Remove(config.DSN) // delete the old DB
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("could not delete existing db: %v", err)
+	}
+
+	for _, conn := range config.Attach {
+		err := os.Remove(conn) // delete the old DB
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("could not delete existing db: %v", err)
+		}
+	}
+
+	fmt.Printf(" DONE\n")
+}
 
 //go:embed testdb.sql
 var testDB string
@@ -29,10 +46,9 @@ func TestAssemble(t *testing.T) {
 		Attach: map[string]string{"1": "./test1.db"},
 	}
 
-	err := os.Remove(config.DSN) // delete the old DB
-	if err != nil {
-		t.Fatalf("could not delete existing db: %v", err)
-	}
+	cleanup(t, config)
+	t.Cleanup(func() { cleanup(t, config) })
+
 	db, err := sql.Open("sqlite", config.DSN)
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
@@ -40,11 +56,6 @@ func TestAssemble(t *testing.T) {
 	defer db.Close()
 
 	for schema, conn := range config.Attach {
-		err := os.Remove(conn) // delete the old DB
-		if err != nil {
-			t.Fatalf("could not delete existing db: %v", err)
-		}
-
 		_, err = db.ExecContext(ctx, fmt.Sprintf("attach database '%s' as %q", conn, schema))
 		if err != nil {
 			t.Fatalf("could not attach %q: %v", conn, err)
@@ -52,11 +63,9 @@ func TestAssemble(t *testing.T) {
 	}
 
 	fmt.Printf("migrating...")
-	for _, statement := range strings.Split(testDB, ";") {
-		_, err = db.Exec(statement)
-		if err != nil {
-			t.Fatal(err)
-		}
+	_, err = db.Exec(testDB)
+	if err != nil {
+		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")
 
