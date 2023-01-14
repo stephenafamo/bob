@@ -46,7 +46,7 @@ jobs:
       - name: Run tests
         env:
           PSQL_TEST_DSN: postgresql://user:pass@localhost:5432/droppable?sslmode=disable
-          MYSQL_TEST_DSN: root:pass@tcp(mysql:33036)/droppable?tls=skip-verify&multiStatements=true
+          MYSQL_TEST_DSN: root:pass@(localhost:33036)/droppable?tls=skip-verify&multiStatements=true
         run: go test -race -covermode atomic -coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
 
       - name: Send coverage
