@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"html/template"
 	"io/fs"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
