@@ -17,6 +17,8 @@ import (
 )
 
 func cleanup(t *testing.T, config Config) {
+	t.Helper()
+
 	fmt.Printf("cleaning...")
 	err := os.Remove(config.DSN) // delete the old DB
 	if err != nil && !errors.Is(err, os.ErrNotExist) {

@@ -388,7 +388,7 @@ func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 
 			// reset things
 			current = drivers.Constraint{}
-			table, foreignTable, currentTyp, foreignCols = "", "", "", nil
+			table, foreignTable, currentTyp, foreignCols = "", "", "", nil //nolint:ineffassign
 		}
 
 		table = c.TableName
@@ -413,7 +413,7 @@ func CustomFuncs() template.FuncMap {
 }
 
 func uniqueColPairs(t drivers.Table) string {
-	var ret []string
+	ret := make([]string, 0, len(t.Uniques)+1)
 	if t.PKey != nil {
 		ret = append(ret, fmt.Sprintf("%#v", t.PKey.Columns))
 	}
