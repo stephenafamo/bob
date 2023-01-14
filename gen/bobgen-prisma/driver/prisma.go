@@ -65,6 +65,12 @@ type Driver struct {
 	datamodel Datamodel
 }
 
+func (d *Driver) Capabilities() drivers.Capabilities {
+	return drivers.Capabilities{
+		BulkInsert: d.provider.DriverName != "mysql",
+	}
+}
+
 // Assemble all the information we need to provide back to the driver
 func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo

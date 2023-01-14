@@ -31,6 +31,9 @@ type {{$tAlias.UpSingular}} struct {
 // This should almost always be used instead of []{{$tAlias.UpSingular}}.
 type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 
+{{block "model_and_query" . -}}
+{{$table := .Table}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 {{if not $table.PKey -}}
 	// {{$tAlias.UpPlural}}View contains methods to work with the {{$table.Name}} view
 	var {{$tAlias.UpPlural}}View = {{$.Dialect}}.NewView[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
@@ -41,6 +44,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTable[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]
+{{- end}}
 {{- end}}
 
 // {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}

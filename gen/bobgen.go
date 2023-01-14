@@ -92,6 +92,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 			Tags:              s.Config.Tags,
 			RelationTag:       s.Config.RelationTag,
 			ModelsPackage:     s.ModelsPkg,
+			CanBulkInsert:     driver.Capabilities().BulkInsert,
 		}
 
 		for _, v := range s.Config.TagIgnore {

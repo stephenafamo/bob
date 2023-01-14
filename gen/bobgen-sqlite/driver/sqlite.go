@@ -23,13 +23,6 @@ func New(config Config) Interface {
 	return &Driver{config: config}
 }
 
-// Driver holds the database connection string and a handle
-// to the database connection.
-type Driver struct {
-	config Config
-	conn   *sql.DB
-}
-
 type Config struct {
 	// The database connection string
 	DSN string
@@ -52,6 +45,19 @@ type Config struct {
 	// The name you wish to assign to your generated models package
 	Pkgname   string
 	NoFactory bool `yaml:"no_factory"`
+}
+
+// Driver holds the database connection string and a handle
+// to the database connection.
+type Driver struct {
+	config Config
+	conn   *sql.DB
+}
+
+func (d *Driver) Capabilities() drivers.Capabilities {
+	return drivers.Capabilities{
+		BulkInsert: true,
+	}
 }
 
 // Assemble all the information we need to provide back to the driver

@@ -12,8 +12,14 @@ import (
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface[T any] interface {
+	// What the driver is capable of
+	Capabilities() Capabilities
 	// Assemble the database information into a nice struct
 	Assemble(ctx context.Context) (*DBInfo[T], error)
+}
+
+type Capabilities struct {
+	BulkInsert bool
 }
 
 // DBInfo is the database's table data and dialect.
@@ -51,9 +57,9 @@ type Constructor interface {
 	TableDetails(ctx context.Context, info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
 }
 
-// TablesConcurrently is a concurrent version of Tables. It returns the
+// TablesConcurrently is a concurrent version of BuildDBInfo. It returns the
 // metadata for all tables, minus the tables specified in the excludes.
-func Tables(ctx context.Context, c Constructor, concurrency int, only, except map[string][]string) ([]Table, error) {
+func BuildDBInfo(ctx context.Context, c Constructor, concurrency int, only, except map[string][]string) ([]Table, error) {
 	var err error
 	var ret []Table
 

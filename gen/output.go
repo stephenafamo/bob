@@ -176,7 +176,6 @@ func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
 
 		// Skip writing the file if the content is empty
 		if out.Len()-prevLen < 1 {
-			fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.output.OutFolder, normalized)
 			continue
 		}
 

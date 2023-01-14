@@ -89,6 +89,10 @@ type templateData[T any] struct {
 	// Supplied by the driver
 	ExtraInfo     T
 	ModelsPackage string
+
+	// If the driver cannot bulk insert and return concrete objects
+	// then we have to insert relationships one-by-one
+	CanBulkInsert bool
 }
 
 func (t *templateData[T]) ResetImports() {

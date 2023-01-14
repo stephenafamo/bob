@@ -82,11 +82,21 @@
     var err error
 
     {{if $rel.InsertEarly -}}
-      rels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
-      if err != nil {
-          return fmt.Errorf("inserting related objects: %w", err)
-      }
-			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rels...)
+      {{if $.CanBulkInsert -}}
+        rels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
+        if err != nil {
+            return fmt.Errorf("inserting related objects: %w", err)
+        }
+      {{- else -}}
+        rels := make({{$ftable.UpSingular}}Slice, len(related))
+        for i, rel := range related {
+          rels[i], err = {{$ftable.UpPlural}}Table.Insert(ctx, exec, rel)
+          if err != nil {
+              return fmt.Errorf("inserting related objects: %w", err)
+          }
+        }
+      {{- end}}
+      o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rels...)
     {{else -}}
       rels := related
     {{end}}
@@ -105,11 +115,21 @@
     {{insertDeps $.Aliases $rel true}}
 
     {{if not $rel.InsertEarly -}}
-      newRels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
-      if err != nil {
-          return fmt.Errorf("inserting related objects: %w", err)
-      }
-			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, newRels...)
+      {{if $.CanBulkInsert -}}
+        newRels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
+        if err != nil {
+            return fmt.Errorf("inserting related objects: %w", err)
+        }
+      {{- else -}}
+        newRels := make({{$ftable.UpSingular}}Slice, len(related))
+        for i, rel := range related {
+          newRels[i], err = {{$ftable.UpPlural}}Table.Insert(ctx, exec, rel)
+          if err != nil {
+              return fmt.Errorf("inserting related objects: %w", err)
+          }
+        }
+      {{- end}}
+      o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, newRels...)
     {{- end}}
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}

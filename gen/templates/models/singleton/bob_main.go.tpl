@@ -27,6 +27,7 @@ var ColumnNames = struct {
 	{{end -}}
 }
 
+{{block "where_helpers" . -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
@@ -34,6 +35,7 @@ var (
 	UpdateWhere = Where[*dialect.UpdateQuery]()
 	DeleteWhere = Where[*dialect.DeleteQuery]()
 )
+{{- end}}
 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 func Where[Q {{$.Dialect}}.Filterable]() struct {

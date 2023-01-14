@@ -9,6 +9,10 @@ import (
 // MockDriver is a mock implementation of the bdb driver Interface
 type MockDriver struct{}
 
+func (m *MockDriver) Capabilities() drivers.Capabilities {
+	return drivers.Capabilities{BulkInsert: true}
+}
+
 // Assemble the DBInfo
 func (m *MockDriver) Assemble(ctx context.Context) (*drivers.DBInfo[any], error) {
 	var err error
@@ -21,7 +25,7 @@ func (m *MockDriver) Assemble(ctx context.Context) (*drivers.DBInfo[any], error)
 		}
 	}()
 
-	dbinfo.Tables, err = drivers.Tables(ctx, m, 1, nil, map[string][]string{"hangars": nil})
+	dbinfo.Tables, err = drivers.BuildDBInfo(ctx, m, 1, nil, map[string][]string{"hangars": nil})
 	if err != nil {
 		return nil, err
 	}

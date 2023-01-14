@@ -40,21 +40,6 @@ type Enum struct {
 	Values pq.StringArray
 }
 
-func New(config Config) Interface {
-	return &Driver{config: config}
-}
-
-// Driver holds the database connection string and a handle
-// to the database connection.
-type Driver struct {
-	config Config
-
-	conn *sql.DB
-
-	enums         []Enum
-	uniqueColumns map[columnIdentifier]struct{}
-}
-
 type Config struct {
 	// The database connection string
 	Dsn string
@@ -86,6 +71,27 @@ type columnIdentifier struct {
 	Column string
 }
 
+func New(config Config) Interface {
+	return &Driver{config: config}
+}
+
+// Driver holds the database connection string and a handle
+// to the database connection.
+type Driver struct {
+	config Config
+
+	conn *sql.DB
+
+	enums         []Enum
+	uniqueColumns map[columnIdentifier]struct{}
+}
+
+func (d *Driver) Capabilities() drivers.Capabilities {
+	return drivers.Capabilities{
+		BulkInsert: true,
+	}
+}
+
 // Assemble all the information we need to provide back to the driver
 func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
@@ -115,7 +121,7 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, errors.Wrapf(err, "unable to load enums")
 	}
 
-	dbinfo.Tables, err = drivers.Tables(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
+	dbinfo.Tables, err = drivers.BuildDBInfo(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
 	if err != nil {
 		return nil, err
 	}
