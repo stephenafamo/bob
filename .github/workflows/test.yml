@@ -22,13 +22,18 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       mysql:
-        image: mysql/mysql-server:8.0
+        image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: pass
           MYSQL_DATABASE: droppable
         ports:
-        - 33036:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -ppass"
+          --health-interval 10s
+          --health-start-period 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout Repo
@@ -46,7 +51,7 @@ jobs:
       - name: Run tests
         env:
           PSQL_TEST_DSN: postgresql://user:pass@localhost:5432/droppable?sslmode=disable
-          MYSQL_TEST_DSN: root:pass@(localhost:33036)/droppable?tls=skip-verify&multiStatements=true
+          MYSQL_TEST_DSN: root:pass@(localhost:3306)/droppable?tls=skip-verify&multiStatements=true
         run: go test -race -covermode atomic -coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
 
       - name: Send coverage
