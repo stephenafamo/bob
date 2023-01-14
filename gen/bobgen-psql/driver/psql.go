@@ -266,29 +266,22 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		%s
 	) AS c`, tableQuery) // matviewQuery, tableQuery)
 
-	allfilter := colFilter["*"]
 	filter := colFilter[info.Key]
-	include := append(allfilter.Only, filter.Only...)
-	exclude := append(allfilter.Except, filter.Except...)
+	only := filter.Only
+	except := filter.Except
 
-	if len(include) > 0 || len(exclude) > 0 {
+	if len(only) > 0 || len(except) > 0 {
 		query += " where "
 	}
 
-	if len(include) > 0 {
-		query += fmt.Sprintf("c.column_name in (%s)", strmangle.Placeholders(true, len(include), 3, 1))
-		for _, w := range include {
+	if len(only) > 0 {
+		query += fmt.Sprintf("c.column_name in (%s)", strmangle.Placeholders(true, len(only), 3, 1))
+		for _, w := range only {
 			args = append(args, w)
 		}
-	}
-
-	if len(include) > 0 && len(exclude) > 0 {
-		query += " and "
-	}
-
-	if len(exclude) > 0 {
-		query += fmt.Sprintf("c.column_name not in (%s)", strmangle.Placeholders(true, len(exclude), 3, 1))
-		for _, w := range exclude {
+	} else if len(except) > 0 {
+		query += fmt.Sprintf("c.column_name not in (%s)", strmangle.Placeholders(true, len(except), 3, 1))
+		for _, w := range except {
 			args = append(args, w)
 		}
 	}

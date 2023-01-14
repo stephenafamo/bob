@@ -43,7 +43,7 @@ func (t Table) GetColumn(name string) Column {
 		}
 	}
 
-	panic(fmt.Sprintf("could not find column name: %s in %#v", name, t.Columns))
+	panic(fmt.Sprintf("could not find column name: %q.%q in %#v", t.Key, name, t.Columns))
 }
 
 func (t Table) CanSoftDelete(deleteColumn string) bool {
