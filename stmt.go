@@ -164,3 +164,36 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 
 	return typedSlice, err
 }
+
+func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor[T], error) {
+	rows, err := s.stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
+		before, after := s.mapper(ctx, c)
+		return before, func(link any) (T, error) {
+			t, err := after(link)
+			if err != nil {
+				return t, err
+			}
+
+			for _, loader := range s.loaders {
+				err = loader.Load(ctx, s.exec, t)
+				if err != nil {
+					return t, err
+				}
+			}
+
+			if s.settings.AfterSelect != nil {
+				if err := s.settings.AfterSelect(ctx, []T{t}); err != nil {
+					return t, err
+				}
+			}
+			return t, err
+		}
+	})
+
+	return scan.CursorFromRows(ctx, m2, rows)
+}
