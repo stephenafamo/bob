@@ -50,4 +50,4 @@ myquery, myargs := psql.Insert(...).MustBuild()
 err := sql.ExecContext(ctx, myquery, myargs...)
 ```
 
-In addition to these, `Bob` also has a [sql executor](../sql-executor) which can build and run queries in a single step.
+In addition to these, `Bob` also has a [sql executor](../sql-executor/intro) which can build and run queries in a single step.

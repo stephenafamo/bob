@@ -27,12 +27,6 @@ Read more about [the principles](./principles).
 * Faster than comparable packages. [See Benchmarks](https://github.com/stephenafamo/go-sql-builder-benchmarks).
 * Build any query. Supports the specification as closely as possible.
 
-:::tip
-
-If you need more than query building, you can generate models from your database schema. [See Documentation](gen)
-
-:::
-
 ## Dialect Support
 
 | Dialect       | Raw | Select | Insert | Update | Delete |
