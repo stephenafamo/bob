@@ -33,8 +33,8 @@ type OptionalWithUnique struct {
 }
 
 var (
-	table1 = NewTable[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("")
-	table2 = NewTable[*WithUnique, []*WithUnique, *OptionalWithUnique](
+	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("")
+	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
 		"", []string{"id"}, []string{"title", "author_id"},
 	)
 )

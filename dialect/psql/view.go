@@ -20,7 +20,11 @@ func UseSchema(ctx context.Context, schema string) context.Context {
 	return context.WithValue(ctx, orm.CtxUseSchema, schema)
 }
 
-func NewView[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
+func NewView[T any](schema, tableName string) *View[T, []T] {
+	return NewViewx[T, []T](schema, tableName)
+}
+
+func NewViewx[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 	v, _ := newView[T, Tslice](schema, tableName)
 	return v
 }

@@ -21,7 +21,11 @@ var (
 	ErrCannotRetrieveRow = errors.New("cannot retrieve inserted row")
 )
 
-func NewTable[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]string) *Table[T, Tslice, Topt] {
+func NewTable[T any, Topt any](tableName string, uniques ...[]string) *Table[T, []T, Topt] {
+	return NewTablex[T, []T, Topt](tableName, uniques...)
+}
+
+func NewTablex[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]string) *Table[T, Tslice, Topt] {
 	var zeroOpt Topt
 
 	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))

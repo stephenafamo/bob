@@ -13,13 +13,11 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-// UseSchema modifies a context to add a schema that will be used when
-// a tablle/view was generated with an empty schema
-func UseSchema(ctx context.Context, schema string) context.Context {
-	return context.WithValue(ctx, orm.CtxUseSchema, schema)
+func NewView[T any](tableName string) *View[T, []T] {
+	return NewViewx[T, []T](tableName)
 }
 
-func NewView[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
+func NewViewx[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
 	v, _ := newView[T, Tslice](tableName)
 	return v
 }
