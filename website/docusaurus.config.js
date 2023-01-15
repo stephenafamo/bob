@@ -37,7 +37,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/stephenafamo/bob/tree/main/docs/',
-          path: "../docs",
+          path: "./docs",
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
