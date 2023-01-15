@@ -55,19 +55,19 @@ type Stmt struct {
 }
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (s Stmt) Exec(ctx context.Context, args ...any) (int64, error) {
+func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
 	result, err := s.stmt.ExecContext(ctx, args...)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	for _, loader := range s.loaders {
 		if err := loader.Load(ctx, s.exec, nil); err != nil {
-			return 0, err
+			return nil, err
 		}
 	}
 
-	return result.RowsAffected()
+	return result, nil
 }
 
 func PrepareQuery[T any](ctx context.Context, q Query, m scan.Mapper[T], exec Preparer, opts ...ExecOption[T]) (QueryStmt[T, []T], error) {
