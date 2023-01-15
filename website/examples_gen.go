@@ -68,7 +68,7 @@ func genDialect(path string) {
 			baseName := strings.ReplaceAll(fileparts[len(fileparts)-1], "_test.go", ".md")
 
 			// replace "dialect/" with "docs/query-builder" and drop the basename
-			fileparts = append([]string{"docs", "query-builder"}, fileparts[1:len(fileparts)-1]...)
+			fileparts = append([]string{"website", "docs", "query-builder"}, fileparts[1:len(fileparts)-1]...)
 
 			// rejoin the file parts and add the basename and examples folder
 			examplesFileName := filepath.Join(append(fileparts, "examples", baseName)...)
