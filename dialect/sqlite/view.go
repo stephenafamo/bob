@@ -114,7 +114,7 @@ func (v *View[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer, queryM
 
 // Prepare a statement from an existing query that will be mapped to the view's type
 func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q bob.Query) (bob.QueryStmt[T, Tslice], error) {
-	return bob.PrepareQueryx[T, Tslice](ctx, q, scan.StructMapper[T](), exec, v.afterSelect(ctx, exec))
+	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, scan.StructMapper[T](), v.afterSelect(ctx, exec))
 }
 
 func (v *View[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
