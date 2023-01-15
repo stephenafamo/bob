@@ -1,14 +1,8 @@
 # Bob (the builder): A spec compliant SQL query builder
 
-[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stephenafamo/bob)
-[![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
-[![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob)
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
-[![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
+[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stephenafamo/bob) [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob) [![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob) [![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
 
-Bob helps build SQL queries. It does not try to abstract away SQL, or to hide implementation, instead **Bob** adds typed handrails to the query building
-for a better development experience.
+Bob helps build SQL queries. It does not try to abstract away SQL, or to hide implementation, instead **Bob** adds typed handrails to the query building for a better development experience.
 
 **Bob** can be progressively adopted from raw SQL query strings, to fully typed queries and models generated for your database.
 
@@ -49,9 +43,7 @@ Examples are in the [examples folder](examples):
 
 ### Custom Crafting
 
-In `bob`, each dialect, and the applicable query mods are custom crafted
-to be as close to the specification as possible.
-This is unlike most other query builders that use a common structure and attempt to adapt it to every dialect.
+In `bob`, each dialect, and the applicable query mods are custom crafted to be as close to the specification as possible. This is unlike most other query builders that use a common structure and attempt to adapt it to every dialect.
 
 ### Progressive enhancement
 
@@ -107,11 +99,10 @@ psql.Select(
 
 Query building is done with the use of QueryMods.
 
-QueryMods are options applied to a query. Each query type of each dialect defines what mods can be applied to it.  
+QueryMods are options applied to a query. Each query type of each dialect defines what mods can be applied to it.
 This way, the possible options can be built to match the spec as closely as possible.
 
-Despite this custom configuration, the mods are designed to match each other as closely
-so that switching dialects can be achieved by simply switching imports.  
+Despite this custom configuration, the mods are designed to match each other as closely so that switching dialects can be achieved by simply switching imports.
 However, if using an unspported mod, the error will be displayed at compile time.
 
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
@@ -143,13 +134,13 @@ For conditional queries, the query object have an `Apply()` method which can be 
 
 ```go
 q := psql.Select(
-    sm.From("projects"),
+	sm.From("projects"),
 ) // SELECT * FROM projects
 
 if !user.IsAdmin {
-    q.Apply(
-        sm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
-    ) // SELECT * FROM projects WHERE user_id = $1
+	q.Apply(
+		sm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
+	) // SELECT * FROM projects WHERE user_id = $1
 }
 ```
 
@@ -159,7 +150,7 @@ if !user.IsAdmin {
 
 ## Quotes
 
-It is often required to quote identifiers in SQL queries. With `bob`  use the `sm.Quote()` where necessary.  
+It is often required to quote identifiers in SQL queries. With `bob` use the `sm.Quote()` where necessary.
 When building the query, the quotes are added correctly by the dialect.
 
 It can take multiple strings that need to be quoted and joined with `.`
@@ -174,7 +165,7 @@ psql.Quote("schema_name", "table_name")
 
 ## Expressions
 
-Every dialect contain starter functions to fluently build complex expressions.  
+Every dialect contain starter functions to fluently build complex expressions.
 It starts with one of several functions which then return a chain that has methods for various operators.
 
 For example:
@@ -183,13 +174,13 @@ For example:
 // Query: ($1 >= 50) AND (name IS NOT NULL)
 // Args: 'Stephen'
 psql.Arg("Stephen").GTE(50).
-    And(psql.X("name").IsNotNull())
+	And(psql.X("name").IsNotNull())
 
 // OR
 
 psql.And(
-    psql.Arg("Stephen").GTE(50),
-    psql.X("name").IsNotNull(),
+	psql.Arg("Stephen").GTE(50),
+	psql.X("name").IsNotNull(),
 )
 ```
 
@@ -210,7 +201,7 @@ psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
 
 Other starters are listed below:
 
-**NOTE:** These are the common starters. Each dialect can sometimes include their own starters.  
+**NOTE:** These are the common starters. Each dialect can sometimes include their own starters.
 For example, starters for common function calls can easily be added
 
 * `X(any)`: Plain start to a chain.
@@ -229,7 +220,7 @@ For example, starters for common function calls can easily be added
 
 ### Chaining
 
-The type returned by the starter methods return have methods for common operators.  
+The type returned by the starter methods return have methods for common operators.
 **NOTE:** These are the common operators. Each dialect can sometimes include their own starters
 
 * `IsNull()`: X IS NULL
@@ -254,7 +245,7 @@ The following expressions cannot be chained and are expected to be used at the e
 
 ## Parameters
 
-To prevent SQL injection, it is necessary to use parameters in our queries. With `bob` use `sm.Arg()` where necessary.  
+To prevent SQL injection, it is necessary to use parameters in our queries. With `bob` use `sm.Arg()` where necessary.
 This will write the placeholder correctly in the generated sql, and return the value in the argument slice.
 
 ```go
@@ -271,8 +262,7 @@ psql.Select(
 
 ## Raw Queries
 
-As any good query builder, you are allowed to use your own raw SQL queries.
-Either at the top level with `psql.RawQuery()` or inside any clause with `psql.Raw()`.
+As any good query builder, you are allowed to use your own raw SQL queries. Either at the top level with `psql.RawQuery()` or inside any clause with `psql.Raw()`.
 
 These functions take a query and args. The placeholder in the clauses are question marks `?`.
 
@@ -285,8 +275,8 @@ psql.RawQuery(`SELECT * FROM USERS WHERE id = ? and name = ?`, 100, "Stephen")
 // OR
 // -----
 psql.Select(
-    sm.From("users"),
-    sm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
+	sm.From("users"),
+	sm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
 )
 ```
 
@@ -296,15 +286,15 @@ The `Query` object is an interface that has a single method:
 
 ```go
 type Query interface {
-    // start is the index of the args, usually 1.
-    // it is present to allow re-indexing in cases of a subquery
-    // The method returns the value of any args placed
-    // An `io.Writer` is used for efficiency when building the query.
-    WriteQuery(w io.Writer, start int) (args []any, err error)
+	// start is the index of the args, usually 1.
+	// it is present to allow re-indexing in cases of a subquery
+	// The method returns the value of any args placed
+	// An `io.Writer` is used for efficiency when building the query.
+	WriteQuery(w io.Writer, start int) (args []any, err error)
 }
 ```
 
-The `WriteQuery` method is useful when we want to write to an exisiting `io.Writer`.  
+The `WriteQuery` method is useful when we want to write to an exisiting `io.Writer`.
 However we often just want the query string and arguments. So the Query objects have the following methods:
 
 * `Build() (query string, args []any, err error)`
@@ -316,8 +306,7 @@ However we often just want the query string and arguments. So the Query objects 
 queryString, args, err := psql.Select(...).Build()
 ```
 
-Since the query is built from scratch every time the `WriteQuery()` method is called,
-it can be useful to initialize the query one time and reuse where necessary.
+Since the query is built from scratch every time the `WriteQuery()` method is called, it can be useful to initialize the query one time and reuse where necessary.
 
 For that, the `MustBuild()` function can be used. This panics on error.
 
@@ -328,48 +317,48 @@ var myquery, myargs = psql.Insert(...).MustBuild()
 ## Roadmap
 
 * **Postgres**
-  * [x] Raw
-  * [x] Select
-  * [x] Insert
-  * [x] Update
-  * [x] Delete
+  * [X] Raw
+  * [X] Select
+  * [X] Insert
+  * [X] Update
+  * [X] Delete
   * [ ] Postgres Specific Operators
     * [ ] Is [Not] True
     * [ ] Is [Not] False
     * [ ] Is [Not] Unknown
-    * [x] [Not] Between Symmetric
+    * [X] [Not] Between Symmetric
     * [ ] Is [Not] [NFC|NFD|NFKC|NFKD] Normalized
 * **MySQL**
-  * [x] Raw
-  * [x] Select
-  * [x] Insert
-  * [x] Update
-  * [x] Delete
+  * [X] Raw
+  * [X] Select
+  * [X] Insert
+  * [X] Update
+  * [X] Delete
 * **SQLite**
-  * [x] Raw
-  * [x] Select
-  * [x] Insert
-  * [x] Update
-  * [x] Delete
+  * [X] Raw
+  * [X] Select
+  * [X] Insert
+  * [X] Update
+  * [X] Delete
   * [ ] SQLite Specific Operators
     * [ ] GLOB
 * **SQL Server**
-  * [x] Raw
+  * [X] Raw
   * [ ] Select
   * [ ] Insert
   * [ ] Update
   * [ ] Delete
 * **Common Operators**
-  * [x] [Not] Equal
-  * [x] Not Equal
-  * [x] Less than
-  * [x] Less than or equal to
-  * [x] Greater than
-  * [x] Greater than or equal to
-  * [x] And
-  * [x] Or
-  * [x] [Not] In
-  * [x] [Not] Null
-  * [x] Is [not] distinct from
-  * [x] Concatenation: ||
-  * [x] Between
+  * [X] [Not] Equal
+  * [X] Not Equal
+  * [X] Less than
+  * [X] Less than or equal to
+  * [X] Greater than
+  * [X] Greater than or equal to
+  * [X] And
+  * [X] Or
+  * [X] [Not] In
+  * [X] [Not] Null
+  * [X] Is [not] distinct from
+  * [X] Concatenation: ||
+  * [X] Between

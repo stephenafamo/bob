@@ -1,0 +1,156 @@
+---
+
+sidebar_position: 1
+description: How to build queries with Bob
+
+---
+
+# Building Queries
+
+Query building is done with the use of QueryMods.
+
+## Query Mods
+
+QueryMods are options applied to a query. Each query type of each dialect defines what mods can be applied to it. This way, the possible options can be built to match the spec as closely as possible.
+
+Despite this custom configuration, the mods are designed to match each other as closely so that switching dialects can be achieved by simply switching imports. However, if using an unspported mod, the error will be displayed at compile time.
+
+As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
+
+```go
+import "github.com/stephenafamo/bob/dialect/psql/sm"
+cte := psql.Select(
+    sm.From("users"),
+    sm.Where(psql.X("age").GTE(21)),
+)
+
+var cte query.Query
+psql.Select(
+    sm.With("adults").As(cte), // works
+    sm.From("projects"),
+)
+
+import "github.com/stephenafamo/bob/dialect/psql/insert/im"
+psql.Insert(
+    im.With("adults").As(cte), // works as well
+    im.From("projects"), // ERROR: Does not compile!!!
+    im.Into("projects"), // works
+)
+```
+
+Using this query mod system, the mods closely match the allowed syntax for each specific query type.
+
+For conditional queries, the query object have an `Apply()` method which can be used to add more query mods.
+
+```go
+q := psql.Select(
+	sm.From("projects"),
+) // SELECT * FROM projects
+
+if !user.IsAdmin {
+	q.Apply(
+		sm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
+	) // SELECT * FROM projects WHERE user_id = $1
+}
+```
+
+> Since the mods modify the main query object any new mods added with `Apply()` will affect all instances of the query.
+>
+> To reuse the base of a query and add new mods each time, first use the `Clone()` method.
+
+## Expressions
+
+Every dialect contain starter functions to fluently build complex expressions. It starts with one of several functions which then return a chain that has methods for various operators.
+
+For example:
+
+```go
+// Query: ($1 >= 50) AND (name IS NOT NULL)
+// Args: 'Stephen'
+psql.Arg("Stephen").GTE(50).
+	And(psql.X("name").IsNotNull())
+
+// OR
+
+psql.And(
+	psql.Arg("Stephen").GTE(50),
+	psql.X("name").IsNotNull(),
+)
+```
+
+### Starters
+
+These functions are included in every dialect and can be used to create a chainable expression.
+
+The most flexible starter is `X()`
+
+* Pass a single value to start a plain chain
+* Pass multiple values to join them all with spaces. This is better than using a plain string because it is easier to interpolate quoted values, args, e.t.c.
+
+```go
+// SQL: "schema"."table"."name" = $1
+// Args: 'Stephen'
+psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
+```
+
+Other starters are listed below:
+
+**NOTE:** These are the common starters. Each dialect can sometimes include their own starters. For example, starters for common function calls can easily be added
+
+* `X(any)`: Plain start to a chain.
+* `Not(any)`: Creates a `NOT expr` expression that is then chainable.
+* `F(name string, args ...any)`: A generic function call. Takes a name and the arguments.
+* `OR(...any)`: Joins multiple expressions with "OR"
+* `AND(...any)`: Joins multiple expressions with "AND"
+* `CONCAT(...any)`: Joins multiple expressions with "||"
+* `S(string)`: Create a plain string literal. Single quoted.
+* `Arg(...any)`: One or more arguments. These are replaced with placeholders in the query and the args returned.
+* `Placeholders(uint)`: Inserts a `count` of placeholders without any specific value yet. Useful for compiling reusable queries.
+* `Statement(clause string, args ...any)`: For inserting a raw statement somewhere. To keep it dialect agnostic, placeholders should be inserted with `?` and a literal question mark can be escaped with a backslash `\?`.
+* `Group(...any)`: To easily group a number of expressions. Wraps them in parentheses and seperates them with commas.
+* `Quote(...string)`: For quoting. [See details](#quotes)
+* `P(any)`: To manually wrap an expression with parentheses. This is often not necessary as the parentheses will be added as the expression is built.
+
+### Chaining
+
+The type returned by the starter methods return have methods for common operators. **NOTE:** These are the common operators. Each dialect can sometimes include their own starters
+
+* `IsNull()`: X IS NULL
+* `IsNotNull()`: X IS NOT NULL
+* `Is(y any)`: X IS DISTINCT FROM Y
+* `IsNot(y any)`: X IS NOT DISTINCT FROM Y
+* `EQ(y any)`: X = Y
+* `NE(y any)`: X \<\> Y
+* `LT(y any)`: X \< Y
+* `LTE(y any)`: X \<= Y
+* `GT(y any)`: X \> Y
+* `GTE(y any)`: X >= Y
+* `In(...any)`: X IN (y, z)
+* `NotIn(...any)`: X NOT IN (y, z)
+* `Or(y any)`: X OR Y
+* `And(y any)`: X AND Y
+* `Concat(y any)`: X || Y
+
+The following expressions cannot be chained and are expected to be used at the end of a chain
+
+* `As(alias string)`: X as "alias". Used for aliasing column names
+
+## Raw Queries
+
+As any good query builder, you are allowed to use your own raw SQL queries. Either at the top level with `psql.RawQuery()` or inside any clause with `psql.Raw()`.
+
+These functions take a query and args. The placeholder in the clauses are question marks `?`.
+
+```go
+// SELECT * from users WHERE id = $1 AND name = $2
+// args: 100, "Stephen"
+
+psql.RawQuery(`SELECT * FROM USERS WHERE id = ? and name = ?`, 100, "Stephen")
+// -----
+// OR
+// -----
+psql.Select(
+	sm.From("users"),
+	sm.Where(psql.Raw("id = ? and name = ?", 100, "Stephen")),
+)
+```
