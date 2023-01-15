@@ -6,7 +6,7 @@
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
-  func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related *Optional{{$ftable.UpSingular}}) error {
+  func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
     {{if $rel.InsertEarly -}}
       rel, err := {{$ftable.UpPlural}}Table.Insert(ctx, exec, related)
       if err != nil {
@@ -78,7 +78,7 @@
 
   {{end -}}
 {{else -}}
-  func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related ...*Optional{{$ftable.UpSingular}}) error {
+  func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related ...*{{$ftable.UpSingular}}Setter) error {
     var err error
 
     {{if $rel.InsertEarly -}}
@@ -169,7 +169,7 @@
     {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
     {{with $relatedVals}}
     if _, err := {{$ftable.UpPlural}}Table.UpdateMany(
-      ctx, exec, &Optional{{$ftable.UpSingular}}{
+      ctx, exec, &{{$ftable.UpSingular}}Setter{
         {{.}}
       }, related...,
     ); err != nil {

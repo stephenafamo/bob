@@ -52,10 +52,10 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
 }
 
 {{if .Table.PKey -}}
-// BuildOptional returns an *models.Optional{{$tAlias.UpSingular}}
+// BuildSetter returns an *models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlias.UpSingular}} {
-	m := &models.Optional{{$tAlias.UpSingular}}{}
+func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingular}}Setter {
+	m := &models.{{$tAlias.UpSingular}}Setter{}
 
 	{{range $column := .Table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
@@ -74,13 +74,13 @@ func (o {{$tAlias.UpSingular}}Template) BuildOptional() *models.Optional{{$tAlia
 	return m
 }
 
-// BuildManyOptional returns an []*models.Optional{{$tAlias.UpSingular}}
+// BuildManySetter returns an []*models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}Template) BuildManyOptional(number int) []*models.Optional{{$tAlias.UpSingular}} {
-	m := make([]*models.Optional{{$tAlias.UpSingular}}, number)
+func (o {{$tAlias.UpSingular}}Template) BuildManySetter(number int) []*models.{{$tAlias.UpSingular}}Setter {
+	m := make([]*models.{{$tAlias.UpSingular}}Setter, number)
 
 	for i := range m {
-	  m[i] = o.BuildOptional()
+	  m[i] = o.BuildSetter()
 	}
 
 	return m

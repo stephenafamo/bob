@@ -41,9 +41,9 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 	// {{$tAlias.UpPlural}}Table contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]("{{$table.Schema}}","{{$table.Name}}")
+	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
-	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *Optional{{$tAlias.UpSingular}}]
+	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]
 {{- end}}
 {{- end}}
 
@@ -65,10 +65,10 @@ type {{$tAlias.DownSingular}}R struct {
 {{- end}}
 
 {{if .Table.PKey -}}
-// Optional{{$tAlias.UpSingular}} is used for insert/upsert/update operations
+// {{$tAlias.UpSingular}}Setter is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
-type Optional{{$tAlias.UpSingular}} struct {
+type {{$tAlias.UpSingular}}Setter struct {
 	{{- range $column := .Table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}

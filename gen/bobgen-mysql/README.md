@@ -33,15 +33,15 @@ MYSQL_DSN="user:pass@host:port/dbname"
 
 The values that exist for the drivers:
 
-| Name          | Description                           | Default                  |
-|---------------|---------------------------------------|--------------------------|
-| dsn           | URL to connect to                     |                          |
-| output        | Folder for generated files            | "models"                 |
-| pkgname       | Package name for generated code       | "models"                 |
-| no_factory    | Skip generation of factories          | false                    |
-| concurrency   | How many tables to fetch in parallel  | 10                       |
-| only          | Only generate these                   |                          |
-| except        | Skip generation for these             |                          |
+| Name        | Description                          | Default  |
+|-------------|--------------------------------------|----------|
+| dsn         | URL to connect to                    |          |
+| output      | Folder for generated files           | "models" |
+| pkgname     | Package name for generated code      | "models" |
+| no_factory  | Skip generation of factories         | false    |
+| concurrency | How many tables to fetch in parallel | 10       |
+| only        | Only generate these                  |          |
+| except      | Skip generation for these            |          |
 
 Example of Only/Except:
 

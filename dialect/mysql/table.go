@@ -21,26 +21,26 @@ var (
 	ErrCannotRetrieveRow = errors.New("cannot retrieve inserted row")
 )
 
-func NewTable[T any, Topt any](tableName string, uniques ...[]string) *Table[T, []T, Topt] {
-	return NewTablex[T, []T, Topt](tableName, uniques...)
+func NewTable[T any, Tset any](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
+	return NewTablex[T, []T, Tset](tableName, uniques...)
 }
 
-func NewTablex[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]string) *Table[T, Tslice, Topt] {
-	var zeroOpt Topt
+func NewTablex[T any, Tslice ~[]T, Tset any](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
+	var zeroSet Tset
 
-	optMapping := internal.GetMappings(reflect.TypeOf(zeroOpt))
+	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
 
 	view, mappings := newView[T, Tslice](tableName)
-	t := &Table[T, Tslice, Topt]{
+	t := &Table[T, Tslice, Tset]{
 		View:       view,
 		pkCols:     internal.FilterNonZero(mappings.PKs),
-		optMapping: optMapping,
+		setMapping: setMapping,
 	}
 
 	allAutoIncr := internal.FilterNonZero(mappings.AutoIncrement)
 	if len(allAutoIncr) == 1 {
-		optAutoIncr := internal.FilterNonZero(optMapping.AutoIncrement)
-		if len(allAutoIncr) == len(optAutoIncr) && allAutoIncr[0] == optAutoIncr[0] {
+		setAutoIncr := internal.FilterNonZero(setMapping.AutoIncrement)
+		if len(allAutoIncr) == len(setAutoIncr) && allAutoIncr[0] == setAutoIncr[0] {
 			t.autoIncrementColumn = allAutoIncr[0]
 			return t
 		}
@@ -48,7 +48,7 @@ func NewTablex[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]stri
 
 	// Do this only if needed
 	if t.autoIncrementColumn == "" {
-		t.uniqueIdx = uniqueIndexes(optMapping.All, uniques...)
+		t.uniqueIdx = uniqueIndexes(setMapping.All, uniques...)
 	}
 
 	t.unretrievable = t.autoIncrementColumn == "" && len(t.uniqueIdx) == 0
@@ -58,13 +58,13 @@ func NewTablex[T any, Tslice ~[]T, Topt any](tableName string, uniques ...[]stri
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T any, Tslice ~[]T, Topt any] struct {
+type Table[T any, Tslice ~[]T, Tset any] struct {
 	*View[T, Tslice]
 	pkCols     []string
-	optMapping internal.Mapping
+	setMapping internal.Mapping
 
-	BeforeInsertHooks orm.Hooks[Topt]
-	BeforeUpsertHooks orm.Hooks[Topt]
+	BeforeInsertHooks orm.Hooks[Tset]
+	BeforeUpsertHooks orm.Hooks[Tset]
 
 	// NOTE: This is not called by InsertMany()
 	AfterInsertOneHooks orm.Hooks[T]
@@ -88,16 +88,16 @@ type Table[T any, Tslice ~[]T, Topt any] struct {
 	unretrievable bool
 }
 
-// Insert inserts a row into the table with only the set columns in Topt
+// Insert inserts a row into the table with only the set columns in Tset
 //   - If the table has an AUTO_INCREMENT column,
 //     the inserted row is retrieved using the lastInsertID
 //   - If there is no AUTO_INCREMENT but the table has a unique indes that
-//     has all columns set in the optional row, then the values of the unique columns
+//     has all columns set in the setional row, then the values of the unique columns
 //     are used to retrieve the inserted row
 //
 // If there is none of the above methods are possible, a zero value and
 // [ErrCannotRetrieveRow] is returned after a successful insert
-func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, row Topt) (T, error) {
+func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, row Tset) (T, error) {
 	var err error
 	var zero T
 
@@ -106,7 +106,7 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 		return zero, nil
 	}
 
-	columns, values, err := internal.GetColumnValues(t.optMapping, nil, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
 	if err != nil {
 		return zero, fmt.Errorf("get insert values: %w", err)
 	}
@@ -157,9 +157,9 @@ func (t *Table[T, Tslice, Topt]) Insert(ctx context.Context, exec bob.Executor, 
 	return val, nil
 }
 
-// InsertMany inserts multiple row into the table with only the set columns in Topt
+// InsertMany inserts multiple row into the table with only the set columns in Tset
 // and returns the number of inserted rows
-func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Executor, rows ...Topt) (int64, error) {
+func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Executor, rows ...Tset) (int64, error) {
 	var err error
 
 	for _, row := range rows {
@@ -169,14 +169,14 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	columns, values, err := internal.GetColumnValues(t.optMapping, nil, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get insert values: %w", err)
 	}
 
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
-		columns = []string{internal.FirstNonEmpty(t.optMapping.All)}
+		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
 		values = make([][]any, len(rows))
 		for i := range rows {
 			values[i] = []any{"DEFAULT"}
@@ -199,7 +199,7 @@ func (t *Table[T, Tslice, Topt]) InsertMany(ctx context.Context, exec bob.Execut
 // Updates the given model
 // if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
-func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, row T, cols ...string) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, row T, cols ...string) (int64, error) {
 	_, err := t.BeforeUpdateHooks.Do(ctx, exec, row)
 	if err != nil {
 		return 0, err
@@ -244,8 +244,8 @@ func (t *Table[T, Tslice, Topt]) Update(ctx context.Context, exec bob.Executor, 
 // Updates the given models
 // if columns is nil, every column is updated
 // NOTE: values from the DB are not refreshed into the models
-func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Executor, vals Topt, rows ...T) (int64, error) {
-	columns, values, err := internal.GetColumnValues(t.optMapping, nil, vals)
+func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) (int64, error) {
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -301,10 +301,10 @@ func (t *Table[T, Tslice, Topt]) UpdateMany(ctx context.Context, exec bob.Execut
 	return result.RowsAffected()
 }
 
-// Uses the optional columns to know what to insert
-// If updateCols is nil, it updates all the columns set in Topt
-// if no column is set in Topt (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
-func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, row Topt) (T, error) {
+// Uses the setional columns to know what to insert
+// If updateCols is nil, it updates all the columns set in Tset
+// if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
+func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, row Tset) (T, error) {
 	var err error
 	var zero T
 
@@ -313,7 +313,7 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 		return zero, nil
 	}
 
-	columns, values, err := internal.GetColumnValues(t.optMapping, updateCols, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, row)
 	if err != nil {
 		return zero, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -377,11 +377,11 @@ func (t *Table[T, Tslice, Topt]) Upsert(ctx context.Context, exec bob.Executor, 
 	return val, nil
 }
 
-// Uses the optional columns to know what to insert
+// Uses the setional columns to know what to insert
 // If conflictCols is nil, it uses the primary key columns
-// If updateCols is nil, it updates all the columns set in Topt
-// if no column is set in Topt (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
-func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, rows ...Topt) (int64, error) {
+// If updateCols is nil, it updates all the columns set in Tset
+// if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
+func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, rows ...Tset) (int64, error) {
 	var err error
 
 	for _, row := range rows {
@@ -391,14 +391,14 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	columns, values, err := internal.GetColumnValues(t.optMapping, updateCols, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
 
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
-		columns = []string{internal.FirstNonEmpty(t.optMapping.All)}
+		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
 		values = make([][]any, len(rows))
 		for i := range rows {
 			values[i] = []any{"DEFAULT"}
@@ -435,7 +435,7 @@ func (t *Table[T, Tslice, Topt]) UpsertMany(ctx context.Context, exec bob.Execut
 
 // Deletes the given model
 // if columns is nil, every column is deleted
-func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, row T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, row T) (int64, error) {
 	_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
 	if err != nil {
 		return 0, err
@@ -467,7 +467,7 @@ func (t *Table[T, Tslice, Topt]) Delete(ctx context.Context, exec bob.Executor, 
 
 // Deletes the given models
 // if columns is nil, every column is deleted
-func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
 	for _, row := range rows {
 		_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
 		if err != nil {
@@ -513,27 +513,27 @@ func (t *Table[T, Tslice, Topt]) DeleteMany(ctx context.Context, exec bob.Execut
 }
 
 // Adds table name et al
-func (t *Table[T, Tslice, Topt]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Topt] {
+func (t *Table[T, Tslice, Tset]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Tset] {
 	vq := t.View.Query(ctx, exec, queryMods...)
-	return &TableQuery[T, Tslice, Topt]{
+	return &TableQuery[T, Tslice, Tset]{
 		ViewQuery:  *vq,
 		nameExpr:   t.NameAs,
 		pkCols:     t.pkCols,
-		optMapping: t.optMapping,
+		setMapping: t.setMapping,
 	}
 }
 
-type TableQuery[T any, Ts ~[]T, Topt any] struct {
+type TableQuery[T any, Ts ~[]T, Tset any] struct {
 	ViewQuery[T, Ts]
 	nameExpr   func(context.Context) bob.Expression // to prevent calling it prematurely
 	pkCols     []string
-	optMapping internal.Mapping
+	setMapping internal.Mapping
 }
 
 // UpdateAll updates all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
-	columns, values, err := internal.GetColumnValues(t.optMapping, nil, vals)
+func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -569,7 +569,7 @@ func (t *TableQuery[T, Tslice, Topt]) UpdateAll(vals Topt) (int64, error) {
 
 // DeleteAll deletes all rows matched by the current query
 // NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Topt]) DeleteAll() (int64, error) {
+func (t *TableQuery[T, Tslice, Tset]) DeleteAll() (int64, error) {
 	q := Delete(dm.From(t.nameExpr(t.ctx)))
 
 	pkGroup := make([]any, len(t.pkCols))
@@ -616,7 +616,7 @@ func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {
 //nolint:gochecknoglobals
 var settableTyp = reflect.TypeOf((*interface{ IsSet() bool })(nil)).Elem()
 
-func (t *Table[T, Tslice, Topt]) uniqueSet(row Topt) ([]string, []any) {
+func (t *Table[T, Tslice, Tset]) uniqueSet(row Tset) ([]string, []any) {
 	val := reflect.ValueOf(row)
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
@@ -641,7 +641,7 @@ func (t *Table[T, Tslice, Topt]) uniqueSet(row Topt) ([]string, []any) {
 				break
 			}
 
-			colNames = append(colNames, t.optMapping.All[col])
+			colNames = append(colNames, t.setMapping.All[col])
 			args = append(args, field.Interface())
 		}
 

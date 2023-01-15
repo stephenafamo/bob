@@ -7,7 +7,7 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Exe
 	return {{$tAlias.UpPlural}}Table.DeleteMany(ctx, exec, o...)
 }
 
-func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals Optional{{$tAlias.UpSingular}}) (int64, error) {
+func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) (int64, error) {
 	rowsAff, err := {{$tAlias.UpPlural}}Table.UpdateMany(ctx, exec, &vals, o...)
 	if err != nil {
 		return rowsAff, err

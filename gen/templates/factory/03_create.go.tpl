@@ -85,7 +85,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 // this returns a context that includes the newly inserted model
 func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Executor) (context.Context, *models.{{$tAlias.UpSingular}}, error) {
 	var err error
-	opt := o.BuildOptional()
+	opt := o.BuildSetter()
 
 	{{range $index, $rel := $table.Relationships -}}
 		{{- if not (relIsRequired $table $rel)}}{{continue}}{{end -}}
