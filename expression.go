@@ -9,6 +9,7 @@ import (
 
 var ErrNoNamedArgs = errors.New("Dialect does not support named arguments")
 
+// Dialect provides expressions with methods to write parts of the query
 type Dialect interface {
 	// WriteArg should write an argument placeholder to the writer with the given index
 	WriteArg(w io.Writer, position int)
@@ -18,13 +19,14 @@ type Dialect interface {
 	WriteQuoted(w io.Writer, s string)
 }
 
-// Can also write namded args
+// DialectWithNamed is a [Dialect] with the additional ability to WriteNamedArgs
 type DialectWithNamed interface {
 	Dialect
 	// WriteNamedArg should write an argument placeholder to the writer with the given name
 	WriteNamedArg(w io.Writer, name string)
 }
 
+// Expression represents a section of a query
 type Expression interface {
 	// Writes the textual representation of the expression to the writer
 	// using the given dialect.
