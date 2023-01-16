@@ -230,6 +230,9 @@ var templateFunctions = template.FuncMap{
 		if c.Generated {
 			tag += ",generated"
 		}
+		if c.AutoIncr {
+			tag += ",autoincr"
+		}
 		return tag
 	},
 	"columnTagName": func(casing, name, alias string) string {

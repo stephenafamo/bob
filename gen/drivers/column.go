@@ -17,6 +17,7 @@ type Column struct {
 	Nullable  bool   `json:"nullable" yaml:"nullable" toml:"nullable"`
 	Unique    bool   `json:"unique" yaml:"unique" toml:"unique"`
 	Generated bool   `json:"generated" yaml:"generated" toml:"generated"`
+	AutoIncr  bool   `json:"autoincr" yaml:"autoincr" toml:"autoincr"`
 
 	Type    string         `json:"type" yaml:"type" toml:"type"`
 	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`

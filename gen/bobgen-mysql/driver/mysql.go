@@ -144,7 +144,8 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	c.column_type,
 	c.column_comment,
 	c.data_type,
-	if (extra = 'auto_increment','auto_increment', c.column_default) AS default_value,
+	c.column_default,
+	c.extra = 'auto_increment' AS autoincr,
 	c.is_nullable = 'YES' AS nullable,
 	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated,
 	exists (
@@ -185,9 +186,9 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	for rows.Next() {
 		var colName, colFullType, colComment, colType string
-		var nullable, generated, unique bool
+		var autoIncr, nullable, generated, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &generated, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &nullable, &generated, &unique); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", tableName, err)
 		}
 
@@ -202,6 +203,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			Nullable:  nullable,
 			Unique:    unique,
 			Generated: generated,
+			AutoIncr:  autoIncr,
 		}
 
 		if defaultValue != nil {
@@ -211,6 +213,11 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		// A generated column technically has a default value
 		if column.Default == "" && column.Generated {
 			column.Default = "AUTO_GENERATED"
+		}
+
+		// An auto incrementing column technically has a default value
+		if column.Default == "" && column.AutoIncr {
+			column.Default = "AUTO_INCREMENT"
 		}
 
 		if !rgxEnum.MatchString(colFullType) {
