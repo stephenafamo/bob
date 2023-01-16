@@ -61,6 +61,15 @@ func TestSelect(t *testing.T) {
 				sm.GroupBy("status"),
 			),
 		},
+		"select with grouped IN": {
+			Query: mysql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Where(mysql.Group("id", "employee_id").In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
+			),
+			ExpectedSQL:  "SELECT id, name FROM users WHERE ((id, employee_id) IN ((?, ?), (?, ?)))",
+			ExpectedArgs: []any{100, 200, 300, 400},
+		},
 	}
 
 	testutils.RunTests(t, examples, nil)

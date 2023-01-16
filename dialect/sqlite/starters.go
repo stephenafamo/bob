@@ -50,6 +50,10 @@ func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
+func ArgGroup(args ...any) Expression {
+	return bmod.ArgGroup(args...)
+}
+
 func Named(name string, value any) Expression {
 	var b Expression
 	b.Base = sql.Named(name, value)

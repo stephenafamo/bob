@@ -48,6 +48,10 @@ func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
+func ArgGroup(args ...any) Expression {
+	return bmod.ArgGroup(args...)
+}
+
 func P(exp any) Expression {
 	return bmod.P(exp)
 }

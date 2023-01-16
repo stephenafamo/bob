@@ -99,6 +99,15 @@ func TestSelect(t *testing.T) {
 				sm.GroupBy("status"),
 			),
 		},
+		"select with grouped IN": {
+			Query: psql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Where(psql.Group("id", "employee_id").In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
+			),
+			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
+			ExpectedArgs: []any{100, 200, 300, 400},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

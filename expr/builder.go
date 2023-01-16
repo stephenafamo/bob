@@ -78,6 +78,11 @@ func (e Builder[T, B]) Arg(vals ...any) T {
 	return e.X(Arg(vals...))
 }
 
+// Comma separated list of arguments surrounded by parentheses
+func (e Builder[T, B]) ArgGroup(vals ...any) T {
+	return e.X(ArgGroup(vals...))
+}
+
 func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
 }
