@@ -19,8 +19,7 @@ var templates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates, _   = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
+	ModelTemplates, _ = fs.Sub(templates, "templates/models")
 )
 
 type (
@@ -34,7 +33,6 @@ type (
 	}
 	Extra struct {
 		Provider Provider
-		Enums    []Enum
 	}
 	Config struct {
 		// List of tables that will be included. Others are ignored
@@ -60,7 +58,7 @@ func New(config Config, provider Provider, datamodel Datamodel) Interface {
 // to the database connection.
 type Driver struct {
 	config    Config
-	enums     map[string]Enum
+	enums     map[string]drivers.Enum
 	provider  Provider
 	datamodel Datamodel
 }
@@ -90,8 +88,8 @@ func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
 		Tables: d.tables(),
 		ExtraInfo: Extra{
 			Provider: d.provider,
-			Enums:    d.getEnums(),
 		},
+		Enums: d.getEnums(),
 	}
 
 	return dbinfo, err
@@ -195,38 +193,30 @@ func (p *Driver) loadEnums() {
 	if p.enums != nil {
 		return
 	}
-	p.enums = map[string]Enum{}
+	p.enums = map[string]drivers.Enum{}
 
 	enums := p.datamodel.Enums
 	for _, enum := range enums {
-		name := enum.Name
 		values := make([]string, len(enum.Values))
 		for i, val := range enum.Values {
 			values[i] = val.Name
 		}
 
-		p.enums[name] = Enum{
-			Name:   name,
+		p.enums[enum.Name] = drivers.Enum{
 			Type:   gocase.To(strcase.ToCamel(enum.Name)),
 			Values: values,
 		}
 	}
 }
 
-type Enum struct {
-	Name   string
-	Type   string
-	Values []string
-}
-
-func (p *Driver) getEnums() []Enum {
-	enums := make([]Enum, 0, len(p.enums))
+func (p *Driver) getEnums() []drivers.Enum {
+	enums := make([]drivers.Enum, 0, len(p.enums))
 	for _, e := range p.enums {
 		enums = append(enums, e)
 	}
 
 	sort.Slice(enums, func(i, j int) bool {
-		return enums[i].Name < enums[j].Name
+		return enums[i].Type < enums[j].Type
 	})
 
 	return enums

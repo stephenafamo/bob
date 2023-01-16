@@ -3,9 +3,7 @@ package driver
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"fmt"
-	"io/fs"
 	"sort"
 
 	"github.com/lib/pq"
@@ -15,21 +13,9 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-//go:embed templates
-var templates embed.FS
-
-//nolint:gochecknoglobals
-var (
-	ModelTemplates, _   = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
-)
-
 type (
-	Interface = drivers.Interface[Extra]
-	DBInfo    = drivers.DBInfo[Extra]
-	Extra     struct {
-		Enums []Enum
-	}
+	Interface = drivers.Interface[any]
+	DBInfo    = drivers.DBInfo[any]
 )
 
 type Enum struct {
@@ -125,11 +111,16 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	dbinfo.ExtraInfo.Enums = make([]Enum, len(d.enums))
-	copy(dbinfo.ExtraInfo.Enums, d.enums)
+	dbinfo.Enums = make([]drivers.Enum, len(d.enums))
+	for i, e := range d.enums {
+		dbinfo.Enums[i] = drivers.Enum{
+			Type:   e.Type,
+			Values: e.Values,
+		}
+	}
 
-	sort.Slice(dbinfo.ExtraInfo.Enums, func(i, j int) bool {
-		return dbinfo.ExtraInfo.Enums[i].Name < dbinfo.ExtraInfo.Enums[j].Name
+	sort.Slice(dbinfo.Enums, func(i, j int) bool {
+		return dbinfo.Enums[i].Type < dbinfo.Enums[j].Type
 	})
 
 	return dbinfo, err

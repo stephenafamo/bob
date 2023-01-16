@@ -72,7 +72,7 @@ func run(c *cli.Context) error {
 		{
 			OutFolder: driverConfig.Output,
 			PkgName:   driverConfig.Pkgname,
-			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+			Templates: []fs.FS{gen.ModelTemplates},
 		},
 	}
 
@@ -80,7 +80,7 @@ func run(c *cli.Context) error {
 		outputs = append(outputs, &gen.Output{
 			OutFolder: path.Join(driverConfig.Output, "factory"),
 			PkgName:   "factory",
-			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
+			Templates: []fs.FS{gen.FactoryTemplates},
 		})
 	}
 
@@ -91,7 +91,7 @@ func run(c *cli.Context) error {
 
 	d := driver.New(driverConfig)
 
-	cmdState := &gen.State[driver.Extra]{
+	cmdState := &gen.State[any]{
 		Config:    &config,
 		Dialect:   "psql",
 		Outputs:   outputs,

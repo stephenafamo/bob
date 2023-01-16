@@ -33,6 +33,7 @@ type State[T any] struct {
 	CustomTemplateFuncs template.FuncMap
 
 	tables    []drivers.Table
+	enums     []drivers.Enum
 	extraInfo T
 }
 
@@ -82,6 +83,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 		data := &templateData[T]{
 			Dialect:           s.Dialect,
 			Tables:            s.tables,
+			Enums:             s.enums,
 			ExtraInfo:         s.extraInfo,
 			Aliases:           s.Config.Aliases,
 			PkgName:           o.PkgName,
@@ -255,6 +257,7 @@ func (s *State[T]) initDBInfo(ctx context.Context, driver drivers.Interface[T]) 
 	}
 
 	s.tables = dbInfo.Tables
+	s.enums = dbInfo.Enums
 	s.extraInfo = dbInfo.ExtraInfo
 
 	return nil

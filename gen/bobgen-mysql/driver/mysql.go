@@ -25,23 +25,14 @@ var templates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates, _   = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
-	rgxEnum             = regexp.MustCompile(`^enum\([^\)]+\)$`)
+	ModelTemplates, _ = fs.Sub(templates, "templates/models")
+	rgxEnum           = regexp.MustCompile(`^enum\([^\)]+\)$`)
 )
 
 type (
-	Interface = drivers.Interface[Extra]
-	DBInfo    = drivers.DBInfo[Extra]
-	Extra     struct {
-		Enums []Enum
-	}
+	Interface = drivers.Interface[any]
+	DBInfo    = drivers.DBInfo[any]
 )
-
-type Enum struct {
-	Type   string
-	Values []string
-}
 
 type Config struct {
 	// The database connection string
@@ -74,7 +65,7 @@ type Driver struct {
 	conn   *sql.DB
 	dbName string
 
-	enums  []Enum
+	enums  []drivers.Enum
 	enumMu sync.Mutex
 }
 
@@ -112,9 +103,9 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	dbinfo.ExtraInfo.Enums = d.enums
-	sort.Slice(dbinfo.ExtraInfo.Enums, func(i, j int) bool {
-		return dbinfo.ExtraInfo.Enums[i].Type < dbinfo.ExtraInfo.Enums[j].Type
+	dbinfo.Enums = d.enums
+	sort.Slice(dbinfo.Enums, func(i, j int) bool {
+		return dbinfo.Enums[i].Type < dbinfo.Enums[j].Type
 	})
 
 	return dbinfo, err
@@ -238,7 +229,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			enumTyp := strmangle.TitleCase(tableName + "_" + colName)
 			column.Type = enumTyp
 			d.enumMu.Lock()
-			d.enums = append(d.enums, Enum{
+			d.enums = append(d.enums, drivers.Enum{
 				Type:   enumTyp,
 				Values: parseEnumVals(colFullType),
 			})

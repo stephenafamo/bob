@@ -175,7 +175,7 @@ func generate(root root) error {
 		outputs = append(outputs, &gen.Output{
 			OutFolder: path.Join(output, "factory"),
 			PkgName:   "factory",
-			Templates: []fs.FS{gen.FactoryTemplates, driver.FactoryTemplates},
+			Templates: []fs.FS{gen.FactoryTemplates},
 		})
 	}
 

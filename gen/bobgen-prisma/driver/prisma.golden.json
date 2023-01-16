@@ -2048,25 +2048,24 @@
 			]
 		}
 	],
+	"enums": [
+		{
+			"Type": "Workday",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		}
+	],
 	"extra_info": {
 		"Provider": {
 			"DriverName": "",
 			"DriverPkg": "",
 			"DriverSource": "",
 			"DriverENVSource": ""
-		},
-		"Enums": [
-			{
-				"Name": "workday",
-				"Type": "Workday",
-				"Values": [
-					"monday",
-					"tuesday",
-					"wednesday",
-					"thursday",
-					"friday"
-				]
-			}
-		]
+		}
 	}
 }

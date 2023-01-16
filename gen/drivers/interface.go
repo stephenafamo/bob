@@ -25,7 +25,13 @@ type Capabilities struct {
 // DBInfo is the database's table data and dialect.
 type DBInfo[T any] struct {
 	Tables    []Table `json:"tables"`
+	Enums     []Enum  `json:"enums"`
 	ExtraInfo T       `json:"extra_info"`
+}
+
+type Enum struct {
+	Type   string
+	Values []string
 }
 
 type TablesInfo []TableInfo

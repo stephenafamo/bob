@@ -1,4 +1,4 @@
-{{- range $enum := $.ExtraInfo.Enums}}
+{{- range $enum := $.Enums}}
 	{{$allvals := "\n"}}
 	type {{$enum.Type}} string
 
@@ -16,3 +16,4 @@
 	}
 
 {{end -}}
+

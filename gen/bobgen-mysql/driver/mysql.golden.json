@@ -2069,28 +2069,27 @@
 			]
 		}
 	],
-	"extra_info": {
-		"Enums": [
-			{
-				"Type": "TypeMonstersEnumNullable",
-				"Values": [
-					"monday",
-					"tuesday",
-					"wednesday",
-					"thursday",
-					"friday"
-				]
-			},
-			{
-				"Type": "TypeMonstersEnumUse",
-				"Values": [
-					"monday",
-					"tuesday",
-					"wednesday",
-					"thursday",
-					"friday"
-				]
-			}
-		]
-	}
+	"enums": [
+		{
+			"Type": "TypeMonstersEnumNullable",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		},
+		{
+			"Type": "TypeMonstersEnumUse",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		}
+	],
+	"extra_info": null
 }

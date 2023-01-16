@@ -4375,20 +4375,17 @@
 			]
 		}
 	],
-	"extra_info": {
-		"Enums": [
-			{
-				"Schema": "public",
-				"Name": "workday",
-				"Type": "PublicWorkday",
-				"Values": [
-					"monday",
-					"tuesday",
-					"wednesday",
-					"thursday",
-					"friday"
-				]
-			}
-		]
-	}
+	"enums": [
+		{
+			"Type": "PublicWorkday",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		}
+	],
+	"extra_info": null
 }
