@@ -12,8 +12,8 @@ To prevent SQL injection, it is necessary to use parameters in our queries. With
 ```go
 // args: 100, "Stephen"
 // Postgres: SELECT * from users WHERE id = $1 AND name = $2
+// SQLite: SELECT * from users WHERE id = ?1 AND name = ?2
 // MySQL: SELECT * from users WHERE id = ? AND name = ?
-// SQL Server: SELECT * from users WHERE id = @p1 AND name = @p2
 psql.Select(
     sm.From("users"),
     sm.Where(psql.X("id").EQ(psql.Arg(100))),

@@ -15,7 +15,6 @@ It can take multiple strings that need to be quoted and joined with `.`
 // Postgres: "schema_name"."table_name"
 // SQLite: "schema_name"."table_name"
 // MySQL: `schema_name`.`table_name`
-// SQL Server: [schema_name].[table_name]
 psql.Quote("schema_name", "table_name")
 ```
 

@@ -34,7 +34,6 @@ Read more about [the principles](./principles).
 | Postgres      | ✅  | ✅     | ✅     | ✅     | ✅     |
 | MySQL/MariaDB | ✅  | ✅     | ✅     | ✅     | ✅     |
 | SQLite        | ✅  | ✅     | ✅     | ✅     | ✅     |
-| SQL Server    | ✅  |        |        |        |        |
 
 ## Examples
 
