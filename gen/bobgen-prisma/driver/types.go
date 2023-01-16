@@ -1,5 +1,7 @@
 package driver
 
+import "encoding/json"
+
 // FieldKind describes a scalar, object or enum.
 type FieldKind string
 
@@ -87,7 +89,8 @@ type Field struct {
 	// RelationName (optional)
 	RelationName string `json:"relationName"`
 	// HasDefaultValue
-	HasDefaultValue bool `json:"hasDefaultValue"`
+	HasDefaultValue bool         `json:"hasDefaultValue"`
+	Default         fieldDefault `json:"default"`
 }
 
 // EnumValue contains detailed information about an enum type.
@@ -95,4 +98,19 @@ type EnumValue struct {
 	Name string `json:"name"`
 	// DBName (optional)
 	DBName string `json:"dBName"`
+}
+
+type fieldDefault struct {
+	AutoIncr bool
+}
+
+// The Field default value from the dmmf can be any type since it
+// depends on the type of the column
+// We are only interested in auto increment values, so we ignore
+// the error if the shape is not what we want
+func (f *fieldDefault) UnmarshalJSON(data []byte) error {
+	var proxy struct{ Name string }
+	_ = json.Unmarshal(data, &proxy) // ignore error
+	f.AutoIncr = proxy.Name == "autoincrement"
+	return nil
 }

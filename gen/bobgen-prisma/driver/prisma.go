@@ -235,6 +235,7 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 			Nullable:  !field.IsRequired,
 			Generated: field.IsGenerated,
 			Unique:    field.IsID || field.IsUnique,
+			AutoIncr:  field.Default.AutoIncr,
 		}
 
 		if field.HasDefaultValue {
