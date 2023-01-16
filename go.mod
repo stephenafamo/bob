@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/aarondl/opt v0.0.0-20221129170750-3d40c96d9bb8
-	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/iancoleman/strcase v0.2.0

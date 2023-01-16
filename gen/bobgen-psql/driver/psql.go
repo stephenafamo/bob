@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"sort"
 
-	"github.com/friendsofgo/errors"
 	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
@@ -106,19 +105,19 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	d.conn, err = sql.Open("postgres", d.config.Dsn)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to database")
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer d.conn.Close()
 
 	dbinfo = &DBInfo{}
 
 	if err := d.loadUniqueColumns(); err != nil {
-		return nil, errors.Wrapf(err, "unable to load unique data")
+		return nil, fmt.Errorf("unable to load unique data: %w", err)
 	}
 
 	// drivers.Tables call translateColumnType which uses Enums
 	if err := d.loadEnums(ctx); err != nil {
-		return nil, errors.Wrapf(err, "unable to load enums")
+		return nil, fmt.Errorf("unable to load enums: %w", err)
 	}
 
 	dbinfo.Tables, err = drivers.BuildDBInfo(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
@@ -305,7 +304,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		var defaultValue, arrayType, domainName *string
 		var nullable, generated, identity bool
 		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
-			return "", "", nil, errors.Wrapf(err, "unable to scan for table %s", info.Key)
+			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", info.Key, err)
 		}
 
 		_, unique := d.uniqueColumns[columnIdentifier{info.Schema, info.Name, colName}]

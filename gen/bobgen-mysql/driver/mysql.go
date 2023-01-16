@@ -12,7 +12,6 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/importers"
@@ -96,13 +95,13 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 
 	if config.DBName == "" {
-		return nil, errors.Wrap(err, "no database name given")
+		return nil, fmt.Errorf("no database name given: %w", err)
 	}
 	d.dbName = config.DBName
 
 	d.conn, err = sql.Open("mysql", d.config.Dsn)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to database")
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer d.conn.Close()
 
@@ -208,7 +207,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		var nullable, generated, unique bool
 		var defaultValue *string
 		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &generated, &unique); err != nil {
-			return "", "", nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
+			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", tableName, err)
 		}
 
 		if colFullType == "tinyint(1)" {
