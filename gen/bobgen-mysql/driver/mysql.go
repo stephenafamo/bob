@@ -3,14 +3,11 @@ package driver
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"fmt"
-	"io/fs"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
-	"text/template"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -20,14 +17,7 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-//go:embed templates
-var templates embed.FS
-
-//nolint:gochecknoglobals
-var (
-	ModelTemplates, _ = fs.Sub(templates, "templates/models")
-	rgxEnum           = regexp.MustCompile(`^enum\([^\)]+\)$`)
-)
+var rgxEnum = regexp.MustCompile(`^enum\([^\)]+\)$`)
 
 type (
 	Interface = drivers.Interface[any]
@@ -393,24 +383,4 @@ func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 	}
 
 	return ret, nil
-}
-
-func CustomFuncs() template.FuncMap {
-	fm := map[string]any{
-		"uniqueColPairs": uniqueColPairs,
-	}
-	return fm
-}
-
-func uniqueColPairs(t drivers.Table) string {
-	ret := make([]string, 0, len(t.Uniques)+1)
-	if t.PKey != nil {
-		ret = append(ret, fmt.Sprintf("%#v", t.PKey.Columns))
-	}
-
-	for _, unique := range t.Uniques {
-		ret = append(ret, fmt.Sprintf("%#v", unique.Columns))
-	}
-
-	return strings.Join(ret, ", ")
 }

@@ -67,7 +67,7 @@ func run(c *cli.Context) error {
 		{
 			OutFolder: driverConfig.Output,
 			PkgName:   driverConfig.Pkgname,
-			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+			Templates: []fs.FS{gen.ModelTemplates, gen.MySQLModelTemplates},
 		},
 	}
 
@@ -87,11 +87,10 @@ func run(c *cli.Context) error {
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:              &config,
-		Dialect:             "mysql",
-		Outputs:             outputs,
-		ModelsPkg:           modPkg,
-		CustomTemplateFuncs: driver.CustomFuncs(),
+		Config:    &config,
+		Dialect:   "mysql",
+		Outputs:   outputs,
+		ModelsPkg: modPkg,
 	}
 
 	return cmdState.Run(c.Context, d)

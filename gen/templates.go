@@ -20,10 +20,18 @@ import (
 //go:embed templates
 var templates embed.FS
 
+//go:embed bobgen-mysql/templates
+var mysqlTemplates embed.FS
+
+//go:embed bobgen-prisma/templates
+var prismaTemplates embed.FS
+
 //nolint:gochecknoglobals
 var (
-	ModelTemplates, _   = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
+	ModelTemplates, _       = fs.Sub(templates, "templates/models")
+	FactoryTemplates, _     = fs.Sub(templates, "templates/factory")
+	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
+	PrismaModelTemplates, _ = fs.Sub(prismaTemplates, "bobgen-prisma/templates/models")
 )
 
 type Importer map[string]struct{}
@@ -253,6 +261,7 @@ var templateFunctions = template.FuncMap{
 
 		return fmt.Sprintf("%q, %q", s1, s2)
 	},
+	"uniqueColPairs":        uniqueColPairs,
 	"relArgs":               relArgs,
 	"relDependencies":       relDependencies,
 	"relDependenciesTyp":    relDependenciesTyp,
@@ -748,4 +757,17 @@ func shouldCreateObjs(tableName, local, foreign string, needed []string) bool {
 	}
 
 	return true
+}
+
+func uniqueColPairs(t drivers.Table) string {
+	ret := make([]string, 0, len(t.Uniques)+1)
+	if t.PKey != nil {
+		ret = append(ret, fmt.Sprintf("%#v", t.PKey.Columns))
+	}
+
+	for _, unique := range t.Uniques {
+		ret = append(ret, fmt.Sprintf("%#v", unique.Columns))
+	}
+
+	return strings.Join(ret, ", ")
 }

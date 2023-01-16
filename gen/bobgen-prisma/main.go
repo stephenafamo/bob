@@ -137,6 +137,8 @@ func generate(root root) error {
 	var err error
 	var dialect, driverName, driverPkg string
 
+	modelTemplates := []fs.FS{gen.ModelTemplates, gen.PrismaModelTemplates}
+
 	datasource := root.Datasources[0]
 	switch datasource.Provider {
 	case ProviderPostgreSQL:
@@ -147,6 +149,11 @@ func generate(root root) error {
 		dialect = "sqlite"
 		driverName = "sqlite"
 		driverPkg = "modernc.org/sqlite"
+	case ProviderMySQL:
+		dialect = "mysql"
+		driverName = "mysql"
+		driverPkg = "github.com/go-sql-driver/mysql"
+		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
 	default:
 		return fmt.Errorf("Unsupported datasource provider %q", datasource.Provider)
 	}
@@ -167,7 +174,7 @@ func generate(root root) error {
 		{
 			OutFolder: output,
 			PkgName:   driverConfig.Pkgname,
-			Templates: []fs.FS{gen.ModelTemplates, driver.ModelTemplates},
+			Templates: modelTemplates,
 		},
 	}
 

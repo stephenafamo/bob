@@ -2,9 +2,7 @@ package driver
 
 import (
 	"context"
-	"embed"
 	"fmt"
-	"io/fs"
 	"sort"
 	"strings"
 
@@ -12,14 +10,6 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/takuoki/gocase"
-)
-
-//go:embed templates
-var templates embed.FS
-
-//nolint:gochecknoglobals
-var (
-	ModelTemplates, _ = fs.Sub(templates, "templates/models")
 )
 
 type (
