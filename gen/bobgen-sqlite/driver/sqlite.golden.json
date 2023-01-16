@@ -13,6 +13,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -24,6 +25,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -35,6 +37,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -46,6 +49,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -57,6 +61,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				}
@@ -85,6 +90,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -96,6 +102,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -124,6 +131,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -152,6 +160,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -204,6 +213,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -256,6 +266,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -267,6 +278,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -278,6 +290,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -301,6 +314,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -353,6 +367,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -364,6 +379,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -460,6 +476,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -471,6 +488,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -482,6 +500,7 @@
 					"nullable": true,
 					"unique": true,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -608,6 +627,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -619,6 +639,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -630,6 +651,7 @@
 					"nullable": true,
 					"unique": true,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -641,6 +663,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -652,6 +675,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				}
@@ -733,6 +757,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -761,6 +786,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -772,6 +798,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -783,6 +810,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -794,6 +822,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -805,6 +834,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": true,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				}
@@ -833,6 +863,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -885,6 +916,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -937,6 +969,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -948,6 +981,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -959,6 +993,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -970,6 +1005,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -981,6 +1017,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -992,6 +1029,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1003,6 +1041,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1014,6 +1053,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1025,6 +1065,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1036,6 +1077,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1047,6 +1089,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1058,6 +1101,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1069,6 +1113,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1080,6 +1125,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1091,6 +1137,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1102,6 +1149,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1113,6 +1161,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1124,6 +1173,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1135,6 +1185,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1146,6 +1197,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1157,6 +1209,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1168,6 +1221,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1179,6 +1233,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1190,6 +1245,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1201,6 +1257,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1212,6 +1269,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1223,6 +1281,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1234,6 +1293,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1245,6 +1305,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1256,6 +1317,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1267,6 +1329,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1278,6 +1341,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1289,6 +1353,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1300,6 +1365,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1311,6 +1377,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1322,6 +1389,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1333,6 +1401,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float32",
 					"imports": null
 				},
@@ -1344,6 +1413,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float32",
 					"imports": null
 				},
@@ -1355,6 +1425,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1366,6 +1437,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1377,6 +1449,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1388,6 +1461,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1399,6 +1473,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1410,6 +1485,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1421,6 +1497,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1432,6 +1509,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1443,6 +1521,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1454,6 +1533,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1465,6 +1545,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1476,6 +1557,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1487,6 +1569,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1498,6 +1581,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1509,6 +1593,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1520,6 +1605,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1531,6 +1617,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1542,6 +1629,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1553,6 +1641,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1566,6 +1655,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1577,6 +1667,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1588,6 +1679,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1599,6 +1691,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1610,6 +1703,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1623,6 +1717,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1636,6 +1731,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1649,6 +1745,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1662,6 +1759,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1676,6 +1774,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1690,6 +1789,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int8",
 					"imports": null
 				},
@@ -1701,6 +1801,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int8",
 					"imports": null
 				},
@@ -1712,6 +1813,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1723,6 +1825,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1734,6 +1837,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1745,6 +1849,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1756,6 +1861,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int16",
 					"imports": null
 				},
@@ -1767,6 +1873,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int16",
 					"imports": null
 				},
@@ -1778,6 +1885,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int32",
 					"imports": null
 				},
@@ -1789,6 +1897,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int32",
 					"imports": null
 				},
@@ -1800,6 +1909,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1811,6 +1921,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -1822,6 +1933,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float32",
 					"imports": null
 				},
@@ -1833,6 +1945,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float32",
 					"imports": null
 				},
@@ -1844,6 +1957,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1855,6 +1969,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1866,6 +1981,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1877,6 +1993,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1888,6 +2005,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1899,6 +2017,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "float64",
 					"imports": null
 				},
@@ -1910,6 +2029,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "bool",
 					"imports": null
 				},
@@ -1921,6 +2041,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "bool",
 					"imports": null
 				},
@@ -1932,6 +2053,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1945,6 +2067,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1958,6 +2081,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1971,6 +2095,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1984,6 +2109,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -1995,6 +2121,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2006,6 +2133,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2017,6 +2145,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2028,6 +2157,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2039,6 +2169,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2050,6 +2181,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2061,6 +2193,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2072,6 +2205,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "[]byte",
 					"imports": null
 				},
@@ -2083,6 +2217,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "[]byte",
 					"imports": null
 				},
@@ -2094,6 +2229,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2105,6 +2241,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2116,6 +2253,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2127,6 +2265,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2138,6 +2277,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2149,6 +2289,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2160,6 +2301,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2171,6 +2313,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2182,6 +2325,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				},
@@ -2193,6 +2337,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "string",
 					"imports": null
 				}
@@ -2221,6 +2366,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -2232,6 +2378,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -2243,6 +2390,7 @@
 					"nullable": true,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -2266,6 +2414,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -2318,6 +2467,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -2329,6 +2479,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
@@ -2425,6 +2576,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -2436,6 +2588,7 @@
 					"nullable": false,
 					"unique": false,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				},
@@ -2447,6 +2600,7 @@
 					"nullable": true,
 					"unique": true,
 					"generated": false,
+					"autoincr": false,
 					"type": "int64",
 					"imports": null
 				}
