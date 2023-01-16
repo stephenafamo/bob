@@ -4,7 +4,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -63,12 +62,8 @@ func CrossJoin(e any) bob.Mod[*dialect.DeleteQuery] {
 	return dialect.CrossJoin[*dialect.DeleteQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
+func Where(e any) bob.Mod[*dialect.DeleteQuery] {
 	return mods.Where[*dialect.DeleteQuery]{e}
-}
-
-func WhereClause(clause string, args ...any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
 func Returning(clauses ...any) bob.Mod[*dialect.DeleteQuery] {

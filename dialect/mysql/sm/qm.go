@@ -4,7 +4,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -60,40 +59,32 @@ func From(table any) dialect.FromChain[*dialect.SelectQuery] {
 	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func InnerJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.InnerJoin[*dialect.SelectQuery](e)
 }
 
-func LeftJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+func LeftJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.LeftJoin[*dialect.SelectQuery](e)
 }
 
-func RightJoin(e bob.Expression) dialect.JoinChain[*dialect.SelectQuery] {
+func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.RightJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
 	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func StraightJoin(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func StraightJoin(e any) bob.Mod[*dialect.SelectQuery] {
 	return dialect.StraightJoin[*dialect.SelectQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func Where(e any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Where[*dialect.SelectQuery]{e}
 }
 
-func WhereClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Where[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
-}
-
-func Having(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func Having(e any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Having[*dialect.SelectQuery]{e}
-}
-
-func HavingClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Having[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
 func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {

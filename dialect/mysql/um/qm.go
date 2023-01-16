@@ -40,12 +40,8 @@ func SetArg(a string, b any) bob.Mod[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), expr.Arg(b))}
 }
 
-func Where(e bob.Expression) bob.Mod[*dialect.UpdateQuery] {
+func Where(e any) bob.Mod[*dialect.UpdateQuery] {
 	return mods.Where[*dialect.UpdateQuery]{e}
-}
-
-func WhereClause(clause string, args ...any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Where[*dialect.UpdateQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.UpdateQuery] {

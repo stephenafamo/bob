@@ -4,7 +4,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -57,32 +56,28 @@ func Using(name any) dialect.FromChain[*dialect.DeleteQuery] {
 	return dialect.From[*dialect.DeleteQuery](name)
 }
 
-func InnerJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
+func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.InnerJoin[*dialect.DeleteQuery](e)
 }
 
-func LeftJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
+func LeftJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.LeftJoin[*dialect.DeleteQuery](e)
 }
 
-func RightJoin(e bob.Expression) dialect.JoinChain[*dialect.DeleteQuery] {
+func RightJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.RightJoin[*dialect.DeleteQuery](e)
 }
 
-func CrossJoin(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
+func CrossJoin(e any) bob.Mod[*dialect.DeleteQuery] {
 	return dialect.CrossJoin[*dialect.DeleteQuery](e)
 }
 
-func StraightJoin(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
+func StraightJoin(e any) bob.Mod[*dialect.DeleteQuery] {
 	return dialect.StraightJoin[*dialect.DeleteQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*dialect.DeleteQuery] {
+func Where(e any) bob.Mod[*dialect.DeleteQuery] {
 	return mods.Where[*dialect.DeleteQuery]{e}
-}
-
-func WhereClause(clause string, args ...any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.DeleteQuery] {

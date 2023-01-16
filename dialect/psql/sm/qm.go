@@ -4,7 +4,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -68,20 +67,12 @@ func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
 	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func Where(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func Where(e any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Where[*dialect.SelectQuery]{e}
 }
 
-func WhereClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Where[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
-}
-
-func Having(e bob.Expression) bob.Mod[*dialect.SelectQuery] {
+func Having(e any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Having[*dialect.SelectQuery]{e}
-}
-
-func HavingClause(clause string, args ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Having[*dialect.SelectQuery]{expr.RawQuery(dialect.Dialect, clause, args...)}
 }
 
 func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
