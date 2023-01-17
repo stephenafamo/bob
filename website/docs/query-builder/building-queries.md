@@ -93,47 +93,13 @@ The most flexible starter is `X()`
 psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
 ```
 
-Other starters are listed below:
+See the [starters page](./starters) for the list of common starters.
 
-**NOTE:** These are the common starters. Each dialect can sometimes include their own starters. For example, starters for common function calls can easily be added
+### Operators
 
-* `X(any)`: Plain start to a chain.
-* `Not(any)`: Creates a `NOT expr` expression that is then chainable.
-* `F(name string, args ...any)`: A generic function call. Takes a name and the arguments.
-* `OR(...any)`: Joins multiple expressions with "OR"
-* `AND(...any)`: Joins multiple expressions with "AND"
-* `CONCAT(...any)`: Joins multiple expressions with "||"
-* `S(string)`: Create a plain string literal. Single quoted.
-* `Arg(...any)`: One or more arguments. These are replaced with placeholders in the query and the args returned.
-* `Placeholders(uint)`: Inserts a `count` of placeholders without any specific value yet. Useful for compiling reusable queries.
-* `Statement(clause string, args ...any)`: For inserting a raw statement somewhere. To keep it dialect agnostic, placeholders should be inserted with `?` and a literal question mark can be escaped with a backslash `\?`.
-* `Group(...any)`: To easily group a number of expressions. Wraps them in parentheses and seperates them with commas.
-* `Quote(...string)`: For quoting. [See details](#quotes)
-* `P(any)`: To manually wrap an expression with parentheses. This is often not necessary as the parentheses will be added as the expression is built.
+The expression type returned by the starter functions have methods to build queries using operators.
 
-### Chaining
-
-The type returned by the starter methods return have methods for common operators. **NOTE:** These are the common operators. Each dialect can sometimes include their own starters
-
-* `IsNull()`: X IS NULL
-* `IsNotNull()`: X IS NOT NULL
-* `Is(y any)`: X IS DISTINCT FROM Y
-* `IsNot(y any)`: X IS NOT DISTINCT FROM Y
-* `EQ(y any)`: X = Y
-* `NE(y any)`: X \<\> Y
-* `LT(y any)`: X \< Y
-* `LTE(y any)`: X \<= Y
-* `GT(y any)`: X \> Y
-* `GTE(y any)`: X >= Y
-* `In(...any)`: X IN (y, z)
-* `NotIn(...any)`: X NOT IN (y, z)
-* `Or(y any)`: X OR Y
-* `And(y any)`: X AND Y
-* `Concat(y any)`: X || Y
-
-The following expressions cannot be chained and are expected to be used at the end of a chain
-
-* `As(alias string)`: X as "alias". Used for aliasing column names
+See the [operators page](./operators) for the list of common operators.
 
 ## Raw Queries
 
