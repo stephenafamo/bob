@@ -14,11 +14,11 @@ type {{$tAlias.DownSingular}}Mods struct {}
 
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		o.{{$colAlias}} = func() {{$colTyp}} { return val }
+		o.{{$colAlias}} = func(*faker.Faker) {{$colTyp}} { return val }
 	})
 }
 
-func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func(*faker.Faker) {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 			o.{{$colAlias}} = f
 	})
@@ -27,6 +27,18 @@ func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{
 func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		o.{{$colAlias}} = nil
+	})
+}
+
+func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+		o.{{$colAlias}} = func(f *faker.Faker) {{$colTyp}} {
+			{{if $column.Nullable -}}
+				return RandomNull[{{$column.Type}}](f)
+			{{- else -}}
+				return Random[{{$column.Type}}](f)
+			{{- end}}
+		}
 	})
 }
 

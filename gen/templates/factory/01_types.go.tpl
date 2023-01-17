@@ -1,4 +1,5 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
+{{$.Importer.Import "github.com/jaswdr/faker"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table .Table.Key -}}
 
@@ -31,7 +32,7 @@ type {{$tAlias.UpSingular}}Template struct {
             {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
             {{- $colTyp = printf "null.Val[%s]" $column.Type -}}
         {{- end -}}
-        {{$colAlias}} func() {{$colTyp}}
+        {{$colAlias}} func(*faker.Faker) {{$colTyp}}
     {{end -}}
 
     {{if .Table.Relationships -}}
@@ -82,7 +83,7 @@ func (o {{$tAlias.UpSingular}}Template) toModel() (*models.{{$tAlias.UpSingular}
     {{range $column := .Table.Columns -}}
     {{$colAlias := $tAlias.Column $column.Name -}}
         if o.{{$colAlias}} != nil {
-            m.{{$colAlias}} = o.{{$colAlias}}()
+            m.{{$colAlias}} = o.{{$colAlias}}(nil)
         }
     {{end}}
 

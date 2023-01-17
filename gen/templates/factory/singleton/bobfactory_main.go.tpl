@@ -7,23 +7,14 @@ type factory struct {
 
 func NewFactory() *factory {
   return &factory{
-    {{range $table := .Tables -}}
-    {{ $tAlias := $.Aliases.Table $table.Key -}}
+    {{- range $table := .Tables}}
+    {{- $tAlias := $.Aliases.Table $table.Key}}
     base{{$tAlias.UpSingular}}Mods: {{$tAlias.UpSingular}}ModSlice{
       {{range $column := $table.Columns -}}
         {{if .Default}}{{continue}}{{end -}}
-        {{$.Importer.ImportList $column.Imports -}}
-        {{- $colTyp := $column.Type -}}
-        {{- if $column.Nullable -}}
-          {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-          {{- $colTyp = printf "null.Val[%s]" $column.Type -}}
-        {{- end -}}
         {{$colAlias := $tAlias.Column $column.Name -}}
-        {{$tAlias.UpSingular}}Mods.{{$colAlias}}Func(func() {{$colTyp}} {
-          var zero {{$colTyp}}
-          return zero
-        }),
-      {{- end}}
+        {{$tAlias.UpSingular}}Mods.Random{{$colAlias}}(),
+      {{end -}}
     },
     {{- end}}
   }
