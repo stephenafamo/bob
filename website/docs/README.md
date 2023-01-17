@@ -6,11 +6,13 @@ import DocCardList from '@theme/DocCardList';
 
 # Introduction
 
-[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
+
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stephenafamo/bob)
 [![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob)
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
+
+[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
 
 Bob is a set of Go packages and tools to work with SQL databases.
