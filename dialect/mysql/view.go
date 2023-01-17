@@ -34,6 +34,7 @@ func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], internal.M
 		alias:   alias,
 		mapping: mappings,
 		allCols: allCols,
+		scanner: scan.StructMapper[T](),
 	}, mappings
 }
 
@@ -43,6 +44,7 @@ type View[T any, Tslice ~[]T] struct {
 
 	mapping internal.Mapping
 	allCols orm.Columns
+	scanner scan.Mapper[T]
 
 	AfterSelectHooks orm.Hooks[T]
 }
@@ -62,8 +64,8 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 }
 
 // Adds table name et al
-func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := Select(sm.From(t.NameAs(ctx)))
+func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
+	q := Select(sm.From(v.NameAs(ctx)))
 
 	preloadMods := make([]preloader, 0, len(queryMods))
 	for _, m := range queryMods {
@@ -76,7 +78,7 @@ func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 
 	// Append the table columns
 	if len(q.Expression.SelectList.Columns) == 0 {
-		q.Expression.AppendSelect(t.Columns())
+		q.Expression.AppendSelect(v.Columns())
 	}
 
 	// Do this after attaching table columns if necessary
@@ -88,7 +90,8 @@ func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 		BaseQuery:        q,
 		ctx:              ctx,
 		exec:             exec,
-		afterSelectHooks: &t.AfterSelectHooks,
+		scanner:          v.scanner,
+		afterSelectHooks: &v.AfterSelectHooks,
 	}
 }
 
@@ -99,7 +102,7 @@ func (v *View[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer, queryM
 
 // Prepare a statement from an existing query that will be mapped to the view's type
 func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q bob.Query) (bob.QueryStmt[T, Tslice], error) {
-	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, scan.StructMapper[T](), v.afterSelect(ctx, exec))
+	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, v.scanner, v.afterSelect(ctx, exec))
 }
 
 func (v *View[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
@@ -121,6 +124,7 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	bob.BaseQuery[*dialect.SelectQuery]
 	ctx              context.Context
 	exec             bob.Executor
+	scanner          scan.Mapper[T]
 	afterSelectHooks *orm.Hooks[T]
 }
 
@@ -150,7 +154,7 @@ func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 // First matching row
 func (v *ViewQuery[T, Tslice]) One() (T, error) {
 	v.BaseQuery.Expression.Limit.SetLimit(1)
-	val, err := bob.One(v.ctx, v.exec, v.BaseQuery, scan.StructMapper[T](), v.afterSelect(v.ctx, v.exec))
+	val, err := bob.One(v.ctx, v.exec, v.BaseQuery, v.scanner, v.afterSelect(v.ctx, v.exec))
 	if err != nil {
 		return val, err
 	}
@@ -160,7 +164,7 @@ func (v *ViewQuery[T, Tslice]) One() (T, error) {
 
 // All matching rows
 func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	vals, err := bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, scan.StructMapper[T](), v.afterSelect(v.ctx, v.exec))
+	vals, err := bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, v.scanner, v.afterSelect(v.ctx, v.exec))
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +174,7 @@ func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
 
 // Cursor to scan through the results
 func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
-	return bob.Cursor(v.ctx, v.exec, v.BaseQuery, scan.StructMapper[T](), v.afterSelect(v.ctx, v.exec))
+	return bob.Cursor(v.ctx, v.exec, v.BaseQuery, v.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // Count the number of matching rows

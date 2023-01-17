@@ -13,7 +13,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/um"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
-	"github.com/stephenafamo/scan"
 )
 
 var ErrNothingToUpdate = errors.New("nothing to update")
@@ -75,7 +74,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 		im.Returning(t.Columns()),
 	)
 
-	val, err := bob.One(ctx, exec, q, scan.StructMapper[T]())
+	val, err := bob.One(ctx, exec, q, t.scanner)
 	if err != nil {
 		return val, err
 	}
@@ -119,7 +118,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		im.Returning(t.Columns()),
 	)
 
-	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
+	vals, err := bob.All(ctx, exec, q, t.scanner)
 	if err != nil {
 		return vals, err
 	}
@@ -281,7 +280,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		conflictQM,
 	)
 
-	val, err := bob.One(ctx, exec, q, scan.StructMapper[T]())
+	val, err := bob.One(ctx, exec, q, t.scanner)
 	if err != nil {
 		return val, err
 	}
@@ -349,7 +348,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		q.Apply(im.Values(val...))
 	}
 
-	vals, err := bob.All(ctx, exec, q, scan.StructMapper[T]())
+	vals, err := bob.All(ctx, exec, q, t.scanner)
 	if err != nil {
 		return vals, err
 	}

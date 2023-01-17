@@ -46,6 +46,7 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], in
 		alias:   alias,
 		mapping: mappings,
 		allCols: allCols,
+		scanner: scan.StructMapper[T](),
 	}, mappings
 }
 
@@ -56,6 +57,7 @@ type View[T any, Tslice ~[]T] struct {
 
 	mapping internal.Mapping
 	allCols orm.Columns
+	scanner scan.Mapper[T]
 
 	AfterSelectHooks orm.Hooks[T]
 }
@@ -81,8 +83,8 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 }
 
 // Adds table name et al
-func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := Select(sm.From(t.NameAs(ctx)))
+func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
+	q := Select(sm.From(v.NameAs(ctx)))
 
 	preloadMods := make([]preloader, 0, len(queryMods))
 	for _, m := range queryMods {
@@ -95,7 +97,7 @@ func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 
 	// Append the table columns
 	if len(q.Expression.SelectList.Columns) == 0 {
-		q.Expression.AppendSelect(t.Columns())
+		q.Expression.AppendSelect(v.Columns())
 	}
 
 	// Do this after attaching table columns if necessary
@@ -107,7 +109,8 @@ func (t *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 		q:                q,
 		ctx:              ctx,
 		exec:             exec,
-		afterSelectHooks: &t.AfterSelectHooks,
+		scanner:          v.scanner,
+		afterSelectHooks: &v.AfterSelectHooks,
 	}
 }
 
@@ -140,6 +143,7 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	ctx              context.Context
 	exec             bob.Executor
 	q                bob.BaseQuery[*dialect.SelectQuery]
+	scanner          scan.Mapper[T]
 	afterSelectHooks *orm.Hooks[T]
 }
 
