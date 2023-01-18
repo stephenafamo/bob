@@ -5,7 +5,7 @@ type factory struct {
     {{- end}}
 }
 
-func NewFactory() *factory {
+func New() *factory {
   return &factory{
     {{- range $table := .Tables}}
     {{- $tAlias := $.Aliases.Table $table.Key}}
@@ -20,7 +20,7 @@ func NewFactory() *factory {
   }
 }
 
-var defaultFactory = NewFactory()
+var defaultFactory = New()
 
 {{range $table := .Tables}}{{if not $table.IsJoinTable -}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
