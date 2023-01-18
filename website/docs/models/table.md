@@ -22,15 +22,17 @@ To create a view, use the `NewTable()` function. This takes 2 type parameters:
 
 ```go
 type User struct {
-    ID    int     `db:",pk"` // needed to know the primary key when updating
-    Name  string
-    Email string
+    ID        int     `db:",pk"` // needed to know the primary key when updating
+    VehicleID int
+    Name      string
+    Email     string
 }
 
 type UserSetter struct {
-    ID    omit.Val[int]
-    Name  omit.Val[string]
-    Email omit.Val[string]
+    ID        omit.Val[int]
+    VehicleID omit.Val[int]
+    Name      omit.Val[string]
+    Email     omit.Val[string]
 }
 
 var userTable = psql.NewTable[User, UserSetter]("public", "users")
@@ -54,41 +56,82 @@ userTable.Insert(ctx, db, UserSetter{
 }) 
 ```
 
-## Insert()
-
-Inserts a single row into the table.
-
-## InsertMany()
-
-Bulk inserts multiple rows into the table.
-
-## Upsert()
-
-Inserts a single row into the table and handle conflicts as desired.
-
-## UpsertMany()
-
-Bulk inserts a single row into the table and handle conflicts as desired.
-
-## Update()
-
-Syncs the current values in the model into the expected row in the database (by primary key).
-
-## UpdateMany()
-
-Updates all the given models with the values in the provided setter.
-
-## Delete()
-
-Deletes a single row from the table.
-
-## DeleteMany()
-
-Bulk delete multiple rows from the table.
-
-## Query()
+## Queries
 
 The `Query()` method returns a `TableQuery` on the model's database table.
 
 In addition to the methods provided by `ViewQuery` -- `One()`, `All()`, `Cursor()`, `Count()`, `Exists()`,  
 `TableQuery` also has `UpdateAll()` and `DeleteAll()` which works on all the columns matching the current query.
+
+```go
+// DELETE FROM "users" WHERE id IN (SELECT "users"."id" FROM "users" LIMIT 10)
+models.Users(ctx, db, sm.Limit(10)).DeleteAll()
+
+// UPDATE "users" SET "vehicle_id" = 100 WHERE id IN (SELECT "users"."id" FROM "users" LIMIT 10)
+models.Users(ctx, db, sm.Limit(10)).UpdateAll(&UserSetter{VehicleID: omit.From(100)})
+```
+
+## Insert
+
+```go
+// INSERT INTO "users" ("id") VALUES (100)
+user, err := models.UsersTable.Insert(ctx, db, &UserSetter{
+    ID: omit.From(100),
+    // add other columns
+})
+```
+
+## InsertMany
+
+Bulk insert models
+
+```go
+// INSERT INTO "users" ("id") VALUES (100), (101), (102)
+users, err := models.UsersTable.InsertMany(ctx, db,
+    &UserSetter{ID: omit.From(100)},
+    &UserSetter{ID: omit.From(101)},
+    &UserSetter{ID: omit.From(102)},
+)
+```
+
+## Update
+
+```go
+_, err := models.UsersTable.Update(ctx, db, user)
+```
+
+## UpdateMany
+
+UpdateMany uses a `UserSetter` to determine which columns to set to and the desired value
+
+```go
+// UPDATE "users"
+// SET "vehicle_id" = 200
+// WHERE "users"."id" IN (10, 11, 12)
+_, err := models.UsersTable.UpdateMany(ctx, db, &UserSetter{
+    &UserSetter{VehicleID: omit.From(200)},
+}, user10, user11, user12)
+```
+
+## Upsert
+
+:::info
+
+The method signature for this varies by dialect.
+
+:::
+
+```go
+// INSERT INTO "users" ("id") VALUES (100) ON CONFLICT DO UPDATE SET "id" = EXCLUDED."id"
+user, err := models.UsersTable.Upsert(ctx, db, true, nil, nil, &UserSetter{
+    ID: omit.From(100),
+    // add other columns
+})
+```
+
+## Delete
+
+```go
+// DELETE FROM "users" WHERE "id" = 100
+_, err := models.UsersTable.Delete(ctx, db, user)
+```

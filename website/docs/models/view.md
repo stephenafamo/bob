@@ -56,10 +56,27 @@ Learn about how to manipulate a columns list in the [columns documentation](./co
 The `Query()` method returns a `ViewQuery` on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
-userView.Query(
+q := userView.Query(
     ctx, db, 
     sm.Limit(10), // LIMIT 10
 )
 ```
 
 The query can then be executed with `One()`, `All()`, `Cursor()`, `Count()` or `Exists()`.
+
+```go
+// SELECT * FROM "users" LIMIT 1
+userView.Query(ctx, db).One()
+
+// SELECT * FROM "users"
+userView.Query(ctx, db).All()
+
+// Like All, but returns a cursor for moving through large results
+userView.Query(ctx, db).Cursor()
+
+// SELECT count(1) FROM "users"
+userView.Query(ctx, db).Count()
+
+// Like One(), but only returns a boolean indicating if the model was found
+userView.Query(ctx, db).Exists()
+```
