@@ -115,11 +115,11 @@ func (c exceptColumnsOpt) modifyPreloader(el *preloadSettings) {
 	}
 }
 
-func LoadOnlyColumns(cols ...string) onlyColumnsOpt {
+func OnlyColumns(cols ...string) onlyColumnsOpt {
 	return onlyColumnsOpt(cols)
 }
 
-func LoadExceptColumns(cols ...string) exceptColumnsOpt {
+func ExceptColumns(cols ...string) exceptColumnsOpt {
 	return exceptColumnsOpt(cols)
 }
 
