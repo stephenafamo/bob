@@ -11,11 +11,11 @@
 
 Bob is a set of Go packages and tools to work with SQL databases.
 
-Bob's philosophy centers around the following:
+Bob's philosophy centres around the following:
 
 1. **Correctness**: Things should work correctly. Follow specifications as closely as possible.
 2. **Convenience** (not magic): Bob provides convenient ways to perform actions, it does not add unexplainable magic, or needless abstraction.
-3. **Cooperation**: Bob should work will with other tools and packages as much as possible, especially the standard library.
+3. **Cooperation**: Bob should work well with other tools and packages as much as possible, especially the standard library.
 
 **Bob** can be progressively adopted from raw SQL query strings, to fully typed queries with models and factories generated for your database.
 
