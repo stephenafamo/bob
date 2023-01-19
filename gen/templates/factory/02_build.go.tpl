@@ -63,10 +63,10 @@ func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingul
 		if o.{{$colAlias}} != nil {
 			{{if $column.Nullable -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-			m.{{$colAlias}} = omitnull.FromNull(o.{{$colAlias}}(nil))
+			m.{{$colAlias}} = omitnull.FromNull(o.{{$colAlias}}())
 			{{else -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
-			m.{{$colAlias}} = omit.From(o.{{$colAlias}}(nil))
+			m.{{$colAlias}} = omit.From(o.{{$colAlias}}())
 			{{end -}}
 		}
 	{{end}}

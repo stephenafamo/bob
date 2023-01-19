@@ -5,6 +5,21 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table .Table.Key}}
 
+func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
+	{{range $column := .Table.Columns -}}
+  {{- if $column.Default}}{{continue}}{{end -}}
+	{{- if $column.Generated}}{{continue}}{{end -}}
+	{{$colAlias := $tAlias.Column $column.Name -}}
+		if m.{{$colAlias}}.IsUnset() {
+			{{if $column.Nullable -}}
+          m.{{$colAlias}} = omitnull.FromNull(randomNull[{{$column.Type}}](nil))
+			{{- else -}}
+          m.{{$colAlias}} = omit.From(random[{{$column.Type}}](nil))
+			{{- end}}
+  }
+	{{end -}}
+}
+
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. 
 // any required relationship should have already exist on the model
@@ -86,6 +101,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Executor) (context.Context, *models.{{$tAlias.UpSingular}}, error) {
 	var err error
 	opt := o.BuildSetter()
+	ensureCreatable{{$tAlias.UpSingular}}(opt)
 
 	{{range $index, $rel := $table.Relationships -}}
 		{{- if not (relIsRequired $table $rel)}}{{continue}}{{end -}}
