@@ -64,8 +64,9 @@ const config = {
         title: 'Bob - Go SQL Access Toolkit',
         items: [
           {
-            to: 'docs/README',
+            to: 'docs',
             label: 'Introduction',
+            activeBaseRegex: 'docs[/]?$',
             position: 'left',
           },
           {
@@ -95,6 +96,11 @@ const config = {
           {
             href: 'https://github.com/stephenafamo/bob',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://pkg.go.dev/github.com/stephenafamo/bob',
+            label: 'Reference',
             position: 'right',
           },
         ],

@@ -1,19 +1,12 @@
 ---
+
 sidebar_position: 1
+
 ---
 
 import DocCardList from '@theme/DocCardList';
 
 # Introduction
-
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/stephenafamo/bob)
-
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stephenafamo/bob)
-[![Go Reference](https://pkg.go.dev/badge/github.com/stephenafamo/bob.svg)](https://pkg.go.dev/github.com/stephenafamo/bob)
-[![Go Report Card](https://goreportcard.com/badge/github.com/stephenafamo/bob)](https://goreportcard.com/report/github.com/stephenafamo/bob)
-
-[![Test Status](https://github.com/stephenafamo/bob/actions/workflows/test.yml/badge.svg)](https://github.com/stephenafamo/bob/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/stephenafamo/bob/badge.svg)](https://coveralls.io/github/stephenafamo/bob)
 
 Bob is a set of Go packages and tools to work with SQL databases.
 
@@ -156,28 +149,28 @@ generate factories that offer many benefits:
     {
         type: 'link',
         label: 'Query Builder',
-        href: 'query-builder/intro',
+        href: '/docs/query-builder/intro',
         docId: 'query-builder/intro',
         autoAddBaseUrl: true,
     },
     {
         type: 'link',
         label: 'SQL Executor',
-        href: 'sql-executor/intro',
+        href: '/docs/sql-executor/intro',
         docId: 'sql-executor/intro',
         autoAddBaseUrl: true,
     },
     {
         type: 'link',
         label: 'Models',
-        href: 'models/intro',
+        href: '/docs/models/intro',
         docId: 'models/intro',
         autoAddBaseUrl: true,
     },
     {
         type: 'link',
         label: 'Code Generation',
-        href: 'code-generation/intro',
+        href: '/docs/code-generation/intro',
         docId: 'code-generation/intro',
         autoAddBaseUrl: true,
     },
