@@ -1261,8 +1261,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_one",
@@ -1273,8 +1275,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_two",
@@ -1285,8 +1289,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_three",
@@ -1297,8 +1303,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_four",
@@ -1309,8 +1317,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_five",
@@ -1321,8 +1331,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "integer_default",
@@ -3359,8 +3371,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_one",
@@ -3371,8 +3385,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_two",
@@ -3383,8 +3399,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_three",
@@ -3395,8 +3413,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_four",
@@ -3407,8 +3427,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "uuid_five",
@@ -3419,8 +3441,10 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "string",
-					"imports": null
+					"type": "uuid.UUID",
+					"imports": [
+						"\"github.com/gofrs/uuid\""
+					]
 				},
 				{
 					"name": "integer_default",

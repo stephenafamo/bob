@@ -40,7 +40,7 @@ func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "float64"
 	case "real":
 		c.Type = "float32"
-	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
 		c.Type = "string"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
@@ -64,6 +64,8 @@ func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "pgeo.Polygon"
 	case "circle":
 		c.Type = "pgeo.Circle"
+	case "uuid":
+		c.Type = "uuid.UUID"
 	case "ENUM":
 		c.Type = "string"
 		for _, e := range d.enums {
@@ -122,10 +124,15 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 			return "pq.Int64Array", info.ArrType, nil
 		case "bytea":
 			return "pq.ByteaArray", info.ArrType, nil
-		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
 			return "pq.StringArray", info.ArrType, nil
 		case "boolean":
 			return "pq.BoolArray", info.ArrType, nil
+		case "uuid":
+			var imports importers.List
+			imports = append(imports, typMap["parray"]...)
+			imports = append(imports, typMap["uuid.UUID"]...)
+			return "parray.GenericArray[uuid.UUID]", info.ArrType, imports
 		case "decimal", "numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
@@ -142,10 +149,15 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 			return "pq.Int64Array", info.UDTName, nil
 		case "_bytea":
 			return "pq.ByteaArray", info.UDTName, nil
-		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
+		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_xml":
 			return "pq.StringArray", info.UDTName, nil
 		case "_bool":
 			return "pq.BoolArray", info.UDTName, nil
+		case "_uuid":
+			var imports importers.List
+			imports = append(imports, typMap["parray"]...)
+			imports = append(imports, typMap["uuid.UUID"]...)
+			return "parray.GenericArray[uuid.UUID]", info.ArrType, imports
 		case "_numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
@@ -162,19 +174,20 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 //nolint:gochecknoglobals
 var typMap = map[string]importers.List{
 	"time.Time":                   {`"time"`},
-	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
-	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
-	"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
-	"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
+	"pq.BoolArray":                {`"github.com/lib/pq"`},
+	"pq.Int64Array":               {`"github.com/lib/pq"`},
+	"pq.ByteaArray":               {`"github.com/lib/pq"`},
+	"pq.StringArray":              {`"github.com/lib/pq"`},
+	"pq.Float64Array":             {`"github.com/lib/pq"`},
+	"uuid.UUID":                   {`"github.com/gofrs/uuid"`},
+	"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
 	"pgeo.Line":                   {`"github.com/saulortega/pgeo"`},
 	"pgeo.Lseg":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
 	"pgeo.Path":                   {`"github.com/saulortega/pgeo"`},
+	"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
 	"pgeo.Polygon":                {`"github.com/saulortega/pgeo"`},
-	"pq.ByteaArray":               {`"github.com/lib/pq"`},
-	"pq.Int64Array":               {`"github.com/lib/pq"`},
-	"pq.Float64Array":             {`"github.com/lib/pq"`},
-	"pq.BoolArray":                {`"github.com/lib/pq"`},
-	"pq.StringArray":              {`"github.com/lib/pq"`},
+	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
+	"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
 	"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
+	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
 }
