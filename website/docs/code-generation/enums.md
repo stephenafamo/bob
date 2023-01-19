@@ -1,6 +1,6 @@
 ---
 
-sidebar_position: 4
+sidebar_position: 8
 description: Generated code for defined Enums
 
 ---

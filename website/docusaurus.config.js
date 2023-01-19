@@ -64,10 +64,33 @@ const config = {
         title: 'Bob - Go SQL Access Toolkit',
         items: [
           {
-            type: 'doc',
-            docId: 'README',
-            position: 'left',
+            to: 'docs/README',
             label: 'Introduction',
+            position: 'left',
+          },
+          {
+            to: 'docs/query-builder/intro',
+            label: 'Builder',
+            activeBaseRegex: 'docs/query-builder',
+            position: 'left',
+          },
+          {
+            to: 'docs/sql-executor/intro',
+            label: 'Executor',
+            activeBaseRegex: 'docs/sql-executor',
+            position: 'left',
+          },
+          {
+            to: 'docs/models/intro',
+            label: 'Models',
+            activeBaseRegex: 'docs/models',
+            position: 'left',
+          },
+          {
+            to: 'docs/code-generation/intro',
+            label: 'Generator',
+            activeBaseRegex: 'docs/code-generation',
+            position: 'left',
           },
           {
             href: 'https://github.com/stephenafamo/bob',

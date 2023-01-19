@@ -5,7 +5,7 @@ description: How to use the Generated Models
 
 ---
 
-# Basic Usage
+# Usage
 
 Given a database table like this:
 
@@ -23,7 +23,7 @@ CREATE TABLE jets (
 );
 ```
 
-The following age generated:
+The following are generated:
 
 :::note
 
@@ -169,3 +169,40 @@ Use exists to quicky check if a model with a given PK exists.
 ```go
 hasJet, err := models.JetExists(ctx, db, 10).All()
 ```
+
+## Query Building
+
+Several constants[^1] are also generated to help with query building. As with all queries built with [Bob's query builder](../query-builder/intro), the building blocks are expressions and mods.
+
+### Filters
+
+To fluently build type safe queries, mods are generated to easily add `WHERE` filters.
+
+```go
+// SELECT * FROM "jets" WHERE "jets"."id" = 100
+models.Jets(
+    models.SelectWhere.Jets.ID.EQ(100),
+)
+```
+
+Since each query type has its own mods, `SelectWhere`,  `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
+
+### Column Expressions
+
+For even more control, expresions are generated for every column to be used in any part of the query.
+
+```go
+// SELECT "jets"."name", count(1) FROM "jets"
+// WHERE "jet"."id" BETWEEN 50 AND 5000
+// GROUP BY "jets"."pilot_id"
+// ORDER BY "jets"."pilot_id"
+psql.Select(
+    sm.Columns(models.JetColumns.Name, "count(1)"),
+    sm.From(models.JetsTable.Name()),
+    sm.Where(models.JetColumns.ID.Between(50, 5000)),
+    sm.OrderBy(models.JetColumns.PilotID),
+)
+
+```
+
+[^1]: Some are technically just global variables. But they are never mutated by Bob, or expected to be mutated by the user.
