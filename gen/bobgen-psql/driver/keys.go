@@ -56,7 +56,8 @@ func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		
 	WHERE nsp.nspname = ANY($1)
 	AND con.contype IN ('p', 'f', 'u')
-	GROUP BY nsp.nspname, rel.relname, name, con.contype`
+	GROUP BY nsp.nspname, rel.relname, name, con.contype
+	ORDER BY nsp.nspname, rel.relname, name, con.contype`
 
 	constraints, err := stdscan.All(ctx, d.conn, scan.StructMapper[struct {
 		Schema         string
