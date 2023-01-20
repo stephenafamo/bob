@@ -1629,7 +1629,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -1644,7 +1644,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -1687,7 +1687,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
@@ -1702,7 +1702,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
@@ -1717,7 +1717,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""
@@ -1732,7 +1732,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[types.JSON[json.RawMessage]]",
+					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"time\""

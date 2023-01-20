@@ -1363,7 +1363,7 @@
 				{
 					"name": "timestamp_notz",
 					"db_type": "timestamp without time zone",
-					"default": "timezone('utc'::text, now())",
+					"default": "(now() AT TIME ZONE 'utc'::text)",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -1377,7 +1377,7 @@
 				{
 					"name": "timestamp_tz",
 					"db_type": "timestamp with time zone",
-					"default": "timezone('utc'::text, now())",
+					"default": "(now() AT TIME ZONE 'utc'::text)",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -1997,7 +1997,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -2012,7 +2012,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -4107,7 +4107,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -4122,7 +4122,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
-					"type": "parray.GenericArray[decimal.Decimal]",
+					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
 						"\"github.com/shopspring/decimal\""
@@ -4490,8 +4490,8 @@
 			"p_key": {
 				"name": "video_tags_pkey",
 				"columns": [
-					"video_id",
-					"tag_id"
+					"tag_id",
+					"video_id"
 				]
 			},
 			"foreign_keys": [

@@ -6,14 +6,14 @@ import (
 	"github.com/lib/pq"
 )
 
-type GenericArray[T any] []T
+type Array[T any] []T
 
 // Scan implements the sql.Scanner interface.
-func (e *GenericArray[T]) Scan(src any) error {
+func (e *Array[T]) Scan(src any) error {
 	return pq.GenericArray{A: e}.Scan(src)
 }
 
 // Value implements the driver.Valuer interface.
-func (e GenericArray[T]) Value() (driver.Value, error) {
+func (e Array[T]) Value() (driver.Value, error) {
 	return pq.GenericArray{A: e}.Value()
 }

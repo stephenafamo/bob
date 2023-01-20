@@ -301,15 +301,15 @@ func (d *Driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 		case "Bytes":
 			c.Type = "pq.ByteaArray"
 		case "Decimal":
-			c.Type = "parray.GenericArray[decimal.Decimal]"
+			c.Type = "parray.Array[decimal.Decimal]"
 			c.Imports = append(c.Imports, typMap["parray"]...)
 			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
 		case "DateTime":
-			c.Type = "parray.GenericArray[time.Time]"
+			c.Type = "parray.Array[time.Time]"
 			c.Imports = append(c.Imports, typMap["parray"]...)
 			c.Imports = append(c.Imports, typMap["time.Time"]...)
 		case "Json":
-			c.Type = "parray.GenericArray[types.JSON[json.RawMessage]]"
+			c.Type = "parray.Array[types.JSON[json.RawMessage]]"
 			c.Imports = append(c.Imports, typMap["parray"]...)
 			c.Imports = append(c.Imports, typMap["time.Time"]...)
 		default:

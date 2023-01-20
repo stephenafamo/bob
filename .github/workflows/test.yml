@@ -8,7 +8,7 @@ jobs:
         go: [ 'oldstable', 'stable' ]
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_DB: droppable
           POSTGRES_USER: user

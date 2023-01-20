@@ -132,12 +132,12 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["uuid.UUID"]...)
-			return "parray.GenericArray[uuid.UUID]", info.ArrType, imports
+			return "parray.Array[uuid.UUID]", info.ArrType, imports
 		case "decimal", "numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.GenericArray[decimal.Decimal]", info.ArrType, imports
+			return "parray.Array[decimal.Decimal]", info.ArrType, imports
 		case "double precision", "real":
 			return "pq.Float64Array", info.ArrType, nil
 		default:
@@ -157,12 +157,12 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["uuid.UUID"]...)
-			return "parray.GenericArray[uuid.UUID]", info.ArrType, imports
+			return "parray.Array[uuid.UUID]", info.ArrType, imports
 		case "_numeric":
 			var imports importers.List
 			imports = append(imports, typMap["parray"]...)
 			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.GenericArray[decimal.Decimal]", info.UDTName, imports
+			return "parray.Array[decimal.Decimal]", info.UDTName, imports
 		case "_float4", "_float8":
 			return "pq.Float64Array", info.UDTName, nil
 		default:
