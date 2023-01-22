@@ -47,7 +47,9 @@ type Relationship struct {
 	Ignored bool // Can be set through user configuration
 
 	// if present is used instead of computing from the columns
-	Alias string `yaml:"alias"`
+	// only expected to be set by drivers not by configuration
+	// configuration should set aliases though the alias configuration
+	Alias string `yaml:"-"`
 }
 
 func (r Relationship) Local() string {
