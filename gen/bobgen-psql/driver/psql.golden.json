@@ -4494,8 +4494,8 @@
 			"p_key": {
 				"name": "video_tags_pkey",
 				"columns": [
-					"tag_id",
-					"video_id"
+					"video_id",
+					"tag_id"
 				]
 			},
 			"foreign_keys": [

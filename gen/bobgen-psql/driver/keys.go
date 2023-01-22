@@ -44,15 +44,22 @@ func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 	LEFT JOIN pg_catalog.pg_namespace fnsp
 		ON fnsp.oid = out.relnamespace
 		
-	LEFT JOIN information_schema.columns local_cols
-		ON local_cols.table_schema = nsp.nspname 
-		AND local_cols.table_name = rel.relname 
-		AND local_cols.ordinal_position = ANY(con.conkey)
-		
-	LEFT JOIN information_schema.columns foreign_cols
-		ON foreign_cols.table_schema = fnsp.nspname 
-		AND foreign_cols.table_name = out.relname 
-		AND foreign_cols.ordinal_position = ANY(con.confkey)
+	LEFT JOIN LATERAL (
+		SELECT table_schema, table_name, column_name FROM unnest(con.conkey) pos
+		LEFT JOIN information_schema.columns
+		ON ordinal_position = pos
+	) AS local_cols
+	ON local_cols.table_schema = nsp.nspname
+	AND local_cols.table_name = rel.relname
+
+
+	LEFT JOIN LATERAL (
+		SELECT table_schema, table_name, column_name FROM unnest(con.confkey) pos
+		LEFT JOIN information_schema.columns
+		ON ordinal_position = pos
+	) AS foreign_cols
+	ON foreign_cols.table_schema = fnsp.nspname
+	AND foreign_cols.table_name = out.relname
 		
 	WHERE nsp.nspname = ANY($1)
 	AND con.contype IN ('p', 'f', 'u')
