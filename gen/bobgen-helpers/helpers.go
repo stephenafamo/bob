@@ -70,7 +70,7 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 	return config, driverConfig, nil
 }
 
-func setColumns(c *gen.Config) error {
+func setColumns(c *gen.Config) {
 	for table, rels := range c.Relationships {
 		for relIdx, rel := range rels {
 			for sideIdx, side := range rel.Sides {
@@ -83,7 +83,6 @@ func setColumns(c *gen.Config) error {
 			}
 		}
 	}
-	return nil
 }
 
 func flipRelationships(config *gen.Config) {
