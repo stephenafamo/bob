@@ -181,10 +181,11 @@
 					"Sides": [
 						{
 							"From": "1.sponsors",
+							"To": "1.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "1.videos",
 							"ToColumns": [
 								"sponsor_id"
 							],
@@ -234,10 +235,11 @@
 					"Sides": [
 						{
 							"From": "1.tags",
+							"To": "1.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "1.video_tags",
 							"ToColumns": [
 								"tag_id"
 							],
@@ -335,10 +337,11 @@
 					"Sides": [
 						{
 							"From": "1.users",
+							"To": "1.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "1.videos",
 							"ToColumns": [
 								"user_id"
 							],
@@ -421,10 +424,11 @@
 					"Sides": [
 						{
 							"From": "1.video_tags",
+							"To": "1.tags",
+							"Columns": null,
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "1.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -444,10 +448,11 @@
 					"Sides": [
 						{
 							"From": "1.video_tags",
+							"To": "1.videos",
+							"Columns": null,
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "1.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -549,10 +554,11 @@
 					"Sides": [
 						{
 							"From": "1.videos",
+							"To": "1.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "1.video_tags",
 							"ToColumns": [
 								"video_id"
 							],
@@ -572,10 +578,11 @@
 					"Sides": [
 						{
 							"From": "1.videos",
+							"To": "1.sponsors",
+							"Columns": null,
 							"FromColumns": [
 								"sponsor_id"
 							],
-							"To": "1.sponsors",
 							"ToColumns": [
 								"id"
 							],
@@ -595,10 +602,11 @@
 					"Sides": [
 						{
 							"From": "1.videos",
+							"To": "1.users",
+							"Columns": null,
 							"FromColumns": [
 								"user_id"
 							],
-							"To": "1.users",
 							"ToColumns": [
 								"id"
 							],
@@ -723,11 +731,12 @@
 					"Sides": [
 						{
 							"From": "main.autoinckeywordtest",
+							"To": "main.videos",
+							"Columns": null,
 							"FromColumns": [
 								"user_id",
 								"sponsor_id"
 							],
-							"To": "main.videos",
 							"ToColumns": [
 								"user_id",
 								"sponsor_id"
@@ -884,10 +893,11 @@
 					"Sides": [
 						{
 							"From": "main.sponsors",
+							"To": "main.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "main.videos",
 							"ToColumns": [
 								"sponsor_id"
 							],
@@ -937,10 +947,11 @@
 					"Sides": [
 						{
 							"From": "main.tags",
+							"To": "main.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "main.video_tags",
 							"ToColumns": [
 								"tag_id"
 							],
@@ -2435,10 +2446,11 @@
 					"Sides": [
 						{
 							"From": "main.users",
+							"To": "main.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "main.videos",
 							"ToColumns": [
 								"user_id"
 							],
@@ -2521,10 +2533,11 @@
 					"Sides": [
 						{
 							"From": "main.video_tags",
+							"To": "main.tags",
+							"Columns": null,
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "main.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -2544,10 +2557,11 @@
 					"Sides": [
 						{
 							"From": "main.video_tags",
+							"To": "main.videos",
+							"Columns": null,
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "main.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -2649,11 +2663,12 @@
 					"Sides": [
 						{
 							"From": "main.videos",
+							"To": "main.autoinckeywordtest",
+							"Columns": null,
 							"FromColumns": [
 								"user_id",
 								"sponsor_id"
 							],
-							"To": "main.autoinckeywordtest",
 							"ToColumns": [
 								"user_id",
 								"sponsor_id"
@@ -2674,10 +2689,11 @@
 					"Sides": [
 						{
 							"From": "main.videos",
+							"To": "main.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "main.video_tags",
 							"ToColumns": [
 								"video_id"
 							],
@@ -2697,10 +2713,11 @@
 					"Sides": [
 						{
 							"From": "main.videos",
+							"To": "main.sponsors",
+							"Columns": null,
 							"FromColumns": [
 								"sponsor_id"
 							],
-							"To": "main.sponsors",
 							"ToColumns": [
 								"id"
 							],
@@ -2720,10 +2737,11 @@
 					"Sides": [
 						{
 							"From": "main.videos",
+							"To": "main.users",
+							"Columns": null,
 							"FromColumns": [
 								"user_id"
 							],
-							"To": "main.users",
 							"ToColumns": [
 								"id"
 							],

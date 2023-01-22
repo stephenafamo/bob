@@ -34,10 +34,11 @@
 					"Sides": [
 						{
 							"From": "public.sponsors",
+							"To": "public.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "public.videos",
 							"ToColumns": [
 								"sponsor_id"
 							],
@@ -87,10 +88,11 @@
 					"Sides": [
 						{
 							"From": "public.tags",
+							"To": "public.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "public.video_tags",
 							"ToColumns": [
 								"tag_id"
 							],
@@ -102,10 +104,11 @@
 						},
 						{
 							"From": "public.video_tags",
+							"To": "public.videos",
+							"Columns": null,
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "public.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -4438,10 +4441,11 @@
 					"Sides": [
 						{
 							"From": "public.users",
+							"To": "public.videos",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "public.videos",
 							"ToColumns": [
 								"user_id"
 							],
@@ -4525,10 +4529,11 @@
 					"Sides": [
 						{
 							"From": "public.video_tags",
+							"To": "public.tags",
+							"Columns": null,
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "public.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -4548,10 +4553,11 @@
 					"Sides": [
 						{
 							"From": "public.video_tags",
+							"To": "public.videos",
+							"Columns": null,
 							"FromColumns": [
 								"video_id"
 							],
-							"To": "public.videos",
 							"ToColumns": [
 								"id"
 							],
@@ -4653,10 +4659,11 @@
 					"Sides": [
 						{
 							"From": "public.videos",
+							"To": "public.video_tags",
+							"Columns": null,
 							"FromColumns": [
 								"id"
 							],
-							"To": "public.video_tags",
 							"ToColumns": [
 								"video_id"
 							],
@@ -4668,10 +4675,11 @@
 						},
 						{
 							"From": "public.video_tags",
+							"To": "public.tags",
+							"Columns": null,
 							"FromColumns": [
 								"tag_id"
 							],
-							"To": "public.tags",
 							"ToColumns": [
 								"id"
 							],
@@ -4691,10 +4699,11 @@
 					"Sides": [
 						{
 							"From": "public.videos",
+							"To": "public.sponsors",
+							"Columns": null,
 							"FromColumns": [
 								"sponsor_id"
 							],
-							"To": "public.sponsors",
 							"ToColumns": [
 								"id"
 							],
@@ -4714,10 +4723,11 @@
 					"Sides": [
 						{
 							"From": "public.videos",
+							"To": "public.users",
+							"Columns": null,
 							"FromColumns": [
 								"user_id"
 							],
-							"To": "public.users",
 							"ToColumns": [
 								"id"
 							],
