@@ -13,10 +13,15 @@ type RelWhere struct {
 }
 
 type RelSide struct {
-	From        string   `yaml:"from"`
-	FromColumns []string `yaml:"from_columns"`
-	To          string   `yaml:"to"`
-	ToColumns   []string `yaml:"to_columns"`
+	From string `yaml:"from"`
+	To   string `yaml:"to"`
+
+	// To make sure the column lengths match and are in the right order,
+	// a slice of tupules is expected.
+	// bobgen-helpers.GenConfig has a function to spread that into From/ToColumns
+	Columns     [][2]string `yaml:"columns"`
+	FromColumns []string    `yaml:"-"`
+	ToColumns   []string    `yaml:"-"`
 
 	FromWhere []RelWhere `yaml:"from_where"`
 	ToWhere   []RelWhere `yaml:"to_where"`
