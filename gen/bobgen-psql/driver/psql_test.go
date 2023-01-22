@@ -109,9 +109,6 @@ func TestAssemble(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// if diff := cmp.Diff(exp, spp); diff != "" {
-			// t.Fatal(diff)
-			// }
 			require.JSONEq(t, string(want), string(got))
 		})
 	}
