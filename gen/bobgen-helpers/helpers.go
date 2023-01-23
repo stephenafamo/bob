@@ -137,22 +137,32 @@ func Version() string {
 }
 
 func ModelsPackage(modelsFolder string) (string, error) {
-	modRoot, modFile, err := GoModInfo()
+	modRoot, modFile, err := goModInfo()
 	if err != nil {
 		return "", fmt.Errorf("getting mod details: %w", err)
 	}
 
-	relPath := modelsFolder
-	if filepath.IsAbs(modelsFolder) {
-		relPath = strings.TrimPrefix(modelsFolder, modRoot)
+	fullPath := modelsFolder
+	if !filepath.IsAbs(modelsFolder) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("could not get working directory: %w", err)
+		}
+
+		fullPath = filepath.Join(wd, modelsFolder)
+	}
+
+	relPath := strings.TrimPrefix(fullPath, modRoot)
+	if fullPath == relPath {
+		return "", fmt.Errorf("output folder is not in same module: %w", err)
 	}
 
 	return path.Join(modFile.Module.Mod.Path, relPath), nil
 }
 
-// GoModInfo returns the main module's root directory
+// goModInfo returns the main module's root directory
 // and the parsed contents of the go.mod file.
-func GoModInfo() (string, *modfile.File, error) {
+func goModInfo() (string, *modfile.File, error) {
 	goModPath, err := findGoMod()
 	if err != nil {
 		return "", nil, fmt.Errorf("cannot find main module: %w", err)
