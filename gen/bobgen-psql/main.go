@@ -53,6 +53,7 @@ func run(c *cli.Context) error {
 		"schemas":     "public",
 		"output":      "models",
 		"pkgname":     "models",
+		"uuid_pkg":    "gofrs",
 		"no_factory":  false,
 		"concurrency": 10,
 	})

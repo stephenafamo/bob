@@ -49,6 +49,7 @@ The values that exist for the drivers:
 | output        | Folder for generated files            | "models"                 |
 | pkgname       | Package name for generated code       | "models"                 |
 | no_factory    | Skip generation of factories          | false                    |
+| uuid_pkg      | UUID package to use (gofrs or google) | "gofrs"                  |
 | concurrency   | How many tables to fetch in parallel  | 10                       |
 | only          | Only generate these                   |                          |
 | except        | Skip generation for these             |                          |

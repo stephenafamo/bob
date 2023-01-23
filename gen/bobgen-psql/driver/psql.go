@@ -40,6 +40,8 @@ type Config struct {
 	Except map[string][]string
 	// How many tables to fetch in parallel
 	Concurrency int
+	// Which UUID package to use (gofrs or google)
+	UUIDPkg string `yaml:"uuid_pkg"`
 
 	//-------
 

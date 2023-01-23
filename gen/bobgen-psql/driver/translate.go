@@ -25,6 +25,8 @@ type colInfo struct {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
+	typMap := d.typMap()
+
 	switch c.DBType {
 	case "bigint", "bigserial":
 		c.Type = "int64"
@@ -101,6 +103,8 @@ func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 
 // getArrayType returns the correct Array type for each database type
 func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
+	typMap := d.typMap()
+
 	if info.ArrType == "USER-DEFINED" {
 		name := info.UDTName[1:] // postgres prefixes with an underscore
 		for _, e := range d.enums {
@@ -171,23 +175,32 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 	}
 }
 
-//nolint:gochecknoglobals
-var typMap = map[string]importers.List{
-	"time.Time":                   {`"time"`},
-	"pq.BoolArray":                {`"github.com/lib/pq"`},
-	"pq.Int64Array":               {`"github.com/lib/pq"`},
-	"pq.ByteaArray":               {`"github.com/lib/pq"`},
-	"pq.StringArray":              {`"github.com/lib/pq"`},
-	"pq.Float64Array":             {`"github.com/lib/pq"`},
-	"uuid.UUID":                   {`"github.com/gofrs/uuid"`},
-	"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
-	"pgeo.Line":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Lseg":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Path":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
-	"pgeo.Polygon":                {`"github.com/saulortega/pgeo"`},
-	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
-	"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
-	"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
-	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
+func (d *Driver) typMap() map[string]importers.List {
+	var uuidPkg string
+	switch d.config.UUIDPkg {
+	case "google":
+		uuidPkg = `"github.com/google/uuid"`
+	default:
+		uuidPkg = `"github.com/gofrs/uuid"`
+	}
+
+	return map[string]importers.List{
+		"time.Time":                   {`"time"`},
+		"pq.BoolArray":                {`"github.com/lib/pq"`},
+		"pq.Int64Array":               {`"github.com/lib/pq"`},
+		"pq.ByteaArray":               {`"github.com/lib/pq"`},
+		"pq.StringArray":              {`"github.com/lib/pq"`},
+		"pq.Float64Array":             {`"github.com/lib/pq"`},
+		"uuid.UUID":                   {uuidPkg},
+		"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
+		"pgeo.Line":                   {`"github.com/saulortega/pgeo"`},
+		"pgeo.Lseg":                   {`"github.com/saulortega/pgeo"`},
+		"pgeo.Path":                   {`"github.com/saulortega/pgeo"`},
+		"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
+		"pgeo.Polygon":                {`"github.com/saulortega/pgeo"`},
+		"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
+		"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
+		"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
+		"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
+	}
 }
