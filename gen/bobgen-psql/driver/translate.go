@@ -16,9 +16,6 @@ type colInfo struct {
 	ArrType   string `json:"arr_type" yaml:"arr_type" toml:"arr_type"`
 	UDTName   string `json:"udt_name" yaml:"udt_name" toml:"udt_name"`
 	UDTSchema string `json:"udt_schema" yaml:"udt_schema" toml:"udt_schema"`
-	// DomainName is the domain type name associated to the column. See here:
-	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
-	DomainName string `json:"domain_name" toml:"domain_name"`
 }
 
 // translateColumnType converts postgres database types to Go types, for example

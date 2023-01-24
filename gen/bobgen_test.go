@@ -263,6 +263,12 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Nullable: true,
 				},
 				{
+					Name:       "domain",
+					Type:       "string",
+					DBType:     "text",
+					DomainName: "domain name",
+				},
+				{
 					Name:     "by_named",
 					Type:     "int",
 					DBType:   "numeric",
@@ -317,6 +323,15 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 		{
 			Match: drivers.Column{
+				DomainName: "domain name",
+			},
+			Replace: drivers.Column{
+				Type:    "contextInt",
+				Imports: []string{`"contextual"`},
+			},
+		},
+		{
+			Match: drivers.Column{
 				Name: "by_named",
 			},
 			Replace: drivers.Column{
@@ -342,10 +357,17 @@ func TestProcessTypeReplacements(t *testing.T) {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.tables[0].Columns[2].Type; typ != "big.Int" {
+	if typ := s.tables[0].Columns[2].Type; typ != "contextInt" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[0].Columns[2].Imports[0]; i != `"math/big"` {
+	if i := s.tables[0].Columns[2].Imports[0]; i != `"contextual"` {
+		t.Error("imports were not adjusted")
+	}
+
+	if typ := s.tables[0].Columns[3].Type; typ != "big.Int" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.tables[0].Columns[3].Imports[0]; i != `"math/big"` {
 		t.Error("imports were not adjusted")
 	}
 

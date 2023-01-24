@@ -315,6 +315,10 @@ func matchColumn(c, m drivers.Column) bool {
 		return false
 	}
 
+	if !matches(m.DomainName, c.DomainName) {
+		return false
+	}
+
 	if !matchedSomething {
 		return false
 	}

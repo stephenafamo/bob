@@ -14,6 +14,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": true,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				}
@@ -68,6 +69,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": true,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				}
@@ -138,6 +140,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": true,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -150,6 +153,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "Workday",
 					"imports": null
 				},
@@ -162,6 +166,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "Workday",
 					"imports": null
 				},
@@ -174,6 +179,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -186,6 +192,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -198,6 +205,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -210,6 +218,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -222,6 +231,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -234,6 +244,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -246,6 +257,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -258,6 +270,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -270,6 +283,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -282,6 +296,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -294,6 +309,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -306,6 +322,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -318,6 +335,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -330,6 +348,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -342,6 +361,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -354,6 +374,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -366,6 +387,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -378,6 +400,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -390,6 +413,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -402,6 +426,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -414,6 +439,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -426,6 +452,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -438,6 +465,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -450,6 +478,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -462,6 +491,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -474,6 +504,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -486,6 +517,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -498,6 +530,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -510,6 +543,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -522,6 +556,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -534,6 +569,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -546,6 +582,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -558,6 +595,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -570,6 +608,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -582,6 +621,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -594,6 +634,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -606,6 +647,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -618,6 +660,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -630,6 +673,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -642,6 +686,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -654,6 +699,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -666,6 +712,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -678,6 +725,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -690,6 +738,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -702,6 +751,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -714,6 +764,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -726,6 +777,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -738,6 +790,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -750,6 +803,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -764,6 +818,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -778,6 +833,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -792,6 +848,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -806,6 +863,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -820,6 +878,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -834,6 +893,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -848,6 +908,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -862,6 +923,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -876,6 +938,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -890,6 +953,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -902,6 +966,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -914,6 +979,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -926,6 +992,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -938,6 +1005,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -950,6 +1018,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -962,6 +1031,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -974,6 +1044,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -986,6 +1057,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -998,6 +1070,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1012,6 +1085,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1026,6 +1100,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1040,6 +1115,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1054,6 +1130,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1068,6 +1145,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1082,6 +1160,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1096,6 +1175,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1110,6 +1190,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1124,6 +1205,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1138,6 +1220,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1152,6 +1235,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1166,6 +1250,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1180,6 +1265,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1194,6 +1280,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1208,6 +1295,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1222,6 +1310,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1236,6 +1325,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1250,6 +1340,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1264,6 +1355,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1276,6 +1368,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1288,6 +1381,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1300,6 +1394,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1312,6 +1407,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1324,6 +1420,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1336,6 +1433,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -1348,6 +1446,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1360,6 +1459,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1374,6 +1474,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1388,6 +1489,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1403,6 +1505,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1418,6 +1521,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1433,6 +1537,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1448,6 +1553,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -1460,6 +1566,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -1472,6 +1579,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1484,6 +1592,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1496,6 +1605,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -1510,6 +1620,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -1524,6 +1635,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1536,6 +1648,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1548,6 +1661,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1562,6 +1676,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1576,6 +1691,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.BoolArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1590,6 +1706,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.BoolArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1604,6 +1721,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.StringArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1618,6 +1736,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.StringArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1632,6 +1751,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1647,6 +1767,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[decimal.Decimal]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1662,6 +1783,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.ByteaArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1676,6 +1798,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.ByteaArray",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1690,6 +1813,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1705,6 +1829,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1720,6 +1845,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1735,6 +1861,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "parray.Array[types.JSON[json.RawMessage]]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\"",
@@ -1750,6 +1877,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1764,6 +1892,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "pq.Int64Array",
 					"imports": [
 						"\"github.com/lib/pq\""
@@ -1778,6 +1907,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "decimal.Decimal",
 					"imports": [
 						"\"github.com/shopspring/decimal\""
@@ -1792,6 +1922,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1804,6 +1935,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1816,6 +1948,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -1845,6 +1978,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": true,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -1857,6 +1991,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -1869,6 +2004,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -1930,6 +2066,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -1942,6 +2079,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				}
@@ -2042,6 +2180,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": true,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -2054,6 +2193,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				},
@@ -2066,6 +2206,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int",
 					"imports": null
 				}

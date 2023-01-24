@@ -320,7 +320,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		}
 
 		if domainName != nil {
-			info.DomainName = *domainName
+			column.DomainName = *domainName
 		}
 
 		if defaultValue != nil {

@@ -14,6 +14,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -26,6 +27,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -38,6 +40,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -50,6 +53,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -62,6 +66,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -91,6 +96,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -103,6 +109,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -132,6 +139,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -161,6 +169,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -215,6 +224,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -269,6 +279,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -281,6 +292,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -293,6 +305,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -317,6 +330,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -371,6 +385,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -383,6 +398,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -482,6 +498,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -494,6 +511,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -506,6 +524,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -636,6 +655,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -648,6 +668,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -660,6 +681,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -672,6 +694,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -684,6 +707,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -767,6 +791,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -796,6 +821,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -808,6 +834,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -820,6 +847,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -832,6 +860,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -844,6 +873,7 @@
 					"unique": false,
 					"generated": true,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -873,6 +903,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -927,6 +958,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -981,6 +1013,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -993,6 +1026,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1005,6 +1039,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1017,6 +1052,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1029,6 +1065,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1041,6 +1078,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1053,6 +1091,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1065,6 +1104,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1077,6 +1117,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1089,6 +1130,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1101,6 +1143,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1113,6 +1156,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1125,6 +1169,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1137,6 +1182,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1149,6 +1195,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1161,6 +1208,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1173,6 +1221,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1185,6 +1234,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1197,6 +1247,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1209,6 +1260,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1221,6 +1273,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1233,6 +1286,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1245,6 +1299,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1257,6 +1312,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1269,6 +1325,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1281,6 +1338,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1293,6 +1351,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1305,6 +1364,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1317,6 +1377,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1329,6 +1390,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1341,6 +1403,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1353,6 +1416,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1365,6 +1429,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1377,6 +1442,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1389,6 +1455,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1401,6 +1468,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1413,6 +1481,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float32",
 					"imports": null
 				},
@@ -1425,6 +1494,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float32",
 					"imports": null
 				},
@@ -1437,6 +1507,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1449,6 +1520,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1461,6 +1533,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1473,6 +1546,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1485,6 +1559,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1497,6 +1572,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1509,6 +1585,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1521,6 +1598,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1533,6 +1611,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1545,6 +1624,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1557,6 +1637,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1569,6 +1650,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1581,6 +1663,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1593,6 +1676,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1605,6 +1689,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1617,6 +1702,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1629,6 +1715,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1641,6 +1728,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1653,6 +1741,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1667,6 +1756,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1679,6 +1769,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1691,6 +1782,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1703,6 +1795,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1715,6 +1808,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1729,6 +1823,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1743,6 +1838,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1757,6 +1853,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -1771,6 +1868,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1786,6 +1884,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "types.JSON[json.RawMessage]",
 					"imports": [
 						"\"encoding/json\"",
@@ -1801,6 +1900,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int8",
 					"imports": null
 				},
@@ -1813,6 +1913,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int8",
 					"imports": null
 				},
@@ -1825,6 +1926,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1837,6 +1939,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1849,6 +1952,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1861,6 +1965,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -1873,6 +1978,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int16",
 					"imports": null
 				},
@@ -1885,6 +1991,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int16",
 					"imports": null
 				},
@@ -1897,6 +2004,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int32",
 					"imports": null
 				},
@@ -1909,6 +2017,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int32",
 					"imports": null
 				},
@@ -1921,6 +2030,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1933,6 +2043,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -1945,6 +2056,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float32",
 					"imports": null
 				},
@@ -1957,6 +2069,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float32",
 					"imports": null
 				},
@@ -1969,6 +2082,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -1981,6 +2095,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -1993,6 +2108,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -2005,6 +2121,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -2017,6 +2134,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -2029,6 +2147,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "float64",
 					"imports": null
 				},
@@ -2041,6 +2160,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -2053,6 +2173,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "bool",
 					"imports": null
 				},
@@ -2065,6 +2186,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -2079,6 +2201,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -2093,6 +2216,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -2107,6 +2231,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "time.Time",
 					"imports": [
 						"\"time\""
@@ -2121,6 +2246,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2133,6 +2259,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2145,6 +2272,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2157,6 +2285,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2169,6 +2298,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2181,6 +2311,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2193,6 +2324,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2205,6 +2337,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2217,6 +2350,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -2229,6 +2363,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "[]byte",
 					"imports": null
 				},
@@ -2241,6 +2376,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2253,6 +2389,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2265,6 +2402,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2277,6 +2415,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2289,6 +2428,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2301,6 +2441,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2313,6 +2454,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2325,6 +2467,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2337,6 +2480,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				},
@@ -2349,6 +2493,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "string",
 					"imports": null
 				}
@@ -2378,6 +2523,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -2390,6 +2536,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -2402,6 +2549,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -2426,6 +2574,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -2480,6 +2629,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -2492,6 +2642,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}
@@ -2591,6 +2742,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -2603,6 +2755,7 @@
 					"unique": false,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				},
@@ -2615,6 +2768,7 @@
 					"unique": true,
 					"generated": false,
 					"autoincr": false,
+					"domain_name": "",
 					"type": "int64",
 					"imports": null
 				}

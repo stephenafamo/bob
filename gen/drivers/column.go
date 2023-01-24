@@ -19,6 +19,10 @@ type Column struct {
 	Generated bool   `json:"generated" yaml:"generated" toml:"generated"`
 	AutoIncr  bool   `json:"autoincr" yaml:"autoincr" toml:"autoincr"`
 
+	// DomainName is the domain type name associated to the column. See here:
+	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
+	DomainName string `json:"domain_name" yaml:"domain_name" toml:"domain_name"`
+
 	Type    string         `json:"type" yaml:"type" toml:"type"`
 	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`
 }
