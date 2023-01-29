@@ -166,7 +166,7 @@ func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 
 	//nolint:gosec
 	query := fmt.Sprintf("SELECT 1 FROM '%s'.sqlite_master WHERE type = 'table' AND name = ? AND sql LIKE '%%AUTOINCREMENT%%'", schema)
-	result, err := d.conn.Query(query, tableName)
+	result, err := d.conn.QueryContext(ctx, query, tableName)
 	if err != nil {
 		return nil, fmt.Errorf("autoincr query: %w", err)
 	}

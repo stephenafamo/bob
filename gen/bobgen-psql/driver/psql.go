@@ -52,12 +52,6 @@ type Config struct {
 	NoFactory bool `yaml:"no_factory"`
 }
 
-type columnIdentifier struct {
-	Schema string
-	Table  string
-	Column string
-}
-
 func New(config Config) Interface {
 	return &Driver{config: config}
 }
@@ -66,11 +60,8 @@ func New(config Config) Interface {
 // to the database connection.
 type Driver struct {
 	config Config
-
-	conn *sql.DB
-
-	enums         []Enum
-	uniqueColumns map[columnIdentifier]struct{}
+	conn   *sql.DB
+	enums  []Enum
 }
 
 func (d *Driver) Capabilities() drivers.Capabilities {
