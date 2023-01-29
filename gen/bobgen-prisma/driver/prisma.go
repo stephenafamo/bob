@@ -64,13 +64,6 @@ func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
-	defer func() {
-		if r := recover(); r != nil && err == nil {
-			dbinfo = nil
-			err = r.(error)
-		}
-	}()
-
 	// drivers.Tables call translateColumnType which uses Enums
 	d.loadEnums()
 

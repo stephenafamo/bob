@@ -75,13 +75,6 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
-	defer func() {
-		if r := recover(); r != nil && err == nil {
-			dbinfo = nil
-			err = r.(error)
-		}
-	}()
-
 	d.conn, err = sql.Open("postgres", d.config.Dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
