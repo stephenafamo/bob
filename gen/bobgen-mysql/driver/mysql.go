@@ -136,7 +136,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	var columns []drivers.Column
 	schema := d.dbName
 	tableName := info.Name
-	args := []interface{}{tableName, tableName, schema, schema, schema, schema, tableName, tableName, schema}
+	args := []interface{}{tableName, schema}
 
 	query := `
 	select
@@ -147,18 +147,7 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	c.column_default,
 	c.extra = 'auto_increment' AS autoincr,
 	c.is_nullable = 'YES' AS nullable,
-	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated,
-	exists (
-		select c.column_name
-		from information_schema.table_constraints tc
-		inner join information_schema.key_column_usage kcu
-			on tc.constraint_name = kcu.constraint_name
-		where tc.table_name = ? and kcu.table_name = ? and tc.table_schema = ? and kcu.table_schema = ? and
-			c.column_name = kcu.column_name and
-			(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE') and
-			(select count(*) from information_schema.key_column_usage where table_schema = ? and
-			constraint_schema = ? and table_name = ? and constraint_name = tc.constraint_name) = 1
-	) as is_unique
+	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated
 	from information_schema.columns as c
 	where table_name = ? and table_schema = ?`
 
@@ -186,9 +175,9 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	for rows.Next() {
 		var colName, colFullType, colComment, colType string
-		var autoIncr, nullable, generated, unique bool
+		var autoIncr, nullable, generated bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &nullable, &generated, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &nullable, &generated); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", tableName, err)
 		}
 
@@ -201,7 +190,6 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			Comment:   colComment,
 			DBType:    colType,
 			Nullable:  nullable,
-			Unique:    unique,
 			Generated: generated,
 			AutoIncr:  autoIncr,
 		}

@@ -15,7 +15,6 @@ type Column struct {
 	Default   string `json:"default" yaml:"default" toml:"default"`
 	Comment   string `json:"comment" yaml:"comment" toml:"comment"`
 	Nullable  bool   `json:"nullable" yaml:"nullable" toml:"nullable"`
-	Unique    bool   `json:"unique" yaml:"unique" toml:"unique"`
 	Generated bool   `json:"generated" yaml:"generated" toml:"generated"`
 	AutoIncr  bool   `json:"autoincr" yaml:"autoincr" toml:"autoincr"`
 

@@ -99,10 +99,6 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	dbinfo = &DBInfo{}
 
-	if err := d.loadUniqueColumns(); err != nil {
-		return nil, fmt.Errorf("unable to load unique data: %w", err)
-	}
-
 	// drivers.Tables call translateColumnType which uses Enums
 	if err := d.loadEnums(ctx); err != nil {
 		return nil, fmt.Errorf("unable to load enums: %w", err)
@@ -301,14 +297,12 @@ func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", info.Key, err)
 		}
 
-		_, unique := d.uniqueColumns[columnIdentifier{info.Schema, info.Name, colName}]
 		column := drivers.Column{
 			Name:      colName,
 			DBType:    colType,
 			Comment:   comment,
 			Nullable:  nullable,
 			Generated: generated,
-			Unique:    unique,
 		}
 		info := colInfo{
 			UDTSchema: udtSchema,

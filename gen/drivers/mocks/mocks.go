@@ -62,14 +62,14 @@ func (m *MockDriver) TableDetails(_ context.Context, info drivers.TableInfo, fil
 		},
 		"schema.jets": {
 			{Name: "id", Type: "int", DBType: "integer"},
-			{Name: "pilot_id", Type: "int", DBType: "integer", Nullable: true, Unique: true},
+			{Name: "pilot_id", Type: "int", DBType: "integer", Nullable: true},
 			{Name: "airport_id", Type: "int", DBType: "integer"},
 			{Name: "name", Type: "string", DBType: "character", Nullable: false},
 			{Name: "color", Type: "string", DBType: "character", Nullable: true},
 			{Name: "uuid", Type: "string", DBType: "uuid", Nullable: true},
 			{Name: "identifier", Type: "string", DBType: "uuid", Nullable: false},
 			{Name: "cargo", Type: "[]byte", DBType: "bytea", Nullable: false},
-			{Name: "manifest", Type: "[]byte", DBType: "bytea", Nullable: true, Unique: true},
+			{Name: "manifest", Type: "[]byte", DBType: "bytea", Nullable: true},
 		},
 		"licenses": {
 			{Name: "id", Type: "int", DBType: "integer"},
@@ -77,11 +77,11 @@ func (m *MockDriver) TableDetails(_ context.Context, info drivers.TableInfo, fil
 		},
 		"hangars": {
 			{Name: "id", Type: "int", DBType: "integer"},
-			{Name: "name", Type: "string", DBType: "character", Nullable: true, Unique: true},
+			{Name: "name", Type: "string", DBType: "character", Nullable: true},
 		},
 		"languages": {
 			{Name: "id", Type: "int", DBType: "integer"},
-			{Name: "language", Type: "string", DBType: "character", Nullable: false, Unique: true},
+			{Name: "language", Type: "string", DBType: "character", Nullable: false},
 		},
 		"pilot_languages": {
 			{Name: "pilot_id", Type: "int", DBType: "integer"},

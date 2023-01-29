@@ -164,12 +164,6 @@ func (d Driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []info) ([]drivers.Column, error) {
 	var columns []drivers.Column //nolint:prealloc
 
-	// get all indexes
-	uniques, err := d.uniques(ctx, schema, tableName)
-	if err != nil {
-		return nil, err
-	}
-
 	//nolint:gosec
 	query := fmt.Sprintf("SELECT 1 FROM '%s'.sqlite_master WHERE type = 'table' AND name = ? AND sql LIKE '%%AUTOINCREMENT%%'", schema)
 	result, err := d.conn.Query(query, tableName)
@@ -193,21 +187,6 @@ func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 			Name:     colInfo.Name,
 			DBType:   strings.ToUpper(colInfo.Type),
 			Nullable: !colInfo.NotNull && colInfo.Pk < 1,
-		}
-
-		// also get a correct information for Unique
-		for _, uIdx := range uniques {
-			// A unique index with multiple columns does not make
-			// the individual column unique
-			if len(uIdx.Columns) > 1 {
-				continue
-			}
-			for _, name := range uIdx.Columns {
-				if name == colInfo.Name {
-					// A column is unique if it has a unique non-partial index
-					column.Unique = true
-				}
-			}
 		}
 
 		isPrimaryKeyInteger := colInfo.Pk == 1 && column.DBType == "INTEGER"

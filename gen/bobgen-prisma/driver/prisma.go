@@ -234,7 +234,6 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 			Comment:   field.Documentation,
 			Nullable:  !field.IsRequired,
 			Generated: field.IsGenerated,
-			Unique:    field.IsID || field.IsUnique,
 			AutoIncr:  field.Default.AutoIncr,
 		}
 
