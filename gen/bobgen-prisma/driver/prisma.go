@@ -346,10 +346,9 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 	var fks []drivers.ForeignKey
 
 	tableName := model.TableName()
-	allfilter := colFilter["*"]
 	filter := colFilter[tableName]
-	include := append(allfilter.Only, filter.Only...)
-	exclude := append(allfilter.Except, filter.Except...)
+	only := filter.Only
+	except := filter.Except
 
 	// If it is a composite primary key defined on the model
 	if len(model.PrimaryKey.Fields) > 0 {
@@ -357,7 +356,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 		cols := make([]string, len(model.PrimaryKey.Fields))
 
 		for i, f := range model.PrimaryKey.Fields {
-			if drivers.Skip(f, include, exclude) {
+			if drivers.Skip(f, only, except) {
 				shouldSkip = true
 			}
 			cols[i] = f
@@ -380,7 +379,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 		cols := make([]string, len(unique.Fields))
 
 		for i, f := range unique.Fields {
-			if drivers.Skip(f, include, exclude) {
+			if drivers.Skip(f, only, except) {
 				shouldSkip = true
 			}
 			cols[i] = f
@@ -401,7 +400,7 @@ func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 
 	// If one of the fields has an @id attribute
 	for _, field := range model.Fields {
-		if drivers.Skip(field.Name, include, exclude) {
+		if drivers.Skip(field.Name, only, except) {
 			continue
 		}
 
