@@ -424,9 +424,9 @@ func (Driver) translateColumnType(c drivers.Column) drivers.Column {
 		c.Type = "string"
 	case "BLOB":
 		c.Type = "[]byte"
-	case "FLOAT":
+	case "FLOAT", "REAL":
 		c.Type = "float32"
-	case "REAL", "DOUBLE", "DOUBLE PRECISION":
+	case "DOUBLE", "DOUBLE PRECISION":
 		c.Type = "float64"
 	case "NUMERIC", "DECIMAL":
 		c.Type = "decimal.Decimal"

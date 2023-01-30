@@ -2017,7 +2017,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
+					"type": "float32",
 					"imports": null
 				},
 				{
@@ -2029,7 +2029,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
+					"type": "float32",
 					"imports": null
 				},
 				{
