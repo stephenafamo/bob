@@ -115,7 +115,7 @@ const config = {
       },
     }),
 
-  plugins: ["@lyrasearch/plugin-docusaurus",
+  plugins: [
     async function tailwindPlugin(_context, _options) {
       return {
         name: "docusaurus-tailwindcss",

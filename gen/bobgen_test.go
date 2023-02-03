@@ -110,9 +110,6 @@ func testNew(t *testing.T, aliases Aliases) {
 		Outputs:   outputs,
 		ModelsPkg: path.Join(module, "models"),
 	}
-	if err != nil {
-		t.Fatalf("Unable to create State using config: %s", err)
-	}
 
 	if err = state.Run(context.Background(), &mocks.MockDriver{}); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
