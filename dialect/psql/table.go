@@ -60,7 +60,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 
 	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, row)
 	if err != nil {
-		return zero, nil
+		return zero, err
 	}
 
 	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
@@ -94,7 +94,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	for _, row := range rows {
 		ctx, err = t.BeforeInsertHooks.Do(ctx, exec, row)
 		if err != nil {
-			return nil, nil
+			return nil, err
 		}
 	}
 
@@ -248,7 +248,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 
 	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
 	if err != nil {
-		return zero, nil
+		return zero, err
 	}
 
 	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, row)
@@ -303,7 +303,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	for _, row := range rows {
 		ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
 		if err != nil {
-			return nil, nil
+			return nil, err
 		}
 	}
 
