@@ -83,8 +83,8 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_tag_id_fkey",
-					"ByJoinTable": false,
+					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"ByJoinTable": true,
 					"Sides": [
 						{
 							"From": "tags",
@@ -100,6 +100,22 @@
 							"ToWhere": null,
 							"ToKey": true,
 							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"To": "videos",
+							"Columns": null,
+							"FromColumns": [
+								"video_id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
 							"KeyNullable": false
 						}
 					],
@@ -2358,7 +2374,7 @@
 				}
 			],
 			"unique": null,
-			"is_join_table": false,
+			"is_join_table": true,
 			"relationship": [
 				{
 					"Name": "video_tags_tag_id_fkey",
@@ -2491,8 +2507,8 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_video_id_fkey",
-					"ByJoinTable": false,
+					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"ByJoinTable": true,
 					"Sides": [
 						{
 							"From": "videos",
@@ -2508,6 +2524,22 @@
 							"ToWhere": null,
 							"ToKey": true,
 							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"To": "tags",
+							"Columns": null,
+							"FromColumns": [
+								"tag_id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
 							"KeyNullable": false
 						}
 					],
