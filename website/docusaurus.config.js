@@ -101,6 +101,10 @@ const config = {
                 to: 'vs/gorm',
               },
               {
+                label: 'Ent',
+                to: 'vs/ent',
+              },
+              {
                 label: 'SQLBoiler',
                 to: 'vs/sqlboiler',
               },

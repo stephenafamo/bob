@@ -1,3 +1,9 @@
+---
+
+sidebar_position: 1
+
+---
+
 # Bob vs GORM
 
 ## Source of truth
