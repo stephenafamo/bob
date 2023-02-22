@@ -9,7 +9,9 @@ Bob's new foundation made it possible to do many things SQLBoiler cannot since B
   * **SQLBoiler**: The same query object is shared for all dialects and query types.
   * **Bob**: Each query type in each dialect is unique.
 * Query Mods:
-  * **SQLBoiler**: Ths same query mods are used every where, making it possible to craft invalid queries where a mod is used on the wrong query type (e.g. JOINS on a DELETE query)
+  QueryMods are how both packages build queries. For example, to add a `WHERE` clause.
+
+  * **SQLBoiler**: The same query mods are used every where, making it possible to craft invalid queries where a mod is used on the wrong query type (e.g. JOINS on a DELETE query)
   * **Bob**: Each query type has its own mods, making it impossible to craft an invalid query.
 * Dialect Support:
   * **SQLBoiler**: Since every feature has to work accross all dialects, it is difficult to support the full range of a dialect or add new dialects.
@@ -30,4 +32,4 @@ Bob's new foundation made it possible to do many things SQLBoiler cannot since B
 ## SQLBoiler features that are not implemented in Bob
 
 1. Automatic timestamps (createdAt/updatedAt): While convenient to have this in the ORM, it is much better to implement this at the DB level. There are no plans to implement this in Bob. It isn't worth the additional complexity.
-1. Soft deletes: TThe many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
+1. Soft deletes: The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
