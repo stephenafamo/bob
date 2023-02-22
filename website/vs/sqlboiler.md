@@ -1,3 +1,9 @@
+---
+
+sidebar_position: 3
+
+---
+
 # Bob vs SQLBoiler
 
 Bob is primarily inspired by SQLBoiler so there are **a lot** of similarities between the two of them.
