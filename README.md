@@ -30,5 +30,10 @@ Bob's philosophy centres around the following:
 
 Check out [the documentation][docs] for more information.
 
+## Comparisons
+
+1. [Bob vs GORM](https://bob.stephenafamo.com/vs/gorm)
+1. [Bob vs SQLBoiler](https://bob.stephenafamo.com/vs/sqlboiler)
+
 [docs]: https://bob.stephenafamo.com/docs
 [reference]: https://pkg.go.dev/github.com/stephenafamo/bob

@@ -14,4 +14,3 @@ While convenient to have this in the ORM, it is much better to implement this at
 ## Soft deletes
 
 There are no immediate plans for this. The many edge cases make this extremely complex especially when relationships and cascading soft deletes are considered.
-

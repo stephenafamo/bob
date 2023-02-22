@@ -16,7 +16,7 @@ export default function Home(): JSX.Element {
 export function Hero() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <div className="place-self-stretch grid bg-indigo-700">
+    <div className="grow grid bg-indigo-700">
       <div className="m-auto max-w-2xl py-16 px-6 text-center sm:py-20 lg:px-8">
         <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
           <span className="block">{siteConfig.title}</span>

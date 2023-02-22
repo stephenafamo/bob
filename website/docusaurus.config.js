@@ -44,11 +44,9 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/stephenafamo/bob/tree/main/docs/',
           path: "./docs",
+          sidebarPath: require.resolve('./sidebars.js'),
+          editUrl: 'https://github.com/stephenafamo/bob/tree/main/website/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -94,6 +92,21 @@ const config = {
             position: 'left',
           },
           {
+            type: 'dropdown',
+            label: 'VS Others',
+            position: 'left',
+            items: [
+              {
+                label: 'GORM',
+                to: 'vs/gorm',
+              },
+              {
+                label: 'SQLBoiler',
+                to: 'vs/sqlboiler',
+              },
+            ],
+          },
+          {
             href: 'https://github.com/stephenafamo/bob',
             label: 'GitHub',
             position: 'right',
@@ -116,6 +129,16 @@ const config = {
     }),
 
   plugins: [
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'comparisons',
+        path: './vs',
+        routeBasePath: 'vs',
+        sidebarPath: require.resolve('./sidebars.js'),
+        editUrl: 'https://github.com/stephenafamo/bob/tree/main/website/',
+      },
+    ],
     async function tailwindPlugin(_context, _options) {
       return {
         name: "docusaurus-tailwindcss",
