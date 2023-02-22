@@ -33,6 +33,7 @@ Check out [the documentation][docs] for more information.
 ## Comparisons
 
 1. [Bob vs GORM](https://bob.stephenafamo.com/vs/gorm)
+1. [Bob vs Ent](https://bob.stephenafamo.com/vs/ent)
 1. [Bob vs SQLBoiler](https://bob.stephenafamo.com/vs/sqlboiler)
 
 [docs]: https://bob.stephenafamo.com/docs
