@@ -80,7 +80,7 @@ var userTable = psql.NewTable[User, UserSetter]("public", "users")
 
 To learn more about the methods attached to views and tables, see the [models documentation](./models/intro).
 
-## 4. Code Generatoion
+## 4. Code Generation
 
 **Bob** includes code generators that will read your database structure and generate a fully featured and type safe ORM for you.
 
