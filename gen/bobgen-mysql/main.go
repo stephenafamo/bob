@@ -34,7 +34,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    "config",
 				Aliases: []string{"c"},
-				Value:   "./bobgen.yaml",
+				Value:   helpers.DefaultConfigPath,
 				Usage:   "Load configuration from `FILE`",
 			},
 		},

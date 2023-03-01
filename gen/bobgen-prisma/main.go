@@ -158,7 +158,12 @@ func generate(root root) error {
 		return fmt.Errorf("Unsupported datasource provider %q", datasource.Provider)
 	}
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](root.Generator.Config.ConfigFile, "prisma", map[string]any{
+	configPath := root.Generator.Config.ConfigFile
+	if configPath == "" {
+		configPath = helpers.DefaultConfigPath
+	}
+
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configPath, "prisma", map[string]any{
 		"pkgname": "prisma",
 	})
 	if err != nil {

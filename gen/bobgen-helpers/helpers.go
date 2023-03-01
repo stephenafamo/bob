@@ -21,6 +21,8 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+const DefaultConfigPath = "./bobgen.yaml"
+
 func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[string]any) (gen.Config, T, error) {
 	var config gen.Config
 	var driverConfig T
@@ -42,7 +44,7 @@ func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[str
 		// Load YAML config and merge into the previously loaded config (because we can).
 		err := k.Load(file.Provider(configPath), yaml.Parser())
 		if err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
+			if !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
 				return config, driverConfig, err
 			}
 		}
