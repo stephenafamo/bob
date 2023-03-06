@@ -8,6 +8,17 @@ import DocCardList from '@theme/DocCardList';
 
 # Introduction
 
+## Support
+
+|               | Queries | Models | ORM Gen | Factory Gen |
+|---------------|---------|--------|---------|-------------|
+| Postgres      | ✅      | ✅     | ✅      | ✅          |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
+| SQLite        | ✅      | ✅     | ✅      | ✅          |
+| Atlas         |         |        | ✅      | ✅          |
+| Prisma        |         |        | ✅      | ✅          |
+
+
 Bob is a set of Go packages and tools to work with SQL databases.
 
 Bob's philosophy centers around the following:
@@ -136,14 +147,6 @@ generate factories that offer many benefits:
 * Create templates from the rules, overriding specific columns as needed.
 * Build models based on the model templates and use them in tests.
 * Insert the model in the database to truly test your application. Bob will help you by inserting any dependent models.
-
-## Dialect Support
-
-| Dialect       | Queries | Models | ORM Gen | Factory Gen |
-|---------------|---------|--------|---------|-------------|
-| Postgres      | ✅      | ✅     | ✅      | ✅          |
-| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
-| SQLite        | ✅      | ✅     | ✅      | ✅          |
 
 <DocCardList items={[
     {

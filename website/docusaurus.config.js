@@ -62,34 +62,58 @@ const config = {
         title: 'Bob - Go SQL Access Toolkit',
         items: [
           {
-            to: 'docs',
-            label: 'Introduction',
-            activeBaseRegex: 'docs[/]?$',
+            type: 'dropdown',
+            label: 'Query Building',
             position: 'left',
+            items: [
+              {
+                label: 'Introduction',
+                to: 'docs/query-builder/intro',
+              },
+              {
+                label: 'PostgreSQL',
+                to: 'docs/query-builder/psql/how-to-use',
+              },
+              {
+                label: 'MySQL',
+                to: 'docs/query-builder/mysql/how-to-use',
+              },
+              {
+                label: 'SQLite',
+                to: 'docs/query-builder/sqlite/how-to-use',
+              },
+            ],
           },
           {
-            to: 'docs/query-builder/intro',
-            label: 'Builder',
-            activeBaseRegex: 'docs/query-builder',
+            type: 'dropdown',
+            label: 'Code Generation',
             position: 'left',
-          },
-          {
-            to: 'docs/sql-executor/intro',
-            label: 'Executor',
-            activeBaseRegex: 'docs/sql-executor',
-            position: 'left',
-          },
-          {
-            to: 'docs/models/intro',
-            label: 'Models',
-            activeBaseRegex: 'docs/models',
-            position: 'left',
-          },
-          {
-            to: 'docs/code-generation/intro',
-            label: 'Generator',
-            activeBaseRegex: 'docs/code-generation',
-            position: 'left',
+            items: [
+              {
+                label: 'Introduction',
+                to: 'docs/code-generation/intro',
+              },
+              {
+                label: 'PostgreSQL',
+                to: 'docs/code-generation/psql',
+              },
+              {
+                label: 'MySQL',
+                to: 'docs/code-generation/mysql',
+              },
+              {
+                label: 'SQLite',
+                to: 'docs/code-generation/sqlite',
+              },
+              {
+                label: 'Atlas',
+                to: 'docs/code-generation/atlas',
+              },
+              {
+                label: 'Prisma',
+                to: 'docs/code-generation/prisma',
+              },
+            ],
           },
           {
             type: 'dropdown',
