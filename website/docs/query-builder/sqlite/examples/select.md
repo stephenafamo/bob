@@ -103,3 +103,28 @@ sqlite.Select(
   sm.GroupBy("status"),
 )
 ```
+
+## Select With Grouped IN
+
+SQL:
+
+```sql
+SELECT id, name FROM users WHERE ((id, employee_id) IN ((?1, ?2), (?3, ?4)))
+```
+
+Args:
+
+* `100`
+* `200`
+* `300`
+* `400`
+
+Code:
+
+```go
+sqlite.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Where(sqlite.Group("id", "employee_id").In(sqlite.ArgGroup(100, 200), sqlite.ArgGroup(300, 400))),
+)
+```

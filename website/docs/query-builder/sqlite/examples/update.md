@@ -18,7 +18,7 @@ Code:
 ```go
 sqlite.Update(
   um.Table("films"),
-  um.SetArg("kind", "Dramatic"),
+  um.Set("kind").ToArg("Dramatic"),
   um.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
 )
 ```
@@ -42,7 +42,7 @@ Code:
 ```go
 sqlite.Update(
   um.Table("employees"),
-  um.Set("sales_count", "sales_count + 1"),
+  um.Set("sales_count").To("sales_count + 1"),
   um.From("accounts"),
   um.Where(sqlite.X("accounts.name").EQ(sqlite.Arg("Acme Corporation"))),
   um.Where(sqlite.X("employees.id").EQ("accounts.sales_person")),
@@ -69,7 +69,7 @@ Code:
 sqlite.Update(
   um.TableAs("employees", "e"),
   um.TableNotIndexed(),
-  um.Set("sales_count", "sales_count + 1"),
+  um.Set("sales_count").To("sales_count + 1"),
   um.Where(sqlite.X("id").EQ(sqlite.P(sqlite.Select(
     sm.Columns("sales_person"),
     sm.From("accounts"),

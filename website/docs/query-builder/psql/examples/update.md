@@ -18,7 +18,7 @@ Code:
 ```go
 psql.Update(
   um.Table("films"),
-  um.SetArg("kind", "Dramatic"),
+  um.Set("kind").ToArg("Dramatic"),
   um.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
 )
 ```
@@ -42,7 +42,7 @@ Code:
 ```go
 psql.Update(
   um.Table("employees"),
-  um.Set("sales_count", "sales_count + 1"),
+  um.Set("sales_count").To("sales_count + 1"),
   um.From("accounts"),
   um.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
   um.Where(psql.X("employees.id").EQ("accounts.sales_person")),
@@ -67,7 +67,7 @@ Code:
 ```go
 psql.Update(
   um.Table("employees"),
-  um.Set("sales_count", "sales_count + 1"),
+  um.Set("sales_count").To("sales_count + 1"),
   um.Where(psql.X("id").EQ(psql.P(psql.Select(
     sm.Columns("sales_person"),
     sm.From("accounts"),

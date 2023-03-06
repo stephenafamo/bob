@@ -87,3 +87,28 @@ mysql.Select(
   sm.GroupBy("status"),
 )
 ```
+
+## Select With Grouped IN
+
+SQL:
+
+```sql
+SELECT id, name FROM users WHERE ((id, employee_id) IN ((?, ?), (?, ?)))
+```
+
+Args:
+
+* `100`
+* `200`
+* `300`
+* `400`
+
+Code:
+
+```go
+mysql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Where(mysql.Group("id", "employee_id").In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
+)
+```
