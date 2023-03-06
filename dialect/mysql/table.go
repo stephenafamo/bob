@@ -303,7 +303,6 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 
 // Uses the setional columns to know what to insert
 // If updateCols is nil, it updates all the columns set in Tset
-// if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
 func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, row Tset) (T, error) {
 	var err error
 	var zero T
@@ -313,7 +312,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		return zero, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
 	if err != nil {
 		return zero, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -378,9 +377,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 }
 
 // Uses the setional columns to know what to insert
-// If conflictCols is nil, it uses the primary key columns
 // If updateCols is nil, it updates all the columns set in Tset
-// if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
 func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, updateCols []string, rows ...Tset) (int64, error) {
 	var err error
 
@@ -391,7 +388,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}

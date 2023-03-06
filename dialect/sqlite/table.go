@@ -251,7 +251,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		return zero, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
 	if err != nil {
 		return zero, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -264,7 +264,12 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 	if !updateOnConflict {
 		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).DoNothing()
 	} else {
-		excludeSetCols := columns
+		excludeSetCols := updateCols
+		// If no update columns, use the columns set
+		if len(excludeSetCols) == 0 {
+			excludeSetCols = columns
+		}
+		// if still empty, use non-PKs
 		if len(excludeSetCols) == 0 {
 			excludeSetCols = t.setMapping.NonPKs
 		}
@@ -307,7 +312,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		}
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, updateCols, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
 	if err != nil {
 		return nil, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -329,7 +334,12 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	if !updateOnConflict {
 		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).DoNothing()
 	} else {
-		excludeSetCols := columns
+		excludeSetCols := updateCols
+		// If no update columns, use the columns set
+		if len(excludeSetCols) == 0 {
+			excludeSetCols = columns
+		}
+		// if still empty, use non-PKs
 		if len(excludeSetCols) == 0 {
 			excludeSetCols = t.setMapping.NonPKs
 		}
