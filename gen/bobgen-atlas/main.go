@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -57,10 +56,6 @@ func run(c *cli.Context) error {
 	})
 	if err != nil {
 		return err
-	}
-
-	if driverConfig.Dialect == "" {
-		return errors.New("dialect must be specified")
 	}
 
 	modelTemplates := []fs.FS{gen.ModelTemplates}

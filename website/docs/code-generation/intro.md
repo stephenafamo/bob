@@ -21,6 +21,7 @@ There is also a generator for other schema definitions like [Prisma's schmea](ht
 | PostgreSQL | [LINK](./psql)   |
 | MySQL      | [LINK](./mysql)  |
 | SQLite     | [LINK](./sqlite) |
+| Atlas      | [LINK](./atlas) |
 | Prisma     | [LINK](./prisma) |
 
 ## Features
