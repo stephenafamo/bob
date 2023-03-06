@@ -3,7 +3,6 @@ package um
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -61,12 +60,8 @@ func TableNotIndexed() bob.Mod[*dialect.UpdateQuery] {
 	})
 }
 
-func Set(a string, b any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), b)}
-}
-
-func SetArg(a string, b any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), expr.Arg(b))}
+func Set(from ...string) mods.Set[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery](from)
 }
 
 func From(table any) dialect.FromChain[*dialect.UpdateQuery] {

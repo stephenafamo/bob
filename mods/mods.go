@@ -3,6 +3,7 @@ package mods
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 )
 
 type QueryMods[T any] []bob.Mod[T]
@@ -141,8 +142,18 @@ func (s Returning[Q]) Apply(q Q) {
 	q.AppendReturning(s...)
 }
 
-type Set[Q interface{ AppendSet(clauses ...any) }] []any
+type Set[Q interface{ AppendSet(clauses ...any) }] []string
 
-func (s Set[Q]) Apply(q Q) {
+func (s Set[Q]) To(to any) bob.Mod[Q] {
+	return set[Q]{expr.OP("=", expr.Quote(s...), to)}
+}
+
+func (s Set[Q]) ToArg(to any) bob.Mod[Q] {
+	return set[Q]{expr.OP("=", expr.Quote(s...), expr.Arg(to))}
+}
+
+type set[Q interface{ AppendSet(clauses ...any) }] []any
+
+func (s set[Q]) Apply(q Q) {
 	q.AppendSet(s...)
 }

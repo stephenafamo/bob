@@ -229,7 +229,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 	}
 
 	for i, col := range columns {
-		q.Apply(um.Set(col, values[0][i]))
+		q.Apply(um.Set(col).ToArg(values[0][i]))
 	}
 
 	result, err := q.Exec(ctx, exec)
@@ -271,7 +271,7 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 	q := Update(um.Table(t.NameAs(ctx)))
 
 	for i, col := range columns {
-		q.Apply(um.Set(col, values[0][i]))
+		q.Apply(um.Set(col).ToArg(values[0][i]))
 	}
 
 	// Find a set the PKs
@@ -557,7 +557,7 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 	q := Update(um.Table(t.nameExpr(t.ctx)))
 
 	for i, col := range columns {
-		q.Apply(um.Set(col, values[0][i]))
+		q.Apply(um.Set(col).ToArg(values[0][i]))
 	}
 
 	pkGroup := make([]any, len(t.pkCols))

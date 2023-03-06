@@ -4,7 +4,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -52,12 +51,8 @@ func StraightJoin(e any) bob.Mod[*dialect.UpdateQuery] {
 	return dialect.StraightJoin[*dialect.UpdateQuery](e)
 }
 
-func Set(a string, b any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), b)}
-}
-
-func SetArg(a string, b any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), expr.Arg(b))}
+func Set(from ...string) mods.Set[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery](from)
 }
 
 func Where(e any) bob.Mod[*dialect.UpdateQuery] {
