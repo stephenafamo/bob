@@ -32,6 +32,26 @@ func Table(name any) dialect.FromChain[*dialect.UpdateQuery] {
 	return dialect.From[*dialect.UpdateQuery](name)
 }
 
+func InnerJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.InnerJoin[*dialect.UpdateQuery](e)
+}
+
+func LeftJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.LeftJoin[*dialect.UpdateQuery](e)
+}
+
+func RightJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
+	return dialect.RightJoin[*dialect.UpdateQuery](e)
+}
+
+func CrossJoin(e any) bob.Mod[*dialect.UpdateQuery] {
+	return dialect.CrossJoin[*dialect.UpdateQuery](e)
+}
+
+func StraightJoin(e any) bob.Mod[*dialect.UpdateQuery] {
+	return dialect.StraightJoin[*dialect.UpdateQuery](e)
+}
+
 func Set(a string, b any) bob.Mod[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]{expr.OP("=", expr.Quote(a), b)}
 }
