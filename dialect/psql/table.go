@@ -89,6 +89,10 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 
 // Insert inserts a row into the table with only the set columns in Tset
 func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Executor, rows ...Tset) (Tslice, error) {
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
 	var err error
 
 	for _, row := range rows {
@@ -182,6 +186,10 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 // if columns is nil, every column is updated
 // NOTE: values from the DB are not refreshed into the models
 func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) (int64, error) {
+	if len(rows) == 0 {
+		return 0, nil
+	}
+
 	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
@@ -303,6 +311,10 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 // If updateCols is nil, it updates all the columns set in Tset
 // if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
 func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols []string, rows ...Tset) (Tslice, error) {
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
 	var err error
 
 	for _, row := range rows {
@@ -408,6 +420,10 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 // Deletes the given models
 // if columns is nil, every column is deleted
 func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
+	if len(rows) == 0 {
+		return 0, nil
+	}
+
 	for _, row := range rows {
 		_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
 		if err != nil {
