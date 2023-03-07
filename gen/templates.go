@@ -23,6 +23,9 @@ var templates embed.FS
 //go:embed bobgen-mysql/templates
 var mysqlTemplates embed.FS
 
+//go:embed bobgen-sqlite/templates
+var sqliteTemplates embed.FS
+
 //go:embed bobgen-prisma/templates
 var prismaTemplates embed.FS
 
@@ -31,6 +34,7 @@ var (
 	ModelTemplates, _       = fs.Sub(templates, "templates/models")
 	FactoryTemplates, _     = fs.Sub(templates, "templates/factory")
 	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
+	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
 	PrismaModelTemplates, _ = fs.Sub(prismaTemplates, "bobgen-prisma/templates/models")
 )
 

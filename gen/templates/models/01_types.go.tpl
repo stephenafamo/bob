@@ -93,6 +93,34 @@ type {{$tAlias.DownSingular}}ColumnNames struct {
   {{end -}}
 }
 
+{{if $table.Relationships -}}
+type {{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable] struct {
+	{{range $table.Relationships -}}
+	{{- $relAlias := $tAlias.Relationship .Name -}}
+	{{$relAlias}} bob.Mod[Q]
+  {{end -}}
+}
+
+func build{{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable](ctx context.Context, typ string) {{$tAlias.DownSingular}}RelationshipJoins[Q] {
+  return {{$tAlias.DownSingular}}RelationshipJoins[Q]{
+		{{range $table.Relationships -}}
+			{{$ftable := $.Aliases.Table .Foreign -}}
+			{{$relAlias := $tAlias.Relationship .Name -}}
+			{{$relAlias}}: {{$tAlias.DownPlural}}Join{{$relAlias}}[Q](ctx, typ),
+		{{end}}
+	}
+}
+
+{{$.Importer.Import "github.com/stephenafamo/bob/clause"}}
+func {{$tAlias.DownPlural}}Join[Q dialect.Joinable](ctx context.Context) joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]] {
+	return joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]] {
+	  InnerJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.InnerJoin),
+	  LeftJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.LeftJoin),
+	  RightJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.RightJoin),
+	}
+}
+{{- end}}
+
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 var {{$tAlias.UpSingular}}Columns = struct {
 	{{range $column := $table.Columns -}}

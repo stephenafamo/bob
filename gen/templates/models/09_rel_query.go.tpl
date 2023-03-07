@@ -1,6 +1,42 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{if $table.Relationships -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
+
+{{range $rel := $table.Relationships -}}
+{{- $fAlias := $.Aliases.Table $rel.Foreign -}}
+{{- $relAlias := $tAlias.Relationship $rel.Name -}}
+func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
+	return mods.QueryMods[Q]{
+		{{- range $index := until (len $rel.Sides) | reverse -}}
+		{{/* Index counts down */}}
+		{{/* This also flips the meaning of $from and $to */}}
+		{{- $side := index $rel.Sides $index -}}
+		{{- $from := $.Aliases.Table $side.From -}}
+		{{- $to := $.Aliases.Table $side.To -}}
+		dialect.Join[Q](typ, {{$from.UpPlural}}Table.Name(ctx)).On(
+			{{range $i, $local := $side.FromColumns -}}
+				{{- $fromCol := index $from.Columns $local -}}
+				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
+				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
+			{{- end}}
+			{{- range $where := $side.FromWhere}}
+				{{- $fromCol := index $from.Columns $where.Column}}
+				{{if eq $index 0 -}}sm.Where({{end -}}
+				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}}),
+				{{- if eq $index 0 -}}),{{- end -}}
+			{{- end}}
+			{{- range $where := $side.ToWhere}}
+				{{- $toCol := index $to.Columns $where.Column}}
+				{{if eq $index 0 -}}sm.Where({{end -}}
+				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}}),
+				{{- if eq $index 0 -}}),{{- end -}}
+			{{- end}}
+		),
+		{{- end}}
+	}
+}
+{{end}}
 
 {{range $rel := $table.Relationships -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}

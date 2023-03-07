@@ -59,8 +59,11 @@ func run(c *cli.Context) error {
 	}
 
 	modelTemplates := []fs.FS{gen.ModelTemplates}
-	if driverConfig.Dialect == "mysql" {
+	switch driverConfig.Dialect {
+	case "mysql":
 		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
+	case "sqlite":
+		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	}
 
 	outputs := []*gen.Output{

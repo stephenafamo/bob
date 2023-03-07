@@ -212,47 +212,35 @@ func (j JoinChain[Q]) Using(using ...any) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-type joinable interface{ AppendJoin(clause.Join) }
+type Joinable interface{ AppendJoin(clause.Join) }
 
-func InnerJoin[Q joinable](e any) JoinChain[Q] {
+func Join[Q Joinable](typ string, e any) JoinChain[Q] {
 	return JoinChain[Q](func() clause.Join {
 		return clause.Join{
-			Type: clause.InnerJoin,
+			Type: typ,
 			To:   e,
 		}
 	})
 }
 
-func LeftJoin[Q joinable](e any) JoinChain[Q] {
-	return JoinChain[Q](func() clause.Join {
-		return clause.Join{
-			Type: clause.LeftJoin,
-			To:   e,
-		}
-	})
+func InnerJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.InnerJoin, e)
 }
 
-func RightJoin[Q joinable](e any) JoinChain[Q] {
-	return JoinChain[Q](func() clause.Join {
-		return clause.Join{
-			Type: clause.RightJoin,
-			To:   e,
-		}
-	})
+func LeftJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.LeftJoin, e)
 }
 
-func CrossJoin[Q joinable](e any) bob.Mod[Q] {
-	return mods.Join[Q]{
-		Type: clause.CrossJoin,
-		To:   e,
-	}
+func RightJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.RightJoin, e)
 }
 
-func StraightJoin[Q joinable](e any) bob.Mod[Q] {
-	return mods.Join[Q]{
-		Type: clause.StraightJoin,
-		To:   e,
-	}
+func CrossJoin[Q Joinable](e any) bob.Mod[Q] {
+	return Join[Q](clause.CrossJoin, e)
+}
+
+func StraightJoin[Q Joinable](e any) bob.Mod[Q] {
+	return Join[Q](clause.StraightJoin, e)
 }
 
 type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef

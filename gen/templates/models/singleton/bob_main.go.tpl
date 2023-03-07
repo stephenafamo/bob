@@ -56,3 +56,38 @@ func Where[Q {{$.Dialect}}.Filterable]() struct {
 		{{end -}}
 	}
 }
+
+{{block "join_helpers" . -}}
+var (
+	SelectJoins = joins[*dialect.SelectQuery]
+	UpdateJoins = joins[*dialect.UpdateQuery]
+	DeleteJoins = joins[*dialect.DeleteQuery]
+)
+{{- end}}
+
+type joinSet[Q any] struct {
+    InnerJoin Q
+    LeftJoin Q
+    RightJoin Q
+}
+
+{{$.Importer.Import "context"}}
+func joins[Q dialect.Joinable](ctx context.Context) struct {
+		{{range $table := .Tables -}}{{if $table.Relationships -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
+		{{$tAlias.UpPlural}} joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]]
+		{{end}}{{end}}
+} {
+	return struct {
+		{{range $table := .Tables -}}{{if $table.Relationships -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
+		{{$tAlias.UpPlural}} joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]]
+		{{end}}{{end}}
+	}{
+		{{range $table := .Tables -}}{{if $table.Relationships -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
+		{{$tAlias.UpPlural}}: {{$tAlias.DownPlural}}Join[Q](ctx),
+		{{end}}{{end}}
+	}
+}
+

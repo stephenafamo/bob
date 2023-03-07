@@ -149,6 +149,7 @@ func generate(root root) error {
 		dialect = "sqlite"
 		driverName = "sqlite"
 		driverPkg = "modernc.org/sqlite"
+		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	case ProviderMySQL:
 		dialect = "mysql"
 		driverName = "mysql"

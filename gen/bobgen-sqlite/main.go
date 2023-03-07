@@ -69,7 +69,7 @@ func run(c *cli.Context) error {
 		{
 			OutFolder: driverConfig.Output,
 			PkgName:   driverConfig.Pkgname,
-			Templates: []fs.FS{gen.ModelTemplates},
+			Templates: []fs.FS{gen.ModelTemplates, gen.SQLiteModelTemplates},
 		},
 	}
 
