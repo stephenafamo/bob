@@ -71,6 +71,10 @@ type driver struct {
 	enums  map[string]drivers.Enum
 }
 
+func (d *driver) Dialect() string {
+	return d.config.Dialect
+}
+
 func (d *driver) Destination() string {
 	return d.config.Output
 }

@@ -12,6 +12,8 @@ import (
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface[T any] interface {
+	// The dialect
+	Dialect() string
 	// The destination folder
 	Destination() string
 	// The package name

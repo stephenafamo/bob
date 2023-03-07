@@ -71,6 +71,10 @@ type driver struct {
 	enumMu sync.Mutex
 }
 
+func (d *driver) Dialect() string {
+	return "mysql"
+}
+
 func (d *driver) Destination() string {
 	return d.config.Output
 }

@@ -53,8 +53,7 @@ func run(c *cli.Context) error {
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:  config,
-		Dialect: "psql",
+		Config: config,
 	}
 
 	return cmdState.Run(c.Context, d)

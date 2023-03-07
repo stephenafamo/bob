@@ -66,6 +66,10 @@ type driver struct {
 	conn   *sql.DB
 }
 
+func (d *driver) Dialect() string {
+	return "sqlite"
+}
+
 func (d *driver) Destination() string {
 	return d.config.Output
 }

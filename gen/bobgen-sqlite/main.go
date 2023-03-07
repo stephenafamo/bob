@@ -54,8 +54,7 @@ func run(c *cli.Context) error {
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:  config,
-		Dialect: "sqlite",
+		Config: config,
 		Templates: gen.Templates{
 			Models: []fs.FS{gen.SQLiteModelTemplates},
 		},

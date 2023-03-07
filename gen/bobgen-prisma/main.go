@@ -176,6 +176,7 @@ func generate(root root) error {
 
 	d := driver.New(
 		driverConfig,
+		dialect,
 		output,
 		driver.Provider{
 			DriverName:      driverName,
@@ -187,8 +188,7 @@ func generate(root root) error {
 	)
 
 	state := &gen.State[driver.Extra]{
-		Config:  config,
-		Dialect: dialect,
+		Config: config,
 		Templates: gen.Templates{
 			Models: modelTemplates,
 		},

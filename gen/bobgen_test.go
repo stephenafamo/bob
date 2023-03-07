@@ -89,8 +89,7 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	state := &State[any]{
-		Dialect: "psql",
-		Config:  config,
+		Config: config,
 	}
 
 	buf := &bytes.Buffer{}
@@ -122,8 +121,9 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	if err = state.Run(context.Background(), &mocks.MockDriver{
-		Output:  filepath.Join(out, "models"),
-		PkgName: "models",
+		DialectName: "psql",
+		Output:      filepath.Join(out, "models"),
+		PkgName:     "models",
 	}); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}

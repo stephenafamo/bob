@@ -8,8 +8,13 @@ import (
 
 // MockDriver is a mock implementation of the bdb driver Interface
 type MockDriver struct {
-	Output  string
-	PkgName string
+	DialectName string
+	Output      string
+	PkgName     string
+}
+
+func (d *MockDriver) Dialect() string {
+	return d.DialectName
 }
 
 func (d *MockDriver) Destination() string {

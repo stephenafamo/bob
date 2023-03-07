@@ -89,6 +89,10 @@ type driver struct {
 	enums  []Enum
 }
 
+func (d *driver) Dialect() string {
+	return "psql"
+}
+
 func (d *driver) Destination() string {
 	return d.config.Output
 }

@@ -36,7 +36,6 @@ type Templates struct {
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
 	Config              Config
-	Dialect             string
 	Templates           Templates
 	CustomTemplateFuncs template.FuncMap
 
@@ -48,7 +47,7 @@ type State[T any] struct {
 // Run executes the templates and outputs them to files based on the
 // state given.
 func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
-	if s.Dialect == "" {
+	if driver.Dialect() == "" {
 		return fmt.Errorf("no dialect specified")
 	}
 
@@ -109,7 +108,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 		}
 
 		data := &templateData[T]{
-			Dialect:           s.Dialect,
+			Dialect:           driver.Dialect(),
 			Tables:            s.tables,
 			Enums:             s.enums,
 			ExtraInfo:         s.extraInfo,
