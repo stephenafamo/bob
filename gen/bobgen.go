@@ -584,9 +584,9 @@ func goModInfo(path string) (string, *modfile.File, error) {
 func findGoMod(path string) (string, error) {
 	var outData, errData bytes.Buffer
 
-	_, err := os.Stat(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		os.MkdirAll(path, 0o755)
+	err := os.MkdirAll(path, 0o755)
+	if err != nil {
+		return "", fmt.Errorf("could not create destination folder")
 	}
 
 	c := exec.Command("go", "env", "GOMOD")
