@@ -5,10 +5,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -73,27 +71,13 @@ func testNew(t *testing.T, aliases Aliases) {
 		t.Fatalf("unable to create tempdir: %s", err)
 	}
 
-	outputs := []*Output{
-		{
-			PkgName:   "models",
-			OutFolder: filepath.Join(out, "models"),
-			Templates: []fs.FS{ModelTemplates},
-		},
-		{
-			PkgName:   "factory",
-			OutFolder: filepath.Join(out, "factory"),
-			Templates: []fs.FS{FactoryTemplates},
-		},
-	}
 	// Defer cleanup of the tmp folder
 	defer func() {
 		if t.Failed() {
 			t.Log("template test output:", out)
 			return
 		}
-		for _, o := range outputs {
-			os.RemoveAll(o.OutFolder)
-		}
+		os.RemoveAll(out)
 	}()
 
 	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
@@ -105,14 +89,10 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	state := &State[any]{
-		Dialect:   "psql",
-		Config:    config,
-		Outputs:   outputs,
-		ModelsPkg: path.Join(module, "models"),
-	}
-
-	if err = state.Run(context.Background(), &mocks.MockDriver{}); err != nil {
-		t.Errorf("Unable to execute State.Run: %s", err)
+		Dialect:           "psql",
+		Config:            config,
+		DestinationFolder: filepath.Join(out, "models"),
+		ModelsPkgName:     "models",
 	}
 
 	buf := &bytes.Buffer{}
@@ -138,9 +118,13 @@ func testNew(t *testing.T, aliases Aliases) {
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
-		t.Errorf("go mod init cmd execution failed: %s", err)
+		t.Errorf("go mod edit cmd execution failed: %s", err)
 		outputCompileErrors(buf, out)
 		fmt.Println()
+	}
+
+	if err = state.Run(context.Background(), &mocks.MockDriver{}); err != nil {
+		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 
 	// From go1.16 dependencies are not auto downloaded

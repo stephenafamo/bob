@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -49,8 +50,17 @@ var (
 	testHarnessWriteFile = os.WriteFile
 )
 
+type output struct {
+	PkgName   string
+	OutFolder string
+	Templates []fs.FS
+
+	templates     *templateList
+	testTemplates *templateList
+}
+
 type executeTemplateData[T any] struct {
-	output *Output
+	output *output
 	data   *templateData[T]
 
 	templates     *templateList
@@ -61,7 +71,7 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
+func generateOutput[T any](o *output, dirExts dirExtMap, data *templateData[T]) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:               o,
 		data:                 data,
@@ -72,7 +82,7 @@ func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) 
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
+func generateTestOutput[T any](o *output, dirExts dirExtMap, data *templateData[T]) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:               o,
 		data:                 data,
@@ -85,7 +95,7 @@ func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *templateData[T]) error {
+func generateSingletonOutput[T any](o *output, data *templateData[T]) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
@@ -95,7 +105,7 @@ func generateSingletonOutput[T any](o *Output, data *templateData[T]) error {
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *templateData[T]) error {
+func generateSingletonTestOutput[T any](o *output, data *templateData[T]) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,

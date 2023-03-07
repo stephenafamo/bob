@@ -1,8 +1,6 @@
 package gen
 
 import (
-	"io/fs"
-
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -38,15 +36,6 @@ type Config struct {
 }
 
 type relationships = map[string][]orm.Relationship
-
-type Output struct {
-	PkgName   string  `yaml:"pkg_name" toml:"pkg_name" json:"pkg_name"`
-	OutFolder string  `yaml:"out_folder" toml:"out_folder" json:"out_folder"`
-	Templates []fs.FS `yaml:"-" toml:"-" json:"-"`
-
-	templates     *templateList
-	testTemplates *templateList
-}
 
 // Replace replaces a column type with something else
 type Replace struct {

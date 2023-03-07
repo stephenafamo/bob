@@ -1,11 +1,14 @@
 package gen
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -15,6 +18,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
+	"golang.org/x/mod/modfile"
 )
 
 var (
@@ -24,13 +28,20 @@ var (
 	rgxValidTableColumn = regexp.MustCompile(`^[\w]+\.[\w]+$|^[\w]+$`)
 )
 
+type Templates struct {
+	Models  []fs.FS
+	Factory []fs.FS
+}
+
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
 	Config              *Config
 	Dialect             string
-	Outputs             []*Output
-	ModelsPkg           string
 	CustomTemplateFuncs template.FuncMap
+
+	DestinationFolder string
+	ModelsPkgName     string
+	Templates         Templates
 
 	tables    []drivers.Table
 	enums     []drivers.Enum
@@ -43,6 +54,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 	if s.Dialect == "" {
 		return fmt.Errorf("no dialect specified")
 	}
+
 	var templates []lazyTemplate
 
 	if len(s.Config.Generator) > 0 {
@@ -61,7 +73,34 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 	s.processTypeReplacements()
 	s.processRelationshipConfig()
 
-	for _, o := range s.Outputs {
+	modPkg, err := modelsPackage(s.DestinationFolder)
+	if err != nil {
+		return fmt.Errorf("getting models pkg details: %w", err)
+	}
+
+	outputs := []*output{
+		{
+			OutFolder: s.DestinationFolder,
+			PkgName:   s.ModelsPkgName,
+			Templates: append(s.Templates.Models, ModelTemplates),
+		},
+	}
+
+	if !s.Config.NoFactory {
+		outputs = append(outputs, &output{
+			OutFolder: path.Join(s.DestinationFolder, "factory"),
+			PkgName:   "factory",
+			Templates: append(s.Templates.Factory, FactoryTemplates),
+		})
+	}
+
+	err = s.initTags(s.Config.Tags)
+	if err != nil {
+		return fmt.Errorf("unable to initialize struct tags: %w", err)
+	}
+
+	s.initAliases(&s.Config.Aliases)
+	for _, o := range outputs {
 		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
@@ -71,15 +110,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 		if err != nil {
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
-	}
 
-	err = s.initTags(s.Config.Tags)
-	if err != nil {
-		return fmt.Errorf("unable to initialize struct tags: %w", err)
-	}
-
-	s.initAliases(&s.Config.Aliases)
-	for _, o := range s.Outputs {
 		data := &templateData[T]{
 			Dialect:           s.Dialect,
 			Tables:            s.tables,
@@ -93,7 +124,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 			TagIgnore:         make(map[string]struct{}),
 			Tags:              s.Config.Tags,
 			RelationTag:       s.Config.RelationTag,
-			ModelsPackage:     s.ModelsPkg,
+			ModelsPackage:     modPkg,
 			CanBulkInsert:     driver.Capabilities().BulkInsert,
 		}
 
@@ -152,7 +183,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
+func (o *output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
@@ -420,7 +451,7 @@ func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
 }
 
 // initOutFolders creates the folders that will hold the generated output.
-func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
+func (o *output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 	if wipe {
 		if err := os.RemoveAll(o.OutFolder); err != nil {
 			return err
@@ -506,4 +537,79 @@ func normalizeSlashes(path string) string {
 	path = strings.ReplaceAll(path, `/`, string(os.PathSeparator))
 	path = strings.ReplaceAll(path, `\`, string(os.PathSeparator))
 	return path
+}
+
+func modelsPackage(modelsFolder string) (string, error) {
+	modRoot, modFile, err := goModInfo(modelsFolder)
+	if err != nil {
+		return "", fmt.Errorf("getting mod details: %w", err)
+	}
+
+	fullPath := modelsFolder
+	if !filepath.IsAbs(modelsFolder) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("could not get working directory: %w", err)
+		}
+
+		fullPath = filepath.Join(wd, modelsFolder)
+	}
+
+	relPath := strings.TrimPrefix(fullPath, modRoot)
+	return path.Join(modFile.Module.Mod.Path, relPath), nil
+}
+
+// goModInfo returns the main module's root directory
+// and the parsed contents of the go.mod file.
+func goModInfo(path string) (string, *modfile.File, error) {
+	goModPath, err := findGoMod(path)
+	if err != nil {
+		return "", nil, fmt.Errorf("cannot find main module: %w", err)
+	}
+
+	if goModPath == os.DevNull {
+		return "", nil, fmt.Errorf("destination is not in a go module")
+	}
+
+	data, err := os.ReadFile(goModPath)
+	if err != nil {
+		return "", nil, fmt.Errorf("cannot read main go.mod file: %w", err)
+	}
+
+	modf, err := modfile.Parse(goModPath, data, nil)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not parse go.mod: %w", err)
+	}
+
+	return filepath.Dir(goModPath), modf, nil
+}
+
+func findGoMod(path string) (string, error) {
+	var outData, errData bytes.Buffer
+
+	_, err := os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		os.MkdirAll(path, 0o755)
+	}
+
+	c := exec.Command("go", "env", "GOMOD")
+	c.Stdout = &outData
+	c.Stderr = &errData
+	c.Dir = path
+	err = c.Run()
+	if err != nil {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) && errData.Len() > 0 {
+			return "", errors.New(strings.TrimSpace(errData.String()))
+		}
+
+		return "", fmt.Errorf("cannot run go env GOMOD: %w", err)
+	}
+
+	out := strings.TrimSpace(outData.String())
+	if out == "" {
+		return "", errors.New("no go.mod file found in any parent directory")
+	}
+
+	return out, nil
 }

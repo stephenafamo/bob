@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 
 	"github.com/stephenafamo/bob/gen"
@@ -65,34 +63,16 @@ func run(c *cli.Context) error {
 		return errors.New("database dsn is not set")
 	}
 
-	outputs := []*gen.Output{
-		{
-			OutFolder: driverConfig.Output,
-			PkgName:   driverConfig.Pkgname,
-			Templates: []fs.FS{gen.ModelTemplates, gen.SQLiteModelTemplates},
-		},
-	}
-
-	if !config.NoFactory {
-		outputs = append(outputs, &gen.Output{
-			OutFolder: path.Join(driverConfig.Output, "factory"),
-			PkgName:   "factory",
-			Templates: []fs.FS{gen.FactoryTemplates},
-		})
-	}
-
-	modPkg, err := helpers.ModelsPackage(driverConfig.Output)
-	if err != nil {
-		return fmt.Errorf("getting models pkg details: %w", err)
-	}
-
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:    &config,
-		Dialect:   "sqlite",
-		Outputs:   outputs,
-		ModelsPkg: modPkg,
+		Config:            &config,
+		Dialect:           "sqlite",
+		DestinationFolder: driverConfig.Output,
+		ModelsPkgName:     driverConfig.Pkgname,
+		Templates: gen.Templates{
+			Models: []fs.FS{gen.SQLiteModelTemplates},
+		},
 	}
 
 	return cmdState.Run(c.Context, d)

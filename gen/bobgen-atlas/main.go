@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 
 	"github.com/stephenafamo/bob/gen"
@@ -58,7 +56,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	modelTemplates := []fs.FS{gen.ModelTemplates}
+	var modelTemplates []fs.FS
 	switch driverConfig.Dialect {
 	case "mysql":
 		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
@@ -66,34 +64,16 @@ func run(c *cli.Context) error {
 		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	}
 
-	outputs := []*gen.Output{
-		{
-			OutFolder: driverConfig.Output,
-			PkgName:   driverConfig.Pkgname,
-			Templates: modelTemplates,
-		},
-	}
-
-	if !config.NoFactory {
-		outputs = append(outputs, &gen.Output{
-			OutFolder: path.Join(driverConfig.Output, "factory"),
-			PkgName:   "factory",
-			Templates: []fs.FS{gen.FactoryTemplates},
-		})
-	}
-
-	modPkg, err := helpers.ModelsPackage(driverConfig.Output)
-	if err != nil {
-		return fmt.Errorf("getting models pkg details: %w", err)
-	}
-
 	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
 
 	cmdState := &gen.State[any]{
-		Config:    &config,
-		Dialect:   driverConfig.Dialect,
-		Outputs:   outputs,
-		ModelsPkg: modPkg,
+		Config:            &config,
+		Dialect:           driverConfig.Dialect,
+		DestinationFolder: driverConfig.Output,
+		ModelsPkgName:     driverConfig.Pkgname,
+		Templates: gen.Templates{
+			Models: modelTemplates,
+		},
 	}
 
 	return cmdState.Run(c.Context, d)

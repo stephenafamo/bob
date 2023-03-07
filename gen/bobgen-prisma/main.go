@@ -137,7 +137,7 @@ func generate(root root) error {
 	var err error
 	var dialect, driverName, driverPkg string
 
-	modelTemplates := []fs.FS{gen.ModelTemplates, gen.PrismaModelTemplates}
+	modelTemplates := []fs.FS{gen.PrismaModelTemplates}
 
 	datasource := root.Datasources[0]
 	switch datasource.Provider {
@@ -176,22 +176,6 @@ func generate(root root) error {
 		return fmt.Errorf("no output folder configured")
 	}
 
-	outputs := []*gen.Output{
-		{
-			OutFolder: output,
-			PkgName:   driverConfig.Pkgname,
-			Templates: modelTemplates,
-		},
-	}
-
-	if !config.NoFactory {
-		outputs = append(outputs, &gen.Output{
-			OutFolder: path.Join(output, "factory"),
-			PkgName:   "factory",
-			Templates: []fs.FS{gen.FactoryTemplates},
-		})
-	}
-
 	d := driver.New(
 		driverConfig,
 		driver.Provider{
@@ -203,16 +187,14 @@ func generate(root root) error {
 		root.DMMF.Datamodel,
 	)
 
-	modPkg, err := helpers.ModelsPackage(output)
-	if err != nil {
-		return fmt.Errorf("getting models pkg details: %w", err)
-	}
-
 	state := &gen.State[driver.Extra]{
-		Config:    &config,
-		Dialect:   dialect,
-		Outputs:   outputs,
-		ModelsPkg: modPkg,
+		Config:            &config,
+		Dialect:           dialect,
+		DestinationFolder: output,
+		ModelsPkgName:     driverConfig.Pkgname,
+		Templates: gen.Templates{
+			Models: modelTemplates,
+		},
 	}
 
 	if err := state.Run(context.Background(), d); err != nil {
