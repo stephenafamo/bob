@@ -12,6 +12,10 @@ import (
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface[T any] interface {
+	// The destination folder
+	Destination() string
+	// The package name
+	PackageName() string
 	// What the driver is capable of
 	Capabilities() Capabilities
 	// Assemble the database information into a nice struct

@@ -10,7 +10,7 @@ import (
 	"github.com/stephenafamo/scan/stdscan"
 )
 
-func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
+func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	ret := drivers.DBConstraints{
 		PKs:     map[string]*drivers.Constraint{},
 		FKs:     map[string][]drivers.ForeignKey{},

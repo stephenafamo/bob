@@ -46,15 +46,12 @@ func main() {
 func run(c *cli.Context) error {
 	configFile := c.String("config")
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "atlas", map[string]any{
-		"dir":        ".",
-		"output":     "models",
-		"pkgname":    "models",
-		"no_factory": false,
-	})
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "atlas")
 	if err != nil {
 		return err
 	}
+
+	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
 
 	var modelTemplates []fs.FS
 	switch driverConfig.Dialect {
@@ -64,13 +61,9 @@ func run(c *cli.Context) error {
 		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	}
 
-	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
-
 	cmdState := &gen.State[any]{
-		Config:            &config,
-		Dialect:           driverConfig.Dialect,
-		DestinationFolder: driverConfig.Output,
-		ModelsPkgName:     driverConfig.Pkgname,
+		Config:  &config,
+		Dialect: driverConfig.Dialect,
 		Templates: gen.Templates{
 			Models: modelTemplates,
 		},

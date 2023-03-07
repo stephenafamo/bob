@@ -36,31 +36,43 @@ type (
 	}
 )
 
-func New(config Config, provider Provider, datamodel Datamodel) Interface {
-	return &Driver{
+func New(config Config, destination string, provider Provider, datamodel Datamodel) Interface {
+	if config.Pkgname == "" {
+		config.Pkgname = "prisma"
+	}
+	return &driver{
 		config:    config,
 		provider:  provider,
 		datamodel: datamodel,
 	}
 }
 
-// Driver holds the database connection string and a handle
+// driver holds the database connection string and a handle
 // to the database connection.
-type Driver struct {
-	config    Config
-	enums     map[string]drivers.Enum
-	provider  Provider
-	datamodel Datamodel
+type driver struct {
+	destination string
+	config      Config
+	enums       map[string]drivers.Enum
+	provider    Provider
+	datamodel   Datamodel
 }
 
-func (d *Driver) Capabilities() drivers.Capabilities {
+func (d *driver) Destination() string {
+	return d.destination
+}
+
+func (d *driver) PackageName() string {
+	return d.config.Pkgname
+}
+
+func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{
 		BulkInsert: d.provider.DriverName != "mysql",
 	}
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
+func (d *driver) Assemble(_ context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
@@ -78,7 +90,7 @@ func (d *Driver) Assemble(_ context.Context) (*DBInfo, error) {
 	return dbinfo, err
 }
 
-func (d *Driver) tables() []drivers.Table {
+func (d *driver) tables() []drivers.Table {
 	models := d.datamodel.Models
 	tables := make([]drivers.Table, 0, len(models))
 
@@ -157,7 +169,7 @@ func (d *Driver) tables() []drivers.Table {
 // tableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
+func (d *driver) tableNames(tableFilter drivers.Filter) []string {
 	models := d.datamodel.Models
 	names := make([]string, 0, len(models))
 
@@ -172,7 +184,7 @@ func (d *Driver) tableNames(tableFilter drivers.Filter) []string {
 	return names
 }
 
-func (p *Driver) loadEnums() {
+func (p *driver) loadEnums() {
 	if p.enums != nil {
 		return
 	}
@@ -192,7 +204,7 @@ func (p *Driver) loadEnums() {
 	}
 }
 
-func (p *Driver) getEnums() []drivers.Enum {
+func (p *driver) getEnums() []drivers.Enum {
 	enums := make([]drivers.Enum, 0, len(p.enums))
 	for _, e := range p.enums {
 		enums = append(enums, e)
@@ -205,7 +217,7 @@ func (p *Driver) getEnums() []drivers.Enum {
 	return enums
 }
 
-func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []drivers.Column {
+func (d *driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []drivers.Column {
 	allfilter := colFilter["*"]
 	filter := colFilter[model.TableName()]
 	include := append(allfilter.Only, filter.Only...)
@@ -250,7 +262,7 @@ func (d *Driver) tableColumns(model Model, colFilter drivers.ColumnFilter) []dri
 	return columns
 }
 
-func (d *Driver) translateColumnType(c drivers.Column, isArray bool) drivers.Column {
+func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Column {
 	switch isArray {
 	case false: // not an array
 		switch c.DBType {
@@ -340,7 +352,7 @@ var typMap = map[string]importers.List{
 	"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
 }
 
-func (d *Driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
+func (d *driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
 	var pk *drivers.PrimaryKey
 	var uniques []drivers.Constraint
 	var fks []drivers.ForeignKey

@@ -45,28 +45,48 @@ type (
 )
 
 func New(config Config, fs fs.FS) Interface {
-	return &Driver{
+	if config.Dir == "" {
+		config.Dir = "."
+	}
+
+	if config.Output == "" {
+		config.Output = "models"
+	}
+
+	if config.Pkgname == "" {
+		config.Pkgname = "models"
+	}
+
+	return &driver{
 		config: config,
 		fs:     fs,
 	}
 }
 
-// Driver holds the database connection string and a handle
+// driver holds the database connection string and a handle
 // to the database connection.
-type Driver struct {
+type driver struct {
 	config Config
 	fs     fs.FS
 	enums  map[string]drivers.Enum
 }
 
-func (d *Driver) Capabilities() drivers.Capabilities {
+func (d *driver) Destination() string {
+	return d.config.Output
+}
+
+func (d *driver) PackageName() string {
+	return d.config.Pkgname
+}
+
+func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{
 		BulkInsert: d.config.Dialect != "mysql",
 	}
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
+func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var err error
 	var dbinfo *DBInfo
 	var evalFunc schemahcl.EvalFunc
@@ -106,7 +126,7 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	return dbinfo, err
 }
 
-func (d *Driver) key(schema string, table string) string {
+func (d *driver) key(schema string, table string) string {
 	key := table
 	if schema != "" && schema != d.config.SharedSchema {
 		key = schema + "." + table
@@ -115,7 +135,7 @@ func (d *Driver) key(schema string, table string) string {
 	return key
 }
 
-func (d *Driver) schema(schema string) string {
+func (d *driver) schema(schema string) string {
 	if schema == d.config.SharedSchema {
 		return ""
 	}
@@ -123,7 +143,7 @@ func (d *Driver) schema(schema string) string {
 	return schema
 }
 
-func (d *Driver) tables(realm *schema.Realm) []drivers.Table {
+func (d *driver) tables(realm *schema.Realm) []drivers.Table {
 	tables := make([]drivers.Table, 0, len(realm.Schemas))
 
 	tblFilter := drivers.ParseTableFilter(d.config.Only, d.config.Except)
@@ -163,7 +183,7 @@ func (d *Driver) tables(realm *schema.Realm) []drivers.Table {
 	return tables
 }
 
-func (d *Driver) tableNames(realm *schema.Realm, tableFilter drivers.Filter) []string {
+func (d *driver) tableNames(realm *schema.Realm, tableFilter drivers.Filter) []string {
 	names := make([]string, 0, len(realm.Schemas))
 
 	for _, s := range realm.Schemas {
@@ -180,7 +200,7 @@ func (d *Driver) tableNames(realm *schema.Realm, tableFilter drivers.Filter) []s
 	return names
 }
 
-func (d *Driver) tableColumns(table *schema.Table, colFilter drivers.ColumnFilter) []drivers.Column {
+func (d *driver) tableColumns(table *schema.Table, colFilter drivers.ColumnFilter) []drivers.Column {
 	key := d.key(table.Schema.Name, table.Name)
 	allfilter := colFilter["*"]
 	filter := colFilter[key]
@@ -252,7 +272,7 @@ func (d *Driver) tableColumns(table *schema.Table, colFilter drivers.ColumnFilte
 }
 
 //nolint:gocyclo
-func (d *Driver) translateColumnType(c drivers.Column, tableKey string, typ schema.Type) drivers.Column {
+func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ schema.Type) drivers.Column {
 	switch t := typ.(type) {
 	case *schema.BoolType:
 		c.Type = "bool"
@@ -401,7 +421,7 @@ func (d *Driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 	return c
 }
 
-func (d *Driver) getKeys(table *schema.Table, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
+func (d *driver) getKeys(table *schema.Table, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {
 	var pk *drivers.PrimaryKey
 	var uniques []drivers.Constraint
 	var fks []drivers.ForeignKey
@@ -502,7 +522,7 @@ func (d *Driver) getKeys(table *schema.Table, colFilter drivers.ColumnFilter) (*
 	return pk, uniques, fks
 }
 
-func (d *Driver) loadEnums(realm *schema.Realm) {
+func (d *driver) loadEnums(realm *schema.Realm) {
 	if d.enums != nil {
 		return
 	}
@@ -530,7 +550,7 @@ func (d *Driver) loadEnums(realm *schema.Realm) {
 	}
 }
 
-func (p *Driver) getEnums() []drivers.Enum {
+func (p *driver) getEnums() []drivers.Enum {
 	enums := make([]drivers.Enum, 0, len(p.enums))
 	for _, e := range p.enums {
 		enums = append(enums, e)

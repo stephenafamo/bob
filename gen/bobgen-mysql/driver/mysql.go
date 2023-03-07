@@ -44,12 +44,24 @@ type Config struct {
 }
 
 func New(config Config) Interface {
-	return &Driver{config: config}
+	if config.Output == "" {
+		config.Output = "models"
+	}
+
+	if config.Pkgname == "" {
+		config.Pkgname = "models"
+	}
+
+	if config.Concurrency < 1 {
+		config.Concurrency = 10
+	}
+
+	return &driver{config: config}
 }
 
-// Driver holds the database connection string and a handle
+// driver holds the database connection string and a handle
 // to the database connection.
-type Driver struct {
+type driver struct {
 	config Config
 
 	conn   *sql.DB
@@ -59,16 +71,28 @@ type Driver struct {
 	enumMu sync.Mutex
 }
 
-func (d *Driver) Capabilities() drivers.Capabilities {
+func (d *driver) Destination() string {
+	return d.config.Output
+}
+
+func (d *driver) PackageName() string {
+	return d.config.Pkgname
+}
+
+func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{
 		BulkInsert: false,
 	}
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
+func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
+
+	if d.config.Dsn == "" {
+		return nil, fmt.Errorf("database dsn is not set")
+	}
 
 	config, err := mysql.ParseDSN(d.config.Dsn)
 	if err != nil {
@@ -104,7 +128,7 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
-func (d *Driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {
+func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {
 	query := "SELECT table_name as `key`, table_name as name FROM information_schema.tables WHERE table_schema = ?"
 	args := []any{d.dbName}
 
@@ -131,7 +155,7 @@ func (d *Driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 }
 
 // Load details about a single table
-func (d *Driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
+func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	filter := colFilter[info.Key]
 	var columns []drivers.Column
 	schema := d.dbName
@@ -237,7 +261,7 @@ func parseEnumVals(s string) []string {
 // translateTableColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (*Driver) translateColumnType(c drivers.Column, fullType string) drivers.Column {
+func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Column {
 	unsigned := strings.HasSuffix(fullType, " unsigned")
 	switch c.DBType {
 	case "tinyint":
@@ -301,7 +325,7 @@ var typMap = map[string]importers.List{
 	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
 }
 
-func (d *Driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
+func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
 	ret := drivers.DBConstraints{
 		PKs:     map[string]*drivers.Constraint{},
 		FKs:     map[string][]drivers.ForeignKey{},

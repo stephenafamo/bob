@@ -20,7 +20,19 @@ type (
 )
 
 func New(config Config) Interface {
-	return &Driver{config: config}
+	if config.SharedSchema == "" {
+		config.SharedSchema = "main"
+	}
+
+	if config.Output == "" {
+		config.Output = "models"
+	}
+
+	if config.Pkgname == "" {
+		config.Pkgname = "models"
+	}
+
+	return &driver{config: config}
 }
 
 type Config struct {
@@ -47,22 +59,34 @@ type Config struct {
 	NoFactory bool `yaml:"no_factory"`
 }
 
-// Driver holds the database connection string and a handle
+// driver holds the database connection string and a handle
 // to the database connection.
-type Driver struct {
+type driver struct {
 	config Config
 	conn   *sql.DB
 }
 
-func (d *Driver) Capabilities() drivers.Capabilities {
+func (d *driver) Destination() string {
+	return d.config.Output
+}
+
+func (d *driver) PackageName() string {
+	return d.config.Pkgname
+}
+
+func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{
 		BulkInsert: true,
 	}
 }
 
 // Assemble all the information we need to provide back to the driver
-func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
+func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var err error
+
+	if d.config.DSN == "" {
+		return nil, fmt.Errorf("database dsn is not set")
+	}
 
 	d.conn, err = sql.Open("sqlite", d.config.DSN)
 	if err != nil {
@@ -90,7 +114,7 @@ func (d *Driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	return &DBInfo{Tables: tables}, nil
 }
 
-func (d *Driver) tables(ctx context.Context) ([]drivers.Table, error) {
+func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
 	query := `SELECT name FROM %q.sqlite_schema WHERE name NOT LIKE 'sqlite_%%' AND type IN ('table', 'view') ORDER BY type, name`
 
 	mainTables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], fmt.Sprintf(query, "main"))
@@ -124,7 +148,7 @@ func (d *Driver) tables(ctx context.Context) ([]drivers.Table, error) {
 	return allTables, nil
 }
 
-func (d Driver) getTable(ctx context.Context, schema, name string) (drivers.Table, error) {
+func (d driver) getTable(ctx context.Context, schema, name string) (drivers.Table, error) {
 	var err error
 
 	table := drivers.Table{
@@ -161,7 +185,7 @@ func (d Driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 // from the database. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []info) ([]drivers.Column, error) {
+func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []info) ([]drivers.Column, error) {
 	var columns []drivers.Column //nolint:prealloc
 
 	//nolint:gosec
@@ -219,7 +243,7 @@ func (d Driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 	return columns, nil
 }
 
-func (s Driver) tableInfo(ctx context.Context, schema, tableName string) ([]info, error) {
+func (s driver) tableInfo(ctx context.Context, schema, tableName string) ([]info, error) {
 	var ret []info
 	rows, err := s.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.table_xinfo('%s')", schema, tableName))
 	if err != nil {
@@ -239,7 +263,7 @@ func (s Driver) tableInfo(ctx context.Context, schema, tableName string) ([]info
 }
 
 // primaryKey looks up the primary key for a table.
-func (s Driver) primaryKey(schema, tableName string, tinfo []info) *drivers.PrimaryKey {
+func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.PrimaryKey {
 	var cols []string
 	for _, c := range tinfo {
 		if c.Pk == 1 {
@@ -258,7 +282,7 @@ func (s Driver) primaryKey(schema, tableName string, tinfo []info) *drivers.Prim
 }
 
 // foreignKeys retrieves the foreign keys for a given table name.
-func (d Driver) foreignKeys(ctx context.Context, schema, tableName string) ([]drivers.ForeignKey, error) {
+func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]drivers.ForeignKey, error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.foreign_key_list('%s')", schema, tableName))
 	if err != nil {
 		return nil, err
@@ -306,7 +330,7 @@ func (d Driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 }
 
 // uniques retrieves the foreign keys for a given table name.
-func (d Driver) uniques(ctx context.Context, schema, tableName string) ([]drivers.Constraint, error) {
+func (d driver) uniques(ctx context.Context, schema, tableName string) ([]drivers.Constraint, error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.index_list('%s')", schema, tableName))
 	if err != nil {
 		return nil, err
@@ -347,7 +371,7 @@ func (d Driver) uniques(ctx context.Context, schema, tableName string) ([]driver
 	return uniques, nil
 }
 
-func (d Driver) getUniqueIndex(ctx context.Context, schema, index string) (drivers.Constraint, error) {
+func (d driver) getUniqueIndex(ctx context.Context, schema, index string) (drivers.Constraint, error) {
 	unique := drivers.Constraint{Name: index}
 
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.index_info('%s')", schema, index))
@@ -386,7 +410,7 @@ type info struct {
 	Hidden       int
 }
 
-func (d *Driver) key(schema string, table string) string {
+func (d *driver) key(schema string, table string) string {
 	key := table
 	if schema != "" && schema != d.config.SharedSchema {
 		key = schema + "." + table
@@ -395,7 +419,7 @@ func (d *Driver) key(schema string, table string) string {
 	return key
 }
 
-func (d *Driver) schema(schema string) string {
+func (d *driver) schema(schema string) string {
 	if schema == d.config.SharedSchema {
 		return ""
 	}
@@ -407,7 +431,7 @@ func (d *Driver) schema(schema string) string {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html
-func (Driver) translateColumnType(c drivers.Column) drivers.Column {
+func (driver) translateColumnType(c drivers.Column) drivers.Column {
 	switch c.DBType {
 	case "INT", "INTEGER", "BIGINT":
 		c.Type = "int64"

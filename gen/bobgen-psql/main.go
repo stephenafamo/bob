@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -46,33 +45,16 @@ func main() {
 func run(c *cli.Context) error {
 	configFile := c.String("config")
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "psql", map[string]any{
-		"schemas":     "public",
-		"output":      "models",
-		"pkgname":     "models",
-		"uuid_pkg":    "gofrs",
-		"no_factory":  false,
-		"concurrency": 10,
-	})
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "psql")
 	if err != nil {
 		return err
-	}
-
-	if driverConfig.Dsn == "" {
-		return errors.New("database dsn is not set")
-	}
-
-	if driverConfig.SharedSchema == "" {
-		driverConfig.SharedSchema = driverConfig.Schemas[0]
 	}
 
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:            &config,
-		Dialect:           "psql",
-		DestinationFolder: driverConfig.Output,
-		ModelsPkgName:     driverConfig.Pkgname,
+		Config:  &config,
+		Dialect: "psql",
 	}
 
 	return cmdState.Run(c.Context, d)

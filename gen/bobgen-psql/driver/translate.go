@@ -21,7 +21,7 @@ type colInfo struct {
 // translateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
+func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
 	typMap := d.typMap()
 
 	switch c.DBType {
@@ -99,7 +99,7 @@ func (d *Driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 }
 
 // getArrayType returns the correct Array type for each database type
-func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
+func (d *driver) getArrayType(info colInfo) (string, string, importers.List) {
 	typMap := d.typMap()
 
 	if info.ArrType == "USER-DEFINED" {
@@ -172,7 +172,7 @@ func (d *Driver) getArrayType(info colInfo) (string, string, importers.List) {
 	}
 }
 
-func (d *Driver) typMap() map[string]importers.List {
+func (d *driver) typMap() map[string]importers.List {
 	var uuidPkg string
 	switch d.config.UUIDPkg {
 	case "google":

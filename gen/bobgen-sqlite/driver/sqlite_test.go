@@ -85,7 +85,7 @@ func TestAssemble(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Driver{config: tt.config}
+			p := &driver{config: tt.config}
 			info, err := p.Assemble(context.Background())
 			if err != nil {
 				t.Fatal(err)

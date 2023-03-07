@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"io/fs"
 	"log"
 	"os"
@@ -47,29 +46,16 @@ func main() {
 func run(c *cli.Context) error {
 	configFile := c.String("config")
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "sqlite", map[string]any{
-		"schemas":       "public",
-		"shared_schema": "main",
-		"output":        "models",
-		"pkgname":       "models",
-		"no_factory":    false,
-		"concurrency":   10,
-	})
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "sqlite")
 	if err != nil {
 		return err
-	}
-
-	if driverConfig.DSN == "" {
-		return errors.New("database dsn is not set")
 	}
 
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:            &config,
-		Dialect:           "sqlite",
-		DestinationFolder: driverConfig.Output,
-		ModelsPkgName:     driverConfig.Pkgname,
+		Config:  &config,
+		Dialect: "sqlite",
 		Templates: gen.Templates{
 			Models: []fs.FS{gen.SQLiteModelTemplates},
 		},

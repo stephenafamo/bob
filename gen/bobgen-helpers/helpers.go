@@ -18,47 +18,48 @@ import (
 
 const DefaultConfigPath = "./bobgen.yaml"
 
-func GetConfig[T any](configPath, driverConfigKey string, driverDefaults map[string]any) (gen.Config, T, error) {
+func GetConfig[T any](configPath, driverConfigKey string) (gen.Config, T, error) {
 	var config gen.Config
 	var driverConfig T
 
 	k := koanf.New(".")
 
 	// Add some defaults
-	if err := k.Load(confmap.Provider(map[string]any{
+	err := k.Load(confmap.Provider(map[string]any{
 		"wipe":              true,
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
-		driverConfigKey:     (any)(driverDefaults),
-	}, "."), nil); err != nil {
+	}, "."), nil)
+	if err != nil {
 		return config, driverConfig, err
 	}
 
 	if configPath != "" {
 		// Load YAML config and merge into the previously loaded config (because we can).
 		err := k.Load(file.Provider(configPath), yaml.Parser())
-		if err != nil {
-			if !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
-				return config, driverConfig, err
-			}
+		if err != nil && !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
+			return config, driverConfig, err
 		}
 	}
 
 	// Load env variables for ONLY driver config
 	envKey := strings.ToUpper(driverConfigKey) + "_"
-	if err := k.Load(env.Provider(envKey, ".", func(s string) string {
+	err = k.Load(env.Provider(envKey, ".", func(s string) string {
 		// replace only the first underscore to make it a flat map[string]any
 		return strings.Replace(strings.ToLower(s), "_", ".", 1)
-	}), nil); err != nil {
+	}), nil)
+	if err != nil {
 		return config, driverConfig, err
 	}
 
-	if err := k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
+	err = k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"})
+	if err != nil {
 		return config, driverConfig, err
 	}
 
-	if err := k.UnmarshalWithConf(driverConfigKey, &driverConfig, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
+	err = k.UnmarshalWithConf(driverConfigKey, &driverConfig, koanf.UnmarshalConf{Tag: "yaml"})
+	if err != nil {
 		return config, driverConfig, err
 	}
 

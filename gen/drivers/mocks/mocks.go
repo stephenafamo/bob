@@ -7,7 +7,18 @@ import (
 )
 
 // MockDriver is a mock implementation of the bdb driver Interface
-type MockDriver struct{}
+type MockDriver struct {
+	Output  string
+	PkgName string
+}
+
+func (d *MockDriver) Destination() string {
+	return d.Output
+}
+
+func (d *MockDriver) PackageName() string {
+	return d.PkgName
+}
 
 func (m *MockDriver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{BulkInsert: true}

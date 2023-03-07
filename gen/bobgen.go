@@ -37,11 +37,8 @@ type Templates struct {
 type State[T any] struct {
 	Config              *Config
 	Dialect             string
+	Templates           Templates
 	CustomTemplateFuncs template.FuncMap
-
-	DestinationFolder string
-	ModelsPkgName     string
-	Templates         Templates
 
 	tables    []drivers.Table
 	enums     []drivers.Enum
@@ -73,22 +70,22 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 	s.processTypeReplacements()
 	s.processRelationshipConfig()
 
-	modPkg, err := modelsPackage(s.DestinationFolder)
+	modPkg, err := modelsPackage(driver.Destination())
 	if err != nil {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
 
 	outputs := []*output{
 		{
-			OutFolder: s.DestinationFolder,
-			PkgName:   s.ModelsPkgName,
+			OutFolder: driver.Destination(),
+			PkgName:   driver.PackageName(),
 			Templates: append(s.Templates.Models, ModelTemplates),
 		},
 	}
 
 	if !s.Config.NoFactory {
 		outputs = append(outputs, &output{
-			OutFolder: path.Join(s.DestinationFolder, "factory"),
+			OutFolder: path.Join(driver.Destination(), "factory"),
 			PkgName:   "factory",
 			Templates: append(s.Templates.Factory, FactoryTemplates),
 		})

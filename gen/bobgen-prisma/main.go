@@ -164,9 +164,7 @@ func generate(root root) error {
 		configPath = helpers.DefaultConfigPath
 	}
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configPath, "prisma", map[string]any{
-		"pkgname": "prisma",
-	})
+	config, driverConfig, err := helpers.GetConfig[driver.Config](configPath, "prisma")
 	if err != nil {
 		return err
 	}
@@ -178,6 +176,7 @@ func generate(root root) error {
 
 	d := driver.New(
 		driverConfig,
+		output,
 		driver.Provider{
 			DriverName:      driverName,
 			DriverPkg:       driverPkg,
@@ -188,10 +187,8 @@ func generate(root root) error {
 	)
 
 	state := &gen.State[driver.Extra]{
-		Config:            &config,
-		Dialect:           dialect,
-		DestinationFolder: output,
-		ModelsPkgName:     driverConfig.Pkgname,
+		Config:  &config,
+		Dialect: dialect,
 		Templates: gen.Templates{
 			Models: modelTemplates,
 		},
