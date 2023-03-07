@@ -91,5 +91,6 @@ func (s *dupKeyUpdater) Set(alias string, cols ...string) *dupKeyUpdater {
 		newCols[i] = dialect.Set{Col: c, Val: expr.Quote(alias, c)}
 	}
 
+	s.sets = append(s.sets, newCols...)
 	return s
 }

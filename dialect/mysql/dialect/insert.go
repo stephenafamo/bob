@@ -106,7 +106,7 @@ func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 
 	// Either this or the values will get expressed
 	updateArgs, err := bob.ExpressSlice(w, d, start+len(args), i.DuplicateKeyUpdate,
-		"\nON DUPLICATE KEY UPDATE\n", "\n", "")
+		"\nON DUPLICATE KEY UPDATE\n", ",\n", "")
 	if err != nil {
 		return nil, err
 	}

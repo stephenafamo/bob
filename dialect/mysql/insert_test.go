@@ -63,6 +63,7 @@ func TestInsert(t *testing.T) {
 				im.Values(mysql.Arg(9, "Sentry Distribution")),
 				im.As("new"),
 				im.OnDuplicateKeyUpdate().
+					Set("new", "did").
 					SetCol("dbname", mysql.Concat(
 						"new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
 					)),
@@ -71,6 +72,7 @@ func TestInsert(t *testing.T) {
 				VALUES (?, ?), (?, ?)
 				AS new
 				ON DUPLICATE KEY UPDATE
+				` + " `did` = `new`.`did`," + `
 				` + "`dbname`" + ` = (new.dname || ' (formerly ' || d.dname || ')')`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
