@@ -62,7 +62,7 @@ func run(c *cli.Context) error {
 	}
 
 	cmdState := &gen.State[any]{
-		Config:  &config,
+		Config:  config,
 		Dialect: driverConfig.Dialect,
 		Templates: gen.Templates{
 			Models: modelTemplates,

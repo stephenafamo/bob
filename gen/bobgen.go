@@ -35,7 +35,7 @@ type Templates struct {
 
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
-	Config              *Config
+	Config              Config
 	Dialect             string
 	Templates           Templates
 	CustomTemplateFuncs template.FuncMap

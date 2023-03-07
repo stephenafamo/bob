@@ -54,7 +54,7 @@ func run(c *cli.Context) error {
 	d := driver.New(driverConfig)
 
 	cmdState := &gen.State[any]{
-		Config:  &config,
+		Config:  config,
 		Dialect: "mysql",
 		Templates: gen.Templates{
 			Models: []fs.FS{gen.MySQLModelTemplates},

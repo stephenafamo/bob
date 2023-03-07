@@ -187,7 +187,7 @@ func generate(root root) error {
 	)
 
 	state := &gen.State[driver.Extra]{
-		Config:  &config,
+		Config:  config,
 		Dialect: dialect,
 		Templates: gen.Templates{
 			Models: modelTemplates,

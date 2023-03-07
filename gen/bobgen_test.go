@@ -81,7 +81,7 @@ func testNew(t *testing.T, aliases Aliases) {
 	}()
 
 	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
-	config := &Config{
+	config := Config{
 		NoTests:   true,
 		TagIgnore: []string{"pass"},
 		Aliases:   aliases,
@@ -226,7 +226,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 
 func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State[any])
-	s.Config = &Config{}
+	s.Config = Config{}
 	s.tables = []drivers.Table{
 		{
 			Columns: []drivers.Column{
