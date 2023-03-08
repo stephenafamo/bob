@@ -16,14 +16,14 @@ type {{$tAlias.UpSingular}} struct {
 		// {{ . }}
 	{{- end}}{{end -}}
 	{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-	{{$colAlias}} {{$colTyp}} `{{generateIgnoreTags $.Tags}}db:"{{dbTag $table $column}}" json:"-" toml:"-" yaml:"-"`
+	{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateIgnoreTags $.Tags | trim}}`
 	{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
-		{{$colAlias}} {{$colTyp}} `{{generateTags $.Tags $tagName}}db:"{{dbTag $table $column}}" json:"{{$tagName}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$tagName}}" yaml:"{{$tagName}}{{if $column.Nullable}},omitempty{{end}}"`
+		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateTags $.Tags $tagName | trim}}`
 	{{- end -}}
 	{{- end -}}
 	{{- if .Table.Relationships}}
 
-	R {{$tAlias.DownSingular}}R `{{generateTags $.Tags $.RelationTag}}db:"{{$.RelationTag}}" json:"{{$.RelationTag}}" toml:"{{$.RelationTag}}" yaml:"{{$.RelationTag}}"`
+	R {{$tAlias.DownSingular}}R `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
 	{{end -}}
 }
 
