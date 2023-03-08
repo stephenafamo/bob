@@ -41,4 +41,3 @@ sidebar_position: 1
 * **GORM** does not provide any testing helpers.
 
 * **Bob** also generates factories (inspired by Ruby's FactoryBot) to make it very easy to test your models.
-

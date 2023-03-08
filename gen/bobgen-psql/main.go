@@ -43,9 +43,7 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	configFile := c.String("config")
-
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "psql")
+	config, driverConfig, err := helpers.GetConfigFromFile[driver.Config](c.String("config"), "psql")
 	if err != nil {
 		return err
 	}

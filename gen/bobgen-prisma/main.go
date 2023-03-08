@@ -164,7 +164,7 @@ func generate(root root) error {
 		configPath = helpers.DefaultConfigPath
 	}
 
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configPath, "prisma")
+	config, driverConfig, err := helpers.GetConfigFromPath[driver.Config](configPath, "prisma")
 	if err != nil {
 		return err
 	}

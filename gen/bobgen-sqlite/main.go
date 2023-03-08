@@ -44,9 +44,7 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	configFile := c.String("config")
-
-	config, driverConfig, err := helpers.GetConfig[driver.Config](configFile, "sqlite")
+	config, driverConfig, err := helpers.GetConfigFromFile[driver.Config](c.String("config"), "sqlite")
 	if err != nil {
 		return err
 	}

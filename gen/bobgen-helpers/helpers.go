@@ -57,7 +57,24 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 	return outputs
 }
 
-func GetConfig[DriverConfig any](configPath, driverConfigKey string) (gen.Config, DriverConfig, error) {
+func GetConfigFromFile[DriverConfig any](configPath, driverConfigKey string) (gen.Config, DriverConfig, error) {
+	var provider koanf.Provider
+	var config gen.Config
+	var driverConfig DriverConfig
+
+	_, err := os.Stat(configPath)
+	if err == nil {
+		// set the provider if provided
+		provider = file.Provider(configPath)
+	}
+	if err != nil && !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
+		return config, driverConfig, err
+	}
+
+	return GetConfigFromProvider[DriverConfig](provider, driverConfigKey)
+}
+
+func GetConfigFromProvider[DriverConfig any](provider koanf.Provider, driverConfigKey string) (gen.Config, DriverConfig, error) {
 	var config gen.Config
 	var driverConfig DriverConfig
 
@@ -74,10 +91,10 @@ func GetConfig[DriverConfig any](configPath, driverConfigKey string) (gen.Config
 		return config, driverConfig, err
 	}
 
-	if configPath != "" {
+	if provider != nil {
 		// Load YAML config and merge into the previously loaded config (because we can).
-		err := k.Load(file.Provider(configPath), yaml.Parser())
-		if err != nil && !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
+		err := k.Load(provider, yaml.Parser())
+		if err != nil {
 			return config, driverConfig, err
 		}
 	}
