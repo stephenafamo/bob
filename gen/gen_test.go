@@ -7,9 +7,7 @@ import (
 )
 
 func TestProcessTypeReplacements(t *testing.T) {
-	s := new(State[any])
-	s.Config = Config{}
-	s.tables = []drivers.Table{
+	tables := []drivers.Table{
 		{
 			Columns: []drivers.Column{
 				{
@@ -55,7 +53,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 	}
 
-	s.Config.Replacements = []Replace{
+	replacements := []Replace{
 		{
 			Match: drivers.Column{
 				DBType: "serial",
@@ -105,40 +103,40 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 	}
 
-	s.processTypeReplacements()
+	processTypeReplacements(replacements, tables)
 
-	if typ := s.tables[0].Columns[0].Type; typ != "excellent.Type" {
+	if typ := tables[0].Columns[0].Type; typ != "excellent.Type" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[0].Columns[0].Imports[0]; i != `"rock.com/excellent"` {
+	if i := tables[0].Columns[0].Imports[0]; i != `"rock.com/excellent"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.tables[0].Columns[1].Type; typ != "int" {
+	if typ := tables[0].Columns[1].Type; typ != "int" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[0].Columns[1].Imports[0]; i != `"context"` {
+	if i := tables[0].Columns[1].Imports[0]; i != `"context"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.tables[0].Columns[2].Type; typ != "contextInt" {
+	if typ := tables[0].Columns[2].Type; typ != "contextInt" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[0].Columns[2].Imports[0]; i != `"contextual"` {
+	if i := tables[0].Columns[2].Imports[0]; i != `"contextual"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.tables[0].Columns[3].Type; typ != "big.Int" {
+	if typ := tables[0].Columns[3].Type; typ != "big.Int" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[0].Columns[3].Imports[0]; i != `"math/big"` {
+	if i := tables[0].Columns[3].Imports[0]; i != `"math/big"` {
 		t.Error("imports were not adjusted")
 	}
 
-	if typ := s.tables[1].Columns[0].Type; typ != "excellent.NamedType" {
+	if typ := tables[1].Columns[0].Type; typ != "excellent.NamedType" {
 		t.Error("type was wrong:", typ)
 	}
-	if i := s.tables[1].Columns[0].Imports[0]; i != `"rock.com/excellent-name"` {
+	if i := tables[1].Columns[0].Imports[0]; i != `"rock.com/excellent-name"` {
 		t.Error("imports were not adjusted")
 	}
 }
