@@ -51,8 +51,6 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
-
 	var modelTemplates []fs.FS
 	switch driverConfig.Dialect {
 	case "mysql":
@@ -61,11 +59,15 @@ func run(c *cli.Context) error {
 		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	}
 
+	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
+	outputs := helpers.DefaultOutputs(
+		d.Destination(), d.PackageName(), config.NoFactory,
+		&helpers.Templates{Models: modelTemplates},
+	)
+
 	cmdState := &gen.State[any]{
-		Config: config,
-		Templates: gen.Templates{
-			Models: modelTemplates,
-		},
+		Config:  config,
+		Outputs: outputs,
 	}
 
 	return cmdState.Run(c.Context, d)

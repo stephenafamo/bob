@@ -187,11 +187,14 @@ func generate(root root) error {
 		root.DMMF.Datamodel,
 	)
 
+	outputs := helpers.DefaultOutputs(
+		d.Destination(), d.PackageName(), config.NoFactory,
+		&helpers.Templates{Models: modelTemplates},
+	)
+
 	state := &gen.State[driver.Extra]{
-		Config: config,
-		Templates: gen.Templates{
-			Models: modelTemplates,
-		},
+		Config:  config,
+		Outputs: outputs,
 	}
 
 	if err := state.Run(context.Background(), d); err != nil {

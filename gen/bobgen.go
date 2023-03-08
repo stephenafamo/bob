@@ -28,15 +28,10 @@ var (
 	rgxValidTableColumn = regexp.MustCompile(`^[\w]+\.[\w]+$|^[\w]+$`)
 )
 
-type Templates struct {
-	Models  []fs.FS
-	Factory []fs.FS
-}
-
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
 	Config              Config
-	Templates           Templates
+	Outputs             []*Output
 	CustomTemplateFuncs template.FuncMap
 
 	tables    []drivers.Table
@@ -74,29 +69,13 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
 
-	outputs := []*output{
-		{
-			OutFolder: driver.Destination(),
-			PkgName:   driver.PackageName(),
-			Templates: append(s.Templates.Models, ModelTemplates),
-		},
-	}
-
-	if !s.Config.NoFactory {
-		outputs = append(outputs, &output{
-			OutFolder: path.Join(driver.Destination(), "factory"),
-			PkgName:   "factory",
-			Templates: append(s.Templates.Factory, FactoryTemplates),
-		})
-	}
-
 	err = s.initTags(s.Config.Tags)
 	if err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
 	s.initAliases(&s.Config.Aliases)
-	for _, o := range outputs {
+	for _, o := range s.Outputs {
 		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
@@ -179,7 +158,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (o *output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
+func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
@@ -447,7 +426,7 @@ func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
 }
 
 // initOutFolders creates the folders that will hold the generated output.
-func (o *output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
+func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 	if wipe {
 		if err := os.RemoveAll(o.OutFolder); err != nil {
 			return err

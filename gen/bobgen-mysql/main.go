@@ -52,12 +52,14 @@ func run(c *cli.Context) error {
 	}
 
 	d := driver.New(driverConfig)
+	outputs := helpers.DefaultOutputs(
+		d.Destination(), d.PackageName(), config.NoFactory,
+		&helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
+	)
 
 	cmdState := &gen.State[any]{
-		Config: config,
-		Templates: gen.Templates{
-			Models: []fs.FS{gen.MySQLModelTemplates},
-		},
+		Config:  config,
+		Outputs: outputs,
 	}
 
 	return cmdState.Run(c.Context, d)

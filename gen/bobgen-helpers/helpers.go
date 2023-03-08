@@ -3,7 +3,9 @@ package helpers
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path"
 	"runtime/debug"
 	"strings"
 
@@ -18,9 +20,46 @@ import (
 
 const DefaultConfigPath = "./bobgen.yaml"
 
-func GetConfig[T any](configPath, driverConfigKey string) (gen.Config, T, error) {
+func Version() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		return info.Main.Version
+	}
+
+	return ""
+}
+
+type Templates struct {
+	Models  []fs.FS
+	Factory []fs.FS
+}
+
+func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Templates) []*gen.Output {
+	if templates == nil {
+		templates = &Templates{}
+	}
+
+	outputs := []*gen.Output{
+		{
+			OutFolder: destination,
+			PkgName:   pkgname,
+			Templates: append(templates.Models, gen.ModelTemplates),
+		},
+	}
+
+	if !noFactory {
+		outputs = append(outputs, &gen.Output{
+			OutFolder: path.Join(destination, "factory"),
+			PkgName:   "factory",
+			Templates: append(templates.Factory, gen.FactoryTemplates),
+		})
+	}
+
+	return outputs
+}
+
+func GetConfig[DriverConfig any](configPath, driverConfigKey string) (gen.Config, DriverConfig, error) {
 	var config gen.Config
-	var driverConfig T
+	var driverConfig DriverConfig
 
 	k := koanf.New(".")
 
@@ -124,12 +163,4 @@ func flipRelationship(r orm.Relationship) orm.Relationship {
 	}
 
 	return flipped
-}
-
-func Version() string {
-	if info, ok := debug.ReadBuildInfo(); ok {
-		return info.Main.Version
-	}
-
-	return ""
 }

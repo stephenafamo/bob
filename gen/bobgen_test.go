@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -88,8 +89,28 @@ func testNew(t *testing.T, aliases Aliases) {
 		Generator: "BobGen",
 	}
 
+	d := &mocks.MockDriver{
+		DialectName: "psql",
+		Output:      filepath.Join(out, "models"),
+		PkgName:     "models",
+	}
+
+	outputs := []*Output{
+		{
+			PkgName:   "models",
+			OutFolder: filepath.Join(out, "models"),
+			Templates: []fs.FS{ModelTemplates},
+		},
+		{
+			PkgName:   "factory",
+			OutFolder: filepath.Join(out, "factory"),
+			Templates: []fs.FS{FactoryTemplates},
+		},
+	}
+
 	state := &State[any]{
-		Config: config,
+		Config:  config,
+		Outputs: outputs,
 	}
 
 	buf := &bytes.Buffer{}
@@ -120,11 +141,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		fmt.Println()
 	}
 
-	if err = state.Run(context.Background(), &mocks.MockDriver{
-		DialectName: "psql",
-		Output:      filepath.Join(out, "models"),
-		PkgName:     "models",
-	}); err != nil {
+	if err = state.Run(context.Background(), d); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 
