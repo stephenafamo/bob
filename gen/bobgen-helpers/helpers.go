@@ -33,13 +33,13 @@ type Templates struct {
 	Factory []fs.FS
 }
 
-func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Templates) map[string]*gen.Output {
+func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Templates) []*gen.Output {
 	if templates == nil {
 		templates = &Templates{}
 	}
 
-	outputs := map[string]*gen.Output{
-		"models": {
+	outputs := []*gen.Output{
+		{
 			OutFolder: destination,
 			PkgName:   pkgname,
 			Templates: append(templates.Models, gen.ModelTemplates),
@@ -47,11 +47,11 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 	}
 
 	if !noFactory {
-		outputs["factory"] = &gen.Output{
+		outputs = append(outputs, &gen.Output{
 			OutFolder: path.Join(destination, "factory"),
 			PkgName:   "factory",
 			Templates: append(templates.Factory, gen.FactoryTemplates),
-		}
+		})
 	}
 
 	return outputs
