@@ -40,6 +40,7 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 
 	outputs := []*gen.Output{
 		{
+			Key:       "models",
 			OutFolder: destination,
 			PkgName:   pkgname,
 			Templates: append(templates.Models, gen.ModelTemplates),
@@ -48,6 +49,7 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 
 	if !noFactory {
 		outputs = append(outputs, &gen.Output{
+			Key:       "factory",
 			OutFolder: path.Join(destination, "factory"),
 			PkgName:   "factory",
 			Templates: append(templates.Factory, gen.FactoryTemplates),

@@ -73,7 +73,13 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
+	knownKeys := make(map[string]struct{})
 	for _, o := range s.Outputs {
+		if _, ok := knownKeys[o.Key]; ok {
+			return fmt.Errorf("Duplicate output key: %q", o.Key)
+		}
+		knownKeys[o.Key] = struct{}{}
+
 		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)

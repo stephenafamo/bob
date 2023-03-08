@@ -51,6 +51,10 @@ var (
 )
 
 type Output struct {
+	// The key has to be unique in a gen.State
+	// it also makes it possible to target modifing a specific output
+	Key string
+
 	PkgName   string
 	OutFolder string
 	Templates []fs.FS
