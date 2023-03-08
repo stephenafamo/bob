@@ -50,22 +50,21 @@ user, err := models.Users(
 ### Jet: Retrieve with relations
 
 ```go
-	var dest struct {
-		model.Users
-		Videos []model.Videos
-	}
-	err = postgres.
-		SELECT(
-			table.Users.AllColumns,
-			table.Videos.AllColumns,
-		).
-		FROM(
-			table.Users.
-				INNER_JOIN(table.Videos, table.Users.ID.EQ(table.Videos.UserID)),
-		).
-		WHERE(table.Users.ID.EQ(postgres.Int(1))).
-		QueryContext(ctx, db, &dest)
-
+var dest struct {
+    model.Users
+    Videos []model.Videos
+}
+err = postgres.
+    SELECT(
+        table.Users.AllColumns,
+        table.Videos.AllColumns,
+    ).
+    FROM(
+        table.Users.
+            INNER_JOIN(table.Videos, table.Users.ID.EQ(table.Videos.UserID)),
+    ).
+    WHERE(table.Users.ID.EQ(postgres.Int(1))).
+    QueryContext(ctx, db, &dest)
 ```
 
 ## Factory
