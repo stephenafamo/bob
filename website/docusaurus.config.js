@@ -132,6 +132,10 @@ const config = {
                 label: 'SQLBoiler',
                 to: 'vs/sqlboiler',
               },
+              {
+                label: 'Jet',
+                to: 'vs/jet',
+              },
             ],
           },
           {
