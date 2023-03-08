@@ -53,7 +53,7 @@ func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
 	}
 
 	if d.overwriteGolden {
-		if err = os.WriteFile(d.goldenFile, got, 0o664); err != nil {
+		if err = os.WriteFile(d.goldenFile, got, 0o600); err != nil {
 			t.Fatal(err)
 		}
 		return
