@@ -4,15 +4,17 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
-	"sort"
+	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stephenafamo/bob/gen"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	testutils "github.com/stephenafamo/bob/test_utils"
 	_ "modernc.org/sqlite"
 )
 
@@ -45,7 +47,7 @@ func TestAssemble(t *testing.T) {
 
 	config := Config{
 		DSN:    "./test.db",
-		Attach: map[string]string{"1": "./test1.db"},
+		Attach: map[string]string{"one": "./test1.db"},
 	}
 
 	cleanup(t, config)
@@ -85,34 +87,34 @@ func TestAssemble(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &driver{config: tt.config}
-			info, err := p.Assemble(context.Background())
+			out, err := os.MkdirTemp("", "bobgen_sqlite_")
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create tempdir: %s", err)
 			}
 
-			sort.Slice(info.Tables, func(i, j int) bool {
-				return info.Tables[i].Key < info.Tables[j].Key
-			})
-
-			got, err := json.MarshalIndent(info, "", "\t")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if *flagOverwriteGolden {
-				if err = os.WriteFile(tt.goldenJson, got, 0o664); err != nil {
-					t.Fatal(err)
+			// Defer cleanup of the tmp folder
+			defer func() {
+				if t.Failed() {
+					t.Log("template test output:", out)
+					return
 				}
-				return
-			}
+				os.RemoveAll(out)
+			}()
 
-			want, err := os.ReadFile(tt.goldenJson)
+			modelsFolder := filepath.Join(out, "models")
+			err = os.Mkdir(modelsFolder, os.ModePerm)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create models folder: %s", err)
 			}
 
-			require.JSONEq(t, string(want), string(got))
+			tt.config.Output = modelsFolder
+			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
+				Root:            out,
+				Driver:          New(tt.config),
+				GoldenFile:      tt.goldenJson,
+				OverwriteGolden: *flagOverwriteGolden,
+				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+			})
 		})
 	}
 }

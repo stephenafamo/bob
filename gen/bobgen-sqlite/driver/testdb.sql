@@ -162,12 +162,12 @@ create table type_monsters (
 
 -- all table defintions will not cause sqlite autoincrement primary key without rowid tables to be generated
 create table autoinctest (
-	id INTEGER PRIMARY KEY
+	id INTEGER PRIMARY KEY NOT NULL
 );
 
 -- additional fields should not be marked as auto generated, when the AUTOINCREMENT keyword is present
 create table autoinckeywordtest (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 
 	user_id int not null,
 	sponsor_id int unique,
@@ -185,7 +185,7 @@ from users u
 inner join videos v on v.user_id = u.id;
 
 CREATE TABLE has_generated_columns (
-   a INTEGER PRIMARY KEY,
+   a INTEGER PRIMARY KEY NOT NULL,
    b INT,
    c TEXT,
    d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,
@@ -195,15 +195,15 @@ CREATE TABLE has_generated_columns (
 
 
 -- For the attached database
-create table "1".users (
+create table one.users (
 	id int primary key not null
 );
 
-create table "1".sponsors (
+create table one.sponsors (
 	id int primary key not null
 );
 
-create table "1".videos (
+create table one.videos (
 	id int primary key not null,
 
 	user_id int not null,
@@ -213,11 +213,11 @@ create table "1".videos (
 	foreign key (sponsor_id) references sponsors (id)
 );
 
-create table "1".tags (
+create table one.tags (
 	id int primary key not null
 );
 
-create table "1".video_tags (
+create table one.video_tags (
 	video_id int not null,
 	tag_id   int not null,
 
@@ -228,23 +228,23 @@ create table "1".video_tags (
 
 
 -- all table defintions will not cause sqlite autoincrement primary key without rowid tables to be generated
-create table "1".autoinctest (
-	id INTEGER PRIMARY KEY
+create table one.autoinctest (
+	id INTEGER PRIMARY KEY NOT NULL
 );
 
 -- additional fields should not be marked as auto generated, when the AUTOINCREMENT keyword is present
-create table "1".autoinckeywordtest (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+create table one.autoinckeywordtest (
+	id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	b INTEGER
 );
 
-create view "1".user_videos as
+create view one.user_videos as
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u
 inner join videos v on v.user_id = u.id;
 
-create table "1".as_generated_columns (
-   a INTEGER PRIMARY KEY,
+create table one.as_generated_columns (
+   a INTEGER PRIMARY KEY NOT NULL,
    b INT,
    c TEXT,
    d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,

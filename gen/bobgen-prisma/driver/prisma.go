@@ -41,10 +41,11 @@ func New(config Config, dialect, destination string, provider Provider, datamode
 		config.Pkgname = "prisma"
 	}
 	return &driver{
-		dialect:   dialect,
-		config:    config,
-		provider:  provider,
-		datamodel: datamodel,
+		dialect:     dialect,
+		destination: destination,
+		config:      config,
+		provider:    provider,
+		datamodel:   datamodel,
 	}
 }
 
@@ -73,7 +74,7 @@ func (d *driver) PackageName() string {
 
 func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{
-		BulkInsert: d.provider.DriverName != "mysql",
+		BulkInsert: d.dialect != "mysql",
 	}
 }
 

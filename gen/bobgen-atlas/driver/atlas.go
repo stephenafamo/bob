@@ -28,7 +28,7 @@ type (
 		// Where the hcl files are
 		Dir string
 		// The name of this schema will not be included in the generated models
-		// a context value can then be used ot set the schema at runtime
+		// a context value can then be used to set the schema at runtime
 		// useful for multi-tenant setups
 		SharedSchema string `yaml:"shared_schema"`
 		// List of tables that will be included. Others are ignored
@@ -507,10 +507,7 @@ func (d *driver) getKeys(table *schema.Table, colFilter drivers.ColumnFilter) (*
 		}
 
 		if !shouldSkip {
-			keyName := fk.Symbol
-			if keyName == "" {
-				keyName = fmt.Sprintf("fk_%s_%d", table.Name, i)
-			}
+			keyName := fmt.Sprintf("fk_%s_%d", table.Name, i)
 
 			fks = append(fks, drivers.ForeignKey{
 				Constraint: drivers.Constraint{

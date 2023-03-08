@@ -1,16 +1,19 @@
 package driver
 
 import (
-	"context"
 	_ "embed"
 	"encoding/json"
 	"flag"
+	"fmt"
+	"io/fs"
 	"os"
-	"sort"
+	"path/filepath"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/stretchr/testify/require"
+	"github.com/stephenafamo/bob/gen"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 //go:embed test_data_model.json
@@ -26,49 +29,79 @@ func TestAssemble(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		config     Config
-		datamodel  Datamodel
-		goldenJson string
+		name           string
+		config         Config
+		provider       Provider
+		datamodel      Datamodel
+		goldenJson     string
+		modelTemplates fs.FS
 	}{
 		{
-			name:       "default",
+			name:       "psql",
 			config:     Config{},
 			datamodel:  dataModel,
-			goldenJson: "prisma.golden.json",
+			goldenJson: "prisma.psql_golden.json",
+			provider: Provider{
+				DriverName: "pgx",
+				DriverPkg:  "github.com/jackc/pgx/v5/stdlib",
+			},
+		},
+		{
+			name:       "mysql",
+			config:     Config{},
+			datamodel:  dataModel,
+			goldenJson: "prisma.mysql_golden.json",
+			provider: Provider{
+				DriverName: "mysql",
+				DriverPkg:  "github.com/go-sql-driver/mysql",
+			},
+			modelTemplates: gen.MySQLModelTemplates,
+		},
+		{
+			name:       "sqlite",
+			config:     Config{},
+			datamodel:  dataModel,
+			goldenJson: "prisma.sqlite_golden.json",
+			provider: Provider{
+				DriverName: "sqlite",
+				DriverPkg:  "modernc.org/sqlite",
+			},
+			modelTemplates: gen.SQLiteModelTemplates,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &driver{config: tt.config, datamodel: tt.datamodel}
-			info, err := p.Assemble(context.Background())
+			out, err := os.MkdirTemp("", fmt.Sprintf("bobgen_prisma_%s_", tt.name))
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create tempdir: %s", err)
 			}
 
-			sort.Slice(info.Tables, func(i, j int) bool {
-				return info.Tables[i].Key < info.Tables[j].Key
-			})
-
-			got, err := json.MarshalIndent(info, "", "\t")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if *flagOverwriteGolden {
-				if err = os.WriteFile(tt.goldenJson, got, 0o664); err != nil {
-					t.Fatal(err)
+			// Defer cleanup of the tmp folder
+			defer func() {
+				if t.Failed() {
+					t.Log("template test output:", out)
+					return
 				}
-				return
-			}
+				os.RemoveAll(out)
+			}()
 
-			want, err := os.ReadFile(tt.goldenJson)
+			modelsFolder := filepath.Join(out, "models")
+			err = os.Mkdir(modelsFolder, os.ModePerm)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create models folder: %s", err)
 			}
 
-			require.JSONEq(t, string(want), string(got))
+			d := New(tt.config, tt.name, modelsFolder, tt.provider, tt.datamodel)
+			testutils.TestDriver(t, testutils.DriverTestConfig[Extra]{
+				Root:            out,
+				Driver:          d,
+				GoldenFile:      tt.goldenJson,
+				OverwriteGolden: *flagOverwriteGolden,
+				Templates: &helpers.Templates{
+					Models: append([]fs.FS{gen.PrismaModelTemplates}, tt.modelTemplates),
+				},
+			})
 		})
 	}
 }

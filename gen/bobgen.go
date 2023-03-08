@@ -167,6 +167,9 @@ func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemp
 	}
 
 	for _, tempFS := range o.Templates {
+		if tempFS == nil {
+			continue
+		}
 		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
 				return fmt.Errorf("in walk err: %w", err)
@@ -564,7 +567,7 @@ func findGoMod(path string) (string, error) {
 
 	err := os.MkdirAll(path, 0o755)
 	if err != nil {
-		return "", fmt.Errorf("could not create destination folder")
+		return "", fmt.Errorf("could not create destination folder %q: %w", path, err)
 	}
 
 	c := exec.Command("go", "env", "GOMOD")

@@ -1,8 +1,8 @@
 {
 	"tables": [
 		{
-			"key": "public.sponsors",
-			"schema": "public",
+			"key": "sponsors",
+			"schema": "",
 			"name": "sponsors",
 			"columns": [
 				{
@@ -33,8 +33,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.sponsors",
-							"To": "public.videos",
+							"From": "sponsors",
+							"To": "videos",
 							"Columns": null,
 							"FromColumns": [
 								"id"
@@ -55,8 +55,8 @@
 			]
 		},
 		{
-			"key": "public.tags",
-			"schema": "public",
+			"key": "tags",
+			"schema": "",
 			"name": "tags",
 			"columns": [
 				{
@@ -87,8 +87,8 @@
 					"ByJoinTable": true,
 					"Sides": [
 						{
-							"From": "public.tags",
-							"To": "public.video_tags",
+							"From": "tags",
+							"To": "video_tags",
 							"Columns": null,
 							"FromColumns": [
 								"id"
@@ -103,8 +103,8 @@
 							"KeyNullable": false
 						},
 						{
-							"From": "public.video_tags",
-							"To": "public.videos",
+							"From": "video_tags",
+							"To": "videos",
 							"Columns": null,
 							"FromColumns": [
 								"video_id"
@@ -125,8 +125,8 @@
 			]
 		},
 		{
-			"key": "public.type_monsters",
-			"schema": "public",
+			"key": "type_monsters",
+			"schema": "",
 			"name": "type_monsters",
 			"columns": [
 				{
@@ -150,7 +150,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "PublicWorkday",
+					"type": "Workday",
 					"imports": null
 				},
 				{
@@ -162,7 +162,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "PublicWorkday",
+					"type": "Workday",
 					"imports": null
 				},
 				{
@@ -2114,7 +2114,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[PublicWorkday]",
+					"type": "parray.EnumArray[Workday]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\""
 					]
@@ -2128,7 +2128,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[PublicWorkday]",
+					"type": "parray.EnumArray[Workday]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\""
 					]
@@ -2224,8 +2224,8 @@
 			"relationship": null
 		},
 		{
-			"key": "public.type_monsters_mv",
-			"schema": "public",
+			"key": "type_monsters_mv",
+			"schema": "",
 			"name": "type_monsters_mv",
 			"columns": null,
 			"p_key": null,
@@ -2235,8 +2235,8 @@
 			"relationship": null
 		},
 		{
-			"key": "public.type_monsters_v",
-			"schema": "public",
+			"key": "type_monsters_v",
+			"schema": "",
 			"name": "type_monsters_v",
 			"columns": [
 				{
@@ -2260,7 +2260,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "PublicWorkday",
+					"type": "Workday",
 					"imports": null
 				},
 				{
@@ -2272,7 +2272,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "PublicWorkday",
+					"type": "Workday",
 					"imports": null
 				},
 				{
@@ -4224,7 +4224,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[PublicWorkday]",
+					"type": "parray.EnumArray[Workday]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\""
 					]
@@ -4238,7 +4238,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[PublicWorkday]",
+					"type": "parray.EnumArray[Workday]",
 					"imports": [
 						"\"github.com/stephenafamo/bob/types/parray\""
 					]
@@ -4329,8 +4329,8 @@
 			"relationship": null
 		},
 		{
-			"key": "public.user_videos",
-			"schema": "public",
+			"key": "user_videos",
+			"schema": "",
 			"name": "user_videos",
 			"columns": [
 				{
@@ -4377,8 +4377,8 @@
 			"relationship": null
 		},
 		{
-			"key": "public.users",
-			"schema": "public",
+			"key": "users",
+			"schema": "",
 			"name": "users",
 			"columns": [
 				{
@@ -4440,8 +4440,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.users",
-							"To": "public.videos",
+							"From": "users",
+							"To": "videos",
 							"Columns": null,
 							"FromColumns": [
 								"id"
@@ -4462,8 +4462,8 @@
 			]
 		},
 		{
-			"key": "public.video_tags",
-			"schema": "public",
+			"key": "video_tags",
+			"schema": "",
 			"name": "video_tags",
 			"columns": [
 				{
@@ -4504,7 +4504,7 @@
 					"columns": [
 						"tag_id"
 					],
-					"foreign_table": "public.tags",
+					"foreign_table": "tags",
 					"foreign_columns": [
 						"id"
 					]
@@ -4514,7 +4514,7 @@
 					"columns": [
 						"video_id"
 					],
-					"foreign_table": "public.videos",
+					"foreign_table": "videos",
 					"foreign_columns": [
 						"id"
 					]
@@ -4528,8 +4528,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.video_tags",
-							"To": "public.tags",
+							"From": "video_tags",
+							"To": "tags",
 							"Columns": null,
 							"FromColumns": [
 								"tag_id"
@@ -4552,8 +4552,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.video_tags",
-							"To": "public.videos",
+							"From": "video_tags",
+							"To": "videos",
 							"Columns": null,
 							"FromColumns": [
 								"video_id"
@@ -4574,8 +4574,8 @@
 			]
 		},
 		{
-			"key": "public.videos",
-			"schema": "public",
+			"key": "videos",
+			"schema": "",
 			"name": "videos",
 			"columns": [
 				{
@@ -4627,7 +4627,7 @@
 					"columns": [
 						"sponsor_id"
 					],
-					"foreign_table": "public.sponsors",
+					"foreign_table": "sponsors",
 					"foreign_columns": [
 						"id"
 					]
@@ -4637,7 +4637,7 @@
 					"columns": [
 						"user_id"
 					],
-					"foreign_table": "public.users",
+					"foreign_table": "users",
 					"foreign_columns": [
 						"id"
 					]
@@ -4658,8 +4658,8 @@
 					"ByJoinTable": true,
 					"Sides": [
 						{
-							"From": "public.videos",
-							"To": "public.video_tags",
+							"From": "videos",
+							"To": "video_tags",
 							"Columns": null,
 							"FromColumns": [
 								"id"
@@ -4674,8 +4674,8 @@
 							"KeyNullable": false
 						},
 						{
-							"From": "public.video_tags",
-							"To": "public.tags",
+							"From": "video_tags",
+							"To": "tags",
 							"Columns": null,
 							"FromColumns": [
 								"tag_id"
@@ -4698,8 +4698,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.videos",
-							"To": "public.sponsors",
+							"From": "videos",
+							"To": "sponsors",
 							"Columns": null,
 							"FromColumns": [
 								"sponsor_id"
@@ -4722,8 +4722,8 @@
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "public.videos",
-							"To": "public.users",
+							"From": "videos",
+							"To": "users",
 							"Columns": null,
 							"FromColumns": [
 								"user_id"
@@ -4746,7 +4746,7 @@
 	],
 	"enums": [
 		{
-			"Type": "PublicWorkday",
+			"Type": "Workday",
 			"Values": [
 				"monday",
 				"tuesday",

@@ -31,7 +31,7 @@ type Config struct {
 	// The database schemas to generate models for
 	Schemas pq.StringArray
 	// The name of this schema will not be included in the generated models
-	// a context value can then be used ot set the schema at runtime
+	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
 	SharedSchema string
 	// List of tables that will be included. Others are ignored

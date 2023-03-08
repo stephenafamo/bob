@@ -2213,8 +2213,8 @@
 	],
 	"extra_info": {
 		"Provider": {
-			"DriverName": "",
-			"DriverPkg": "",
+			"DriverName": "mysql",
+			"DriverPkg": "github.com/go-sql-driver/mysql",
 			"DriverSource": "",
 			"DriverENVSource": ""
 		}

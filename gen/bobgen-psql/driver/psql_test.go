@@ -1,20 +1,18 @@
 package driver
 
 import (
-	"context"
 	"database/sql"
 	_ "embed"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
-	"sort"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/stretchr/testify/require"
+	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
 //go:embed testdatabase.sql
@@ -26,7 +24,7 @@ var (
 	dsn = os.Getenv("PSQL_TEST_DSN")
 )
 
-func TestAssemble(t *testing.T) {
+func TestDriver(t *testing.T) {
 	if dsn == "" {
 		t.Fatalf("No environment variable PSQL_TEST_DSN")
 	}
@@ -82,34 +80,33 @@ func TestAssemble(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &driver{config: tt.config}
-			info, err := p.Assemble(context.Background())
+			out, err := os.MkdirTemp("", "bobgen_psql_")
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create tempdir: %s", err)
 			}
 
-			sort.Slice(info.Tables, func(i, j int) bool {
-				return info.Tables[i].Key < info.Tables[j].Key
-			})
-
-			got, err := json.MarshalIndent(info, "", "\t")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if *flagOverwriteGolden {
-				if err = os.WriteFile(tt.goldenJson, got, 0o664); err != nil {
-					t.Fatal(err)
+			// Defer cleanup of the tmp folder
+			defer func() {
+				if t.Failed() {
+					t.Log("template test output:", out)
+					return
 				}
-				return
-			}
+				os.RemoveAll(out)
+			}()
 
-			want, err := os.ReadFile(tt.goldenJson)
+			modelsFolder := filepath.Join(out, "models")
+			err = os.Mkdir(modelsFolder, os.ModePerm)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unable to create models folder: %s", err)
 			}
 
-			require.JSONEq(t, string(want), string(got))
+			tt.config.Output = modelsFolder
+			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
+				Root:            out,
+				Driver:          New(tt.config),
+				GoldenFile:      tt.goldenJson,
+				OverwriteGolden: *flagOverwriteGolden,
+			})
 		})
 	}
 }

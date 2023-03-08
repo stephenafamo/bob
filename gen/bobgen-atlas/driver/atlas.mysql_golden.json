@@ -1,856 +1,152 @@
 {
 	"tables": [
 		{
-			"key": "autoinckeywordtest",
+			"key": "multi_keys",
 			"schema": "",
-			"name": "autoinckeywordtest",
+			"name": "multi_keys",
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
+					"db_type": "",
+					"default": "",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
-					"autoincr": false,
+					"generated": false,
+					"autoincr": true,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "user_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "sponsor_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "something",
-					"db_type": "TEXT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "another",
-					"db_type": "TEXT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "one",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "two",
+					"db_type": "",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_autoinckeywordtest",
+				"name": "pk_multi_keys",
 				"columns": [
 					"id"
 				]
 			},
 			"foreign_keys": [
 				{
-					"name": "fk_autoinckeywordtest_0",
+					"name": "fk_multi_keys_0",
 					"columns": [
-						"user_id",
-						"sponsor_id"
+						"one",
+						"two"
 					],
-					"foreign_table": "videos",
+					"foreign_table": "type_monsters",
 					"foreign_columns": [
-						"user_id",
-						"sponsor_id"
+						"int_one",
+						"int_two"
 					]
 				}
 			],
 			"unique": [
 				{
-					"name": "sqlite_autoindex_autoinckeywordtest_2",
+					"name": "something",
 					"columns": [
 						"something",
 						"another"
 					]
 				},
 				{
-					"name": "sqlite_autoindex_autoinckeywordtest_1",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_autoinckeywordtest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "autoinckeywordtest",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				}
-			]
-		},
-		{
-			"key": "autoinctest",
-			"schema": "",
-			"name": "autoinctest",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_main_autoinctest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "has_generated_columns",
-			"schema": "",
-			"name": "has_generated_columns",
-			"columns": [
-				{
-					"name": "a",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "b",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "c",
-					"db_type": "TEXT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"imports": null
-				},
-				{
-					"name": "d",
-					"db_type": "INT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "e",
-					"db_type": "TEXT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_main_has_generated_columns",
-				"columns": [
-					"a"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "one.as_generated_columns",
-			"schema": "one",
-			"name": "as_generated_columns",
-			"columns": [
-				{
-					"name": "a",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "b",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "c",
-					"db_type": "TEXT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"imports": null
-				},
-				{
-					"name": "d",
-					"db_type": "INT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "e",
-					"db_type": "TEXT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_as_generated_columns",
-				"columns": [
-					"a"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "one.autoinckeywordtest",
-			"schema": "one",
-			"name": "autoinckeywordtest",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "b",
-					"db_type": "INTEGER",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_autoinckeywordtest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "one.autoinctest",
-			"schema": "one",
-			"name": "autoinctest",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_autoinctest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "one.sponsors",
-			"schema": "one",
-			"name": "sponsors",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_sponsors",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.sponsors",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				}
-			]
-		},
-		{
-			"key": "one.tags",
-			"schema": "one",
-			"name": "tags",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_tags",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.tags",
-							"To": "one.video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"tag_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				}
-			]
-		},
-		{
-			"key": "one.user_videos",
-			"schema": "one",
-			"name": "user_videos",
-			"columns": [
-				{
-					"name": "user_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "video_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
 					"name": "sponsor_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"columns": [
+						"sponsor_id"
+					]
 				}
 			],
-			"p_key": null,
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
-		},
-		{
-			"key": "one.users",
-			"schema": "one",
-			"name": "users",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_users",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "fk_videos_1",
+					"Name": "fk_multi_keys_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
-							"From": "one.users",
-							"To": "one.videos",
+							"From": "multi_keys",
+							"To": "type_monsters",
 							"Columns": null,
 							"FromColumns": [
-								"id"
+								"one",
+								"two"
 							],
 							"ToColumns": [
-								"user_id"
+								"int_one",
+								"int_two"
 							],
 							"FromWhere": null,
 							"ToWhere": null,
-							"ToKey": true,
+							"ToKey": false,
 							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				}
-			]
-		},
-		{
-			"key": "one.video_tags",
-			"schema": "one",
-			"name": "video_tags",
-			"columns": [
-				{
-					"name": "video_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "tag_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_video_tags",
-				"columns": [
-					"video_id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_video_tags_0",
-					"columns": [
-						"tag_id"
-					],
-					"foreign_table": "one.tags",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "fk_video_tags_1",
-					"columns": [
-						"video_id"
-					],
-					"foreign_table": "one.videos",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.video_tags",
-							"To": "one.tags",
-							"Columns": null,
-							"FromColumns": [
-								"tag_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_video_tags_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.video_tags",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"video_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				}
-			]
-		},
-		{
-			"key": "one.videos",
-			"schema": "one",
-			"name": "videos",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "user_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "sponsor_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				}
-			],
-			"p_key": {
-				"name": "pk_one_videos",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_videos_0",
-					"columns": [
-						"sponsor_id"
-					],
-					"foreign_table": "one.sponsors",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "fk_videos_1",
-					"columns": [
-						"user_id"
-					],
-					"foreign_table": "one.users",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [
-				{
-					"name": "sqlite_autoindex_videos_2",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"video_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.sponsors",
-							"Columns": null,
-							"FromColumns": [
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.users",
-							"Columns": null,
-							"FromColumns": [
-								"user_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
 							"KeyNullable": false
 						}
 					],
@@ -866,29 +162,29 @@
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
-					"autoincr": false,
+					"autoincr": true,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_sponsors",
+				"name": "pk_sponsors",
 				"columns": [
 					"id"
 				]
 			},
-			"foreign_keys": [],
-			"unique": [],
+			"foreign_keys": null,
+			"unique": null,
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "fk_videos_0",
+					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -920,30 +216,30 @@
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
-					"autoincr": false,
+					"autoincr": true,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_tags",
+				"name": "pk_tags",
 				"columns": [
 					"id"
 				]
 			},
-			"foreign_keys": [],
-			"unique": [],
+			"foreign_keys": null,
+			"unique": null,
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "fk_video_tags_0",
-					"ByJoinTable": false,
+					"Name": "fk_video_tags_0fk_video_tags_1",
+					"ByJoinTable": true,
 					"Sides": [
 						{
 							"From": "tags",
@@ -960,6 +256,22 @@
 							"ToKey": true,
 							"ToUnique": false,
 							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"To": "videos",
+							"Columns": null,
+							"FromColumns": [
+								"video_id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
 						}
 					],
 					"Ignored": false,
@@ -974,127 +286,151 @@
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INT",
+					"db_type": "",
+					"default": "",
+					"comment": "comment on ID",
+					"nullable": false,
+					"generated": false,
+					"autoincr": true,
+					"domain_name": "",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "enum_use",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "TypeMonstersEnumUse",
+					"imports": null
+				},
+				{
+					"name": "enum_nullable",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "TypeMonstersEnumNullable",
 					"imports": null
 				},
 				{
 					"name": "id_two",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "id_three",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "bool_zero",
-					"db_type": "BOOL",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_one",
-					"db_type": "BOOL",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_two",
-					"db_type": "BOOL",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_three",
-					"db_type": "BOOL",
-					"default": "false",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_four",
-					"db_type": "BOOL",
-					"default": "true",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_five",
-					"db_type": "BOOL",
-					"default": "false",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "bool_six",
-					"db_type": "BOOL",
-					"default": "true",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "string_zero",
-					"db_type": "VARCHAR(1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1106,7 +442,7 @@
 				},
 				{
 					"name": "string_one",
-					"db_type": "VARCHAR(1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1118,7 +454,7 @@
 				},
 				{
 					"name": "string_two",
-					"db_type": "VARCHAR(1)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1130,8 +466,8 @@
 				},
 				{
 					"name": "string_three",
-					"db_type": "VARCHAR(1)",
-					"default": "'a'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1142,8 +478,8 @@
 				},
 				{
 					"name": "string_four",
-					"db_type": "VARCHAR(1)",
-					"default": "'b'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1154,7 +490,7 @@
 				},
 				{
 					"name": "string_five",
-					"db_type": "VARCHAR(1000)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1166,7 +502,7 @@
 				},
 				{
 					"name": "string_six",
-					"db_type": "VARCHAR(1000)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1178,7 +514,7 @@
 				},
 				{
 					"name": "string_seven",
-					"db_type": "VARCHAR(1000)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1190,8 +526,8 @@
 				},
 				{
 					"name": "string_eight",
-					"db_type": "VARCHAR(1000)",
-					"default": "'abcdefgh'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1202,8 +538,8 @@
 				},
 				{
 					"name": "string_nine",
-					"db_type": "VARCHAR(1000)",
-					"default": "'abcdefgh'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1214,8 +550,8 @@
 				},
 				{
 					"name": "string_ten",
-					"db_type": "VARCHAR(1000)",
-					"default": "''",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1226,8 +562,8 @@
 				},
 				{
 					"name": "string_eleven",
-					"db_type": "VARCHAR(1000)",
-					"default": "''",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1238,7 +574,7 @@
 				},
 				{
 					"name": "big_int_zero",
-					"db_type": "BIGINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1250,7 +586,7 @@
 				},
 				{
 					"name": "big_int_one",
-					"db_type": "BIGINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1262,7 +598,7 @@
 				},
 				{
 					"name": "big_int_two",
-					"db_type": "BIGINT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1274,8 +610,8 @@
 				},
 				{
 					"name": "big_int_three",
-					"db_type": "BIGINT",
-					"default": "111111",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1286,8 +622,8 @@
 				},
 				{
 					"name": "big_int_four",
-					"db_type": "BIGINT",
-					"default": "222222",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1298,8 +634,8 @@
 				},
 				{
 					"name": "big_int_five",
-					"db_type": "BIGINT",
-					"default": "0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1310,8 +646,8 @@
 				},
 				{
 					"name": "big_int_six",
-					"db_type": "BIGINT",
-					"default": "0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1321,92 +657,140 @@
 					"imports": null
 				},
 				{
-					"name": "int_zero",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "int_one",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int64",
-					"imports": null
-				},
-				{
-					"name": "int_two",
-					"db_type": "INT",
+					"name": "big_int_seven",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "uint64",
+					"imports": null
+				},
+				{
+					"name": "big_int_eight",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "uint64",
+					"imports": null
+				},
+				{
+					"name": "int_zero",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "int_one",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "int_two",
+					"db_type": "",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "int_three",
-					"db_type": "INT",
-					"default": "333333",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "int_four",
-					"db_type": "INT",
-					"default": "444444",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "int_five",
-					"db_type": "INT",
-					"default": "0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "int_six",
-					"db_type": "INT",
-					"default": "0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
+					"imports": null
+				},
+				{
+					"name": "int_seven",
+					"db_type": "",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "uint",
+					"imports": null
+				},
+				{
+					"name": "int_eight",
+					"db_type": "",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "uint",
 					"imports": null
 				},
 				{
 					"name": "float_zero",
-					"db_type": "FLOAT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1418,7 +802,7 @@
 				},
 				{
 					"name": "float_one",
-					"db_type": "FLOAT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1430,223 +814,225 @@
 				},
 				{
 					"name": "float_two",
-					"db_type": "FLOAT(2,1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_three",
-					"db_type": "FLOAT(2,1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_four",
-					"db_type": "FLOAT(2,1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_five",
-					"db_type": "FLOAT(2,1)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_six",
-					"db_type": "FLOAT(2,1)",
-					"default": "1.1",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_seven",
-					"db_type": "FLOAT(2,1)",
-					"default": "1.1",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_eight",
-					"db_type": "FLOAT(2,1)",
-					"default": "0.0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "float_nine",
-					"db_type": "FLOAT(2,1)",
-					"default": "0.0",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float32",
 					"imports": null
 				},
 				{
 					"name": "bytea_zero",
-					"db_type": "BINARY",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_one",
-					"db_type": "BINARY",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_two",
-					"db_type": "BINARY",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_three",
-					"db_type": "BINARY",
-					"default": "'a'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_four",
-					"db_type": "BINARY",
-					"default": "'b'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_five",
-					"db_type": "BINARY(100)",
-					"default": "'abcdefghabcdefghabcdefgh'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_six",
-					"db_type": "BINARY(100)",
-					"default": "'hgfedcbahgfedcbahgfedcba'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_seven",
-					"db_type": "BINARY",
-					"default": "''",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "bytea_eight",
-					"db_type": "BINARY",
-					"default": "''",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "time_zero",
-					"db_type": "TIMESTAMP",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
 					"name": "time_one",
-					"db_type": "DATE",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1660,55 +1046,63 @@
 				},
 				{
 					"name": "time_two",
-					"db_type": "TIMESTAMP",
-					"default": "null",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"imports": null
-				},
-				{
-					"name": "time_three",
-					"db_type": "TIMESTAMP",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
-					"name": "time_five",
-					"db_type": "TIMESTAMP",
-					"default": "current_timestamp",
+					"name": "time_three",
+					"db_type": "",
+					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
+				},
+				{
+					"name": "time_five",
+					"db_type": "",
+					"default": "DEFAULT",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
 					"name": "time_nine",
-					"db_type": "TIMESTAMP",
-					"default": "current_timestamp",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
 					"name": "time_eleven",
-					"db_type": "DATE",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1722,7 +1116,7 @@
 				},
 				{
 					"name": "time_twelve",
-					"db_type": "DATE",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1736,8 +1130,8 @@
 				},
 				{
 					"name": "time_fifteen",
-					"db_type": "DATE",
-					"default": "'19990108'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
@@ -1750,8 +1144,8 @@
 				},
 				{
 					"name": "time_sixteen",
-					"db_type": "DATE",
-					"default": "'1999-01-08'",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
@@ -1764,7 +1158,7 @@
 				},
 				{
 					"name": "json_null",
-					"db_type": "JSON",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1779,7 +1173,7 @@
 				},
 				{
 					"name": "json_nnull",
-					"db_type": "JSON",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1794,7 +1188,7 @@
 				},
 				{
 					"name": "tinyint_null",
-					"db_type": "TINYINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1806,7 +1200,7 @@
 				},
 				{
 					"name": "tinyint_nnull",
-					"db_type": "TINYINT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1818,55 +1212,55 @@
 				},
 				{
 					"name": "tinyint1_null",
-					"db_type": "TINYINT(1)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "tinyint1_nnull",
-					"db_type": "TINYINT(1)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "bool",
 					"imports": null
 				},
 				{
 					"name": "tinyint2_null",
-					"db_type": "TINYINT(2)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int8",
 					"imports": null
 				},
 				{
 					"name": "tinyint2_nnull",
-					"db_type": "TINYINT(2)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int8",
 					"imports": null
 				},
 				{
 					"name": "smallint_null",
-					"db_type": "SMALLINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1878,7 +1272,7 @@
 				},
 				{
 					"name": "smallint_nnull",
-					"db_type": "SMALLINT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1890,7 +1284,7 @@
 				},
 				{
 					"name": "mediumint_null",
-					"db_type": "MEDIUMINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1902,7 +1296,7 @@
 				},
 				{
 					"name": "mediumint_nnull",
-					"db_type": "MEDIUMINT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1914,7 +1308,7 @@
 				},
 				{
 					"name": "bigint_null",
-					"db_type": "BIGINT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1926,7 +1320,7 @@
 				},
 				{
 					"name": "bigint_nnull",
-					"db_type": "BIGINT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1938,7 +1332,7 @@
 				},
 				{
 					"name": "float_null",
-					"db_type": "FLOAT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1950,7 +1344,7 @@
 				},
 				{
 					"name": "float_nnull",
-					"db_type": "FLOAT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1962,7 +1356,7 @@
 				},
 				{
 					"name": "double_null",
-					"db_type": "DOUBLE",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1974,7 +1368,7 @@
 				},
 				{
 					"name": "double_nnull",
-					"db_type": "DOUBLE",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1986,7 +1380,7 @@
 				},
 				{
 					"name": "doubleprec_null",
-					"db_type": "DOUBLE PRECISION",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -1998,7 +1392,7 @@
 				},
 				{
 					"name": "doubleprec_nnull",
-					"db_type": "DOUBLE PRECISION",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2010,31 +1404,31 @@
 				},
 				{
 					"name": "real_null",
-					"db_type": "REAL",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"imports": null
 				},
 				{
 					"name": "real_nnull",
-					"db_type": "REAL",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"imports": null
 				},
 				{
 					"name": "boolean_null",
-					"db_type": "BOOLEAN",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2046,7 +1440,7 @@
 				},
 				{
 					"name": "boolean_nnull",
-					"db_type": "BOOLEAN",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2058,7 +1452,7 @@
 				},
 				{
 					"name": "date_null",
-					"db_type": "DATE",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2072,7 +1466,7 @@
 				},
 				{
 					"name": "date_nnull",
-					"db_type": "DATE",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2086,7 +1480,7 @@
 				},
 				{
 					"name": "datetime_null",
-					"db_type": "DATETIME",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2100,7 +1494,7 @@
 				},
 				{
 					"name": "datetime_nnull",
-					"db_type": "DATETIME",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2114,103 +1508,107 @@
 				},
 				{
 					"name": "timestamp_null",
-					"db_type": "TIMESTAMP",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
 					"name": "timestamp_nnull",
-					"db_type": "TIMESTAMP",
-					"default": "current_timestamp",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "time.Time",
+					"imports": [
+						"\"time\""
+					]
 				},
 				{
 					"name": "binary_null",
-					"db_type": "BINARY",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "binary_nnull",
-					"db_type": "BINARY",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "varbinary_null",
-					"db_type": "VARBINARY(100)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "varbinary_nnull",
-					"db_type": "VARBINARY(100)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "tinyblob_null",
-					"db_type": "TINYBLOB",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "tinyblob_nnull",
-					"db_type": "TINYBLOB",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "blob_null",
-					"db_type": "BLOB",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2222,7 +1620,7 @@
 				},
 				{
 					"name": "blob_nnull",
-					"db_type": "BLOB",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2234,55 +1632,55 @@
 				},
 				{
 					"name": "mediumblob_null",
-					"db_type": "MEDIUMBLOB",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "mediumblob_nnull",
-					"db_type": "MEDIUMBLOB",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "longblob_null",
-					"db_type": "LONGBLOB",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "longblob_nnull",
-					"db_type": "LONGBLOB",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"imports": null
 				},
 				{
 					"name": "varchar_null",
-					"db_type": "VARCHAR(100)",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2294,7 +1692,7 @@
 				},
 				{
 					"name": "varchar_nnull",
-					"db_type": "VARCHAR(100)",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2306,7 +1704,7 @@
 				},
 				{
 					"name": "char_null",
-					"db_type": "CHAR",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2318,7 +1716,7 @@
 				},
 				{
 					"name": "char_nnull",
-					"db_type": "CHAR",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2330,7 +1728,7 @@
 				},
 				{
 					"name": "text_null",
-					"db_type": "TEXT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2342,7 +1740,7 @@
 				},
 				{
 					"name": "text_nnull",
-					"db_type": "TEXT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2351,18 +1749,93 @@
 					"domain_name": "",
 					"type": "string",
 					"imports": null
+				},
+				{
+					"name": "virtual_nnull",
+					"db_type": "",
+					"default": "GENERATED",
+					"comment": "",
+					"nullable": false,
+					"generated": true,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"imports": null
+				},
+				{
+					"name": "virtual_null",
+					"db_type": "",
+					"default": "GENERATED",
+					"comment": "",
+					"nullable": true,
+					"generated": true,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"imports": null
+				},
+				{
+					"name": "generated_nnull",
+					"db_type": "",
+					"default": "GENERATED",
+					"comment": "",
+					"nullable": false,
+					"generated": true,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"imports": null
+				},
+				{
+					"name": "generated_null",
+					"db_type": "",
+					"default": "GENERATED",
+					"comment": "",
+					"nullable": true,
+					"generated": true,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_type_monsters",
+				"name": "pk_type_monsters",
 				"columns": [
 					"id"
 				]
 			},
-			"foreign_keys": [],
-			"unique": [],
+			"foreign_keys": null,
+			"unique": null,
 			"is_join_table": false,
-			"relationship": null
+			"relationship": [
+				{
+					"Name": "fk_multi_keys_0",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "type_monsters",
+							"To": "multi_keys",
+							"Columns": null,
+							"FromColumns": [
+								"int_one",
+								"int_two"
+							],
+							"ToColumns": [
+								"one",
+								"two"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false,
+					"Alias": ""
+				}
+			]
 		},
 		{
 			"key": "user_videos",
@@ -2371,44 +1844,44 @@
 			"columns": [
 				{
 					"name": "user_id",
-					"db_type": "INT",
-					"default": "NULL",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "video_id",
-					"db_type": "INT",
-					"default": "NULL",
+					"db_type": "",
+					"default": "DEFAULT",
 					"comment": "",
-					"nullable": true,
+					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "sponsor_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": null,
-			"foreign_keys": [],
-			"unique": [],
+			"foreign_keys": null,
+			"unique": null,
 			"is_join_table": false,
 			"relationship": null
 		},
@@ -2419,29 +1892,29 @@
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
-					"autoincr": false,
+					"autoincr": true,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_users",
+				"name": "pk_users",
 				"columns": [
 					"id"
 				]
 			},
-			"foreign_keys": [],
-			"unique": [],
+			"foreign_keys": null,
+			"unique": null,
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "fk_videos_1",
+					"Name": "fk_videos_0",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2473,48 +1946,39 @@
 			"columns": [
 				{
 					"name": "video_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "tag_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_video_tags",
+				"name": "pk_video_tags",
 				"columns": [
-					"video_id"
+					"video_id",
+					"tag_id"
 				]
 			},
 			"foreign_keys": [
 				{
 					"name": "fk_video_tags_0",
-					"columns": [
-						"tag_id"
-					],
-					"foreign_table": "tags",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "fk_video_tags_1",
 					"columns": [
 						"video_id"
 					],
@@ -2522,10 +1986,20 @@
 					"foreign_columns": [
 						"id"
 					]
+				},
+				{
+					"name": "fk_video_tags_1",
+					"columns": [
+						"tag_id"
+					],
+					"foreign_table": "tags",
+					"foreign_columns": [
+						"id"
+					]
 				}
 			],
-			"unique": [],
-			"is_join_table": false,
+			"unique": null,
+			"is_join_table": true,
 			"relationship": [
 				{
 					"Name": "fk_video_tags_0",
@@ -2533,10 +2007,10 @@
 					"Sides": [
 						{
 							"From": "video_tags",
-							"To": "tags",
+							"To": "videos",
 							"Columns": null,
 							"FromColumns": [
-								"tag_id"
+								"video_id"
 							],
 							"ToColumns": [
 								"id"
@@ -2557,10 +2031,10 @@
 					"Sides": [
 						{
 							"From": "video_tags",
-							"To": "videos",
+							"To": "tags",
 							"Columns": null,
 							"FromColumns": [
-								"video_id"
+								"tag_id"
 							],
 							"ToColumns": [
 								"id"
@@ -2584,43 +2058,43 @@
 			"columns": [
 				{
 					"name": "id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
-					"autoincr": false,
+					"autoincr": true,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "user_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "",
-					"comment": "",
+					"comment": "this is a comment",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				},
 				{
 					"name": "sponsor_id",
-					"db_type": "INT",
+					"db_type": "",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
+					"type": "int",
 					"imports": null
 				}
 			],
 			"p_key": {
-				"name": "pk_main_videos",
+				"name": "pk_videos",
 				"columns": [
 					"id"
 				]
@@ -2629,9 +2103,9 @@
 				{
 					"name": "fk_videos_0",
 					"columns": [
-						"sponsor_id"
+						"user_id"
 					],
-					"foreign_table": "sponsors",
+					"foreign_table": "users",
 					"foreign_columns": [
 						"id"
 					]
@@ -2639,9 +2113,9 @@
 				{
 					"name": "fk_videos_1",
 					"columns": [
-						"user_id"
+						"sponsor_id"
 					],
-					"foreign_table": "users",
+					"foreign_table": "sponsors",
 					"foreign_columns": [
 						"id"
 					]
@@ -2649,7 +2123,7 @@
 			],
 			"unique": [
 				{
-					"name": "sqlite_autoindex_videos_2",
+					"name": "sponsor_id",
 					"columns": [
 						"sponsor_id"
 					]
@@ -2658,34 +2132,8 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "fk_autoinckeywordtest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "autoinckeywordtest",
-							"Columns": null,
-							"FromColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_video_tags_1",
-					"ByJoinTable": false,
+					"Name": "fk_video_tags_0fk_video_tags_1",
+					"ByJoinTable": true,
 					"Sides": [
 						{
 							"From": "videos",
@@ -2700,6 +2148,22 @@
 							"FromWhere": null,
 							"ToWhere": null,
 							"ToKey": true,
+							"ToUnique": false,
+							"KeyNullable": false
+						},
+						{
+							"From": "video_tags",
+							"To": "tags",
+							"Columns": null,
+							"FromColumns": [
+								"tag_id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
 							"ToUnique": true,
 							"KeyNullable": false
 						}
@@ -2709,30 +2173,6 @@
 				},
 				{
 					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "sponsors",
-							"Columns": null,
-							"FromColumns": [
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_1",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -2754,10 +2194,55 @@
 					],
 					"Ignored": false,
 					"Alias": ""
+				},
+				{
+					"Name": "fk_videos_1",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "videos",
+							"To": "sponsors",
+							"Columns": null,
+							"FromColumns": [
+								"sponsor_id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false,
+					"Alias": ""
 				}
 			]
 		}
 	],
-	"enums": null,
+	"enums": [
+		{
+			"Type": "TypeMonstersEnumNullable",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		},
+		{
+			"Type": "TypeMonstersEnumUse",
+			"Values": [
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday"
+			]
+		}
+	],
 	"extra_info": null
 }
