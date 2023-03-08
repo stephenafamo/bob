@@ -1,4 +1,4 @@
-{{block "join_helpers" . -}}
+{{define "join_helpers" -}}
 var (
 	SelectJoins = joins[*dialect.SelectQuery]
 	UpdateJoins = joins[*dialect.UpdateQuery]
