@@ -31,7 +31,7 @@ var (
 // State holds the global data needed by most pieces to run
 type State[T any] struct {
 	Config              Config
-	Outputs             []*Output
+	Outputs             map[string]*Output
 	CustomTemplateFuncs template.FuncMap
 
 	tables    []drivers.Table
