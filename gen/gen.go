@@ -29,19 +29,15 @@ var (
 )
 
 // State holds the global data needed by most pieces to run
-type State[T any] struct {
+type State struct {
 	Config              Config
 	Outputs             map[string]*Output
 	CustomTemplateFuncs template.FuncMap
-
-	tables    []drivers.Table
-	enums     []drivers.Enum
-	extraInfo T
 }
 
 // Run executes the templates and outputs them to files based on the
 // state given.
-func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
+func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) error {
 	if driver.Dialect() == "" {
 		return fmt.Errorf("no dialect specified")
 	}
@@ -54,27 +50,29 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 		)
 	}
 
-	s.initInflections()
-
-	err := s.initDBInfo(ctx, driver)
+	dbInfo, err := driver.Assemble(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to initialize tables: %w", err)
+		return fmt.Errorf("unable to fetch table data: %w", err)
 	}
 
-	s.processTypeReplacements()
-	s.processRelationshipConfig()
+	if len(dbInfo.Tables) == 0 {
+		return errors.New("no tables found in database")
+	}
 
 	modPkg, err := modelsPackage(driver.Destination())
 	if err != nil {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
 
-	err = s.initTags(s.Config.Tags)
+	initInflections(s.Config.Inflections)
+	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
+	processRelationshipConfig(s.Config.Relationships, dbInfo.Tables)
+	initAliases(&s.Config.Aliases, dbInfo.Tables)
+	err = s.initTags()
 	if err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
-	s.initAliases(&s.Config.Aliases)
 	for _, o := range s.Outputs {
 		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
@@ -88,9 +86,9 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 
 		data := &templateData[T]{
 			Dialect:           driver.Dialect(),
-			Tables:            s.tables,
-			Enums:             s.enums,
-			ExtraInfo:         s.extraInfo,
+			Tables:            dbInfo.Tables,
+			Enums:             dbInfo.Enums,
+			ExtraInfo:         dbInfo.ExtraInfo,
 			Aliases:           s.Config.Aliases,
 			PkgName:           o.PkgName,
 			NoTests:           s.Config.NoTests,
@@ -126,7 +124,7 @@ func (s *State[T]) Run(ctx context.Context, driver drivers.Interface[T]) error {
 			testDirExtMap = groupTemplates(o.testTemplates)
 		}
 
-		for _, table := range s.tables {
+		for _, table := range dbInfo.Tables {
 			data.Table = table
 
 			// Generate the regular templates
@@ -254,30 +252,12 @@ func groupTemplates(templates *templateList) dirExtMap {
 	return dirs
 }
 
-// initDBInfo retrieves information about the database
-func (s *State[T]) initDBInfo(ctx context.Context, driver drivers.Interface[T]) error {
-	dbInfo, err := driver.Assemble(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to fetch table data: %w", err)
-	}
-
-	if len(dbInfo.Tables) == 0 {
-		return errors.New("no tables found in database")
-	}
-
-	s.tables = dbInfo.Tables
-	s.enums = dbInfo.Enums
-	s.extraInfo = dbInfo.ExtraInfo
-
-	return nil
-}
-
 // processTypeReplacements checks the config for type replacements
 // and performs them.
-func (s *State[T]) processTypeReplacements() {
-	for _, r := range s.Config.Replacements {
-		for i := range s.tables {
-			t := s.tables[i]
+func processTypeReplacements(replacements []Replace, tables []drivers.Table) {
+	for _, r := range replacements {
+		for i := range tables {
+			t := tables[i]
 
 			if !shouldReplaceInTable(t, r) {
 				continue
@@ -378,18 +358,18 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func (s *State[T]) processRelationshipConfig() {
-	if len(s.tables) == 0 {
+func processRelationshipConfig(r relationships, tables []drivers.Table) {
+	if len(tables) == 0 {
 		return
 	}
 
-	for i, t := range s.tables {
-		rels, ok := s.Config.Relationships[t.Key]
+	for i, t := range tables {
+		rels, ok := r[t.Key]
 		if !ok {
 			continue
 		}
 
-		s.tables[i].Relationships = mergeRelationships(s.tables[i].Relationships, rels)
+		tables[i].Relationships = mergeRelationships(tables[i].Relationships, rels)
 	}
 }
 
@@ -470,32 +450,32 @@ func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 }
 
 // initInflections adds custom inflections to strmangle's ruleset
-func (s *State[T]) initInflections() {
+func initInflections(i Inflections) {
 	ruleset := strmangle.GetBoilRuleset()
 
-	for k, v := range s.Config.Inflections.Plural {
+	for k, v := range i.Plural {
 		ruleset.AddPlural(k, v)
 	}
-	for k, v := range s.Config.Inflections.PluralExact {
+	for k, v := range i.PluralExact {
 		ruleset.AddPluralExact(k, v, true)
 	}
 
-	for k, v := range s.Config.Inflections.Singular {
+	for k, v := range i.Singular {
 		ruleset.AddSingular(k, v)
 	}
-	for k, v := range s.Config.Inflections.SingularExact {
+	for k, v := range i.SingularExact {
 		ruleset.AddSingularExact(k, v, true)
 	}
 
-	for k, v := range s.Config.Inflections.Irregular {
+	for k, v := range i.Irregular {
 		ruleset.AddIrregular(k, v)
 	}
 }
 
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
-func (s *State[T]) initTags(tags []string) error {
-	s.Config.Tags = strmangle.RemoveDuplicates(tags)
+func (s *State) initTags() error {
+	s.Config.Tags = strmangle.RemoveDuplicates(s.Config.Tags)
 	for _, v := range s.Config.Tags {
 		if !rgxValidTag.MatchString(v) {
 			return errors.New("Invalid tag format %q supplied, only specify name, eg: xml")
@@ -505,8 +485,8 @@ func (s *State[T]) initTags(tags []string) error {
 	return nil
 }
 
-func (s *State[T]) initAliases(a *Aliases) {
-	FillAliases(a, s.tables)
+func initAliases(a *Aliases, tables []drivers.Table) {
+	FillAliases(a, tables)
 }
 
 // normalizeSlashes takes a path that was made on linux or windows and converts it

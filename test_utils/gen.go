@@ -95,7 +95,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 
 	outputs := helpers.DefaultOutputs(d.Destination(), d.PackageName(), false, config.Templates)
 	t.Run("generate", func(t *testing.T) {
-		state := &gen.State[T]{Outputs: outputs}
+		state := &gen.State{Outputs: outputs}
 		testDriver[T](t, state, d, config.Root, false)
 	})
 
@@ -122,7 +122,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		state := &gen.State[T]{
+		state := &gen.State{
 			Config:  gen.Config{Aliases: aliases, Wipe: true},
 			Outputs: outputs,
 		}
@@ -130,7 +130,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	})
 }
 
-func testDriver[T any](t *testing.T, state *gen.State[T], d drivers.Interface[T], root string, skipInit bool) {
+func testDriver[T any](t *testing.T, state *gen.State, d drivers.Interface[T], root string, skipInit bool) {
 	t.Helper()
 
 	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
@@ -171,7 +171,7 @@ func testDriver[T any](t *testing.T, state *gen.State[T], d drivers.Interface[T]
 		t.Fatalf("go mod edit cmd execution failed: %s", err)
 	}
 
-	if err = state.Run(context.Background(), d); err != nil {
+	if err = gen.Run(context.Background(), state, d); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
 

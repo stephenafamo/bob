@@ -192,12 +192,12 @@ func generate(root root) error {
 		&helpers.Templates{Models: modelTemplates},
 	)
 
-	state := &gen.State[driver.Extra]{
+	state := &gen.State{
 		Config:  config,
 		Outputs: outputs,
 	}
 
-	if err := state.Run(context.Background(), d); err != nil {
+	if err := gen.Run(context.Background(), state, d); err != nil {
 		fmt.Println(err) // makes the error print better
 		return err
 	}

@@ -57,10 +57,10 @@ func run(c *cli.Context) error {
 		&helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
 	)
 
-	cmdState := &gen.State[any]{
+	state := &gen.State{
 		Config:  config,
 		Outputs: outputs,
 	}
 
-	return cmdState.Run(c.Context, d)
+	return gen.Run(c.Context, state, d)
 }
