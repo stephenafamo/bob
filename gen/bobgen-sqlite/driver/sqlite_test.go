@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	"github.com/stephenafamo/bob/gen/drivers"
 	testutils "github.com/stephenafamo/bob/test_utils"
 	_ "modernc.org/sqlite"
 )
@@ -101,16 +101,12 @@ func TestAssemble(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			modelsFolder := filepath.Join(out, "models")
-			err = os.Mkdir(modelsFolder, os.ModePerm)
-			if err != nil {
-				t.Fatalf("unable to create models folder: %s", err)
-			}
-
-			tt.config.Output = modelsFolder
 			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
-				Root:            out,
-				Driver:          New(tt.config),
+				Root: out,
+				GetDriver: func(path string) drivers.Interface[any] {
+					tt.config.Output = path
+					return New(tt.config)
+				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
 				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},

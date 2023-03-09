@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const module = "github.com/stephenafamo/bob/orm/bob-gen-test"
+
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 type driverWrapper[T any] struct {
@@ -31,14 +33,20 @@ type driverWrapper[T any] struct {
 }
 
 func (d *driverWrapper[T]) Assemble(context.Context) (*drivers.DBInfo[T], error) {
+	var err error
+
+	d.info, err = d.Interface.Assemble(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
 	return d.info, nil
 }
 
 func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
 	t.Helper()
 
-	var err error
-	d.info, err = d.Interface.Assemble(context.Background())
+	_, err := d.Assemble(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,16 +78,22 @@ func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
 type DriverTestConfig[T any] struct {
 	Root            string
 	Templates       *helpers.Templates
-	Driver          drivers.Interface[T]
 	OverwriteGolden bool
 	GoldenFile      string
+	GetDriver       func(path string) drivers.Interface[T]
 }
 
 func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	t.Helper()
 
+	defaultFolder := filepath.Join(config.Root, "default")
+	err := os.Mkdir(defaultFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("unable to create default folder: %s", err)
+	}
+
 	d := &driverWrapper[T]{
-		Interface:       config.Driver,
+		Interface:       config.GetDriver(defaultFolder),
 		overwriteGolden: config.OverwriteGolden,
 		goldenFile:      config.GoldenFile,
 	}
@@ -93,10 +107,20 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.SkipNow()
 	}
 
-	outputs := helpers.DefaultOutputs(d.Destination(), d.PackageName(), false, config.Templates)
+	cmd := exec.Command("go", "env", "GOMOD")
+	output, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("go env GOMOD cmd execution failed: %s", err)
+	}
+
+	goModFilePath := strings.TrimSpace(string(output))
+
+	if string(goModFilePath) == os.DevNull {
+		t.Fatalf("go env GOMOD cmd execution failed: %s", "not in a go module")
+	}
+
 	t.Run("generate", func(t *testing.T) {
-		state := &gen.State{Outputs: outputs}
-		testDriver[T](t, state, d, config.Root, false)
+		testDriver[T](t, config.Templates, gen.Config{}, d, goModFilePath)
 	})
 
 	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias)}
@@ -121,77 +145,72 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		aliases.Tables[table.Key] = tableAlias
 	}
 
+	aliasesFolder := filepath.Join(config.Root, "aliases")
+	err = os.Mkdir(aliasesFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("unable to create aliases folder: %s", err)
+	}
+
+	d = &driverWrapper[T]{
+		Interface:       config.GetDriver(aliasesFolder),
+		overwriteGolden: config.OverwriteGolden,
+		goldenFile:      config.GoldenFile,
+	}
+
 	t.Run("generate with aliases", func(t *testing.T) {
-		state := &gen.State{
-			Config:  gen.Config{Aliases: aliases, Wipe: true},
-			Outputs: outputs,
-		}
-		testDriver[T](t, state, d, config.Root, true)
+		testDriver[T](t, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath)
 	})
 }
 
-func testDriver[T any](t *testing.T, state *gen.State, d drivers.Interface[T], root string, skipInit bool) {
+func testDriver[T any](t *testing.T, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string) {
 	t.Helper()
 
-	module := "github.com/stephenafamo/bob/orm/bob-gen-test"
+	dst := d.Destination()
 	buf := &bytes.Buffer{}
 
-	cmd := exec.Command("go", "env", "GOMOD")
-	output, err := cmd.Output()
-	if err != nil {
-		t.Fatalf("go env GOMOD cmd execution failed: %s", err)
-	}
+	cmd := exec.Command("go", "mod", "init", module)
+	cmd.Dir = dst
+	cmd.Stderr = buf
 
-	goModFilePath := strings.TrimSpace(string(output))
-
-	if string(goModFilePath) == os.DevNull {
-		t.Fatalf("go env GOMOD cmd execution failed: %s", "not in a go module")
-	}
-
-	if !skipInit {
-		cmd = exec.Command("go", "mod", "init", module)
-		cmd.Dir = root
-		cmd.Stderr = buf
-
-		if err = cmd.Run(); err != nil {
-			outputCompileErrors(buf, root)
-			fmt.Println()
-			t.Fatalf("go mod init cmd execution failed: %s", err)
-		}
+	if err := cmd.Run(); err != nil {
+		outputCompileErrors(buf, dst)
+		fmt.Println()
+		t.Fatalf("go mod init cmd execution failed: %s", err)
 	}
 
 	//nolint:gosec
-	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(string(goModFilePath))))
-	cmd.Dir = root
+	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(modPath)))
+	cmd.Dir = dst
 	cmd.Stderr = buf
 
-	if err = cmd.Run(); err != nil {
-		outputCompileErrors(buf, root)
+	if err := cmd.Run(); err != nil {
+		outputCompileErrors(buf, dst)
 		fmt.Println()
 		t.Fatalf("go mod edit cmd execution failed: %s", err)
 	}
 
-	if err = gen.Run(context.Background(), state, d); err != nil {
+	outputs := helpers.DefaultOutputs(dst, d.PackageName(), false, tpls)
+	if err := gen.Run(context.Background(), &gen.State{Config: config, Outputs: outputs}, d); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
 
 	// From go1.16 dependencies are not auto downloaded
 	cmd = exec.Command("go", "mod", "tidy")
-	cmd.Dir = root
+	cmd.Dir = dst
 	cmd.Stderr = buf
 
-	if err = cmd.Run(); err != nil {
-		outputCompileErrors(buf, root)
+	if err := cmd.Run(); err != nil {
+		outputCompileErrors(buf, dst)
 		fmt.Println()
 		t.Fatalf("go mod tidy cmd execution failed: %s", err)
 	}
 
 	cmd = exec.Command("go", "test", "-run", "xxxxxxx", "./...")
-	cmd.Dir = root
+	cmd.Dir = dst
 	cmd.Stderr = buf
 
-	if err = cmd.Run(); err != nil {
-		outputCompileErrors(buf, root)
+	if err := cmd.Run(); err != nil {
+		outputCompileErrors(buf, dst)
 		fmt.Println()
 		t.Fatalf("go test cmd execution failed: %s", err)
 	}

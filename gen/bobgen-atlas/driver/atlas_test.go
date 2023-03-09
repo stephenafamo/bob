@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	"github.com/stephenafamo/bob/gen/drivers"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -21,7 +21,7 @@ var testSchema embed.FS
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-func TestAssemble(t *testing.T) {
+func TestDriver(t *testing.T) {
 	psqlSchemas, _ := fs.Sub(testSchema, "test_schema/psql")
 	mysqlSchemas, _ := fs.Sub(testSchema, "test_schema/mysql")
 	sqliteSchemas, _ := fs.Sub(testSchema, "test_schema/sqlite")
@@ -76,16 +76,12 @@ func TestAssemble(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			modelsFolder := filepath.Join(out, "models")
-			err = os.Mkdir(modelsFolder, os.ModePerm)
-			if err != nil {
-				t.Fatalf("unable to create models folder: %s", err)
-			}
-
-			tt.config.Output = modelsFolder
 			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
-				Root:            out,
-				Driver:          New(tt.config, tt.schema),
+				Root: out,
+				GetDriver: func(path string) drivers.Interface[any] {
+					tt.config.Output = path
+					return New(tt.config, tt.schema)
+				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
 				Templates:       &helpers.Templates{Models: []fs.FS{tt.modelTemplates}},

@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	"github.com/stephenafamo/bob/gen/drivers"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -86,16 +86,11 @@ func TestAssemble(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			modelsFolder := filepath.Join(out, "models")
-			err = os.Mkdir(modelsFolder, os.ModePerm)
-			if err != nil {
-				t.Fatalf("unable to create models folder: %s", err)
-			}
-
-			d := New(tt.config, tt.name, modelsFolder, tt.provider, tt.datamodel)
 			testutils.TestDriver(t, testutils.DriverTestConfig[Extra]{
-				Root:            out,
-				Driver:          d,
+				Root: out,
+				GetDriver: func(path string) drivers.Interface[Extra] {
+					return New(tt.config, tt.name, path, tt.provider, tt.datamodel)
+				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
 				Templates: &helpers.Templates{
