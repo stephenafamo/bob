@@ -42,6 +42,7 @@ func TestDriver(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not connect to db: %v", err)
 	}
+	defer db.Close()
 
 	fmt.Printf("cleaning tables...")
 	_, err = db.Exec(`DO $$ DECLARE
