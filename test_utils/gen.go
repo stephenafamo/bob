@@ -15,10 +15,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nsf/jsondiff"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stretchr/testify/require"
 )
 
 const module = "github.com/stephenafamo/bob/orm/bob-gen-test"
@@ -72,7 +72,12 @@ func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	require.JSONEq(t, string(want), string(got))
+	opts := jsondiff.DefaultConsoleOptions()
+	opts.SkipMatches = true
+	_, s := jsondiff.Compare(want, got, &opts)
+	if s != "" {
+		t.Fatal(s)
+	}
 }
 
 type DriverTestConfig[T any] struct {
