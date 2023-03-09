@@ -3,8 +3,8 @@ package driver
 import (
 	"context"
 	"database/sql"
+	"strings"
 
-	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
@@ -24,8 +24,8 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		, con.contype as type
 		, max(fnsp.nspname) as foreign_schema
 		, max(out.relname) as foreign_table
-		, max(local_cols.columns) as columns
-		, max(foreign_cols.columns) as foreign_columns
+		, max(array_to_string(local_cols.columns, '     ')) as columns
+		, max(array_to_string(foreign_cols.columns, '     ')) as foreign_columns
 	FROM pg_catalog.pg_constraint con
 	
 	INNER JOIN pg_catalog.pg_class rel
@@ -70,10 +70,10 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		Table          string
 		Name           string
 		Type           string
-		Columns        pq.StringArray
+		Columns        string
 		ForeignSchema  sql.NullString
 		ForeignTable   sql.NullString
-		ForeignColumns pq.StringArray
+		ForeignColumns sql.NullString
 	}](), query, d.config.Schemas)
 	if err != nil {
 		return ret, err
@@ -89,12 +89,12 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		case "p":
 			ret.PKs[key] = &drivers.Constraint{
 				Name:    c.Name,
-				Columns: c.Columns,
+				Columns: strings.Split(c.Columns, "     "),
 			}
 		case "u":
 			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint{
 				Name:    c.Name,
-				Columns: c.Columns,
+				Columns: strings.Split(c.Columns, "     "),
 			})
 		case "f":
 			fkey := c.ForeignTable.String
@@ -104,10 +104,10 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey{
 				Constraint: drivers.Constraint{
 					Name:    c.Name,
-					Columns: c.Columns,
+					Columns: strings.Split(c.Columns, "     "),
 				},
 				ForeignTable:   fkey,
-				ForeignColumns: c.ForeignColumns,
+				ForeignColumns: strings.Split(c.ForeignColumns.String, "     "),
 			})
 		}
 	}
