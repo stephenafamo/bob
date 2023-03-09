@@ -91,21 +91,27 @@ type DriverTestConfig[T any] struct {
 func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	t.Helper()
 
+	var aliases gen.Aliases
+
 	defaultFolder := filepath.Join(config.Root, "default")
 	err := os.Mkdir(defaultFolder, os.ModePerm)
 	if err != nil {
 		t.Fatalf("unable to create default folder: %s", err)
 	}
 
-	d := &driverWrapper[T]{
-		Interface:       config.GetDriver(defaultFolder),
-		overwriteGolden: config.OverwriteGolden,
-		goldenFile:      config.GoldenFile,
-	}
+	{
+		d := &driverWrapper[T]{
+			Interface:       config.GetDriver(defaultFolder),
+			overwriteGolden: config.OverwriteGolden,
+			goldenFile:      config.GoldenFile,
+		}
 
-	t.Run("assemble", func(t *testing.T) {
-		d.TestAssemble(t)
-	})
+		t.Run("assemble", func(t *testing.T) {
+			d.TestAssemble(t)
+		})
+
+		aliases = buildAliases(d.info.Tables)
+	}
 
 	if testing.Short() {
 		// skip testing generation
@@ -125,30 +131,14 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate", func(t *testing.T) {
+		d := &driverWrapper[T]{
+			Interface:       config.GetDriver(defaultFolder),
+			overwriteGolden: config.OverwriteGolden,
+			goldenFile:      config.GoldenFile,
+		}
+
 		testDriver[T](t, config.Templates, gen.Config{}, d, goModFilePath)
 	})
-
-	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias)}
-	for i, table := range d.info.Tables {
-		tableAlias := gen.TableAlias{
-			UpPlural:     fmt.Sprintf("Alias%dThings", i),
-			UpSingular:   fmt.Sprintf("Alias%dThing", i),
-			DownPlural:   fmt.Sprintf("alias%dThings", i),
-			DownSingular: fmt.Sprintf("alias%dThing", i),
-		}
-
-		tableAlias.Columns = make(map[string]string)
-		for j, column := range table.Columns {
-			tableAlias.Columns[column.Name] = fmt.Sprintf("Alias%dThingColumn%d", i, j)
-		}
-
-		tableAlias.Relationships = make(map[string]string)
-		for j, rel := range table.Relationships {
-			tableAlias.Relationships[rel.Name] = fmt.Sprintf("Alias%dThingRel%d", i, j)
-		}
-
-		aliases.Tables[table.Key] = tableAlias
-	}
 
 	aliasesFolder := filepath.Join(config.Root, "aliases")
 	err = os.Mkdir(aliasesFolder, os.ModePerm)
@@ -156,13 +146,13 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.Fatalf("unable to create aliases folder: %s", err)
 	}
 
-	d = &driverWrapper[T]{
-		Interface:       config.GetDriver(aliasesFolder),
-		overwriteGolden: config.OverwriteGolden,
-		goldenFile:      config.GoldenFile,
-	}
-
 	t.Run("generate with aliases", func(t *testing.T) {
+		d := &driverWrapper[T]{
+			Interface:       config.GetDriver(aliasesFolder),
+			overwriteGolden: config.OverwriteGolden,
+			goldenFile:      config.GoldenFile,
+		}
+
 		testDriver[T](t, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath)
 	})
 }
@@ -296,4 +286,30 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 
 		fh.Close()
 	}
+}
+
+func buildAliases(tables []drivers.Table) gen.Aliases {
+	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias, len(tables))}
+	for i, table := range tables {
+		tableAlias := gen.TableAlias{
+			UpPlural:     fmt.Sprintf("Alias%dThings", i),
+			UpSingular:   fmt.Sprintf("Alias%dThing", i),
+			DownPlural:   fmt.Sprintf("alias%dThings", i),
+			DownSingular: fmt.Sprintf("alias%dThing", i),
+		}
+
+		tableAlias.Columns = make(map[string]string)
+		for j, column := range table.Columns {
+			tableAlias.Columns[column.Name] = fmt.Sprintf("Alias%dThingColumn%d", i, j)
+		}
+
+		tableAlias.Relationships = make(map[string]string)
+		for j, rel := range table.Relationships {
+			tableAlias.Relationships[rel.Name] = fmt.Sprintf("Alias%dThingRel%d", i, j)
+		}
+
+		aliases.Tables[table.Key] = tableAlias
+	}
+
+	return aliases
 }
