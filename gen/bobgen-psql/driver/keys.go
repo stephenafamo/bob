@@ -3,8 +3,8 @@ package driver
 import (
 	"context"
 	"database/sql"
-	"strings"
 
+	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
@@ -24,8 +24,8 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		, con.contype as type
 		, max(fnsp.nspname) as foreign_schema
 		, max(out.relname) as foreign_table
-		, max(array_to_string(local_cols.columns, '     ')) as columns
-		, max(array_to_string(foreign_cols.columns, '     ')) as foreign_columns
+		, max(local_cols.columns) as columns
+		, max(foreign_cols.columns) as foreign_columns
 	FROM pg_catalog.pg_constraint con
 	
 	INNER JOIN pg_catalog.pg_class rel
@@ -41,20 +41,20 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		ON fnsp.oid = out.relnamespace
 	
 	LEFT JOIN LATERAL (
-		SELECT table_schema, table_name, array_agg(column_name) AS columns
-		FROM unnest(con.conkey) pos
+		SELECT table_schema, table_name, array_agg(column_name ORDER BY pos.ordinality) AS columns
+		FROM unnest(con.conkey) with ordinality pos
 		LEFT JOIN information_schema.columns
-		ON ordinal_position = pos
+		ON ordinal_position = pos.pos
 		GROUP BY table_schema, table_name
 	) AS local_cols
 	ON local_cols.table_schema = nsp.nspname
 	AND local_cols.table_name = rel.relname
 
 	LEFT JOIN LATERAL (
-		SELECT table_schema, table_name, array_agg(column_name) AS columns
-		FROM unnest(con.confkey) pos
+		SELECT table_schema, table_name, array_agg(column_name ORDER BY pos.ordinality) AS columns
+		FROM unnest(con.confkey) with ordinality pos
 		LEFT JOIN information_schema.columns
-		ON ordinal_position = pos
+		ON ordinal_position = pos.pos
 		GROUP BY table_schema, table_name
 	) AS foreign_cols
 	ON foreign_cols.table_schema = fnsp.nspname
@@ -70,10 +70,10 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		Table          string
 		Name           string
 		Type           string
-		Columns        string
+		Columns        pq.StringArray
 		ForeignSchema  sql.NullString
 		ForeignTable   sql.NullString
-		ForeignColumns sql.NullString
+		ForeignColumns pq.StringArray
 	}](), query, d.config.Schemas)
 	if err != nil {
 		return ret, err
@@ -89,12 +89,12 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 		case "p":
 			ret.PKs[key] = &drivers.Constraint{
 				Name:    c.Name,
-				Columns: strings.Split(c.Columns, "     "),
+				Columns: c.Columns,
 			}
 		case "u":
 			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint{
 				Name:    c.Name,
-				Columns: strings.Split(c.Columns, "     "),
+				Columns: c.Columns,
 			})
 		case "f":
 			fkey := c.ForeignTable.String
@@ -104,10 +104,10 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey{
 				Constraint: drivers.Constraint{
 					Name:    c.Name,
-					Columns: strings.Split(c.Columns, "     "),
+					Columns: c.Columns,
 				},
 				ForeignTable:   fkey,
-				ForeignColumns: strings.Split(c.ForeignColumns.String, "     "),
+				ForeignColumns: c.ForeignColumns,
 			})
 		}
 	}
