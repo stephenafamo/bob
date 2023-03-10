@@ -21,12 +21,12 @@ var testDB string
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-	dsn = os.Getenv("PSQL_TEST_DSN")
+	dsn = os.Getenv("PSQL_DRIVER_TEST_DSN")
 )
 
 func TestDriver(t *testing.T) {
 	if dsn == "" {
-		t.Fatalf("No environment variable PSQL_TEST_DSN")
+		t.Fatalf("No environment variable PSQL_DRIVER_TEST_DSN")
 	}
 	// somehow create the DB
 	config, err := pgx.ParseConfig(dsn)

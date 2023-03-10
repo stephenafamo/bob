@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	ariga.io/atlas v0.9.0
+	github.com/DATA-DOG/go-txdb v0.1.6
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/aarondl/opt v0.0.0-20230114172057-b91f370c41f0
 	github.com/go-sql-driver/mysql v1.7.0
