@@ -164,7 +164,7 @@ jet, err := models.FindJet(ctx, db, 10, "id", "cargo")
 
 ### Exists
 
-Use exists to quicky check if a model with a given PK exists.
+Use exists to quickly check if a model with a given PK exists.
 
 ```go
 hasJet, err := models.JetExists(ctx, db, 10).All()
