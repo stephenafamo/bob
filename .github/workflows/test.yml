@@ -39,8 +39,8 @@ jobs:
         run: >
           echo "*:*:*:*:pass" > $HOME/.pgpass
           && chmod 600 $HOME/.pgpass
-          && psql --host localhost --username postgres -c 'CREATE DATABASE dialect_droppable;'
-          && psql --host localhost --username postgres -c 'CREATE DATABASE driver_droppable;'
+          && psql --host localhost --username user -c 'CREATE DATABASE dialect_droppable;'
+          && psql --host localhost --username user -c 'CREATE DATABASE driver_droppable;'
 
       - name: Checkout Repo
         uses: actions/checkout@v3
