@@ -181,8 +181,7 @@ To fluently build type safe queries, mods are generated to easily add `WHERE` fi
 ```go
 // SELECT * FROM "jets" WHERE "jets"."id" = 100
 models.Jets(
-    ctx,
-    db,
+    ctx, db,
     models.SelectWhere.Jets.ID.EQ(100),
 )
 ```
