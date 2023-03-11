@@ -22,7 +22,8 @@ var (
 	rgxExampleFiles  = regexp.MustCompile(`^(select|update|insert|delete)_test.go`)
 	rgxTabs          = regexp.MustCompile(`\t`)
 	rgxLeadingSpaces = regexp.MustCompile(`^\s+`)
-	rgxBacktics      = regexp.MustCompile(`\x60 \+ "(\x60\w*\x60)" \+ \x60`)
+	// Switch from backticks to double quotes and back
+	rgxQuoteSwitch = regexp.MustCompile(`(\x60 \+ "|" \+ \x60)`)
 )
 
 func main() {
@@ -291,13 +292,7 @@ func (c *caseVisitor) Visit(n ast.Node) ast.Visitor {
 		c.builder = rgxTabs.ReplaceAllLiteralString(val, "  ")
 	case "ExpectedSQL":
 		q := reindent(rgxTabs.ReplaceAllLiteralString(val[1:len(val)-1], "  "))
-
-		match := rgxBacktics.FindStringSubmatchIndex(q)
-		for match != nil {
-			q = q[:match[0]] + q[match[2]:match[3]] + q[match[1]:]
-			match = rgxBacktics.FindStringSubmatchIndex(q)
-		}
-
+		q = rgxQuoteSwitch.ReplaceAllLiteralString(q, "")
 		c.query = q
 	case "ExpectedArgs":
 		visitor := &argVisitor{fset: c.fset}

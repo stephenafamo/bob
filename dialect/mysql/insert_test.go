@@ -72,7 +72,7 @@ func TestInsert(t *testing.T) {
 				VALUES (?, ?), (?, ?)
 				AS new
 				ON DUPLICATE KEY UPDATE
-				` + " `did` = `new`.`did`," + `
+				` + "`did` = `new`.`did`," + `
 				` + "`dbname`" + ` = (new.dname || ' (formerly ' || d.dname || ')')`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},

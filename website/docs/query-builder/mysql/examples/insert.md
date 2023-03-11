@@ -130,7 +130,7 @@ INSERT INTO distributors (`did`, `dname`)
 VALUES (?, ?), (?, ?)
 AS new
 ON DUPLICATE KEY UPDATE
-` + " `did` = `new`.`did`," + `
+`did` = `new`.`did`,
 `dbname` = (new.dname || ' (formerly ' || d.dname || ')')
 ```
 
