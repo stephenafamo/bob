@@ -19,15 +19,25 @@ func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Exe
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
   var mods []bob.Mod[*dialect.SelectQuery]
 
-	{{range $column := $table.PKey.Columns -}}
-	{{- $colAlias := $tAlias.Column $column -}}
-	{{$colAlias}}PK := make([]any, len(o))
-		for i, o := range o {
-			{{$colAlias}}PK[i] = o.{{$colAlias}}
-		}
-		mods = append(mods, sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.In({{$colAlias}}PK...)))
-
+	{{range $colName := $table.PKey.Columns -}}
+		{{$column := $table.GetColumn $colName -}}
+		{{$colAlias := $tAlias.Column $colName -}}
+		{{$colAlias}}PK := make([]{{$column.Type}}, len(o))
 	{{end}}
+
+	for i, o := range o {
+		{{range $column := $table.PKey.Columns -}}
+		{{$colAlias := $tAlias.Column $column -}}
+			{{$colAlias}}PK[i] = o.{{$colAlias}}
+		{{end -}}
+	}
+
+	mods = append(mods, 
+	{{range $column := $table.PKey.Columns -}}
+		{{- $colAlias := $tAlias.Column $column -}}
+		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.In({{$colAlias}}PK...),
+	{{end}}
+	)
 
 	o2, err := {{$tAlias.UpPlural}}(ctx, exec, mods...).All()
 	if err != nil {
