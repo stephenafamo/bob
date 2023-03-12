@@ -5,7 +5,7 @@
 SQL:
 
 ```sql
-SELECT id, name FROM users WHERE (id IN (?, ?, ?))
+SELECT id, name FROM users WHERE (`id` IN (?, ?, ?))
 ```
 
 Args:
@@ -20,7 +20,7 @@ Code:
 mysql.Select(
   sm.Columns("id", "name"),
   sm.From("users"),
-  sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+  sm.Where(mysql.Quote("id").In(mysql.Arg(100, 200, 300))),
 )
 ```
 
@@ -29,7 +29,7 @@ mysql.Select(
 SQL:
 
 ```sql
-SELECT DISTINCT id, name FROM users WHERE (id IN (?, ?, ?))
+SELECT DISTINCT id, name FROM users WHERE (`id` IN (?, ?, ?))
 ```
 
 Args:
@@ -45,7 +45,7 @@ mysql.Select(
   sm.Columns("id", "name"),
   sm.Distinct(),
   sm.From("users"),
-  sm.Where(mysql.X("id").In(mysql.Arg(100, 200, 300))),
+  sm.Where(mysql.Quote("id").In(mysql.Arg(100, 200, 300))),
 )
 ```
 
@@ -63,7 +63,7 @@ FROM (
      - created_date) AS `difference`
   FROM presales_presalestatus
 ) AS `differnce_by_status`
-WHERE (status IN ('A', 'B', 'C'))
+WHERE (`status` IN ('A', 'B', 'C'))
 GROUP BY status
 ```
 
@@ -83,7 +83,7 @@ mysql.Select(
         As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
-  sm.Where(mysql.X("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
+  sm.Where(mysql.Quote("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
   sm.GroupBy("status"),
 )
 ```
@@ -93,7 +93,7 @@ mysql.Select(
 SQL:
 
 ```sql
-SELECT id, name FROM users WHERE ((id, employee_id) IN ((?, ?), (?, ?)))
+SELECT id, name FROM users WHERE ((`id`, `employee_id`) IN ((?, ?), (?, ?)))
 ```
 
 Args:
@@ -109,6 +109,6 @@ Code:
 mysql.Select(
   sm.Columns("id", "name"),
   sm.From("users"),
-  sm.Where(mysql.Group("id", "employee_id").In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
+  sm.Where(mysql.Group(mysql.Quote("id"), mysql.Quote("employee_id")).In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
 )
 ```

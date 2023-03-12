@@ -5,7 +5,7 @@
 SQL:
 
 ```sql
-DELETE FROM films WHERE (kind = ?)
+DELETE FROM films WHERE (`kind` = ?)
 ```
 
 Args:
@@ -17,7 +17,7 @@ Code:
 ```go
 mysql.Delete(
   dm.From("films"),
-  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.Where(mysql.Quote("kind").EQ(mysql.Arg("Drama"))),
 )
 ```
 
@@ -26,7 +26,7 @@ mysql.Delete(
 SQL:
 
 ```sql
-DELETE FROM films, actors WHERE (kind = ?)
+DELETE FROM films, actors WHERE (`kind` = ?)
 ```
 
 Args:
@@ -39,7 +39,7 @@ Code:
 mysql.Delete(
   dm.From("films"),
   dm.From("actors"),
-  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.Where(mysql.Quote("kind").EQ(mysql.Arg("Drama"))),
 )
 ```
 
@@ -48,7 +48,7 @@ mysql.Delete(
 SQL:
 
 ```sql
-DELETE FROM films WHERE (kind = ?) ORDER BY producer DESC LIMIT 10
+DELETE FROM films WHERE (`kind` = ?) ORDER BY producer DESC LIMIT 10
 ```
 
 Args:
@@ -60,7 +60,7 @@ Code:
 ```go
 mysql.Delete(
   dm.From("films"),
-  dm.Where(mysql.X("kind").EQ(mysql.Arg("Drama"))),
+  dm.Where(mysql.Quote("kind").EQ(mysql.Arg("Drama"))),
   dm.Limit(10),
   dm.OrderBy("producer").Desc(),
 )
@@ -71,9 +71,7 @@ mysql.Delete(
 SQL:
 
 ```sql
-DELETE FROM employees USING accounts
-WHERE (accounts.name = ?)
-AND (employees.id = accounts.sales_person)
+DELETE FROM employees USING accounts WHERE (`accounts`.`name` = ?) AND (`employees`.`id` = `accounts`.`sales_person`)
 ```
 
 Args:
@@ -86,7 +84,7 @@ Code:
 mysql.Delete(
   dm.From("employees"),
   dm.Using("accounts"),
-  dm.Where(mysql.X("accounts.name").EQ(mysql.Arg("Acme Corporation"))),
-  dm.Where(mysql.X("employees.id").EQ("accounts.sales_person")),
+  dm.Where(mysql.Quote("accounts", "name").EQ(mysql.Arg("Acme Corporation"))),
+  dm.Where(mysql.Quote("employees", "id").EQ(mysql.Quote("accounts", "sales_person"))),
 )
 ```

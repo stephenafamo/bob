@@ -17,7 +17,7 @@ Code:
 ```go
 psql.Delete(
   dm.From("films"),
-  dm.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
+  dm.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
 )
 ```
 
@@ -41,7 +41,7 @@ Code:
 psql.Delete(
   dm.From("employees"),
   dm.Using("accounts"),
-  dm.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
-  dm.Where(psql.X("employees.id").EQ("accounts.sales_person")),
+  dm.Where(psql.Quote("accounts", "name").EQ(psql.Arg("Acme Corporation"))),
+  dm.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
 )
 ```

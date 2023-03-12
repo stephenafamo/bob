@@ -20,7 +20,7 @@ Code:
 psql.Select(
   sm.Columns("id", "name"),
   sm.From("users"),
-  sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+  sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 )
 ```
 
@@ -45,7 +45,7 @@ psql.Select(
   sm.Columns("id", "name"),
   sm.Distinct(),
   sm.From("users"),
-  sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+  sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 )
 ```
 
@@ -70,7 +70,7 @@ psql.Select(
   sm.Columns("id", "name"),
   sm.Distinct("id"),
   sm.From("users"),
-  sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+  sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 )
 ```
 
@@ -157,7 +157,7 @@ psql.Select(
         As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
-  sm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
+  sm.Where(psql.Quote("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
   sm.GroupBy("status"),
 )
 ```
@@ -183,6 +183,8 @@ Code:
 psql.Select(
   sm.Columns("id", "name"),
   sm.From("users"),
-  sm.Where(psql.Group("id", "employee_id").In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
+  sm.Where(
+    psql.Group(psql.Quote("id"), psql.Quote("employee_id")).
+      In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
 )
 ```

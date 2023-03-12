@@ -131,7 +131,7 @@ VALUES (?, ?), (?, ?)
 AS new
 ON DUPLICATE KEY UPDATE
 `did` = `new`.`did`,
-`dbname` = (new.dname || ' (formerly ' || d.dname || ')')
+`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')
 ```
 
 Args:
@@ -152,7 +152,8 @@ mysql.Insert(
   im.OnDuplicateKeyUpdate().
     Set("new", "did").
     SetCol("dbname", mysql.Concat(
-      "new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
+      mysql.Quote("new", "dname"), mysql.S(" (formerly "),
+      mysql.Quote("d", "dname"), mysql.S(")"),
     )),
 )
 ```

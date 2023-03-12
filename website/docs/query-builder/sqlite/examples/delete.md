@@ -5,7 +5,7 @@
 SQL:
 
 ```sql
-DELETE FROM films WHERE (kind = ?1)
+DELETE FROM films WHERE ("kind" = ?1)
 ```
 
 Args:
@@ -17,6 +17,6 @@ Code:
 ```go
 sqlite.Delete(
   dm.From("films"),
-  dm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
+  dm.Where(sqlite.Quote("kind").EQ(sqlite.Arg("Drama"))),
 )
 ```
