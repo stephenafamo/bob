@@ -3,17 +3,22 @@ package dialect
 import (
 	"strings"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
 )
 
 //nolint:gochecknoglobals
-var bmod = expr.Builder[Expression, Expression]{}
+var (
+	and                 = expr.Raw("AND")
+	betweenSymmetric    = expr.Raw("BETWEEN")
+	notBetweenSymmetric = expr.Raw("NOT BETWEEN")
+)
 
 type Expression struct {
 	expr.Chain[Expression, Expression]
 }
 
-func (Expression) New(exp any) Expression {
+func (Expression) New(exp bob.Expression) Expression {
 	var b Expression
 	b.Base = exp
 	return b
@@ -27,15 +32,15 @@ func (x Expression) String() string {
 }
 
 // BETWEEN SYMMETRIC a AND b
-func (x Expression) BetweenSymmetric(a, b any) Expression {
-	return bmod.X(expr.Join{Exprs: []any{
-		x.Base, "BETWEEN SYMMETRIC", a, "AND", b,
+func (x Expression) BetweenSymmetric(a, b bob.Expression) Expression {
+	return expr.X[Expression, Expression](expr.Join{Exprs: []bob.Expression{
+		x.Base, betweenSymmetric, a, and, b,
 	}})
 }
 
 // NOT BETWEEN SYMMETRIC a AND b
-func (x Expression) NotBetweenSymmetric(a, b any) Expression {
-	return bmod.X(expr.Join{Exprs: []any{
-		x.Base, "NOT BETWEEN SYMMETRIC", a, "AND", b,
+func (x Expression) NotBetweenSymmetric(a, b bob.Expression) Expression {
+	return expr.X[Expression, Expression](expr.Join{Exprs: []bob.Expression{
+		x.Base, notBetweenSymmetric, a, and, b,
 	}})
 }

@@ -110,9 +110,9 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
 		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
-		values = make([][]any, len(rows))
+		values = make([][]bob.Expression, len(rows))
 		for i := range rows {
-			values[i] = []any{"DEFAULT"}
+			values[i] = []bob.Expression{Raw("DEFAULT")}
 		}
 	}
 
@@ -217,12 +217,12 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
 
-	pkPairs := make([]any, len(pkVals))
+	pkPairs := make([]bob.Expression, len(pkVals))
 	for i, pair := range pkVals {
 		pkPairs[i] = Group(pair...)
 	}
 
-	pkGroup := make([]any, len(pks))
+	pkGroup := make([]bob.Expression, len(pks))
 	for i, pk := range pks {
 		pkGroup[i] = Quote(pk)
 	}
@@ -332,9 +332,9 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	// If there are no columns, force at least one column with "DEFAULT" for each row
 	if len(columns) == 0 {
 		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
-		values = make([][]any, len(rows))
+		values = make([][]bob.Expression, len(rows))
 		for i := range rows {
-			values[i] = []any{"DEFAULT"}
+			values[i] = []bob.Expression{Raw("DEFAULT")}
 		}
 	}
 
@@ -439,12 +439,12 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
 
-	pkPairs := make([]any, len(pkVals))
+	pkPairs := make([]bob.Expression, len(pkVals))
 	for i, pair := range pkVals {
 		pkPairs[i] = Group(pair...)
 	}
 
-	pkGroup := make([]any, len(pks))
+	pkGroup := make([]bob.Expression, len(pks))
 	for i, pk := range pks {
 		pkGroup[i] = Quote(pk)
 	}
@@ -503,13 +503,16 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 		q.Apply(um.Set(col).To(values[0][i]))
 	}
 
-	pkGroup := make([]any, len(t.pkCols))
+	pkCols := make([]any, len(t.pkCols))
+	pkGroup := make([]bob.Expression, len(t.pkCols))
 	for i, pk := range t.pkCols {
-		pkGroup[i] = Quote(pk)
+		q := Quote(pk)
+		pkGroup[i] = q
+		pkCols[i] = q
 	}
 
 	// Select ONLY the primary keys
-	t.q.Expression.SelectList.Columns = pkGroup
+	t.q.Expression.SelectList.Columns = pkCols
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(um.Where(
 		Group(pkGroup...).In(t.q.Expression),
@@ -528,13 +531,16 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 func (t *TableQuery[T, Tslice, Tset]) DeleteAll() (int64, error) {
 	q := Delete(dm.From(t.nameExpr(t.ctx)))
 
-	pkGroup := make([]any, len(t.pkCols))
+	pkCols := make([]any, len(t.pkCols))
+	pkGroup := make([]bob.Expression, len(t.pkCols))
 	for i, pk := range t.pkCols {
-		pkGroup[i] = Quote(pk)
+		q := Quote(pk)
+		pkGroup[i] = q
+		pkCols[i] = q
 	}
 
 	// Select ONLY the primary keys
-	t.q.Expression.SelectList.Columns = pkGroup
+	t.q.Expression.SelectList.Columns = pkCols
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(dm.Where(
 		Group(pkGroup...).In(t.q.Expression),

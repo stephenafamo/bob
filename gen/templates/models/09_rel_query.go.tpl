@@ -88,7 +88,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 
 func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $side.FromColumns) 0 -}}
-	PKArgs := make([]any, 0, len(os))
+	PKArgs := make([]bob.Expression, 0, len(os))
 	for _, o := range os {
 	PKArgs = append(PKArgs, {{$.Dialect}}.ArgGroup(
 		{{- range $index, $local := $side.FromColumns -}}
@@ -128,7 +128,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 
 func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $firstSide.FromColumns) 0 -}}
-	PKArgs := make([]any, 0, len(os))
+	PKArgs := make([]bob.Expression, 0, len(os))
 	for _, o := range os {
 	PKArgs = append(PKArgs, {{$.Dialect}}.ArgGroup(
 		{{- range $index, $local := $firstSide.FromColumns -}}

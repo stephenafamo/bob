@@ -146,25 +146,13 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			on := make([]any, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
 				toCol := side.ToColumns[i]
-				on = append(on, X(
-					Quote(parent, fromCol),
-					"=",
-					Quote(alias, toCol),
-				))
+				on = append(on, Quote(parent, fromCol).EQ(Quote(alias, toCol)))
 			}
 			for _, from := range side.FromWhere {
-				on = append(on, X(
-					Quote(parent, from.Column),
-					"=",
-					from.Value,
-				))
+				on = append(on, Quote(parent, from.Column).EQ(Raw(from.Value)))
 			}
 			for _, to := range side.ToWhere {
-				on = append(on, X(
-					Quote(alias, to.Column),
-					"=",
-					to.Value,
-				))
+				on = append(on, Quote(alias, to.Column).EQ(Raw(to.Value)))
 			}
 
 			queryMods = append(queryMods, sm.

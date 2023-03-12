@@ -56,7 +56,7 @@ func (c Conflict[Q]) SetExcluded(cols ...string) Conflict[Q] {
 			continue
 		}
 		exprs = append(exprs,
-			expr.Join{Exprs: []any{expr.Quote(col), "=", "EXCLUDED.", expr.Quote(col)}},
+			expr.Join{Exprs: []bob.Expression{expr.Quote(col), expr.Raw("= EXCLUDED."), expr.Quote(col)}},
 		)
 	}
 	conflict.Set.Set = append(conflict.Set.Set, exprs...)

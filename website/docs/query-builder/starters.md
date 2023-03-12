@@ -9,14 +9,6 @@ description: Common starters accross dialects
 
 There are a number of common starter functions shared by all supported dialects:
 
-* `X(any)`: Flexible starter that joins the given expressions with a space
-
-    ```go
-    // SQL: "schema"."table"."name" = $1
-    // Args: 'Stephen'
-    psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
-    ```
-
 * `S(string)`: Create a single quoted string literal.
 
     ```go
@@ -31,21 +23,21 @@ There are a number of common starter functions shared by all supported dialects:
     psql.F("generate_series", 1, 3)
     ```
 
-* `Not(any)`: Creates a `NOT expr` expression.
+* `Not(Expression)`: Creates a `NOT expr` expression.
 
     ```go
     //	SQL: Not a = b
     psql.Not("a = b")
     ```
 
-* `OR(...any)`: Joins multiple expressions with "OR".
+* `OR(...Expression)`: Joins multiple expressions with "OR".
 
     ```go
     // SQL: a OR b OR c
     psql.Or("a", "b", "c")
     ```
 
-* `AND(...any)`: Joins multiple expressions with "AND"
+* `AND(...Expression)`: Joins multiple expressions with "AND"
 
     ```go
     // SQL: a AND b AND c
@@ -64,8 +56,8 @@ There are a number of common starter functions shared by all supported dialects:
 
     ```go
     // SQL: ($1, $2), ($3, $4)
-    // Args: 'a', 'b', 'c', 'd'
-    psql.X(psql.ArgGroup("a", "b"), psql.ArgGroup("c", "d"))
+    // Args: ('a', 'b', 'c', 'd')
+    psql.Group(psql.ArgGroup("a", "b"), psql.ArgGroup("c", "d"))
     ```
 
 * `Placeholders(uint)`: Inserts a `count` of placeholders without any specific value yet. Useful for compiling reusable queries.
@@ -76,14 +68,7 @@ There are a number of common starter functions shared by all supported dialects:
     psql.Placeholders(3)
     ```
 
-* `P(any)`: To manually wrap an expression with parentheses. This is often not necessary as the parentheses will be added as the expression is built.
-
-    ```go
-    // SQL: (a b c)
-    psql.Group("a", "b", "c")
-    ```
-
-* `Group(...any)`: To easily group a number of expressions. Wraps them in parentheses **AND** seperates them with commas.
+* `Group(...Expression)`: To easily group a number of expressions. Wraps them in parentheses **AND** seperates them with commas.
 
     ```go
     // SQL: (a, b, c)

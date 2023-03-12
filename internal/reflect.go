@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -141,12 +142,12 @@ func GetMappings(typ reflect.Type) Mapping {
 }
 
 // Get the values for non generated columns
-func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]string, [][]any, error) {
+func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]string, [][]bob.Expression, error) {
 	if len(objs) == 0 {
 		return nil, nil, nil
 	}
 
-	allvalues := make([][]any, 0, len(objs))
+	allvalues := make([][]bob.Expression, 0, len(objs))
 
 	refVal1 := reflect.ValueOf(objs[0])
 	cols, vals1, err := getObjColsVals(mapping, filter, refVal1)
@@ -169,9 +170,9 @@ func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]stri
 	return cols, allvalues, nil
 }
 
-func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]string, []any, error) {
+func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]string, []bob.Expression, error) {
 	cols := make([]string, 0, len(mapping.NonGenerated))
-	values := make([]any, 0, len(mapping.NonGenerated))
+	values := make([]bob.Expression, 0, len(mapping.NonGenerated))
 
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
@@ -209,7 +210,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 	return cols, values, nil
 }
 
-func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]any, error) {
+func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]bob.Expression, error) {
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return nil, errors.New("object is nil")
@@ -217,7 +218,7 @@ func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]any, error
 		val = val.Elem()
 	}
 
-	values := make([]any, 0, len(cols))
+	values := make([]bob.Expression, 0, len(cols))
 
 	for index, name := range mapping.NonGenerated {
 		if name == "" {

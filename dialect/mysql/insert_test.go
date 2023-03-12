@@ -65,7 +65,8 @@ func TestInsert(t *testing.T) {
 				im.OnDuplicateKeyUpdate().
 					Set("new", "did").
 					SetCol("dbname", mysql.Concat(
-						"new.dname", mysql.S(" (formerly "), "d.dname", mysql.S(")"),
+						mysql.Quote("new", "dname"), mysql.S(" (formerly "),
+						mysql.Quote("d", "dname"), mysql.S(")"),
 					)),
 			),
 			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
@@ -73,7 +74,7 @@ func TestInsert(t *testing.T) {
 				AS new
 				ON DUPLICATE KEY UPDATE
 				` + "`did` = `new`.`did`," + `
-				` + "`dbname`" + ` = (new.dname || ' (formerly ' || d.dname || ')')`,
+				` + "`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')",
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 	}

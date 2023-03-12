@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/expr"
 )
@@ -9,11 +10,6 @@ type Expression = dialect.Expression
 
 //nolint:gochecknoglobals
 var bmod = expr.Builder[Expression, Expression]{}
-
-// X is a flexible starter that joins the given expressions with a space
-func X(exp any, others ...any) Expression {
-	return bmod.X(exp, others...)
-}
 
 // F creates a function expression with the given name and args
 //
@@ -38,26 +34,26 @@ func S(s string) Expression {
 
 // SQL: NOT true
 // Go: psql.Not("true")
-func Not(exp any) Expression {
+func Not(exp bob.Expression) Expression {
 	return bmod.Not(exp)
 }
 
 // SQL: a OR b OR c
 // Go: psql.Or("a", "b", "c")
-func Or(args ...any) Expression {
+func Or(args ...bob.Expression) Expression {
 	return bmod.Or(args...)
 }
 
 // SQL: a AND b AND c
 // Go: psql.And("a", "b", "c")
-func And(args ...any) Expression {
+func And(args ...bob.Expression) Expression {
 	return bmod.And(args...)
 }
 
 // SQL: a || b || c
 // Go: psql.Concat("a", "b", "c")
-func Concat(args ...any) Expression {
-	return bmod.X(expr.Join{Exprs: args, Sep: " || "})
+func Concat(args ...bob.Expression) Expression {
+	return expr.X[Expression, Expression](expr.Join{Exprs: args, Sep: " || "})
 }
 
 // SQL: $1, $2, $3
@@ -78,15 +74,9 @@ func Placeholder(n uint) Expression {
 	return bmod.Placeholder(n)
 }
 
-// SQL: (a and b)
-// Go: psql.P("a and b")
-func P(exp any) Expression {
-	return bmod.P(exp)
-}
-
 // SQL: (a, b)
 // Go: psql.Group("a", "b")
-func Group(exps ...any) Expression {
+func Group(exps ...bob.Expression) Expression {
 	return bmod.Group(exps...)
 }
 

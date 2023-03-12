@@ -3,7 +3,7 @@ package psql_test
 import (
 	"testing"
 
-	pg_query "github.com/pganalyze/pg_query_go/v2"
+	pg_query "github.com/pganalyze/pg_query_go/v4"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
@@ -18,7 +18,7 @@ func TestSelect(t *testing.T) {
 			Query: psql.Select(
 				sm.Columns("id", "name"),
 				sm.From("users"),
-				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"select distinct": {
@@ -28,7 +28,7 @@ func TestSelect(t *testing.T) {
 				sm.Columns("id", "name"),
 				sm.Distinct(),
 				sm.From("users"),
-				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"select distinct on": {
@@ -38,7 +38,7 @@ func TestSelect(t *testing.T) {
 				sm.Columns("id", "name"),
 				sm.Distinct("id"),
 				sm.From("users"),
-				sm.Where(psql.X("id").In(psql.Arg(100, 200, 300))),
+				sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
 		"select from function": {
@@ -95,7 +95,7 @@ func TestSelect(t *testing.T) {
 							As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
-				sm.Where(psql.X("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
+				sm.Where(psql.Quote("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
 				sm.GroupBy("status"),
 			),
 		},
@@ -103,7 +103,9 @@ func TestSelect(t *testing.T) {
 			Query: psql.Select(
 				sm.Columns("id", "name"),
 				sm.From("users"),
-				sm.Where(psql.Group("id", "employee_id").In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
+				sm.Where(
+					psql.Group(psql.Quote("id"), psql.Quote("employee_id")).
+						In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
 			),
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
 			ExpectedArgs: []any{100, 200, 300, 400},

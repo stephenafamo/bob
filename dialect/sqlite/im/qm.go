@@ -54,11 +54,11 @@ func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQu
 	})
 }
 
-func Values(clauses ...any) bob.Mod[*dialect.InsertQuery] {
+func Values(clauses ...bob.Expression) bob.Mod[*dialect.InsertQuery] {
 	return mods.Values[*dialect.InsertQuery](clauses)
 }
 
-func Rows(rows ...[]any) bob.Mod[*dialect.InsertQuery] {
+func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
 	return mods.Rows[*dialect.InsertQuery](rows)
 }
 

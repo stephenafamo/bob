@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -123,9 +124,9 @@ func (j JoinChain[Q]) On(on ...any) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-func (j JoinChain[Q]) OnEQ(a, b any) bob.Mod[Q] {
+func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, bmod.X(a).EQ(b))
+	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
 
 	return mods.Join[Q](jo)
 }

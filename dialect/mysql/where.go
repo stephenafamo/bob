@@ -20,27 +20,27 @@ type WhereMod[Q Filterable, C any] struct {
 }
 
 func (w WhereMod[Q, C]) EQ(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).EQ(Arg(val))}
+	return mods.Where[Q]{w.name.EQ(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) NE(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).NE(Arg(val))}
+	return mods.Where[Q]{w.name.NE(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) LT(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).LT(Arg(val))}
+	return mods.Where[Q]{w.name.LT(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) LTE(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).LTE(Arg(val))}
+	return mods.Where[Q]{w.name.LTE(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) GT(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).GT(Arg(val))}
+	return mods.Where[Q]{w.name.GT(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) GTE(val C) bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).GTE(Arg(val))}
+	return mods.Where[Q]{w.name.GTE(Arg(val))}
 }
 
 func (w WhereMod[Q, C]) In(slice ...C) bob.Mod[Q] {
@@ -48,7 +48,7 @@ func (w WhereMod[Q, C]) In(slice ...C) bob.Mod[Q] {
 	for _, value := range slice {
 		values = append(values, value)
 	}
-	return mods.Where[Q]{X(w.name).In(Arg(values...))}
+	return mods.Where[Q]{w.name.In(Arg(values...))}
 }
 
 func (w WhereMod[Q, C]) NotIn(slice ...C) bob.Mod[Q] {
@@ -56,7 +56,7 @@ func (w WhereMod[Q, C]) NotIn(slice ...C) bob.Mod[Q] {
 	for _, value := range slice {
 		values = append(values, value)
 	}
-	return mods.Where[Q]{X(w.name).NotIn(Arg(values...))}
+	return mods.Where[Q]{w.name.NotIn(Arg(values...))}
 }
 
 func WhereNull[Q Filterable, C any](name Expression) WhereNullMod[Q, C] {
@@ -72,9 +72,9 @@ type WhereNullMod[Q interface {
 }
 
 func (w WhereNullMod[Q, C]) IsNull() bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).IsNull()}
+	return mods.Where[Q]{w.name.IsNull()}
 }
 
 func (w WhereNullMod[Q, C]) IsNotNull() bob.Mod[Q] {
-	return mods.Where[Q]{X(w.name).IsNotNull()}
+	return mods.Where[Q]{w.name.IsNotNull()}
 }

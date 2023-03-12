@@ -15,7 +15,7 @@ func TestUpdate(t *testing.T) {
 			Query: psql.Update(
 				um.Table("films"),
 				um.Set("kind").ToArg("Dramatic"),
-				um.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
+				um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET "kind" = $1 WHERE (kind = $2)`,
 			ExpectedArgs: []any{"Dramatic", "Drama"},
@@ -25,8 +25,8 @@ func TestUpdate(t *testing.T) {
 				um.Table("employees"),
 				um.Set("sales_count").To("sales_count + 1"),
 				um.From("accounts"),
-				um.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
-				um.Where(psql.X("employees.id").EQ("accounts.sales_person")),
+				um.Where(psql.Quote("accounts", "name").EQ(psql.Arg("Acme Corporation"))),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
 			),
 			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
 			  WHERE (accounts.name = $1)
@@ -40,10 +40,10 @@ func TestUpdate(t *testing.T) {
 			Query: psql.Update(
 				um.Table("employees"),
 				um.Set("sales_count").To("sales_count + 1"),
-				um.Where(psql.X("id").EQ(psql.P(psql.Select(
+				um.Where(psql.Quote("id").EQ(psql.Group(psql.Select(
 					sm.Columns("sales_person"),
 					sm.From("accounts"),
-					sm.Where(psql.X("name").EQ(psql.Arg("Acme Corporation"))),
+					sm.Where(psql.Quote("name").EQ(psql.Arg("Acme Corporation"))),
 				)))),
 			),
 		},

@@ -6,8 +6,8 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type Chain[T any, B builder[T]] struct {
-	Base any
+type Chain[T bob.Expression, B builder[T]] struct {
+	Base bob.Expression
 }
 
 // WriteSQL satisfies the bob.Expression interface
@@ -16,27 +16,27 @@ func (x Chain[T, B]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 }
 
 // IS DISTINCT FROM
-func (x Chain[T, B]) IsDistinctFrom(exp any) T {
-	return X[T, B](Join{Exprs: []any{x.Base, "IS DISTINCT FROM", exp}})
+func (x Chain[T, B]) IsDistinctFrom(exp bob.Expression) T {
+	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isDistinctFrom, exp}})
 }
 
 // IS NOT DISTINCT FROM
-func (x Chain[T, B]) IsNotDistinctFrom(exp any) T {
-	return X[T, B](Join{Exprs: []any{x.Base, "IS NOT DISTINCT FROM", exp}})
+func (x Chain[T, B]) IsNotDistinctFrom(exp bob.Expression) T {
+	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isNotDistinctFrom, exp}})
 }
 
 // IS NUll
 func (x Chain[T, B]) IsNull() T {
-	return X[T, B](Join{Exprs: []any{x.Base, "IS NULL"}})
+	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isNull}})
 }
 
 // IS NOT NUll
 func (x Chain[T, B]) IsNotNull() T {
-	return X[T, B](Join{Exprs: []any{x.Base, "IS NOT NULL"}})
+	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isNotNull}})
 }
 
 // Equal
-func (x Chain[T, B]) EQ(target any) T {
+func (x Chain[T, B]) EQ(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "="})
 }
 
@@ -66,39 +66,39 @@ func (x Chain[T, B]) GTE(target any) T {
 }
 
 // IN
-func (x Chain[T, B]) In(vals ...any) T {
+func (x Chain[T, B]) In(vals ...bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: group(vals), operator: "IN"})
 }
 
 // NOT IN
-func (x Chain[T, B]) NotIn(vals ...any) T {
+func (x Chain[T, B]) NotIn(vals ...bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: group(vals), operator: "NOT IN"})
 }
 
 // OR
-func (x Chain[T, B]) Or(targets ...any) T {
-	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " OR "})
+func (x Chain[T, B]) Or(targets ...bob.Expression) T {
+	return X[T, B](Join{Exprs: append([]bob.Expression{x.Base}, targets...), Sep: " OR "})
 }
 
 // AND
-func (x Chain[T, B]) And(targets ...any) T {
-	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " AND "})
+func (x Chain[T, B]) And(targets ...bob.Expression) T {
+	return X[T, B](Join{Exprs: append([]bob.Expression{x.Base}, targets...), Sep: " AND "})
 }
 
 // Concatenate: ||
-func (x Chain[T, B]) Concat(targets ...any) T {
-	return X[T, B](Join{Exprs: append([]any{x.Base}, targets...), Sep: " || "})
+func (x Chain[T, B]) Concat(targets ...bob.Expression) T {
+	return X[T, B](Join{Exprs: append([]bob.Expression{x.Base}, targets...), Sep: " || "})
 }
 
 // BETWEEN a AND b
-func (x Chain[T, B]) Between(a, b any) T {
-	return X[T, B](Join{Exprs: []any{x.Base, "BETWEEN", a, "AND", b}})
+func (x Chain[T, B]) Between(a, b bob.Expression) T {
+	return X[T, B](Join{Exprs: []bob.Expression{x.Base, between, a, and, b}})
 }
 
 // NOT BETWEEN a AND b
-func (x Chain[T, B]) NotBetween(a, b any) T {
-	return X[T, B](Join{Exprs: []any{
-		x.Base, "NOT BETWEEN", a, "AND", b,
+func (x Chain[T, B]) NotBetween(a, b bob.Expression) T {
+	return X[T, B](Join{Exprs: []bob.Expression{
+		x.Base, notBetween, a, and, b,
 	}})
 }
 

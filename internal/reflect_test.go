@@ -119,7 +119,7 @@ type testGetColumnsCase[T any] struct {
 	Filter  []string
 	Rows    []T
 	Columns []string
-	Values  [][]any
+	Values  [][]bob.Expression
 }
 
 func TestGetColumnValues(t *testing.T) {
@@ -134,25 +134,25 @@ func TestGetColumnValues(t *testing.T) {
 	testGetColumnValues(t, "pointer", testGetColumnsCase[*User]{
 		Rows:    []*User{&user1},
 		Columns: []string{"id", "first_name", "last_name"},
-		Values:  [][]any{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
+		Values:  [][]bob.Expression{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
 	})
 
 	testGetColumnValues(t, "single row", testGetColumnsCase[User]{
 		Rows:    []User{user1},
 		Columns: []string{"id", "first_name", "last_name"},
-		Values:  [][]any{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
+		Values:  [][]bob.Expression{{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")}},
 	})
 
 	testGetColumnValues(t, "with generated", testGetColumnsCase[SettableUser]{
 		Rows:    []SettableUser{user3},
 		Columns: []string{"id", "first_name", "last_name"},
-		Values:  [][]any{{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe")}},
+		Values:  [][]bob.Expression{{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe")}},
 	})
 
 	testGetColumnValues(t, "settable and set", testGetColumnsCase[SettableUser]{
 		Rows:    []SettableUser{user4},
 		Columns: []string{"id", "first_name", "last_name", "bio"},
-		Values: [][]any{{
+		Values: [][]bob.Expression{{
 			expr.Arg(4), expr.Arg("Jane"),
 			expr.Arg("Does"), expr.Arg(omit.From("Foo Bar")),
 		}},
@@ -162,13 +162,13 @@ func TestGetColumnValues(t *testing.T) {
 		Filter:  []string{"first_name", "last_name"},
 		Rows:    []User{user1},
 		Columns: []string{"first_name", "last_name"},
-		Values:  [][]any{{expr.Arg("Stephen"), expr.Arg("AfamO")}},
+		Values:  [][]bob.Expression{{expr.Arg("Stephen"), expr.Arg("AfamO")}},
 	})
 
 	testGetColumnValues(t, "multiple users", testGetColumnsCase[User]{
 		Rows:    []User{user1, user2},
 		Columns: []string{"id", "first_name", "last_name"},
-		Values: [][]any{
+		Values: [][]bob.Expression{
 			{expr.Arg(1), expr.Arg("Stephen"), expr.Arg("AfamO")},
 			{expr.Arg(2), expr.Arg("Peter"), expr.Arg("Pan")},
 		},
@@ -178,7 +178,7 @@ func TestGetColumnValues(t *testing.T) {
 		Filter:  []string{"id", "first_name"},
 		Rows:    []User{user1, user2},
 		Columns: []string{"id", "first_name"},
-		Values: [][]any{
+		Values: [][]bob.Expression{
 			{expr.Arg(1), expr.Arg("Stephen")},
 			{expr.Arg(2), expr.Arg("Peter")},
 		},
@@ -187,7 +187,7 @@ func TestGetColumnValues(t *testing.T) {
 	testGetColumnValues(t, "first has fewer columns", testGetColumnsCase[SettableUser]{
 		Rows:    []SettableUser{user3, user4},
 		Columns: []string{"id", "first_name", "last_name"},
-		Values: [][]any{
+		Values: [][]bob.Expression{
 			{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe")},
 			{expr.Arg(4), expr.Arg("Jane"), expr.Arg("Does")},
 		},
@@ -196,7 +196,7 @@ func TestGetColumnValues(t *testing.T) {
 	testGetColumnValues(t, "first has more columns", testGetColumnsCase[SettableUser]{
 		Rows:    []SettableUser{user4, user3},
 		Columns: []string{"id", "first_name", "last_name", "bio"},
-		Values: [][]any{
+		Values: [][]bob.Expression{
 			{expr.Arg(4), expr.Arg("Jane"), expr.Arg("Does"), expr.Arg(omit.From("Foo Bar"))},
 			{expr.Arg(3), expr.Arg("John"), expr.Arg("Doe"), expr.Arg(omit.FromCond("", false))},
 		},

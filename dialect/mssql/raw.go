@@ -5,6 +5,6 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-func RawQuery(q string, args ...any) bob.BaseQuery[expr.Raw] {
+func RawQuery(q string, args ...any) bob.BaseQuery[expr.Clause] {
 	return expr.RawQuery(dialect, q, args...)
 }

@@ -41,7 +41,7 @@ func OP(operator string, left, right any) bob.Expression {
 
 // If no separator, a space is used
 type Join struct {
-	Exprs []any
+	Exprs []bob.Expression
 	Sep   string
 }
 

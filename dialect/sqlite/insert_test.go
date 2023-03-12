@@ -48,13 +48,13 @@ func TestInsert(t *testing.T) {
 				im.Values(sqlite.Arg(9, "Sentry Distribution")),
 				im.OnConflict("did").DoUpdate().
 					SetExcluded("dname").
-					Where(sqlite.X("d.zipcode").NE(sqlite.S("21201"))),
+					Where(sqlite.Quote("d", "zipcode").NE(sqlite.S("21201"))),
 			),
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES (?1, ?2), (?3, ?4)
 				ON CONFLICT (did) DO UPDATE
 				SET "dname" = EXCLUDED. "dname"
-				WHERE (d.zipcode <> '21201')`,
+				WHERE ("d"."zipcode" <> '21201')`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 		"or replace": {

@@ -13,7 +13,7 @@ func TestDelete(t *testing.T) {
 		"simple": {
 			Query: psql.Delete(
 				dm.From("films"),
-				dm.Where(psql.X("kind").EQ(psql.Arg("Drama"))),
+				dm.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `DELETE FROM films WHERE (kind = $1)`,
 			ExpectedArgs: []any{"Drama"},
@@ -22,8 +22,8 @@ func TestDelete(t *testing.T) {
 			Query: psql.Delete(
 				dm.From("employees"),
 				dm.Using("accounts"),
-				dm.Where(psql.X("accounts.name").EQ(psql.Arg("Acme Corporation"))),
-				dm.Where(psql.X("employees.id").EQ("accounts.sales_person")),
+				dm.Where(psql.Quote("accounts", "name").EQ(psql.Arg("Acme Corporation"))),
+				dm.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
 			),
 			ExpectedSQL: `DELETE FROM employees USING accounts
 			  WHERE (accounts.name = $1)

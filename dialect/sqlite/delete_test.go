@@ -13,9 +13,9 @@ func TestDelete(t *testing.T) {
 		"simple": {
 			Query: sqlite.Delete(
 				dm.From("films"),
-				dm.Where(sqlite.X("kind").EQ(sqlite.Arg("Drama"))),
+				dm.Where(sqlite.Quote("kind").EQ(sqlite.Arg("Drama"))),
 			),
-			ExpectedSQL:  `DELETE FROM films WHERE (kind = ?1)`,
+			ExpectedSQL:  `DELETE FROM films WHERE ("kind" = ?1)`,
 			ExpectedArgs: []any{"Drama"},
 		},
 	}

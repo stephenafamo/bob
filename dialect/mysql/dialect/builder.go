@@ -3,6 +3,7 @@ package dialect
 import (
 	"strings"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
 )
 
@@ -10,7 +11,7 @@ type Expression struct {
 	expr.Chain[Expression, Expression]
 }
 
-func (Expression) New(exp any) Expression {
+func (Expression) New(exp bob.Expression) Expression {
 	var b Expression
 	b.Base = exp
 	return b

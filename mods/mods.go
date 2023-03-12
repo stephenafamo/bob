@@ -122,13 +122,13 @@ func (f For[Q]) Apply(q Q) {
 	q.SetFor(clause.For(f))
 }
 
-type Values[Q interface{ AppendValues(vals ...any) }] []any
+type Values[Q interface{ AppendValues(vals ...bob.Expression) }] []bob.Expression
 
 func (s Values[Q]) Apply(q Q) {
 	q.AppendValues(s...)
 }
 
-type Rows[Q interface{ AppendValues(vals ...any) }] [][]any
+type Rows[Q interface{ AppendValues(vals ...bob.Expression) }] [][]bob.Expression
 
 func (r Rows[Q]) Apply(q Q) {
 	for _, row := range r {

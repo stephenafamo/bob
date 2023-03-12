@@ -16,13 +16,13 @@ type Values struct {
 	Vals []value
 }
 
-type value []any
+type value []bob.Expression
 
 func (v value) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(w, d, start, v, "(", ", ", ")")
 }
 
-func (v *Values) AppendValues(vals ...any) {
+func (v *Values) AppendValues(vals ...bob.Expression) {
 	if len(vals) == 0 {
 		return
 	}
