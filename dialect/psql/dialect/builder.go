@@ -12,6 +12,7 @@ var (
 	and                 = expr.Raw("AND")
 	betweenSymmetric    = expr.Raw("BETWEEN")
 	notBetweenSymmetric = expr.Raw("NOT BETWEEN")
+	iLike               = expr.Raw("ILIKE")
 )
 
 type Expression struct {
@@ -42,5 +43,12 @@ func (x Expression) BetweenSymmetric(a, b bob.Expression) Expression {
 func (x Expression) NotBetweenSymmetric(a, b bob.Expression) Expression {
 	return expr.X[Expression, Expression](expr.Join{Exprs: []bob.Expression{
 		x.Base, notBetweenSymmetric, a, and, b,
+	}})
+}
+
+// ILIKE val
+func (x Expression) ILike(val bob.Expression) Expression {
+	return expr.X[Expression, Expression](expr.Join{Exprs: []bob.Expression{
+		x.Base, iLike, val,
 	}})
 }
