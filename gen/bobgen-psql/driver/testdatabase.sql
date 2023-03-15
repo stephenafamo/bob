@@ -18,7 +18,10 @@ create domain uint3 as numeric check(value >= 0 and value < power(2::numeric, 3:
 create table users (
 	id serial primary key not null,
 	email_validated  bool null default false,
-	primary_email    varchar(100) unique null
+	primary_email    varchar(100) unique null,
+	parent_id int,
+
+	foreign key (parent_id) references users (id)
 );
 
 comment on column users.email_validated is 'Has the email address been tested?';
