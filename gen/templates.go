@@ -322,7 +322,10 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 	switch {
 	case (fromOpt == toOpt) && (toCol.Nullable == fromCol.Nullable):
 		// If both type match, return it plainly
-		return to
+		if fromTable.Name == "users" {
+			fmt.Printf("\n")
+		}
+		return to + fmt.Sprintf(`// opt: %t, null: %t`, fromOpt, fromCol.Nullable)
 
 	case !fromOpt && !fromCol.Nullable:
 		// if from is concrete, then use MustGet()
@@ -451,7 +454,7 @@ func createDeps(aliases Aliases, r orm.Relationship, many bool) string {
 			continue
 		}
 
-		objVarName := getVarName(aliases, kside.TableName, local, foreign, many)
+		objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, many)
 		oalias := aliases.Tables[kside.TableName]
 
 		if many {
@@ -483,7 +486,7 @@ func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
 			continue
 		}
 
-		objVarName := getVarName(aliases, kside.TableName, local, foreign, many)
+		objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, many)
 		oalias := aliases.Tables[kside.TableName]
 
 		if many {
@@ -524,8 +527,7 @@ func setModelDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Rel
 	}
 
 	if optional {
-		foreign := r.Foreign()
-		opts.fromOpt = func(side orm.RelSetDetails) bool { return side.TableName == foreign }
+		opts.fromOpt = func(side orm.RelSetDetails) bool { return side.End }
 	}
 
 	return setDeps(opts)
@@ -554,7 +556,7 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 			}
 
 			oalias := aliases.Tables[kside.TableName]
-			objVarName := getVarName(aliases, kside.TableName, local, foreign, false)
+			objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, false)
 
 			if mapp.Value != "" {
 				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
@@ -580,7 +582,7 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 				continue
 			}
 
-			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
+			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
 			oSetter := columnSetter(i, aliases, tables,
 				kside.TableName, mapp.ExternalTable,
@@ -620,10 +622,10 @@ func setDeps(o setDepsOptions) string {
 	ret := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
 		mret := make([]string, 0, len(kside.Mapped))
-		objVarName := getVarName(o.aliases, kside.TableName, local, foreign, false)
+		objVarName := getVarName(o.aliases, kside.TableName, kside.Start, kside.End, false)
 		oalias := o.aliases.Tables[kside.TableName]
 
-		objVarNamePlural := getVarName(o.aliases, kside.TableName, local, foreign, true)
+		objVarNamePlural := getVarName(o.aliases, kside.TableName, kside.Start, kside.End, true)
 		shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
 
 		if shouldCreate && o.skipCreated {
@@ -667,7 +669,7 @@ func setDeps(o setDepsOptions) string {
 				continue
 			}
 
-			extObjVarName := getVarName(o.aliases, mapp.ExternalTable, local, foreign, false)
+			extObjVarName := getVarName(o.aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
 			oSetter := columnSetter(o.i, o.aliases, o.tables,
 				kside.TableName, mapp.ExternalTable,
@@ -688,12 +690,8 @@ func setDeps(o setDepsOptions) string {
 }
 
 func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
-	local := r.Local()
-	foreign := r.Foreign()
-	ksides := r.ValuedSides()
-
-	for _, kside := range ksides {
-		if kside.TableName != foreign {
+	for _, kside := range r.ValuedSides() {
+		if !kside.End {
 			continue
 		}
 
@@ -709,7 +707,7 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 				continue
 			}
 
-			extObjVarName := getVarName(aliases, mapp.ExternalTable, local, foreign, false)
+			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
 			oSetter := columnSetter(i, aliases, tables,
 				kside.TableName, mapp.ExternalTable,
@@ -728,16 +726,16 @@ func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r 
 	return ""
 }
 
-func getVarName(aliases Aliases, tableName, local, foreign string, many bool) string {
+func getVarName(aliases Aliases, tableName string, local, foreign, many bool) string {
 	switch {
-	case tableName == local:
-		return "o"
-
-	case tableName == foreign:
+	case foreign:
 		if many {
 			return "rels"
 		}
 		return "rel"
+
+	case local:
+		return "o"
 
 	default:
 		alias := aliases.Tables[tableName]

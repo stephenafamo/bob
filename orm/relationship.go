@@ -75,10 +75,8 @@ func (r Relationship) IsRemovable() bool {
 }
 
 func (r Relationship) InsertEarly() bool {
-	foreign := r.Foreign()
-	mappings := r.ValuedSides()
-	for _, mapping := range mappings {
-		if mapping.TableName == foreign {
+	for _, mapping := range r.ValuedSides() {
+		if mapping.End {
 			return false
 		}
 	}
@@ -114,6 +112,8 @@ func (r Relationship) NeededColumns() []string {
 type RelSetDetails struct {
 	TableName string
 	Mapped    []RelSetMapping
+	Start     bool
+	End       bool
 }
 
 type RelSetMapping struct {
@@ -121,20 +121,24 @@ type RelSetMapping struct {
 	Value          string
 	ExternalTable  string
 	ExternalColumn string
+	ExternalStart  bool
+	ExternalEnd    bool
 }
 
 func (r Relationship) ValuedSides() []RelSetDetails {
 	x := make([]RelSetDetails, 0, len(r.Sides))
 
-	for i, side := range r.Sides {
+	for sideIndex, side := range r.Sides {
 		fromDeets := RelSetDetails{
 			TableName: side.From,
 			Mapped:    make([]RelSetMapping, 0, len(side.FromColumns)+len(side.FromWhere)),
+			Start:     sideIndex == 0,
 		}
 
 		toDeets := RelSetDetails{
 			TableName: side.To,
 			Mapped:    make([]RelSetMapping, 0, len(side.ToColumns)+len(side.ToWhere)),
+			End:       sideIndex == (len(r.Sides) - 1),
 		}
 
 		if len(side.FromWhere) > 0 {
@@ -157,12 +161,13 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 
 		//nolint:nestif
 		if !side.ToKey {
-			if i == 0 || !r.Sides[i-1].ToKey {
+			if sideIndex == 0 || !r.Sides[sideIndex-1].ToKey {
 				for i, f := range side.FromColumns {
 					fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
 						Column:         f,
 						ExternalTable:  side.To,
 						ExternalColumn: side.ToColumns[i],
+						ExternalEnd:    sideIndex == (len(r.Sides) - 1),
 					})
 				}
 			}
@@ -172,17 +177,19 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 					Column:         side.ToColumns[i],
 					ExternalTable:  side.From,
 					ExternalColumn: f,
+					ExternalStart:  sideIndex == 0,
 				})
 			}
 
-			if len(r.Sides) > i+1 {
-				nextSide := r.Sides[i+1]
+			if len(r.Sides) > sideIndex+1 {
+				nextSide := r.Sides[sideIndex+1]
 				if !nextSide.ToKey {
 					for i, f := range nextSide.FromColumns {
 						toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
 							Column:         f,
 							ExternalTable:  nextSide.To,
 							ExternalColumn: nextSide.ToColumns[i],
+							ExternalEnd:    (sideIndex + 1) == (len(r.Sides) - 1),
 						})
 					}
 				}

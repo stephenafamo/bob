@@ -20,8 +20,10 @@ create table users (
 	email_validated  bool null default false,
 	primary_email    varchar(100) unique null,
 	parent_id int,
+    party_id int UNIQUE,
 
-	foreign key (parent_id) references users (id)
+	foreign key (parent_id) references users (id),
+	foreign key (party_id) references users (id)
 );
 
 comment on column users.email_validated is 'Has the email address been tested?';

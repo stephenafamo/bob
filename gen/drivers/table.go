@@ -2,6 +2,7 @@ package drivers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/stephenafamo/bob/orm"
 )
@@ -74,8 +75,17 @@ func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Re
 		return orm.Relationship{}
 	}
 
+	toMatch := r.Name
+	if r.Local() == r.Foreign() {
+		hadSuffix := false
+		toMatch, hadSuffix = strings.CutSuffix(r.Name, SelfJoinSuffix)
+		if !hadSuffix {
+			toMatch += SelfJoinSuffix
+		}
+	}
+
 	for _, r2 := range fTable.Relationships {
-		if r.Name == r2.Name {
+		if toMatch == r2.Name {
 			return r2
 		}
 	}

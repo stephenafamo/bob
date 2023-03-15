@@ -69,6 +69,12 @@ func relAlias(t drivers.Table) map[string]string {
 		aliases[rel.Name] = formatRelAlias(rel, colToUse+"_"+last(side.To))
 	}
 
+	for k, alias := range aliases {
+		if strings.HasSuffix(k, drivers.SelfJoinSuffix) {
+			aliases[k] = "Reverse" + alias
+		}
+	}
+
 	return aliases
 }
 

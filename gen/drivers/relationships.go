@@ -4,6 +4,8 @@ import (
 	"github.com/stephenafamo/bob/orm"
 )
 
+const SelfJoinSuffix = "__self_join_reverse"
+
 func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 	relationships := map[string][]orm.Relationship{}
 
@@ -51,7 +53,23 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				}},
 			})
 
-			if !t1.IsJoinTable && t1.Key != t2.Key {
+			switch {
+			case t1.IsJoinTable:
+				// Skip. Join tables are handled below
+			case t1.Key == t2.Key: // Self join
+				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
+					Name: fk.Name + SelfJoinSuffix,
+					Sides: []orm.RelSide{{
+						From:        t2.Key,
+						FromColumns: fk.ForeignColumns,
+						To:          t1.Key,
+						ToColumns:   fk.Columns,
+						ToKey:       true,
+						ToUnique:    localUnique,
+						KeyNullable: localNullable,
+					}},
+				})
+			default:
 				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
 					Name: fk.Name,
 					Sides: []orm.RelSide{{
@@ -65,6 +83,25 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 					}},
 				})
 			}
+
+			// Adding the inverse relationship
+			// if !t1.IsJoinTable && t1.Key != t2.Key {
+			// if t1.Name == "users" {
+			// fmt.Println("ADDING")
+			// }
+			// relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
+			// Name: fk.Name,
+			// Sides: []orm.RelSide{{
+			// From:        t2.Key,
+			// FromColumns: fk.ForeignColumns,
+			// To:          t1.Key,
+			// ToColumns:   fk.Columns,
+			// ToKey:       true,
+			// ToUnique:    localUnique,
+			// KeyNullable: localNullable,
+			// }},
+			// })
+			// }
 		}
 
 		if !t1.IsJoinTable {
