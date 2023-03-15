@@ -77,9 +77,9 @@ func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Re
 
 	toMatch := r.Name
 	if r.Local() == r.Foreign() {
-		hadSuffix := false
-		toMatch, hadSuffix = strings.CutSuffix(r.Name, SelfJoinSuffix)
-		if !hadSuffix {
+		hadSuffix := strings.HasSuffix(r.Name, SelfJoinSuffix)
+		toMatch = strings.TrimSuffix(r.Name, SelfJoinSuffix)
+		if hadSuffix {
 			toMatch += SelfJoinSuffix
 		}
 	}
