@@ -30,6 +30,16 @@ Bob's philosophy centres around the following:
 
 Check out [the documentation][docs] for more information.
 
+## Support
+
+|               | Queries | Models | ORM Gen | Factory Gen |
+|---------------|---------|--------|---------|-------------|
+| Postgres      | ✅      | ✅     | ✅      | ✅          |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
+| SQLite        | ✅      | ✅     | ✅      | ✅          |
+| Atlas         |         |        | ✅      | ✅          |
+| Prisma        |         |        | ✅      | ✅          |
+
 ## Comparisons
 
 1. [Bob vs GORM](https://bob.stephenafamo.com/vs/gorm)
