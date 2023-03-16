@@ -8,7 +8,7 @@
 
 func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}{{$relAlias}}R{
+		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}R{{$relAlias}}R{
 			o: rel,
 			{{relDependenciesTypSet $.Aliases .}}
 		}

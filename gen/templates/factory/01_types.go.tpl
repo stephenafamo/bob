@@ -45,9 +45,9 @@ type {{$tAlias.DownSingular}}R struct {
     {{range .Table.Relationships -}}
         {{- $ftable := $.Aliases.Table .Foreign -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
-        {{- $relTyp := printf "*%s%sR" $tAlias.DownSingular $relAlias -}}
+        {{- $relTyp := printf "*%sR%sR" $tAlias.DownSingular $relAlias -}}
         {{- if .IsToMany -}}
-            {{$relTyp = printf "[]*%s%sR" $tAlias.DownSingular $relAlias}}
+            {{$relTyp = printf "[]*%sR%sR" $tAlias.DownSingular $relAlias}}
         {{- end -}}
 
         {{$relAlias}} {{$relTyp}}
@@ -58,7 +58,7 @@ type {{$tAlias.DownSingular}}R struct {
 {{range .Table.Relationships}}
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
-type {{$tAlias.DownSingular}}{{$relAlias}}R struct{
+type {{$tAlias.DownSingular}}R{{$relAlias}}R struct{
     {{- if .IsToMany}}
         number int
     {{- end}}
