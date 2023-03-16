@@ -35,11 +35,6 @@ func (x Chain[T, B]) IsNotNull() T {
 	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isNotNull}})
 }
 
-// X create a flexible expression
-func (x Chain[T, B]) X(targets ...bob.Expression) T {
-	return X[T, B](Join{Exprs: append([]bob.Expression{x.Base}, targets...)})
-}
-
 // Equal
 func (x Chain[T, B]) EQ(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "="})
