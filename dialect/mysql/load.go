@@ -159,6 +159,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 				LeftJoin(side.ToExpr(ctx)).
 				As(alias).
 				On(on...))
+
+			// so the condition on the next "side" will be on the right table
+			parent = alias
 		}
 
 		queryMods = append(queryMods, sm.Columns(

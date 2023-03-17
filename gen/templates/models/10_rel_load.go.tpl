@@ -80,10 +80,11 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 			Name: "{{$relAlias}}",
 			Sides:  []orm.RelSide{
 				{{range $side := $rel.Sides -}}
+				{{- $fromTable := getTable $.Tables $side.From -}}
 				{{- $from := $.Aliases.Table $side.From -}}
 				{{- $to := $.Aliases.Table $side.To -}}
 				{
-					From: {{quote $table.Key}},
+					From: {{quote $fromTable.Key}},
 					To: TableNames.{{$to.UpPlural}},
 					ToExpr: {{$to.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Name,
 					{{if $side.FromColumns -}}
