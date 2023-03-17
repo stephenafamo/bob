@@ -26,7 +26,7 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
 func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec bob.Executor, m *models.{{$tAlias.UpSingular}}) (context.Context,error) {
 	var err error
 
-	{{range $index, $rel := .Table.Relationships -}}
+	{{range $index, $rel := .Table.Relationships -}}{{if not (relIsView $.Tables $rel) -}}
 		{{- if (relIsRequired $table $rel)}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 		{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
@@ -81,7 +81,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		{{end -}}
 		}
 
-	{{end}}
+	{{end}}{{end}}
 
 	return ctx, err
 }
