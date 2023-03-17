@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/mods"
 )
 
 // NewAfterPreloader returns a new AfterPreloader based on the given types
@@ -71,4 +72,27 @@ func (a *AfterPreloader) Load(ctx context.Context, exec bob.Executor, _ any) err
 	}
 
 	return nil
+}
+
+func ExtractPreloader[PL any, Q any](queryMods ...bob.Mod[Q]) ([]bob.Mod[Q], []PL) {
+	mainMods := make([]bob.Mod[Q], 0, len(queryMods))
+	preloadMods := make([]PL, 0, len(queryMods))
+	for _, m := range queryMods {
+		if preloader, ok := m.(PL); ok {
+			preloadMods = append(preloadMods, preloader)
+			continue
+		}
+
+		if nested, ok := m.(mods.QueryMods[Q]); ok {
+			mains, pls := ExtractPreloader[PL](nested...)
+			mainMods = append(mainMods, mains...)
+			preloadMods = append(preloadMods, pls...)
+			continue
+		}
+
+		// regular mod
+		mainMods = append(mainMods, m)
+	}
+
+	return mainMods, preloadMods
 }
