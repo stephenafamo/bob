@@ -1,7 +1,7 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-{{range $rel := $table.Relationships -}}
+{{range $rel := $table.Relationships -}}{{if not (relIsView $.Tables $rel) -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
@@ -199,5 +199,5 @@
   {{end -}}
 {{end -}}
 
-{{end -}}
+{{end -}}{{end -}}
 

@@ -279,6 +279,7 @@ var templateFunctions = template.FuncMap{
 	"setModelDeps":          setModelDeps,
 	"setFactoryDeps":        setFactoryDeps,
 	"relatedUpdateValues":   relatedUpdateValues,
+	"relIsView":             relIsView,
 }
 
 func getColumn(t []drivers.Table, table string, a TableAlias, column string) drivers.Column {
@@ -775,4 +776,15 @@ func uniqueColPairs(t drivers.Table) string {
 	}
 
 	return strings.Join(ret, ", ")
+}
+
+func relIsView(tables []drivers.Table, rel orm.Relationship) bool {
+	for _, s := range rel.Sides {
+		t := drivers.GetTable(tables, s.To)
+		if t.PKey == nil {
+			return true
+		}
+	}
+
+	return false
 }

@@ -69,6 +69,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 
 
 {{range $rel := $table.Relationships -}}
+{{- $isToView := relIsView $.Tables $rel -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
@@ -84,7 +85,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				{
 					From: {{quote $table.Key}},
 					To: TableNames.{{$to.UpPlural}},
-					ToExpr: {{$to.UpPlural}}Table.Name,
+					ToExpr: {{$to.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Name,
 					{{if $side.FromColumns -}}
 					FromColumns: []string{
 						{{range $name := $side.FromColumns -}}
@@ -126,7 +127,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				},
 				{{- end}}
 			},
-		}, {{$fAlias.UpPlural}}Table.Columns().Names(), opts...)
+		}, {{$fAlias.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Columns().Names(), opts...)
 }
 {{- end}}
 

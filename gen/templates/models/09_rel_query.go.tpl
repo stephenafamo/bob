@@ -4,6 +4,7 @@
 {{if $table.Relationships -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
 
 {{range $rel := $table.Relationships -}}
+{{- $isToView := relIsView $.Tables $rel -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
@@ -14,7 +15,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
-		dialect.Join[Q](typ, {{$to.UpPlural}}Table.Name(ctx)).On(
+		dialect.Join[Q](typ, {{$to.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Name(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
 				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
