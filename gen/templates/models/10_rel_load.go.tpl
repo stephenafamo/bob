@@ -79,14 +79,16 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 	return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",
 			Sides:  []orm.RelSide{
+				{{- $toTable := $table }}{{/* To be able to access the last one after the loop */}}
 				{{range $side := $rel.Sides -}}
-				{{- $fromTable := getTable $.Tables $side.From -}}
 				{{- $from := $.Aliases.Table $side.From -}}
 				{{- $to := $.Aliases.Table $side.To -}}
+				{{- $fromTable := getTable $.Tables $side.From -}}
+				{{- $toTable = getTable $.Tables $side.To -}}
 				{
 					From: {{quote $fromTable.Key}},
 					To: TableNames.{{$to.UpPlural}},
-					ToExpr: {{$to.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Name,
+					ToExpr: {{$to.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Name,
 					{{if $side.FromColumns -}}
 					FromColumns: []string{
 						{{range $name := $side.FromColumns -}}
@@ -128,7 +130,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				},
 				{{- end}}
 			},
-		}, {{$fAlias.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Columns().Names(), opts...)
+		}, {{$fAlias.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Columns().Names(), opts...)
 }
 {{- end}}
 

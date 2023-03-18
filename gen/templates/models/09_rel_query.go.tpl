@@ -4,7 +4,6 @@
 {{if $table.Relationships -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
 
 {{range $rel := $table.Relationships -}}
-{{- $isToView := relIsView $.Tables $rel -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
@@ -15,7 +14,8 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
-		dialect.Join[Q](typ, {{$to.UpPlural}}{{if $isToView}}View{{else}}Table{{end}}.Name(ctx)).On(
+		{{- $toTable := getTable $.Tables $side.To -}}
+		dialect.Join[Q](typ, {{$to.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
 				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
@@ -51,8 +51,9 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
+		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}{{if $fromTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -147,8 +148,9 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
+		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}Table.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}{{if $fromTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
 				{{- $fromCol := index $from.Columns $local -}}
