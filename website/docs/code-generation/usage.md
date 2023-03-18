@@ -199,7 +199,7 @@ For even more control, expresions are generated for every column to be used in a
 // ORDER BY "jets"."pilot_id"
 psql.Select(
     sm.Columns(models.JetColumns.Name, "count(1)"),
-    sm.From(models.JetsTable.Name()),
+    sm.From(models.JetsTable.Name(ctx)),
     sm.Where(models.JetColumns.ID.Between(50, 5000)),
     sm.OrderBy(models.JetColumns.PilotID),
 )
