@@ -59,6 +59,10 @@ func (w WhereMod[Q, C]) NotIn(slice ...C) bob.Mod[Q] {
 	return mods.Where[Q]{w.name.NotIn(Arg(values...))}
 }
 
+func (w WhereMod[Q, C]) Like(val C) bob.Mod[Q] {
+	return mods.Where[Q]{w.name.Like(Arg(val))}
+}
+
 func WhereNull[Q Filterable, C any](name Expression) WhereNullMod[Q, C] {
 	return WhereNullMod[Q, C]{
 		WhereMod: Where[Q, C](name),

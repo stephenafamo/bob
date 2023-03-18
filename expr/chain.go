@@ -107,6 +107,11 @@ func (x Chain[T, B]) Minus(target any) T {
 	return X[T, B](leftRight{operator: "-", left: x.Base, right: target})
 }
 
+// Like operator
+func (x Chain[T, B]) Like(target bob.Expression) T {
+	return X[T, B](leftRight{operator: "LIKE", left: x.Base, right: target})
+}
+
 // As does not return a new chain. Should be used at the end of an expression
 // useful for columns
 func (x Chain[T, B]) As(alias string) bob.Expression {
