@@ -8,10 +8,7 @@
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
 	return mods.QueryMods[Q]{
-		{{- range $index := until (len $rel.Sides) | reverse -}}
-		{{/* Index counts down */}}
-		{{/* This also flips the meaning of $from and $to */}}
-		{{- $side := index $rel.Sides $index -}}
+		{{range $index, $side := $rel.Sides -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $toTable := getTable $.Tables $side.To -}}
@@ -23,18 +20,18 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				{{if eq $index 0 -}}sm.Where({{end -}}
-				{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}}),
-				{{- if eq $index 0 -}}),{{- end -}}
+				sm.Where(
+					{{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}}),
+				),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				{{if eq $index 0 -}}sm.Where({{end -}}
-				{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}}),
-				{{- if eq $index 0 -}}),{{- end -}}
+				sm.Where(
+					{{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}}),
+				),
 			{{- end}}
 		),
-		{{- end}}
+		{{end}}
 	}
 }
 {{end}}
