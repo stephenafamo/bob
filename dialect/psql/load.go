@@ -25,6 +25,15 @@ var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 // it can be used to prevent N+1 queries by loading relationships in batches
 type Loader = internal.Loader[*dialect.SelectQuery]
 
+// Preloader builds a query mod that modifies the original query to retrieve related fields
+// while it can be used as a queryMod, it does not have any direct effect.
+// if using manually, the ApplyPreload method should be called
+// with the query's context AFTER other mods have been applied
+type Preloader = internal.Preloader[*dialect.SelectQuery]
+
+// Settings for preloading relationships
+type PreloadSettings = internal.PreloadSettings[*dialect.SelectQuery]
+
 func OnlyColumns(cols ...string) internal.PreloadOption[*dialect.SelectQuery] {
 	return internal.OnlyColumns[*dialect.SelectQuery](cols)
 }
