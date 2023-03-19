@@ -34,15 +34,18 @@ type Preloader = internal.Preloader[*dialect.SelectQuery]
 // Settings for preloading relationships
 type PreloadSettings = internal.PreloadSettings[*dialect.SelectQuery]
 
-func OnlyColumns(cols ...string) internal.PreloadOption[*dialect.SelectQuery] {
+// Modifies preloading relationships
+type PreloadOption = internal.PreloadOption[*dialect.SelectQuery]
+
+func OnlyColumns(cols ...string) PreloadOption {
 	return internal.OnlyColumns[*dialect.SelectQuery](cols)
 }
 
-func ExceptColumns(cols ...string) internal.PreloadOption[*dialect.SelectQuery] {
+func ExceptColumns(cols ...string) PreloadOption {
 	return internal.ExceptColumns[*dialect.SelectQuery](cols)
 }
 
-func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...internal.PreloadOption[*dialect.SelectQuery]) internal.Preloader[*dialect.SelectQuery] {
+func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {
 	settings := internal.NewPreloadSettings[T, Ts, *dialect.SelectQuery](cols)
 	for _, o := range opts {
 		if o == nil {
@@ -90,7 +93,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...intern
 	}, rel.Name, settings)
 }
 
-func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt internal.PreloadSettings[*dialect.SelectQuery]) internal.Preloader[*dialect.SelectQuery] {
+func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt PreloadSettings) Preloader {
 	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(ctx)
 		prefix := alias + "."
