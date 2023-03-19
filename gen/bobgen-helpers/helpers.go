@@ -144,7 +144,7 @@ func setColumns(c *gen.Config) {
 func flipRelationships(config *gen.Config) {
 	for _, rels := range config.Relationships {
 		for _, rel := range rels {
-			if len(rel.Sides) < 1 {
+			if rel.NoReverse || len(rel.Sides) < 1 {
 				continue
 			}
 			ftable := rel.Sides[len(rel.Sides)-1].To
