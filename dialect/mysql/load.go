@@ -23,113 +23,23 @@ var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
 // Loader builds a query mod that makes an extra query after the object is retrieved
 // it can be used to prevent N+1 queries by loading relationships in batches
-type Loader func(ctx context.Context, exec bob.Executor, retrieved any) error
+type Loader = internal.Loader[*dialect.SelectQuery]
 
-// Load is called after the original object is retrieved
-func (l Loader) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
-	return l(ctx, exec, retrieved)
+func OnlyColumns(cols ...string) internal.PreloadOption[*dialect.SelectQuery] {
+	return internal.OnlyColumns[*dialect.SelectQuery](cols)
 }
 
-// Apply satisfies the bob.Mod[*dialect.SelectQuery] interface
-func (l Loader) Apply(q *dialect.SelectQuery) {
-	q.AppendLoader(l)
+func ExceptColumns(cols ...string) internal.PreloadOption[*dialect.SelectQuery] {
+	return internal.ExceptColumns[*dialect.SelectQuery](cols)
 }
 
-// modifyPreloader makes a Loader also work as a mod for a [Preloader]
-func (l Loader) modifyPreloader(s *preloadSettings) {
-	s.extraLoader.AppendLoader(l)
-}
-
-// Preloader must be a preload option to be able to have subloaders
-var (
-	_ PreloadOption = Preloader(nil)
-	_ preloader     = Preloader(nil)
-)
-
-// Preloader builds a query mod that modifies the original query to retrieve related fields
-// while it can be used as a queryMod, it does not have any direct effect.
-// if using manually, the ApplyPreload method should be called
-// with the query's context AFTER other mods have been applied
-type Preloader func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader)
-
-// ApplyPreload does a few things to enable preloading
-// 1. It modifies the query to join the preloading table and the extra columns to retrieve
-// 2. It modifies the mapper to scan the new columns.
-// 3. It calls the original object's Preload method with the loaded object
-func (l Preloader) ApplyPreload(ctx context.Context, q *dialect.SelectQuery) {
-	mod, mapperMod, afterLoaders := l(ctx)
-
-	mod.Apply(q)
-	q.AppendMapperMod(mapperMod)
-	q.AppendLoader(afterLoaders...)
-}
-
-// Apply satisfies bob.Mod[*dialect.SelectQuery].
-// included for convenience, does not have any effect by itself
-// to preload with custom queries, the ApplyPreload method should be used
-func (l Preloader) Apply(s *dialect.SelectQuery) {}
-
-// modifyPreloader makes a Loader also work as a mod for a [Preloader]
-func (l Preloader) modifyPreloader(s *preloadSettings) {
-	s.subLoaders = append(s.subLoaders, l)
-}
-
-type preloader interface {
-	ApplyPreload(context.Context, *dialect.SelectQuery)
-}
-
-type preloadable interface {
-	Preload(name string, rel any) error
-}
-
-func newPreloadSettings[T any, Ts ~[]T](cols []string) preloadSettings {
-	return preloadSettings{
-		columns:     cols,
-		extraLoader: internal.NewAfterPreloader[T, Ts](),
-	}
-}
-
-type preloadSettings struct {
-	columns     []string
-	subLoaders  []Preloader
-	extraLoader *internal.AfterPreloader
-}
-
-type PreloadOption interface {
-	modifyPreloader(*preloadSettings)
-}
-
-type onlyColumnsOpt []string
-
-func (c onlyColumnsOpt) modifyPreloader(el *preloadSettings) {
-	if len(c) > 0 {
-		el.columns = orm.Only(el.columns, c...)
-	}
-}
-
-type exceptColumnsOpt []string
-
-func (c exceptColumnsOpt) modifyPreloader(el *preloadSettings) {
-	if len(c) > 0 {
-		el.columns = orm.Except(el.columns, c...)
-	}
-}
-
-func OnlyColumns(cols ...string) onlyColumnsOpt {
-	return onlyColumnsOpt(cols)
-}
-
-func ExceptColumns(cols ...string) exceptColumnsOpt {
-	return exceptColumnsOpt(cols)
-}
-
-func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {
-	settings := newPreloadSettings[T, Ts](cols)
+func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...internal.PreloadOption[*dialect.SelectQuery]) internal.Preloader[*dialect.SelectQuery] {
+	settings := internal.NewPreloadSettings[T, Ts, *dialect.SelectQuery](cols)
 	for _, o := range opts {
 		if o == nil {
 			continue
 		}
-		o.modifyPreloader(&settings)
+		o.ModifyPreloadSettings(&settings)
 	}
 
 	return buildPreloader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
@@ -165,22 +75,22 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		}
 
 		queryMods = append(queryMods, sm.Columns(
-			orm.NewColumns(settings.columns...).WithParent(alias).WithPrefix(alias+"."),
+			orm.NewColumns(settings.Columns...).WithParent(alias).WithPrefix(alias+"."),
 		))
 		return alias, queryMods
 	}, rel.Name, settings)
 }
 
-func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt preloadSettings) Preloader {
+func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt internal.PreloadSettings[*dialect.SelectQuery]) internal.Preloader[*dialect.SelectQuery] {
 	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(ctx)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
-		extraLoaders := []bob.Loader{opt.extraLoader}
+		extraLoaders := []bob.Loader{opt.ExtraLoader}
 
 		ctx = context.WithValue(ctx, orm.CtxLoadParentAlias, alias)
-		for _, l := range opt.subLoaders {
+		for _, l := range opt.SubLoaders {
 			queryMods = append(queryMods, l)
 			queryMod, mapperMod, extraLoader := l(ctx)
 			if queryMod != nil {
@@ -205,7 +115,7 @@ func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dial
 			)(ctx, cols)
 
 			return before, func(link, retrieved any) error {
-				loader, isLoader := retrieved.(preloadable)
+				loader, isLoader := retrieved.(internal.Preloadable)
 				if !isLoader {
 					return fmt.Errorf("object %T cannot pre load", retrieved)
 				}
@@ -215,7 +125,7 @@ func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dial
 					return err
 				}
 
-				if err = opt.extraLoader.Collect(t); err != nil {
+				if err = opt.ExtraLoader.Collect(t); err != nil {
 					return err
 				}
 

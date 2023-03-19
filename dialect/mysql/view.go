@@ -67,7 +67,7 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := Select(sm.From(v.NameAs(ctx)))
 
-	mainMods, preloadMods := internal.ExtractPreloader[preloader](queryMods...)
+	mainMods, preloadMods := internal.ExtractPreloader(queryMods...)
 	for _, m := range mainMods {
 		q.Apply(m)
 	}
