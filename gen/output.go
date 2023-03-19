@@ -75,18 +75,18 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
+func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:               o,
 		data:                 data,
 		templates:            o.templates,
 		combineImportsOnType: true,
 		dirExtensions:        dirExts,
-	})
+	}, padding)
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T]) error {
+func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:               o,
 		data:                 data,
@@ -94,31 +94,31 @@ func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[
 		combineImportsOnType: false,
 		isTest:               true,
 		dirExtensions:        dirExts,
-	})
+	}, padding)
 }
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *templateData[T]) error {
+func generateSingletonOutput[T any](o *Output, data *templateData[T], padding int) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.templates,
-	})
+	}, padding)
 }
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *templateData[T]) error {
+func generateSingletonTestOutput[T any](o *Output, data *templateData[T], padding int) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.testTemplates,
 		isTest:    true,
-	})
+	}, padding)
 }
 
-func executeTemplates[T any](e executeTemplateData[T]) error {
+func executeTemplates[T any](e executeTemplateData[T], padding int) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			headerOut := templateHeaderByteBuffer
@@ -144,9 +144,10 @@ func executeTemplates[T any](e executeTemplateData[T]) error {
 
 			// Skip writing the file if the content is empty
 			if out.Len()-prevLen < 1 {
-				fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.output.OutFolder, fName)
+				fmt.Fprintf(os.Stderr, "%s/%-*s SKIPPED\n", e.output.OutFolder, padding, fName)
 				continue
 			}
+			fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, fName, out.Len()-prevLen)
 
 			imps := e.data.Importer.ToList()
 			if isGo {
@@ -168,7 +169,7 @@ func executeTemplates[T any](e executeTemplateData[T]) error {
 	return nil
 }
 
-func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
+func executeSingletonTemplates[T any](e executeTemplateData[T], padding int) error {
 	headerOut := templateHeaderByteBuffer
 	out := templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
@@ -190,8 +191,10 @@ func executeSingletonTemplates[T any](e executeTemplateData[T]) error {
 
 		// Skip writing the file if the content is empty
 		if out.Len()-prevLen < 1 {
+			fmt.Fprintf(os.Stderr, "%s/%-*s SKIPPED\n", e.output.OutFolder, padding, normalized)
 			continue
 		}
+		fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, normalized, out.Len()-prevLen)
 
 		if isGo {
 			imps := e.data.Importer.ToList()

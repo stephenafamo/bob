@@ -114,12 +114,14 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 			data.TagIgnore[v] = struct{}{}
 		}
 
-		if err := generateSingletonOutput(o, data); err != nil {
+		padding := outputPadding(o.templates.Templates(), dbInfo.Tables)
+
+		if err := generateSingletonOutput(o, data, padding); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
 		}
 
 		if !s.Config.NoTests {
-			if err := generateSingletonTestOutput(o, data); err != nil {
+			if err := generateSingletonTestOutput(o, data, padding); err != nil {
 				return fmt.Errorf("unable to generate singleton test template output: %w", err)
 			}
 		}
@@ -134,13 +136,13 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 			data.Table = table
 
 			// Generate the regular templates
-			if err := generateOutput(o, regularDirExtMap, data); err != nil {
+			if err := generateOutput(o, regularDirExtMap, data, padding); err != nil {
 				return fmt.Errorf("unable to generate output: %w", err)
 			}
 
 			// Generate the test templates
 			if !s.Config.NoTests {
-				if err := generateTestOutput(o, testDirExtMap, data); err != nil {
+				if err := generateTestOutput(o, testDirExtMap, data, padding); err != nil {
 					return fmt.Errorf("unable to generate test output: %w", err)
 				}
 			}
@@ -256,6 +258,24 @@ func groupTemplates(templates *templateList) dirExtMap {
 	}
 
 	return dirs
+}
+
+func outputPadding(tpls []string, tables []drivers.Table) int {
+	longest := 0
+	for _, tplName := range tpls {
+		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
+		if isSingleton && len(normalized) > longest {
+			longest = len(normalized)
+		}
+	}
+
+	for _, t := range tables {
+		if len(t.Name)+6 > longest { // padd for any extra suffix like _model
+			longest = len(t.Name) + 6
+		}
+	}
+
+	return longest
 }
 
 // processTypeReplacements checks the config for type replacements
