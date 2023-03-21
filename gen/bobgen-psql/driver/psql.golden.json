@@ -4442,6 +4442,18 @@
 					"domain_name": "",
 					"type": "int",
 					"imports": null
+				},
+				{
+					"name": "referrer",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int",
+					"imports": null
 				}
 			],
 			"p_key": {
@@ -4465,6 +4477,16 @@
 					"name": "users_party_id_fkey",
 					"columns": [
 						"party_id"
+					],
+					"foreign_table": "users",
+					"foreign_columns": [
+						"id"
+					]
+				},
+				{
+					"name": "users_referrer_fkey",
+					"columns": [
+						"referrer"
 					],
 					"foreign_table": "users",
 					"foreign_columns": [
@@ -4581,6 +4603,56 @@
 							"ToWhere": null,
 							"ToKey": true,
 							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false,
+					"NoReverse": false,
+					"Alias": ""
+				},
+				{
+					"Name": "users_referrer_fkey",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "users",
+							"To": "users",
+							"Columns": null,
+							"FromColumns": [
+								"referrer"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": true
+						}
+					],
+					"Ignored": false,
+					"NoReverse": false,
+					"Alias": ""
+				},
+				{
+					"Name": "users_referrer_fkey__self_join_reverse",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "users",
+							"To": "users",
+							"Columns": null,
+							"FromColumns": [
+								"id"
+							],
+							"ToColumns": [
+								"referrer"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": false,
 							"KeyNullable": true
 						}
 					],
