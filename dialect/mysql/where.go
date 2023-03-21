@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -62,10 +61,6 @@ func (w WhereMod[Q, C]) NotIn(slice ...C) bob.Mod[Q] {
 
 func (w WhereMod[Q, C]) Like(val C) bob.Mod[Q] {
 	return mods.Where[Q]{w.name.Like(Arg(val))}
-}
-
-func (w WhereMod[Q, C]) ILike(val C) bob.Mod[Q] {
-	return mods.Where[Q]{expr.OP("ILIKE", w.name, Arg(val))}
 }
 
 func WhereNull[Q Filterable, C any](name Expression) WhereNullMod[Q, C] {
