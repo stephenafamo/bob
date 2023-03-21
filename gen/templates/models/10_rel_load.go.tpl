@@ -154,9 +154,9 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 	}
 
 	{{if $rel.IsToMany -}}
-	related, err := o.{{$relAlias}}(ctx, exec, mods...).All()
+	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
 	{{else -}}
-	related, err := o.{{$relAlias}}(ctx, exec, mods...).One()
+	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).One()
 	{{end -}}
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
