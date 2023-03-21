@@ -40,7 +40,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
-func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
@@ -85,7 +85,7 @@ func (o *{{$tAlias.UpSingular}}) {{$relAlias}}(ctx context.Context, exec bob.Exe
 {{$fromAlias := $.Aliases.Table $side.From -}}
 {{$toAlias := $.Aliases.Table $side.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $side.FromColumns) 0 -}}
 	PKArgs := make([]bob.Expression, 0, len(os))
 	for _, o := range os {
@@ -125,7 +125,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bo
 {{$lastFrom := $.Aliases.Table $lastSide.From -}}
 {{$lastTo := $.Aliases.Table $lastSide.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $firstSide.FromColumns) 0 -}}
 	PKArgs := make([]bob.Expression, 0, len(os))
 	for _, o := range os {

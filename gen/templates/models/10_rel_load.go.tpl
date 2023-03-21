@@ -195,7 +195,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	  return nil
 	}
 
-	{{$fAlias.DownPlural}}, err := os.{{$relAlias}}(ctx, exec, mods...).All()
+	{{$fAlias.DownPlural}}, err := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
 	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		return err
 	}
@@ -247,7 +247,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	  return nil
 	}
 
-	q := os.{{$relAlias}}(ctx, exec, append(
+	q := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, append(
 		mods, 
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}

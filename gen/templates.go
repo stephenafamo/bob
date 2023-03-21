@@ -280,6 +280,7 @@ var templateFunctions = template.FuncMap{
 	"setFactoryDeps":        setFactoryDeps,
 	"relatedUpdateValues":   relatedUpdateValues,
 	"relIsView":             relIsView,
+	"relQueryMethodName":    relQueryMethodName,
 }
 
 func getColumn(t []drivers.Table, table string, a TableAlias, column string) drivers.Column {
@@ -787,4 +788,15 @@ func relIsView(tables []drivers.Table, rel orm.Relationship) bool {
 	}
 
 	return false
+}
+
+func relQueryMethodName(tAlias TableAlias, relAlias string) string {
+	for _, colAlias := range tAlias.Columns {
+		// clash with field name
+		if colAlias == relAlias {
+			return "Related" + relAlias
+		}
+	}
+
+	return relAlias
 }
