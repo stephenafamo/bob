@@ -22,8 +22,11 @@ create table users (
 	parent_id int,
     party_id int UNIQUE,
 
+	referrer int,
+
 	foreign key (parent_id) references users (id),
-	foreign key (party_id) references users (id)
+	foreign key (party_id) references users (id),
+	foreign key (referrer) references users (id)
 );
 
 comment on column users.email_validated is 'Has the email address been tested?';
