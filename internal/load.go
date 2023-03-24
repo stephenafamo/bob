@@ -159,5 +159,3 @@ func (a *AfterPreloader) Load(ctx context.Context, exec bob.Executor, _ any) err
 
 	return nil
 }
-
-
