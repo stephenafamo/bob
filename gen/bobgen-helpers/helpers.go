@@ -143,14 +143,22 @@ func setColumns(c *gen.Config) {
 
 func flipRelationships(config *gen.Config) {
 	for _, rels := range config.Relationships {
+	RelsLoop:
 		for _, rel := range rels {
 			if rel.NoReverse || len(rel.Sides) < 1 {
 				continue
 			}
 			ftable := rel.Sides[len(rel.Sides)-1].To
-			config.Relationships[ftable] = append(
-				config.Relationships[ftable], flipRelationship(rel),
-			)
+
+			// Check if the foreign table already has the
+			// reverse configured
+			existingRels := config.Relationships[ftable]
+			for _, existing := range existingRels {
+				if existing.Name == rel.Name {
+					continue RelsLoop
+				}
+			}
+			config.Relationships[ftable] = append(existingRels, flipRelationship(rel))
 		}
 	}
 }
