@@ -512,10 +512,10 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 	}
 
 	// Select ONLY the primary keys
-	t.q.Expression.SelectList.Columns = pkCols
+	t.BaseQuery.Expression.SelectList.Columns = pkCols
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(um.Where(
-		Group(pkGroup...).In(t.q.Expression),
+		Group(pkGroup...).In(t.BaseQuery.Expression),
 	))
 
 	result, err := q.Exec(t.ctx, t.exec)
@@ -540,10 +540,10 @@ func (t *TableQuery[T, Tslice, Tset]) DeleteAll() (int64, error) {
 	}
 
 	// Select ONLY the primary keys
-	t.q.Expression.SelectList.Columns = pkCols
+	t.BaseQuery.Expression.SelectList.Columns = pkCols
 	// WHERE (col1, col2) IN (SELECT ...)
 	q.Apply(dm.Where(
-		Group(pkGroup...).In(t.q.Expression),
+		Group(pkGroup...).In(t.BaseQuery.Expression),
 	))
 
 	result, err := q.Exec(t.ctx, t.exec)

@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"fmt"
-	"io"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -84,30 +83,16 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 
 // Adds table name et al
 func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := Select(sm.From(v.NameAs(ctx)))
-
-	mainMods, preloadMods := internal.ExtractPreloader(queryMods...)
-	for _, m := range mainMods {
-		q.Apply(m)
+	q := &ViewQuery[T, Tslice]{
+		BaseQuery: Select(sm.From(v.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      v,
 	}
 
-	// Append the table columns
-	if len(q.Expression.SelectList.Columns) == 0 {
-		q.Expression.AppendSelect(v.Columns())
-	}
+	q.Apply(queryMods...)
 
-	// Do this after attaching table columns if necessary
-	for _, p := range preloadMods {
-		p.ApplyPreload(ctx, q.Expression)
-	}
-
-	return &ViewQuery[T, Tslice]{
-		q:                q,
-		ctx:              ctx,
-		exec:             exec,
-		scanner:          v.scanner,
-		afterSelectHooks: &v.AfterSelectHooks,
-	}
+	return q
 }
 
 // Prepare a statement that will be mapped to the view's type
@@ -136,26 +121,34 @@ func (v *View[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.Ex
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	ctx              context.Context
-	exec             bob.Executor
-	q                bob.BaseQuery[*dialect.SelectQuery]
-	scanner          scan.Mapper[T]
-	afterSelectHooks *orm.Hooks[T]
+	bob.BaseQuery[*dialect.SelectQuery]
+	ctx  context.Context
+	exec bob.Executor
+	view *View[T, Ts]
 }
 
-func (v *ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return v.q.WriteQuery(w, start)
-}
+func (v *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) {
+	mainMods, preloadMods := internal.ExtractPreloader(queryMods...)
+	for _, m := range mainMods {
+		v.BaseQuery.Apply(m)
+	}
 
-func (v *ViewQuery[T, Ts]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return v.q.WriteSQL(w, d, start)
+	// Append the table columns
+	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
+		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
+	}
+
+	// Do this after attaching table columns if necessary
+	for _, p := range preloadMods {
+		p.ApplyPreload(v.ctx, v.BaseQuery.Expression)
+	}
 }
 
 func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
 			for _, val := range retrieved {
-				_, err := v.afterSelectHooks.Do(ctx, exec, val)
+				_, err := v.view.AfterSelectHooks.Do(ctx, exec, val)
 				if err != nil {
 					return err
 				}
@@ -168,8 +161,8 @@ func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 
 // First matching row
 func (v *ViewQuery[T, Tslice]) One() (T, error) {
-	v.q.Expression.Limit.SetLimit(1)
-	val, err := bob.One(v.ctx, v.exec, v.q, v.scanner, v.afterSelect(v.ctx, v.exec))
+	v.BaseQuery.Expression.Limit.SetLimit(1)
+	val, err := bob.One(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 	if err != nil {
 		return val, err
 	}
@@ -179,7 +172,7 @@ func (v *ViewQuery[T, Tslice]) One() (T, error) {
 
 // All matching rows
 func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	vals, err := bob.Allx[T, Tslice](v.ctx, v.exec, v.q, v.scanner, v.afterSelect(v.ctx, v.exec))
+	vals, err := bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 	if err != nil {
 		return nil, err
 	}
@@ -189,13 +182,13 @@ func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
 
 // Cursor to scan through the results
 func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
-	return bob.Cursor(v.ctx, v.exec, v.q, v.scanner, v.afterSelect(v.ctx, v.exec))
+	return bob.Cursor(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count() (int64, error) {
-	v.q.Expression.SelectList.Columns = []any{"count(1)"}
-	return bob.One(v.ctx, v.exec, v.q, scan.SingleColumnMapper[int64])
+	v.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
+	return bob.One(v.ctx, v.exec, v.BaseQuery, scan.SingleColumnMapper[int64])
 }
 
 // Exists checks if there is any matching row
