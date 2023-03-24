@@ -62,7 +62,7 @@ type View[T any, Tslice ~[]T] struct {
 	AfterSelectHooks orm.Hooks[T]
 }
 
-func (v *View[T, Tslice]) Name(ctx context.Context) bob.Expression {
+func (v *View[T, Tslice]) Name(ctx context.Context) Expression {
 	// schema is not empty, never override
 	if v.schema != "" {
 		return Quote(v.schema, v.name)
@@ -73,7 +73,7 @@ func (v *View[T, Tslice]) Name(ctx context.Context) bob.Expression {
 }
 
 func (v *View[T, Tslice]) NameAs(ctx context.Context) bob.Expression {
-	return v.Name(ctx).(Expression).As(v.alias)
+	return v.Name(ctx).As(v.alias)
 }
 
 // Returns a column list
