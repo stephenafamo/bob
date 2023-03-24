@@ -1,7 +1,7 @@
 {{define "join_helpers" -}}
 var (
-	SelectJoins = joins[*dialect.SelectQuery]
-	UpdateJoins = joins[*dialect.UpdateQuery]
+	SelectJoins = getJoins[*dialect.SelectQuery]
+	UpdateJoins = getJoins[*dialect.UpdateQuery]
 )
 {{- end}}
 
