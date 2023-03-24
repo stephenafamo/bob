@@ -26,26 +26,37 @@ type (
 
 // Load is an embeddable struct that enables Preloading and AfterLoading
 type Load[Q any] struct {
-	LoadFuncs         []Loader
-	PreloadMapperMods []scan.MapperMod
+	loadContext       context.Context
+	loadFuncs         []Loader
+	preloadMapperMods []scan.MapperMod
+}
+
+// GetLoadContext
+func (l *Load[Q]) GetLoadContext() context.Context {
+	return l.loadContext
+}
+
+// SetLoadContext
+func (l *Load[Q]) SetLoadContext(ctx context.Context) {
+	l.loadContext = ctx
 }
 
 // GetMapperMods implements the [MapperModder] interface
 func (l *Load[Q]) GetMapperMods() []scan.MapperMod {
-	return l.PreloadMapperMods
+	return l.preloadMapperMods
 }
 
 // AppendMapperMod adds to the query's mapper mods
 func (l *Load[Q]) AppendMapperMod(f scan.MapperMod) {
-	l.PreloadMapperMods = append(l.PreloadMapperMods, f)
+	l.preloadMapperMods = append(l.preloadMapperMods, f)
 }
 
 // GetLoaders implements the [Loadable] interface
 func (l *Load[Q]) GetLoaders() []Loader {
-	return l.LoadFuncs
+	return l.loadFuncs
 }
 
 // AppendLoader add to the query's loaders
 func (l *Load[Q]) AppendLoader(f ...Loader) {
-	l.LoadFuncs = append(l.LoadFuncs, f...)
+	l.loadFuncs = append(l.loadFuncs, f...)
 }

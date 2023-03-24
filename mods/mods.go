@@ -38,6 +38,12 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
+type Preload[Q interface{ AppendPreloadSelect(columns ...any) }] []any
+
+func (s Preload[Q]) Apply(q Q) {
+	q.AppendPreloadSelect(s...)
+}
+
 type Join[Q interface{ AppendJoin(clause.Join) }] clause.Join
 
 func (j Join[Q]) Apply(q Q) {

@@ -86,9 +86,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			parent = alias
 		}
 
-		queryMods = append(queryMods, sm.Columns(
-			orm.NewColumns(settings.Columns...).WithParent(alias).WithPrefix(alias+"."),
-		))
+		queryMods = append(queryMods, mods.Preload[*dialect.SelectQuery]{
+			orm.NewColumns(settings.Columns...).WithParent(alias).WithPrefix(alias + "."),
+		})
 		return alias, queryMods
 	}, rel.Name, settings)
 }
