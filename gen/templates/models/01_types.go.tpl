@@ -130,7 +130,7 @@ var {{$tAlias.UpSingular}}Columns = struct {
 }{
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{$colAlias}}: {{$.Dialect}}.Quote("{{$table.Key}}", "{{$column.Name}}"),
+	{{$colAlias}}: {{$.Dialect}}.Quote({{quote $table.Key}}, {{quote $column.Name}}),
 	{{end -}}
 }
 
@@ -150,9 +150,9 @@ func {{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable]() {{$tAlias.DownSin
 			{{range $column := $table.Columns -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}
 				{{- if $column.Nullable -}}
-					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$.Dialect}}.Quote("{{$table.Key}}", "{{$column.Name}}")),
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$tAlias.UpSingular}}Columns.{{$colAlias}}),
 				{{- else -}}
-					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$.Dialect}}.Quote({{quote $table.Key}}, {{quote $column.Name}})),
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$tAlias.UpSingular}}Columns.{{$colAlias}}),
 				{{- end}}
 			{{end -}}
 	}
