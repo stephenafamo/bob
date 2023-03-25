@@ -1,6 +1,7 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
+const {Joi} = require("@docusaurus/utils-validation")
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
@@ -169,6 +170,54 @@ const config = {
         routeBasePath: 'vs',
         sidebarPath: require.resolve('./sidebars.js'),
         editUrl: 'https://github.com/stephenafamo/bob/tree/main/website/',
+      },
+    ],
+    [
+      function pluginAnalytics(
+        /** @type {import('@docusaurus/types').LoadContext} */
+        context,
+        /** @type {{websiteID: string}} */
+        options
+      ) {
+        const url = new URL(context.siteConfig.url)
+        const isProd = process.env.NODE_ENV === "production";
+
+        /** @type {import('Joi').ObjectSchema<{websiteID: string}>} */
+        const pluginOptionsSchema = Joi.object({
+          websiteID: Joi.string().guid().required(),
+        })
+
+        const {value: cleanOptions, error} = pluginOptionsSchema.validate(options, {allowUnknown: true})
+        if (error?.details) {
+          throw (error)
+        }
+
+        const {websiteID} = cleanOptions;
+
+        return {
+          name: "docusaurus-plugin-analytics",
+          async contentLoaded({actions}) {
+            actions.setGlobalData(options);
+          },
+          injectHtmlTags() {
+            let baseUrl = `http://swishink.test`
+            if (isProd) {
+              baseUrl = `https://swish.ink`
+            }
+
+            return {
+              postBodyTags: [
+                `<script async defer data-api-url="${baseUrl}/" data-hostname="${websiteID}.${url.hostname}" data-collect-dnt="true" src="${baseUrl}/assets/js/latest.js"></script>`,
+                `<noscript><img src="${baseUrl}/simple.gif?collect-dnt=true&hostname=${websiteID}.${url.hostname}" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>`,
+
+              ],
+            };
+          },
+        };
+      },
+      /** @type {{websiteID: string}} */
+      {
+        websiteID: "e84c4b3f-1915-5441-b601-d1b85dce7329", // Required
       },
     ],
     async function tailwindPlugin(_context, _options) {
