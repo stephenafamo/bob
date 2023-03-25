@@ -103,7 +103,6 @@ func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dial
 
 		ctx = context.WithValue(ctx, orm.CtxLoadParentAlias, alias)
 		for _, l := range opt.SubLoaders {
-			queryMods = append(queryMods, l)
 			queryMod, mapperMod, extraLoader := l(ctx)
 			if queryMod != nil {
 				queryMods = append(queryMods, queryMod)
