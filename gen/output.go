@@ -70,30 +70,27 @@ type executeTemplateData[T any] struct {
 	templates     *templateList
 	dirExtensions dirExtMap
 
-	combineImportsOnType bool
-	isTest               bool
+	isTest bool
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
 func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
-		output:               o,
-		data:                 data,
-		templates:            o.templates,
-		combineImportsOnType: true,
-		dirExtensions:        dirExts,
+		output:        o,
+		data:          data,
+		templates:     o.templates,
+		dirExtensions: dirExts,
 	}, padding)
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
 func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
-		output:               o,
-		data:                 data,
-		templates:            o.testTemplates,
-		combineImportsOnType: false,
-		isTest:               true,
-		dirExtensions:        dirExts,
+		output:        o,
+		data:          data,
+		templates:     o.testTemplates,
+		isTest:        true,
+		dirExtensions: dirExts,
 	}, padding)
 }
 
