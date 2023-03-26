@@ -1,14 +1,14 @@
 package sqlite_test
 
 import (
-	"database/sql"
-	"strings"
+	"errors"
 	"testing"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
-	_ "modernc.org/sqlite"
+	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
 
 func TestSelect(t *testing.T) {
@@ -82,13 +82,29 @@ func TestSelect(t *testing.T) {
 	testutils.RunTests(t, examples, formatter)
 }
 
-var db, _ = sql.Open("sqlite", ":memory:")
-
 func formatter(s string) (string, error) {
-	_, err := db.Exec(s)
+	input := antlr.NewInputStream(s)
+	lexer := sqliteparser.NewSQLiteLexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+	p := sqliteparser.NewSQLiteParser(stream)
 
-	if strings.Contains(err.Error(), "syntax error") {
-		return "", err
+	el := &errorListener{}
+	p.AddErrorListener(el)
+
+	tree := p.Parse()
+	if el.err != "" {
+		return "", errors.New(el.err)
 	}
-	return testutils.Clean(s), nil
+
+	return tree.GetText(), nil
+}
+
+type errorListener struct {
+	*antlr.DefaultErrorListener
+
+	err string
+}
+
+func (el *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	el.err = msg
 }

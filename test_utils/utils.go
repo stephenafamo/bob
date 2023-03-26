@@ -49,8 +49,6 @@ func QueryDiff(a, b string, clean FormatFunc) (string, error) {
 		return "", fmt.Errorf("%s\n%w", b, err)
 	}
 
-	// fmt.Printf("AC: %s\n", cleanA)
-	// fmt.Printf("BC: %s\n", cleanB)
 	return cmp.Diff(cleanA, cleanB), nil
 }
 

@@ -22,9 +22,14 @@ func TestDelete(t *testing.T) {
 			Query: mysql.Delete(
 				dm.From("films"),
 				dm.From("actors"),
+				dm.Using("films"),
+				dm.InnerJoin("film_actors").OnEQ(mysql.Raw("films.id"), mysql.Raw("film_actors.film_id")),
+				dm.InnerJoin("actors").OnEQ(mysql.Raw("film_actors.actor_id"), mysql.Raw("actors.id")),
 				dm.Where(mysql.Quote("kind").EQ(mysql.Arg("Drama"))),
 			),
-			ExpectedSQL:  "DELETE FROM films, actors WHERE (`kind` = ?)",
+			ExpectedSQL: `DELETE FROM films, actors USING films
+			` + "INNER JOIN film_actors ON ((films.id) = (film_actors.film_id))" + `
+			` + "INNER JOIN actors ON ((film_actors.actor_id) = (actors.id)) WHERE (`kind` = ?)",
 			ExpectedArgs: []any{"Drama"},
 		},
 		"with limit and offest": {
@@ -49,5 +54,5 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }

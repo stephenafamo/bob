@@ -1,11 +1,14 @@
 package mysql_test
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
+	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
 )
 
 func TestSelect(t *testing.T) {
@@ -38,8 +41,8 @@ func TestSelect(t *testing.T) {
 							OVER (PARTITION BY presale_id ORDER BY created_date)
 							 - created_date) AS ` + "`difference`" + `
 						FROM presales_presalestatus
-					) AS ` + "`differnce_by_status`" + `
-					WHERE (` + "`status`" + ` IN ('A', 'B', 'C'))
+					` + ") AS `differnce_by_status`" + `
+					` + "WHERE (`status` IN ('A', 'B', 'C'))" + `
 					GROUP BY status`,
 			Query: mysql.Select(
 				sm.Columns("status", mysql.F("avg", "difference")),
@@ -69,27 +72,32 @@ func TestSelect(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }
 
-// some bugs to work out for use
-//  1. Does not understand multiple tables syntax
-//  2. Does not understand aliases in upsert
-// In general, TIDB's parser is not updated for MySQL 8.0
+func formatter(s string) (string, error) {
+	input := antlr.NewInputStream(s)
+	lexer := mysqlparser.NewMySqlLexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+	p := mysqlparser.NewMySqlParser(stream)
 
-// var p = parser.New()
+	el := &errorListener{}
+	p.AddErrorListener(el)
 
-// func formatter(s string) (string, error) {
-// node, err := p.ParseOneStmt(s, "", "")
-// if err != nil {
-// return "", err
-// }
+	tree := p.Root()
+	if el.err != "" {
+		return "", errors.New(el.err)
+	}
 
-// var buf bytes.Buffer
-// err = node.Restore(format.NewRestoreCtx(format.DefaultRestoreFlags, &buf))
-// if err != nil {
-// return "", err
-// }
+	return tree.GetText(), nil
+}
 
-// return buf.String(), nil
-// }
+type errorListener struct {
+	*antlr.DefaultErrorListener
+
+	err string
+}
+
+func (el *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	el.err = msg
+}
