@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -14,8 +13,6 @@ import (
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
-
-var ErrNothingToUpdate = errors.New("nothing to update")
 
 func NewTable[T any, Tset any](schema, tableName string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](schema, tableName)
@@ -195,7 +192,7 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
 	if len(columns) == 0 {
-		return 0, ErrNothingToUpdate
+		return 0, orm.ErrNothingToUpdate
 	}
 
 	for _, row := range rows {
@@ -494,7 +491,7 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
 	if len(columns) == 0 {
-		return 0, ErrNothingToUpdate
+		return 0, orm.ErrNothingToUpdate
 	}
 
 	q := Update(um.Table(t.nameExpr(t.ctx)))

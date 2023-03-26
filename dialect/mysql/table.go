@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -14,11 +13,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/um"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
-)
-
-var (
-	ErrNothingToUpdate   = errors.New("nothing to update")
-	ErrCannotRetrieveRow = errors.New("cannot retrieve inserted row")
 )
 
 func NewTable[T any, Tset any](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
@@ -122,7 +116,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 	}
 
 	if t.unretrievable {
-		return zero, ErrCannotRetrieveRow
+		return zero, orm.ErrCannotRetrieveRow
 	}
 
 	if t.autoIncrementColumn != "" {
@@ -136,7 +130,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 
 	uCols, uArgs := t.uniqueSet(row)
 	if len(uCols) == 0 {
-		return zero, ErrCannotRetrieveRow
+		return zero, orm.ErrCannotRetrieveRow
 	}
 
 	q2 := t.Query(ctx, exec)
@@ -258,7 +252,7 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
 	if len(columns) == 0 {
-		return 0, ErrNothingToUpdate
+		return 0, orm.ErrNothingToUpdate
 	}
 
 	for _, row := range rows {
@@ -349,7 +343,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 	}
 
 	if t.unretrievable {
-		return zero, ErrCannotRetrieveRow
+		return zero, orm.ErrCannotRetrieveRow
 	}
 
 	if t.autoIncrementColumn != "" {
@@ -363,7 +357,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 
 	uCols, uArgs := t.uniqueSet(row)
 	if len(uCols) == 0 {
-		return zero, ErrCannotRetrieveRow
+		return zero, orm.ErrCannotRetrieveRow
 	}
 
 	q2 := t.Query(ctx, exec)
@@ -551,7 +545,7 @@ func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
 		return 0, fmt.Errorf("get update values: %w", err)
 	}
 	if len(columns) == 0 {
-		return 0, ErrNothingToUpdate
+		return 0, orm.ErrNothingToUpdate
 	}
 
 	q := Update(um.Table(t.nameExpr(t.ctx)))

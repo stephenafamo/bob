@@ -1,6 +1,15 @@
 package orm
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrNothingToUpdate   = errors.New("nothing to update")
+	ErrCannotRetrieveRow = errors.New("cannot retrieve inserted row")
+	ErrCannotPrepare     = errors.New("supplied executor does not implement bob.Preparer")
+)
 
 // RelationshipChainError is the error returned when a wrong value is encountered in a relationship chain
 type RelationshipChainError struct {
