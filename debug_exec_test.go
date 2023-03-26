@@ -14,14 +14,40 @@ import (
 var reArgs = regexp.MustCompile(`\n\d+\:`)
 
 func TestDebugExecutorDefaultWriter(t *testing.T) {
-	d, ok := DebugExecutor(NoopExecutor{}, nil).(debugExecutor)
+	d, ok := DebugToWriter(NoopExecutor{}, nil).(debugExecutor)
+	if !ok {
+		t.Fatal("DebugToWriter does not return an instance of debugExecutor")
+	}
+
+	writer, ok := d.printer.(writerPrinter)
+	if !ok {
+		t.Fatal("printer for debugExecutor is not a writerPrinter")
+	}
+
+	debugFile, ok := writer.Writer.(*os.File)
+	if !ok {
+		t.Fatal("writer for writerPrinter is not an *os.File")
+	}
+
+	if debugFile != os.Stdout {
+		t.Fatal("writer for debugExecutor is not os.Stdout")
+	}
+}
+
+func TestDebugExecutorDefaultPrinter(t *testing.T) {
+	d, ok := DebugToPrinter(NoopExecutor{}, nil).(debugExecutor)
 	if !ok {
 		t.Fatal("DebugExecutor does not return an instance of debugExecutor")
 	}
 
-	debugFile, ok := d.w.(*os.File)
+	writer, ok := d.printer.(writerPrinter)
 	if !ok {
-		t.Fatal("writer for debugExecutor is not an *os.File")
+		t.Fatal("printer for debugExecutor is not a writerPrinter")
+	}
+
+	debugFile, ok := writer.Writer.(*os.File)
+	if !ok {
+		t.Fatal("writer for writerPrinter is not an *os.File")
 	}
 
 	if debugFile != os.Stdout {
@@ -57,7 +83,7 @@ func testDebugExecutor(t *testing.T, f func(Executor, string, ...any) error) {
 	t.Helper()
 
 	dest := &bytes.Buffer{}
-	exec := DebugExecutor(NoopExecutor{}, dest)
+	exec := DebugToWriter(NoopExecutor{}, dest)
 
 	sql := "A QUERY"
 	args := []any{"arg1", "arg2", "3rd arg"}

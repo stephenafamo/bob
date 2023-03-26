@@ -10,35 +10,59 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-// DebugExecutor wraps an existing [Executor] and writes all
+// DebugPrinter is used to print queries and arguments
+type DebugPrinter interface {
+	PrintQuery(query string, args ...any)
+}
+
+// an implementtion of the [DebugPrinter]
+type writerPrinter struct{ io.Writer }
+
+// implements [DebugPrinter]
+func (w writerPrinter) PrintQuery(query string, args ...any) {
+	fmt.Fprintln(w.Writer, query)
+	for i, arg := range args {
+		fmt.Fprintf(w.Writer, "%d: %#v\n", i, arg)
+	}
+	fmt.Fprintf(w.Writer, "\n")
+}
+
+// Debug wraps an [Executor] and prints the queries and args to os.Stdout
+func Debug(exec Executor) Executor {
+	return DebugToWriter(exec, nil)
+}
+
+// DebugToWriter wraps an existing [Executor] and writes all
 // queries and args to the given [io.Writer]
 // if w is nil, it fallsback to [os.Stdout]
-func DebugExecutor(exec Executor, w io.Writer) Executor {
+func DebugToWriter(exec Executor, w io.Writer) Executor {
 	if w == nil {
 		w = os.Stdout
 	}
-	return debugExecutor{w: w, exec: exec}
+	return DebugToPrinter(exec, writerPrinter{w})
+}
+
+// DebugToPrinter wraps an existing [Executor] and writes all
+// queries and args to the given [DebugPrinter]
+// if w is nil, it fallsback to writing to [os.Stdout]
+func DebugToPrinter(exec Executor, w DebugPrinter) Executor {
+	if w == nil {
+		w = writerPrinter{os.Stdout}
+	}
+	return debugExecutor{printer: w, exec: exec}
 }
 
 type debugExecutor struct {
-	w    io.Writer
-	exec Executor
-}
-
-func (d debugExecutor) print(query string, args ...any) {
-	fmt.Fprintln(d.w, query)
-	for i, arg := range args {
-		fmt.Fprintf(d.w, "%d: %#v\n", i, arg)
-	}
-	fmt.Fprintf(d.w, "\n")
+	printer DebugPrinter
+	exec    Executor
 }
 
 func (d debugExecutor) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	d.print(query, args...)
+	d.printer.PrintQuery(query, args...)
 	return d.exec.ExecContext(ctx, query, args...)
 }
 
 func (d debugExecutor) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
-	d.print(query, args...)
+	d.printer.PrintQuery(query, args...)
 	return d.exec.QueryContext(ctx, query, args...)
 }
