@@ -6,22 +6,28 @@ import (
 )
 
 //nolint:gochecknoglobals
-var dialect Dialect
+var (
+	Dialect             dialect
+	atSign              = []byte("@")
+	atSignP             = []byte("@p")
+	openSquareBrackets  = []byte("[")
+	closeSquareBrackets = []byte("]")
+)
 
-type Dialect struct{}
+type dialect struct{}
 
-func (d Dialect) WriteArg(w io.Writer, position int) {
-	w.Write([]byte("@p"))
+func (d dialect) WriteArg(w io.Writer, position int) {
+	w.Write(atSignP)
 	w.Write([]byte(strconv.Itoa(position)))
 }
 
-func (d Dialect) WriteNamedArg(w io.Writer, name string) {
-	w.Write([]byte("@"))
+func (d dialect) WriteNamedArg(w io.Writer, name string) {
+	w.Write(atSign)
 	w.Write([]byte(name))
 }
 
-func (d Dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write([]byte("["))
+func (d dialect) WriteQuoted(w io.Writer, s string) {
+	w.Write(openSquareBrackets)
 	w.Write([]byte(s))
-	w.Write([]byte("]"))
+	w.Write(closeSquareBrackets)
 }

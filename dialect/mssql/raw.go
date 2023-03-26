@@ -6,5 +6,5 @@ import (
 )
 
 func RawQuery(q string, args ...any) bob.BaseQuery[expr.Clause] {
-	return expr.RawQuery(dialect, q, args...)
+	return expr.RawQuery(Dialect, q, args...)
 }
