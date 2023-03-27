@@ -18,7 +18,7 @@ type Function struct {
 	// Used in value functions. Supported by Sqlite and Postgres
 	filter []any
 
-	alias   string // used with there should be an alias before the columns
+	alias   string // used when there should be an alias before the columns
 	columns []columnDef
 
 	// For chain methods
@@ -102,9 +102,7 @@ type columnDef struct {
 }
 
 func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte(c.name))
-	w.Write([]byte(" "))
-	w.Write([]byte(c.dataType))
+	w.Write([]byte(c.name + " " + c.dataType))
 
 	return nil, nil
 }

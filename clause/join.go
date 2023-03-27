@@ -16,9 +16,8 @@ const (
 )
 
 type Join struct {
-	Type  string
-	To    any // the expression for the table
-	Alias string
+	Type string
+	To   From // the expression for the table
 
 	// Join methods
 	Natural bool
@@ -37,11 +36,6 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	args, err := bob.Express(w, d, start, j.To)
 	if err != nil {
 		return nil, err
-	}
-
-	if j.Alias != "" {
-		w.Write([]byte(" AS "))
-		d.WriteQuoted(w, j.Alias)
 	}
 
 	onArgs, err := bob.ExpressSlice(w, d, start+len(args), j.On, " ON ", " AND ", "")

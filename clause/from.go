@@ -25,7 +25,7 @@ where from_item can be one of:
     from_item [ NATURAL ] join_type from_item [ ON join_condition | USING ( join_column [, ...] ) [ AS join_using_alias ] ]
 
 
-SQLite: https://www.sqlite.org/syntax/table-or-subbob.html
+SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
 
 MySQL: https://dev.mysql.com/doc/refman/8.0/en/join.html
 */

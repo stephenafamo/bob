@@ -95,15 +95,74 @@ func (f FromChain[Q]) WithOrdinality() FromChain[Q] {
 	})
 }
 
-type JoinChain[Q interface{ AppendJoin(clause.Join) }] func() clause.Join
+type Joinable interface{ AppendJoin(clause.Join) }
+
+func Join[Q Joinable](typ string, e any) JoinChain[Q] {
+	return JoinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: typ,
+			To:   clause.From{Table: e},
+		}
+	})
+}
+
+func InnerJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.InnerJoin, e)
+}
+
+func LeftJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.LeftJoin, e)
+}
+
+func RightJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.RightJoin, e)
+}
+
+func FullJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.FullJoin, e)
+}
+
+func CrossJoin[Q Joinable](e any) bob.Mod[Q] {
+	return Join[Q](clause.CrossJoin, e)
+}
+
+type JoinChain[Q Joinable] func() clause.Join
 
 func (j JoinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
 }
 
-func (j JoinChain[Q]) As(alias string) JoinChain[Q] {
+func (j JoinChain[Q]) As(alias string, columns ...string) JoinChain[Q] {
 	jo := j()
-	jo.Alias = alias
+	jo.To.Alias = alias
+	jo.To.Columns = columns
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
+func (f JoinChain[Q]) Only() JoinChain[Q] {
+	jo := f()
+	jo.To.Only = true
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
+func (f JoinChain[Q]) Lateral() JoinChain[Q] {
+	jo := f()
+	jo.To.Lateral = true
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
+func (f JoinChain[Q]) WithOrdinality() JoinChain[Q] {
+	jo := f()
+	jo.To.WithOrdinality = true
 
 	return JoinChain[Q](func() clause.Join {
 		return jo
@@ -136,37 +195,6 @@ func (j JoinChain[Q]) Using(using ...any) bob.Mod[Q] {
 	jo.Using = using
 
 	return mods.Join[Q](jo)
-}
-
-type Joinable interface{ AppendJoin(clause.Join) }
-
-func Join[Q Joinable](typ string, e any) JoinChain[Q] {
-	return JoinChain[Q](func() clause.Join {
-		return clause.Join{
-			Type: typ,
-			To:   e,
-		}
-	})
-}
-
-func InnerJoin[Q Joinable](e any) JoinChain[Q] {
-	return Join[Q](clause.InnerJoin, e)
-}
-
-func LeftJoin[Q Joinable](e any) JoinChain[Q] {
-	return Join[Q](clause.LeftJoin, e)
-}
-
-func RightJoin[Q Joinable](e any) JoinChain[Q] {
-	return Join[Q](clause.RightJoin, e)
-}
-
-func FullJoin[Q Joinable](e any) JoinChain[Q] {
-	return Join[Q](clause.FullJoin, e)
-}
-
-func CrossJoin[Q Joinable](e any) bob.Mod[Q] {
-	return Join[Q](clause.CrossJoin, e)
 }
 
 type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef

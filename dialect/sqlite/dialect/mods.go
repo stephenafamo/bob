@@ -141,9 +141,28 @@ func (j JoinChain[Q]) Apply(q Q) {
 	q.AppendJoin(j())
 }
 
+func (f JoinChain[Q]) NotIndexed() bob.Mod[Q] {
+	i := ""
+	jo := f()
+	jo.To.SetIndexedBy(&i)
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
+func (f JoinChain[Q]) IndexedBy(indexName string) bob.Mod[Q] {
+	jo := f()
+	jo.To.SetIndexedBy(&indexName)
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
 func (j JoinChain[Q]) As(alias string) JoinChain[Q] {
 	jo := j()
-	jo.Alias = alias
+	jo.To.Alias = alias
 
 	return JoinChain[Q](func() clause.Join {
 		return jo
@@ -184,7 +203,7 @@ func Join[Q Joinable](typ string, e any) JoinChain[Q] {
 	return JoinChain[Q](func() clause.Join {
 		return clause.Join{
 			Type: typ,
-			To:   e,
+			To:   clause.From{Table: e},
 		}
 	})
 }
