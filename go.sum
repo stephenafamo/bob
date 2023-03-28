@@ -325,8 +325,8 @@ github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnIn
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97 h1:XItoZNmhOih06TC02jK7l3wlpZ0XT/sPQYutDcGOQjg=
-github.com/stephenafamo/scan v0.4.0 h1:PUK/NbTj6FjvCfZK/jL4WzoItzbK6pfAatMFJLr/INs=
-github.com/stephenafamo/scan v0.4.0/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
+github.com/stephenafamo/scan v0.4.2 h1:mPmOjV84VCQdlYPPX1jZZHt5LYRHAPdEe/yuSaMi92Q=
+github.com/stephenafamo/scan v0.4.2/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
 github.com/stephenafamo/sqlparser v0.0.0-20230326220333-c2adaf4c30e8 h1:HR6pFkWHsRRVm+VUSjltpaI56XFl2hdwxdGw7hHIPDk=
 github.com/stephenafamo/sqlparser v0.0.0-20230326220333-c2adaf4c30e8/go.mod h1:hOw+0TLAWETjE8UJG+q5bdj7EArbIombNBnEUoF7XwM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
