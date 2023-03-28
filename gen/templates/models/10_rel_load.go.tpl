@@ -145,7 +145,14 @@ func ThenLoad{{$tAlias.UpSingular}}{{$relAlias}}(queryMods ...bob.Mod[*dialect.S
 			return fmt.Errorf("object %T cannot load {{$tAlias.UpSingular}}{{$relAlias}}", retrieved)
 		}
 
-		return loader.Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx, exec, queryMods...)
+		err := loader.Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx, exec, queryMods...)
+
+		// Don't cause an issue due to missing relationships
+		if errors.Is(err, sql.ErrNoRows) {
+		  return nil
+		}
+
+		return err
 	})
 }
 
@@ -155,12 +162,15 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 	  return nil
 	}
 
+	// Reset the relationship
+	o.R.{{$relAlias}} = nil
+
 	{{if $rel.IsToMany -}}
 	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
 	{{else -}}
 	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).One()
 	{{end -}}
-	if err != nil && !errors.Is(err, sql.ErrNoRows){
+	if err != nil {
 		return err
 	}
 
@@ -170,7 +180,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 		for _, rel := range related {
 			{{if $invRel.IsToMany -}}
 				rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
-			{{else -}}
+			{{- else -}}
 				rel.R.{{$invAlias}} =  o
 			{{- end}}
 		}
@@ -198,7 +208,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	}
 
 	{{$fAlias.DownPlural}}, err := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
-	if err != nil && !errors.Is(err, sql.ErrNoRows){
+	if err != nil {
 		return err
 	}
 
@@ -267,7 +277,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			Related{{$fromColAlias}} {{$fromCol.Type}} `db:"related_{{$firstSide.From}}.{{$fromColAlias}}"`
 		{{- end}}
 	}]())
-	if err != nil && !errors.Is(err, sql.ErrNoRows){
+	if err != nil {
 		return err
 	}
 
