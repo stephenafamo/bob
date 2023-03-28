@@ -140,22 +140,12 @@ func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 // First matching row
 func (v *ViewQuery[T, Tslice]) One() (T, error) {
 	v.BaseQuery.Expression.Limit.SetLimit(1)
-	val, err := bob.One(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
-	if err != nil {
-		return val, err
-	}
-
-	return val, nil
+	return bob.One(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // All matching rows
 func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	vals, err := bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
-	if err != nil {
-		return nil, err
-	}
-
-	return vals, nil
+	return bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // Cursor to scan through the results
