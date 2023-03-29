@@ -27,7 +27,7 @@ var ColumnNames = struct {
 	{{end -}}
 }
 
-{{block "where_helpers" . -}}
+{{block "helpers/where_variables" . -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
@@ -57,7 +57,7 @@ func Where[Q {{$.Dialect}}.Filterable]() struct {
 	}
 }
 
-{{block "join_helpers" . -}}
+{{block "helpers/join_variables" . -}}
 var (
 	SelectJoins = getJoins[*dialect.SelectQuery]
 	UpdateJoins = getJoins[*dialect.UpdateQuery]

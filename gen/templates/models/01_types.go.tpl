@@ -21,6 +21,7 @@ type {{$tAlias.UpSingular}} struct {
 		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateTags $.Tags $tagName | trim}}`
 	{{- end -}}
 	{{- end -}}
+	{{block "model/fields/additional" .}}{{end}}
 	{{- if .Table.Relationships}}
 
 	R {{$tAlias.DownSingular}}R `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`

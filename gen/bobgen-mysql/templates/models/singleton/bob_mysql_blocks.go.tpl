@@ -1,4 +1,4 @@
-{{define "where_helpers" -}}
+{{define "helpers/where_variables" -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()

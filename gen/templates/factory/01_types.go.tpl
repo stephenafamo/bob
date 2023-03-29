@@ -34,6 +34,8 @@ type {{$tAlias.UpSingular}}Template struct {
         {{$colAlias}} func() {{$colTyp}}
     {{end -}}
 
+    {{block "factory_template/fields/additional" .}}{{end}}
+
     {{if .Table.Relationships -}}
         r {{$tAlias.DownSingular}}R
     {{- end}}
