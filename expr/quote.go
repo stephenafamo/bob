@@ -8,9 +8,12 @@ import (
 )
 
 func Quote(aa ...string) bob.Expression {
-	ss := make([]any, len(aa))
-	for k, v := range aa {
-		ss[k] = v
+	ss := make([]any, 0, len(aa))
+	for _, v := range aa {
+		if v == "" {
+			continue
+		}
+		ss = append(ss, v)
 	}
 
 	return quoted(ss)
