@@ -13,6 +13,14 @@ type SelectList struct {
 	PreloadColumns []any
 }
 
+func (s *SelectList) CountSelectCols() int {
+	return len(s.Columns)
+}
+
+func (s *SelectList) SetSelect(columns ...any) {
+	s.Columns = columns
+}
+
 func (s *SelectList) AppendSelect(columns ...any) {
 	s.Columns = append(s.Columns, columns...)
 }
