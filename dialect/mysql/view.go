@@ -140,23 +140,23 @@ func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 // First matching row
 func (v *ViewQuery[T, Tslice]) One() (T, error) {
 	v.BaseQuery.Expression.Limit.SetLimit(1)
-	return bob.One(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // All matching rows
 func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	return bob.Allx[T, Tslice](v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // Cursor to scan through the results
 func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
-	return bob.Cursor(v.ctx, v.exec, v.BaseQuery, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
 }
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count() (int64, error) {
 	v.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
-	return bob.One(v.ctx, v.exec, v.BaseQuery, scan.SingleColumnMapper[int64])
+	return bob.One(v.ctx, v.exec, v, scan.SingleColumnMapper[int64])
 }
 
 // Exists checks if there is any matching row
