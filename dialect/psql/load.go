@@ -37,12 +37,12 @@ type PreloadSettings = internal.PreloadSettings[*dialect.SelectQuery]
 // Modifies preloading relationships
 type PreloadOption = internal.PreloadOption[*dialect.SelectQuery]
 
-func OnlyColumns(cols ...string) PreloadOption {
-	return internal.OnlyColumns[*dialect.SelectQuery](cols)
+func PreloadOnly(cols ...string) PreloadOption {
+	return internal.PreloadOnly[*dialect.SelectQuery](cols)
 }
 
-func ExceptColumns(cols ...string) PreloadOption {
-	return internal.ExceptColumns[*dialect.SelectQuery](cols)
+func PreloadExcept(cols ...string) PreloadOption {
+	return internal.PreloadExcept[*dialect.SelectQuery](cols)
 }
 
 func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {

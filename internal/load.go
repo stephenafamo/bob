@@ -56,17 +56,17 @@ type PreloadOption[Q loadable] interface {
 	ModifyPreloadSettings(*PreloadSettings[Q])
 }
 
-type OnlyColumns[Q loadable] []string
+type PreloadOnly[Q loadable] []string
 
-func (o OnlyColumns[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
+func (o PreloadOnly[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(o) > 0 {
 		el.Columns = orm.Only(el.Columns, o...)
 	}
 }
 
-type ExceptColumns[Q loadable] []string
+type PreloadExcept[Q loadable] []string
 
-func (e ExceptColumns[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
+func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
 		el.Columns = orm.Except(el.Columns, e...)
 	}
