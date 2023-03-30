@@ -129,8 +129,6 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	view *View[T, Ts]
 }
 
-// Satisfies the Expression interface, but uses its own dialect instead
-// of the dialect passed to it
 // it is necessary to override this method to be able to add columns if not set
 func (v ViewQuery[T, Ts]) WriteSQL(w io.Writer, _ bob.Dialect, start int) ([]any, error) {
 	// Append the table columns
@@ -139,6 +137,11 @@ func (v ViewQuery[T, Ts]) WriteSQL(w io.Writer, _ bob.Dialect, start int) ([]any
 	}
 
 	return v.Expression.WriteSQL(w, v.Dialect, start)
+}
+
+// it is necessary to override this method to be able to add columns if not set
+func (v ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
+	return v.WriteSQL(w, v.Dialect, start)
 }
 
 func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
