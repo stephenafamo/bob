@@ -28,6 +28,8 @@ type {{$tAlias.UpSingular}} struct {
 	{{end -}}
 }
 
+{{block "model/methods/additional" .}}{{end}}
+
 // {{$tAlias.UpSingular}}Slice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.
 // This should almost always be used instead of []{{$tAlias.UpSingular}}.
 type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
