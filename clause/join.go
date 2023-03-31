@@ -45,11 +45,21 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 	args = append(args, onArgs...)
 
-	_, err = bob.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")", func(s string) any {
-		return expr.Quote(s)
-	})
-	if err != nil {
-		return nil, err
+	for k, col := range j.Using {
+		if k != 0 {
+			w.Write([]byte("USING("))
+		} else {
+			w.Write([]byte(", "))
+		}
+
+		if k == len(j.Using)-1 {
+			w.Write([]byte(")"))
+		}
+
+		_, err = expr.Quote(col).WriteSQL(w, d, 1) // start does not matter
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return args, nil
