@@ -45,6 +45,10 @@ func PreloadExcept(cols ...string) PreloadOption {
 	return internal.PreloadExcept[*dialect.SelectQuery](cols)
 }
 
+func PreloadWhere(f func(from, to string) []bob.Expression) PreloadOption {
+	return internal.PreloadWhere[*dialect.SelectQuery](f)
+}
+
 func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {
 	settings := internal.NewPreloadSettings[T, Ts, *dialect.SelectQuery](cols)
 	for _, o := range opts {
@@ -75,6 +79,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			}
 			for _, to := range side.ToWhere {
 				on = append(on, Quote(alias, to.Column).EQ(Raw(to.Value)))
+			}
+			for _, additional := range settings.Mods {
+				on = append(on, additional(parent, alias)...)
 			}
 
 			queryMods = append(queryMods, sm.
