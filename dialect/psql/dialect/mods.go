@@ -176,7 +176,7 @@ func (j JoinChain[Q]) Natural() bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-func (j JoinChain[Q]) On(on ...any) bob.Mod[Q] {
+func (j JoinChain[Q]) On(on ...bob.Expression) bob.Mod[Q] {
 	jo := j()
 	jo.On = append(jo.On, on...)
 
@@ -190,7 +190,7 @@ func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-func (j JoinChain[Q]) Using(using ...any) bob.Mod[Q] {
+func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 	jo := j()
 	jo.Using = using
 

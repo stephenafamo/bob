@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
 )
 
 const (
@@ -21,8 +22,8 @@ type Join struct {
 
 	// Join methods
 	Natural bool
-	On      []any
-	Using   []any
+	On      []bob.Expression
+	Using   []string
 }
 
 func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -44,11 +45,12 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 	args = append(args, onArgs...)
 
-	usingArgs, err := bob.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")")
+	_, err = bob.ExpressSlice(w, d, start+len(args), j.Using, " USING(", ", ", ")", func(s string) any {
+		return expr.Quote(s)
+	})
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, usingArgs...)
 
 	return args, nil
 }

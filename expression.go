@@ -81,9 +81,15 @@ func ExpressIf(w io.Writer, d Dialect, start int, e any, cond bool, prefix, suff
 }
 
 // ExpressSlice is used to express a slice of expressions along with a prefix and suffix
-func ExpressSlice[T any](w io.Writer, d Dialect, start int, expressions []T, prefix, sep, suffix string) ([]any, error) {
+// a converter can also be passed to modify each expression before expressing it.
+func ExpressSlice[T any](w io.Writer, d Dialect, start int, expressions []T, prefix, sep, suffix string, converter ...func(T) any) ([]any, error) {
 	if len(expressions) == 0 {
 		return nil, nil
+	}
+
+	c := defaultConverter[T]
+	if len(converter) > 0 {
+		c = converter[0]
 	}
 
 	var args []any
@@ -94,7 +100,7 @@ func ExpressSlice[T any](w io.Writer, d Dialect, start int, expressions []T, pre
 			w.Write([]byte(sep))
 		}
 
-		newArgs, err := Express(w, d, start+len(args), e)
+		newArgs, err := Express(w, d, start+len(args), c(e))
 		if err != nil {
 			return args, err
 		}
@@ -104,4 +110,8 @@ func ExpressSlice[T any](w io.Writer, d Dialect, start int, expressions []T, pre
 	w.Write([]byte(suffix))
 
 	return args, nil
+}
+
+func defaultConverter[T any](e T) any {
+	return e
 }

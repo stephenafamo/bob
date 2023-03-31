@@ -65,7 +65,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 
 		for _, side := range rel.Sides {
 			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
-			on := make([]any, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
+			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
 				toCol := side.ToColumns[i]
 				on = append(on, Quote(parent, fromCol).EQ(Quote(alias, toCol)))
