@@ -7,7 +7,15 @@ import (
 )
 
 func Quote(aa ...string) bob.Expression {
-	return quoted(aa)
+	ss := make([]string, 0, len(aa))
+	for _, v := range aa {
+		if v == "" {
+			continue
+		}
+		ss = append(ss, v)
+	}
+
+	return quoted(ss)
 }
 
 // quoted and joined... something like "users"."id"
@@ -19,10 +27,16 @@ func (q quoted) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 
 	// wrap in parenthesis and join with comma
-	for k, a := range q {
+	k := 0 // not using the loop index to avoid empty strings
+	for _, a := range q {
+		if a == "" {
+			continue
+		}
+
 		if k != 0 {
 			w.Write([]byte("."))
 		}
+		k++
 
 		d.WriteQuoted(w, a)
 	}
