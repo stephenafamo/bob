@@ -45,7 +45,7 @@ func PreloadExcept(cols ...string) PreloadOption {
 	return internal.PreloadExcept[*dialect.SelectQuery](cols)
 }
 
-func PreloadWhere(f func(from, to string) []bob.Expression) PreloadOption {
+func PreloadWhere(f ...func(from, to string) []bob.Expression) PreloadOption {
 	return internal.PreloadWhere[*dialect.SelectQuery](f)
 }
 
@@ -67,7 +67,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		var alias string
 		var queryMods mods.QueryMods[*dialect.SelectQuery]
 
-		for _, side := range rel.Sides {
+		for i, side := range rel.Sides {
 			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
@@ -80,8 +80,11 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			for _, to := range side.ToWhere {
 				on = append(on, Quote(alias, to.Column).EQ(Raw(to.Value)))
 			}
-			for _, additional := range settings.Mods {
-				on = append(on, additional(parent, alias)...)
+
+			if len(settings.Mods) > i {
+				for _, additional := range settings.Mods[i] {
+					on = append(on, additional(parent, alias)...)
+				}
 			}
 
 			queryMods = append(queryMods, sm.
