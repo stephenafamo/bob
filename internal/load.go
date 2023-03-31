@@ -46,10 +46,13 @@ func NewPreloadSettings[T any, Ts ~[]T, Q loadable](cols []string) PreloadSettin
 	}
 }
 
+type preloadfilter func(from, to string) []bob.Expression
+
 type PreloadSettings[Q loadable] struct {
 	Columns     []string
 	SubLoaders  []Preloader[Q]
 	ExtraLoader *AfterPreloader
+	Mods        []preloadfilter
 }
 
 type PreloadOption[Q loadable] interface {
@@ -70,6 +73,12 @@ func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
 		el.Columns = orm.Except(el.Columns, e...)
 	}
+}
+
+type PreloadWhere[Q loadable] func(from, to string) []bob.Expression
+
+func (e PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
+	el.Mods = append(el.Mods, preloadfilter(e))
 }
 
 // Preloader builds a query mod that modifies the original query to retrieve related fields
