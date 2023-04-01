@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/nsf/jsondiff"
@@ -30,12 +31,16 @@ type driverWrapper[T any] struct {
 	info            *drivers.DBInfo[T]
 	overwriteGolden bool
 	goldenFile      string
+	once            sync.Once
 }
 
 func (d *driverWrapper[T]) Assemble(context.Context) (*drivers.DBInfo[T], error) {
 	var err error
 
-	d.info, err = d.Interface.Assemble(context.Background())
+	d.once.Do(func() {
+		d.info, err = d.Interface.Assemble(context.Background())
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +90,7 @@ type DriverTestConfig[T any] struct {
 	Templates       *helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
-	GetDriver       func(path string) drivers.Interface[T]
+	GetDriver       func() drivers.Interface[T]
 }
 
 func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
@@ -99,19 +104,17 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.Fatalf("unable to create default folder: %s", err)
 	}
 
-	{
-		d := &driverWrapper[T]{
-			Interface:       config.GetDriver(defaultFolder),
-			overwriteGolden: config.OverwriteGolden,
-			goldenFile:      config.GoldenFile,
-		}
-
-		t.Run("assemble", func(t *testing.T) {
-			d.TestAssemble(t)
-		})
-
-		aliases = buildAliases(d.info.Tables)
+	d := &driverWrapper[T]{
+		Interface:       config.GetDriver(),
+		overwriteGolden: config.OverwriteGolden,
+		goldenFile:      config.GoldenFile,
 	}
+
+	t.Run("assemble", func(t *testing.T) {
+		d.TestAssemble(t)
+	})
+
+	aliases = buildAliases(d.info.Tables)
 
 	if testing.Short() {
 		// skip testing generation
@@ -131,13 +134,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate", func(t *testing.T) {
-		d := &driverWrapper[T]{
-			Interface:       config.GetDriver(defaultFolder),
-			overwriteGolden: config.OverwriteGolden,
-			goldenFile:      config.GoldenFile,
-		}
-
-		testDriver[T](t, config.Templates, gen.Config{}, d, goModFilePath)
+		testDriver[T](t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath)
 	})
 
 	aliasesFolder := filepath.Join(config.Root, "aliases")
@@ -147,20 +144,13 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		d := &driverWrapper[T]{
-			Interface:       config.GetDriver(aliasesFolder),
-			overwriteGolden: config.OverwriteGolden,
-			goldenFile:      config.GoldenFile,
-		}
-
-		testDriver[T](t, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath)
+		testDriver[T](t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath)
 	})
 }
 
-func testDriver[T any](t *testing.T, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string) {
+func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string) {
 	t.Helper()
 
-	dst := d.Destination()
 	buf := &bytes.Buffer{}
 
 	cmd := exec.Command("go", "mod", "init", module)
@@ -184,7 +174,7 @@ func testDriver[T any](t *testing.T, tpls *helpers.Templates, config gen.Config,
 		t.Fatalf("go mod edit cmd execution failed: %s", err)
 	}
 
-	outputs := helpers.DefaultOutputs(dst, d.PackageName(), false, tpls)
+	outputs := helpers.DefaultOutputs(dst, "models", false, tpls)
 	if err := gen.Run(context.Background(), &gen.State{Config: config, Outputs: outputs}, d); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}

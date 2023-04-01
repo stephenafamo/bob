@@ -24,14 +24,6 @@ func New(config Config) Interface {
 		config.SharedSchema = "main"
 	}
 
-	if config.Output == "" {
-		config.Output = "models"
-	}
-
-	if config.Pkgname == "" {
-		config.Pkgname = "models"
-	}
-
 	return &driver{config: config}
 }
 

@@ -36,36 +36,30 @@ type (
 	}
 )
 
-func New(config Config, dialect, destination string, provider Provider, datamodel Datamodel) Interface {
+func New(config Config, dialect string, provider Provider, datamodel Datamodel) Interface {
 	if config.Pkgname == "" {
 		config.Pkgname = "prisma"
 	}
 	return &driver{
-		dialect:     dialect,
-		destination: destination,
-		config:      config,
-		provider:    provider,
-		datamodel:   datamodel,
+		dialect:   dialect,
+		config:    config,
+		provider:  provider,
+		datamodel: datamodel,
 	}
 }
 
 // driver holds the database connection string and a handle
 // to the database connection.
 type driver struct {
-	dialect     string
-	destination string
-	config      Config
-	enums       map[string]drivers.Enum
-	provider    Provider
-	datamodel   Datamodel
+	dialect   string
+	config    Config
+	enums     map[string]drivers.Enum
+	provider  Provider
+	datamodel Datamodel
 }
 
 func (d *driver) Dialect() string {
 	return d.dialect
-}
-
-func (d *driver) Destination() string {
-	return d.destination
 }
 
 func (d *driver) PackageName() string {

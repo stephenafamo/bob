@@ -14,10 +14,6 @@ import (
 type Interface[T any] interface {
 	// The dialect
 	Dialect() string
-	// The destination folder
-	Destination() string
-	// The package name
-	PackageName() string
 	// What the driver is capable of
 	Capabilities() Capabilities
 	// Assemble the database information into a nice struct

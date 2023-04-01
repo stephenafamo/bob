@@ -88,8 +88,8 @@ func TestAssemble(t *testing.T) {
 
 			testutils.TestDriver(t, testutils.DriverTestConfig[Extra]{
 				Root: out,
-				GetDriver: func(path string) drivers.Interface[Extra] {
-					return New(tt.config, tt.name, path, tt.provider, tt.datamodel)
+				GetDriver: func() drivers.Interface[Extra] {
+					return New(tt.config, tt.name, tt.provider, tt.datamodel)
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,

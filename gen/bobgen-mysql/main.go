@@ -51,7 +51,7 @@ func run(c *cli.Context) error {
 
 	d := driver.New(driverConfig)
 	outputs := helpers.DefaultOutputs(
-		d.Destination(), d.PackageName(), config.NoFactory,
+		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
 		&helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
 	)
 

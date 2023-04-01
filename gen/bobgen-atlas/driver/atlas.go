@@ -49,14 +49,6 @@ func New(config Config, fs fs.FS) Interface {
 		config.Dir = "."
 	}
 
-	if config.Output == "" {
-		config.Output = "models"
-	}
-
-	if config.Pkgname == "" {
-		config.Pkgname = "models"
-	}
-
 	return &driver{
 		config: config,
 		fs:     fs,
@@ -73,14 +65,6 @@ type driver struct {
 
 func (d *driver) Dialect() string {
 	return d.config.Dialect
-}
-
-func (d *driver) Destination() string {
-	return d.config.Output
-}
-
-func (d *driver) PackageName() string {
-	return d.config.Pkgname
 }
 
 func (d *driver) Capabilities() drivers.Capabilities {

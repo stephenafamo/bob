@@ -169,15 +169,18 @@ func generate(root root) error {
 		return err
 	}
 
-	output := root.Generator.Output.Value
-	if output == "" {
+	if driverConfig.Pkgname == "" {
+		driverConfig.Pkgname = "prisma"
+	}
+
+	outputDir := root.Generator.Output.Value
+	if outputDir == "" {
 		return fmt.Errorf("no output folder configured")
 	}
 
 	d := driver.New(
 		driverConfig,
 		dialect,
-		output,
 		driver.Provider{
 			DriverName:      driverName,
 			DriverPkg:       driverPkg,
@@ -188,7 +191,7 @@ func generate(root root) error {
 	)
 
 	outputs := helpers.DefaultOutputs(
-		d.Destination(), d.PackageName(), config.NoFactory,
+		outputDir, driverConfig.Pkgname, config.NoFactory,
 		&helpers.Templates{Models: modelTemplates},
 	)
 

@@ -62,14 +62,6 @@ func New(config Config) Interface {
 		config.SharedSchema = config.Schemas[0]
 	}
 
-	if config.Output == "" {
-		config.Output = "models"
-	}
-
-	if config.Pkgname == "" {
-		config.Pkgname = "models"
-	}
-
 	if config.UUIDPkg == "" {
 		config.UUIDPkg = "gofrs"
 	}
@@ -91,14 +83,6 @@ type driver struct {
 
 func (d *driver) Dialect() string {
 	return "psql"
-}
-
-func (d *driver) Destination() string {
-	return d.config.Output
-}
-
-func (d *driver) PackageName() string {
-	return d.config.Pkgname
 }
 
 func (d *driver) Capabilities() drivers.Capabilities {

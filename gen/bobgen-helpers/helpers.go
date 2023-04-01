@@ -38,6 +38,14 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 		templates = &Templates{}
 	}
 
+	if destination == "" {
+		destination = "models"
+	}
+
+	if pkgname == "" {
+		pkgname = "models"
+	}
+
 	outputs := []*gen.Output{
 		{
 			Key:       "models",

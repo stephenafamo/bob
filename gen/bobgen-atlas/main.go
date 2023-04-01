@@ -59,7 +59,7 @@ func run(c *cli.Context) error {
 
 	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
 	outputs := helpers.DefaultOutputs(
-		d.Destination(), d.PackageName(), config.NoFactory,
+		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
 		&helpers.Templates{Models: modelTemplates},
 	)
 

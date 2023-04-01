@@ -78,8 +78,7 @@ func TestDriver(t *testing.T) {
 
 			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
 				Root: out,
-				GetDriver: func(path string) drivers.Interface[any] {
-					tt.config.Output = path
+				GetDriver: func() drivers.Interface[any] {
 					return New(tt.config, tt.schema)
 				},
 				GoldenFile:      tt.goldenJson,

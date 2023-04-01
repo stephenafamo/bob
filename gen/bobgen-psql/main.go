@@ -49,7 +49,7 @@ func run(c *cli.Context) error {
 	}
 
 	d := driver.New(driverConfig)
-	outputs := helpers.DefaultOutputs(d.Destination(), d.PackageName(), config.NoFactory, nil)
+	outputs := helpers.DefaultOutputs(driverConfig.Output, driverConfig.Pkgname, config.NoFactory, nil)
 
 	state := &gen.State{
 		Config:  config,

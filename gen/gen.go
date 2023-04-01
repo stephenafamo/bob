@@ -59,7 +59,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 		return errors.New("no tables found in database")
 	}
 
-	modPkg, err := modelsPackage(driver.Destination())
+	modPkg, err := modelsPackage(s.Outputs)
 	if err != nil {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
@@ -523,7 +523,18 @@ func normalizeSlashes(path string) string {
 	return path
 }
 
-func modelsPackage(modelsFolder string) (string, error) {
+func modelsPackage(outputs []*Output) (string, error) {
+	var modelsFolder string
+	for _, o := range outputs {
+		if o.Key == "models" {
+			modelsFolder = o.OutFolder
+		}
+	}
+
+	if modelsFolder == "" {
+		return "", nil
+	}
+
 	modRoot, modFile, err := goModInfo(modelsFolder)
 	if err != nil {
 		return "", fmt.Errorf("getting mod details: %w", err)
