@@ -73,12 +73,38 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
+	data := &templateData[T]{
+		Dialect:           driver.Dialect(),
+		Tables:            dbInfo.Tables,
+		Enums:             dbInfo.Enums,
+		ExtraInfo:         dbInfo.ExtraInfo,
+		Aliases:           s.Config.Aliases,
+		NoTests:           s.Config.NoTests,
+		NoBackReferencing: s.Config.NoBackReferencing,
+		StructTagCasing:   s.Config.StructTagCasing,
+		TagIgnore:         make(map[string]struct{}),
+		Tags:              s.Config.Tags,
+		RelationTag:       s.Config.RelationTag,
+		ModelsPackage:     modPkg,
+		CanBulkInsert:     driver.Capabilities().BulkInsert,
+	}
+
+	for _, v := range s.Config.TagIgnore {
+		if !rgxValidTableColumn.MatchString(v) {
+			return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
+		}
+		data.TagIgnore[v] = struct{}{}
+	}
+
 	knownKeys := make(map[string]struct{})
 	for _, o := range s.Outputs {
 		if _, ok := knownKeys[o.Key]; ok {
 			return fmt.Errorf("Duplicate output key: %q", o.Key)
 		}
 		knownKeys[o.Key] = struct{}{}
+
+		// set the package name for this output
+		data.PkgName = o.PkgName
 
 		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
@@ -88,30 +114,6 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 		err = o.initOutFolders(templates, s.Config.Wipe)
 		if err != nil {
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
-		}
-
-		data := &templateData[T]{
-			Dialect:           driver.Dialect(),
-			Tables:            dbInfo.Tables,
-			Enums:             dbInfo.Enums,
-			ExtraInfo:         dbInfo.ExtraInfo,
-			Aliases:           s.Config.Aliases,
-			PkgName:           o.PkgName,
-			NoTests:           s.Config.NoTests,
-			NoBackReferencing: s.Config.NoBackReferencing,
-			StructTagCasing:   s.Config.StructTagCasing,
-			TagIgnore:         make(map[string]struct{}),
-			Tags:              s.Config.Tags,
-			RelationTag:       s.Config.RelationTag,
-			ModelsPackage:     modPkg,
-			CanBulkInsert:     driver.Capabilities().BulkInsert,
-		}
-
-		for _, v := range s.Config.TagIgnore {
-			if !rgxValidTableColumn.MatchString(v) {
-				return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
-			}
-			data.TagIgnore[v] = struct{}{}
 		}
 
 		padding := outputPadding(o.templates.Templates(), dbInfo.Tables)
