@@ -37,9 +37,19 @@ type State struct {
 
 // Run executes the templates and outputs them to files based on the
 // state given.
-func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) error {
+func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plugins ...Plugin) error {
 	if driver.Dialect() == "" {
 		return fmt.Errorf("no dialect specified")
+	}
+
+	// For StatePlugins
+	for _, plugin := range plugins {
+		if statePlug, ok := plugin.(StatePlugin); ok {
+			err := statePlug.PlugState(s)
+			if err != nil {
+				return fmt.Errorf("StatePlugin Error [%s]: %w", statePlug.Name(), err)
+			}
+		}
 	}
 
 	var templates []lazyTemplate
@@ -53,6 +63,16 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 	dbInfo, err := driver.Assemble(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to fetch table data: %w", err)
+	}
+
+	// For DBInfoPlugins
+	for _, plugin := range plugins {
+		if dbPlug, ok := plugin.(DBInfoPlugin[T]); ok {
+			err := dbPlug.PlugDBInfo(dbInfo)
+			if err != nil {
+				return fmt.Errorf("StatePlugin Error [%s]: %w", dbPlug.Name(), err)
+			}
+		}
 	}
 
 	if len(dbInfo.Tables) == 0 {
@@ -94,6 +114,16 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 			return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
 		}
 		data.TagIgnore[v] = struct{}{}
+	}
+
+	// For TemplateDataPlugins
+	for _, plugin := range plugins {
+		if tdPlug, ok := plugin.(TemplateDataPlugin[T]); ok {
+			err = tdPlug.PlugTemplateData(data)
+			if err != nil {
+				return fmt.Errorf("TemplateDataPlugin Error [%s]: %w", tdPlug.Name(), err)
+			}
+		}
 	}
 
 	knownKeys := make(map[string]struct{})
