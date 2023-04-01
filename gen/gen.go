@@ -73,7 +73,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T]) erro
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
-	data := &templateData[T]{
+	data := &TemplateData[T]{
 		Dialect:           driver.Dialect(),
 		Tables:            dbInfo.Tables,
 		Enums:             dbInfo.Enums,

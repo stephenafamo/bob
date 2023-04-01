@@ -65,7 +65,7 @@ type Output struct {
 
 type executeTemplateData[T any] struct {
 	output *Output
-	data   *templateData[T]
+	data   *TemplateData[T]
 
 	templates     *templateList
 	dirExtensions dirExtMap
@@ -74,7 +74,7 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
+func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
@@ -84,7 +84,7 @@ func generateOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], 
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[T], padding int) error {
+func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
@@ -96,7 +96,7 @@ func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *templateData[
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *templateData[T], padding int) error {
+func generateSingletonOutput[T any](o *Output, data *TemplateData[T], padding int) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
@@ -106,7 +106,7 @@ func generateSingletonOutput[T any](o *Output, data *templateData[T], padding in
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *templateData[T], padding int) error {
+func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], padding int) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
@@ -260,7 +260,7 @@ func writeFile(outFolder string, fileName string, input io.Reader, format bool) 
 
 // executeTemplate takes a template and returns the output of the template
 // execution.
-func executeTemplate[T any](buf io.Writer, t *template.Template, name string, data *templateData[T]) (err error) {
+func executeTemplate[T any](buf io.Writer, t *template.Template, name string, data *TemplateData[T]) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("failed to execute template: %s\npanic: %+v\n", name, r)

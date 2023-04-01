@@ -71,7 +71,7 @@ func (i Importer) ToList() importers.List {
 	return list
 }
 
-type templateData[T any] struct {
+type TemplateData[T any] struct {
 	Dialect  string
 	Importer Importer
 
@@ -108,7 +108,7 @@ type templateData[T any] struct {
 	CanBulkInsert bool
 }
 
-func (t *templateData[T]) ResetImports() {
+func (t *TemplateData[T]) ResetImports() {
 	t.Importer = make(Importer)
 }
 
