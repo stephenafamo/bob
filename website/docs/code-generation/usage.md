@@ -61,7 +61,7 @@ type JetSetter struct {
 }
 
 // JetSlice is an alias for a slice of pointers to Jet.
-// This should almost always be used instead of []Jet.
+// This should almost always be used instead of []*Jet.
 type JetSlice []*Jet
 
 // JetsTable contains methods to work with the jets table
