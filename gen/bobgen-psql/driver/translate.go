@@ -178,7 +178,7 @@ func (d *driver) typMap() map[string]importers.List {
 	case "google":
 		uuidPkg = `"github.com/google/uuid"`
 	default:
-		uuidPkg = `"github.com/gofrs/uuid"`
+		uuidPkg = `"github.com/gofrs/uuid/v5"`
 	}
 
 	return map[string]importers.List{

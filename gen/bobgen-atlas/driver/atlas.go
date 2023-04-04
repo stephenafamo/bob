@@ -331,7 +331,7 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 
 	case *schema.UUIDType:
 		c.Type = "uuid.UUID"
-		c.Imports = importers.List{`"github.com/gofrs/uuid"`}
+		c.Imports = importers.List{`"github.com/gofrs/uuid/v5"`}
 		if d.config.UUIDPkg == "google" {
 			c.Imports = importers.List{`"github.com/google/uuid"`}
 		}
