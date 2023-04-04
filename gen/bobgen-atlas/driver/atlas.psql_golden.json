@@ -1268,7 +1268,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
@@ -1282,7 +1282,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
@@ -1296,7 +1296,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
@@ -1310,7 +1310,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
@@ -1324,7 +1324,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
@@ -1338,7 +1338,7 @@
 					"domain_name": "",
 					"type": "uuid.UUID",
 					"imports": [
-						"\"github.com/gofrs/uuid\""
+						"\"github.com/gofrs/uuid/v5\""
 					]
 				},
 				{
