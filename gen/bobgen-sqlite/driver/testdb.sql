@@ -162,7 +162,8 @@ create table type_monsters (
 
 -- all table defintions will not cause sqlite autoincrement primary key without rowid tables to be generated
 create table autoinctest (
-	id INTEGER PRIMARY KEY NOT NULL
+    id INTEGER PRIMARY KEY NOT NULL,
+    FOREIGN KEY (id) REFERENCES tags (id) -- causes make sure id is included in getter
 );
 
 -- additional fields should not be marked as auto generated, when the AUTOINCREMENT keyword is present

@@ -11,7 +11,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -143,7 +143,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -156,10 +156,47 @@
 					"id"
 				]
 			},
-			"foreign_keys": [],
+			"foreign_keys": [
+				{
+					"name": "fk_autoinctest_0",
+					"columns": [
+						"id"
+					],
+					"foreign_table": "tags",
+					"foreign_columns": [
+						"id"
+					]
+				}
+			],
 			"unique": [],
 			"is_join_table": false,
-			"relationship": null
+			"relationship": [
+				{
+					"Name": "fk_autoinctest_0",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "autoinctest",
+							"To": "tags",
+							"Columns": null,
+							"FromColumns": [
+								"id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": false,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false,
+					"NoReverse": false,
+					"Alias": ""
+				}
+			]
 		},
 		{
 			"key": "has_generated_columns",
@@ -172,7 +209,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -249,7 +286,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -326,7 +363,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -367,7 +404,7 @@
 					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
-					"generated": true,
+					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int64",
@@ -951,6 +988,31 @@
 			"unique": [],
 			"is_join_table": false,
 			"relationship": [
+				{
+					"Name": "fk_autoinctest_0",
+					"ByJoinTable": false,
+					"Sides": [
+						{
+							"From": "tags",
+							"To": "autoinctest",
+							"Columns": null,
+							"FromColumns": [
+								"id"
+							],
+							"ToColumns": [
+								"id"
+							],
+							"FromWhere": null,
+							"ToWhere": null,
+							"ToKey": true,
+							"ToUnique": true,
+							"KeyNullable": false
+						}
+					],
+					"Ignored": false,
+					"NoReverse": false,
+					"Alias": ""
+				},
 				{
 					"Name": "fk_video_tags_0",
 					"ByJoinTable": false,

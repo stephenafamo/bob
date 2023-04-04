@@ -219,7 +219,7 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 		autoIncr := isPrimaryKeyInteger && (tableHasAutoIncr || nPkeys == 1)
 
 		// See: https://github.com/sqlite/sqlite/blob/91f621531dc1cb9ba5f6a47eb51b1de9ed8bdd07/src/pragma.c#L1165
-		column.Generated = autoIncr || colInfo.Hidden == 2 || colInfo.Hidden == 3
+		column.Generated = colInfo.Hidden == 2 || colInfo.Hidden == 3
 
 		if colInfo.DefaultValue.Valid {
 			column.Default = colInfo.DefaultValue.String
