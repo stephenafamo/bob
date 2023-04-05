@@ -72,3 +72,25 @@ jobs:
         uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: covprofile.out
+
+  # Run generation test on windows to catch filepath issues
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        go: ['stable' ]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -race ./gen/bobgen-sqlite/driver
