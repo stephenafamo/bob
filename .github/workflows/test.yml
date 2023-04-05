@@ -2,10 +2,11 @@ name: Test
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         go: [ 'oldstable', 'stable' ]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     services:
       postgres:
         image: postgres:15
