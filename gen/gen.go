@@ -583,7 +583,7 @@ func modelsPackage(outputs []*Output) (string, error) {
 	}
 
 	relPath := strings.TrimPrefix(fullPath, modRoot)
-	return path.Join(modFile.Module.Mod.Path, relPath), nil
+	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), nil
 }
 
 // goModInfo returns the main module's root directory
