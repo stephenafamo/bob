@@ -73,8 +73,10 @@ jobs:
         with:
           path-to-profile: covprofile.out
 
-  # Run generation test on windows to catch filepath issues
-  test-windows:
+  test-windows-sqlite:
+    # Run generation test on windows to catch filepath issues
+    # Testing Postgres and MySQL are not possible since the windows runner
+    # does not support containers
     runs-on: windows-latest
     strategy:
       matrix:
