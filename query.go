@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"io"
 
-	"github.com/jinzhu/copier"
+	clone "github.com/huandu/go-clone/generic"
 	"github.com/stephenafamo/scan"
 )
 
@@ -38,14 +38,7 @@ type BaseQuery[E Expression] struct {
 }
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
-	b2 := new(BaseQuery[E])
-	//nolint:errcheck
-	copier.CopyWithOption(b2, &b, copier.Option{
-		IgnoreEmpty: true,
-		DeepCopy:    true,
-	})
-
-	return *b2
+	return clone.Clone(b)
 }
 
 func (b BaseQuery[E]) Exec(ctx context.Context, exec Executor) (sql.Result, error) {
