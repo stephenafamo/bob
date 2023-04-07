@@ -11,13 +11,13 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/hcl/v2 v2.10.0
-	github.com/huandu/go-clone/generic v1.6.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jackc/pgx/v5 v5.2.0
 	github.com/knadh/koanf v1.4.5
 	github.com/lib/pq v1.10.7
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/pganalyze/pg_query_go/v4 v4.2.0
+	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/stephenafamo/scan v0.4.2
 	github.com/stephenafamo/sqlparser v0.0.0-20230326220333-c2adaf4c30e8
 	github.com/takuoki/gocase v1.0.0
@@ -40,7 +40,6 @@ require (
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/huandu/go-clone v1.6.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

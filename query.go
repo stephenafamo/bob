@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"io"
 
-	clone "github.com/huandu/go-clone/generic"
+	"github.com/qdm12/reprint"
 	"github.com/stephenafamo/scan"
 )
 
@@ -38,7 +38,17 @@ type BaseQuery[E Expression] struct {
 }
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
-	return clone.Clone(b)
+	if c, ok := any(b.Expression).(interface{ Clone() E }); ok {
+		return BaseQuery[E]{
+			Expression: c.Clone(),
+			Dialect:    b.Dialect,
+		}
+	}
+
+	return BaseQuery[E]{
+		Expression: reprint.This(b.Expression).(E),
+		Dialect:    b.Dialect,
+	}
 }
 
 func (b BaseQuery[E]) Exec(ctx context.Context, exec Executor) (sql.Result, error) {
