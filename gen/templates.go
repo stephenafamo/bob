@@ -460,7 +460,7 @@ func createDeps(aliases Aliases, r orm.Relationship, many bool) string {
 		oalias := aliases.Tables[kside.TableName]
 
 		if many {
-			created = append(created, fmt.Sprintf(`var %s []*%sSetter`,
+			created = append(created, fmt.Sprintf(`%s := make([]*%sSetter, len(related))`,
 				objVarName,
 				oalias.UpSingular,
 			))
