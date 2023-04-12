@@ -327,7 +327,7 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 		if fromTable.Name == "users" {
 			fmt.Printf("\n")
 		}
-		return to + fmt.Sprintf(`// opt: %t, null: %t`, fromOpt, fromCol.Nullable)
+		return to
 
 	case !fromOpt && !fromCol.Nullable:
 		// if from is concrete, then use MustGet()
