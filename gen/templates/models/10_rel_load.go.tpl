@@ -218,8 +218,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		}
 	{{- end}}
 
-	for _, rel := range {{$fAlias.DownPlural}} {
-		for _, o := range os {
+	for _, o := range os {
+		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $side.FromColumns -}}
 			{{- $foreign := index $side.ToColumns $index -}}
 			{{- $fromColGet := columnGetter $.Tables $side.From $fromAlias $local -}}
@@ -287,8 +287,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		}
 	{{- end}}
 
-	for _, rel := range {{$fAlias.DownPlural}} {
-		for _, o := range os {
+	for _, o := range os {
+		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
 			if o.{{$fromCol}} != rel.Related{{$fromCol}} {
