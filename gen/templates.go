@@ -635,8 +635,8 @@ func setDeps(o setDepsOptions) string {
 		}
 
 		if shouldCreate && o.inLoop {
-			mret = append(mret, fmt.Sprintf("%s := %s[i]",
-				objVarName, objVarNamePlural,
+			mret = append(mret, fmt.Sprintf("%s := &%sSetter{}",
+				objVarName, oalias.UpSingular,
 			))
 		}
 
@@ -682,6 +682,13 @@ func setDeps(o setDepsOptions) string {
 				objVarName,
 				oalias.Columns[mapp.Column],
 				oSetter,
+			))
+		}
+
+		if shouldCreate && o.inLoop {
+			mret = append(mret, fmt.Sprintf("%s[i] = %s",
+				objVarNamePlural,
+				objVarName,
 			))
 		}
 
