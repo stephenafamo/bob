@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"hash/maphash"
-	"math/rand"
 	"reflect"
 
 	"github.com/aarondl/opt"
@@ -17,9 +15,6 @@ import (
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
-
-//nolint:gochecknoglobals,gosec
-var randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64())))
 
 // Loader builds a query mod that makes an extra query after the object is retrieved
 // it can be used to prevent N+1 queries by loading relationships in batches
@@ -68,7 +63,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		var queryMods mods.QueryMods[*dialect.SelectQuery]
 
 		for i, side := range rel.Sides {
-			alias = fmt.Sprintf("%s_%d", side.To, randsrc.Int63n(10000))
+			alias = fmt.Sprintf("%s_%d", side.To, internal.RandInt())
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
 				toCol := side.ToColumns[i]

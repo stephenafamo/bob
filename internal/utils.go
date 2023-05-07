@@ -1,5 +1,11 @@
 package internal
 
+import (
+	"hash/maphash"
+	"math/rand"
+	"sync"
+)
+
 func ToAnySlice[T any, Ts ~[]T](slice Ts) []any {
 	ret := make([]any, len(slice))
 	for i, val := range slice {
@@ -32,4 +38,16 @@ func FilterNonZero[T comparable](s []T) []T {
 	}
 
 	return filtered
+}
+
+//nolint:gochecknoglobals
+var (
+	randsrc = rand.New(rand.NewSource(int64(new(maphash.Hash).Sum64()))) //nolint:gosec
+	randmu  sync.Mutex
+)
+
+func RandInt() int64 {
+	randmu.Lock()
+	defer randmu.Unlock()
+	return randsrc.Int63n(10000)
 }
