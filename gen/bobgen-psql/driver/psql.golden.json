@@ -29,7 +29,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "videos_sponsor_id_fkey",
+					"Name": "videos.videos_sponsor_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -84,7 +84,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"Name": "video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -4464,7 +4464,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "users_parent_id_fkey",
+					"name": "users.users_parent_id_fkey",
 					"columns": [
 						"parent_id"
 					],
@@ -4474,7 +4474,7 @@
 					]
 				},
 				{
-					"name": "users_party_id_fkey",
+					"name": "users.users_party_id_fkey",
 					"columns": [
 						"party_id"
 					],
@@ -4484,7 +4484,7 @@
 					]
 				},
 				{
-					"name": "users_referrer_fkey",
+					"name": "users.users_referrer_fkey",
 					"columns": [
 						"referrer"
 					],
@@ -4511,7 +4511,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "users_parent_id_fkey",
+					"Name": "users.users_parent_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4536,7 +4536,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "users_parent_id_fkey__self_join_reverse",
+					"Name": "users.users_parent_id_fkey__self_join_reverse",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4561,7 +4561,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "users_party_id_fkey",
+					"Name": "users.users_party_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4586,7 +4586,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "users_party_id_fkey__self_join_reverse",
+					"Name": "users.users_party_id_fkey__self_join_reverse",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4611,7 +4611,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "users_referrer_fkey",
+					"Name": "users.users_referrer_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4636,7 +4636,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "users_referrer_fkey__self_join_reverse",
+					"Name": "users.users_referrer_fkey__self_join_reverse",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4661,7 +4661,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "videos_user_id_fkey",
+					"Name": "videos.videos_user_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4726,7 +4726,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "video_tags_tag_id_fkey",
+					"name": "video_tags.video_tags_tag_id_fkey",
 					"columns": [
 						"tag_id"
 					],
@@ -4736,7 +4736,7 @@
 					]
 				},
 				{
-					"name": "video_tags_video_id_fkey",
+					"name": "video_tags.video_tags_video_id_fkey",
 					"columns": [
 						"video_id"
 					],
@@ -4750,7 +4750,7 @@
 			"is_join_table": true,
 			"relationship": [
 				{
-					"Name": "video_tags_tag_id_fkey",
+					"Name": "video_tags.video_tags_tag_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4775,7 +4775,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "video_tags_video_id_fkey",
+					"Name": "video_tags.video_tags_video_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4851,7 +4851,7 @@
 			},
 			"foreign_keys": [
 				{
-					"name": "videos_sponsor_id_fkey",
+					"name": "videos.videos_sponsor_id_fkey",
 					"columns": [
 						"sponsor_id"
 					],
@@ -4861,7 +4861,7 @@
 					]
 				},
 				{
-					"name": "videos_user_id_fkey",
+					"name": "videos.videos_user_id_fkey",
 					"columns": [
 						"user_id"
 					],
@@ -4882,7 +4882,7 @@
 			"is_join_table": false,
 			"relationship": [
 				{
-					"Name": "video_tags_tag_id_fkeyvideo_tags_video_id_fkey",
+					"Name": "video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey",
 					"ByJoinTable": true,
 					"Sides": [
 						{
@@ -4923,7 +4923,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "videos_sponsor_id_fkey",
+					"Name": "videos.videos_sponsor_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{
@@ -4948,7 +4948,7 @@
 					"Alias": ""
 				},
 				{
-					"Name": "videos_user_id_fkey",
+					"Name": "videos.videos_user_id_fkey",
 					"ByJoinTable": false,
 					"Sides": [
 						{

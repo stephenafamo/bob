@@ -58,9 +58,9 @@ type {{$tAlias.DownSingular}}R struct {
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{if .IsToMany -}}
-		{{$relAlias}} {{$ftable.UpSingular}}Slice {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}}
+		{{$relAlias}} {{$ftable.UpSingular}}Slice {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
 	{{else -}}
-		{{$relAlias}} *{{$ftable.UpSingular}} {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}}
+		{{$relAlias}} *{{$ftable.UpSingular}} {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
 	{{end}}{{end -}}
 }
 {{- end}}
