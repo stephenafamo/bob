@@ -31,7 +31,7 @@ func (j JSON[T]) Value() (driver.Value, error) {
 }
 
 // Scan implements the Scanner interface.
-func (j *JSON[T]) Scan(value interface{}) error {
+func (j *JSON[T]) Scan(value any) error {
 	var err error
 
 	switch x := value.(type) {

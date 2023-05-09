@@ -98,7 +98,7 @@ To learn more about the methods attached to views and tables, see the [models do
 * Work with existing databases. Don't be the tool to define the schema, that's better left to other tools.
 * Eliminate all sql boilerplate, have relationships as a first-class concept.
 * Work with normal structs, call functions, no hyper-magical struct tags, small interfaces.
-* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for interface{}.
+* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for `interface{}`.
 * The generated types closely correlate to your database column types.
 * IDE auto-completion due to generated types and functions.
 * Clean code that is easy to read and debug.

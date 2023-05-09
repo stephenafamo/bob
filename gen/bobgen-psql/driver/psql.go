@@ -184,7 +184,7 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 // Load details about a single table
 func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFilter drivers.ColumnFilter) (string, string, []drivers.Column, error) {
 	var columns []drivers.Column
-	args := []interface{}{info.Schema, info.Name}
+	args := []any{info.Schema, info.Name}
 
 	tableQuery := `
 	SELECT

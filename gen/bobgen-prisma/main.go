@@ -51,7 +51,7 @@ func main() {
 	}
 }
 
-func reply(w io.Writer, data interface{}) error {
+func reply(w io.Writer, data any) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("could not marshal data %w", err)
@@ -99,7 +99,7 @@ func servePrisma() error {
 			return fmt.Errorf("could not open stdin %w", err)
 		}
 
-		var response interface{}
+		var response any
 
 		switch input.Method {
 		case "getManifest":
@@ -261,11 +261,11 @@ type Response struct {
 	// ID identifies a unique request.
 	ID int `json:"id"`
 	// Result contains the payload of the response.
-	Result interface{} `json:"result"`
+	Result any `json:"result"`
 }
 
 // NewResponse forms a new JSON RPC response to reply to the Prisma CLI commands
-func NewResponse(id int, result interface{}) Response {
+func NewResponse(id int, result any) Response {
 	return Response{
 		JSONRPC: "2.0",
 		ID:      id,

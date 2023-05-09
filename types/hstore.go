@@ -32,7 +32,7 @@ type HStore map[string]null.Val[string]
 
 // escapes and quotes hstore keys/values
 // s should be a sql.NullString or string
-func hQuote(s interface{}) string {
+func hQuote(s any) string {
 	var str string
 	switch v := s.(type) {
 	case null.Val[string]:
@@ -59,7 +59,7 @@ func hQuote(s interface{}) string {
 //
 // Note h is reallocated before the scan to clear existing values. If the
 // hstore column's database value is NULL, then h is set to nil instead.
-func (h *HStore) Scan(value interface{}) error {
+func (h *HStore) Scan(value any) error {
 	if value == nil {
 		h = nil //nolint:ineffassign
 		return nil

@@ -148,7 +148,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	var columns []drivers.Column
 	schema := d.dbName
 	tableName := info.Name
-	args := []interface{}{tableName, schema}
+	args := []any{tableName, schema}
 
 	query := `
 	select
