@@ -77,6 +77,20 @@ func TestInsert(t *testing.T) {
 				` + "`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')",
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"upsert2": {
+			Query: mysql.Insert(
+				im.Into("distributors", "did", "dname"),
+				im.Values(mysql.Arg(8, "Anvil Distribution")),
+				im.Values(mysql.Arg(9, "Sentry Distribution")),
+				im.OnDuplicateKeyUpdate().SetValues("did", "dbname"),
+			),
+			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
+				VALUES (?, ?), (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`did` = VALUES(`did`)," + `
+				` + "`dbname` = VALUES(`dbname`)",
+			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
+		},
 	}
 
 	// Cannot use the formatter for upsert with alias

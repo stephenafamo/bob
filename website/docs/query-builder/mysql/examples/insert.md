@@ -157,3 +157,33 @@ mysql.Insert(
     )),
 )
 ```
+
+## Upsert2
+
+SQL:
+
+```sql
+INSERT INTO distributors (`did`, `dname`)
+VALUES (?, ?), (?, ?)
+ON DUPLICATE KEY UPDATE
+`did` = VALUES(`did`),
+`dbname` = VALUES(`dbname`)
+```
+
+Args:
+
+* `8`
+* `"Anvil Distribution"`
+* `9`
+* `"Sentry Distribution"`
+
+Code:
+
+```go
+mysql.Insert(
+  im.Into("distributors", "did", "dname"),
+  im.Values(mysql.Arg(8, "Anvil Distribution")),
+  im.Values(mysql.Arg(9, "Sentry Distribution")),
+  im.OnDuplicateKeyUpdate().SetValues("did", "dbname"),
+)
+```

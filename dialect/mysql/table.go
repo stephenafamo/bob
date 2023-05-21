@@ -327,7 +327,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 			updateCols = columns
 		}
 
-		conflictQM = im.OnDuplicateKeyUpdate().Set(t.alias, updateCols...)
+		conflictQM = im.OnDuplicateKeyUpdate().SetValues(updateCols...)
 	}
 
 	q := Insert(
@@ -416,7 +416,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 			updateCols = columns
 		}
 
-		conflictQM = im.OnDuplicateKeyUpdate().Set(t.alias, updateCols...)
+		conflictQM = im.OnDuplicateKeyUpdate().SetValues(updateCols...)
 	}
 
 	q := Insert(

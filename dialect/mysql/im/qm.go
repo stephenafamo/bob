@@ -94,3 +94,13 @@ func (s *dupKeyUpdater) Set(alias string, cols ...string) *dupKeyUpdater {
 	s.sets = append(s.sets, newCols...)
 	return s
 }
+
+func (s *dupKeyUpdater) SetValues(cols ...string) *dupKeyUpdater {
+	newCols := make([]dialect.Set, len(cols))
+	for i, c := range cols {
+		newCols[i] = dialect.Set{Col: c, Val: dialect.NewFunction("VALUES", expr.Quote(c))}
+	}
+
+	s.sets = append(s.sets, newCols...)
+	return s
+}
