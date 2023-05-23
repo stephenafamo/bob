@@ -2,20 +2,20 @@
 {{$.Importer.Import "github.com/jaswdr/faker"}}
 {{$.Importer.Import "github.com/aarondl/opt/null"}}
 
-type factory struct {
+type Factory struct {
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Key -}}
 		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
     {{- end}}
 }
 
-func New() *factory {
-  return &factory{}
+func New() *Factory {
+  return &Factory{}
 }
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
-func (f *factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
+func (f *Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f}
 
   if f != nil {
@@ -31,11 +31,11 @@ func (f *factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
-func (f *factory) ClearBase{{$tAlias.UpSingular}}Mods() {
+func (f *Factory) ClearBase{{$tAlias.UpSingular}}Mods() {
     f.base{{$tAlias.UpSingular}}Mods = nil
 }
 
-func (f *factory) AddBase{{$tAlias.UpSingular}}Mod(mods ...{{$tAlias.UpSingular}}Mod) {
+func (f *Factory) AddBase{{$tAlias.UpSingular}}Mod(mods ...{{$tAlias.UpSingular}}Mod) {
 f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods...)
 }
 

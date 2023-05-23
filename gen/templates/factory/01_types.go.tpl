@@ -39,7 +39,7 @@ type {{$tAlias.UpSingular}}Template struct {
     {{if .Table.Relationships -}}
         r {{$tAlias.DownSingular}}R
     {{- end}}
-    f *factory
+    f *Factory
 }
 
 {{if .Table.Relationships -}}
