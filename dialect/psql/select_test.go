@@ -110,6 +110,17 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+		"simple limit offset arg": {
+			Doc:          "Simple select with limit and offset as argument",
+			ExpectedSQL:  "SELECT id, name FROM users LIMIT $1 OFFSET $2",
+			ExpectedArgs: []any{10, 15},
+			Query: psql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Offset(psql.Arg(15)),
+				sm.Limit(psql.Arg(10)),
+			),
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

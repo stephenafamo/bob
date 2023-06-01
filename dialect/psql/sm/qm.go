@@ -104,13 +104,13 @@ func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
 	})
 }
 
-func Limit(count int64) bob.Mod[*dialect.SelectQuery] {
+func Limit(count any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Limit[*dialect.SelectQuery]{
 		Count: count,
 	}
 }
 
-func Offset(count int64) bob.Mod[*dialect.SelectQuery] {
+func Offset(count any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Offset[*dialect.SelectQuery]{
 		Count: count,
 	}
