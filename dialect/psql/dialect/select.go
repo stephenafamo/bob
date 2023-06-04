@@ -100,17 +100,19 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, orderArgs...)
 
-	_, err = bob.ExpressIf(w, d, start+len(args), s.Limit,
+	limitArgs, err := bob.ExpressIf(w, d, start+len(args), s.Limit,
 		s.Limit.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
+	args = append(args, limitArgs...)
 
-	_, err = bob.ExpressIf(w, d, start+len(args), s.Offset,
+	offsetArgs, err := bob.ExpressIf(w, d, start+len(args), s.Offset,
 		s.Offset.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
+	args = append(args, offsetArgs...)
 
 	_, err = bob.ExpressIf(w, d, start+len(args), s.Fetch,
 		s.Fetch.Count != nil, "\n", "")
