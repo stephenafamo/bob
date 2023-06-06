@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	maindb()
+	maindb2()
 }
 
 func main1() {
@@ -172,6 +172,52 @@ func maindb() {
 			"offset": items[0],
 			"limit":  items[1],
 		}), dataMapper)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(data)
+	}
+
+}
+
+func maindb2() {
+	db, err := sql.Open("pgx",
+		fmt.Sprintf("postgres://postgres:password@%s:%s/%s?sslmode=disable", "localhost", "5478", "sakila"))
+	if err != nil {
+		panic(err)
+	}
+
+	bdb := bob.NewDB(db)
+
+	type Data struct {
+		FirstName string
+		LastName  string
+	}
+
+	dataMapper := scan.StructMapper[Data]()
+
+	for _, items := range [][2]int{{0, 4}, {2, 4}, {50, 12}} {
+		fmt.Printf("%s OFFSET %d LIMIT %d %s\n", strings.Repeat("=", 10), items[0], items[1], strings.Repeat("=", 10))
+
+		query := psql.Select(
+			sm.Columns("first_name", "last_name"),
+			sm.From("actor"),
+			sm.OrderBy("first_name"),
+			sm.OrderBy("last_name"),
+			sm.Offset(psql.ArgNamed("offset")),
+			sm.Limit(psql.ArgNamed("limit")),
+		)
+
+		stmt, err := bob.PrepareQuery(context.Background(), bdb, query, dataMapper)
+		if err != nil {
+			panic(err)
+		}
+
+		data, err := stmt.All(context.Background(), map[string]any{
+			"offset": items[0],
+			"limit":  items[1],
+		})
 		if err != nil {
 			panic(err)
 		}

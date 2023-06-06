@@ -32,9 +32,9 @@ func Prepare(ctx context.Context, exec Preparer, q QueryWriter) (Stmt, error) {
 	}
 
 	s := Stmt{
-		exec:    exec,
-		stmt:    stmt,
-		lenArgs: len(args),
+		exec: exec,
+		stmt: stmt,
+		args: args,
 	}
 
 	if l, ok := q.(Loadable); ok {
@@ -50,12 +50,17 @@ func Prepare(ctx context.Context, exec Preparer, q QueryWriter) (Stmt, error) {
 type Stmt struct {
 	stmt    Statement
 	exec    Executor
-	lenArgs int
+	args    []any
 	loaders []Loader
 }
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
 func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
+	args, err := bindNamedArgs(s.args, args)
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := s.stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return nil, err
@@ -112,6 +117,11 @@ type QueryStmt[T any, Ts ~[]T] struct {
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 	var t T
 
+	args, err := bindNamedArgs(s.args, args)
+	if err != nil {
+		return t, err
+	}
+
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return t, err
@@ -138,6 +148,11 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 }
 
 func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
+	args, err := bindNamedArgs(s.args, args)
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
@@ -166,6 +181,11 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 }
 
 func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor[T], error) {
+	args, err := bindNamedArgs(s.args, args)
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err

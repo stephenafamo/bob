@@ -7,12 +7,19 @@ import (
 
 func bindNamedArgs(buildArgs []any, args []any) ([]any, error) {
 	var nargs []NamedArgument
+	hasNonNamed := false
 	for _, buildArg := range buildArgs {
 		if na, ok := buildArg.(NamedArgument); ok {
 			nargs = append(nargs, na)
 		} else {
-			return nil, fmt.Errorf("all arguments must be named arguments")
+			hasNonNamed = true
 		}
+	}
+	if len(nargs) == 0 {
+		return args, nil
+	}
+	if hasNonNamed {
+		return nil, fmt.Errorf("cannot mix named and non-named arguments")
 	}
 	return mergeNamedArguments(nargs, args...)
 }
