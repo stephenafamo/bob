@@ -26,6 +26,11 @@ func Prepare(ctx context.Context, exec Preparer, q QueryWriter) (Stmt, error) {
 		return Stmt{}, err
 	}
 
+	err = FailIfMixedNamedArguments(args)
+	if err != nil {
+		return Stmt{}, err
+	}
+
 	stmt, err := exec.PrepareContext(ctx, query)
 	if err != nil {
 		return Stmt{}, err

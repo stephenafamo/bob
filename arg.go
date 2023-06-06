@@ -61,3 +61,19 @@ func FailIfNamedArguments(args []any) error {
 	}
 	return nil
 }
+
+func FailIfMixedNamedArguments(args []any) error {
+	hasNamed := false
+	hasNonNamed := false
+	for _, arg := range args {
+		if _, ok := arg.(NamedArgument); ok {
+			hasNamed = true
+		} else {
+			hasNonNamed = true
+		}
+	}
+	if hasNamed == true && hasNonNamed == true {
+		return fmt.Errorf("cannot mix named and non-named arguments")
+	}
+	return nil
+}
