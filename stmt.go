@@ -61,7 +61,7 @@ type Stmt struct {
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
 func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
-	args, err := bindNamedArgs(s.args, args)
+	args, err := BindNamedArgs(s.args, args)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ type QueryStmt[T any, Ts ~[]T] struct {
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 	var t T
 
-	args, err := bindNamedArgs(s.args, args)
+	args, err := BindNamedArgs(s.args, args)
 	if err != nil {
 		return t, err
 	}
@@ -153,7 +153,7 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 }
 
 func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
-	args, err := bindNamedArgs(s.args, args)
+	args, err := BindNamedArgs(s.args, args)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 }
 
 func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor[T], error) {
-	args, err := bindNamedArgs(s.args, args)
+	args, err := BindNamedArgs(s.args, args)
 	if err != nil {
 		return nil, err
 	}

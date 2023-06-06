@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func bindNamedArgs(buildArgs []any, args []any) ([]any, error) {
+func BindNamedArgs(buildArgs []any, args []any) ([]any, error) {
 	var nargs []NamedArgument
 	hasNonNamed := false
 	for _, buildArg := range buildArgs {
@@ -24,13 +24,30 @@ func bindNamedArgs(buildArgs []any, args []any) ([]any, error) {
 	return mergeNamedArguments(nargs, args...)
 }
 
-func BuildWithNamedArgs[E Expression](q BaseQuery[E], args ...any) (string, []any, error) {
-	query, buildArgs, err := q.Build()
+func MustBuildWithNamedArgs(q QueryWriter, args ...any) (string, []any) {
+	return MustBuildNWithNamedArgs(q, 1, args...)
+}
+
+func MustBuildNWithNamedArgs(q QueryWriter, start int, args ...any) (string, []any) {
+	sql, args, err := BuildNWithNamedArgs(q, start, args...)
+	if err != nil {
+		panic(err)
+	}
+
+	return sql, args
+}
+
+func BuildWithNamedArgs(q QueryWriter, args ...any) (string, []any, error) {
+	return BuildNWithNamedArgs(q, 1, args...)
+}
+
+func BuildNWithNamedArgs(q QueryWriter, start int, args ...any) (string, []any, error) {
+	query, buildArgs, err := BuildN(q, start)
 	if err != nil {
 		return "", nil, err
 	}
 
-	bindArgs, err := bindNamedArgs(buildArgs, args)
+	bindArgs, err := BindNamedArgs(buildArgs, args)
 	if err != nil {
 		return "", nil, err
 	}
@@ -55,5 +72,5 @@ func (q queryWithNamedArgs) WriteQuery(w io.Writer, start int) (args []any, err 
 	if err != nil {
 		return nil, err
 	}
-	return bindNamedArgs(buildArgs, q.args)
+	return BindNamedArgs(buildArgs, q.args)
 }

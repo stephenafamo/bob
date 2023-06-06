@@ -72,7 +72,7 @@ func ArgGroup(args ...any) Expression {
 	return bmod.ArgGroup(args...)
 }
 
-func ArgGroupNamed(names ...string) Expression {
+func ArgNamedGroup(names ...string) Expression {
 	return bmod.ArgNamedGroup(names...)
 }
 
