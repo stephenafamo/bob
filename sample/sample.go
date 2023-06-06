@@ -35,21 +35,6 @@ func main1() {
 		"y":   "h",
 		"id1": 400,
 	})
-
-	// prepared, err := query.BuildPrepared()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	//
-	//
-	// args, err := prepared.Build(map[string]any{
-	// 	"in1": 15,
-	// 	"in2": 200,
-	// 	"in3": 300,
-	// 	"x":   "abc",
-	// 	"y":   "h",
-	// 	"id1": 400,
-	// })
 	if err != nil {
 		panic(err)
 	}
@@ -76,16 +61,6 @@ func main2() {
 		"in1": 15,
 		"in2": "LAST_NAME",
 	})
-
-	// prepared, err := query.BuildPrepared()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	//
-	// args, err := prepared.Build(map[string]any{
-	// 	"in1": 15,
-	// 	"in2": "LAST_NAME",
-	// })
 	if err != nil {
 		panic(err)
 	}
@@ -160,13 +135,6 @@ func maindb() {
 			sm.Offset(psql.ArgNamed("offset")),
 			sm.Limit(psql.ArgNamed("limit")),
 		)
-
-		// prepared, err := query.BuildPrepared()
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		// stmt, err := bdb.PrepareContext(context.Background(), prepared.SQL())
 
 		data, err := bob.All(context.Background(), bdb, bob.QueryWithNamedArgs(query, map[string]any{
 			"offset": items[0],
