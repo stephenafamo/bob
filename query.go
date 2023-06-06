@@ -9,16 +9,21 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
+type QueryWriter interface {
+	// start is the index of the args, usually 1.
+	// it is present to allow re-indexing in cases of a subquery
+	// The method returns the value of any args placed
+	WriteQuery(w io.Writer, start int) (args []any, err error)
+}
+
 type Query interface {
 	// It should satisfy the Expression interface so that it can be used
 	// in places such as a sub-select
 	// However, it is allowed for a query to use its own dialect and not
 	// the dialect given to it
 	Expression
-	// start is the index of the args, usually 1.
-	// it is present to allow re-indexing in cases of a subquery
-	// The method returns the value of any args placed
-	WriteQuery(w io.Writer, start int) (args []any, err error)
+
+	QueryWriter
 }
 
 type Mod[T any] interface {

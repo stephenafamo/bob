@@ -20,7 +20,7 @@ type Statement interface {
 // NewStmt wraps an [*sql.Stmt] and returns a type that implements [Queryer] but still
 // retains the expected methods used by *sql.Stmt
 // This is useful when an existing *sql.Stmt is used in other places in the codebase
-func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
+func Prepare(ctx context.Context, exec Preparer, q QueryWriter) (Stmt, error) {
 	query, args, err := Build(q)
 	if err != nil {
 		return Stmt{}, err
@@ -70,11 +70,11 @@ func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
 	return result, nil
 }
 
-func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, []T], error) {
+func PrepareQuery[T any](ctx context.Context, exec Preparer, q QueryWriter, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, []T], error) {
 	return PrepareQueryx[T, []T](ctx, exec, q, m, opts...)
 }
 
-func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, Ts], error) {
+func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q QueryWriter, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, Ts], error) {
 	var qs QueryStmt[T, Ts]
 
 	s, err := Prepare(ctx, exec, q)
