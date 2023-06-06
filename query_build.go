@@ -28,20 +28,6 @@ func BuildWithNamedArgs[E Expression](q BaseQuery[E], args ...any) (string, []an
 		return "", nil, err
 	}
 
-	// var nargs []NamedArgument
-	// for _, buildArg := range buildArgs {
-	// 	if na, ok := buildArg.(NamedArgument); ok {
-	// 		nargs = append(nargs, na)
-	// 	} else {
-	// 		return "", nil, fmt.Errorf("all arguments must be named arguments")
-	// 	}
-	// }
-	//
-	// buildArgs, err = mergeNamedArguments(nargs, args...)
-	// if err != nil {
-	// 	return "", nil, err
-	// }
-
 	return query, bindArgs, nil
 }
 
