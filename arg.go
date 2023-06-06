@@ -52,3 +52,12 @@ func NamesToNamedArguments(names ...string) []any {
 	}
 	return args
 }
+
+func FailIfNamedArguments(args []any) error {
+	for _, arg := range args {
+		if _, ok := arg.(NamedArgument); ok {
+			return errors.New("some named arguments were not processed")
+		}
+	}
+	return nil
+}

@@ -30,6 +30,11 @@ func Exec(ctx context.Context, exec Executor, q QueryWriter) (sql.Result, error)
 		return nil, err
 	}
 
+	err = FailIfNamedArguments(args)
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
 		return nil, err
@@ -55,6 +60,11 @@ func One[T any](ctx context.Context, exec Executor, q QueryWriter, m scan.Mapper
 	var t T
 
 	sql, args, err := Build(q)
+	if err != nil {
+		return t, err
+	}
+
+	err = FailIfNamedArguments(args)
 	if err != nil {
 		return t, err
 	}
@@ -105,6 +115,11 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q QueryWriter, m s
 		return nil, err
 	}
 
+	err = FailIfNamedArguments(args)
+	if err != nil {
+		return nil, err
+	}
+
 	if l, ok := q.(MapperModder); ok {
 		if loaders := l.GetMapperMods(); len(loaders) > 0 {
 			m = scan.Mod(m, loaders...)
@@ -143,6 +158,11 @@ func Cursor[T any](ctx context.Context, exec Executor, q QueryWriter, m scan.Map
 	}
 
 	sql, args, err := Build(q)
+	if err != nil {
+		return nil, err
+	}
+
+	err = FailIfNamedArguments(args)
 	if err != nil {
 		return nil, err
 	}
