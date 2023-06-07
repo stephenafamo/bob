@@ -67,7 +67,7 @@ type queryWithNamedArgs struct {
 	args []any
 }
 
-func (q queryWithNamedArgs) WriteQuery(w io.Writer, start int) (args []any, err error) {
+func (q queryWithNamedArgs) WriteQuery(w io.Writer, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteQuery(w, start)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (q queryWithNamedArgs) WriteQuery(w io.Writer, start int) (args []any, err 
 	return BindNamedArgs(buildArgs, q.args)
 }
 
-func (q queryWithNamedArgs) WriteSQL(w io.Writer, d Dialect, start int) (args []any, err error) {
+func (q queryWithNamedArgs) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteSQL(w, d, start)
 	if err != nil {
 		return nil, err

@@ -72,7 +72,7 @@ func FailIfMixedNamedArguments(args []any) error {
 			hasNonNamed = true
 		}
 	}
-	if hasNamed == true && hasNonNamed == true {
+	if hasNamed && hasNonNamed {
 		return fmt.Errorf("cannot mix named and non-named arguments")
 	}
 	return nil
