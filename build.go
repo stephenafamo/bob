@@ -4,11 +4,11 @@ import "bytes"
 
 // MustBuild builds a query and panics on error
 // useful for initializing queries that need to be reused
-func MustBuild(q QueryWriter) (string, []any) {
+func MustBuild(q Query) (string, []any) {
 	return MustBuildN(q, 1)
 }
 
-func MustBuildN(q QueryWriter, start int) (string, []any) {
+func MustBuildN(q Query, start int) (string, []any) {
 	sql, args, err := BuildN(q, start)
 	if err != nil {
 		panic(err)
@@ -18,12 +18,12 @@ func MustBuildN(q QueryWriter, start int) (string, []any) {
 }
 
 // Convinient function to build query from start
-func Build(q QueryWriter) (string, []any, error) {
+func Build(q Query) (string, []any, error) {
 	return BuildN(q, 1)
 }
 
 // Convinient function to build query from a point
-func BuildN(q QueryWriter, start int) (string, []any, error) {
+func BuildN(q Query, start int) (string, []any, error) {
 	b := &bytes.Buffer{}
 	args, err := q.WriteQuery(b, start)
 
