@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-var ErrNoNamedArgs = errors.New("Dialect does not support named arguments")
+var ErrNoArgBindings = errors.New("Dialect does not support argument binding")
 
 // Dialect provides expressions with methods to write parts of the query
 type Dialect interface {
@@ -51,7 +51,7 @@ func Express(w io.Writer, d Dialect, start int, e any) ([]any, error) {
 	case sql.NamedArg:
 		dn, ok := d.(DialectWithNamed)
 		if !ok {
-			return nil, ErrNoNamedArgs
+			return nil, ErrNoArgBindings
 		}
 		dn.WriteNamedArg(w, v.Name)
 		return []any{v}, nil

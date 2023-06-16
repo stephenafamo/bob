@@ -23,11 +23,11 @@ func main1() {
 	query := psql.Select(
 		sm.Columns("id", "name"),
 		sm.From("users"),
-		sm.Where(psql.Quote("id").In(psql.ArgNamed("in1", "in2", "in3"))),
-		sm.Where(psql.Raw("id >= ?", psql.NamedArg("id1"))),
+		sm.Where(psql.Quote("id").In(psql.BindArg("in1", "in2", "in3"))),
+		sm.Where(psql.Raw("id >= ?", psql.ArgBinding("id1"))),
 	)
 
-	queryStr, args, err := bob.BuildWithNamedArgs(query, map[string]any{
+	queryStr, args, err := bob.BuildWithBinding(query, map[string]any{
 		"in1": 15,
 		"in2": 200,
 		"in3": 300,
@@ -53,11 +53,11 @@ func main1() {
 func main2() {
 	query := psql.Insert(
 		im.Into("actor", "first_name", "last_name"),
-		// im.Values(psql.Arg(psql.NamedArg("in1"), psql.NamedArg("in2"))),
-		im.Values(psql.ArgNamed("in1", "in2")),
+		// im.Values(psql.Arg(psql.ArgBinding("in1"), psql.ArgBinding("in2"))),
+		im.Values(psql.BindArg("in1", "in2")),
 	)
 
-	queryStr, args, err := bob.BuildWithNamedArgs(query, map[string]any{
+	queryStr, args, err := bob.BuildWithBinding(query, map[string]any{
 		"in1": 15,
 		"in2": "LAST_NAME",
 	})
@@ -82,7 +82,7 @@ type Main3Args struct {
 // func main3() {
 // 	query := psql.Insert(
 // 		im.Into("actor", "first_name", "last_name"),
-// 		im.Values(psql.ArgNamed("first_name", "last_name")),
+// 		im.Values(psql.BindArg("first_name", "last_name")),
 // 	)
 //
 // 	prepared, err := query.BuildPrepared()
@@ -132,11 +132,11 @@ func maindb() {
 			sm.From("actor"),
 			sm.OrderBy("first_name"),
 			sm.OrderBy("last_name"),
-			sm.Offset(psql.ArgNamed("offset")),
-			sm.Limit(psql.ArgNamed("limit")),
+			sm.Offset(psql.BindArg("offset")),
+			sm.Limit(psql.BindArg("limit")),
 		)
 
-		data, err := bob.All(context.Background(), bdb, bob.QueryWithNamedArgs(query, map[string]any{
+		data, err := bob.All(context.Background(), bdb, bob.QueryWithBinding(query, map[string]any{
 			"offset": items[0],
 			"limit":  items[1],
 		}), dataMapper)
@@ -173,8 +173,8 @@ func maindb2() {
 			sm.From("actor"),
 			sm.OrderBy("first_name"),
 			sm.OrderBy("last_name"),
-			sm.Offset(psql.ArgNamed("offset")),
-			sm.Limit(psql.ArgNamed("limit")),
+			sm.Offset(psql.BindArg("offset")),
+			sm.Limit(psql.BindArg("limit")),
 		)
 
 		stmt, err := bob.PrepareQuery(context.Background(), bdb, query, dataMapper)

@@ -182,7 +182,7 @@ func TestErrNoNamedArgs(t *testing.T) {
 	arg := sql.Named("name", "value")
 	w := bytes.NewBuffer(nil)
 	_, err := Express(w, d, 1, arg)
-	if !errors.Is(err, ErrNoNamedArgs) {
-		t.Fatalf("Expected to get ErrNoNamedArgs but got %v", err)
+	if !errors.Is(err, ErrNoArgBindings) {
+		t.Fatalf("Expected to get ErrNoArgBindings but got %v", err)
 	}
 }

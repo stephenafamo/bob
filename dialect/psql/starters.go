@@ -62,8 +62,8 @@ func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
-func ArgNamed(names ...string) Expression {
-	return bmod.ArgNamed(names...)
+func BindArg(names ...string) Expression {
+	return bmod.BindArg(names...)
 }
 
 // SQL: ($1, $2, $3)
@@ -72,8 +72,8 @@ func ArgGroup(args ...any) Expression {
 	return bmod.ArgGroup(args...)
 }
 
-func ArgNamedGroup(names ...string) Expression {
-	return bmod.ArgNamedGroup(names...)
+func BindArgGroup(names ...string) Expression {
+	return bmod.BindArgGroup(names...)
 }
 
 // SQL: $1, $2, $3
@@ -82,8 +82,8 @@ func Placeholder(n uint) Expression {
 	return bmod.Placeholder(n)
 }
 
-func NamedPlaceholder(names ...string) Expression {
-	return bmod.NamedPlaceholder(names...)
+func BindPlaceholder(names ...string) Expression {
+	return bmod.BindPlaceholder(names...)
 }
 
 // SQL: (a, b)

@@ -30,7 +30,7 @@ func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 		return nil, err
 	}
 
-	err = FailIfNamedArguments(args)
+	err = FailIfArgumentBindings(args)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 		return t, err
 	}
 
-	err = FailIfNamedArguments(args)
+	err = FailIfArgumentBindings(args)
 	if err != nil {
 		return t, err
 	}
@@ -115,7 +115,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 		return nil, err
 	}
 
-	err = FailIfNamedArguments(args)
+	err = FailIfArgumentBindings(args)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		return nil, err
 	}
 
-	err = FailIfNamedArguments(args)
+	err = FailIfArgumentBindings(args)
 	if err != nil {
 		return nil, err
 	}

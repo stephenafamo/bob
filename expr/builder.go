@@ -77,8 +77,8 @@ func (e Builder[T, B]) Arg(vals ...any) T {
 	return X[T, B](Arg(vals...))
 }
 
-func (e Builder[T, B]) ArgNamed(names ...string) T {
-	return X[T, B](Arg(bob.NamesToNamedArguments(names...)...))
+func (e Builder[T, B]) BindArg(names ...string) T {
+	return X[T, B](Arg(bob.NamesToArgumentBindings(names...)...))
 }
 
 // Comma separated list of arguments surrounded by parentheses
@@ -86,16 +86,16 @@ func (e Builder[T, B]) ArgGroup(vals ...any) T {
 	return X[T, B](ArgGroup(vals...))
 }
 
-func (e Builder[T, B]) ArgNamedGroup(names ...string) T {
-	return X[T, B](ArgGroup(bob.NamesToNamedArguments(names...)...))
+func (e Builder[T, B]) BindArgGroup(names ...string) T {
+	return X[T, B](ArgGroup(bob.NamesToArgumentBindings(names...)...))
 }
 
 func (e Builder[T, B]) Placeholder(n uint) T {
 	return e.Arg(make([]any, n)...)
 }
 
-func (e Builder[T, B]) NamedPlaceholder(names ...string) T {
-	return e.Arg(bob.NamesToNamedArguments(names...)...)
+func (e Builder[T, B]) BindPlaceholder(names ...string) T {
+	return e.Arg(bob.NamesToArgumentBindings(names...)...)
 }
 
 func (e Builder[T, B]) Raw(query string, args ...any) T {
