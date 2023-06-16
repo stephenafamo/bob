@@ -56,18 +56,18 @@ func BuildWithBindingN(q Query, start int, args ...any) (string, []any, error) {
 }
 
 func QueryWithBinding(q Query, args ...any) Query {
-	return &queryWithBindingsArgs{
+	return &queryWithBinding{
 		q:    q,
 		args: args,
 	}
 }
 
-type queryWithBindingsArgs struct {
+type queryWithBinding struct {
 	q    Query
 	args []any
 }
 
-func (q queryWithBindingsArgs) WriteQuery(w io.Writer, start int) ([]any, error) {
+func (q queryWithBinding) WriteQuery(w io.Writer, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteQuery(w, start)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (q queryWithBindingsArgs) WriteQuery(w io.Writer, start int) ([]any, error)
 	return replaceArgumentBindingsWithCheck(buildArgs, q.args)
 }
 
-func (q queryWithBindingsArgs) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (q queryWithBinding) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteSQL(w, d, start)
 	if err != nil {
 		return nil, err
