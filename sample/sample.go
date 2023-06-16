@@ -23,6 +23,7 @@ func main1() {
 	query := psql.Select(
 		sm.Columns("id", "name"),
 		sm.From("users"),
+		// sm.Where(psql.Quote("id").In(psql.Arg(psql.ArgBinding("in1"), psql.ArgBinding("in2"), psql.ArgBinding("in3")))),
 		sm.Where(psql.Quote("id").In(psql.BindArg("in1", "in2", "in3"))),
 		sm.Where(psql.Raw("id >= ?", psql.ArgBinding("id1"))),
 	)
