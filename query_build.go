@@ -24,50 +24,37 @@ func replaceArgumentBindingsWithCheck(buildArgs []any, args []any) ([]any, error
 	return replaceArgumentBindings(nargs, args...)
 }
 
-func MustBuildWithBinding(q Query, args ...any) (string, []any) {
-	return MustBuildWithBindingN(q, 1, args...)
+type BoundQuery interface {
+	Query
+
+	// MustBuild builds the query and panics on error
+	// useful for initializing queries that need to be reused
+	MustBuild() (string, []any)
+
+	// MustBuildN builds the query and panics on error
+	// start numbers the arguments from a different point
+	MustBuildN(start int) (string, []any)
+
+	// Convinient function to build query from start
+	Build() (string, []any, error)
+
+	// Convinient function to build query from a point
+	BuildN(start int) (string, []any, error)
 }
 
-func MustBuildWithBindingN(q Query, start int, args ...any) (string, []any) {
-	sql, args, err := BuildWithBindingN(q, start, args...)
-	if err != nil {
-		panic(err)
-	}
-
-	return sql, args
-}
-
-func BuildWithBinding(q Query, args ...any) (string, []any, error) {
-	return BuildWithBindingN(q, 1, args...)
-}
-
-func BuildWithBindingN(q Query, start int, args ...any) (string, []any, error) {
-	query, buildArgs, err := BuildN(q, start)
-	if err != nil {
-		return "", nil, err
-	}
-
-	bindArgs, err := replaceArgumentBindingsWithCheck(buildArgs, args)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return query, bindArgs, nil
-}
-
-func QueryWithBinding(q Query, args ...any) Query {
-	return &queryWithBinding{
+func BindQuery(q Query, args ...any) BoundQuery {
+	return &boundQuery{
 		q:    q,
 		args: args,
 	}
 }
 
-type queryWithBinding struct {
+type boundQuery struct {
 	q    Query
 	args []any
 }
 
-func (q queryWithBinding) WriteQuery(w io.Writer, start int) ([]any, error) {
+func (q boundQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteQuery(w, start)
 	if err != nil {
 		return nil, err
@@ -75,10 +62,32 @@ func (q queryWithBinding) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return replaceArgumentBindingsWithCheck(buildArgs, q.args)
 }
 
-func (q queryWithBinding) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (q boundQuery) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
 	buildArgs, err := q.q.WriteSQL(w, d, start)
 	if err != nil {
 		return nil, err
 	}
 	return replaceArgumentBindingsWithCheck(buildArgs, q.args)
+}
+
+// MustBuild builds the query and panics on error
+// useful for initializing queries that need to be reused
+func (q boundQuery) MustBuild() (string, []any) {
+	return MustBuild(q)
+}
+
+// MustBuildN builds the query and panics on error
+// start numbers the arguments from a different point
+func (q boundQuery) MustBuildN(start int) (string, []any) {
+	return MustBuildN(q, start)
+}
+
+// Convinient function to build query from start
+func (q boundQuery) Build() (string, []any, error) {
+	return Build(q)
+}
+
+// Convinient function to build query from a point
+func (q boundQuery) BuildN(start int) (string, []any, error) {
+	return BuildN(q, start)
 }
