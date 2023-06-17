@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	main1()
+	maindb2()
 }
 
 func main1() {

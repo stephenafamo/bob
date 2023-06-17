@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func replaceArgumentBindingsWithCheck(buildArgs []any, args []any) ([]any, error) {
+func replaceArgumentBindingsWithCheck(buildArgs []any, args ...any) ([]any, error) {
 	var nargs []ArgumentBinding
 	hasNonBinding := false
 	for _, buildArg := range buildArgs {
@@ -42,7 +42,7 @@ type BoundQuery interface {
 	BuildN(start int) (string, []any, error)
 }
 
-func BindQuery(q Query, args ...any) BoundQuery {
+func BindQuery(q Query, args any) BoundQuery {
 	return &boundQuery{
 		q:    q,
 		args: args,
@@ -51,7 +51,7 @@ func BindQuery(q Query, args ...any) BoundQuery {
 
 type boundQuery struct {
 	q    Query
-	args []any
+	args any
 }
 
 func (q boundQuery) WriteQuery(w io.Writer, start int) ([]any, error) {
