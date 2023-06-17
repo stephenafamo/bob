@@ -28,7 +28,7 @@ func main1() {
 		sm.Where(psql.Raw("id >= ?", psql.ArgBinding("id1"))),
 	)
 
-	queryStr, args, err := bob.BindQuery(query, map[string]any{
+	queryStr, args, err := query.Bind(map[string]any{
 		"in1": 15,
 		"in2": 200,
 		"in3": 300,
@@ -58,7 +58,7 @@ func main2() {
 		im.Values(psql.BindArg("in1", "in2")),
 	)
 
-	queryStr, args, err := bob.BindQuery(query, map[string]any{
+	queryStr, args, err := query.Bind(map[string]any{
 		"in1": 15,
 		"in2": "LAST_NAME",
 	}).Build()
@@ -137,7 +137,7 @@ func maindb() {
 			sm.Limit(psql.BindArg("limit")),
 		)
 
-		data, err := bob.All(context.Background(), bdb, bob.BindQuery(query, map[string]any{
+		data, err := bob.All(context.Background(), bdb, query.Bind(map[string]any{
 			"offset": items[0],
 			"limit":  items[1],
 		}), dataMapper)
