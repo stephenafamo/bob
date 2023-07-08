@@ -11,6 +11,7 @@ import (
 	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	"github.com/volatiletech/strmangle"
 	_ "modernc.org/sqlite"
 )
 
@@ -110,10 +111,48 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	return &DBInfo{Tables: tables}, nil
 }
 
-func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
-	query := `SELECT name FROM %q.sqlite_schema WHERE name NOT LIKE 'sqlite_%%' AND type IN ('table', 'view') ORDER BY type, name`
+func (d *driver) buildQuery(schema string) (string, []any) {
+	var args []any
+	query := fmt.Sprintf(`SELECT name FROM %q.sqlite_schema WHERE name NOT LIKE 'sqlite_%%' AND type IN ('table', 'view')`, schema)
 
-	mainTables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], fmt.Sprintf(query, "main"))
+	tableFilter := drivers.ParseTableFilter(d.config.Only, d.config.Except)
+
+	include := make([]string, 0, len(tableFilter.Only))
+	for _, name := range tableFilter.Only {
+		if (schema == "main" && !strings.Contains(name, ".")) || strings.HasPrefix(name, schema+".") {
+			include = append(include, name)
+		}
+	}
+
+	exclude := make([]string, 0, len(tableFilter.Except))
+	for _, name := range tableFilter.Except {
+		if (schema == "main" && !strings.Contains(name, ".")) || strings.HasPrefix(name, schema+".") {
+			exclude = append(exclude, name)
+		}
+	}
+
+	if len(include) > 0 {
+		query += fmt.Sprintf(" and name in (%s)", strmangle.Placeholders(true, len(include), 1, 1))
+		for _, w := range include {
+			args = append(args, w)
+		}
+	}
+
+	if len(exclude) > 0 {
+		query += fmt.Sprintf(" and name not in (%s)", strmangle.Placeholders(true, len(exclude), 1+len(include), 1))
+		for _, w := range exclude {
+			args = append(args, w)
+		}
+	}
+
+	query += ` ORDER BY type, name`
+
+	return query, args
+}
+
+func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
+	mainQuery, mainArgs := d.buildQuery("main")
+	mainTables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], mainQuery, mainArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +166,8 @@ func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
 	}
 
 	for schema := range d.config.Attach {
-		tables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], fmt.Sprintf(query, schema))
+		schemaQuery, schemaArgs := d.buildQuery(schema)
+		tables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], schemaQuery, schemaArgs...)
 		if err != nil {
 			return nil, err
 		}
@@ -277,6 +317,47 @@ func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.Prim
 	}
 }
 
+func (d driver) skipKey(table, column string) bool {
+	if len(d.config.Only) > 0 {
+		// check if the table is listed at all
+		filter, ok := d.config.Only[table]
+		if !ok {
+			return true
+		}
+
+		// check if the column is listed
+		if len(filter) == 0 {
+			return false
+		}
+
+		for _, filteredCol := range filter {
+			if filteredCol == column {
+				return false
+			}
+		}
+		return true
+	}
+
+	if len(d.config.Except) > 0 {
+		filter, ok := d.config.Except[table]
+		if !ok {
+			return false
+		}
+
+		if len(filter) == 0 {
+			return true
+		}
+
+		for _, filteredCol := range filter {
+			if filteredCol == column {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // foreignKeys retrieves the foreign keys for a given table name.
 func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]drivers.ForeignKey, error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.foreign_key_list('%s')", schema, tableName))
@@ -296,6 +377,15 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 		err = rows.Scan(&id, &seq, &ftable, &col, &fcol, &onupdate, &ondelete, &match)
 		if err != nil {
 			return nil, err
+		}
+
+		fullFtable := ftable
+		if schema != "main" {
+			fullFtable = fmt.Sprintf("%s.%s", schema, ftable)
+		}
+
+		if d.skipKey(fullFtable, fcol) {
+			continue
 		}
 
 		fkeyMap[id] = drivers.ForeignKey{
