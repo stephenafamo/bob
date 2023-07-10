@@ -28,14 +28,14 @@ func (w writerPrinter) PrintQuery(query string, args ...any) {
 }
 
 // Debug wraps an [Executor] and prints the queries and args to os.Stdout
-func Debug(exec Executor) Executor {
+func Debug(exec Executor) Preparer {
 	return DebugToWriter(exec, nil)
 }
 
 // DebugToWriter wraps an existing [Executor] and writes all
 // queries and args to the given [io.Writer]
 // if w is nil, it fallsback to [os.Stdout]
-func DebugToWriter(exec Executor, w io.Writer) Executor {
+func DebugToWriter(exec Executor, w io.Writer) Preparer {
 	if w == nil {
 		w = os.Stdout
 	}
@@ -45,7 +45,7 @@ func DebugToWriter(exec Executor, w io.Writer) Executor {
 // DebugToPrinter wraps an existing [Executor] and writes all
 // queries and args to the given [DebugPrinter]
 // if w is nil, it fallsback to writing to [os.Stdout]
-func DebugToPrinter(exec Executor, w DebugPrinter) Executor {
+func DebugToPrinter(exec Executor, w DebugPrinter) Preparer {
 	if w == nil {
 		w = writerPrinter{os.Stdout}
 	}
@@ -59,11 +59,17 @@ type debugExecutor struct {
 
 func (d debugExecutor) PrepareContext(ctx context.Context, query string) (Statement, error) {
 	d.printer.PrintQuery(query)
-	if p, ok := d.exec.(Preparer); ok {
-		return p.PrepareContext(ctx, query)
+	p, ok := d.exec.(Preparer)
+	if !ok {
+		return nil, fmt.Errorf("executor does not implement Preparer")
 	}
 
-	return nil, fmt.Errorf("executor does not implement Preparer")
+	stmt, err := p.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return debugStmt{printer: d.printer, stmt: stmt, query: query}, nil
 }
 
 func (d debugExecutor) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
@@ -74,4 +80,24 @@ func (d debugExecutor) ExecContext(ctx context.Context, query string, args ...an
 func (d debugExecutor) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
 	d.printer.PrintQuery(query, args...)
 	return d.exec.QueryContext(ctx, query, args...)
+}
+
+type debugStmt struct {
+	printer DebugPrinter
+	stmt    Statement
+	query   string
+}
+
+func (d debugStmt) Close() error {
+	return d.stmt.Close()
+}
+
+func (d debugStmt) ExecContext(ctx context.Context, args ...any) (sql.Result, error) {
+	d.printer.PrintQuery(d.query, args...)
+	return d.stmt.ExecContext(ctx, args...)
+}
+
+func (d debugStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
+	d.printer.PrintQuery(d.query, args...)
+	return d.stmt.QueryContext(ctx, args...)
 }
