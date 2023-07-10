@@ -58,7 +58,6 @@ type debugExecutor struct {
 }
 
 func (d debugExecutor) PrepareContext(ctx context.Context, query string) (Statement, error) {
-	d.printer.PrintQuery(query)
 	p, ok := d.exec.(Preparer)
 	if !ok {
 		return nil, fmt.Errorf("executor does not implement Preparer")
