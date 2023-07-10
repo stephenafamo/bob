@@ -60,6 +60,11 @@ func makeMapBinder(args []any) (mapBinder, error) {
 			continue
 		}
 
+		if name, ok := arg.(named); ok && len(name.names) == 1 {
+			positions[pos] = string(name.names[0])
+			continue
+		}
+
 		return mapBinder{}, ErrNamedArgRequired{arg}
 	}
 
