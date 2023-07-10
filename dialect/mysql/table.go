@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -22,7 +23,7 @@ func NewTable[T any, Tset any](tableName string, uniques ...[]string) *Table[T, 
 func NewTablex[T any, Tslice ~[]T, Tset any](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
-	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
+	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
 
 	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Tset]{

@@ -3,9 +3,19 @@ package bob
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/stephenafamo/scan"
 )
+
+type ErrMismatchedArgs struct {
+	Expected int
+	Got      int
+}
+
+func (e ErrMismatchedArgs) Error() string {
+	return fmt.Sprintf("expected %d args, got %d", e.Expected, e.Got)
+}
 
 type Preparer interface {
 	Executor
@@ -15,26 +25,23 @@ type Preparer interface {
 type Statement interface {
 	ExecContext(ctx context.Context, args ...any) (sql.Result, error)
 	QueryContext(ctx context.Context, args ...any) (scan.Rows, error)
+	Close() error
 }
 
-// NewStmt wraps an [*sql.Stmt] and returns a type that implements [Queryer] but still
-// retains the expected methods used by *sql.Stmt
-// This is useful when an existing *sql.Stmt is used in other places in the codebase
-func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
+func prepare(ctx context.Context, exec Preparer, q Query) (Stmt, []any, error) {
 	query, args, err := Build(q)
 	if err != nil {
-		return Stmt{}, err
+		return Stmt{}, nil, err
 	}
 
 	stmt, err := exec.PrepareContext(ctx, query)
 	if err != nil {
-		return Stmt{}, err
+		return Stmt{}, nil, err
 	}
 
 	s := Stmt{
-		exec:    exec,
-		stmt:    stmt,
-		lenArgs: len(args),
+		exec: exec,
+		stmt: stmt,
 	}
 
 	if l, ok := q.(Loadable); ok {
@@ -43,15 +50,25 @@ func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
 		copy(s.loaders, loaders)
 	}
 
-	return s, nil
+	return s, args, nil
+}
+
+// Prepare prepares a query using the [Preparer] and returns a [Stmt]
+func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
+	s, _, err := prepare(ctx, exec, q)
+	return s, err
 }
 
 // Stmt is similar to *sql.Stmt but implements [Queryer]
 type Stmt struct {
 	stmt    Statement
 	exec    Executor
-	lenArgs int
 	loaders []Loader
+}
+
+// Close closes the statement
+func (s Stmt) Close() error {
+	return s.stmt.Close()
 }
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
@@ -75,11 +92,16 @@ func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Map
 }
 
 func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, Ts], error) {
+	s, _, err := prepareQuery[T, Ts](ctx, exec, q, m, opts...)
+	return s, err
+}
+
+func prepareQuery[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, Ts], []any, error) {
 	var qs QueryStmt[T, Ts]
 
-	s, err := Prepare(ctx, exec, q)
+	s, args, err := prepare(ctx, exec, q)
 	if err != nil {
-		return qs, err
+		return qs, nil, err
 	}
 
 	settings := ExecSettings[T]{}
@@ -99,7 +121,7 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 		settings: settings,
 	}
 
-	return qs, nil
+	return qs, args, nil
 }
 
 type QueryStmt[T any, Ts ~[]T] struct {
@@ -107,6 +129,11 @@ type QueryStmt[T any, Ts ~[]T] struct {
 
 	mapper   scan.Mapper[T]
 	settings ExecSettings[T]
+}
+
+// Close closes the statement
+func (s QueryStmt[T, Ts]) Close() error {
+	return s.stmt.Close()
 }
 
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {

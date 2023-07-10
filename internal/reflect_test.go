@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/internal/mappings"
 )
 
 type User struct {
@@ -100,7 +101,7 @@ func testGetColumns[T any](t *testing.T, expected Mapping) {
 	var x T
 	xTyp := reflect.TypeOf(x)
 	t.Run(xTyp.Name(), func(t *testing.T) {
-		cols := GetMappings(xTyp)
+		cols := mappings.GetMappings(xTyp)
 		if diff := cmp.Diff(expected, cols); diff != "" {
 			t.Fatal(diff)
 		}
@@ -207,7 +208,7 @@ func testGetColumnValues[T any](t *testing.T, name string, tc testGetColumnsCase
 	t.Helper()
 	var x T
 	xTyp := reflect.TypeOf(x)
-	cols := GetMappings(xTyp)
+	cols := mappings.GetMappings(xTyp)
 	if name == "" {
 		name = xTyp.Name()
 	}

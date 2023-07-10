@@ -57,6 +57,15 @@ type debugExecutor struct {
 	exec    Executor
 }
 
+func (d debugExecutor) PrepareContext(ctx context.Context, query string) (Statement, error) {
+	d.printer.PrintQuery(query)
+	if p, ok := d.exec.(Preparer); ok {
+		return p.PrepareContext(ctx, query)
+	}
+
+	return nil, fmt.Errorf("executor does not implement Preparer")
+}
+
 func (d debugExecutor) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	d.printer.PrintQuery(query, args...)
 	return d.exec.ExecContext(ctx, query, args...)

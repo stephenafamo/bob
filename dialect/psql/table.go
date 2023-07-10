@@ -11,6 +11,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -21,7 +22,7 @@ func NewTable[T any, Tset any](schema, tableName string) *Table[T, []T, Tset] {
 func NewTablex[T any, Tslice ~[]T, Tset any](schema, tableName string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
-	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
+	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
 	view, mappings := newView[T, Tslice](schema, tableName)
 	return &Table[T, Tslice, Tset]{
 		View:       view,

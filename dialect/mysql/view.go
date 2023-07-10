@@ -9,6 +9,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -25,17 +26,17 @@ func NewViewx[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
 func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], internal.Mapping) {
 	var zero T
 
-	mappings := internal.GetMappings(reflect.TypeOf(zero))
+	mapping := mappings.GetMappings(reflect.TypeOf(zero))
 	alias := tableName
-	allCols := mappings.Columns(alias)
+	allCols := internal.MappingCols(mapping, alias)
 
 	return &View[T, Tslice]{
 		name:    tableName,
 		alias:   alias,
-		mapping: mappings,
+		mapping: mapping,
 		allCols: allCols,
 		scanner: scan.StructMapper[T](),
-	}, mappings
+	}, mapping
 }
 
 type View[T any, Tslice ~[]T] struct {
