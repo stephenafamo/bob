@@ -9,7 +9,7 @@ description: Creates a prepared statement for later queries or executions.
 
 ## Exec Statements
 
-A statment is created with `bob.Prepare()`.
+A statement is created with `bob.Prepare()`.
 
 ```go
 ctx := context.Background()
@@ -27,10 +27,10 @@ if err != nil {
 }
 ```
 
-Prepared statments can then be reused as many times as we want.
+Prepared statements can then be reused as many times as we want.
 
 ```go
-// Use our prepared statment
+// Use our prepared statement
 _, err := stmt.Exec(ctx)
 if err != nil {
     // ...
@@ -52,7 +52,7 @@ if err != nil {
     // ...
 }
 
-// Use our prepared statment
+// Use our prepared statement
 users, err := stmt.All(ctx)
 if err != nil {
     // ...

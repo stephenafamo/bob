@@ -35,7 +35,7 @@ ArgLoop:
 				continue ArgLoop
 			}
 		}
-		return nil, ErrMissingArg{Name: argName}
+		return nil, MissingArgError{Name: argName}
 	}
 
 	return values, nil
@@ -54,7 +54,7 @@ func makeStructBinder[Arg any](args []any) (structBinder[Arg], error) {
 			continue
 		}
 
-		return structBinder[Arg]{}, ErrNamedArgRequired{arg}
+		return structBinder[Arg]{}, NamedArgRequiredError{arg}
 	}
 
 	var x Arg
@@ -68,7 +68,7 @@ ArgLoop:
 				continue ArgLoop
 			}
 		}
-		return structBinder[Arg]{}, ErrMissingArg{Name: name}
+		return structBinder[Arg]{}, MissingArgError{Name: name}
 	}
 
 	return structBinder[Arg]{
@@ -123,6 +123,9 @@ func PrepareBoundQuery[Arg any, T any](ctx context.Context, exec Preparer, q Que
 
 func PrepareBoundQueryx[Arg any, T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (BoundQueryStmt[Arg, T, Ts], error) {
 	s, args, err := prepareQuery[T, Ts](ctx, exec, q, m, opts...)
+	if err != nil {
+		return BoundQueryStmt[Arg, T, Ts]{}, err
+	}
 
 	binder, err := makeStructBinder[Arg](args)
 	if err != nil {
@@ -140,7 +143,7 @@ type BoundQueryStmt[Arg any, T any, Ts ~[]T] struct {
 	binder structBinder[Arg]
 }
 
-// Close closes the statment.
+// Close closes the statement.
 func (s BoundQueryStmt[Arg, T, Ts]) Close() error {
 	return s.query.Close()
 }

@@ -8,12 +8,12 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type ErrMismatchedArgs struct {
+type MismatchedArgsError struct {
 	Expected int
 	Got      int
 }
 
-func (e ErrMismatchedArgs) Error() string {
+func (e MismatchedArgsError) Error() string {
 	return fmt.Sprintf("expected %d args, got %d", e.Expected, e.Got)
 }
 

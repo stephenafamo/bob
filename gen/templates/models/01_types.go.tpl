@@ -48,7 +48,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{- end}}
 {{- end}}
 
-// {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
+// {{$tAlias.UpPlural}}Stmt is a prepared statement on {{$table.Name}}
 type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 
 {{if .Table.Relationships -}}

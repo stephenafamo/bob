@@ -8,21 +8,21 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type ErrNamedArgRequired struct{ value any }
+type NamedArgRequiredError struct{ value any }
 
-func (e ErrNamedArgRequired) Error() string {
+func (e NamedArgRequiredError) Error() string {
 	return fmt.Sprintf("expected named arg, got %#v", e.value)
 }
 
-type ErrDuplicateArg struct{ Name string }
+type DuplicateArgError struct{ Name string }
 
-func (e ErrDuplicateArg) Error() string {
+func (e DuplicateArgError) Error() string {
 	return fmt.Sprintf("duplicate arg %s", e.Name)
 }
 
-type ErrMissingArg struct{ Name string }
+type MissingArgError struct{ Name string }
 
-func (e ErrMissingArg) Error() string {
+func (e MissingArgError) Error() string {
 	return fmt.Sprintf("missing arg %s", e.Name)
 }
 
@@ -33,7 +33,7 @@ type mapBinder struct {
 
 func (m mapBinder) toArgs(mapArgs map[string]any) ([]any, error) {
 	if len(mapArgs) != m.unique {
-		return nil, ErrMismatchedArgs{
+		return nil, MismatchedArgsError{
 			Expected: m.unique,
 			Got:      len(mapArgs),
 		}
@@ -43,7 +43,7 @@ func (m mapBinder) toArgs(mapArgs map[string]any) ([]any, error) {
 	for position, name := range m.positions {
 		value, ok := mapArgs[name]
 		if !ok {
-			return nil, ErrMissingArg{Name: name}
+			return nil, MissingArgError{Name: name}
 		}
 
 		args[position] = value
@@ -65,7 +65,7 @@ func makeMapBinder(args []any) (mapBinder, error) {
 			continue
 		}
 
-		return mapBinder{}, ErrNamedArgRequired{arg}
+		return mapBinder{}, NamedArgRequiredError{arg}
 	}
 
 	// count unique names
@@ -133,6 +133,9 @@ func PrepareMappedQuery[T any](ctx context.Context, exec Preparer, q Query, m sc
 
 func PrepareMappedQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (MappedQueryStmt[T, Ts], error) {
 	s, args, err := prepareQuery[T, Ts](ctx, exec, q, m, opts...)
+	if err != nil {
+		return MappedQueryStmt[T, Ts]{}, err
+	}
 
 	binder, err := makeMapBinder(args)
 	if err != nil {

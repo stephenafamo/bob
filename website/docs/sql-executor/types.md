@@ -40,6 +40,6 @@ Convert an existing `*sql.Conn` to `bob.Conn` with `bob.NewConn()`
 
 ## Prepared Statements
 
-All of the above executors can be used to create prepared statments too.
+All of the above executors can be used to create prepared statements too.
 
 [Read More](./prepare)

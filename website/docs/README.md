@@ -48,7 +48,7 @@ Bob's executor can builds and execute Bob queries in a single call.
 * `One()`: To scan a single row
 * `All()`: To scan all rows
 * `Cursor()`: To loop through rows. Useful for large results
-* `Prepare()`: For prepared statments
+* `Prepare()`: For prepared statements
 
 In addition, the executor covers the usual range of DB activities:
 
