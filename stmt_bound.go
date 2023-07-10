@@ -49,6 +49,11 @@ func makeStructBinder[Arg any](args []any) (structBinder[Arg], error) {
 			continue
 		}
 
+		if name, ok := arg.(named); ok && len(name.names) == 1 {
+			argPositions[pos] = string(name.names[0])
+			continue
+		}
+
 		return structBinder[Arg]{}, ErrNamedArgRequired{arg}
 	}
 
