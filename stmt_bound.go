@@ -102,6 +102,19 @@ type BoundStmt[Arg any] struct {
 	binder structBinder[Arg]
 }
 
+// InTx returns a new MappedStmt that will be executed in the given transaction
+func (s BoundStmt[Arg]) InTx(ctx context.Context, tx Tx) BoundStmt[Arg] {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt.stmt = stmt
+	s.stmt.exec = tx
+	return s
+}
+
 // Close closes the statement.
 func (s BoundStmt[Arg]) Close() error {
 	return s.stmt.Close()
@@ -133,19 +146,27 @@ func PrepareBoundQueryx[Arg any, T any, Ts ~[]T](ctx context.Context, exec Prepa
 	}
 
 	return BoundQueryStmt[Arg, T, Ts]{
-		query:  s,
-		binder: binder,
+		QueryStmt: s,
+		binder:    binder,
 	}, nil
 }
 
 type BoundQueryStmt[Arg any, T any, Ts ~[]T] struct {
-	query  QueryStmt[T, Ts]
+	QueryStmt[T, Ts]
 	binder structBinder[Arg]
 }
 
-// Close closes the statement.
-func (s BoundQueryStmt[Arg, T, Ts]) Close() error {
-	return s.query.Close()
+// InTx returns a new MappedStmt that will be executed in the given transaction
+func (s BoundQueryStmt[Arg, T, Ts]) InTx(ctx context.Context, tx Tx) BoundQueryStmt[Arg, T, Ts] {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt = stmt
+	s.exec = tx
+	return s
 }
 
 func (s BoundQueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
@@ -155,7 +176,7 @@ func (s BoundQueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error)
 		return t, err
 	}
 
-	return s.query.One(ctx, args...)
+	return s.QueryStmt.One(ctx, args...)
 }
 
 func (s BoundQueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
@@ -164,7 +185,7 @@ func (s BoundQueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error
 		return nil, err
 	}
 
-	return s.query.All(ctx, args...)
+	return s.QueryStmt.All(ctx, args...)
 }
 
 func (s BoundQueryStmt[Arg, T, Ts]) Cursor(ctx context.Context, arg Arg) (scan.ICursor[T], error) {
@@ -173,5 +194,5 @@ func (s BoundQueryStmt[Arg, T, Ts]) Cursor(ctx context.Context, arg Arg) (scan.I
 		return nil, err
 	}
 
-	return s.query.Cursor(ctx, args...)
+	return s.QueryStmt.Cursor(ctx, args...)
 }

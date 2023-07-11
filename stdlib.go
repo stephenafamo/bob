@@ -157,3 +157,19 @@ type stdStmt struct {
 func (s stdStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
 	return s.Stmt.QueryContext(ctx, args...)
 }
+
+type errStmt struct {
+	err error
+}
+
+func (s errStmt) ExecContext(ctx context.Context, args ...any) (sql.Result, error) {
+	return nil, s.err
+}
+
+func (s errStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
+	return nil, s.err
+}
+
+func (s errStmt) Close() error {
+	return s.err
+}

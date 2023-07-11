@@ -3,6 +3,7 @@ package bob
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stephenafamo/scan"
@@ -64,6 +65,19 @@ type Stmt struct {
 	stmt    Statement
 	exec    Executor
 	loaders []Loader
+}
+
+// InTx returns a copy of the Stmt that will execute in the given transaction
+func (s Stmt) InTx(ctx context.Context, tx Tx) Stmt {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt = stmt
+	s.exec = tx
+	return s
 }
 
 // Close closes the statement
@@ -131,9 +145,17 @@ type QueryStmt[T any, Ts ~[]T] struct {
 	settings ExecSettings[T]
 }
 
-// Close closes the statement
-func (s QueryStmt[T, Ts]) Close() error {
-	return s.stmt.Close()
+// InTx returns a copy of the Stmt that will execute in the given transaction
+func (s QueryStmt[T, Ts]) InTx(ctx context.Context, tx Tx) QueryStmt[T, Ts] {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt = stmt
+	s.exec = tx
+	return s
 }
 
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {

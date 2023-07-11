@@ -3,6 +3,7 @@ package bob
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stephenafamo/scan"
@@ -107,6 +108,19 @@ type MappedStmt struct {
 	mapper mapBinder
 }
 
+// InTx returns a new MappedStmt that will be executed in the given transaction
+func (s MappedStmt) InTx(ctx context.Context, tx Tx) MappedStmt {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt.stmt = stmt
+	s.stmt.exec = tx
+	return s
+}
+
 // Inspect returns a map with all the expected keys
 func (s MappedStmt) Inspect() []string {
 	return s.mapper.positions
@@ -143,19 +157,27 @@ func PrepareMappedQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Q
 	}
 
 	return MappedQueryStmt[T, Ts]{
-		query:  s,
-		binder: binder,
+		QueryStmt: s,
+		binder:    binder,
 	}, nil
 }
 
 type MappedQueryStmt[T any, Ts ~[]T] struct {
-	query  QueryStmt[T, Ts]
+	QueryStmt[T, Ts]
 	binder mapBinder
 }
 
-// Close closes the statement
-func (s MappedQueryStmt[T, Ts]) Close() error {
-	return s.query.Close()
+// InTx returns a new MappedStmt that will be executed in the given transaction
+func (s MappedQueryStmt[T, Ts]) InTx(ctx context.Context, tx Tx) MappedQueryStmt[T, Ts] {
+	var stmt Statement = errStmt{errors.New("stmt is not an stdStmt")}
+
+	if std, ok := s.stmt.(stdStmt); !ok {
+		stmt = stdStmt{tx.wrapped.StmtContext(ctx, std.Stmt)}
+	}
+
+	s.stmt = stmt
+	s.exec = tx
+	return s
 }
 
 func (s MappedQueryStmt[T, Ts]) One(ctx context.Context, arg map[string]any) (T, error) {
@@ -165,7 +187,7 @@ func (s MappedQueryStmt[T, Ts]) One(ctx context.Context, arg map[string]any) (T,
 		return t, err
 	}
 
-	return s.query.One(ctx, args...)
+	return s.QueryStmt.One(ctx, args...)
 }
 
 func (s MappedQueryStmt[T, Ts]) All(ctx context.Context, arg map[string]any) (Ts, error) {
@@ -174,7 +196,7 @@ func (s MappedQueryStmt[T, Ts]) All(ctx context.Context, arg map[string]any) (Ts
 		return nil, err
 	}
 
-	return s.query.All(ctx, args...)
+	return s.QueryStmt.All(ctx, args...)
 }
 
 func (s MappedQueryStmt[T, Ts]) Cursor(ctx context.Context, arg map[string]any) (scan.ICursor[T], error) {
@@ -183,5 +205,5 @@ func (s MappedQueryStmt[T, Ts]) Cursor(ctx context.Context, arg map[string]any) 
 		return nil, err
 	}
 
-	return s.query.Cursor(ctx, args...)
+	return s.QueryStmt.Cursor(ctx, args...)
 }
