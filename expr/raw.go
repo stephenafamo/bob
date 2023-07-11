@@ -31,25 +31,29 @@ type Clause struct {
 
 func (r Clause) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately
-	total := r.convertQuestionMarks(w, d, start)
+	total, args, err := r.convertQuestionMarks(w, d, start)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(r.args) != total {
 		return r.args, &rawError{args: len(r.args), placeholders: total, clause: r.query}
 	}
 
-	return r.args, nil
+	return args, nil
 }
 
 // convertQuestionMarks converts each occurrence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func (r Clause) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) int {
+func (r Clause) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) (int, []any, error) {
 	if startAt == 0 {
 		panic("Not a valid start number.")
 	}
 
 	paramIndex := 0
 	total := 0
+	var args []any
 
 	clause := r.query
 	for {
@@ -73,14 +77,29 @@ func (r Clause) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) in
 		}
 
 		w.Write([]byte(clause[:paramIndex]))
-		d.WriteArg(w, startAt)
+
+		var arg any
+		if total < len(r.args) {
+			arg = r.args[total]
+		}
+		if ex, ok := arg.(bob.Expression); ok {
+			eargs, err := ex.WriteSQL(w, d, startAt)
+			if err != nil {
+				return total, nil, err
+			}
+			args = append(args, eargs...)
+			startAt += len(eargs)
+		} else {
+			d.WriteArg(w, startAt)
+			args = append(args, arg)
+			startAt++
+		}
 
 		total++
-		startAt++
 		paramIndex++
 	}
 
-	return total
+	return total, args, nil
 }
 
 type rawError struct {
