@@ -37,6 +37,30 @@ func TestStatement(t *testing.T) {
 			ExpectedSQL:  `SELECT a, b FROM alphabet WHERE c = ?1 AND d <= ?2`,
 			ExpectedArgs: []any{1, 2},
 		},
+		"expr args": {
+			Expression: Clause{
+				query: "SELECT a, b FROM alphabet WHERE c IN (?) AND d <= ?",
+				args:  []any{Arg(5, 6, 7), 2},
+			},
+			ExpectedSQL:  `SELECT a, b FROM alphabet WHERE c IN (?1, ?2, ?3) AND d <= ?4`,
+			ExpectedArgs: []any{5, 6, 7, 2},
+		},
+		"expr args group": {
+			Expression: Clause{
+				query: "SELECT a, b FROM alphabet WHERE c IN ? AND d <= ?",
+				args:  []any{ArgGroup(5, 6, 7), 2},
+			},
+			ExpectedSQL:  `SELECT a, b FROM alphabet WHERE c IN (?1, ?2, ?3) AND d <= ?4`,
+			ExpectedArgs: []any{5, 6, 7, 2},
+		},
+		"expr args quote": {
+			Expression: Clause{
+				query: "SELECT a, b FROM alphabet WHERE c = ? AND d <= ?",
+				args:  []any{Quote("AA"), 2},
+			},
+			ExpectedSQL:  `SELECT a, b FROM alphabet WHERE c = "AA" AND d <= ?1`,
+			ExpectedArgs: []any{2},
+		},
 	}
 
 	testutils.RunExpressionTests(t, dialect{}, examples)
