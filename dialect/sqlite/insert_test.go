@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/im"
+	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -17,6 +18,17 @@ func TestInsert(t *testing.T) {
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+		},
+		"insert from select": {
+			Query: sqlite.Insert(
+				im.Into("films"),
+				im.Query(sqlite.Select(
+					sm.From("tmp_films"),
+					sm.Where(sqlite.Quote("date_prod").LT(sqlite.Arg("1971-07-13"))),
+				)),
+			),
+			ExpectedSQL:  `INSERT INTO films SELECT * FROM tmp_films WHERE ("date_prod" < ?1)`,
+			ExpectedArgs: []any{"1971-07-13"},
 		},
 		"bulk insert": {
 			Query: sqlite.Insert(

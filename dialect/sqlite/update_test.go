@@ -43,11 +43,11 @@ func TestUpdate(t *testing.T) {
 				um.TableAs("employees", "e"),
 				um.TableNotIndexed(),
 				um.Set("sales_count").To("sales_count + 1"),
-				um.Where(sqlite.Quote("id").EQ(sqlite.Group(sqlite.Select(
+				um.Where(sqlite.Quote("id").EQ(sqlite.Select(
 					sm.Columns("sales_person"),
 					sm.From("accounts"),
 					sm.Where(sqlite.Quote("name").EQ(sqlite.Arg("Acme Corporation"))),
-				)))),
+				))),
 			),
 		},
 	}

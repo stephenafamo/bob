@@ -26,6 +26,30 @@ psql.Insert(
 )
 ```
 
+## Insert From Select
+
+SQL:
+
+```sql
+INSERT INTO films SELECT * FROM tmp_films WHERE "date_prod" < $1
+```
+
+Args:
+
+* `"1971-07-13"`
+
+Code:
+
+```go
+psql.Insert(
+  im.Into("films"),
+  im.Query(psql.Select(
+    sm.From("tmp_films"),
+    sm.Where(psql.Quote("date_prod").LT(psql.Arg("1971-07-13"))),
+  )),
+)
+```
+
 ## Bulk Insert
 
 SQL:

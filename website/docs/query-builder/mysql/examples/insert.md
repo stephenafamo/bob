@@ -26,6 +26,30 @@ mysql.Insert(
 )
 ```
 
+## Insert From Select
+
+SQL:
+
+```sql
+INSERT INTO films SELECT * FROM tmp_films WHERE (`date_prod` < ?)
+```
+
+Args:
+
+* `"1971-07-13"`
+
+Code:
+
+```go
+mysql.Insert(
+  im.Into("films"),
+  im.Query(mysql.Select(
+    sm.From("tmp_films"),
+    sm.Where(mysql.Quote("date_prod").LT(mysql.Arg("1971-07-13"))),
+  )),
+)
+```
+
 ## Bulk Insert
 
 SQL:

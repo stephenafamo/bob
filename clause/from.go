@@ -99,16 +99,9 @@ func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte("LATERAL "))
 	}
 
-	_, isQuery := f.Table.(bob.Query)
-	if isQuery {
-		w.Write([]byte("("))
-	}
 	args, err := bob.Express(w, d, start, f.Table)
 	if err != nil {
 		return nil, err
-	}
-	if isQuery {
-		w.Write([]byte(")"))
 	}
 
 	if f.WithOrdinality {
