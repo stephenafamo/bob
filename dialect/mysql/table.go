@@ -524,7 +524,7 @@ func (t *Table[T, Tslice, Tset]) Query(ctx context.Context, exec bob.Executor, q
 	vq := t.View.Query(ctx, exec, queryMods...)
 	return &TableQuery[T, Tslice, Tset]{
 		ViewQuery:  *vq,
-		nameExpr:   t.NameAs,
+		nameExpr:   t.Name,
 		pkCols:     t.pkCols,
 		setMapping: t.setMapping,
 	}
@@ -532,7 +532,7 @@ func (t *Table[T, Tslice, Tset]) Query(ctx context.Context, exec bob.Executor, q
 
 type TableQuery[T any, Ts ~[]T, Tset any] struct {
 	ViewQuery[T, Ts]
-	nameExpr   func(context.Context) bob.Expression // to prevent calling it prematurely
+	nameExpr   func(context.Context) dialect.Expression // to prevent calling it prematurely
 	pkCols     []string
 	setMapping internal.Mapping
 }
