@@ -188,3 +188,27 @@ psql.Select(
       In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
 )
 ```
+
+## Simple select with limit and offset as argument
+
+SQL:
+
+```sql
+SELECT id, name FROM users LIMIT $1 OFFSET $2
+```
+
+Args:
+
+* `10`
+* `15`
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Offset(psql.Arg(15)),
+  sm.Limit(psql.Arg(10)),
+)
+```

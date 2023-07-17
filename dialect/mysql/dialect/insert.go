@@ -71,18 +71,18 @@ func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 
 	// Either this or the values will get expressed
-	valArgs, err := bob.ExpressSlice(w, d, start+len(args), i.Sets, "\nSET ", "\n", " ")
-	if err != nil {
-		return nil, err
-	}
-	args = append(args, valArgs...)
-
-	// Either this or SET will get expressed
-	setArgs, err := bob.ExpressIf(w, d, start+len(args), i.Values, len(i.Sets) == 0, "\n", " ")
+	setArgs, err := bob.ExpressSlice(w, d, start+len(args), i.Sets, "\nSET ", "\n", " ")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, setArgs...)
+
+	// Either this or SET will get expressed
+	valArgs, err := bob.ExpressIf(w, d, start+len(args), i.Values, len(i.Sets) == 0, "\n", " ")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, valArgs...)
 
 	// The aliases
 	if i.RowAlias != "" {
@@ -104,7 +104,6 @@ func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 		}
 	}
 
-	// Either this or the values will get expressed
 	updateArgs, err := bob.ExpressSlice(w, d, start+len(args), i.DuplicateKeyUpdate,
 		"\nON DUPLICATE KEY UPDATE\n", ",\n", "")
 	if err != nil {

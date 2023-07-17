@@ -9,6 +9,12 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
+// To pervent unnecessary allocations
+const (
+	openPar  = "("
+	closePar = ")"
+)
+
 type Query interface {
 	// It should satisfy the Expression interface so that it can be used
 	// in places such as a sub-select
@@ -84,7 +90,11 @@ func (b BaseQuery[E]) WriteQuery(w io.Writer, start int) ([]any, error) {
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
 func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error) {
-	return b.Expression.WriteSQL(w, b.Dialect, start)
+	w.Write([]byte(openPar))
+	args, err := b.Expression.WriteSQL(w, b.Dialect, start)
+	w.Write([]byte(closePar))
+
+	return args, err
 }
 
 // MustBuild builds the query and panics on error

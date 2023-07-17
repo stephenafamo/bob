@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/im"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -17,6 +18,17 @@ func TestInsert(t *testing.T) {
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES ($1, $2, $3, $4, $5, $6)",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+		},
+		"insert from select": {
+			Query: psql.Insert(
+				im.Into("films"),
+				im.Query(psql.Select(
+					sm.From("tmp_films"),
+					sm.Where(psql.Quote("date_prod").LT(psql.Arg("1971-07-13"))),
+				)),
+			),
+			ExpectedSQL:  `INSERT INTO films SELECT * FROM tmp_films WHERE "date_prod" < $1`,
+			ExpectedArgs: []any{"1971-07-13"},
 		},
 		"bulk insert": {
 			Query: psql.Insert(

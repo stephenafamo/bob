@@ -5,6 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/im"
+	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
 )
 
@@ -17,6 +18,17 @@ func TestInsert(t *testing.T) {
 			),
 			ExpectedSQL:  "INSERT INTO films VALUES (?, ?, ?, ?, ?, ?)",
 			ExpectedArgs: []any{"UA502", "Bananas", 105, "1971-07-13", "Comedy", "82 mins"},
+		},
+		"insert from select": {
+			Query: mysql.Insert(
+				im.Into("films"),
+				im.Query(mysql.Select(
+					sm.From("tmp_films"),
+					sm.Where(mysql.Quote("date_prod").LT(mysql.Arg("1971-07-13"))),
+				)),
+			),
+			ExpectedSQL:  "INSERT INTO films SELECT * FROM tmp_films WHERE (`date_prod` < ?)",
+			ExpectedArgs: []any{"1971-07-13"},
 		},
 		"bulk insert": {
 			Query: mysql.Insert(

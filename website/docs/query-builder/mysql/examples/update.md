@@ -91,10 +91,10 @@ Code:
 mysql.Update(
   um.Table("employees"),
   um.Set("sales_count").To("sales_count + 1"),
-  um.Where(mysql.Quote("id").EQ(mysql.Group(mysql.Select(
+  um.Where(mysql.Quote("id").EQ(mysql.Select(
     sm.Columns("sales_person"),
     sm.From("accounts"),
     sm.Where(mysql.Quote("name").EQ(mysql.Arg("Acme Corporation"))),
-  )))),
+  ))),
 )
 ```
