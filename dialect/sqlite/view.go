@@ -141,7 +141,12 @@ func (v ViewQuery[T, Ts]) WriteSQL(w io.Writer, _ bob.Dialect, start int) ([]any
 
 // it is necessary to override this method to be able to add columns if not set
 func (v ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return v.WriteSQL(w, v.Dialect, start)
+	// Append the table columns
+	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
+		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
+	}
+
+	return v.BaseQuery.WriteQuery(w, start)
 }
 
 func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
