@@ -37,17 +37,17 @@ type Table[T any, Tslice ~[]T, Tset any] struct {
 	pkCols     []string
 	setMapping internal.Mapping
 
-	BeforeInsertHooks orm.Hooks[Tset]
-	AfterInsertHooks  orm.Hooks[T]
+	BeforeInsertHooks orm.Hooks[[]Tset]
+	AfterInsertHooks  orm.Hooks[Tslice]
 
-	BeforeUpsertHooks orm.Hooks[Tset]
-	AfterUpsertHooks  orm.Hooks[T]
+	BeforeUpsertHooks orm.Hooks[[]Tset]
+	AfterUpsertHooks  orm.Hooks[Tslice]
 
-	BeforeUpdateHooks orm.Hooks[T]
-	AfterUpdateHooks  orm.Hooks[T]
+	BeforeUpdateHooks orm.Hooks[Tslice]
+	AfterUpdateHooks  orm.Hooks[Tslice]
 
-	BeforeDeleteHooks orm.Hooks[T]
-	AfterDeleteHooks  orm.Hooks[T]
+	BeforeDeleteHooks orm.Hooks[Tslice]
+	AfterDeleteHooks  orm.Hooks[Tslice]
 }
 
 // Insert inserts a row into the table with only the set columns in Tset
@@ -55,7 +55,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 	var err error
 	var zero T
 
-	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, row)
+	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, []Tset{row})
 	if err != nil {
 		return zero, err
 	}
@@ -76,7 +76,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 		return val, err
 	}
 
-	_, err = t.AfterInsertHooks.Do(ctx, exec, val)
+	_, err = t.AfterInsertHooks.Do(ctx, exec, Tslice{val})
 	if err != nil {
 		return val, err
 	}
@@ -92,11 +92,9 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 
 	var err error
 
-	for _, row := range rows {
-		ctx, err = t.BeforeInsertHooks.Do(ctx, exec, row)
-		if err != nil {
-			return nil, err
-		}
+	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return nil, err
 	}
 
 	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
@@ -124,11 +122,9 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		return vals, err
 	}
 
-	for _, val := range vals {
-		_, err = t.AfterInsertHooks.Do(ctx, exec, val)
-		if err != nil {
-			return vals, err
-		}
+	_, err = t.AfterInsertHooks.Do(ctx, exec, vals)
+	if err != nil {
+		return vals, err
 	}
 
 	return vals, nil
@@ -138,7 +134,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 // if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
 func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, row T, cols ...string) (int64, error) {
-	_, err := t.BeforeUpdateHooks.Do(ctx, exec, row)
+	_, err := t.BeforeUpdateHooks.Do(ctx, exec, Tslice{row})
 	if err != nil {
 		return 0, err
 	}
@@ -171,7 +167,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	_, err = t.AfterUpdateHooks.Do(ctx, exec, row)
+	_, err = t.AfterUpdateHooks.Do(ctx, exec, Tslice{row})
 	if err != nil {
 		return 0, err
 	}
@@ -195,11 +191,9 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, orm.ErrNothingToUpdate
 	}
 
-	for _, row := range rows {
-		_, err = t.BeforeUpdateHooks.Do(ctx, exec, row)
-		if err != nil {
-			return 0, err
-		}
+	_, err = t.BeforeUpdateHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return 0, err
 	}
 
 	q := Update(um.Table(t.NameAs(ctx)))
@@ -233,11 +227,9 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, err
 	}
 
-	for _, row := range rows {
-		_, err = t.AfterUpdateHooks.Do(ctx, exec, row)
-		if err != nil {
-			return 0, err
-		}
+	_, err = t.AfterUpdateHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return 0, err
 	}
 
 	return result.RowsAffected()
@@ -251,7 +243,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 	var err error
 	var zero T
 
-	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
+	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, []Tset{row})
 	if err != nil {
 		return zero, err
 	}
@@ -295,7 +287,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		return val, err
 	}
 
-	_, err = t.AfterUpsertHooks.Do(ctx, exec, val)
+	_, err = t.AfterUpsertHooks.Do(ctx, exec, Tslice{val})
 	if err != nil {
 		return val, err
 	}
@@ -314,11 +306,9 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	var err error
 
-	for _, row := range rows {
-		ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, row)
-		if err != nil {
-			return nil, err
-		}
+	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return nil, err
 	}
 
 	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
@@ -372,11 +362,9 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		return vals, err
 	}
 
-	for _, val := range vals {
-		_, err = t.AfterUpsertHooks.Do(ctx, exec, val)
-		if err != nil {
-			return nil, err
-		}
+	_, err = t.AfterUpsertHooks.Do(ctx, exec, vals)
+	if err != nil {
+		return nil, err
 	}
 
 	return vals, nil
@@ -385,7 +373,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 // Deletes the given model
 // if columns is nil, every column is deleted
 func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, row T) (int64, error) {
-	_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
+	_, err := t.BeforeDeleteHooks.Do(ctx, exec, Tslice{row})
 	if err != nil {
 		return 0, err
 	}
@@ -406,7 +394,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 		return 0, err
 	}
 
-	_, err = t.AfterDeleteHooks.Do(ctx, exec, row)
+	_, err = t.AfterDeleteHooks.Do(ctx, exec, Tslice{row})
 	if err != nil {
 		return 0, err
 	}
@@ -421,11 +409,9 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		return 0, nil
 	}
 
-	for _, row := range rows {
-		_, err := t.BeforeDeleteHooks.Do(ctx, exec, row)
-		if err != nil {
-			return 0, err
-		}
+	_, err := t.BeforeDeleteHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return 0, err
 	}
 
 	q := Delete(dm.From(t.NameAs(ctx)))
@@ -455,11 +441,9 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		return 0, err
 	}
 
-	for _, row := range rows {
-		_, err = t.AfterDeleteHooks.Do(ctx, exec, row)
-		if err != nil {
-			return 0, err
-		}
+	_, err = t.AfterDeleteHooks.Do(ctx, exec, rows)
+	if err != nil {
+		return 0, err
 	}
 
 	return result.RowsAffected()
