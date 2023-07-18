@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"reflect"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/um"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/scan"
 )
 
 func NewTable[T any, Tset any](schema, tableName string) *Table[T, []T, Tset] {
@@ -465,88 +467,89 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 	return result.RowsAffected()
 }
 
-// Adds table name et al
-func (t *Table[T, Tslice, Tset]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Tset] {
-	vq := t.View.Query(ctx, exec, queryMods...)
-	return &TableQuery[T, Tslice, Tset]{
-		ViewQuery:  *vq,
-		nameExpr:   t.NameAs,
-		pkCols:     t.pkCols,
-		setMapping: t.setMapping,
+// Starts an update query for this table
+func (t *Table[T, Tslice, Tset]) UpdateAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.UpdateQuery]) *TQuery[*dialect.UpdateQuery, T, Tslice] {
+	q := &TQuery[*dialect.UpdateQuery, T, Tslice]{
+		BaseQuery: Update(um.Table(t.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      t.View,
+	}
+
+	// q.Expression.SetLoadContext(ctx)
+	q.Apply(queryMods...)
+
+	return q
+}
+
+// Starts a delete query for this table
+func (t *Table[T, Tslice, Tset]) DeleteAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.DeleteQuery]) *TQuery[*dialect.DeleteQuery, T, Tslice] {
+	q := &TQuery[*dialect.DeleteQuery, T, Tslice]{
+		BaseQuery: Delete(dm.From(t.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      t.View,
+	}
+
+	// q.Expression.SetLoadContext(ctx)
+	q.Apply(queryMods...)
+
+	return q
+}
+
+type returnable interface {
+	bob.Expression
+	HasReturning() bool
+	AppendReturning(...any)
+}
+
+type TQuery[Q returnable, T any, Ts ~[]T] struct {
+	bob.BaseQuery[Q]
+	ctx  context.Context
+	exec bob.Executor
+	view *View[T, Ts]
+}
+
+func (t *TQuery[Q, T, Ts]) addReturning() {
+	if t.BaseQuery.Expression.HasReturning() {
+		t.BaseQuery.Expression.AppendReturning(t.view.Columns())
 	}
 }
 
-type TableQuery[T any, Ts ~[]T, Tset any] struct {
-	ViewQuery[T, Ts]
-	nameExpr   func(context.Context) bob.Expression // to prevent calling it prematurely
-	pkCols     []string
-	setMapping internal.Mapping
+func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
+	return func(es *bob.ExecSettings[T]) {
+		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
+			for _, val := range retrieved {
+				_, err := t.view.AfterSelectHooks.Do(ctx, exec, val)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		}
+	}
 }
 
-// UpdateAll updates all rows matched by the current query
-// NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
-	if err != nil {
-		return 0, fmt.Errorf("get upsert values: %w", err)
-	}
-	if len(columns) == 0 {
-		return 0, orm.ErrNothingToUpdate
-	}
-
-	q := Update(um.Table(t.nameExpr(t.ctx)))
-
-	for i, col := range columns {
-		q.Apply(um.Set(col).To(values[0][i]))
-	}
-
-	pkCols := make([]any, len(t.pkCols))
-	pkGroup := make([]bob.Expression, len(t.pkCols))
-	for i, pk := range t.pkCols {
-		q := Quote(pk)
-		pkGroup[i] = q
-		pkCols[i] = q
-	}
-
-	// Select ONLY the primary keys
-	t.BaseQuery.Expression.SelectList.Columns = pkCols
-	// WHERE (col1, col2) IN (SELECT ...)
-	q.Apply(um.Where(
-		Group(pkGroup...).In(t.BaseQuery.Expression),
-	))
-
-	result, err := q.Exec(t.ctx, t.exec)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
+// Execute the query
+func (t *TQuery[Q, T, Tslice]) Exec() (sql.Result, error) {
+	return t.BaseQuery.Exec(t.ctx, t.exec)
 }
 
-// DeleteAll deletes all rows matched by the current query
-// NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Tset]) DeleteAll() (int64, error) {
-	q := Delete(dm.From(t.nameExpr(t.ctx)))
+// First matching row
+func (t *TQuery[Q, T, Tslice]) One() (T, error) {
+	t.addReturning()
+	return bob.One(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
+}
 
-	pkCols := make([]any, len(t.pkCols))
-	pkGroup := make([]bob.Expression, len(t.pkCols))
-	for i, pk := range t.pkCols {
-		q := Quote(pk)
-		pkGroup[i] = q
-		pkCols[i] = q
-	}
+// All matching rows
+func (t *TQuery[Q, T, Tslice]) All() (Tslice, error) {
+	t.addReturning()
+	return bob.Allx[T, Tslice](t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
+}
 
-	// Select ONLY the primary keys
-	t.BaseQuery.Expression.SelectList.Columns = pkCols
-	// WHERE (col1, col2) IN (SELECT ...)
-	q.Apply(dm.Where(
-		Group(pkGroup...).In(t.BaseQuery.Expression),
-	))
-
-	result, err := q.Exec(t.ctx, t.exec)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
+// Cursor to scan through the results
+func (t *TQuery[Q, T, Tslice]) Cursor() (scan.ICursor[T], error) {
+	t.addReturning()
+	return bob.Cursor(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
 }

@@ -1,5 +1,8 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
+{{$.Importer.Import "context"}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
@@ -44,7 +47,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	// {{$tAlias.UpPlural}}Table contains methods to work with the {{$table.Name}} table
 	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
-	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.TableQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]
+	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
 {{- end}}
 
@@ -84,6 +87,21 @@ type {{$tAlias.UpSingular}}Setter struct {
 		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}"`
 	{{end -}}
 }
+
+{{block "setter_mod" . -}}
+{{$table := .Table}}
+{{$tAlias := .Aliases.Table $table.Key -}}
+func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
+	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
+	{{- range $column := .Table.Columns -}}
+	{{if $column.Generated}}{{continue}}{{end -}}
+	{{$colAlias := $tAlias.Column $column.Name -}}
+		if !s.{{$colAlias}}.IsUnset() {
+			um.Set("{{$column.Name}}").ToArg(s.{{$colAlias}}).Apply(q)
+		}
+	{{end -}}
+}
+{{- end}}
 
 {{- end}}
 
