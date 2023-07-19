@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"reflect"
 
@@ -532,8 +531,13 @@ func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 }
 
 // Execute the query
-func (t *TQuery[Q, T, Tslice]) Exec() (sql.Result, error) {
-	return t.BaseQuery.Exec(t.ctx, t.exec)
+func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
+	result, err := t.BaseQuery.Exec(t.ctx, t.exec)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
 }
 
 // First matching row
