@@ -502,11 +502,9 @@ func (t *TQuery[Q, T, Ts]) addReturning() {
 func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			for _, val := range retrieved {
-				_, err := t.view.AfterSelectHooks.Do(ctx, exec, val)
-				if err != nil {
-					return err
-				}
+			_, err := t.view.AfterSelectHooks.Do(ctx, exec, retrieved)
+			if err != nil {
+				return err
 			}
 
 			return nil
