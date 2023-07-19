@@ -59,7 +59,7 @@ type View[T any, Tslice ~[]T] struct {
 	allCols orm.Columns
 	scanner scan.Mapper[T]
 
-	AfterSelectHooks orm.Hooks[T]
+	AfterSelectHooks orm.Hooks[Tslice]
 }
 
 func (v *View[T, Tslice]) Name(ctx context.Context) Expression {
@@ -110,11 +110,9 @@ func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q
 func (v *View[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			for _, val := range retrieved {
-				_, err := v.AfterSelectHooks.Do(ctx, exec, val)
-				if err != nil {
-					return err
-				}
+			_, err := v.AfterSelectHooks.Do(ctx, exec, retrieved)
+			if err != nil {
+				return err
 			}
 
 			return nil
@@ -152,11 +150,9 @@ func (v ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
 func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			for _, val := range retrieved {
-				_, err := v.view.AfterSelectHooks.Do(ctx, exec, val)
-				if err != nil {
-					return err
-				}
+			_, err := v.view.AfterSelectHooks.Do(ctx, exec, retrieved)
+			if err != nil {
+				return err
 			}
 
 			return nil
