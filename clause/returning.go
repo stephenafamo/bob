@@ -10,6 +10,10 @@ type Returning struct {
 	Expressions []any
 }
 
+func (r *Returning) HasReturning() bool {
+	return len(r.Expressions) > 0
+}
+
 func (r *Returning) AppendReturning(columns ...any) {
 	r.Expressions = append(r.Expressions, columns...)
 }

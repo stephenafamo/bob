@@ -507,92 +507,6 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 	return result.RowsAffected()
 }
 
-// Adds table name et al
-func (t *Table[T, Tslice, Tset]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *TableQuery[T, Tslice, Tset] {
-	vq := t.View.Query(ctx, exec, queryMods...)
-	return &TableQuery[T, Tslice, Tset]{
-		ViewQuery:  *vq,
-		nameExpr:   t.NameAs,
-		pkCols:     t.pkCols,
-		setMapping: t.setMapping,
-	}
-}
-
-type TableQuery[T any, Ts ~[]T, Tset any] struct {
-	ViewQuery[T, Ts]
-	nameExpr   func(context.Context) bob.Expression // to prevent calling it prematurely
-	pkCols     []string
-	setMapping internal.Mapping
-}
-
-// UpdateAll updates all rows matched by the current query
-// NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Tset]) UpdateAll(vals Tset) (int64, error) {
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
-	if err != nil {
-		return 0, fmt.Errorf("get update values: %w", err)
-	}
-	if len(columns) == 0 {
-		return 0, orm.ErrNothingToUpdate
-	}
-
-	q := Update(um.Table(t.nameExpr(t.ctx)))
-
-	for i, col := range columns {
-		q.Apply(um.Set(col).To(values[0][i]))
-	}
-
-	pkCols := make([]any, len(t.pkCols))
-	pkGroup := make([]bob.Expression, len(t.pkCols))
-	for i, pk := range t.pkCols {
-		q := Quote(pk)
-		pkGroup[i] = q
-		pkCols[i] = q
-	}
-
-	// Select ONLY the primary keys
-	t.BaseQuery.Expression.SelectList.Columns = pkCols
-	// WHERE (col1, col2) IN (SELECT ...)
-	q.Apply(um.Where(
-		Group(pkGroup...).In(t.BaseQuery.Expression),
-	))
-
-	result, err := q.Exec(t.ctx, t.exec)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
-}
-
-// DeleteAll deletes all rows matched by the current query
-// NOTE: Hooks cannot be run since the values are never retrieved
-func (t *TableQuery[T, Tslice, Tset]) DeleteAll() (int64, error) {
-	q := Delete(dm.From(t.nameExpr(t.ctx)))
-
-	pkCols := make([]any, len(t.pkCols))
-	pkGroup := make([]bob.Expression, len(t.pkCols))
-	for i, pk := range t.pkCols {
-		q := Quote(pk)
-		pkGroup[i] = q
-		pkCols[i] = q
-	}
-
-	// Select ONLY the primary keys
-	t.BaseQuery.Expression.SelectList.Columns = pkCols
-	// WHERE (col1, col2) IN (SELECT ...)
-	q.Apply(dm.Where(
-		Group(pkGroup...).In(t.BaseQuery.Expression),
-	))
-
-	result, err := q.Exec(t.ctx, t.exec)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
-}
-
 func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {
 	var indexes [][]int
 	for _, unique := range uniques {
@@ -652,4 +566,51 @@ func (t *Table[T, Tslice, Tset]) uniqueSet(row Tset) ([]string, []any) {
 	}
 
 	return nil, nil
+}
+
+// Starts an update query for this table
+func (t *Table[T, Tslice, Tset]) UpdateAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.UpdateQuery]) *TQuery[*dialect.UpdateQuery, T, Tslice] {
+	q := &TQuery[*dialect.UpdateQuery, T, Tslice]{
+		BaseQuery: Update(um.Table(t.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      t.View,
+	}
+
+	// q.Expression.SetLoadContext(ctx)
+	q.Apply(queryMods...)
+
+	return q
+}
+
+// Starts a delete query for this table
+func (t *Table[T, Tslice, Tset]) DeleteAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.DeleteQuery]) *TQuery[*dialect.DeleteQuery, T, Tslice] {
+	q := &TQuery[*dialect.DeleteQuery, T, Tslice]{
+		BaseQuery: Delete(dm.From(t.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      t.View,
+	}
+
+	// q.Expression.SetLoadContext(ctx)
+	q.Apply(queryMods...)
+
+	return q
+}
+
+type TQuery[Q bob.Expression, T any, Ts ~[]T] struct {
+	bob.BaseQuery[Q]
+	ctx  context.Context
+	exec bob.Executor
+	view *View[T, Ts]
+}
+
+// Execute the query
+func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
+	result, err := t.BaseQuery.Exec(t.ctx, t.exec)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
 }
