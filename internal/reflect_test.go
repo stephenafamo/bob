@@ -213,7 +213,7 @@ func testGetColumnValues[T any](t *testing.T, name string, tc testGetColumnsCase
 	}
 
 	t.Run(name, func(t *testing.T) {
-		cols, values, err := GetColumnValues(cols, tc.Filter, tc.Rows...)
+		cols, values, err := GetColumnValues(cols.NonGenerated, tc.Filter, tc.Rows...)
 		if err != nil {
 			t.Fatal(err)
 		}
