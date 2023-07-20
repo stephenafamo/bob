@@ -100,7 +100,7 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 		return zero, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, row)
 	if err != nil {
 		return zero, fmt.Errorf("get insert values: %w", err)
 	}
@@ -165,7 +165,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		return 0, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get insert values: %w", err)
 	}
@@ -203,7 +203,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 
 	q := Update(um.Table(t.NameAs(ctx)))
 
-	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
+	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, row)
 	if err != nil {
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
@@ -211,7 +211,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 	if len(cols) == 0 {
 		cols = t.mapping.NonPKs
 	}
-	columns, values, err := internal.GetColumnValues(t.mapping, cols, row)
+	columns, values, err := internal.GetColumnValues(t.mapping.NonGenerated, cols, row)
 	if err != nil {
 		return 0, fmt.Errorf("get update values: %w", err)
 	}
@@ -245,7 +245,7 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, nil
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, vals)
+	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, vals)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -265,7 +265,7 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 	}
 
 	// Find a set the PKs
-	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
+	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
@@ -308,7 +308,7 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		return zero, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, row)
+	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, row)
 	if err != nil {
 		return zero, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -386,7 +386,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		return 0, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping, nil, rows...)
+	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get upsert values: %w", err)
 	}
@@ -438,7 +438,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 
 	q := Delete(dm.From(t.NameAs(ctx)))
 
-	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, row)
+	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, row)
 	if err != nil {
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
@@ -475,7 +475,7 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 	q := Delete(dm.From(t.NameAs(ctx)))
 
 	// Find a set the PKs
-	pks, pkVals, err := internal.GetColumnValues(t.mapping, t.mapping.PKs, rows...)
+	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, rows...)
 	if err != nil {
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}

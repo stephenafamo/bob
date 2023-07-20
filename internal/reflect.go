@@ -142,7 +142,7 @@ func GetMappings(typ reflect.Type) Mapping {
 }
 
 // Get the values for non generated columns
-func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]string, [][]bob.Expression, error) {
+func GetColumnValues[T any](mapping []string, filter []string, objs ...T) ([]string, [][]bob.Expression, error) {
 	if len(objs) == 0 {
 		return nil, nil, nil
 	}
@@ -170,9 +170,9 @@ func GetColumnValues[T any](mapping Mapping, filter []string, objs ...T) ([]stri
 	return cols, allvalues, nil
 }
 
-func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]string, []bob.Expression, error) {
-	cols := make([]string, 0, len(mapping.NonGenerated))
-	values := make([]bob.Expression, 0, len(mapping.NonGenerated))
+func getObjColsVals(mapping []string, filter []string, val reflect.Value) ([]string, []bob.Expression, error) {
+	cols := make([]string, 0, len(mapping))
+	values := make([]bob.Expression, 0, len(mapping))
 
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
@@ -183,7 +183,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 
 	hasFilter := len(filter) > 0
 	filterMap := sliceToMap(filter)
-	for colIndex, name := range mapping.NonGenerated {
+	for colIndex, name := range mapping {
 		if name == "" {
 			continue
 		}
@@ -210,7 +210,7 @@ func getObjColsVals(mapping Mapping, filter []string, val reflect.Value) ([]stri
 	return cols, values, nil
 }
 
-func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]bob.Expression, error) {
+func getObjVals(mapping []string, cols []string, val reflect.Value) ([]bob.Expression, error) {
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return nil, errors.New("object is nil")
@@ -220,7 +220,7 @@ func getObjVals(mapping Mapping, cols []string, val reflect.Value) ([]bob.Expres
 
 	values := make([]bob.Expression, 0, len(cols))
 
-	for index, name := range mapping.NonGenerated {
+	for index, name := range mapping {
 		if name == "" {
 			continue
 		}
