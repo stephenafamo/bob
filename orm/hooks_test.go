@@ -10,7 +10,8 @@ import (
 )
 
 func TestHooks(t *testing.T) {
-	var H Hooks[*string]
+	type skipKey struct{}
+	var H Hooks[*string, skipKey]
 
 	// Test Adding Hooks
 	for i := 0; i < 5; i++ {
@@ -30,6 +31,15 @@ func TestHooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	if diff := cmp.Diff("12345", s); diff != "" {
+		t.Fatal(diff)
+	}
+
+	// test skipping hooks
+	s = ""
+	if _, err := H.Do(context.WithValue(context.Background(), skipKey{}, true), nil, &s); err != nil {
+		t.Fatal(err)
+	}
+	if diff := cmp.Diff("", s); diff != "" {
 		t.Fatal(diff)
 	}
 }

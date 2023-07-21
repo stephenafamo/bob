@@ -46,7 +46,8 @@ type View[T any, Tslice ~[]T] struct {
 	allCols orm.Columns
 	scanner scan.Mapper[T]
 
-	AfterSelectHooks orm.Hooks[Tslice]
+	AfterSelectHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	SelectQueryHooks orm.Hooks[*dialect.SelectQuery, orm.SkipQueryHooksKey]
 }
 
 func (v *View[T, Tslice]) Name(ctx context.Context) Expression {
@@ -128,38 +129,57 @@ func (v ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
 	return v.BaseQuery.WriteQuery(w, start)
 }
 
-func (v *ViewQuery[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
-	return func(es *bob.ExecSettings[T]) {
-		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			_, err := v.view.AfterSelectHooks.Do(ctx, exec, retrieved)
-			if err != nil {
-				return err
-			}
+func (v *ViewQuery[T, Ts]) hook() error {
+	var err error
+	v.ctx, err = v.view.SelectQueryHooks.Do(v.ctx, v.exec, v.Expression)
+	return err
+}
 
-			return nil
-		}
+// Execute the query
+func (v *ViewQuery[T, Tslice]) Exec() (int64, error) {
+	if err := v.hook(); err != nil {
+		return 0, err
 	}
+
+	result, err := v.BaseQuery.Exec(v.ctx, v.exec)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
 }
 
 // First matching row
 func (v *ViewQuery[T, Tslice]) One() (T, error) {
 	v.BaseQuery.Expression.Limit.SetLimit(1)
-	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	if err := v.hook(); err != nil {
+		return *new(T), err
+	}
+	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
 }
 
 // All matching rows
 func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	if err := v.hook(); err != nil {
+		return nil, err
+	}
+	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
 }
 
 // Cursor to scan through the results
 func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
-	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.afterSelect(v.ctx, v.exec))
+	if err := v.hook(); err != nil {
+		return nil, err
+	}
+	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
 }
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count() (int64, error) {
 	v.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
+	if err := v.hook(); err != nil {
+		return 0, err
+	}
 	return bob.One(v.ctx, v.exec, v, scan.SingleColumnMapper[int64])
 }
 

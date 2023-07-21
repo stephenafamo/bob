@@ -38,17 +38,21 @@ type Table[T any, Tslice ~[]T, Tset any] struct {
 	pkCols     []string
 	setMapping internal.Mapping
 
-	BeforeInsertHooks orm.Hooks[[]Tset]
-	AfterInsertHooks  orm.Hooks[Tslice]
+	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
+	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
 
-	BeforeUpsertHooks orm.Hooks[[]Tset]
-	AfterUpsertHooks  orm.Hooks[Tslice]
+	BeforeUpsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
+	AfterUpsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
 
-	BeforeUpdateHooks orm.Hooks[Tslice]
-	AfterUpdateHooks  orm.Hooks[Tslice]
+	BeforeUpdateHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	AfterUpdateHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
 
-	BeforeDeleteHooks orm.Hooks[Tslice]
-	AfterDeleteHooks  orm.Hooks[Tslice]
+	BeforeDeleteHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	AfterDeleteHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
+
+	InsertQueryHooks orm.Hooks[*dialect.InsertQuery, orm.SkipQueryHooksKey]
+	UpdateQueryHooks orm.Hooks[*dialect.UpdateQuery, orm.SkipQueryHooksKey]
+	DeleteQueryHooks orm.Hooks[*dialect.DeleteQuery, orm.SkipQueryHooksKey]
 }
 
 // Insert inserts a row into the table with only the set columns in Tset
@@ -71,6 +75,11 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 		im.Rows(values...),
 		im.Returning(t.Columns()),
 	)
+
+	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return zero, err
+	}
 
 	val, err := bob.One(ctx, exec, q, t.scanner)
 	if err != nil {
@@ -118,6 +127,11 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		im.Returning(t.Columns()),
 	)
 
+	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return nil, err
+	}
+
 	vals, err := bob.All(ctx, exec, q, t.scanner)
 	if err != nil {
 		return vals, err
@@ -161,6 +175,11 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 
 	for i, col := range columns {
 		q.Apply(um.Set(col).To(values[0][i]))
+	}
+
+	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return 0, err
 	}
 
 	result, err := q.Exec(ctx, exec)
@@ -223,6 +242,11 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		Group(pkGroup...).In(pkPairs...),
 	))
 
+	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return 0, err
+	}
+
 	result, err := q.Exec(ctx, exec)
 	if err != nil {
 		return 0, err
@@ -282,6 +306,11 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 		im.Returning(t.Columns()),
 		conflictQM,
 	)
+
+	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return zero, err
+	}
 
 	val, err := bob.One(ctx, exec, q, t.scanner)
 	if err != nil {
@@ -358,6 +387,11 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		q.Apply(im.Values(val...))
 	}
 
+	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return nil, err
+	}
+
 	vals, err := bob.All(ctx, exec, q, t.scanner)
 	if err != nil {
 		return vals, err
@@ -388,6 +422,11 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 
 	for i, pk := range pks {
 		q.Apply(dm.Where(Quote(pk).EQ(pkVals[0][i])))
+	}
+
+	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return 0, err
 	}
 
 	result, err := q.Exec(ctx, exec)
@@ -437,6 +476,11 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		Group(pkGroup...).In(pkPairs...),
 	))
 
+	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
+	if err != nil {
+		return 0, err
+	}
+
 	result, err := q.Exec(ctx, exec)
 	if err != nil {
 		return 0, err
@@ -457,9 +501,9 @@ func (t *Table[T, Tslice, Tset]) UpdateAll(ctx context.Context, exec bob.Executo
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,
+		hooks:     &t.UpdateQueryHooks,
 	}
 
-	// q.Expression.SetLoadContext(ctx)
 	q.Apply(queryMods...)
 
 	return q
@@ -472,9 +516,9 @@ func (t *Table[T, Tslice, Tset]) DeleteAll(ctx context.Context, exec bob.Executo
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,
+		hooks:     &t.DeleteQueryHooks,
 	}
 
-	// q.Expression.SetLoadContext(ctx)
 	q.Apply(queryMods...)
 
 	return q
@@ -488,9 +532,16 @@ type returnable interface {
 
 type TQuery[Q returnable, T any, Ts ~[]T] struct {
 	bob.BaseQuery[Q]
-	ctx  context.Context
-	exec bob.Executor
-	view *View[T, Ts]
+	ctx   context.Context
+	exec  bob.Executor
+	view  *View[T, Ts]
+	hooks *orm.Hooks[Q, orm.SkipQueryHooksKey]
+}
+
+func (t *TQuery[Q, T, Ts]) hook() error {
+	var err error
+	t.ctx, err = t.hooks.Do(t.ctx, t.exec, t.Expression)
+	return err
 }
 
 func (t *TQuery[Q, T, Ts]) addReturning() {
@@ -514,6 +565,10 @@ func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 
 // Execute the query
 func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
+	if err := t.hook(); err != nil {
+		return 0, err
+	}
+
 	result, err := t.BaseQuery.Exec(t.ctx, t.exec)
 	if err != nil {
 		return 0, err
@@ -525,17 +580,26 @@ func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
 // First matching row
 func (t *TQuery[Q, T, Tslice]) One() (T, error) {
 	t.addReturning()
+	if err := t.hook(); err != nil {
+		return *new(T), err
+	}
 	return bob.One(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
 }
 
 // All matching rows
 func (t *TQuery[Q, T, Tslice]) All() (Tslice, error) {
 	t.addReturning()
+	if err := t.hook(); err != nil {
+		return nil, err
+	}
 	return bob.Allx[T, Tslice](t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
 }
 
 // Cursor to scan through the results
 func (t *TQuery[Q, T, Tslice]) Cursor() (scan.ICursor[T], error) {
 	t.addReturning()
+	if err := t.hook(); err != nil {
+		return nil, err
+	}
 	return bob.Cursor(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
 }

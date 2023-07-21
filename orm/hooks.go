@@ -10,7 +10,19 @@ import (
 // SkipHooks modifies a context to prevent hooks from running for any query
 // it encounters.
 func SkipHooks(ctx context.Context) context.Context {
-	return context.WithValue(ctx, ctxSkipHooks, true)
+	ctx = SkipModelHooks(ctx)
+	ctx = SkipQueryHooks(ctx)
+	return ctx
+}
+
+// SkipModelHooks modifies a context to prevent hooks from running on models.
+func SkipModelHooks(ctx context.Context) context.Context {
+	return context.WithValue(ctx, SkipModelHooksKey{}, true)
+}
+
+// SkipQueryHooks modifies a context to prevent hooks from running on querys.
+func SkipQueryHooks(ctx context.Context) context.Context {
+	return context.WithValue(ctx, SkipQueryHooksKey{}, true)
 }
 
 // Hook is a function that can be called during lifecycle of an object
@@ -19,13 +31,14 @@ func SkipHooks(ctx context.Context) context.Context {
 type Hook[T any] func(context.Context, bob.Executor, T) (context.Context, error)
 
 // Hooks is a set of hooks that can be called all at once
-type Hooks[T any] struct {
+type Hooks[T any, K any] struct {
 	mu    sync.RWMutex
 	hooks []Hook[T]
+	key   K
 }
 
 // Add a hook to the set
-func (h *Hooks[T]) Add(hook Hook[T]) {
+func (h *Hooks[T, K]) Add(hook Hook[T]) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -34,8 +47,12 @@ func (h *Hooks[T]) Add(hook Hook[T]) {
 
 // Do calls all the registered hooks.
 // if the context is set to skip hooks using [SkipHooks], then Do simply returns the context
-func (h *Hooks[T]) Do(ctx context.Context, exec bob.Executor, o T) (context.Context, error) {
-	if skip, ok := ctx.Value(ctxSkipHooks).(bool); skip && ok {
+func (h *Hooks[T, K]) Do(ctx context.Context, exec bob.Executor, o T) (context.Context, error) {
+	if len(h.hooks) == 0 {
+		return ctx, nil
+	}
+
+	if skip, ok := ctx.Value(h.key).(bool); skip && ok {
 		return ctx, nil
 	}
 
