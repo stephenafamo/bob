@@ -41,27 +41,27 @@ func (x Chain[T, B]) EQ(target bob.Expression) T {
 }
 
 // Not Equal
-func (x Chain[T, B]) NE(target any) T {
+func (x Chain[T, B]) NE(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "<>"})
 }
 
 // Less than
-func (x Chain[T, B]) LT(target any) T {
+func (x Chain[T, B]) LT(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "<"})
 }
 
 // Less than or equal to
-func (x Chain[T, B]) LTE(target any) T {
+func (x Chain[T, B]) LTE(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "<="})
 }
 
 // Greater than
-func (x Chain[T, B]) GT(target any) T {
+func (x Chain[T, B]) GT(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: ">"})
 }
 
 // Greater than or equal to
-func (x Chain[T, B]) GTE(target any) T {
+func (x Chain[T, B]) GTE(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: ">="})
 }
 
@@ -103,7 +103,7 @@ func (x Chain[T, B]) NotBetween(a, b bob.Expression) T {
 }
 
 // Subtract
-func (x Chain[T, B]) Minus(target any) T {
+func (x Chain[T, B]) Minus(target bob.Expression) T {
 	return X[T, B](leftRight{operator: "-", left: x.Base, right: target})
 }
 
