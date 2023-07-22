@@ -46,7 +46,7 @@ func TestSelect(t *testing.T) {
 							status,
 							(LEAD(created_date, 1, NOW())
 							OVER (PARTITION BY presale_id ORDER BY created_date)
-							 - created_date) AS "difference"
+							 - "created_date") AS "difference"
 						FROM presales_presalestatus
 					) AS "differnce_by_status"
 					WHERE ("status" IN ('A', 'B', 'C'))
@@ -60,7 +60,7 @@ func TestSelect(t *testing.T) {
 							Over("").
 							PartitionBy("presale_id").
 							OrderBy("created_date").
-							Minus("created_date").
+							Minus(sqlite.Quote("created_date")).
 							As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
