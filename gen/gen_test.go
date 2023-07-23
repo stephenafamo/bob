@@ -37,6 +37,14 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Default:  "some db nonsense",
 					Nullable: false,
 				},
+				{
+					Name:     "by_comment",
+					Type:     "string",
+					DBType:   "text",
+					Default:  "some db nonsense",
+					Nullable: false,
+					Comment:  "xid",
+				},
 			},
 		},
 		{
@@ -48,6 +56,14 @@ func TestProcessTypeReplacements(t *testing.T) {
 					DBType:   "serial",
 					Default:  "some db nonsense",
 					Nullable: false,
+				},
+				{
+					Name:     "by_comment",
+					Type:     "string",
+					DBType:   "text",
+					Default:  "some db nonsense",
+					Nullable: false,
+					Comment:  "xid",
 				},
 			},
 		},
@@ -101,6 +117,15 @@ func TestProcessTypeReplacements(t *testing.T) {
 				Imports: []string{`"math/big"`},
 			},
 		},
+		{
+			Match: drivers.Column{
+				Comment: "xid",
+			},
+			Replace: drivers.Column{
+				Type:    "xid.ID",
+				Imports: []string{`"github.com/rs/xid"`},
+			},
+		},
 	}
 
 	processTypeReplacements(replacements, tables)
@@ -132,11 +157,23 @@ func TestProcessTypeReplacements(t *testing.T) {
 	if i := tables[0].Columns[3].Imports[0]; i != `"math/big"` {
 		t.Error("imports were not adjusted")
 	}
+	if typ := tables[0].Columns[4].Type; typ != "xid.ID" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := tables[0].Columns[4].Imports[0]; i != `"github.com/rs/xid"` {
+		t.Error("imports were not adjusted")
+	}
 
 	if typ := tables[1].Columns[0].Type; typ != "excellent.NamedType" {
 		t.Error("type was wrong:", typ)
 	}
 	if i := tables[1].Columns[0].Imports[0]; i != `"rock.com/excellent-name"` {
+		t.Error("imports were not adjusted")
+	}
+	if typ := tables[1].Columns[1].Type; typ != "xid.ID" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := tables[1].Columns[1].Imports[0]; i != `"github.com/rs/xid"` {
 		t.Error("imports were not adjusted")
 	}
 }
