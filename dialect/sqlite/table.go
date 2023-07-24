@@ -209,19 +209,30 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
 
-	pkPairs := make([]bob.Expression, len(pkVals))
-	for i, pair := range pkVals {
-		pkPairs[i] = Group(pair...)
-	}
+	if len(pks) == 1 {
+		pkValues := make([]bob.Expression, len(pkVals))
+		for i, pair := range pkVals {
+			pkValues[i] = pair[0]
+		}
 
-	pkGroup := make([]bob.Expression, len(pks))
-	for i, pk := range pks {
-		pkGroup[i] = Quote(pk)
-	}
+		q.Apply(um.Where(
+			Quote(pks[0]).In(pkValues...),
+		))
+	} else {
+		pkPairs := make([]bob.Expression, len(pkVals))
+		for i, pair := range pkVals {
+			pkPairs[i] = Group(pair...)
+		}
 
-	q.Apply(um.Where(
-		Group(pkGroup...).In(pkPairs...),
-	))
+		pkGroup := make([]bob.Expression, len(pks))
+		for i, pk := range pks {
+			pkGroup[i] = Quote(pk)
+		}
+
+		q.Apply(um.Where(
+			Group(pkGroup...).In(pkPairs...),
+		))
+	}
 
 	result, err := q.Exec(ctx, exec)
 	if err != nil {
@@ -423,19 +434,30 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		return 0, fmt.Errorf("get update pk values: %w", err)
 	}
 
-	pkPairs := make([]bob.Expression, len(pkVals))
-	for i, pair := range pkVals {
-		pkPairs[i] = Group(pair...)
-	}
+	if len(pks) == 1 {
+		pkValues := make([]bob.Expression, len(pkVals))
+		for i, pair := range pkVals {
+			pkValues[i] = pair[0]
+		}
 
-	pkGroup := make([]bob.Expression, len(pks))
-	for i, pk := range pks {
-		pkGroup[i] = Quote(pk)
-	}
+		q.Apply(dm.Where(
+			Quote(pks[0]).In(pkValues...),
+		))
+	} else {
+		pkPairs := make([]bob.Expression, len(pkVals))
+		for i, pair := range pkVals {
+			pkPairs[i] = Group(pair...)
+		}
 
-	q.Apply(dm.Where(
-		Group(pkGroup...).In(pkPairs...),
-	))
+		pkGroup := make([]bob.Expression, len(pks))
+		for i, pk := range pks {
+			pkGroup[i] = Quote(pk)
+		}
+
+		q.Apply(dm.Where(
+			Group(pkGroup...).In(pkPairs...),
+		))
+	}
 
 	result, err := q.Exec(ctx, exec)
 	if err != nil {
