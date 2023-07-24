@@ -18,8 +18,8 @@ func From(name any) dialect.FromChain[*dialect.DeleteQuery] {
 	return dialect.From[*dialect.DeleteQuery](name)
 }
 
-func Where(e any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
+	return mods.Where[*dialect.DeleteQuery]{E: e}
 }
 
 func Returning(clauses ...any) bob.Mod[*dialect.DeleteQuery] {

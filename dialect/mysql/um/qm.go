@@ -55,8 +55,8 @@ func Set(from ...string) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery](from)
 }
 
-func Where(e any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Where[*dialect.UpdateQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
+	return mods.Where[*dialect.UpdateQuery]{E: e}
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.UpdateQuery] {

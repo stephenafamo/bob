@@ -80,8 +80,8 @@ func CrossJoin(e any) bob.Mod[*dialect.UpdateQuery] {
 	return dialect.CrossJoin[*dialect.UpdateQuery](e)
 }
 
-func Where(e any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Where[*dialect.UpdateQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
+	return mods.Where[*dialect.UpdateQuery]{E: e}
 }
 
 func Returning(clauses ...any) bob.Mod[*dialect.UpdateQuery] {
