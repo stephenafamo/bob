@@ -49,8 +49,8 @@ func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
 	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func Where(e any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Where[*dialect.SelectQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.SelectQuery] {
+	return mods.Where[*dialect.SelectQuery]{E: e}
 }
 
 func Having(e any) bob.Mod[*dialect.SelectQuery] {

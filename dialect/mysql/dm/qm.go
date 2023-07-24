@@ -76,8 +76,8 @@ func StraightJoin(e any) bob.Mod[*dialect.DeleteQuery] {
 	return dialect.StraightJoin[*dialect.DeleteQuery](e)
 }
 
-func Where(e any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
+	return mods.Where[*dialect.DeleteQuery]{E: e}
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.DeleteQuery] {

@@ -62,8 +62,8 @@ func CrossJoin(e any) bob.Mod[*dialect.DeleteQuery] {
 	return dialect.CrossJoin[*dialect.DeleteQuery](e)
 }
 
-func Where(e any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{e}
+func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
+	return mods.Where[*dialect.DeleteQuery]{E: e}
 }
 
 func Returning(clauses ...any) bob.Mod[*dialect.DeleteQuery] {

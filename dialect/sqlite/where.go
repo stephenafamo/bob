@@ -2,15 +2,8 @@ package sqlite
 
 import (
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/mods"
 )
-
-type mod[Q interface{ AppendWhere(e ...any) }] struct {
-	e bob.Expression
-}
-
-func (d mod[Q]) Apply(q Q) {
-	q.AppendWhere(d.e)
-}
 
 type Filterable interface {
 	AppendWhere(...any)
@@ -22,25 +15,25 @@ func Where[Q Filterable, C any](name Expression) WhereMod[Q, C] {
 	}
 }
 
-func WhereOr[Q Filterable](whereMods ...mod[Q]) mod[Q] {
+func WhereOr[Q Filterable](whereMods ...mods.Where[Q]) mods.Where[Q] {
 	exprs := make([]bob.Expression, len(whereMods))
 	for i, mod := range whereMods {
-		exprs[i] = mod.e
+		exprs[i] = mod.E
 	}
 
-	return mod[Q]{
-		e: Or(exprs...),
+	return mods.Where[Q]{
+		E: Or(exprs...),
 	}
 }
 
-func WhereAnd[Q Filterable](whereMods ...mod[Q]) mod[Q] {
+func WhereAnd[Q Filterable](whereMods ...mods.Where[Q]) mods.Where[Q] {
 	exprs := make([]bob.Expression, len(whereMods))
 	for i, mod := range whereMods {
-		exprs[i] = mod.e
+		exprs[i] = mod.E
 	}
 
-	return mod[Q]{
-		e: And(exprs...),
+	return mods.Where[Q]{
+		E: And(exprs...),
 	}
 }
 
@@ -48,48 +41,48 @@ type WhereMod[Q Filterable, C any] struct {
 	name Expression
 }
 
-func (w WhereMod[Q, C]) EQ(val C) mod[Q] {
-	return mod[Q]{w.name.EQ(Arg(val))}
+func (w WhereMod[Q, C]) EQ(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.EQ(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) NE(val C) mod[Q] {
-	return mod[Q]{w.name.NE(Arg(val))}
+func (w WhereMod[Q, C]) NE(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.NE(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) LT(val C) mod[Q] {
-	return mod[Q]{w.name.LT(Arg(val))}
+func (w WhereMod[Q, C]) LT(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.LT(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) LTE(val C) mod[Q] {
-	return mod[Q]{w.name.LTE(Arg(val))}
+func (w WhereMod[Q, C]) LTE(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.LTE(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) GT(val C) mod[Q] {
-	return mod[Q]{w.name.GT(Arg(val))}
+func (w WhereMod[Q, C]) GT(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.GT(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) GTE(val C) mod[Q] {
-	return mod[Q]{w.name.GTE(Arg(val))}
+func (w WhereMod[Q, C]) GTE(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.GTE(Arg(val))}
 }
 
-func (w WhereMod[Q, C]) In(slice ...C) mod[Q] {
+func (w WhereMod[Q, C]) In(slice ...C) mods.Where[Q] {
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
-	return mod[Q]{w.name.In(Arg(values...))}
+	return mods.Where[Q]{E: w.name.In(Arg(values...))}
 }
 
-func (w WhereMod[Q, C]) NotIn(slice ...C) mod[Q] {
+func (w WhereMod[Q, C]) NotIn(slice ...C) mods.Where[Q] {
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
-	return mod[Q]{w.name.NotIn(Arg(values...))}
+	return mods.Where[Q]{E: w.name.NotIn(Arg(values...))}
 }
 
-func (w WhereMod[Q, C]) Like(val C) mod[Q] {
-	return mod[Q]{w.name.Like(Arg(val))}
+func (w WhereMod[Q, C]) Like(val C) mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.Like(Arg(val))}
 }
 
 func WhereNull[Q Filterable, C any](name Expression) WhereNullMod[Q, C] {
@@ -104,10 +97,10 @@ type WhereNullMod[Q interface {
 	WhereMod[Q, C]
 }
 
-func (w WhereNullMod[Q, C]) IsNull() mod[Q] {
-	return mod[Q]{w.name.IsNull()}
+func (w WhereNullMod[Q, C]) IsNull() mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.IsNull()}
 }
 
-func (w WhereNullMod[Q, C]) IsNotNull() mod[Q] {
-	return mod[Q]{w.name.IsNotNull()}
+func (w WhereNullMod[Q, C]) IsNotNull() mods.Where[Q] {
+	return mods.Where[Q]{E: w.name.IsNotNull()}
 }

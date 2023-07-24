@@ -50,10 +50,12 @@ func (j Join[Q]) Apply(q Q) {
 	q.AppendJoin(clause.Join(j))
 }
 
-type Where[Q interface{ AppendWhere(e ...any) }] []any
+type Where[Q interface{ AppendWhere(e ...any) }] struct {
+	E bob.Expression
+}
 
-func (d Where[Q]) Apply(q Q) {
-	q.AppendWhere(d...)
+func (w Where[Q]) Apply(q Q) {
+	q.AppendWhere(w.E)
 }
 
 type GroupBy[Q interface{ AppendGroup(any) }] struct {
