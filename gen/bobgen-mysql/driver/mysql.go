@@ -124,14 +124,14 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 	exclude := tableFilter.Except
 
 	if len(include) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(include), 3, 1))
+		query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(false, len(include), 1, 1)) // third param is not used for ? placeholders
 		for _, w := range include {
 			args = append(args, w)
 		}
 	}
 
 	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(exclude), 3+len(include), 1))
+		query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(false, len(exclude), 1, 1)) // third param is not used for ? placeholders
 		for _, w := range exclude {
 			args = append(args, w)
 		}
