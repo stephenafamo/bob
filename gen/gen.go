@@ -314,6 +314,7 @@ func outputPadding(tpls []string, tables []drivers.Table) int {
 // and performs them.
 func processTypeReplacements(replacements []Replace, tables []drivers.Table) {
 	for _, r := range replacements {
+		didMatch := false
 		for i := range tables {
 			t := tables[i]
 
@@ -325,8 +326,14 @@ func processTypeReplacements(replacements []Replace, tables []drivers.Table) {
 				c := t.Columns[j]
 				if matchColumn(c, r.Match) {
 					t.Columns[j] = columnMerge(c, r.Replace)
+					didMatch = true
 				}
 			}
+		}
+		// Print a warning if we didn't match anything
+		if !didMatch {
+			c := r.Match
+			fmt.Printf("WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n", c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
 		}
 	}
 }

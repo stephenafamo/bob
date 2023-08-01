@@ -67,13 +67,17 @@ replacements:
     # Boolean values are only checked if all the string specifiers match first,
     # and they must always match.
     #
-    # Not shown here: db_type is the database type and a very useful matcher
-    #
     # Note there is precedence for types.match, more specific things should appear
     # further down in the config as once a matching rule is found it is executed
     # immediately.
     match:
-      name: "column_name" # column name
+      name: "username" # Matches the column name
+      db_type: "varchar(255)" # Matches the database type
+      default: "NULL" # Matches the default value
+      comment: "The username" # Matches the column comment
+      nullable: true # Matches the nullable value. Defaults to false.
+      generated: false # Matches the generated value. Defaults to false.
+      autoincr: false # Matches the autoincr value. Defaults to false.
 
     # The replace is what we replace the strings with. You cannot modify any
     # boolean values in here. But we could change the Go type (the most useful thing)
