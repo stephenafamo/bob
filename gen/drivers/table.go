@@ -106,8 +106,11 @@ func ParseTableFilter(only, except map[string][]string) Filter {
 		filter.Only = append(filter.Only, name)
 	}
 
-	for name := range except {
-		filter.Except = append(filter.Except, name)
+	for name, cols := range except {
+		// If they only want to exclude some columns, then we don't want to exclude the whole table
+		if len(cols) == 0 {
+			filter.Except = append(filter.Except, name)
+		}
 	}
 
 	return filter
