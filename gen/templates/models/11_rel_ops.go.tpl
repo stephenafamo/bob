@@ -5,10 +5,64 @@
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
-{{- if not $rel.IsToMany -}}
+
+
+  func (o *{{$tAlias.UpSingular}}) attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related ...*{{$ftable.UpSingular}}) error {
+    if len(related) == 0 {
+      return nil
+    }
+
+    {{$create := createDeps $.Aliases $rel true}}
+    {{with $create}}
+      var err error
+      {{.}}
+    {{end}}
+
+    {{$set := setModelDeps $.Importer $.Tables $.Aliases $rel true false}}
+
+    {{if or $create $set}}
+    for {{if $create}}i{{else}}_{{end}}, rel := range related {
+      {{$set}}
+    }
+    {{end}}
+
+    {{insertDeps $.Aliases $rel true}}
+
+    {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
+    {{with $relatedVals}}
+    if _, err := {{$ftable.UpPlural}}.Update(
+      ctx, exec, &{{$ftable.UpSingular}}Setter{
+        {{.}}
+      }, related...,
+    ); err != nil {
+        return fmt.Errorf("updating related objects: %w", err)
+    }
+    {{end}}
+
+  {{if $rel.IsToMany -}}
+		o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, related...)
+  {{else -}}
+		o.R.{{$relAlias}} = related[0]
+  {{end}}
+
+    {{if and (not $.NoBackReferencing) $invRel.Name -}}
+    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
+      for _, rel := range related {
+        {{if $invRel.IsToMany -}}
+          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+        {{- else -}}
+          rel.R.{{$invAlias}} = o
+        {{- end}}
+      }
+    {{- end}}
+
+    return nil
+  }
+
+{{if not $rel.IsToMany -}}
   func (o *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
     {{if $rel.InsertEarly -}}
-      rel, err := {{$ftable.UpPlural}}Table.Insert(ctx, exec, related)
+      rel, err := {{$ftable.UpPlural}}.Insert(ctx, exec, related)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
@@ -25,7 +79,7 @@
     {{insertDeps $.Aliases $rel false}}
 
     {{if not $rel.InsertEarly -}}
-      inserted, err := {{$ftable.UpPlural}}Table.Insert(ctx, exec, related)
+      inserted, err := {{$ftable.UpPlural}}.Insert(ctx, exec, related)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
@@ -45,31 +99,7 @@
   }
 
   func (o *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} rel *{{$ftable.UpSingular}}) error {
-    var err error
-
-    {{$create := createDeps $.Aliases $rel false}}
-    {{$create}}
-
-    {{setModelDeps $.Importer $.Tables $.Aliases $rel false false}}
-
-    {{insertDeps $.Aliases $rel false}}
-
-    _, err = rel.Update(ctx, exec)
-    if err != nil {
-        return fmt.Errorf("inserting related objects: %w", err)
-    }
-    o.R.{{$relAlias}} = rel
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      {{if $invRel.IsToMany -}}
-        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-      {{else -}}
-        rel.R.{{$invAlias}} = o
-      {{- end}}
-    {{- end}}
-
-    return nil
+    return o.attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} rel)
   }
 
   {{if or $rel.ByJoinTable $rel.IsRemovable -}}
@@ -82,20 +112,10 @@
     var err error
 
     {{if $rel.InsertEarly -}}
-      {{if $.CanBulkInsert -}}
-        rels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
-        if err != nil {
-            return fmt.Errorf("inserting related objects: %w", err)
-        }
-      {{- else -}}
-        rels := make({{$ftable.UpSingular}}Slice, len(related))
-        for i, rel := range related {
-          rels[i], err = {{$ftable.UpPlural}}Table.Insert(ctx, exec, rel)
-          if err != nil {
-              return fmt.Errorf("inserting related objects: %w", err)
-          }
-        }
-      {{- end}}
+      rels, err := {{$ftable.UpPlural}}.InsertMany(ctx, exec, related...)
+      if err != nil {
+          return fmt.Errorf("inserting related objects: %w", err)
+      }
       o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rels...)
     {{else -}}
       rels := related
@@ -115,20 +135,10 @@
     {{insertDeps $.Aliases $rel true}}
 
     {{if not $rel.InsertEarly -}}
-      {{if $.CanBulkInsert -}}
-        newRels, err := {{$ftable.UpPlural}}Table.InsertMany(ctx, exec, related...)
-        if err != nil {
-            return fmt.Errorf("inserting related objects: %w", err)
-        }
-      {{- else -}}
-        newRels := make({{$ftable.UpSingular}}Slice, len(related))
-        for i, rel := range related {
-          newRels[i], err = {{$ftable.UpPlural}}Table.Insert(ctx, exec, rel)
-          if err != nil {
-              return fmt.Errorf("inserting related objects: %w", err)
-          }
-        }
-      {{- end}}
+      newRels, err := {{$ftable.UpPlural}}.InsertMany(ctx, exec, related...)
+      if err != nil {
+          return fmt.Errorf("inserting related objects: %w", err)
+      }
       o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, newRels...)
     {{- end}}
 
@@ -150,47 +160,7 @@
   }
 
   func (o *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependencies $.Aliases $rel}} related ...*{{$ftable.UpSingular}}) error {
-    {{$create := createDeps $.Aliases $rel true}}
-    {{with $create}}
-      var err error
-      {{.}}
-    {{end}}
-
-    {{$set := setModelDeps $.Importer $.Tables $.Aliases $rel true false}}
-
-    {{if or $create $set}}
-    for {{if $create}}i{{else}}_{{end}}, rel := range related {
-      {{$set}}
-    }
-    {{end}}
-
-    {{insertDeps $.Aliases $rel true}}
-
-    {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
-    {{with $relatedVals}}
-    if _, err := {{$ftable.UpPlural}}Table.UpdateMany(
-      ctx, exec, &{{$ftable.UpSingular}}Setter{
-        {{.}}
-      }, related...,
-    ); err != nil {
-        return fmt.Errorf("inserting related objects: %w", err)
-    }
-    {{end}}
-
-		o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, related...)
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      for _, rel := range related {
-        {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-        {{else -}}
-          rel.R.{{$invAlias}} = o
-        {{- end}}
-      }
-    {{- end}}
-
-    return nil
+    return o.attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} related...)
   }
 
   {{if  $rel.IsRemovable -}}

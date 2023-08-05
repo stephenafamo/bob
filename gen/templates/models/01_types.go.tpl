@@ -1,8 +1,6 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
@@ -39,13 +37,13 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{if not $table.PKey -}}
-	// {{$tAlias.UpPlural}}View contains methods to work with the {{$table.Name}} view
-	var {{$tAlias.UpPlural}}View = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
+	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} view
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} view
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
-	// {{$tAlias.UpPlural}}Table contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}}Table = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}")
+	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} table
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
@@ -55,6 +53,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 
 {{if .Table.Relationships -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
 type {{$tAlias.DownSingular}}R struct {
 	{{range .Table.Relationships -}}
@@ -88,7 +87,35 @@ type {{$tAlias.UpSingular}}Setter struct {
 	{{end -}}
 }
 
-{{block "setter_mod" . -}}
+func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
+  vals := make([]string, 0, {{len $table.NonGeneratedColumns}})
+	{{range $column := .Table.Columns -}}
+	{{if $column.Generated}}{{continue}}{{end -}}
+	{{$colAlias := $tAlias.Column $column.Name -}}
+		if !s.{{$colAlias}}.IsUnset() {
+			vals = append(vals, {{printf "%q" $column.Name}})
+		}
+
+	{{end -}}
+
+	return vals
+}
+
+func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
+	{{- range $column := .Table.Columns -}}
+	{{if $column.Generated}}{{continue}}{{end -}}
+	{{$colAlias := $tAlias.Column $column.Name -}}
+		if !s.{{$colAlias}}.IsUnset() {
+			{{- if not $column.Nullable -}}
+				t.{{$colAlias}}, _ = s.{{$colAlias}}.Get()
+			{{- else -}}
+				t.{{$colAlias}}, _ = s.{{$colAlias}}.GetNull()
+			{{- end -}}
+		}
+	{{end -}}
+}
+
+{{block "setter_update_mod" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
@@ -100,6 +127,26 @@ func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
 			um.Set("{{$column.Name}}").ToArg(s.{{$colAlias}}).Apply(q)
 		}
 	{{end -}}
+}
+{{- end}}
+
+{{block "setter_insert_mod" . -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
+{{$table := .Table}}
+{{$tAlias := .Aliases.Table $table.Key -}}
+func (s {{$tAlias.UpSingular}}Setter) Insert() bob.Mod[*dialect.InsertQuery] {
+  vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
+	{{range $index, $column := $table.NonGeneratedColumns -}}
+		{{$colAlias := $tAlias.Column $column.Name -}}
+		if s.{{$colAlias}}.IsUnset() {
+			vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
+		} else {
+			vals[{{$index}}] = {{$.Dialect}}.Arg(s.{{$colAlias}})
+		}
+
+	{{end -}}
+
+	return im.Values(vals...)
 }
 {{- end}}
 

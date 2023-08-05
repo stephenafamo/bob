@@ -12,7 +12,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $toTable := getTable $.Tables $side.To -}}
-		dialect.Join[Q](typ, {{$to.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
+		dialect.Join[Q](typ, {{$to.UpPlural}}.Name(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
 				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
@@ -41,7 +41,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
 func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
-	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
+	return {{$fAlias.UpPlural}}.Query(ctx, exec, append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
@@ -50,7 +50,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx co
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}{{if $fromTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.Name(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -80,43 +80,6 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx co
 	)...)
 }
 
-{{if le (len $rel.Sides) 1 -}}
-{{$side := (index $rel.Sides 0) -}}
-{{$fromAlias := $.Aliases.Table $side.From -}}
-{{$toAlias := $.Aliases.Table $side.To -}}
-
-func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
-  {{if gt (len $side.FromColumns) 0 -}}
-	PKArgs := make([]bob.Expression, 0, len(os))
-	for _, o := range os {
-	PKArgs = append(PKArgs, {{$.Dialect}}.ArgGroup(
-		{{- range $index, $local := $side.FromColumns -}}
-			{{- $fromCol := index $fromAlias.Columns $local -}}
-			o.{{$fromCol}},
-		{{- end -}}))
-	}
-	{{- end}}
-
-	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
-		{{if gt (len $side.FromColumns) 0 -}}
-			sm.Where({{$.Dialect}}.Group(
-			{{- range $index, $local := $side.FromColumns -}}
-				{{- $fromCol := index $fromAlias.Columns $local -}}
-				{{- $toCol := index $toAlias.Columns (index $side.ToColumns $index) -}}
-				{{$fAlias.UpSingular}}Columns.{{$toCol}},
-			{{- end}}).In(PKArgs...)),
-		{{- end}}
-		{{- range $where := $side.FromWhere}}
-			{{- $fromCol := index $fromAlias.Columns $where.Column}}
-			sm.Where({{$.Dialect}}.X({{$fromAlias.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}})),
-		{{- end}}
-		{{- range $where := $side.ToWhere}}
-			{{- $toCol := index $toAlias.Columns $where.Column}}
-			sm.Where({{$.Dialect}}.X({{$toAlias.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}})),
-		{{- end}}
-	)...)
-}
-{{else -}}
 {{$firstSide := (index $rel.Sides 0) -}}
 {{$firstFrom := $.Aliases.Table $firstSide.From -}}
 {{$firstTo := $.Aliases.Table $firstSide.To -}}
@@ -127,18 +90,18 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 
 func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $firstSide.FromColumns) 0 -}}
-	PKArgs := make([]bob.Expression, 0, len(os))
-	for _, o := range os {
-	PKArgs = append(PKArgs, {{$.Dialect}}.ArgGroup(
+	PKArgs := make([]bob.Expression, len(os))
+	for i, o := range os {
+		PKArgs[i] = {{$.Dialect}}.ArgGroup(
 		{{- range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
 			o.{{$fromCol}},
-		{{- end -}}))
+		{{- end -}})
 	}
 	{{- end}}
 
 
-	return {{$fAlias.UpPlural}}(ctx, exec, append(mods,
+	return {{$fAlias.UpPlural}}.Query(ctx, exec, append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
@@ -147,7 +110,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}{{if $fromTable.PKey}}Table{{else}}View{{end}}.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.Name(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -184,7 +147,6 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 		{{- end}}
 	)...)
 }
-{{end -}}
 
 
 {{end -}}

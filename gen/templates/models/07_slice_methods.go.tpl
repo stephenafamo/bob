@@ -3,18 +3,19 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
-	return {{$tAlias.UpPlural}}Table.DeleteMany(ctx, exec, o...)
-}
-
 func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) (int64, error) {
-	rowsAff, err := {{$tAlias.UpPlural}}Table.UpdateMany(ctx, exec, &vals, o...)
+	rowsAff, err := {{$tAlias.UpPlural}}.Update(ctx, exec, &vals, o...)
 	if err != nil {
 		return rowsAff, err
 	}
 
 	return rowsAff, nil
 }
+
+func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
+	return {{$tAlias.UpPlural}}.Delete(ctx, exec, o...)
+}
+
 
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
   var mods []bob.Mod[*dialect.SelectQuery]
@@ -39,7 +40,7 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 	{{end}}
 	)
 
-	o2, err := {{$tAlias.UpPlural}}(ctx, exec, mods...).All()
+	o2, err := {{$tAlias.UpPlural}}.Query(ctx, exec, mods...).All()
 	if err != nil {
 		return err
 	}

@@ -20,9 +20,7 @@ type Interface[T any] interface {
 	Assemble(ctx context.Context) (*DBInfo[T], error)
 }
 
-type Capabilities struct {
-	BulkInsert bool
-}
+type Capabilities struct{}
 
 // DBInfo is the database's table data and dialect.
 type DBInfo[T any] struct {

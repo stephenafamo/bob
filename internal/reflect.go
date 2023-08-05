@@ -147,7 +147,7 @@ func GetColumnValues[T any](mapping []string, filter []string, objs ...T) ([]str
 		return nil, nil, nil
 	}
 
-	allvalues := make([][]bob.Expression, 0, len(objs))
+	allvalues := make([][]bob.Expression, len(objs))
 
 	refVal1 := reflect.ValueOf(objs[0])
 	cols, vals1, err := getObjColsVals(mapping, filter, refVal1)
@@ -155,7 +155,7 @@ func GetColumnValues[T any](mapping []string, filter []string, objs ...T) ([]str
 		return nil, nil, fmt.Errorf("get column list: %w", err)
 	}
 
-	allvalues = append(allvalues, vals1)
+	allvalues[0] = vals1
 
 	for index, obj := range objs[1:] {
 		refVal := reflect.ValueOf(obj)
@@ -164,7 +164,7 @@ func GetColumnValues[T any](mapping []string, filter []string, objs ...T) ([]str
 			return nil, nil, fmt.Errorf("row %d: %w", index+2, err)
 		}
 
-		allvalues = append(allvalues, values)
+		allvalues[index+1] = values
 	}
 
 	return cols, allvalues, nil

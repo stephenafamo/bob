@@ -89,7 +89,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 					From: {{quote $fromTable.Key}},
 					To: TableNames.{{$to.UpPlural}},
 					ToExpr: func(ctx context.Context) bob.Expression {
-					  return {{$to.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Name(ctx)
+					  return {{$to.UpPlural}}.Name(ctx)
 					},
 					{{if $side.FromColumns -}}
 					FromColumns: []string{
@@ -132,7 +132,7 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				},
 				{{- end}}
 			},
-		}, {{$fAlias.UpPlural}}{{if $toTable.PKey}}Table{{else}}View{{end}}.Columns().Names(), opts...)
+		}, {{$fAlias.UpPlural}}.Columns().Names(), opts...)
 }
 {{- end}}
 

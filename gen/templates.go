@@ -102,10 +102,6 @@ type TemplateData[T any] struct {
 	// Supplied by the driver
 	ExtraInfo     T
 	ModelsPackage string
-
-	// If the driver cannot bulk insert and return concrete objects
-	// then we have to insert relationships one-by-one
-	CanBulkInsert bool
 }
 
 func (t *TemplateData[T]) ResetImports() {
@@ -493,7 +489,7 @@ func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
 
 		if many {
 			insert = append(insert, fmt.Sprintf(`
-			  _, err = %sTable.InsertMany(ctx, exec, %s...)
+			  _, err = %s.InsertMany(ctx, exec, %s...)
 			  if err != nil {
 				  return fmt.Errorf("inserting related objects: %%w", err)
 			  }
@@ -503,7 +499,7 @@ func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
 			))
 		} else {
 			insert = append(insert, fmt.Sprintf(`
-			  _, err = %sTable.Insert(ctx, exec, %s)
+			  _, err = %s.InsertMany(ctx, exec, %s)
 			  if err != nil {
 				  return fmt.Errorf("inserting related object: %%w", err)
 			  }

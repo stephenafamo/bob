@@ -133,7 +133,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 		{{- end}}
 	{{end}}
 
-	m, err := models.{{$tAlias.UpPlural}}Table.Insert(ctx, exec, opt)
+	m, err := models.{{$tAlias.UpPlural}}.Insert(ctx, exec, opt)
 	if err != nil {
 	  return ctx, nil, err
 	}

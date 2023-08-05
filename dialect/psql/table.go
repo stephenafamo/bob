@@ -2,7 +2,6 @@ package psql
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -15,27 +14,40 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-func NewTable[T any, Tset any](schema, tableName string) *Table[T, []T, Tset] {
+func NewTable[T orm.Table, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](schema, tableName string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](schema, tableName)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset any](schema, tableName string) *Table[T, Tslice, Tset] {
+func NewTablex[T orm.Table, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](schema, tableName string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
 	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
 	view, mappings := newView[T, Tslice](schema, tableName)
-	return &Table[T, Tslice, Tset]{
+	t := &Table[T, Tslice, Tset]{
 		View:       view,
 		pkCols:     internal.FilterNonZero(mappings.PKs),
 		setMapping: setMapping,
 	}
+
+	if len(t.pkCols) == 1 {
+		t.pkExpr = Quote(t.pkCols[0])
+	} else {
+		expr := make([]bob.Expression, len(t.pkCols))
+		for i, col := range t.pkCols {
+			expr[i] = Quote(col)
+		}
+		t.pkExpr = Group(expr...)
+	}
+
+	return t
 }
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T any, Tslice ~[]T, Tset any] struct {
+type Table[T orm.Table, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]] struct {
 	*View[T, Tslice]
 	pkCols     []string
+	pkExpr     dialect.Expression
 	setMapping internal.Mapping
 
 	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
@@ -57,44 +69,15 @@ type Table[T any, Tslice ~[]T, Tset any] struct {
 
 // Insert inserts a row into the table with only the set columns in Tset
 func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, row Tset) (T, error) {
-	var err error
-	var zero T
-
-	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, []Tset{row})
+	slice, err := t.InsertMany(ctx, exec, row)
 	if err != nil {
-		return zero, err
+		return *new(T), err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, row)
-	if err != nil {
-		return zero, fmt.Errorf("get insert values: %w", err)
-	}
-
-	q := Insert(
-		im.Into(t.NameAs(ctx), columns...),
-		im.Rows(values...),
-		im.Returning(t.Columns()),
-	)
-
-	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
-	if err != nil {
-		return zero, err
-	}
-
-	val, err := bob.One(ctx, exec, q, t.scanner)
-	if err != nil {
-		return val, err
-	}
-
-	_, err = t.AfterInsertHooks.Do(ctx, exec, Tslice{val})
-	if err != nil {
-		return val, err
-	}
-
-	return val, nil
+	return slice[0], nil
 }
 
-// Insert inserts a row into the table with only the set columns in Tset
+// InsertMany inserts rows into the table with only the set columns in Tset
 func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Executor, rows ...Tset) (Tslice, error) {
 	if len(rows) == 0 {
 		return nil, nil
@@ -107,25 +90,14 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		return nil, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, rows...)
-	if err != nil {
-		return nil, fmt.Errorf("get insert values: %w", err)
-	}
-
-	// If there are no columns, force at least one column with "DEFAULT" for each row
-	if len(columns) == 0 {
-		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
-		values = make([][]bob.Expression, len(rows))
-		for i := range rows {
-			values[i] = []bob.Expression{Raw("DEFAULT")}
-		}
-	}
-
 	q := Insert(
-		im.Into(t.NameAs(ctx), columns...),
-		im.Rows(values...),
+		im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...),
 		im.Returning(t.Columns()),
 	)
+
+	for _, row := range rows {
+		row.Insert().Apply(q.Expression)
+	}
 
 	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
@@ -148,99 +120,22 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 // Updates the given model
 // if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
-func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, row T, cols ...string) (int64, error) {
-	_, err := t.BeforeUpdateHooks.Do(ctx, exec, Tslice{row})
-	if err != nil {
-		return 0, err
-	}
-
-	q := Update(um.Table(t.NameAs(ctx)))
-
-	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, row)
-	if err != nil {
-		return 0, fmt.Errorf("get update pk values: %w", err)
-	}
-
-	if len(cols) == 0 {
-		cols = t.mapping.NonPKs
-	}
-	columns, values, err := internal.GetColumnValues(t.mapping.NonGenerated, cols, row)
-	if err != nil {
-		return 0, fmt.Errorf("get update values: %w", err)
-	}
-
-	for i, pk := range pks {
-		q.Apply(um.Where(Quote(pk).EQ(pkVals[0][i])))
-	}
-
-	for i, col := range columns {
-		q.Apply(um.Set(col).To(values[0][i]))
-	}
-
-	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
-	if err != nil {
-		return 0, err
-	}
-
-	result, err := q.Exec(ctx, exec)
-	if err != nil {
-		return 0, err
-	}
-
-	_, err = t.AfterUpdateHooks.Do(ctx, exec, Tslice{row})
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
-}
-
-// Updates the given models
-// if columns is nil, every column is updated
-// NOTE: values from the DB are not refreshed into the models
-func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) (int64, error) {
 	if len(rows) == 0 {
 		return 0, nil
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, vals)
-	if err != nil {
-		return 0, fmt.Errorf("get update values: %w", err)
-	}
-	if len(columns) == 0 {
-		return 0, orm.ErrNothingToUpdate
-	}
-
-	_, err = t.BeforeUpdateHooks.Do(ctx, exec, rows)
+	_, err := t.BeforeUpdateHooks.Do(ctx, exec, rows)
 	if err != nil {
 		return 0, err
 	}
 
-	q := Update(um.Table(t.NameAs(ctx)))
-
-	for i, col := range columns {
-		q.Apply(um.Set(col).To(values[0][i]))
+	pkPairs := make([]bob.Expression, len(rows))
+	for i, row := range rows {
+		pkPairs[i] = row.PrimaryKeyVals()
 	}
 
-	// Find a set the PKs
-	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, rows...)
-	if err != nil {
-		return 0, fmt.Errorf("get update pk values: %w", err)
-	}
-
-	pkPairs := make([]bob.Expression, len(pkVals))
-	for i, pair := range pkVals {
-		pkPairs[i] = Group(pair...)
-	}
-
-	pkGroup := make([]bob.Expression, len(pks))
-	for i, pk := range pks {
-		pkGroup[i] = Quote(pk)
-	}
-
-	q.Apply(um.Where(
-		Group(pkGroup...).In(pkPairs...),
-	))
+	q := Update(um.Table(t.NameAs(ctx)), vals, um.Where(t.pkExpr.In(pkPairs...)))
 
 	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
@@ -250,6 +145,10 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 	result, err := q.Exec(ctx, exec)
 	if err != nil {
 		return 0, err
+	}
+
+	for _, row := range rows {
+		vals.Overwrite(row)
 	}
 
 	_, err = t.AfterUpdateHooks.Do(ctx, exec, rows)
@@ -265,64 +164,12 @@ func (t *Table[T, Tslice, Tset]) UpdateMany(ctx context.Context, exec bob.Execut
 // If updateCols is nil, it updates all the columns set in Tset
 // if no column is set in Tset (i.e. INSERT DEFAULT VALUES), then it upserts all NonPK columns
 func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, updateOnConflict bool, conflictCols, updateCols []string, row Tset) (T, error) {
-	var err error
-	var zero T
-
-	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, []Tset{row})
+	slice, err := t.UpsertMany(ctx, exec, updateOnConflict, conflictCols, updateCols, row)
 	if err != nil {
-		return zero, err
+		return *new(T), err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, row)
-	if err != nil {
-		return zero, fmt.Errorf("get upsert values: %w", err)
-	}
-
-	if len(conflictCols) == 0 {
-		conflictCols = t.pkCols
-	}
-
-	var conflictQM bob.Mod[*dialect.InsertQuery]
-	if !updateOnConflict {
-		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).DoNothing()
-	} else {
-		excludeSetCols := updateCols
-		// If no update columns, use the columns set
-		if len(excludeSetCols) == 0 {
-			excludeSetCols = columns
-		}
-		// if still empty, use non-PKs
-		if len(excludeSetCols) == 0 {
-			excludeSetCols = t.setMapping.NonPKs
-		}
-		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).
-			DoUpdate().
-			SetExcluded(excludeSetCols...)
-	}
-
-	q := Insert(
-		im.Into(t.NameAs(ctx), columns...),
-		im.Rows(values...),
-		im.Returning(t.Columns()),
-		conflictQM,
-	)
-
-	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
-	if err != nil {
-		return zero, err
-	}
-
-	val, err := bob.One(ctx, exec, q, t.scanner)
-	if err != nil {
-		return val, err
-	}
-
-	_, err = t.AfterUpsertHooks.Do(ctx, exec, Tslice{val})
-	if err != nil {
-		return val, err
-	}
-
-	return val, nil
+	return slice[0], nil
 }
 
 // Uses the setional columns to know what to insert
@@ -341,19 +188,8 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		return nil, err
 	}
 
-	columns, values, err := internal.GetColumnValues(t.setMapping.NonGenerated, nil, rows...)
-	if err != nil {
-		return nil, fmt.Errorf("get upsert values: %w", err)
-	}
-
-	// If there are no columns, force at least one column with "DEFAULT" for each row
-	if len(columns) == 0 {
-		columns = []string{internal.FirstNonEmpty(t.setMapping.All)}
-		values = make([][]bob.Expression, len(rows))
-		for i := range rows {
-			values[i] = []bob.Expression{Raw("DEFAULT")}
-		}
-	}
+	// Just get the set columns in the first row
+	columns := rows[0].SetColumns()
 
 	if len(conflictCols) == 0 {
 		conflictCols = t.pkCols
@@ -378,13 +214,13 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		im.Into(t.NameAs(ctx), columns...),
+		im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...),
 		im.Returning(t.Columns()),
 		conflictQM,
 	)
 
-	for _, val := range values {
-		q.Apply(im.Values(val...))
+	for _, row := range rows {
+		row.Insert().Apply(q.Expression)
 	}
 
 	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
@@ -406,45 +242,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 }
 
 // Deletes the given model
-// if columns is nil, every column is deleted
-func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, row T) (int64, error) {
-	_, err := t.BeforeDeleteHooks.Do(ctx, exec, Tslice{row})
-	if err != nil {
-		return 0, err
-	}
-
-	q := Delete(dm.From(t.NameAs(ctx)))
-
-	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, row)
-	if err != nil {
-		return 0, fmt.Errorf("get update pk values: %w", err)
-	}
-
-	for i, pk := range pks {
-		q.Apply(dm.Where(Quote(pk).EQ(pkVals[0][i])))
-	}
-
-	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
-	if err != nil {
-		return 0, err
-	}
-
-	result, err := q.Exec(ctx, exec)
-	if err != nil {
-		return 0, err
-	}
-
-	_, err = t.AfterDeleteHooks.Do(ctx, exec, Tslice{row})
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
-}
-
-// Deletes the given models
-// if columns is nil, every column is deleted
-func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
 	if len(rows) == 0 {
 		return 0, nil
 	}
@@ -454,27 +252,12 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 		return 0, err
 	}
 
-	q := Delete(dm.From(t.NameAs(ctx)))
-
-	// Find a set the PKs
-	pks, pkVals, err := internal.GetColumnValues(t.mapping.PKs, t.mapping.PKs, rows...)
-	if err != nil {
-		return 0, fmt.Errorf("get update pk values: %w", err)
+	pkPairs := make([]bob.Expression, len(rows))
+	for i, row := range rows {
+		pkPairs[i] = row.PrimaryKeyVals()
 	}
 
-	pkPairs := make([]bob.Expression, len(pkVals))
-	for i, pair := range pkVals {
-		pkPairs[i] = Group(pair...)
-	}
-
-	pkGroup := make([]bob.Expression, len(pks))
-	for i, pk := range pks {
-		pkGroup[i] = Quote(pk)
-	}
-
-	q.Apply(dm.Where(
-		Group(pkGroup...).In(pkPairs...),
-	))
+	q := Delete(dm.From(t.NameAs(ctx)), dm.Where(t.pkExpr.In(pkPairs...)))
 
 	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
@@ -494,9 +277,24 @@ func (t *Table[T, Tslice, Tset]) DeleteMany(ctx context.Context, exec bob.Execut
 	return result.RowsAffected()
 }
 
+// Starts an insert query for this table
+func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TableQuery[*dialect.InsertQuery, T, Tslice] {
+	q := &TableQuery[*dialect.InsertQuery, T, Tslice]{
+		BaseQuery: Insert(im.Into(t.NameAs(ctx))),
+		ctx:       ctx,
+		exec:      exec,
+		view:      t.View,
+		hooks:     &t.InsertQueryHooks,
+	}
+
+	q.Apply(queryMods...)
+
+	return q
+}
+
 // Starts an update query for this table
-func (t *Table[T, Tslice, Tset]) UpdateAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.UpdateQuery]) *TQuery[*dialect.UpdateQuery, T, Tslice] {
-	q := &TQuery[*dialect.UpdateQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) UpdateQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.UpdateQuery]) *TableQuery[*dialect.UpdateQuery, T, Tslice] {
+	q := &TableQuery[*dialect.UpdateQuery, T, Tslice]{
 		BaseQuery: Update(um.Table(t.NameAs(ctx))),
 		ctx:       ctx,
 		exec:      exec,
@@ -510,8 +308,8 @@ func (t *Table[T, Tslice, Tset]) UpdateAll(ctx context.Context, exec bob.Executo
 }
 
 // Starts a delete query for this table
-func (t *Table[T, Tslice, Tset]) DeleteAll(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.DeleteQuery]) *TQuery[*dialect.DeleteQuery, T, Tslice] {
-	q := &TQuery[*dialect.DeleteQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) DeleteQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.DeleteQuery]) *TableQuery[*dialect.DeleteQuery, T, Tslice] {
+	q := &TableQuery[*dialect.DeleteQuery, T, Tslice]{
 		BaseQuery: Delete(dm.From(t.NameAs(ctx))),
 		ctx:       ctx,
 		exec:      exec,
@@ -530,7 +328,7 @@ type returnable interface {
 	AppendReturning(...any)
 }
 
-type TQuery[Q returnable, T any, Ts ~[]T] struct {
+type TableQuery[Q returnable, T any, Ts ~[]T] struct {
 	bob.BaseQuery[Q]
 	ctx   context.Context
 	exec  bob.Executor
@@ -538,19 +336,19 @@ type TQuery[Q returnable, T any, Ts ~[]T] struct {
 	hooks *orm.Hooks[Q, orm.SkipQueryHooksKey]
 }
 
-func (t *TQuery[Q, T, Ts]) hook() error {
+func (t *TableQuery[Q, T, Ts]) hook() error {
 	var err error
 	t.ctx, err = t.hooks.Do(t.ctx, t.exec, t.Expression)
 	return err
 }
 
-func (t *TQuery[Q, T, Ts]) addReturning() {
+func (t *TableQuery[Q, T, Ts]) addReturning() {
 	if !t.BaseQuery.Expression.HasReturning() {
 		t.BaseQuery.Expression.AppendReturning(t.view.Columns())
 	}
 }
 
-func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
+func (t *TableQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
 			_, err := t.view.AfterSelectHooks.Do(ctx, exec, retrieved)
@@ -564,7 +362,7 @@ func (t *TQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) b
 }
 
 // Execute the query
-func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
+func (t *TableQuery[Q, T, Tslice]) Exec() (int64, error) {
 	if err := t.hook(); err != nil {
 		return 0, err
 	}
@@ -578,7 +376,7 @@ func (t *TQuery[Q, T, Tslice]) Exec() (int64, error) {
 }
 
 // First matching row
-func (t *TQuery[Q, T, Tslice]) One() (T, error) {
+func (t *TableQuery[Q, T, Tslice]) One() (T, error) {
 	t.addReturning()
 	if err := t.hook(); err != nil {
 		return *new(T), err
@@ -587,7 +385,7 @@ func (t *TQuery[Q, T, Tslice]) One() (T, error) {
 }
 
 // All matching rows
-func (t *TQuery[Q, T, Tslice]) All() (Tslice, error) {
+func (t *TableQuery[Q, T, Tslice]) All() (Tslice, error) {
 	t.addReturning()
 	if err := t.hook(); err != nil {
 		return nil, err
@@ -596,7 +394,7 @@ func (t *TQuery[Q, T, Tslice]) All() (Tslice, error) {
 }
 
 // Cursor to scan through the results
-func (t *TQuery[Q, T, Tslice]) Cursor() (scan.ICursor[T], error) {
+func (t *TableQuery[Q, T, Tslice]) Cursor() (scan.ICursor[T], error) {
 	t.addReturning()
 	if err := t.hook(); err != nil {
 		return nil, err

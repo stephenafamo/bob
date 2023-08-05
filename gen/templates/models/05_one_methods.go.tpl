@@ -1,11 +1,25 @@
 {{if .Table.PKey -}}
 {{$.Importer.Import "context"}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
+// PrimaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
+func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
+	{{if gt (len $table.PKey.Columns) 1 -}}
+		return {{$.Dialect}}.ArgGroup(
+			{{range $column := $table.PKey.Columns -}}
+				o.{{$tAlias.Column $column}},
+			{{end}}
+		)
+	{{- else -}}
+		return {{$.Dialect}}.Arg(o.{{$tAlias.Column (index $table.PKey.Columns 0)}})
+	{{- end}}
+}
+
 // Update uses an executor to update the {{$tAlias.UpSingular}}
-func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, cols ...string) (int64, error) {
-	rowsAff, err := {{$tAlias.UpPlural}}Table.Update(ctx, exec, o, cols...)
+func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) (int64, error) {
+	rowsAff, err := {{$tAlias.UpPlural}}.Update(ctx, exec, s, o)
 	if err != nil {
 		return rowsAff, err
 	}
@@ -15,12 +29,12 @@ func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, 
 
 // Delete deletes a single {{$tAlias.UpSingular}} record with an executor
 func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) (int64, error) {
-	return {{$tAlias.UpPlural}}Table.Delete(ctx, exec, o)
+	return {{$tAlias.UpPlural}}.Delete(ctx, exec, o)
 }
 
 // Reload refreshes the {{$tAlias.UpSingular}} using the executor
 func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) error {
-	o2, err := {{$tAlias.UpPlural}}Table.Query(
+	o2, err := {{$tAlias.UpPlural}}.Query(
 		ctx, exec,
 		{{range $column := $table.PKey.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}

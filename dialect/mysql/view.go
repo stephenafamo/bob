@@ -32,7 +32,6 @@ func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], internal.M
 	return &View[T, Tslice]{
 		name:    tableName,
 		alias:   alias,
-		mapping: mappings,
 		allCols: allCols,
 		scanner: scan.StructMapper[T](),
 	}, mappings
@@ -42,7 +41,6 @@ type View[T any, Tslice ~[]T] struct {
 	name  string
 	alias string
 
-	mapping internal.Mapping
 	allCols orm.Columns
 	scanner scan.Mapper[T]
 

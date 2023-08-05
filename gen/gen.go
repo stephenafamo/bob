@@ -106,7 +106,6 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,
 		ModelsPackage:     modPkg,
-		CanBulkInsert:     driver.Capabilities().BulkInsert,
 	}
 
 	for _, v := range s.Config.TagIgnore {

@@ -68,9 +68,7 @@ func (d *driver) Dialect() string {
 }
 
 func (d *driver) Capabilities() drivers.Capabilities {
-	return drivers.Capabilities{
-		BulkInsert: false,
-	}
+	return drivers.Capabilities{}
 }
 
 // Assemble all the information we need to provide back to the driver
