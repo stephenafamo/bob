@@ -4,12 +4,7 @@
 {{$tAlias := .Aliases.Table $table.Key -}}
 
 func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) (int64, error) {
-	rowsAff, err := {{$tAlias.UpPlural}}.Update(ctx, exec, &vals, o...)
-	if err != nil {
-		return rowsAff, err
-	}
-
-	return rowsAff, nil
+	return {{$tAlias.UpPlural}}.Update(ctx, exec, &vals, o...)
 }
 
 func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
