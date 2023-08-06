@@ -19,7 +19,7 @@ func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}(number int, {{relDepende
 
 func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{range .NeededColumns -}}
+		{{range .NeededBridgeTables -}}
 			{{$alias := $.Aliases.Table . -}}
 			{{$alias.DownSingular}} := o.f.New{{$alias.UpSingular}}()
 		{{- end}}
@@ -41,7 +41,7 @@ func (m {{$tAlias.DownSingular}}Mods) Add{{$relAlias}}(number int, {{relDependen
 
 func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(number int, mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{range .NeededColumns -}}
+		{{range .NeededBridgeTables -}}
 			{{$alias := $.Aliases.Table . -}}
 			{{$alias.DownSingular}} := o.f.New{{$alias.UpSingular}}()
 		{{- end}}

@@ -87,7 +87,7 @@ func (r Relationship) InsertEarly() bool {
 	return true
 }
 
-func (r Relationship) NeededColumns() []string {
+func (r Relationship) NeededBridgeTables() []string {
 	ma := []string{}
 
 	local := r.Local()

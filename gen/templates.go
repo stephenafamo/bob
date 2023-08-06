@@ -361,10 +361,6 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 }
 
 func relIsRequired(t drivers.Table, r orm.Relationship) bool {
-	// // multi sided relationships are always non-required
-	// if len(r.Sides) > 1 {
-	// return false
-	// }
 	firstSide := r.Sides[0]
 	if firstSide.ToKey {
 		return false
@@ -389,7 +385,7 @@ func relArgs(aliases Aliases, r orm.Relationship, preSuf ...string) string {
 	}
 
 	ma := []string{}
-	for _, need := range r.NeededColumns() {
+	for _, need := range r.NeededBridgeTables() {
 		ma = append(ma, fmt.Sprintf(
 			"%s%s%s,", aliases.Tables[need].DownSingular, prefix, suffix,
 		))
@@ -407,7 +403,7 @@ func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) stri
 		suffix = preSuf[1]
 	}
 	ma := []string{}
-	for _, need := range r.NeededColumns() {
+	for _, need := range r.NeededBridgeTables() {
 		alias := aliases.Tables[need]
 		ma = append(ma, fmt.Sprintf(
 			"%s *%s%s%s,", alias.DownSingular, alias.UpSingular, prefix, suffix,
@@ -420,7 +416,7 @@ func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) stri
 func relDependenciesTyp(aliases Aliases, r orm.Relationship) string {
 	ma := []string{}
 
-	for _, need := range r.NeededColumns() {
+	for _, need := range r.NeededBridgeTables() {
 		alias := aliases.Tables[need]
 		ma = append(ma, fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular))
 	}
@@ -431,7 +427,7 @@ func relDependenciesTyp(aliases Aliases, r orm.Relationship) string {
 func relDependenciesTypSet(aliases Aliases, r orm.Relationship) string {
 	ma := []string{}
 
-	for _, need := range r.NeededColumns() {
+	for _, need := range r.NeededBridgeTables() {
 		alias := aliases.Tables[need]
 		ma = append(ma, fmt.Sprintf("%s: %s,", alias.DownSingular, alias.DownSingular))
 	}
@@ -443,7 +439,7 @@ func createDeps(aliases Aliases, r orm.Relationship, many bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()
-	needed := r.NeededColumns()
+	needed := r.NeededBridgeTables()
 
 	created := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
@@ -475,7 +471,7 @@ func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()
-	needed := r.NeededColumns()
+	needed := r.NeededBridgeTables()
 
 	insert := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
@@ -615,7 +611,7 @@ func setDeps(o setDepsOptions) string {
 	local := o.r.Local()
 	foreign := o.r.Foreign()
 	ksides := o.r.ValuedSides()
-	needed := o.r.NeededColumns()
+	needed := o.r.NeededBridgeTables()
 
 	ret := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
