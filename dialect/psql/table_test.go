@@ -117,7 +117,7 @@ func TestUpdate(t *testing.T) {
 		t.Fatalf("unexpected inserted user: %v", err)
 	}
 
-	_, err = userTable.Update(ctx, db, &UserSetter{
+	err = userTable.Update(ctx, db, &UserSetter{
 		Name:  omit.From("Stephen"),
 		Email: omit.From("stephen@exapmle.com"),
 	}, user)

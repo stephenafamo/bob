@@ -3,11 +3,11 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) (int64, error) {
+func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) error {
 	return {{$tAlias.UpPlural}}.Update(ctx, exec, &vals, o...)
 }
 
-func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) (int64, error) {
+func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) error {
 	return {{$tAlias.UpPlural}}.Delete(ctx, exec, o...)
 }
 

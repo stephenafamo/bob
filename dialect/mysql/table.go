@@ -15,11 +15,15 @@ import (
 	"github.com/stephenafamo/bob/orm"
 )
 
-func NewTable[T orm.Table, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
+type setter[T any] interface {
+	orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+}
+
+func NewTable[T orm.Table, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](tableName, uniques...)
 }
 
-func NewTablex[T orm.Table, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
+func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
 	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
@@ -58,7 +62,7 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T orm.Table, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]] struct {
+type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
 	pkExpr     dialect.Expression
 	setMapping internal.Mapping
@@ -196,14 +200,14 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 // Updates the given model
 // if columns is nil, every non-primary-key column is updated
 // NOTE: values from the DB are not refreshed into the model
-func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, vals Tset, rows ...T) error {
 	if len(rows) == 0 {
-		return 0, nil
+		return nil
 	}
 
 	_, err := t.BeforeUpdateHooks.Do(ctx, exec, rows)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	pkPairs := make([]bob.Expression, len(rows))
@@ -215,24 +219,22 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 
 	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	result, err := q.Exec(ctx, exec)
-	if err != nil {
-		return 0, err
+	if _, err := q.Exec(ctx, exec); err != nil {
+		return err
 	}
 
 	for _, row := range rows {
 		vals.Overwrite(row)
 	}
 
-	_, err = t.AfterUpdateHooks.Do(ctx, exec, rows)
-	if err != nil {
-		return 0, err
+	if _, err = t.AfterUpdateHooks.Do(ctx, exec, rows); err != nil {
+		return err
 	}
 
-	return result.RowsAffected()
+	return nil
 }
 
 // Uses the setional columns to know what to insert
@@ -324,14 +326,14 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 
 // Deletes the given model
 // if columns is nil, every column is deleted
-func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, rows ...T) (int64, error) {
+func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, rows ...T) error {
 	if len(rows) == 0 {
-		return 0, nil
+		return nil
 	}
 
 	_, err := t.BeforeDeleteHooks.Do(ctx, exec, rows)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	pkPairs := make([]bob.Expression, len(rows))
@@ -343,20 +345,18 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 
 	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	result, err := q.Exec(ctx, exec)
-	if err != nil {
-		return 0, err
+	if _, err := q.Exec(ctx, exec); err != nil {
+		return err
 	}
 
-	_, err = t.AfterDeleteHooks.Do(ctx, exec, rows)
-	if err != nil {
-		return 0, err
+	if _, err = t.AfterDeleteHooks.Do(ctx, exec, rows); err != nil {
+		return err
 	}
 
-	return result.RowsAffected()
+	return nil
 }
 
 func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {

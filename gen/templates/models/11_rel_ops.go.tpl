@@ -30,7 +30,7 @@
 
     {{$relatedVals := relatedUpdateValues $.Importer $.Tables $.Aliases $rel true}}
     {{with $relatedVals}}
-    if _, err := {{$ftable.UpPlural}}.Update(
+    if err := {{$ftable.UpPlural}}.Update(
       ctx, exec, &{{$ftable.UpSingular}}Setter{
         {{.}}
       }, related...,

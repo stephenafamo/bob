@@ -18,17 +18,12 @@ func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
 }
 
 // Update uses an executor to update the {{$tAlias.UpSingular}}
-func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) (int64, error) {
-	rowsAff, err := {{$tAlias.UpPlural}}.Update(ctx, exec, s, o)
-	if err != nil {
-		return rowsAff, err
-	}
-
-	return rowsAff, nil
+func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
+	return {{$tAlias.UpPlural}}.Update(ctx, exec, s, o)
 }
 
 // Delete deletes a single {{$tAlias.UpSingular}} record with an executor
-func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) (int64, error) {
+func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) error {
 	return {{$tAlias.UpPlural}}.Delete(ctx, exec, o)
 }
 
