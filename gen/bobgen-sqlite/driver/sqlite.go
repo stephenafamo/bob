@@ -212,6 +212,8 @@ func (d driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 		return table, err
 	}
 
+	table.IsJoinTable = drivers.IsJoinTable(table)
+
 	return table, nil
 }
 
@@ -300,7 +302,7 @@ func (s driver) tableInfo(ctx context.Context, schema, tableName string) ([]info
 func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.PrimaryKey {
 	var cols []string
 	for _, c := range tinfo {
-		if c.Pk == 1 {
+		if c.Pk > 0 {
 			cols = append(cols, c.Name)
 		}
 	}
