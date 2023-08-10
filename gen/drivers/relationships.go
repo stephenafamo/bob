@@ -25,8 +25,8 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				continue // no matching target table
 			}
 
-			localUnique := hasExactUnique(t1, fk.Columns...)
-			foreignUnique := hasExactUnique(t2, fk.ForeignColumns...)
+			localUnique := HasExactUnique(t1, fk.Columns...)
+			foreignUnique := HasExactUnique(t2, fk.ForeignColumns...)
 			fkUniqueMap[fk.Name] = [2]bool{localUnique, foreignUnique}
 
 			localNullable := allNullable(t1, fk.Columns...)
@@ -186,7 +186,7 @@ func allNullable(t Table, cols ...string) bool {
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
-func hasExactUnique(t Table, cols ...string) bool {
+func HasExactUnique(t Table, cols ...string) bool {
 	if len(cols) == 0 {
 		return false
 	}

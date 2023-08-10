@@ -15,7 +15,6 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/stephenafamo/bob/gen"
-	"github.com/stephenafamo/bob/orm"
 )
 
 const DefaultConfigPath = "./bobgen.yaml"
@@ -130,7 +129,6 @@ func GetConfigFromProvider[DriverConfig any](provider koanf.Provider, driverConf
 	}
 
 	setColumns(&config)
-	flipRelationships(&config)
 	return config, driverConfig, nil
 }
 
@@ -147,55 +145,4 @@ func setColumns(c *gen.Config) {
 			}
 		}
 	}
-}
-
-func flipRelationships(config *gen.Config) {
-	for _, rels := range config.Relationships {
-	RelsLoop:
-		for _, rel := range rels {
-			if rel.NoReverse || len(rel.Sides) < 1 {
-				continue
-			}
-			ftable := rel.Sides[len(rel.Sides)-1].To
-
-			// Check if the foreign table already has the
-			// reverse configured
-			existingRels := config.Relationships[ftable]
-			for _, existing := range existingRels {
-				if existing.Name == rel.Name {
-					continue RelsLoop
-				}
-			}
-			config.Relationships[ftable] = append(existingRels, flipRelationship(rel))
-		}
-	}
-}
-
-func flipRelationship(r orm.Relationship) orm.Relationship {
-	sideLen := len(r.Sides)
-	flipped := orm.Relationship{
-		Name:        r.Name,
-		ByJoinTable: r.ByJoinTable,
-		Ignored:     r.Ignored,
-		Sides:       make([]orm.RelSide, sideLen),
-	}
-
-	for i, side := range r.Sides {
-		flippedSide := orm.RelSide{
-			To:   side.From,
-			From: side.To,
-
-			ToColumns:   side.FromColumns,
-			FromColumns: side.ToColumns,
-			ToWhere:     side.FromWhere,
-			FromWhere:   side.ToWhere,
-
-			ToKey:       !side.ToKey,
-			ToUnique:    !side.ToUnique, // Assumption. Overwrite if necessary
-			KeyNullable: side.KeyNullable,
-		}
-		flipped.Sides[sideLen-(1+i)] = flippedSide
-	}
-
-	return flipped
 }

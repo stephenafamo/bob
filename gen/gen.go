@@ -85,8 +85,8 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	}
 
 	initInflections(s.Config.Inflections)
+	processRelationshipConfig(&s.Config, dbInfo.Tables)
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
-	processRelationshipConfig(s.Config.Relationships, dbInfo.Tables)
 	initAliases(&s.Config.Aliases, dbInfo.Tables)
 	err = s.initTags()
 	if err != nil {
@@ -425,19 +425,81 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(r relationships, tables []drivers.Table) {
+func processRelationshipConfig(config *Config, tables []drivers.Table) {
 	if len(tables) == 0 {
 		return
 	}
+	flipRelationships(config, tables)
 
 	for i, t := range tables {
-		rels, ok := r[t.Key]
+		rels, ok := config.Relationships[t.Key]
 		if !ok {
 			continue
 		}
 
 		tables[i].Relationships = mergeRelationships(tables[i].Relationships, rels)
 	}
+}
+
+func flipRelationships(config *Config, tables []drivers.Table) {
+	for _, rels := range config.Relationships {
+	RelsLoop:
+		for _, rel := range rels {
+			if rel.NoReverse || len(rel.Sides) < 1 {
+				continue
+			}
+			ftable := rel.Sides[len(rel.Sides)-1].To
+
+			// Check if the foreign table already has the
+			// reverse configured
+			existingRels := config.Relationships[ftable]
+			for _, existing := range existingRels {
+				if existing.Name == rel.Name {
+					continue RelsLoop
+				}
+			}
+			config.Relationships[ftable] = append(existingRels, flipRelationship(rel, tables))
+		}
+	}
+}
+
+func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationship {
+	sideLen := len(r.Sides)
+	flipped := orm.Relationship{
+		Name:        r.Name,
+		ByJoinTable: r.ByJoinTable,
+		Ignored:     r.Ignored,
+		Sides:       make([]orm.RelSide, sideLen),
+	}
+
+	for i, side := range r.Sides {
+		var from drivers.Table
+		for _, t := range tables {
+			if t.Key == side.From {
+				from = t
+				break
+			}
+		}
+		if from.Key == "" {
+			continue
+		}
+		flippedSide := orm.RelSide{
+			To:   side.From,
+			From: side.To,
+
+			ToColumns:   side.FromColumns,
+			FromColumns: side.ToColumns,
+			ToWhere:     side.FromWhere,
+			FromWhere:   side.ToWhere,
+
+			ToKey:       !side.ToKey,
+			ToUnique:    drivers.HasExactUnique(from, side.FromColumns...),
+			KeyNullable: side.KeyNullable,
+		}
+		flipped.Sides[sideLen-(1+i)] = flippedSide
+	}
+
+	return flipped
 }
 
 func mergeRelationships(srcs, extras []orm.Relationship) []orm.Relationship {
