@@ -271,11 +271,7 @@ var templateFunctions = template.FuncMap{
 	"relDependenciesTyp":    relDependenciesTyp,
 	"relDependenciesTypSet": relDependenciesTypSet,
 	"relIsRequired":         relIsRequired,
-	"createDeps":            createDeps,
-	"insertDeps":            insertDeps,
-	"setModelDeps":          setModelDeps,
 	"setFactoryDeps":        setFactoryDeps,
-	"relatedUpdateValues":   relatedUpdateValues,
 	"relIsView":             relIsView,
 	"relQueryMethodName":    relQueryMethodName,
 }
@@ -455,168 +451,6 @@ func relDependenciesTypSet(aliases Aliases, r orm.Relationship) string {
 	return strings.Join(ma, "\n")
 }
 
-func createDeps(aliases Aliases, r orm.Relationship, many bool) string {
-	local := r.Local()
-	foreign := r.Foreign()
-	ksides := r.ValuedSides()
-	needed := r.NeededBridgeTables()
-
-	created := make([]string, 0, len(ksides))
-	for _, kside := range ksides {
-		shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
-		if !shouldCreate {
-			continue
-		}
-
-		objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, many)
-		oalias := aliases.Tables[kside.TableName]
-
-		if many {
-			created = append(created, fmt.Sprintf(`%s := make([]*%sSetter, len(related))`,
-				objVarName,
-				oalias.UpSingular,
-			))
-		} else {
-			created = append(created, fmt.Sprintf(`%s := &%sSetter{}`,
-				objVarName,
-				oalias.UpSingular,
-			))
-		}
-	}
-
-	return strings.Join(created, "\n")
-}
-
-func insertDeps(aliases Aliases, r orm.Relationship, many bool) string {
-	local := r.Local()
-	foreign := r.Foreign()
-	ksides := r.ValuedSides()
-	needed := r.NeededBridgeTables()
-
-	insert := make([]string, 0, len(ksides))
-	for _, kside := range ksides {
-		shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
-		if !shouldCreate {
-			continue
-		}
-
-		objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, many)
-		oalias := aliases.Tables[kside.TableName]
-
-		if many {
-			insert = append(insert, fmt.Sprintf(`
-			  _, err = %s.InsertMany(ctx, exec, %s...)
-			  if err != nil {
-				  return fmt.Errorf("inserting related objects: %%w", err)
-			  }
-			`,
-				oalias.UpPlural,
-				objVarName,
-			))
-		} else {
-			insert = append(insert, fmt.Sprintf(`
-			  _, err = %s.InsertMany(ctx, exec, %s)
-			  if err != nil {
-				  return fmt.Errorf("inserting related object: %%w", err)
-			  }
-			`,
-				oalias.UpPlural,
-				objVarName,
-			))
-		}
-	}
-
-	return strings.Join(insert, "\n")
-}
-
-func setModelDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, inLoop, optional bool) string {
-	fromOpt := func(side orm.RelSetDetails) bool { return false }
-	if optional {
-		fromOpt = func(side orm.RelSetDetails) bool { return side.End }
-	}
-
-	local := r.Local()
-	foreign := r.Foreign()
-	ksides := r.ValuedSides()
-	needed := r.NeededBridgeTables()
-
-	ret := make([]string, 0, len(ksides))
-	for _, kside := range ksides {
-		mret := make([]string, 0, len(kside.Mapped))
-		objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, false)
-		oalias := aliases.Tables[kside.TableName]
-
-		objVarNamePlural := getVarName(aliases, kside.TableName, kside.Start, kside.End, true)
-		shouldCreate := shouldCreateObjs(kside.TableName, local, foreign, needed)
-
-		if shouldCreate {
-			continue
-		}
-
-		if shouldCreate && inLoop {
-			mret = append(mret, fmt.Sprintf("%s := &%sSetter{}",
-				objVarName, oalias.UpSingular,
-			))
-		}
-
-		for _, mapp := range kside.Mapped {
-			oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
-			fromOpt := shouldCreate || (fromOpt != nil && fromOpt(kside))
-
-			if mapp.Value != "" {
-				if kside.TableName == r.Local() {
-					i.Import("github.com/stephenafamo/bob/orm")
-					mret = append(mret, fmt.Sprintf(`if %s.%s != %s {
-								return &orm.RelationshipChainError{
-									Table1: %q, Column1: %q, Value: %q,
-								}
-							}`,
-						objVarName, oGetter, mapp.Value,
-						kside.TableName, mapp.Column, mapp.Value,
-					))
-					continue
-				}
-
-				oSetter := mapp.Value
-				if fromOpt {
-					oSetter = fmt.Sprintf("omit.From(%s)", oSetter)
-				}
-
-				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
-					objVarName,
-					oalias.Columns[mapp.Column],
-					oSetter,
-				))
-				continue
-			}
-
-			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
-
-			oSetter := columnSetter(i, aliases, tables,
-				kside.TableName, mapp.ExternalTable,
-				mapp.Column, mapp.ExternalColumn,
-				extObjVarName, fromOpt, false)
-
-			mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
-				objVarName,
-				oalias.Columns[mapp.Column],
-				oSetter,
-			))
-		}
-
-		if shouldCreate && inLoop {
-			mret = append(mret, fmt.Sprintf("%s[i] = %s",
-				objVarNamePlural,
-				objVarName,
-			))
-		}
-
-		ret = append(ret, strings.Join(mret, "\n"))
-	}
-
-	return strings.Join(ret, "\n")
-}
-
 func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, inLoop bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
@@ -686,43 +520,6 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 	return strings.Join(ret, "\n")
 }
 
-func relatedUpdateValues(i Importer, tables []drivers.Table, aliases Aliases, r orm.Relationship, skipForeign bool) string {
-	for _, kside := range r.ValuedSides() {
-		if !kside.End {
-			continue
-		}
-
-		oalias := aliases.Tables[kside.TableName]
-
-		mret := make([]string, 0, len(kside.Mapped))
-		for _, mapp := range kside.Mapped {
-			if mapp.Value != "" {
-				mret = append(mret, fmt.Sprintf("%s: omit.From(%s),",
-					oalias.Columns[mapp.Column],
-					mapp.Value,
-				))
-				continue
-			}
-
-			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
-
-			oSetter := columnSetter(i, aliases, tables,
-				kside.TableName, mapp.ExternalTable,
-				mapp.Column, mapp.ExternalColumn,
-				extObjVarName, true, false)
-
-			mret = append(mret, fmt.Sprintf("%s: %s,",
-				oalias.Columns[mapp.Column],
-				oSetter,
-			))
-		}
-
-		return strings.Join(mret, "\n")
-	}
-
-	return ""
-}
-
 func getVarName(aliases Aliases, tableName string, local, foreign, many bool) string {
 	switch {
 	case foreign:
@@ -741,24 +538,6 @@ func getVarName(aliases Aliases, tableName string, local, foreign, many bool) st
 		}
 		return alias.DownSingular
 	}
-}
-
-func shouldCreateObjs(tableName, local, foreign string, needed []string) bool {
-	if tableName == local {
-		return false
-	}
-
-	if tableName == foreign {
-		return false
-	}
-
-	for _, n := range needed {
-		if tableName == n {
-			return false
-		}
-	}
-
-	return true
 }
 
 func uniqueColPairs(t drivers.Table) string {
