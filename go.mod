@@ -23,7 +23,7 @@ require (
 	github.com/takuoki/gocase v1.0.0
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.4
-	golang.org/x/mod v0.9.0
+	golang.org/x/mod v0.12.0
 	golang.org/x/tools v0.7.0
 	modernc.org/sqlite v1.20.3
 )
