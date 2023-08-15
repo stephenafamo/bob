@@ -67,9 +67,7 @@ func (d *driver) PackageName() string {
 }
 
 func (d *driver) Capabilities() drivers.Capabilities {
-	return drivers.Capabilities{
-		BulkInsert: d.dialect != "mysql",
-	}
+	return drivers.Capabilities{}
 }
 
 // Assemble all the information we need to provide back to the driver

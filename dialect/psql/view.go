@@ -44,7 +44,6 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], in
 		schema:  schema,
 		name:    tableName,
 		alias:   alias,
-		mapping: mappings,
 		allCols: allCols,
 		scanner: scan.StructMapper[T](),
 	}, mappings
@@ -55,7 +54,6 @@ type View[T any, Tslice ~[]T] struct {
 	name   string
 	alias  string
 
-	mapping internal.Mapping
 	allCols orm.Columns
 	scanner scan.Mapper[T]
 
@@ -83,7 +81,7 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 	return v.allCols
 }
 
-// Adds table name et al
+// Starts a select query
 func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
 		BaseQuery: Select(sm.From(v.NameAs(ctx))),

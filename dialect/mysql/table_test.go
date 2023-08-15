@@ -6,6 +6,9 @@ import (
 
 	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/orm"
 )
 
 type WithAutoIncr struct {
@@ -14,10 +17,16 @@ type WithAutoIncr struct {
 	AuthorID int    `db:"author_id,autoincr"`
 }
 
+func (w *WithAutoIncr) PrimaryKeyVals() bob.Expression {
+	return Arg(w.ID)
+}
+
 type OptionalWithAutoIncr struct {
 	ID       omit.Val[int]    `db:"id,pk"`
 	Title    omit.Val[string] `db:"title"`
 	AuthorID omit.Val[int]    `db:"author_id,autoincr"`
+
+	orm.Setter[*WithAutoIncr, *dialect.InsertQuery, *dialect.UpdateQuery]
 }
 
 type WithUnique struct {
@@ -26,10 +35,16 @@ type WithUnique struct {
 	AuthorID int    `db:"author_id"`
 }
 
+func (w *WithUnique) PrimaryKeyVals() bob.Expression {
+	return Arg(w.ID)
+}
+
 type OptionalWithUnique struct {
 	ID       omit.Val[int]    `db:"id,pk"`
 	Title    omit.Val[string] `db:"title"`
 	AuthorID omit.Val[int]    `db:"author_id"`
+
+	orm.Setter[*WithUnique, *dialect.InsertQuery, *dialect.UpdateQuery]
 }
 
 var (
@@ -46,7 +61,7 @@ func TestNewTable(t *testing.T) {
 		t.Fatalf("missing autoIncrementColumn. expected %q, got %q", expected, got)
 	}
 
-	if diff := cmp.Diff(table2.uniqueIdx, [][]int{{0}, {1, 2}}); diff != "" {
+	if diff := cmp.Diff([][]int{{0}, {1, 2}}, table2.uniqueIdx); diff != "" {
 		t.Fatalf("diff: %s", diff)
 	}
 

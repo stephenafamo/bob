@@ -12,6 +12,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/dialect/psql/um"
+	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
@@ -45,10 +48,44 @@ type User struct {
 	Email string `db:"email"`
 }
 
+func (u *User) PrimaryKeyVals() bob.Expression {
+	return Arg(u.ID)
+}
+
 type UserSetter struct {
 	ID    omit.Val[int64]  `db:"id,pk"`
 	Name  omit.Val[string] `db:"name"`
 	Email omit.Val[string] `db:"email"`
+
+	orm.Setter[*User, *dialect.InsertQuery, *dialect.UpdateQuery]
+}
+
+func (s UserSetter) Overwrite(t *User) {
+	if !s.ID.IsUnset() {
+		t.ID, _ = s.ID.Get()
+	}
+
+	if !s.Name.IsUnset() {
+		t.Name, _ = s.Name.Get()
+	}
+
+	if !s.Email.IsUnset() {
+		t.Email, _ = s.Email.Get()
+	}
+}
+
+func (s UserSetter) Apply(q *dialect.UpdateQuery) {
+	if !s.ID.IsUnset() {
+		um.Set("id").ToArg(s.ID).Apply(q)
+	}
+
+	if !s.Name.IsUnset() {
+		um.Set("name").ToArg(s.Name).Apply(q)
+	}
+
+	if !s.Email.IsUnset() {
+		um.Set("email").ToArg(s.Email).Apply(q)
+	}
 }
 
 var userTable = NewTable[*User, *UserSetter]("", "users")
@@ -80,11 +117,10 @@ func TestUpdate(t *testing.T) {
 		t.Fatalf("unexpected inserted user: %v", err)
 	}
 
-	_, err = userTable.Update(ctx, db, &User{
-		ID:    1,
-		Name:  "Stephen",
-		Email: "stephen@exapmle.com",
-	})
+	err = userTable.Update(ctx, db, &UserSetter{
+		Name:  omit.From("Stephen"),
+		Email: omit.From("stephen@exapmle.com"),
+	}, user)
 	if err != nil {
 		t.Errorf("error updating: %v", err)
 	}

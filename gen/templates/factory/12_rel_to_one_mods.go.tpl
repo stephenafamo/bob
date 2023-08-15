@@ -17,7 +17,7 @@ func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Alia
 
 func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{range .NeededColumns -}}
+		{{range .NeededBridgeTables -}}
 			{{$alias := $.Aliases.Table . -}}
 			{{$alias.DownSingular}} := o.f.New{{$alias.UpSingular}}()
 		{{- end}}

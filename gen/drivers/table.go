@@ -47,6 +47,18 @@ func (t Table) GetColumn(name string) Column {
 	panic(fmt.Sprintf("could not find column name: %q.%q in %#v", t.Key, name, t.Columns))
 }
 
+func (t Table) NonGeneratedColumns() []Column {
+	cols := make([]Column, 0, len(t.Columns))
+	for _, c := range t.Columns {
+		if c.Generated {
+			continue
+		}
+		cols = append(cols, c)
+	}
+
+	return cols
+}
+
 func (t Table) CanSoftDelete(deleteColumn string) bool {
 	if deleteColumn == "" {
 		deleteColumn = "deleted_at"

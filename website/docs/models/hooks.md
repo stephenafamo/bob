@@ -52,5 +52,5 @@ If you need to run a query without hooks, use the `SkipHooks` function:
 
 ```go
 // Hooks are skipped
-userTable.Query(orm.SkipHooks(ctx), exec).All()
+userTable.Select(orm.SkipHooks(ctx), exec).All()
 ```

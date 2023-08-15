@@ -59,18 +59,30 @@ func (r Relationship) Local() string {
 	return r.Sides[0].From
 }
 
+func (r Relationship) LocalPosition() int {
+	return 0
+}
+
 func (r Relationship) Foreign() string {
 	return r.Sides[len(r.Sides)-1].To
 }
 
+func (r Relationship) ForeignPosition() int {
+	return len(r.Sides)
+}
+
 func (r Relationship) IsToMany() bool {
-	for _, side := range r.Sides {
-		if !side.ToUnique {
-			return true
+	for _, side := range r.ValuedSides() {
+		if side.Position == 0 {
+			return false
+		}
+
+		if r.Sides[side.Position-1].ToUnique {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 func (r Relationship) IsRemovable() bool {
@@ -87,7 +99,7 @@ func (r Relationship) InsertEarly() bool {
 	return true
 }
 
-func (r Relationship) NeededColumns() []string {
+func (r Relationship) NeededBridgeTables() []string {
 	ma := []string{}
 
 	local := r.Local()
@@ -112,9 +124,35 @@ func (r Relationship) NeededColumns() []string {
 	return ma
 }
 
+func (r Relationship) NeededMappings() []RelSetMapping {
+	ma := []RelSetMapping{}
+
+	local := r.Local()
+	foreign := r.Foreign()
+	mappings := r.ValuedSides()
+	for _, mapping := range mappings {
+		for _, ext := range mapping.Mapped {
+			if ext.ExternalTable == "" {
+				continue
+			}
+			if ext.ExternalTable == local {
+				continue
+			}
+			if ext.ExternalTable == foreign {
+				continue
+			}
+
+			ma = append(ma, ext)
+		}
+	}
+
+	return ma
+}
+
 type RelSetDetails struct {
 	TableName string
 	Mapped    []RelSetMapping
+	Position  int
 	Start     bool
 	End       bool
 }
@@ -126,6 +164,26 @@ type RelSetMapping struct {
 	ExternalColumn string
 	ExternalStart  bool
 	ExternalEnd    bool
+	ExtPosition    int
+}
+
+func (r RelSetDetails) UniqueExternals() []RelSetMapping {
+	found := make(map[int]struct{})
+	ma := []RelSetMapping{}
+
+	for _, ext := range r.Mapped {
+		if ext.ExternalTable == "" {
+			continue
+		}
+		if _, ok := found[ext.ExtPosition]; ok {
+			continue
+		}
+
+		ma = append(ma, ext)
+		found[ext.ExtPosition] = struct{}{}
+	}
+
+	return ma
 }
 
 func (r Relationship) ValuedSides() []RelSetDetails {
@@ -136,12 +194,14 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			TableName: side.From,
 			Mapped:    make([]RelSetMapping, 0, len(side.FromColumns)+len(side.FromWhere)),
 			Start:     sideIndex == 0,
+			Position:  sideIndex,
 		}
 
 		toDeets := RelSetDetails{
 			TableName: side.To,
 			Mapped:    make([]RelSetMapping, 0, len(side.ToColumns)+len(side.ToWhere)),
 			End:       sideIndex == (len(r.Sides) - 1),
+			Position:  sideIndex + 1,
 		}
 
 		if len(side.FromWhere) > 0 {
@@ -171,6 +231,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 						ExternalTable:  side.To,
 						ExternalColumn: side.ToColumns[i],
 						ExternalEnd:    sideIndex == (len(r.Sides) - 1),
+						ExtPosition:    sideIndex + 1,
 					})
 				}
 			}
@@ -181,6 +242,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 					ExternalTable:  side.From,
 					ExternalColumn: f,
 					ExternalStart:  sideIndex == 0,
+					ExtPosition:    sideIndex,
 				})
 			}
 
@@ -193,6 +255,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 							ExternalTable:  nextSide.To,
 							ExternalColumn: nextSide.ToColumns[i],
 							ExternalEnd:    (sideIndex + 1) == (len(r.Sides) - 1),
+							ExtPosition:    sideIndex + 2,
 						})
 					}
 				}

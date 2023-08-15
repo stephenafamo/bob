@@ -39,7 +39,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		if o.r.{{$relAlias}} != nil {
 		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
-					{{- range .NeededColumns -}}
+					{{- range .NeededBridgeTables -}}
 						{{$alias := $.Aliases.Table . -}}
 						var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
 						ctx, {{$alias.DownSingular}}, err = r.{{$alias.DownSingular}}.create(ctx, exec)
@@ -60,7 +60,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 					}
 				}
 		{{- else -}}
-			{{- range .NeededColumns -}}
+			{{- range .NeededBridgeTables -}}
 				{{$alias := $.Aliases.Table . -}}
 				var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
 				ctx, {{$alias.DownSingular}}, err = o.r.{{$relAlias}}.{{$alias.DownSingular}}.create(ctx, exec)
@@ -133,7 +133,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 		{{- end}}
 	{{end}}
 
-	m, err := models.{{$tAlias.UpPlural}}Table.Insert(ctx, exec, opt)
+	m, err := models.{{$tAlias.UpPlural}}.Insert(ctx, exec, opt)
 	if err != nil {
 	  return ctx, nil, err
 	}
