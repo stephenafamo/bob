@@ -53,7 +53,7 @@ Learn about how to manipulate a columns list in the [columns documentation](./co
 
 ## Query()
 
-The `Query()` method returns a `ViewQuery` on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
+The `Query()` method starts a SELECT query on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
 q := userView.Query(

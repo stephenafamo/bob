@@ -20,4 +20,3 @@ psql.Select(
     sm.Where(psql.Quote("name".EQ(psql.Arg("Stephen"))),
 )
 ```
-
