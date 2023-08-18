@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.22.0] - 2023-08-18
+
+### Added
+
+* Expand expressions when used in Raw (thanks @RangelReale)
+* Add `InsertQ`, `UpdateQ`, and `DeleteQ` methods to Table models to start INSERT, UPDATE and DELETE queries respectively.
+* Allow column comment for replacement matching (thanks @jroenf)
+* Add table query hooks to modify model queries
+* Include `WhereOr` and `WhereAnd` to make it easier to combine multiple generated where clauses
+* Print a warning if a replacement rule did not find a match (thanks @jacobmolby)
+
+### Changed
+
+* Export generated factory.Factory struct
+* Allow Limit and Offset to be used as Arguments in PostgreSQL (thanks @RangelReale)
+* Make model hooks take slices not single objects
+* Return rows affected from `Exec()` method of view queries instead of `sql.Result`
+* Chain comparison methods now take an `Expression` instead of `any`
+* Table models now require the types to implement `orm.Table` and `orm.Setter` interfaces.
+
+### Removed
+
+* Remove UpdateAll and DeleteAll methods on the Table models.
+
+### Fixed
+
+* Honor Only and Except in sqlite driver
+* Always surround subqueries with parenthesis when used as an expression
+* Fix mysql `TablesInfo` method and make sure we don't exclude entire table when targeting columns (thanks @jacobmolby)
+* Fix bug in sqlite foreign key and join table detection
+
 ## [v0.21.1] - 2023-05-22
 
 ### Fixed
