@@ -7,7 +7,7 @@ description: Common operators accross dialects
 
 # Operators
 
-Operators are methods on the dialect's `Expression`. Given that we have an expression `psql.X("X")`, there are a number of common operators shared by all supported dialects:
+Operators are methods on the dialect's `Expression`. There are a number of common operators shared by all supported dialects:
 
 * `IsNull()`: X IS NULL
 * `IsNotNull()`: X IS NOT NULL

@@ -21,7 +21,7 @@ As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions)
 import "github.com/stephenafamo/bob/dialect/psql/sm"
 cte := psql.Select(
     sm.From("users"),
-    sm.Where(psql.X("age").GTE(21)),
+    sm.Where(psql.Quote("age").GTE(21)),
 )
 
 var cte query.Query
@@ -49,8 +49,8 @@ q := psql.Select(
 
 if !user.IsAdmin {
 	q.Apply(
-		sm.Where(psql.X("user_id").EQ(psql.Arg(user.ID))),
-	) // SELECT * FROM projects WHERE user_id = $1
+		sm.Where(psql.Quote("user_id").EQ(psql.Arg(user.ID))),
+	) // SELECT * FROM projects WHERE "user_id" = $1
 }
 ```
 
@@ -65,33 +65,22 @@ Every dialect contain starter functions to fluently build complex expressions. I
 For example:
 
 ```go
-// Query: ($1 >= 50) AND (name IS NOT NULL)
+// Query: ($1 >= 50) AND ("name" IS NOT NULL)
 // Args: 'Stephen'
 psql.Arg("Stephen").GTE(50).
-	And(psql.X("name").IsNotNull())
+	And(psql.Quote("name").IsNotNull())
 
 // OR
 
 psql.And(
 	psql.Arg("Stephen").GTE(50),
-	psql.X("name").IsNotNull(),
+	psql.Quote("name").IsNotNull(),
 )
 ```
 
 ### Starters
 
 These functions are included in every dialect and can be used to create a chainable expression.
-
-The most flexible starter is `X()`
-
-* Pass a single value to start a plain chain
-* Pass multiple values to join them all with spaces. This is better than using a plain string because it is easier to interpolate quoted values, args, e.t.c.
-
-```go
-// SQL: "schema"."table"."name" = $1
-// Args: 'Stephen'
-psql.X(psql.Quote("schema", "table", "name"), "=", psql.Arg("Stephen"))
-```
 
 See the [starters page](./starters) for the list of common starters.
 

@@ -28,6 +28,13 @@ type User struct {
     Email     string
 }
 
+// An interface to implement to make the model a table
+// this returns the values of the primary keys
+func (u User) PrimaryKeyVals() bob.Expression {
+    return psql.Arg(u.ID)
+}
+
+// UserSetter must implement orm.Setter
 type UserSetter struct {
     ID        omit.Val[int]
     VehicleID omit.Val[int]
@@ -56,19 +63,35 @@ userTable.Insert(ctx, db, UserSetter{
 }) 
 ```
 
+:::tip
+
+If the Setter methods feel tedious to implement, they can be fully generated from your database.  
+See [Code Generation](../code-generation/intro) for more information.
+
+:::
+
 ## Queries
 
-The `Query()` method returns a `TableQuery` on the model's database table.
+Like a [View](./view) the `Query()` method starts a SELECT query on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
-In addition to the methods provided by `ViewQuery` -- `One()`, `All()`, `Cursor()`, `Count()`, `Exists()`,  
-`TableQuery` also has `UpdateAll()` and `DeleteAll()` which works on all the columns matching the current query.
+In addition, a Table also has `InsertQ`, `UpdateQ` and `DeleteQ` which begin insert, update and delete queries on the table. As you may expect, they can also accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
-// DELETE FROM "users" WHERE id IN (SELECT "users"."id" FROM "users" LIMIT 10)
-models.Users(ctx, db, sm.Limit(10)).DeleteAll()
+// UPDATE "users" SET "kind" = $1
+updateQ := userTable.UpdateQ(
+    ctx, db, 
+    um.Set("kind").ToArg("Dramatic"),
+    um.Returning("*"),
+)
+```
 
-// UPDATE "users" SET "vehicle_id" = 100 WHERE id IN (SELECT "users"."id" FROM "users" LIMIT 10)
-models.Users(ctx, db, sm.Limit(10)).UpdateAll(&UserSetter{VehicleID: omit.From(100)})
+The query can then be executed with the `Exec()` method which returns the rows affected and an error. If the dialect supports the `RETURNING` clause, `One()`, `All()` and `Cursor()` methods are also included.
+
+```go
+rowsAffected, _ := updateQ.Exec()
+user, _ := updateQ.One()
+users, _ := updateQ.All()
+userCursor, _ := updateQ.Cursor()
 ```
 
 ## Insert
@@ -97,20 +120,10 @@ users, err := models.UsersTable.InsertMany(ctx, db,
 ## Update
 
 ```go
-_, err := models.UsersTable.Update(ctx, db, user)
-```
-
-## UpdateMany
-
-UpdateMany uses a `UserSetter` to determine which columns to set to and the desired value
-
-```go
 // UPDATE "users"
 // SET "vehicle_id" = 200
-// WHERE "users"."id" IN (10, 11, 12)
-_, err := models.UsersTable.UpdateMany(ctx, db, &UserSetter{
-    &UserSetter{VehicleID: omit.From(200)},
-}, user10, user11, user12)
+// WHERE "users"."id" IN (1, 2)
+err := models.UsersTable.Update(ctx, db, &UserSetter{VehicleID: omit.From(200)}, user1, user2)
 ```
 
 ## Upsert
@@ -133,5 +146,5 @@ user, err := models.UsersTable.Upsert(ctx, db, true, nil, nil, &UserSetter{
 
 ```go
 // DELETE FROM "users" WHERE "id" = 100
-_, err := models.UsersTable.Delete(ctx, db, user)
+err := models.UsersTable.Delete(ctx, db, user)
 ```
