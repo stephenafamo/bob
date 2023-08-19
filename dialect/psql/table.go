@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -25,7 +26,7 @@ func NewTable[T orm.Table, Tset setter[T]](schema, tableName string) *Table[T, [
 func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](schema, tableName string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
-	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
+	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
 	view, mappings := newView[T, Tslice](schema, tableName)
 	t := &Table[T, Tslice, Tset]{
 		View:       view,
@@ -52,7 +53,7 @@ type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
 	pkCols     []string
 	pkExpr     dialect.Expression
-	setMapping internal.Mapping
+	setMapping mappings.Mapping
 
 	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
 	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]

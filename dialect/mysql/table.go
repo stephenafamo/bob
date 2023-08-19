@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -26,7 +27,7 @@ func NewTable[T orm.Table, Tset setter[T]](tableName string, uniques ...[]string
 func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
 	var zeroSet Tset
 
-	setMapping := internal.GetMappings(reflect.TypeOf(zeroSet))
+	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
 
 	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Tset]{
@@ -65,7 +66,7 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](tableName string, uniqu
 type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
 	pkExpr     dialect.Expression
-	setMapping internal.Mapping
+	setMapping mappings.Mapping
 
 	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
 	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
