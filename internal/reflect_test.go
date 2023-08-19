@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/internal/mappings"
 )
 
 type User struct {
@@ -49,7 +50,7 @@ type BlogWithTags struct {
 }
 
 func TestGetColumns(t *testing.T) {
-	testGetColumns[User](t, Mapping{
+	testGetColumns[User](t, mappings.Mapping{
 		All:           []string{"id", "first_name", "last_name"},
 		PKs:           make([]string, 3),
 		NonPKs:        []string{"id", "first_name", "last_name"},
@@ -58,7 +59,7 @@ func TestGetColumns(t *testing.T) {
 		AutoIncrement: make([]string, 3),
 	})
 
-	testGetColumns[Timestamps](t, Mapping{
+	testGetColumns[Timestamps](t, mappings.Mapping{
 		All:           []string{"created_at", "updated_at"},
 		PKs:           make([]string, 2),
 		NonPKs:        []string{"created_at", "updated_at"},
@@ -67,7 +68,7 @@ func TestGetColumns(t *testing.T) {
 		AutoIncrement: make([]string, 2),
 	})
 
-	testGetColumns[UserWithTimestamps](t, Mapping{
+	testGetColumns[UserWithTimestamps](t, mappings.Mapping{
 		All:           []string{"id", "first_name", "last_name", "timestamps"},
 		PKs:           make([]string, 4),
 		NonPKs:        []string{"id", "first_name", "last_name", "timestamps"},
@@ -76,7 +77,7 @@ func TestGetColumns(t *testing.T) {
 		AutoIncrement: make([]string, 4),
 	})
 
-	testGetColumns[Blog](t, Mapping{
+	testGetColumns[Blog](t, mappings.Mapping{
 		All:           []string{"id", "title", "description", "user"},
 		PKs:           make([]string, 4),
 		NonPKs:        []string{"id", "title", "description", "user"},
@@ -85,7 +86,7 @@ func TestGetColumns(t *testing.T) {
 		AutoIncrement: make([]string, 4),
 	})
 
-	testGetColumns[BlogWithTags](t, Mapping{
+	testGetColumns[BlogWithTags](t, mappings.Mapping{
 		All:           []string{"blog_id", "title", "description", ""},
 		PKs:           []string{"blog_id", "title", "", ""},
 		NonPKs:        []string{"", "", "description", ""},
@@ -95,12 +96,12 @@ func TestGetColumns(t *testing.T) {
 	})
 }
 
-func testGetColumns[T any](t *testing.T, expected Mapping) {
+func testGetColumns[T any](t *testing.T, expected mappings.Mapping) {
 	t.Helper()
 	var x T
 	xTyp := reflect.TypeOf(x)
 	t.Run(xTyp.Name(), func(t *testing.T) {
-		cols := GetMappings(xTyp)
+		cols := mappings.GetMappings(xTyp)
 		if diff := cmp.Diff(expected, cols); diff != "" {
 			t.Fatal(diff)
 		}
@@ -207,13 +208,13 @@ func testGetColumnValues[T any](t *testing.T, name string, tc testGetColumnsCase
 	t.Helper()
 	var x T
 	xTyp := reflect.TypeOf(x)
-	cols := GetMappings(xTyp)
+	cols := mappings.GetMappings(xTyp)
 	if name == "" {
 		name = xTyp.Name()
 	}
 
 	t.Run(name, func(t *testing.T) {
-		cols, values, err := GetColumnValues(cols.NonGenerated, tc.Filter, tc.Rows...)
+		cols, values, err := GetColumnValues(cols, tc.Filter, tc.Rows...)
 		if err != nil {
 			t.Fatal(err)
 		}
