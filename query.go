@@ -118,3 +118,13 @@ func (q BaseQuery[E]) Build() (string, []any, error) {
 func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
 	return BuildN(q, start)
 }
+
+// Convinient function to cache a query
+func (q BaseQuery[E]) Cache() (BaseQuery[*cached], error) {
+	return CacheN(q, 1)
+}
+
+// Convinient function to cache a query from a point
+func (q BaseQuery[E]) CacheN(start int) (BaseQuery[*cached], error) {
+	return CacheN(q, start)
+}
