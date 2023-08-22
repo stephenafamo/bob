@@ -33,6 +33,7 @@ A lot of other helpful methods and functions are generated, but let us look at t
 
 ```go
 // Jet is an object representing the database table.
+// The required methods to satisfy orm.Table are also generated
 type Jet struct {
     ID         int              `db:"id,pk" json:"id" toml:"id" yaml:"id"`
     PilotID    int              `db:"pilot_id" json:"pilot_id" toml:"pilot_id" yaml:"pilot_id"`
@@ -48,6 +49,7 @@ type Jet struct {
 // JetSetter is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
+// The required methods to satisfy orm.Setter are also generated
 type JetSetter struct {
     ID         omit.Val[int]        `db:"id,pk"`
     PilotID    omit.Val[int]        `db:"pilot_id"`
@@ -84,16 +86,13 @@ var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
 
 ### Update
 
-Update values in the database based on the values present in the model.
+Update values in the database based on the values set in the `Setter`.
 
 ```go
-_, err := jet.Update(ctx, db)
-```
-
-We can decide to only update a few columns
-
-```go
-jet, err := jet.Update(ctx, db, "id", "cargo")
+err := jet.Update(ctx, db, &models.JetSetter{
+    AirportID: omit.From(100),
+    Name:      omit.From("new name"),
+})
 ```
 
 ### UpdateAll
@@ -103,7 +102,9 @@ UpdateAll is a method on the collection type `JetSlice`.
 All rows matching the primary keys of the memebers of the slice are updated with the given values.
 
 ```go
-_, err := jets.UpdateAll(ctx, db, &JetSetter{AirportID: omit.From(100)})
+err := jets.UpdateAll(ctx, db, &JetSetter{
+    AirportID: omit.From(100),
+})
 ```
 
 ### Delete
@@ -186,7 +187,44 @@ models.Jets(
 )
 ```
 
+Where filters can be combined using `WhereOr` and `WhereAnd`. These can be nested to create even more complex queries.
+
+```go
+// SELECT * FROM "users"
+// WHERE "users"."name" IS NULL
+// OR "users"."email" IS NOT NULL
+// OR ("users"."age" > 21 AND "users"."location" IS NOT NULL)
+users, err := models.Users(
+    ctx, db,
+    psql.WhereOr(
+        models.SelectWhere.Users.Name.IsNull(),
+        models.SelectWhere.Users.Email.IsNotNull(),
+        psql.WhereAnd(
+            models.SelectWhere.Users.Age.GT(21),
+            models.SelectWhere.Users.Location.IsNotNull(),
+        ),
+    ),
+).All()
+```
+
 Since each query type has its own mods, `SelectWhere`,  `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
+
+### Join Helpers
+
+To make joining tables easier, join helpers are generated for each table. The generated joins are based on the [relationships defined for each table](./relationships).
+
+```go
+// SELECT * FROM "jets"
+// INNER JOIN "pilots" ON "pilots"."id" = "jets"."pilot_id"
+// INNER JOIN "airports" ON "airports"."id" = "jets"."airport_id"
+models.Jets(
+    ctx, db,
+    models.SelectJoins.Jets.InnerJoin.Pilots,
+    models.SelectJoins.Jets.InnerJoin.Airports,
+).All()
+```
+
+Since each query type has its own mods, `SelectJoins`,  `InsertJoins`, `UpdateJoins` and `DeleteJoins` are all generated.
 
 ### Column Expressions
 
