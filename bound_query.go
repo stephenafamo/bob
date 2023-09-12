@@ -74,8 +74,9 @@ func BindNamedN[T any](q Query, start int) (BoundQuery[T], error) {
 }
 
 type structBinder[T any] struct {
-	args   []string
-	fields []string
+	args      []string
+	fields    []string
+	givenArgs []any
 }
 
 func (b structBinder[T]) Inspect() []string {
@@ -104,10 +105,14 @@ func (b structBinder[T]) ToArgs(arg T) []any {
 
 ArgLoop:
 	for index, argName := range b.args {
-		for _, fieldName := range b.fields {
+		if argName == "" {
+			values[index] = b.givenArgs[index]
+			continue
+		}
+
+		for fieldIndex, fieldName := range b.fields {
 			if fieldName == argName {
-				field := val.Field(index)
-				values[index] = field.Interface()
+				values[index] = val.Field(fieldIndex).Interface()
 				continue ArgLoop
 			}
 		}
@@ -146,11 +151,14 @@ func makeStructBinder[Arg any](args []any) (structBinder[Arg], error) {
 	}
 
 	fieldPositions := mappings.GetMappings(reflect.TypeOf(x)).All
-	fmt.Println(fieldPositions)
 
 	// check if all positions have matching fields
 ArgLoop:
 	for _, name := range argPositions {
+		if name == "" {
+			continue
+		}
+
 		for _, field := range fieldPositions {
 			if field == name {
 				continue ArgLoop
@@ -160,7 +168,8 @@ ArgLoop:
 	}
 
 	return structBinder[Arg]{
-		args:   argPositions,
-		fields: fieldPositions,
+		args:      argPositions,
+		fields:    fieldPositions,
+		givenArgs: givenArgs,
 	}, nil
 }
