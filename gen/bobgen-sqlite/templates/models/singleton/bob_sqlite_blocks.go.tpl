@@ -6,6 +6,7 @@ var (
 {{- end}}
 
 {{define "setter_insert_mod" -}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
