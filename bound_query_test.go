@@ -14,11 +14,6 @@ type binderTests[Arg any] struct {
 	final []any
 }
 
-type structBinderTest[Arg any] struct {
-	expected structBinder[Arg]
-	args     []binderTests[Arg]
-}
-
 func testBinder[Arg any](t *testing.T, origin []any, tests []binderTests[Arg]) {
 	t.Helper()
 	binder, err := makeStructBinder[Arg](origin)
