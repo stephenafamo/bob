@@ -6,9 +6,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func (s structBinder[Arg]) Equal() {
-}
-
 type binderTests[Arg any] struct {
 	arg   Arg
 	final []any
