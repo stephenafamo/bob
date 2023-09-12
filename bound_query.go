@@ -6,10 +6,7 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/scan"
 )
-
-var mapperSource, _ = scan.NewStructMapperSource()
 
 type MismatchedArgsError struct {
 	Expected int
