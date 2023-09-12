@@ -49,9 +49,6 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{- end}}
 {{- end}}
 
-// {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
-type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
-
 {{if .Table.Relationships -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
