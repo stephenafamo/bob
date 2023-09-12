@@ -41,6 +41,7 @@ var (
 type BaseQuery[E Expression] struct {
 	Expression E
 	Dialect    Dialect
+	NoGroup    bool
 }
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
@@ -90,9 +91,13 @@ func (b BaseQuery[E]) WriteQuery(w io.Writer, start int) ([]any, error) {
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
 func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error) {
-	w.Write([]byte(openPar))
+	if !b.NoGroup {
+		w.Write([]byte(openPar))
+	}
 	args, err := b.Expression.WriteSQL(w, b.Dialect, start)
-	w.Write([]byte(closePar))
+	if !b.NoGroup {
+		w.Write([]byte(closePar))
+	}
 
 	return args, err
 }

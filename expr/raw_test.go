@@ -61,6 +61,16 @@ func TestStatement(t *testing.T) {
 			ExpectedSQL:  `SELECT a, b FROM alphabet WHERE c = "AA" AND d <= ?1`,
 			ExpectedArgs: []any{2},
 		},
+		"rawquery": {
+			Expression:   RawQuery(dialect{}, "c = ? AND d <= ?", Quote("AA"), 2),
+			ExpectedSQL:  `c = "AA" AND d <= ?1`,
+			ExpectedArgs: []any{2},
+		},
+		"rawquery group": {
+			Expression:   group{RawQuery(dialect{}, "c = ? AND d <= ?", Quote("AA"), 2)},
+			ExpectedSQL:  `(c = "AA" AND d <= ?1)`,
+			ExpectedArgs: []any{2},
+		},
 	}
 
 	testutils.RunExpressionTests(t, dialect{}, examples)

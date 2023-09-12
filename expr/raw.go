@@ -20,6 +20,7 @@ func RawQuery(d bob.Dialect, q string, args ...any) bob.BaseQuery[Clause] {
 	return bob.BaseQuery[Clause]{
 		Expression: Clause{query: q, args: args},
 		Dialect:    d,
+		NoGroup:    true,
 	}
 }
 
