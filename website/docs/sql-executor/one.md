@@ -27,7 +27,7 @@ if err != nil {
 q := psql.Select(...)
 
 // user is of type userObj{}
-user, err := bob.Exec(ctx, db, q, scan.StructMapper[userObj]())
+user, err := bob.One(ctx, db, q, scan.StructMapper[userObj]())
 if err != nil {
     // ...
 }
