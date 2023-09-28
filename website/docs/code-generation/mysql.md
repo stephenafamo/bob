@@ -14,7 +14,7 @@ Generates an ORM based on a MySQL database schema
 
 ```sh
 # With env variable
-MYSQL_DSN=user:pass@host:port/dbname go run github.com/stephenafamo/bob/gen/bobgen-mysql@latest
+MYSQL_DSN=user:pass@tcp(host:port)/dbname go run github.com/stephenafamo/bob/gen/bobgen-mysql@latest
 
 # With configuration file
 go run github.com/stephenafamo/bob/gen/bobgen-mysql@latest -c ./config/bobgen.yaml
@@ -30,13 +30,13 @@ In the configuration file for MySQL for example you would do:
 
 ```yaml
 mysql:
-  dsn: "user:pass@host:port/dbname"
+  dsn: "user:pass@tcp(host:port)/dbname"
 ```
 
 When you use an environment variable it must also be prefixed by the driver name:
 
 ```sh
-MYSQL_DSN="user:pass@host:port/dbname"
+MYSQL_DSN="user:pass@tcp(host:port)/dbname"
 ```
 
 The values that exist for the drivers:
