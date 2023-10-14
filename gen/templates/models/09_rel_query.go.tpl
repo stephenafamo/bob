@@ -12,7 +12,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $toTable := getTable $.Tables $side.To -}}
-		dialect.Join[Q](typ, {{$to.UpPlural}}.Name(ctx)).On(
+		dialect.Join[Q](typ, {{$to.UpPlural}}.NameAs(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
 				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
@@ -50,7 +50,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx co
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAs(ctx)).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -110,7 +110,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.Name(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAs(ctx)).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
 				{{- $fromCol := index $from.Columns $local -}}
