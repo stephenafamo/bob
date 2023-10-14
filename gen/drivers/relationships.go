@@ -83,25 +83,6 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 					}},
 				})
 			}
-
-			// Adding the inverse relationship
-			// if !t1.IsJoinTable && t1.Key != t2.Key {
-			// if t1.Name == "users" {
-			// fmt.Println("ADDING")
-			// }
-			// relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
-			// Name: fk.Name,
-			// Sides: []orm.RelSide{{
-			// From:        t2.Key,
-			// FromColumns: fk.ForeignColumns,
-			// To:          t1.Key,
-			// ToColumns:   fk.Columns,
-			// ToKey:       true,
-			// ToUnique:    localUnique,
-			// KeyNullable: localNullable,
-			// }},
-			// })
-			// }
 		}
 
 		if !t1.IsJoinTable {
@@ -139,6 +120,10 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				},
 			},
 		})
+		// It is a many-to-many self join no need to duplicate the relationship
+		if r1.Sides[0].To == r2.Sides[0].To {
+			continue
+		}
 		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], orm.Relationship{
 			Name:        r1.Name + r2.Name,
 			ByJoinTable: true,
