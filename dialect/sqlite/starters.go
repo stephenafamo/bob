@@ -14,7 +14,7 @@ var bmod = expr.Builder[Expression, Expression]{}
 // F creates a function expression with the given name and args
 //
 //	SQL: generate_series(1, 3)
-//	Go: psql.F("generate_series", 1, 3)
+//	Go: sqlite.F("generate_series", 1, 3)
 func F(name string, args ...any) *dialect.Function {
 	f := dialect.NewFunction(name, args...)
 
@@ -27,67 +27,73 @@ func F(name string, args ...any) *dialect.Function {
 
 // S creates a string literal
 // SQL: 'a string'
-// Go: psql.S("a string")
+// Go: sqlite.S("a string")
 func S(s string) Expression {
 	return bmod.S(s)
 }
 
 // SQL: NOT true
-// Go: psql.Not("true")
+// Go: sqlite.Not("true")
 func Not(exp bob.Expression) Expression {
 	return bmod.Not(exp)
 }
 
 // SQL: a OR b OR c
-// Go: psql.Or("a", "b", "c")
+// Go: sqlite.Or("a", "b", "c")
 func Or(args ...bob.Expression) Expression {
 	return bmod.Or(args...)
 }
 
 // SQL: a AND b AND c
-// Go: psql.And("a", "b", "c")
+// Go: sqlite.And("a", "b", "c")
 func And(args ...bob.Expression) Expression {
 	return bmod.And(args...)
 }
 
 // SQL: a || b || c
-// Go: psql.Concat("a", "b", "c")
+// Go: sqlite.Concat("a", "b", "c")
 func Concat(args ...bob.Expression) Expression {
 	return expr.X[Expression, Expression](expr.Join{Exprs: args, Sep: " || "})
 }
 
 // SQL: $1, $2, $3
-// Go: psql.Args("a", "b", "c")
+// Go: sqlite.Args("a", "b", "c")
 func Arg(args ...any) Expression {
 	return bmod.Arg(args...)
 }
 
 // SQL: ($1, $2, $3)
-// Go: psql.ArgGroup("a", "b", "c")
+// Go: sqlite.ArgGroup("a", "b", "c")
 func ArgGroup(args ...any) Expression {
 	return bmod.ArgGroup(args...)
 }
 
 // SQL: $1, $2, $3
-// Go: psql.Placeholder(3)
+// Go: sqlite.Placeholder(3)
 func Placeholder(n uint) Expression {
 	return bmod.Placeholder(n)
 }
 
 // SQL: (a, b)
-// Go: psql.Group("a", "b")
+// Go: sqlite.Group("a", "b")
 func Group(exps ...bob.Expression) Expression {
 	return bmod.Group(exps...)
 }
 
 // SQL: "table"."column"
-// Go: psql.Quote("table", "column")
+// Go: sqlite.Quote("table", "column")
 func Quote(ss ...string) Expression {
 	return bmod.Quote(ss...)
 }
 
 // SQL: where a = $1
-// Go: psql.Raw("where a = ?", "something")
+// Go: sqlite.Raw("where a = ?", "something")
 func Raw(query string, args ...any) Expression {
 	return bmod.Raw(query, args...)
+}
+
+// SQL: a as "alias"
+// Go: sqlite.As("a", "alias")
+func As(e Expression, alias string) bob.Expression {
+	return expr.OP("AS", e, expr.Quote(alias))
 }

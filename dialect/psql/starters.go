@@ -91,3 +91,9 @@ func Quote(ss ...string) Expression {
 func Raw(query string, args ...any) Expression {
 	return bmod.Raw(query, args...)
 }
+
+// SQL: a as "alias"
+// Go: psql.As("a", "alias")
+func As(e Expression, alias string) bob.Expression {
+	return expr.OP("AS", e, expr.Quote(alias))
+}
