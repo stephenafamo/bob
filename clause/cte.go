@@ -30,10 +30,12 @@ func (c CTE) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte("NOT MATERIALIZED "))
 	}
 
-	args, err := bob.ExpressIf(w, d, start, c.Query, true, "(", ")")
+	w.Write([]byte("("))
+	args, err := c.Query.WriteQuery(w, start)
 	if err != nil {
 		return nil, err
 	}
+	w.Write([]byte(")"))
 
 	searchArgs, err := bob.ExpressIf(w, d, start+len(args), c.Search,
 		len(c.Search.Columns) > 0, "\n", "")
