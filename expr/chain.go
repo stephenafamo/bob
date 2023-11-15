@@ -35,6 +35,11 @@ func (x Chain[T, B]) IsNotNull() T {
 	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isNotNull}})
 }
 
+// Generic Operator
+func (x Chain[T, B]) OP(op string, target bob.Expression) T {
+	return X[T, B](leftRight{left: x.Base, right: target, operator: op})
+}
+
 // Equal
 func (x Chain[T, B]) EQ(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "="})
