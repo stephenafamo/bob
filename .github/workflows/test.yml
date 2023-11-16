@@ -72,6 +72,16 @@ jobs:
         uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: covprofile.out
+          flag-name: go-${{ matrix.go }}
+          parallel: true
+
+  finish: 
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true
 
   test-windows-sqlite:
     # Run generation test on windows to catch filepath issues
