@@ -212,3 +212,21 @@ psql.Select(
   sm.Limit(psql.Arg(10)),
 )
 ```
+
+## Join Using
+
+SQL:
+
+```sql
+SELECT id FROM test1 LEFT JOIN test2 USING (id)
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id"),
+  sm.From("test1"),
+  sm.LeftJoin("test2").Using("id"),
+)
+```
