@@ -121,6 +121,14 @@ func TestSelect(t *testing.T) {
 				sm.Limit(psql.Arg(10)),
 			),
 		},
+		"join using": {
+			ExpectedSQL: "SELECT id FROM test1 LEFT JOIN test2 USING (id)",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("test1"),
+				sm.LeftJoin("test2").Using("id"),
+			),
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
