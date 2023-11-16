@@ -44,7 +44,7 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	}
 	args = append(args, filterArgs...)
 
-	if len(f.columns) > 0 {
+	if len(f.columns) > 0 || len(f.alias) > 0 {
 		w.Write([]byte(" AS "))
 	}
 
