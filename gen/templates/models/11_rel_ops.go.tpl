@@ -1,3 +1,4 @@
+{{if .Table.PKey -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
@@ -320,3 +321,4 @@
 
 {{end -}}{{end -}}
 
+{{- end}}
