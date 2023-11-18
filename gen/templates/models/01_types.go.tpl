@@ -67,7 +67,7 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
-{{if .Table.PKey -}}
+{{if or .Table.PKey .Table.Relationships -}}
 // {{$tAlias.UpSingular}}Setter is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
@@ -223,4 +223,3 @@ func {{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable]() {{$tAlias.DownSin
 			{{end -}}
 	}
 }
-
