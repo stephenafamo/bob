@@ -18,6 +18,11 @@ type CTE struct {
 
 func (c CTE) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(c.Name))
+	_, err := bob.ExpressSlice(w, d, start, c.Columns, "(", ", ", ")")
+	if err != nil {
+		return nil, err
+	}
+
 	w.Write([]byte(" AS "))
 
 	switch {

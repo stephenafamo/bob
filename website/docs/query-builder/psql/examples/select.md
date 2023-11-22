@@ -230,3 +230,24 @@ psql.Select(
   sm.LeftJoin("test2").Using("id"),
 )
 ```
+
+## CTE With Column Aliases
+
+SQL:
+
+```sql
+WITH c(id, data) AS (SELECT id FROM test1 LEFT JOIN test2 USING (id)) SELECT * FROM c
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.With("c", "id", "data").As(psql.Select(
+    sm.Columns("id"),
+    sm.From("test1"),
+    sm.LeftJoin("test2").Using("id"),
+  )),
+  sm.From("c"),
+)
+```
