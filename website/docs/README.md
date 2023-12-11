@@ -43,7 +43,7 @@ To learn more, see the [query builder documentation](./query-builder/intro).
 
 Bob includes an SQL executor that conveniently returns types from queries to avoid doing `rows.Scan()` over and over.
 
-Bob's executor can builds and execute Bob queries in a single call.
+Bob's executor can build and execute Bob queries in a single call.
 
 * `One()`: To scan a single row
 * `All()`: To scan all rows
