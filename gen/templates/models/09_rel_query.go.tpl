@@ -1,6 +1,5 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{if $table.Relationships -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
 
 {{range $rel := $table.Relationships -}}

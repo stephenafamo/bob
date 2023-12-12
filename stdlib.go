@@ -42,9 +42,9 @@ type common[T StdInterface] struct {
 }
 
 // PrepareContext creates a prepared statement for later queries or executions
-func (c common[T]) PrepareContext(ctx context.Context, query string) (Statement, error) {
+func (c common[T]) PrepareContext(ctx context.Context, query string) (StdPrepared, error) {
 	s, err := c.wrapped.PrepareContext(ctx, query)
-	return stdStmt{s}, err
+	return StdPrepared{s}, err
 }
 
 // ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
@@ -103,6 +103,11 @@ func NewTx(tx *sql.Tx) Tx {
 	return Tx{New(tx)}
 }
 
+var (
+	_ txForStmt[StdPrepared] = &Tx{}
+	_ Preparer[StdPrepared]  = &Tx{}
+)
+
 // Tx is similar to *sql.Tx but implements [Queryer]
 type Tx struct {
 	common[*sql.Tx]
@@ -116,6 +121,10 @@ func (t Tx) Commit() error {
 // Rollback works the same as [*sql.Tx.Rollback]
 func (t Tx) Rollback() error {
 	return t.wrapped.Rollback()
+}
+
+func (tx *Tx) StmtContext(ctx context.Context, stmt StdPrepared) StdPrepared {
+	return StdPrepared{tx.wrapped.StmtContext(ctx, stmt.Stmt)}
 }
 
 // NewConn wraps an [*sql.Conn] and returns a type that implements [Queryer]
@@ -150,10 +159,10 @@ func (c Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
 	return NewTx(tx), nil
 }
 
-type stdStmt struct {
+type StdPrepared struct {
 	*sql.Stmt
 }
 
-func (s stdStmt) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
+func (s StdPrepared) QueryContext(ctx context.Context, args ...any) (scan.Rows, error) {
 	return s.Stmt.QueryContext(ctx, args...)
 }

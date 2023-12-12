@@ -1,6 +1,5 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
 
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
@@ -48,9 +47,6 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
 {{- end}}
-
-// {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
-type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 
 {{if .Table.Relationships -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
@@ -131,6 +127,7 @@ func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
 {{- end}}
 
 {{block "setter_insert_mod" . -}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
@@ -160,6 +157,7 @@ type {{$tAlias.DownSingular}}ColumnNames struct {
 }
 
 {{if $table.Relationships -}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
 type {{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable] struct {
 	{{range $table.Relationships -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
