@@ -2,6 +2,7 @@ package orm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stephenafamo/bob"
 )
@@ -53,6 +54,20 @@ type Relationship struct {
 	// only expected to be set by drivers not by configuration
 	// configuration should set aliases though the alias configuration
 	Alias string `yaml:"-"`
+}
+
+func (r Relationship) Validate() error {
+	for index := range r.Sides {
+		if index == 0 {
+			continue
+		}
+
+		if r.Sides[index-1].To != r.Sides[index].From {
+			return fmt.Errorf("relationship %s has a gap between %s and %s", r.Name, r.Sides[index-1].To, r.Sides[index].From)
+		}
+	}
+
+	return nil
 }
 
 func (r Relationship) Local() string {

@@ -52,8 +52,6 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		}
 	}
 
-	var templates []lazyTemplate
-
 	if len(s.Config.Generator) > 0 {
 		noEditDisclaimer = []byte(
 			fmt.Sprintf(noEditDisclaimerFmt, " by "+s.Config.Generator),
@@ -85,11 +83,15 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	}
 
 	initInflections(s.Config.Inflections)
-	processRelationshipConfig(&s.Config, dbInfo.Tables)
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
+
+	processRelationshipConfig(&s.Config, dbInfo.Tables)
+	if err := validateRelationships(dbInfo.Tables); err != nil {
+		return fmt.Errorf("validating relationships: %w", err)
+	}
+
 	initAliases(&s.Config.Aliases, dbInfo.Tables)
-	err = s.initTags()
-	if err != nil {
+	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
@@ -125,7 +127,14 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		}
 	}
 
+	return generate(s, data)
+}
+
+func generate[T any](s *State, data *TemplateData[T]) error {
+	var err error
+	var templates []lazyTemplate
 	knownKeys := make(map[string]struct{})
+
 	for _, o := range s.Outputs {
 		if _, ok := knownKeys[o.Key]; ok {
 			return fmt.Errorf("Duplicate output key: %q", o.Key)
@@ -145,7 +154,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
 
-		padding := outputPadding(o.templates.Templates(), dbInfo.Tables)
+		padding := outputPadding(o.templates.Templates(), data.Tables)
 
 		if err := generateSingletonOutput(o, data, padding); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
@@ -163,7 +172,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 			testDirExtMap = groupTemplates(o.testTemplates)
 		}
 
-		for _, table := range dbInfo.Tables {
+		for _, table := range data.Tables {
 			data.Table = table
 
 			// Generate the regular templates
@@ -439,6 +448,18 @@ func processRelationshipConfig(config *Config, tables []drivers.Table) {
 
 		tables[i].Relationships = mergeRelationships(tables[i].Relationships, rels)
 	}
+}
+
+func validateRelationships(tables []drivers.Table) error {
+	for _, t := range tables {
+		for _, r := range t.Relationships {
+			if err := r.Validate(); err != nil {
+				return fmt.Errorf("%s: %w", t.Name, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 func flipRelationships(config *Config, tables []drivers.Table) {
