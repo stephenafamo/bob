@@ -424,7 +424,7 @@ func (t *Table[T, Tslice, Tset]) uniqueSet(row Tset) ([]string, []any) {
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TQuery[*dialect.InsertQuery, T, Tslice] {
 	q := &TQuery[*dialect.InsertQuery, T, Tslice]{
-		BaseQuery: Insert(im.Into(t.NameAs(ctx), t.View.Columns().Names()...)),
+		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...)),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,

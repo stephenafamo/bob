@@ -39,10 +39,15 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		if o.r.{{$relAlias}} != nil {
 		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
-					{{- range .NeededBridgeTables -}}
-						{{$alias := $.Aliases.Table . -}}
-						var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
-						ctx, {{$alias.DownSingular}}, err = r.{{$alias.DownSingular}}.create(ctx, exec)
+          {{- range neededBridgeRels $.Tables $.Aliases . -}}
+						{{$alias := $.Aliases.Table .Table -}}
+            {{if not .Many}}
+              var {{$alias.DownSingular}}{{.Position}} *models.{{$alias.UpSingular}}
+              ctx, {{$alias.DownSingular}}{{.Position}}, err = r.{{$alias.DownSingular}}.create(ctx, exec)
+            {{else}}
+              var {{$alias.DownSingular}}{{.Position}} models.{{$alias.UpSingular}}Slice
+              ctx, {{$alias.DownSingular}}{{.Position}}, err = r.{{$alias.DownSingular}}.createMany(ctx, exec, r.number)
+            {{end}}
 						if err != nil {
 							return ctx, err
 						}
@@ -54,16 +59,21 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 						return ctx, err
 					}
 
-					err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} rel{{$index}}...)
+					err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Tables $.Aliases $rel}} rel{{$index}}...)
 					if err != nil {
 						return ctx, err
 					}
 				}
 		{{- else -}}
-			{{- range .NeededBridgeTables -}}
-				{{$alias := $.Aliases.Table . -}}
-				var {{$alias.DownSingular}} *models.{{$alias.UpSingular}}
-				ctx, {{$alias.DownSingular}}, err = o.r.{{$relAlias}}.{{$alias.DownSingular}}.create(ctx, exec)
+      {{- range neededBridgeRels $.Tables $.Aliases . -}}
+				{{$alias := $.Aliases.Table .Table -}}
+        {{if not .Many}}
+          var {{$alias.DownSingular}}{{.Position}} *models.{{$alias.UpSingular}}
+          ctx, {{$alias.DownSingular}}{{.Position}}, err = r.{{$alias.DownSingular}}.create(ctx, exec)
+        {{else}}
+          var {{$alias.DownSingular}}{{.Position}} models.{{$alias.UpSingular}}Slice
+          ctx, {{$alias.DownSingular}}{{.Position}}, err = r.{{$alias.DownSingular}}.createMany(ctx, exec, r.number)
+        {{end}}
 				if err != nil {
 					return ctx, err
 				}
@@ -74,7 +84,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 			if err != nil {
 				return ctx, err
 			}
-			err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Aliases $rel}} rel{{$index}})
+			err = m.Attach{{$relAlias}}(ctx, exec, {{relArgs $.Tables $.Aliases $rel}} rel{{$index}})
 			if err != nil {
 				return ctx, err
 			}

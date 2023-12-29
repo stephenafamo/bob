@@ -275,7 +275,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- $fromColAlias := index $firstFrom.Columns $local -}}
 			{{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
 			Related{{$fromColAlias}} {{$fromCol.Type}} `db:"related_{{$firstSide.From}}.{{$fromColAlias}}"`
-		{{- end}}
+		{{end}}
 	}]())
 	if err != nil {
 		return err
@@ -290,11 +290,11 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	for _, o := range os {
 		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
-			{{- $fromCol := index $firstFrom.Columns $local -}}
+			{{$fromCol := index $firstFrom.Columns $local -}}
 			if o.{{$fromCol}} != rel.Related{{$fromCol}} {
 			  continue
 			}
-			{{- end}}
+			{{end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}

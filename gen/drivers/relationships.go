@@ -1,6 +1,8 @@
 package drivers
 
 import (
+	"fmt"
+
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -15,6 +17,7 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 	}
 
 	for _, t1 := range tables {
+		isJoinTable := IsJoinTable(t1)
 		fkUniqueMap := make(map[string][2]bool, len(t1.FKeys))
 		fkNullableMap := make(map[string]bool, len(t1.FKeys))
 
@@ -25,8 +28,8 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 				continue // no matching target table
 			}
 
-			localUnique := HasExactUnique(t1, fk.Columns...)
-			foreignUnique := HasExactUnique(t2, fk.ForeignColumns...)
+			localUnique := hasExactUnique(t1, fk.Columns...)
+			foreignUnique := hasExactUnique(t2, fk.ForeignColumns...)
 			fkUniqueMap[fk.Name] = [2]bool{localUnique, foreignUnique}
 
 			localNullable := allNullable(t1, fk.Columns...)
@@ -47,66 +50,62 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 					FromColumns: fk.Columns,
 					To:          t2.Key,
 					ToColumns:   fk.ForeignColumns,
-					ToKey:       false,
+					FromUnique:  localUnique,
 					ToUnique:    foreignUnique,
+					ToKey:       false,
 					KeyNullable: localNullable,
 				}},
 			})
 
+			flipSide := orm.RelSide{
+				From:        t2.Key,
+				FromColumns: fk.ForeignColumns,
+				To:          t1.Key,
+				ToColumns:   fk.Columns,
+				FromUnique:  foreignUnique,
+				ToUnique:    localUnique,
+				ToKey:       true,
+				KeyNullable: localNullable,
+			}
+
 			switch {
-			case t1.IsJoinTable:
+			case isJoinTable:
 				// Skip. Join tables are handled below
 			case t1.Key == t2.Key: // Self join
 				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
-					Name: fk.Name + SelfJoinSuffix,
-					Sides: []orm.RelSide{{
-						From:        t2.Key,
-						FromColumns: fk.ForeignColumns,
-						To:          t1.Key,
-						ToColumns:   fk.Columns,
-						ToKey:       true,
-						ToUnique:    localUnique,
-						KeyNullable: localNullable,
-					}},
+					Name:  fk.Name + SelfJoinSuffix,
+					Sides: []orm.RelSide{flipSide},
 				})
 			default:
 				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
-					Name: fk.Name,
-					Sides: []orm.RelSide{{
-						From:        t2.Key,
-						FromColumns: fk.ForeignColumns,
-						To:          t1.Key,
-						ToColumns:   fk.Columns,
-						ToKey:       true,
-						ToUnique:    localUnique,
-						KeyNullable: localNullable,
-					}},
+					Name:  fk.Name,
+					Sides: []orm.RelSide{flipSide},
 				})
 			}
 		}
 
-		if !t1.IsJoinTable {
+		if !isJoinTable {
 			continue
 		}
 
 		// Build ManyToMany
 		rels := relationships[t1.Key]
 		if len(rels) != 2 {
-			panic("join table does not have 2 relationships")
+			panic(fmt.Sprintf("join table %s does not have 2 relationships, has %d", t1.Key, len(rels)))
 		}
 		r1, r2 := rels[0], rels[1]
 
 		relationships[r1.Sides[0].To] = append(relationships[r1.Sides[0].To], orm.Relationship{
-			Name:        r1.Name + r2.Name,
-			ByJoinTable: true,
+			Name: r1.Name + r2.Name,
 			Sides: []orm.RelSide{
 				{
 					From:        r1.Sides[0].To,
 					FromColumns: r1.Sides[0].ToColumns,
 					To:          t1.Key,
 					ToColumns:   r1.Sides[0].FromColumns,
-					ToKey:       true,
+					FromUnique:  fkUniqueMap[r1.Name][1],
 					ToUnique:    fkUniqueMap[r1.Name][0],
+					ToKey:       true,
 					KeyNullable: fkNullableMap[r1.Name],
 				},
 				{
@@ -114,8 +113,9 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 					FromColumns: r2.Sides[0].FromColumns,
 					To:          r2.Sides[0].To,
 					ToColumns:   r2.Sides[0].ToColumns,
+					FromUnique:  fkUniqueMap[r2.Name][0],
+					ToUnique:    fkUniqueMap[r2.Name][1],
 					ToKey:       false,
-					ToUnique:    fkUniqueMap[r1.Name][1],
 					KeyNullable: fkNullableMap[r2.Name],
 				},
 			},
@@ -125,16 +125,16 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 			continue
 		}
 		relationships[r2.Sides[0].To] = append(relationships[r2.Sides[0].To], orm.Relationship{
-			Name:        r1.Name + r2.Name,
-			ByJoinTable: true,
+			Name: r1.Name + r2.Name,
 			Sides: []orm.RelSide{
 				{
 					From:        r2.Sides[0].To,
 					FromColumns: r2.Sides[0].ToColumns,
 					To:          t1.Key,
 					ToColumns:   r2.Sides[0].FromColumns,
-					ToKey:       true,
+					FromUnique:  fkUniqueMap[r2.Name][1],
 					ToUnique:    fkUniqueMap[r2.Name][0],
+					ToKey:       true,
 					KeyNullable: fkNullableMap[r2.Name],
 				},
 				{
@@ -142,8 +142,9 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 					FromColumns: r1.Sides[0].FromColumns,
 					To:          r1.Sides[0].To,
 					ToColumns:   r1.Sides[0].ToColumns,
+					FromUnique:  fkUniqueMap[r1.Name][0],
+					ToUnique:    fkUniqueMap[r1.Name][1],
 					ToKey:       false,
-					ToUnique:    fkUniqueMap[r2.Name][1],
 					KeyNullable: fkNullableMap[r1.Name],
 				},
 			},
@@ -171,7 +172,7 @@ func allNullable(t Table, cols ...string) bool {
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
-func HasExactUnique(t Table, cols ...string) bool {
+func hasExactUnique(t Table, cols ...string) bool {
 	if len(cols) == 0 {
 		return false
 	}
@@ -249,6 +250,52 @@ func IsJoinTable(t Table) bool {
 
 	// both foreign keys must have distinct columns
 	if !distinctElems(t.FKeys[0].Columns, t.FKeys[1].Columns) {
+		return false
+	}
+
+	// It is a join table!!!
+	return true
+}
+
+// A composite primary key involving two columns
+// Both primary key columns are also foreign keys
+func IsJoinTable2(t Table, r orm.Relationship, position int) bool {
+	if position == 0 || len(r.Sides) < 2 {
+		return false
+	}
+
+	if position == len(r.Sides) {
+		return false
+	}
+
+	if t.Key != r.Sides[position-1].To {
+		panic(fmt.Sprintf(
+			"table name does not match relationship position, expected %s got %s",
+			t.Key, r.Sides[position-1].To,
+		))
+	}
+
+	relevantSides := r.Sides[position-1 : position+1]
+
+	// If the external mappings are not unique, it is not a join table
+	if !relevantSides[0].FromUnique || !relevantSides[1].ToUnique {
+		return false
+	}
+
+	// All columns in the table must be in one of the sides
+	// if not, it is not a join table
+ColumnsLoop:
+	for _, col := range t.Columns {
+		for _, sideCol := range relevantSides[0].ToColumns {
+			if col.Name == sideCol {
+				continue ColumnsLoop
+			}
+		}
+		for _, sideCol := range relevantSides[1].FromColumns {
+			if col.Name == sideCol {
+				continue ColumnsLoop
+			}
+		}
 		return false
 	}
 

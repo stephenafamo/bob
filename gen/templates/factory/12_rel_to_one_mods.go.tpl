@@ -6,24 +6,24 @@
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
 
-func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
+func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{relDependencies $.Tables $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}R{{$relAlias}}R{
 			o: rel,
-			{{relDependenciesTypSet $.Aliases .}}
+			{{relDependenciesTypSet $.Tables $.Aliases .}}
 		}
 	})
 }
 
 func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(mods ...{{$ftable.UpSingular}}Mod) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		{{range .NeededBridgeTables -}}
-			{{$alias := $.Aliases.Table . -}}
-			{{$alias.DownSingular}} := o.f.New{{$alias.UpSingular}}()
-		{{- end}}
+		{{range neededBridgeRels $.Tables $.Aliases . -}}
+			{{$alias := $.Aliases.Table .Table -}}
+			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}()
+		{{end}}
 	  related := o.f.New{{$ftable.UpSingular}}(mods...)
 
-		m.With{{$relAlias}}({{relArgs $.Aliases .}} related).Apply(o)
+		m.With{{$relAlias}}({{relArgs $.Tables $.Aliases .}} related).Apply(o)
 	})
 }
 

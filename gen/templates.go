@@ -214,6 +214,7 @@ func (a assetLoader) String() string {
 //nolint:gochecknoglobals
 var templateFunctions = template.FuncMap{
 	"getTable":           drivers.GetTable,
+	"isJoinTable":        drivers.IsJoinTable2,
 	"titleCase":          strmangle.TitleCase,
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
@@ -265,6 +266,7 @@ var templateFunctions = template.FuncMap{
 		return fmt.Sprintf("%q, %q", s1, s2)
 	},
 	"uniqueColPairs":        uniqueColPairs,
+	"neededBridgeRels":      neededBridgeRels,
 	"relArgs":               relArgs,
 	"relDependencies":       relDependencies,
 	"relDependenciesPos":    relDependenciesPos,
@@ -317,9 +319,6 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 	switch {
 	case (fromOpt == toOpt) && (toCol.Nullable == fromCol.Nullable):
 		// If both type match, return it plainly
-		if fromTable.Name == "users" {
-			fmt.Printf("\n")
-		}
 		return to
 
 	case !fromOpt && !fromCol.Nullable:
@@ -372,26 +371,18 @@ func relIsRequired(t drivers.Table, r orm.Relationship) bool {
 	return true
 }
 
-func relArgs(aliases Aliases, r orm.Relationship, preSuf ...string) string {
-	var prefix, suffix string
-	if len(preSuf) > 0 {
-		prefix = preSuf[0]
-	}
-	if len(preSuf) > 1 {
-		suffix = preSuf[1]
-	}
-
+func relArgs(tables []drivers.Table, aliases Aliases, r orm.Relationship) string {
 	ma := []string{}
-	for _, need := range r.NeededBridgeTables() {
+	for _, need := range neededBridgeRels(tables, aliases, r) {
 		ma = append(ma, fmt.Sprintf(
-			"%s%s%s,", aliases.Tables[need].DownSingular, prefix, suffix,
+			"%s%d,", aliases.Tables[need.Table].DownSingular, need.Position,
 		))
 	}
 
 	return strings.Join(ma, "")
 }
 
-func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) string {
+func relDependencies(tables []drivers.Table, aliases Aliases, r orm.Relationship, preSuf ...string) string {
 	var prefix, suffix string
 	if len(preSuf) > 0 {
 		prefix = preSuf[0]
@@ -400,8 +391,8 @@ func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) stri
 		suffix = preSuf[1]
 	}
 	ma := []string{}
-	for _, need := range r.NeededBridgeTables() {
-		alias := aliases.Tables[need]
+	for _, need := range neededBridgeRels(tables, aliases, r) {
+		alias := aliases.Tables[need.Table]
 		ma = append(ma, fmt.Sprintf(
 			"%s *%s%s%s,", alias.DownSingular, alias.UpSingular, prefix, suffix,
 		))
@@ -410,41 +401,98 @@ func relDependencies(aliases Aliases, r orm.Relationship, preSuf ...string) stri
 	return strings.Join(ma, "")
 }
 
-func relDependenciesPos(aliases Aliases, r orm.Relationship, preSuf ...string) string {
-	var prefix, suffix string
-	if len(preSuf) > 0 {
-		prefix = preSuf[0]
-	}
-	if len(preSuf) > 1 {
-		suffix = preSuf[1]
-	}
-	ma := []string{}
-	for _, need := range r.NeededMappings() {
-		alias := aliases.Tables[need.ExternalTable]
-		ma = append(ma, fmt.Sprintf(
-			"%s%d *%s%s%s,", alias.DownSingular, need.ExtPosition, alias.UpSingular, prefix, suffix,
-		))
+func relDependenciesPos(tables []drivers.Table, aliases Aliases, r orm.Relationship) string {
+	needed := neededBridgeRels(tables, aliases, r)
+	ma := make([]string, len(needed))
+
+	for i, need := range needed {
+		alias := aliases.Tables[need.Table]
+		if need.Many {
+			ma[i] = fmt.Sprintf(
+				"%s%d %sSlice,", alias.DownPlural, need.Position, alias.UpSingular,
+			)
+		} else {
+			ma[i] = fmt.Sprintf(
+				"%s%d *%s,", alias.DownSingular, need.Position, alias.UpSingular,
+			)
+		}
 	}
 
 	return strings.Join(ma, "")
 }
 
-func relDependenciesTyp(aliases Aliases, r orm.Relationship) string {
+func neededBridgeRels(tables []drivers.Table, aliases Aliases, r orm.Relationship) []struct {
+	Table    string
+	Position int
+	Many     bool
+} {
+	ma := []struct {
+		Table    string
+		Position int
+		Many     bool
+	}{}
+
+	for _, side := range r.ValuedSides() {
+		if side.TableName == r.Local() {
+			continue
+		}
+		if side.TableName == r.Foreign() {
+			continue
+		}
+		if side.TableName == "" {
+			continue
+		}
+
+		shouldAdd := false
+
+		table := drivers.GetTable(tables, side.TableName)
+		for _, col := range table.Columns {
+			if col.Generated {
+				continue
+			}
+			if inList(side.Columns(), col.Name) {
+				continue
+			}
+
+			shouldAdd = true
+			break
+		}
+
+		if !shouldAdd {
+			continue
+		}
+
+		ma = append(ma, struct {
+			Table    string
+			Position int
+			Many     bool
+		}{
+			Table:    side.TableName,
+			Position: side.Position,
+			Many:     r.NeedsMany(side.Position),
+		})
+
+	}
+
+	return ma
+}
+
+func relDependenciesTyp(tables []drivers.Table, aliases Aliases, r orm.Relationship) string {
 	ma := []string{}
 
-	for _, need := range r.NeededBridgeTables() {
-		alias := aliases.Tables[need]
+	for _, need := range neededBridgeRels(tables, aliases, r) {
+		alias := aliases.Tables[need.Table]
 		ma = append(ma, fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular))
 	}
 
 	return strings.Join(ma, "\n")
 }
 
-func relDependenciesTypSet(aliases Aliases, r orm.Relationship) string {
+func relDependenciesTypSet(tables []drivers.Table, aliases Aliases, r orm.Relationship) string {
 	ma := []string{}
 
-	for _, need := range r.NeededBridgeTables() {
-		alias := aliases.Tables[need]
+	for _, need := range neededBridgeRels(tables, aliases, r) {
+		alias := aliases.Tables[need.Table]
 		ma = append(ma, fmt.Sprintf("%s: %s,", alias.DownSingular, alias.DownSingular))
 	}
 
@@ -573,4 +621,14 @@ func relQueryMethodName(tAlias TableAlias, relAlias string) string {
 	}
 
 	return relAlias
+}
+
+func inList[T comparable](s []T, val T) bool {
+	for _, v := range s {
+		if v == val {
+			return true
+		}
+	}
+
+	return false
 }

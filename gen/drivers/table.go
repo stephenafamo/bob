@@ -20,8 +20,6 @@ type Table struct {
 	FKeys   []ForeignKey `json:"foreign_keys"`
 	Uniques []Constraint `json:"unique"`
 
-	IsJoinTable bool `json:"is_join_table"`
-
 	Relationships []orm.Relationship `json:"relationship"`
 }
 

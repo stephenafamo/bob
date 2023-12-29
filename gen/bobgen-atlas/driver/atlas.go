@@ -155,8 +155,6 @@ func (d *driver) tables(realm *schema.Realm) []drivers.Table {
 				FKeys:   fks,
 				Columns: d.tableColumns(atlasTable, colFilter),
 			}
-			table.IsJoinTable = drivers.IsJoinTable(table)
-
 			tables = append(tables, table)
 		}
 	}

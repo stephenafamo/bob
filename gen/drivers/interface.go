@@ -95,7 +95,6 @@ func BuildDBInfo(ctx context.Context, c Constructor, concurrency int, only, exce
 		ret[i].PKey = constraints.PKs[t.Key]
 		ret[i].FKeys = constraints.FKs[t.Key]
 		ret[i].Uniques = constraints.Uniques[t.Key]
-		ret[i].IsJoinTable = IsJoinTable(ret[i])
 	}
 
 	relationships := BuildRelationships(ret)

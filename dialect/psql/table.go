@@ -281,7 +281,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TableQuery[*dialect.InsertQuery, T, Tslice] {
 	q := &TableQuery[*dialect.InsertQuery, T, Tslice]{
-		BaseQuery: Insert(im.Into(t.NameAs(ctx), t.View.Columns().Names()...)),
+		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...)),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,

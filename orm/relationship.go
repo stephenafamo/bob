@@ -27,11 +27,13 @@ type RelSide struct {
 	FromWhere []RelWhere `yaml:"from_where"`
 	ToWhere   []RelWhere `yaml:"to_where"`
 
+	// if the origin is unique
+	FromUnique bool `yaml:"from_unique"`
+	// if the destination is unique
+	ToUnique bool `yaml:"to_unique"`
 	// If the destination columns contain the key
 	// if false, it means the source columns are the foreign key
 	ToKey bool `yaml:"to_key"`
-	// if the destination is unique
-	ToUnique bool `yaml:"to_unique"`
 	// If the key is nullable. We need this to know if we can remove the
 	// relationship without deleting it
 	KeyNullable bool `yaml:"key_nullable"`
@@ -41,9 +43,8 @@ type RelSide struct {
 }
 
 type Relationship struct {
-	Name        string    `yaml:"name"`
-	ByJoinTable bool      `yaml:"by_join_table"`
-	Sides       []RelSide `yaml:"sides"`
+	Name  string    `yaml:"name"`
+	Sides []RelSide `yaml:"sides"`
 
 	// These can be set through user configuration
 	Ignored bool
@@ -114,56 +115,6 @@ func (r Relationship) InsertEarly() bool {
 	return true
 }
 
-func (r Relationship) NeededBridgeTables() []string {
-	ma := []string{}
-
-	local := r.Local()
-	foreign := r.Foreign()
-	mappings := r.ValuedSides()
-	for _, mapping := range mappings {
-		for _, ext := range mapping.Mapped {
-			if ext.ExternalTable == "" {
-				continue
-			}
-			if ext.ExternalTable == local {
-				continue
-			}
-			if ext.ExternalTable == foreign {
-				continue
-			}
-
-			ma = append(ma, ext.ExternalTable)
-		}
-	}
-
-	return ma
-}
-
-func (r Relationship) NeededMappings() []RelSetMapping {
-	ma := []RelSetMapping{}
-
-	local := r.Local()
-	foreign := r.Foreign()
-	mappings := r.ValuedSides()
-	for _, mapping := range mappings {
-		for _, ext := range mapping.Mapped {
-			if ext.ExternalTable == "" {
-				continue
-			}
-			if ext.ExternalTable == local {
-				continue
-			}
-			if ext.ExternalTable == foreign {
-				continue
-			}
-
-			ma = append(ma, ext)
-		}
-	}
-
-	return ma
-}
-
 type RelSetDetails struct {
 	TableName string
 	Mapped    []RelSetMapping
@@ -177,9 +128,42 @@ type RelSetMapping struct {
 	Value          string
 	ExternalTable  string
 	ExternalColumn string
+	ExtPosition    int
 	ExternalStart  bool
 	ExternalEnd    bool
-	ExtPosition    int
+}
+
+func (r RelSetDetails) Columns() []string {
+	cols := make([]string, len(r.Mapped))
+	for i, m := range r.Mapped {
+		cols[i] = m.Column
+	}
+
+	return cols
+}
+
+// NeedsMany returns true if the table on this side needs to be many
+func (r Relationship) NeedsMany(position int) bool {
+	if position == 0 {
+		return false
+	}
+
+	// If it is the last side, then it needs to be many
+	// if any items are many
+	if position == len(r.Sides) {
+		return r.IsToMany()
+	}
+
+	for i := position; i < len(r.Sides); i++ {
+		// If there is another "Many" side down the line
+		// this this should not be many
+		if !r.Sides[i].ToUnique {
+			return false
+		}
+	}
+
+	// If the key on the side is not unique, then it needs to be many
+	return !r.Sides[position-1].ToUnique
 }
 
 func (r RelSetDetails) UniqueExternals() []RelSetMapping {
@@ -202,7 +186,7 @@ func (r RelSetDetails) UniqueExternals() []RelSetMapping {
 }
 
 func (r Relationship) ValuedSides() []RelSetDetails {
-	x := make([]RelSetDetails, 0, len(r.Sides))
+	valuedSides := make([]RelSetDetails, 0, len(r.Sides))
 
 	for sideIndex, side := range r.Sides {
 		fromDeets := RelSetDetails{
@@ -278,12 +262,12 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 		}
 
 		if len(fromDeets.Mapped) > 0 {
-			x = append(x, fromDeets)
+			valuedSides = append(valuedSides, fromDeets)
 		}
 		if len(toDeets.Mapped) > 0 {
-			x = append(x, toDeets)
+			valuedSides = append(valuedSides, toDeets)
 		}
 	}
 
-	return x
+	return valuedSides
 }

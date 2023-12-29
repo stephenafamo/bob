@@ -487,23 +487,29 @@ func flipRelationships(config *Config, tables []drivers.Table) {
 func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationship {
 	sideLen := len(r.Sides)
 	flipped := orm.Relationship{
-		Name:        r.Name,
-		ByJoinTable: r.ByJoinTable,
-		Ignored:     r.Ignored,
-		Sides:       make([]orm.RelSide, sideLen),
+		Name:    r.Name,
+		Ignored: r.Ignored,
+		Sides:   make([]orm.RelSide, sideLen),
 	}
 
 	for i, side := range r.Sides {
-		var from drivers.Table
+		var from, to drivers.Table
 		for _, t := range tables {
 			if t.Key == side.From {
 				from = t
+			}
+			if t.Key == side.To {
+				to = t
+			}
+			if from.Key != "" && to.Key != "" {
 				break
 			}
 		}
-		if from.Key == "" {
+
+		if from.Key == "" || to.Key == "" {
 			continue
 		}
+
 		flippedSide := orm.RelSide{
 			To:   side.From,
 			From: side.To,
@@ -514,7 +520,8 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationsh
 			FromWhere:   side.ToWhere,
 
 			ToKey:       !side.ToKey,
-			ToUnique:    drivers.HasExactUnique(from, side.FromColumns...),
+			ToUnique:    side.FromUnique,
+			FromUnique:  side.ToUnique,
 			KeyNullable: side.KeyNullable,
 		}
 		flipped.Sides[sideLen-(1+i)] = flippedSide

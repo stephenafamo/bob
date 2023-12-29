@@ -212,8 +212,6 @@ func (d driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 		return table, err
 	}
 
-	table.IsJoinTable = drivers.IsJoinTable(table)
-
 	return table, nil
 }
 

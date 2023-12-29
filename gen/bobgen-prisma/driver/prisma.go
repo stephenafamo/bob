@@ -115,8 +115,6 @@ func (d *driver) tables() []drivers.Table {
 			Uniques: uniques,
 			FKeys:   fks,
 		}
-		table.IsJoinTable = drivers.IsJoinTable(table)
-
 		tables = append(tables, table)
 	}
 
