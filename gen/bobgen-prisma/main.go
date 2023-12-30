@@ -201,8 +201,9 @@ func generate(root root) error {
 	}
 
 	relAliasPlugin := relAliasPlugin{
-		models: root.DMMF.Datamodel.Models,
-		config: driverConfig,
+		models:  root.DMMF.Datamodel.Models,
+		aliases: config.Aliases,
+		config:  driverConfig,
 	}
 
 	if err := gen.Run(context.Background(), state, d, relAliasPlugin); err != nil {

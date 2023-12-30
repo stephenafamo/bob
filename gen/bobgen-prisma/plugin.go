@@ -10,8 +10,9 @@ import (
 // This plugin sets the default Alias of relationships based on the field name
 // we do this after building the relationships based on the keys
 type relAliasPlugin struct {
-	models []driver.Model
-	config driver.Config
+	models  []driver.Model
+	aliases gen.Aliases
+	config  driver.Config
 }
 
 func (p relAliasPlugin) Name() string {
@@ -55,11 +56,17 @@ func (p relAliasPlugin) PlugTemplateData(data *gen.TemplateData[driver.Extra]) e
 				continue
 			}
 
-			if field.Kind == driver.FieldKindObject {
-				for i, rel := range data.Relationships[table.Key] {
-					if rel.Name == field.RelationName {
-						data.Relationships[table.Key][i].Alias = strcase.ToCamel(field.Name)
-					}
+			if field.Kind != driver.FieldKindObject {
+				continue
+			}
+
+			for _, rel := range data.Relationships[table.Key] {
+				if rel.Name != field.RelationName {
+					continue
+				}
+
+				if p.aliases.Tables[table.Key].Relationships[rel.Name] == "" {
+					data.Aliases.Tables[table.Key].Relationships[rel.Name] = strcase.ToCamel(field.Name)
 				}
 			}
 		}

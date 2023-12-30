@@ -37,49 +37,49 @@ func initAliases(a *Aliases, tables []drivers.Table, relMap drivers.Relationship
 	}
 
 	for _, t := range tables {
-		table := a.Tables[t.Key]
+		tableAlias := a.Tables[t.Key]
 		cleanKey := strings.ReplaceAll(t.Key, ".", "_")
 
-		if len(table.UpPlural) == 0 {
-			table.UpPlural = strmangle.TitleCase(strmangle.Plural(cleanKey))
+		if len(tableAlias.UpPlural) == 0 {
+			tableAlias.UpPlural = strmangle.TitleCase(strmangle.Plural(cleanKey))
 		}
-		if len(table.UpSingular) == 0 {
-			table.UpSingular = strmangle.TitleCase(strmangle.Singular(cleanKey))
+		if len(tableAlias.UpSingular) == 0 {
+			tableAlias.UpSingular = strmangle.TitleCase(strmangle.Singular(cleanKey))
 		}
-		if len(table.DownPlural) == 0 {
-			table.DownPlural = strmangle.CamelCase(strmangle.Plural(cleanKey))
+		if len(tableAlias.DownPlural) == 0 {
+			tableAlias.DownPlural = strmangle.CamelCase(strmangle.Plural(cleanKey))
 		}
-		if len(table.DownSingular) == 0 {
-			table.DownSingular = strmangle.CamelCase(strmangle.Singular(cleanKey))
+		if len(tableAlias.DownSingular) == 0 {
+			tableAlias.DownSingular = strmangle.CamelCase(strmangle.Singular(cleanKey))
 		}
 
-		if table.Columns == nil {
-			table.Columns = make(map[string]string)
+		if tableAlias.Columns == nil {
+			tableAlias.Columns = make(map[string]string)
 		}
-		if table.Relationships == nil {
-			table.Relationships = make(map[string]string)
+		if tableAlias.Relationships == nil {
+			tableAlias.Relationships = make(map[string]string)
 		}
 
 		for _, c := range t.Columns {
-			if _, ok := table.Columns[c.Name]; !ok {
-				table.Columns[c.Name] = strmangle.TitleCase(c.Name)
+			if _, ok := tableAlias.Columns[c.Name]; !ok {
+				tableAlias.Columns[c.Name] = strmangle.TitleCase(c.Name)
 			}
 
-			r, _ := utf8.DecodeRuneInString(table.Columns[c.Name])
+			r, _ := utf8.DecodeRuneInString(tableAlias.Columns[c.Name])
 			if unicode.IsNumber(r) {
-				table.Columns[c.Name] = "C" + table.Columns[c.Name]
+				tableAlias.Columns[c.Name] = "C" + tableAlias.Columns[c.Name]
 			}
 		}
 
 		tableRels := relMap[t.Key]
 		computed := relAlias(tableRels)
 		for _, rel := range tableRels {
-			if _, ok := table.Relationships[rel.Name]; !ok {
-				table.Relationships[rel.Name] = computed[rel.Name]
+			if _, ok := tableAlias.Relationships[rel.Name]; !ok {
+				tableAlias.Relationships[rel.Name] = computed[rel.Name]
 			}
 		}
 
-		a.Tables[t.Key] = table
+		a.Tables[t.Key] = tableAlias
 	}
 }
 

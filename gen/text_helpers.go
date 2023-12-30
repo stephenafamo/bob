@@ -18,11 +18,6 @@ func relAlias(rels []orm.Relationship) map[string]string {
 	aliases := map[string]string{}
 
 	for _, rel := range rels {
-		if rel.Alias != "" {
-			aliases[rel.Name] = rel.Alias
-			continue
-		}
-
 		// When not a direct relationship we just use the table name
 		if len(rel.Sides) > 1 {
 			aliases[rel.Name] = formatRelAlias(rel, last(rel.Sides[len(rel.Sides)-1].To))

@@ -50,11 +50,6 @@ type Relationship struct {
 	Ignored bool
 	// Do not create the inverse of a user configured relationship
 	NoReverse bool `yaml:"no_reverse"`
-
-	// if present is used instead of computing from the columns
-	// only expected to be set by drivers not by configuration
-	// configuration should set aliases though the alias configuration
-	Alias string `yaml:"-"`
 }
 
 func (r Relationship) Validate() error {
