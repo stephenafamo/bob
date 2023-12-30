@@ -114,9 +114,6 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		d.TestAssemble(t)
 	})
 
-	rels := drivers.BuildRelationships(d.info.Tables)
-	aliases = buildAliases(d.info.Tables, rels)
-
 	if testing.Short() {
 		// skip testing generation
 		t.SkipNow()
@@ -134,8 +131,10 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.Fatalf("go env GOMOD cmd execution failed: %s", "not in a go module")
 	}
 
+	aliaser := &aliasPlugin[T]{}
+
 	t.Run("generate", func(t *testing.T) {
-		testDriver[T](t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath)
+		testDriver[T](t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath, aliaser)
 	})
 
 	aliasesFolder := filepath.Join(config.Root, "aliases")
@@ -145,11 +144,11 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		testDriver[T](t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath)
+		testDriver[T](t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath, aliaser)
 	})
 }
 
-func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string) {
+func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string, plugins ...gen.Plugin) {
 	t.Helper()
 
 	buf := &bytes.Buffer{}
@@ -176,7 +175,11 @@ func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config
 	}
 
 	outputs := helpers.DefaultOutputs(dst, "models", false, tpls)
-	if err := gen.Run(context.Background(), &gen.State{Config: config, Outputs: outputs}, d); err != nil {
+	if err := gen.Run(
+		context.Background(),
+		&gen.State{Config: config, Outputs: outputs},
+		d, plugins...,
+	); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
 
@@ -279,9 +282,22 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 	}
 }
 
-func buildAliases(tables []drivers.Table, relMap drivers.Relationships) gen.Aliases {
-	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias, len(tables))}
-	for i, table := range tables {
+type aliasPlugin[T any] struct {
+	tables []drivers.Table
+	rels   drivers.Relationships
+}
+
+func (a *aliasPlugin[T]) Name() string {
+	return "aliaser"
+}
+
+func (a *aliasPlugin[T]) PlugState(s *gen.State) error {
+	if a.rels == nil || len(a.tables) == 0 {
+		return nil
+	}
+
+	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias, len(a.tables))}
+	for i, table := range a.tables {
 		tableAlias := gen.TableAlias{
 			UpPlural:     fmt.Sprintf("Alias%dThings", i),
 			UpSingular:   fmt.Sprintf("Alias%dThing", i),
@@ -295,12 +311,20 @@ func buildAliases(tables []drivers.Table, relMap drivers.Relationships) gen.Alia
 		}
 
 		tableAlias.Relationships = make(map[string]string)
-		for j, rel := range relMap[table.Key] {
+		for j, rel := range a.rels[table.Key] {
 			tableAlias.Relationships[rel.Name] = fmt.Sprintf("Alias%dThingRel%d", i, j)
 		}
 
 		aliases.Tables[table.Key] = tableAlias
 	}
 
-	return aliases
+	s.Config.Aliases = aliases
+
+	return nil
+}
+
+func (a *aliasPlugin[T]) PlugTemplateData(data *gen.TemplateData[any]) error {
+	a.tables = data.Tables
+	a.rels = data.Relationships
+	return nil
 }
