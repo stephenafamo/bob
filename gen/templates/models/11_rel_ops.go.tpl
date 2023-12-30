@@ -1,4 +1,4 @@
-{{if .Table.PKey -}}
+{{if .Table.Constraints.Primary -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 

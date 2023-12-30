@@ -147,12 +147,14 @@ func (d *driver) tables(realm *schema.Realm) []drivers.Table {
 
 			pk, uniques, fks := d.getKeys(atlasTable, colFilter)
 			table := drivers.Table{
-				Key:     d.key(schema.Name, atlasTable.Name),
-				Schema:  d.schema(schema.Name),
-				Name:    atlasTable.Name,
-				PKey:    pk,
-				Uniques: uniques,
-				FKeys:   fks,
+				Key:    d.key(schema.Name, atlasTable.Name),
+				Schema: d.schema(schema.Name),
+				Name:   atlasTable.Name,
+				Constraints: drivers.Constraints{
+					Primary: pk,
+					Uniques: uniques,
+					Foreign: fks,
+				},
 				Columns: d.tableColumns(atlasTable, colFilter),
 			}
 			tables = append(tables, table)

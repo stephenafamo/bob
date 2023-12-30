@@ -1,4 +1,4 @@
-{{if .Table.PKey}}
+{{if .Table.Constraints.Primary}}
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}

@@ -27,12 +27,12 @@ func TestJoinTable(t *testing.T) {
 	for i, test := range tests {
 		var table Table
 
-		table.PKey = &PrimaryKey{Columns: test.Pkey}
+		table.Constraints.Primary = &PrimaryKey{Columns: test.Pkey}
 		for _, col := range strmangle.SetMerge(test.Pkey, test.Fkey) {
 			table.Columns = append(table.Columns, Column{Name: col})
 		}
 		for _, k := range test.Fkey {
-			table.FKeys = append(table.FKeys, ForeignKey{
+			table.Constraints.Foreign = append(table.Constraints.Foreign, ForeignKey{
 				Constraint: Constraint{Columns: []string{k}},
 			})
 		}

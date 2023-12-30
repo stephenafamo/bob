@@ -51,7 +51,7 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
     {{end -}}
 }
 
-{{if .Table.PKey -}}
+{{if .Table.Constraints.Primary -}}
 // BuildSetter returns an *models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
 func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingular}}Setter {

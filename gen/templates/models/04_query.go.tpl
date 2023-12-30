@@ -1,9 +1,9 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table .Table.Key -}}
 
-{{if .Table.PKey -}}
+{{if .Table.Constraints.Primary -}}
 {{$pkArgs := ""}}
-{{range $colName := $table.PKey.Columns -}}
+{{range $colName := $table.Constraints.Primary.Columns -}}
 {{- $column := $table.GetColumn $colName -}}
 {{- $colAlias := $tAlias.Column $colName -}}
 {{$pkArgs = printf "%s%sPK %s," $pkArgs $colAlias $column.Type}}
@@ -16,7 +16,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 	if len(cols) == 0 {
 		return {{$tAlias.UpPlural}}.Query(
 			ctx, exec,
-			{{range $column := $table.PKey.Columns -}}
+			{{range $column := $table.Constraints.Primary.Columns -}}
 			{{- $colAlias := $tAlias.Column $column -}}
 			SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 			{{end -}}
@@ -25,7 +25,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 
 	return {{$tAlias.UpPlural}}.Query(
 		ctx, exec,
-		{{range $column := $table.PKey.Columns -}}
+		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}
@@ -37,7 +37,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 func {{$tAlias.UpSingular}}Exists(ctx context.Context, exec bob.Executor, {{$pkArgs}}) (bool, error) {
 	return {{$tAlias.UpPlural}}.Query(
 		ctx, exec,
-		{{range $column := $table.PKey.Columns -}}
+		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}

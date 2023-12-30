@@ -201,13 +201,13 @@ func (d driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 		return table, err
 	}
 
-	table.PKey = d.primaryKey(schema, name, tinfo)
-	table.FKeys, err = d.foreignKeys(ctx, schema, name)
+	table.Constraints.Primary = d.primaryKey(schema, name, tinfo)
+	table.Constraints.Foreign, err = d.foreignKeys(ctx, schema, name)
 	if err != nil {
 		return table, err
 	}
 
-	table.Uniques, err = d.uniques(ctx, schema, name)
+	table.Constraints.Uniques, err = d.uniques(ctx, schema, name)
 	if err != nil {
 		return table, err
 	}

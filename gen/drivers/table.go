@@ -16,11 +16,14 @@ type Table struct {
 	Name    string   `json:"name"`
 	Columns []Column `json:"columns"`
 
-	PKey    *PrimaryKey  `json:"p_key"`
-	FKeys   []ForeignKey `json:"foreign_keys"`
-	Uniques []Constraint `json:"unique"`
-
+	Constraints   Constraints        `json:"constraints"`
 	Relationships []orm.Relationship `json:"relationship"`
+}
+
+type Constraints struct {
+	Primary *PrimaryKey  `json:"primary"`
+	Foreign []ForeignKey `json:"foreign"`
+	Uniques []Constraint `json:"uniques"`
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).

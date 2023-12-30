@@ -36,7 +36,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{block "model_and_query" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{if not $table.PKey -}}
+{{if not $table.Constraints.Primary -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} view
 	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} view
@@ -67,7 +67,7 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
-{{if or .Table.PKey .Table.Relationships -}}
+{{if or .Table.Constraints.Primary .Table.Relationships -}}
 // {{$tAlias.UpSingular}}Setter is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included

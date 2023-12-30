@@ -111,9 +111,11 @@ func (d *driver) tables() []drivers.Table {
 			Key:     model.TableName(),
 			Name:    model.TableName(),
 			Columns: d.tableColumns(model, colFilter),
-			PKey:    pk,
-			Uniques: uniques,
-			FKeys:   fks,
+			Constraints: drivers.Keys{
+				Primary: pk,
+				Uniques: uniques,
+				Foreign: fks,
+			},
 		}
 		tables = append(tables, table)
 	}

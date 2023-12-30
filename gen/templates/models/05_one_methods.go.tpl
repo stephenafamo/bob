@@ -1,4 +1,4 @@
-{{if .Table.PKey -}}
+{{if .Table.Constraints.Primary -}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 {{$table := .Table}}
@@ -6,14 +6,14 @@
 
 // PrimaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
 func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
-	{{if gt (len $table.PKey.Columns) 1 -}}
+	{{if gt (len $table.Constraints.Primary.Columns) 1 -}}
 		return {{$.Dialect}}.ArgGroup(
-			{{range $column := $table.PKey.Columns -}}
+			{{range $column := $table.Constraints.Primary.Columns -}}
 				o.{{$tAlias.Column $column}},
 			{{end}}
 		)
 	{{- else -}}
-		return {{$.Dialect}}.Arg(o.{{$tAlias.Column (index $table.PKey.Columns 0)}})
+		return {{$.Dialect}}.Arg(o.{{$tAlias.Column (index $table.Constraints.Primary.Columns 0)}})
 	{{- end}}
 }
 
@@ -31,7 +31,7 @@ func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) 
 func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) error {
 	o2, err := {{$tAlias.UpPlural}}.Query(
 		ctx, exec,
-		{{range $column := $table.PKey.Columns -}}
+		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ(o.{{$colAlias}}),
 		{{end -}}

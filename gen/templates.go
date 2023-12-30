@@ -221,8 +221,8 @@ var templateFunctions = template.FuncMap{
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 	"dbTag": func(t drivers.Table, c drivers.Column) string {
 		tag := c.Name
-		if t.PKey != nil {
-			for _, pkc := range t.PKey.Columns {
+		if t.Constraints.Primary != nil {
+			for _, pkc := range t.Constraints.Primary.Columns {
 				if pkc == c.Name {
 					tag += ",pk"
 				}
@@ -589,12 +589,12 @@ func getVarName(aliases Aliases, tableName string, local, foreign, many bool) st
 }
 
 func uniqueColPairs(t drivers.Table) string {
-	ret := make([]string, 0, len(t.Uniques)+1)
-	if t.PKey != nil {
-		ret = append(ret, fmt.Sprintf("%#v", t.PKey.Columns))
+	ret := make([]string, 0, len(t.Constraints.Uniques)+1)
+	if t.Constraints.Primary != nil {
+		ret = append(ret, fmt.Sprintf("%#v", t.Constraints.Primary.Columns))
 	}
 
-	for _, unique := range t.Uniques {
+	for _, unique := range t.Constraints.Uniques {
 		ret = append(ret, fmt.Sprintf("%#v", unique.Columns))
 	}
 
@@ -604,7 +604,7 @@ func uniqueColPairs(t drivers.Table) string {
 func relIsView(tables []drivers.Table, rel orm.Relationship) bool {
 	for _, s := range rel.Sides {
 		t := drivers.GetTable(tables, s.To)
-		if t.PKey == nil {
+		if t.Constraints.Primary == nil {
 			return true
 		}
 	}

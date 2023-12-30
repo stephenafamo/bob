@@ -92,9 +92,9 @@ func BuildDBInfo(ctx context.Context, c Constructor, concurrency int, only, exce
 		return nil, fmt.Errorf("unable to load constraints: %w", err)
 	}
 	for i, t := range ret {
-		ret[i].PKey = constraints.PKs[t.Key]
-		ret[i].FKeys = constraints.FKs[t.Key]
-		ret[i].Uniques = constraints.Uniques[t.Key]
+		ret[i].Constraints.Primary = constraints.PKs[t.Key]
+		ret[i].Constraints.Foreign = constraints.FKs[t.Key]
+		ret[i].Constraints.Uniques = constraints.Uniques[t.Key]
 	}
 
 	relationships := BuildRelationships(ret)

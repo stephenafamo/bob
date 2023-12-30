@@ -18,11 +18,11 @@ func BuildRelationships(tables []Table) map[string][]orm.Relationship {
 
 	for _, t1 := range tables {
 		isJoinTable := IsJoinTable(t1)
-		fkUniqueMap := make(map[string][2]bool, len(t1.FKeys))
-		fkNullableMap := make(map[string]bool, len(t1.FKeys))
+		fkUniqueMap := make(map[string][2]bool, len(t1.Constraints.Foreign))
+		fkNullableMap := make(map[string]bool, len(t1.Constraints.Foreign))
 
 		// Build BelongsTo, ToOne and ToMany
-		for _, fk := range t1.FKeys {
+		for _, fk := range t1.Constraints.Foreign {
 			t2, ok := tableNameMap[fk.ForeignTable]
 			if !ok {
 				continue // no matching target table
@@ -178,12 +178,12 @@ func hasExactUnique(t Table, cols ...string) bool {
 	}
 
 	// Primary keys are unique
-	if t.PKey != nil && sliceMatch(t.PKey.Columns, cols) {
+	if t.Constraints.Primary != nil && sliceMatch(t.Constraints.Primary.Columns, cols) {
 		return true
 	}
 
 	// Check other unique constrints
-	for _, u := range t.Uniques {
+	for _, u := range t.Constraints.Uniques {
 		if sliceMatch(u.Columns, cols) {
 			return true
 		}
@@ -229,27 +229,27 @@ func distinctElems[T comparable, Ts ~[]T](a, b Ts) bool {
 // A composite primary key involving two columns
 // Both primary key columns are also foreign keys
 func IsJoinTable(t Table) bool {
-	if t.PKey == nil {
+	if t.Constraints.Primary == nil {
 		return false
 	}
 
 	// Must have exactly 2 foreign keys
-	if len(t.FKeys) != 2 {
+	if len(t.Constraints.Foreign) != 2 {
 		return false
 	}
 
 	// Number of columns must be the number of primary key columns
-	if len(t.Columns) != len(t.PKey.Columns) {
+	if len(t.Columns) != len(t.Constraints.Primary.Columns) {
 		return false
 	}
 
 	// length of both foreign keys must be the total length of the columns
-	if len(t.Columns) != (len(t.FKeys[0].Columns) + len(t.FKeys[1].Columns)) {
+	if len(t.Columns) != (len(t.Constraints.Foreign[0].Columns) + len(t.Constraints.Foreign[1].Columns)) {
 		return false
 	}
 
 	// both foreign keys must have distinct columns
-	if !distinctElems(t.FKeys[0].Columns, t.FKeys[1].Columns) {
+	if !distinctElems(t.Constraints.Foreign[0].Columns, t.Constraints.Foreign[1].Columns) {
 		return false
 	}
 
