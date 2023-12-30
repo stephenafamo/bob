@@ -95,7 +95,7 @@ func (d *driver) tables() []drivers.Table {
 
 	tblFilter := drivers.ParseTableFilter(d.config.Only, d.config.Except)
 
-	colFilter := drivers.ParseColumnFilter(d.tableNames(drivers.Filter{
+	colFilter := drivers.ParseColumnFilter(TableNamesFromFilter(models, drivers.Filter{
 		Only:   tblFilter.Only,
 		Except: tblFilter.Except,
 	}), d.config.Only, d.config.Except)
@@ -111,7 +111,7 @@ func (d *driver) tables() []drivers.Table {
 			Key:     model.TableName(),
 			Name:    model.TableName(),
 			Columns: d.tableColumns(model, colFilter),
-			Constraints: drivers.Keys{
+			Constraints: drivers.Constraints{
 				Primary: pk,
 				Uniques: uniques,
 				Foreign: fks,
@@ -120,56 +120,10 @@ func (d *driver) tables() []drivers.Table {
 		tables = append(tables, table)
 	}
 
-	relationships := drivers.BuildRelationships(tables)
-	for i, t := range tables {
-		tables[i].Relationships = relationships[t.Key]
-	}
-
-	// This just sets the default Alias of relationships based on the field name
-	// we do this after building the relationships based on the keys
-	for _, model := range models {
-		if drivers.Skip(model.TableName(), tblFilter.Only, tblFilter.Except) {
-			continue
-		}
-
-		var tableIndex int
-		var table drivers.Table
-		for i, t := range tables {
-			if t.Key == model.TableName() {
-				tableIndex = i
-				table = t
-				break
-			}
-		}
-
-		tableName := model.TableName()
-		allfilter := colFilter["*"]
-		filter := colFilter[tableName]
-		include := append(allfilter.Only, filter.Only...)
-		exclude := append(allfilter.Except, filter.Except...)
-		for _, field := range model.Fields {
-			if drivers.Skip(field.Name, include, exclude) {
-				continue
-			}
-
-			if field.Kind == FieldKindObject {
-				for i, rel := range table.Relationships {
-					if rel.Name == field.RelationName {
-						tables[tableIndex].Relationships[i].Alias = strcase.ToCamel(field.Name)
-					}
-				}
-			}
-		}
-	}
-
 	return tables
 }
 
-// tableNames connects to the postgres database and
-// retrieves all table names from the information_schema where the
-// table schema is schema. It uses a whitelist and blacklist.
-func (d *driver) tableNames(tableFilter drivers.Filter) []string {
-	models := d.datamodel.Models
+func TableNamesFromFilter(models []Model, tableFilter drivers.Filter) []string {
 	names := make([]string, 0, len(models))
 
 	for _, m := range models {

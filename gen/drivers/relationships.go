@@ -2,13 +2,14 @@ package drivers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/stephenafamo/bob/orm"
 )
 
 const SelfJoinSuffix = "__self_join_reverse"
 
-func BuildRelationships(tables []Table) map[string][]orm.Relationship {
+func BuildRelationships(tables []Table) Relationships {
 	relationships := map[string][]orm.Relationship{}
 
 	tableNameMap := make(map[string]Table, len(tables))
@@ -301,4 +302,35 @@ ColumnsLoop:
 
 	// It is a join table!!!
 	return true
+}
+
+type Relationships map[string][]orm.Relationship
+
+func (r Relationships) Get(table string) []orm.Relationship {
+	return r[table]
+}
+
+// GetInverse returns the Relationship of the other side
+func (rs Relationships) GetInverse(tables []Table, r orm.Relationship) orm.Relationship {
+	frels, ok := rs[r.Foreign()]
+	if !ok {
+		return orm.Relationship{}
+	}
+
+	toMatch := r.Name
+	if r.Local() == r.Foreign() {
+		hadSuffix := strings.HasSuffix(r.Name, SelfJoinSuffix)
+		toMatch = strings.TrimSuffix(r.Name, SelfJoinSuffix)
+		if hadSuffix {
+			toMatch += SelfJoinSuffix
+		}
+	}
+
+	for _, r2 := range frels {
+		if toMatch == r2.Name {
+			return r2
+		}
+	}
+
+	return orm.Relationship{}
 }

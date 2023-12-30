@@ -85,12 +85,13 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	initInflections(s.Config.Inflections)
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
 
-	processRelationshipConfig(&s.Config, dbInfo.Tables)
-	if err := validateRelationships(dbInfo.Tables); err != nil {
+	relationships := drivers.BuildRelationships(dbInfo.Tables)
+	processRelationshipConfig(&s.Config, dbInfo.Tables, relationships)
+	if err := validateRelationships(relationships); err != nil {
 		return fmt.Errorf("validating relationships: %w", err)
 	}
 
-	initAliases(&s.Config.Aliases, dbInfo.Tables)
+	initAliases(&s.Config.Aliases, dbInfo.Tables, relationships)
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
@@ -101,6 +102,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		Enums:             dbInfo.Enums,
 		ExtraInfo:         dbInfo.ExtraInfo,
 		Aliases:           s.Config.Aliases,
+		Relationships:     relationships,
 		NoTests:           s.Config.NoTests,
 		NoBackReferencing: s.Config.NoBackReferencing,
 		StructTagCasing:   s.Config.StructTagCasing,
@@ -434,27 +436,27 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(config *Config, tables []drivers.Table) {
+func processRelationshipConfig(config *Config, tables []drivers.Table, relMap drivers.Relationships) {
 	if len(tables) == 0 {
 		return
 	}
 	flipRelationships(config, tables)
 
-	for i, t := range tables {
+	for _, t := range tables {
 		rels, ok := config.Relationships[t.Key]
 		if !ok {
 			continue
 		}
 
-		tables[i].Relationships = mergeRelationships(tables[i].Relationships, rels)
+		relMap[t.Key] = mergeRelationships(relMap[t.Key], rels)
 	}
 }
 
-func validateRelationships(tables []drivers.Table) error {
-	for _, t := range tables {
-		for _, r := range t.Relationships {
+func validateRelationships(rels drivers.Relationships) error {
+	for table, tableRels := range rels {
+		for _, r := range tableRels {
 			if err := r.Validate(); err != nil {
-				return fmt.Errorf("%s: %w", t.Name, err)
+				return fmt.Errorf("%s: %w", table, err)
 			}
 		}
 	}
@@ -640,10 +642,6 @@ func (s *State) initTags() error {
 	}
 
 	return nil
-}
-
-func initAliases(a *Aliases, tables []drivers.Table) {
-	FillAliases(a, tables)
 }
 
 // normalizeSlashes takes a path that was made on linux or windows and converts it

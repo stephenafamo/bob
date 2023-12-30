@@ -14,10 +14,10 @@ func last(s string) string {
 	return ss[len(ss)-1]
 }
 
-func relAlias(t drivers.Table) map[string]string {
+func relAlias(rels []orm.Relationship) map[string]string {
 	aliases := map[string]string{}
 
-	for _, rel := range t.Relationships {
+	for _, rel := range rels {
 		if rel.Alias != "" {
 			aliases[rel.Name] = rel.Alias
 			continue

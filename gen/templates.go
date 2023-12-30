@@ -75,10 +75,11 @@ type TemplateData[T any] struct {
 	Dialect  string
 	Importer Importer
 
-	Table   drivers.Table
-	Tables  []drivers.Table
-	Enums   []drivers.Enum
-	Aliases Aliases
+	Table         drivers.Table
+	Tables        []drivers.Table
+	Enums         []drivers.Enum
+	Aliases       Aliases
+	Relationships drivers.Relationships
 
 	// Controls what names are output
 	PkgName string

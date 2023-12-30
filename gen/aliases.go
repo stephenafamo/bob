@@ -26,12 +26,12 @@ type TableAlias struct {
 	Relationships map[string]string `yaml:"relationships,omitempty" toml:"relationships,omitempty" json:"relationships,omitempty"`
 }
 
-// FillAliases takes the table information from the driver
+// initAliases takes the table information from the driver
 // and fills in aliases where the user has provided none.
 //
 // This leaves us with a complete list of Go names for all tables,
 // columns, and relationships.
-func FillAliases(a *Aliases, tables []drivers.Table) {
+func initAliases(a *Aliases, tables []drivers.Table, relMap drivers.Relationships) {
 	if a.Tables == nil {
 		a.Tables = make(map[string]TableAlias)
 	}
@@ -71,8 +71,9 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 			}
 		}
 
-		computed := relAlias(t)
-		for _, rel := range t.Relationships {
+		tableRels := relMap[t.Key]
+		computed := relAlias(tableRels)
+		for _, rel := range tableRels {
 			if _, ok := table.Relationships[rel.Name]; !ok {
 				table.Relationships[rel.Name] = computed[rel.Name]
 			}

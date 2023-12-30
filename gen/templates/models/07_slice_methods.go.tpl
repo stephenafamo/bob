@@ -48,7 +48,7 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 				continue
 			}
 			{{end -}}
-			{{if $table.Relationships}}new.R = old.R{{end}}
+			{{if $.Relationships.Get $table.Key}}new.R = old.R{{end}}
 			*old = *new
 			break
 		}

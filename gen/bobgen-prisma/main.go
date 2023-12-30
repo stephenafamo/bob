@@ -200,7 +200,12 @@ func generate(root root) error {
 		Outputs: outputs,
 	}
 
-	if err := gen.Run(context.Background(), state, d); err != nil {
+	relAliasPlugin := relAliasPlugin{
+		models: root.DMMF.Datamodel.Models,
+		config: driverConfig,
+	}
+
+	if err := gen.Run(context.Background(), state, d, relAliasPlugin); err != nil {
 		fmt.Println(err) // makes the error print better
 		return err
 	}

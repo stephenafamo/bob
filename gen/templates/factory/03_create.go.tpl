@@ -3,10 +3,10 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table .Table.Key}}
+{{$tAlias := .Aliases.Table $table.Key}}
 
 func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
-	{{range $column := .Table.Columns -}}
+	{{range $column := $table.Columns -}}
   {{- if $column.Default}}{{continue}}{{end -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
@@ -26,10 +26,10 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
 func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec bob.Executor, m *models.{{$tAlias.UpSingular}}) (context.Context,error) {
 	var err error
 
-	{{range $index, $rel := .Table.Relationships -}}{{if not (relIsView $.Tables $rel) -}}
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}{{if not (relIsView $.Tables $rel) -}}
 		{{- if (relIsRequired $table $rel)}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+		{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
 		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
 		{{- $invAlias := "" -}}
     {{- if and (not $.NoBackReferencing) $invRel.Name -}}
@@ -113,7 +113,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 	opt := o.BuildSetter()
 	ensureCreatable{{$tAlias.UpSingular}}(opt)
 
-	{{range $index, $rel := $table.Relationships -}}
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not (relIsRequired $table $rel)}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
@@ -150,7 +150,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 	ctx = {{$tAlias.DownSingular}}Ctx.WithValue(ctx, m)
 
 
-	{{range $index, $rel := $table.Relationships -}}
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not (relIsRequired $table $rel) -}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}

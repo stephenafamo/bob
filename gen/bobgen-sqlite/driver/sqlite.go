@@ -101,11 +101,6 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	relationships := drivers.BuildRelationships(tables)
-	for i, t := range tables {
-		tables[i].Relationships = relationships[t.Key]
-	}
-
 	return &DBInfo{Tables: tables}, nil
 }
 

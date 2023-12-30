@@ -114,7 +114,8 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		d.TestAssemble(t)
 	})
 
-	aliases = buildAliases(d.info.Tables)
+	rels := drivers.BuildRelationships(d.info.Tables)
+	aliases = buildAliases(d.info.Tables, rels)
 
 	if testing.Short() {
 		// skip testing generation
@@ -278,7 +279,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 	}
 }
 
-func buildAliases(tables []drivers.Table) gen.Aliases {
+func buildAliases(tables []drivers.Table, relMap drivers.Relationships) gen.Aliases {
 	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias, len(tables))}
 	for i, table := range tables {
 		tableAlias := gen.TableAlias{
@@ -294,7 +295,7 @@ func buildAliases(tables []drivers.Table) gen.Aliases {
 		}
 
 		tableAlias.Relationships = make(map[string]string)
-		for j, rel := range table.Relationships {
+		for j, rel := range relMap[table.Key] {
 			tableAlias.Relationships[rel.Name] = fmt.Sprintf("Alias%dThingRel%d", i, j)
 		}
 

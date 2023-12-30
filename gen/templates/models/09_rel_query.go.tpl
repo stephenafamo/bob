@@ -1,9 +1,9 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{if $table.Relationships -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
+{{if $.Relationships.Get $table.Key -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
 
-{{range $rel := $table.Relationships -}}
+{{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
@@ -36,7 +36,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Con
 }
 {{end}}
 
-{{range $rel := $table.Relationships -}}
+{{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}

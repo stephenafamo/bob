@@ -72,7 +72,7 @@ type joinSet[Q any] struct {
 }
 
 type joins[Q dialect.Joinable] struct {
-		{{range $table := .Tables -}}{{if $table.Relationships -}}
+		{{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
 		{{$tAlias.UpPlural}} joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]]
 		{{end}}{{end}}
@@ -81,7 +81,7 @@ type joins[Q dialect.Joinable] struct {
 {{$.Importer.Import "context"}}
 func getJoins[Q dialect.Joinable](ctx context.Context) joins[Q] {
 	return joins[Q]{
-		{{range $table := .Tables -}}{{if $table.Relationships -}}
+		{{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
 		{{$tAlias.UpPlural}}: {{$tAlias.DownPlural}}Join[Q](ctx),
 		{{end}}{{end}}

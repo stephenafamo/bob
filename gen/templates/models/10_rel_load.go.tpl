@@ -1,7 +1,7 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-{{if $table.Relationships -}}
+{{if $.Relationships.Get $table.Key -}}
 {{$.Importer.Import "fmt" -}}
 {{$.Importer.Import "context" -}}
 {{$.Importer.Import "database/sql" -}}
@@ -13,10 +13,10 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	}
 
 	switch name {
-	{{range $table.Relationships -}}
+	{{range $.Relationships.Get $table.Key -}}
 	{{- $fAlias := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+	{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
 	case "{{$relAlias}}":
 		{{if .IsToMany -}}
 			rels, ok := retrieved.({{$fAlias.UpSingular}}Slice)
@@ -68,11 +68,11 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 {{- end}}
 
 
-{{range $rel := $table.Relationships -}}
+{{range $rel := $.Relationships.Get $table.Key -}}
 {{- $isToView := relIsView $.Tables $rel -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOption) {{$.Dialect}}.Preloader {

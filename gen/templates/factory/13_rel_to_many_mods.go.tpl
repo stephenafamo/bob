@@ -1,7 +1,7 @@
 {{$table := .Table}}
-{{ $tAlias := .Aliases.Table .Table.Key -}}
+{{ $tAlias := .Aliases.Table $table.Key -}}
 
-{{range .Table.Relationships -}}
+{{range $.Relationships.Get $table.Key -}}
 {{- if not .IsToMany -}}{{continue}}{{end -}}
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}

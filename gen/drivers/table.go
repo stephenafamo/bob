@@ -2,9 +2,6 @@ package drivers
 
 import (
 	"fmt"
-	"strings"
-
-	"github.com/stephenafamo/bob/orm"
 )
 
 // Table metadata from the database schema.
@@ -16,8 +13,7 @@ type Table struct {
 	Name    string   `json:"name"`
 	Columns []Column `json:"columns"`
 
-	Constraints   Constraints        `json:"constraints"`
-	Relationships []orm.Relationship `json:"relationship"`
+	Constraints Constraints `json:"constraints"`
 }
 
 type Constraints struct {
@@ -71,39 +67,6 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 		}
 	}
 	return false
-}
-
-// GetRelationshipInverse returns the Relationship of the other side
-func (t Table) GetRelationshipInverse(tables []Table, r orm.Relationship) orm.Relationship {
-	var fTable Table
-	for _, t := range tables {
-		if t.Key == r.Foreign() {
-			fTable = t
-			break
-		}
-	}
-
-	// No foreign table matched
-	if fTable.Key == "" {
-		return orm.Relationship{}
-	}
-
-	toMatch := r.Name
-	if r.Local() == r.Foreign() {
-		hadSuffix := strings.HasSuffix(r.Name, SelfJoinSuffix)
-		toMatch = strings.TrimSuffix(r.Name, SelfJoinSuffix)
-		if hadSuffix {
-			toMatch += SelfJoinSuffix
-		}
-	}
-
-	for _, r2 := range fTable.Relationships {
-		if toMatch == r2.Name {
-			return r2
-		}
-	}
-
-	return orm.Relationship{}
 }
 
 type Filter struct {

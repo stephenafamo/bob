@@ -2,10 +2,10 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-{{range $rel := $table.Relationships -}}{{if not (relIsView $.Tables $rel) -}}
+{{range $rel := $.Relationships.Get $table.Key -}}{{if not (relIsView $.Tables $rel) -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
 {{- $from := printf "%s%d" $tAlias.DownSingular $rel.LocalPosition}}
 {{- $to := printf "%s%d" $ftable.DownSingular $rel.ForeignPosition}}
 {{if $rel.NeedsMany $rel.ForeignPosition -}}

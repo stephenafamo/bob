@@ -4,7 +4,7 @@
 
 // {{$tAlias.UpSingular}} is an object representing the database table.
 type {{$tAlias.UpSingular}} struct {
-	{{- range $column := .Table.Columns -}}
+	{{- range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $colTyp := $column.Type -}}
 	{{- $.Importer.ImportList $column.Imports -}}
@@ -23,7 +23,7 @@ type {{$tAlias.UpSingular}} struct {
 	{{- end -}}
 	{{- end -}}
 	{{block "model/fields/additional" $}}{{end}}
-	{{- if .Table.Relationships}}
+	{{- if $.Relationships.Get $table.Key}}
 
 	R {{$tAlias.DownSingular}}R `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
 	{{end -}}
@@ -52,11 +52,11 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 // {{$tAlias.UpPlural}}Stmt is a prepared statment on {{$table.Name}}
 type {{$tAlias.UpPlural}}Stmt = bob.QueryStmt[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 
-{{if .Table.Relationships -}}
+{{if $.Relationships.Get $table.Key -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
 type {{$tAlias.DownSingular}}R struct {
-	{{range .Table.Relationships -}}
+	{{range $.Relationships.Get $table.Key -}}
 	{{- $ftable := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{if .IsToMany -}}
@@ -67,12 +67,12 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
-{{if or .Table.Constraints.Primary .Table.Relationships -}}
+{{if or $table.Constraints.Primary ($.Relationships.Get $table.Key) -}}
 // {{$tAlias.UpSingular}}Setter is used for insert/upsert/update operations
 // All values are optional, and do not have to be set
 // Generated columns are not included
 type {{$tAlias.UpSingular}}Setter struct {
-	{{- range $column := .Table.Columns -}}
+	{{- range $column := $table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $colTyp := "" -}}
@@ -89,7 +89,7 @@ type {{$tAlias.UpSingular}}Setter struct {
 
 func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
   vals := make([]string, 0, {{len $table.NonGeneratedColumns}})
-	{{range $column := .Table.Columns -}}
+	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if !s.{{$colAlias}}.IsUnset() {
@@ -102,7 +102,7 @@ func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
 }
 
 func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
-	{{- range $column := .Table.Columns -}}
+	{{- range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if !s.{{$colAlias}}.IsUnset() {
@@ -120,7 +120,7 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
-	{{- range $column := .Table.Columns -}}
+	{{- range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if !s.{{$colAlias}}.IsUnset() {
@@ -159,9 +159,9 @@ type {{$tAlias.DownSingular}}ColumnNames struct {
   {{end -}}
 }
 
-{{if $table.Relationships -}}
+{{if $.Relationships.Get $table.Key -}}
 type {{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable] struct {
-	{{range $table.Relationships -}}
+	{{range $.Relationships.Get $table.Key -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{$relAlias}} bob.Mod[Q]
   {{end -}}
@@ -169,7 +169,7 @@ type {{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable] struct {
 
 func build{{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable](ctx context.Context, typ string) {{$tAlias.DownSingular}}RelationshipJoins[Q] {
   return {{$tAlias.DownSingular}}RelationshipJoins[Q]{
-		{{range $table.Relationships -}}
+		{{range $.Relationships.Get $table.Key -}}
 			{{$ftable := $.Aliases.Table .Foreign -}}
 			{{$relAlias := $tAlias.Relationship .Name -}}
 			{{$relAlias}}: {{$tAlias.DownPlural}}Join{{$relAlias}}[Q](ctx, typ),

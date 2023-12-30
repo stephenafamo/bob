@@ -161,11 +161,6 @@ func (d *driver) tables(realm *schema.Realm) []drivers.Table {
 		}
 	}
 
-	relationships := drivers.BuildRelationships(tables)
-	for i, t := range tables {
-		tables[i].Relationships = relationships[t.Key]
-	}
-
 	return tables
 }
 

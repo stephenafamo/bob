@@ -39,7 +39,7 @@ func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) 
 	if err != nil {
 		return err
 	}
-	{{if $table.Relationships}}o2.R = o.R{{end}}
+	{{if $.Relationships.Get $table.Key}}o2.R = o.R{{end}}
 	*o = *o2
 
 	return nil

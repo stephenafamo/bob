@@ -97,11 +97,6 @@ func BuildDBInfo(ctx context.Context, c Constructor, concurrency int, only, exce
 		ret[i].Constraints.Uniques = constraints.Uniques[t.Key]
 	}
 
-	relationships := BuildRelationships(ret)
-	for i, t := range ret {
-		ret[i].Relationships = relationships[t.Key]
-	}
-
 	return ret, nil
 }
 

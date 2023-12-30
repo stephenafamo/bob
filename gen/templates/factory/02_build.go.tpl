@@ -1,13 +1,13 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{ $table := .Table}}
-{{ $tAlias := .Aliases.Table .Table.Key -}}
+{{ $tAlias := .Aliases.Table $table.Key -}}
 
 // setModelRels creates and sets the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. Nothing is inserted into the db
 func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingular}}) {
-    {{- range $index, $rel := .Table.Relationships -}}
+    {{- range $index, $rel := $.Relationships.Get $table.Key -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
-        {{- $invRel := $table.GetRelationshipInverse $.Tables . -}}
+        {{- $invRel := $.Relationships.GetInverse $.Tables . -}}
         {{- $ftable := $.Aliases.Table $rel.Foreign -}}
         {{- $invAlias := "" -}}
     {{- if and (not $.NoBackReferencing) $invRel.Name -}}
@@ -51,13 +51,13 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
     {{end -}}
 }
 
-{{if .Table.Constraints.Primary -}}
+{{if $table.Constraints.Primary -}}
 // BuildSetter returns an *models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
 func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingular}}Setter {
 	m := &models.{{$tAlias.UpSingular}}Setter{}
 
-	{{range $column := .Table.Columns -}}
+	{{range $column := $table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if o.{{$colAlias}} != nil {

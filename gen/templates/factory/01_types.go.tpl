@@ -1,6 +1,6 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$table := .Table}}
-{{$tAlias := .Aliases.Table .Table.Key -}}
+{{$tAlias := .Aliases.Table $table.Key -}}
 
 type {{$tAlias.UpSingular}}Mod interface {
     Apply(*{{$tAlias.UpSingular}}Template)
@@ -23,7 +23,7 @@ func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Templa
 // {{$tAlias.UpSingular}}Template is an object representing the database table.
 // all columns are optional and should be set by mods
 type {{$tAlias.UpSingular}}Template struct {
-    {{- range $column := .Table.Columns -}}
+    {{- range $column := $table.Columns -}}
         {{- $.Importer.ImportList $column.Imports -}}
         {{- $colAlias := $tAlias.Column $column.Name -}}
         {{- $colTyp := $column.Type -}}
@@ -36,15 +36,15 @@ type {{$tAlias.UpSingular}}Template struct {
 
     {{block "factory_template/fields/additional" $}}{{end}}
 
-    {{if .Table.Relationships -}}
+    {{if $.Relationships.Get $table.Key -}}
         r {{$tAlias.DownSingular}}R
     {{- end}}
     f *Factory
 }
 
-{{if .Table.Relationships -}}
+{{if $.Relationships.Get $table.Key -}}
 type {{$tAlias.DownSingular}}R struct {
-    {{range .Table.Relationships -}}
+    {{range $.Relationships.Get $table.Key -}}
         {{- $ftable := $.Aliases.Table .Foreign -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
         {{- $relTyp := printf "*%sR%sR" $tAlias.DownSingular $relAlias -}}
@@ -57,7 +57,7 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
-{{range .Table.Relationships}}
+{{range $.Relationships.Get $table.Key}}
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
 type {{$tAlias.DownSingular}}R{{$relAlias}}R struct{
@@ -81,7 +81,7 @@ func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod
 func (o {{$tAlias.UpSingular}}Template) toModel() (*models.{{$tAlias.UpSingular}}) {
     m := &models.{{$tAlias.UpSingular}}{}
 
-    {{range $column := .Table.Columns -}}
+    {{range $column := $table.Columns -}}
     {{$colAlias := $tAlias.Column $column.Name -}}
         if o.{{$colAlias}} != nil {
             m.{{$colAlias}} = o.{{$colAlias}}()
