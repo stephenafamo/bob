@@ -8,9 +8,9 @@ import (
 )
 
 type RelWhere struct {
-	Column  string `yaml:"column"`
-	Value   string `yaml:"value"`
-	GoValue string `yaml:"go_value"`
+	Column   string `yaml:"column"`
+	SQLValue string `yaml:"sql_value"`
+	GoValue  string `yaml:"go_value"`
 }
 
 type RelSide struct {
@@ -53,13 +53,28 @@ type Relationship struct {
 }
 
 func (r Relationship) Validate() error {
-	for index := range r.Sides {
+	for index, side := range r.Sides {
+		for _, where := range append(side.FromWhere, side.ToWhere...) {
+			if where.Column == "" {
+				return fmt.Errorf("rel %s has a where clause with an empty column", r.Name)
+			}
+
+			if where.SQLValue == "" {
+				return fmt.Errorf("rel %s has a where clause with an empty SQL value", r.Name)
+			}
+
+			if where.GoValue == "" {
+				return fmt.Errorf("rel %s has a where clause with an empty Go value", r.Name)
+			}
+		}
+
+		// Only compare from/to tables if it is not the first side
 		if index == 0 {
 			continue
 		}
 
-		if r.Sides[index-1].To != r.Sides[index].From {
-			return fmt.Errorf("relationship %s has a gap between %s and %s", r.Name, r.Sides[index-1].To, r.Sides[index].From)
+		if r.Sides[index-1].To != side.From {
+			return fmt.Errorf("rel %s has a gap between %s and %s", r.Name, r.Sides[index-1].To, r.Sides[index].From)
 		}
 	}
 
@@ -120,7 +135,7 @@ type RelSetDetails struct {
 
 type RelSetMapping struct {
 	Column         string
-	Value          string
+	Value          [2]string // [0] is the SQL value, [1] is the Go value
 	ExternalTable  string
 	ExternalColumn string
 	ExtPosition    int
@@ -202,7 +217,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			for _, f := range side.FromWhere {
 				fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
 					Column: f.Column,
-					Value:  f.GoValue,
+					Value:  [2]string{f.SQLValue, f.GoValue},
 				})
 			}
 		}
@@ -211,7 +226,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			for _, f := range side.ToWhere {
 				toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
 					Column: f.Column,
-					Value:  f.GoValue,
+					Value:  [2]string{f.SQLValue, f.GoValue},
 				})
 			}
 		}

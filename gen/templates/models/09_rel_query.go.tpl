@@ -119,11 +119,11 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				sm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{$where.Value}})),
+				sm.Where({{$.Dialect}}.X({{$from.UpSingular}}Columns.{{$fromCol}}, "=", {{quote $where.Value}})),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				sm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{$where.Value}})),
+				sm.Where({{$.Dialect}}.X({{$to.UpSingular}}Columns.{{$toCol}}, "=", {{quote $where.Value}})),
 			{{- end}}
 		),
 		{{- else -}}

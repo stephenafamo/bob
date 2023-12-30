@@ -525,7 +525,7 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 			oalias := aliases.Tables[kside.TableName]
 			objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, false)
 
-			if mapp.Value != "" {
+			if mapp.Value != [2]string{} {
 				oGetter := columnGetter(tables, kside.TableName, oalias, mapp.Column)
 
 				if kside.TableName == r.Local() {
@@ -535,8 +535,8 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 									Table1: %q, Column1: %q, Value: %q,
 								}
 							}`,
-						objVarName, oGetter, mapp.Value,
-						kside.TableName, mapp.Column, mapp.Value,
+						objVarName, oGetter, mapp.Value[1],
+						kside.TableName, mapp.Column, mapp.Value[1],
 					))
 					continue
 				}
@@ -544,7 +544,7 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 				mret = append(mret, fmt.Sprintf(`%s.%s = %s`,
 					objVarName,
 					oalias.Columns[mapp.Column],
-					mapp.Value,
+					mapp.Value[1],
 				))
 				continue
 			}

@@ -70,10 +70,10 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 				on = append(on, Quote(parent, fromCol).EQ(Quote(alias, toCol)))
 			}
 			for _, from := range side.FromWhere {
-				on = append(on, Quote(parent, from.Column).EQ(Raw(from.Value)))
+				on = append(on, Quote(parent, from.Column).EQ(Raw(from.SQLValue)))
 			}
 			for _, to := range side.ToWhere {
-				on = append(on, Quote(alias, to.Column).EQ(Raw(to.Value)))
+				on = append(on, Quote(alias, to.Column).EQ(Raw(to.SQLValue)))
 			}
 
 			if len(settings.Mods) > i {
