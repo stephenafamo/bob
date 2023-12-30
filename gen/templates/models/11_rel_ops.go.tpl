@@ -34,22 +34,34 @@
       for _, {{$to}} := range {{$ftable.DownPlural}}{{$rel.ForeignPosition}} {
     {{- end -}}
       {{range $map := $side.Mapped -}}
-        {{$a := $.Aliases.Table .ExternalTable -}}
-        {{$t := getTable $.Tables .ExternalTable -}}
-        {{$c := $t.GetColumn .ExternalColumn -}}
         {{$sideC := $sideTable.GetColumn .Column -}}
-        {{if and $sideC.Nullable $c.Nullable }}
-          {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-          {{$to}}.{{$sideAlias.Column $map.Column}} = omitnull.FromNull({{$a.DownSingular}}{{$map.ExtPosition}}.{{$a.Column $map.ExternalColumn}})
-        {{else if $sideC.Nullable }}
-          {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-          {{$to}}.{{$sideAlias.Column $map.Column}} = omitnull.From({{$a.DownSingular}}{{$map.ExtPosition}}.{{$a.Column $map.ExternalColumn}})
-        {{else if $c.Nullable}}
-          {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-          {{$to}}.{{$sideAlias.Column $map.Column}} = omit.From({{$a.DownSingular}}{{$map.ExtPosition}}.{{$a.Column $map.ExternalColumn}}.GetOrZero())
-        {{else}}
-          {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-          {{$to}}.{{$sideAlias.Column $map.Column}} = omit.From({{$a.DownSingular}}{{$map.ExtPosition}}.{{$a.Column $map.ExternalColumn}})
+        {{$colName := $sideAlias.Column $map.Column -}}
+        {{if .HasValue -}}
+          {{if $sideC.Nullable }}
+            {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+            {{$to}}.{{$colName}} = omitnull.From({{index .Value 1}})
+          {{else}}
+            {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+            {{$to}}.{{$colName}} = omit.From({{index .Value 1}})
+          {{end}}
+        {{- else -}}
+          {{$a := $.Aliases.Table .ExternalTable -}}
+          {{$t := getTable $.Tables .ExternalTable -}}
+          {{$c := $t.GetColumn .ExternalColumn -}}
+          {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+          {{if and $sideC.Nullable $c.Nullable }}
+            {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+            {{$to}}.{{$colName}} = omitnull.FromNull({{$colVal}})
+          {{else if $sideC.Nullable }}
+            {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+            {{$to}}.{{$colName}} = omitnull.From({{$colVal}})
+          {{else if $c.Nullable}}
+            {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+            {{$to}}.{{$colName}} = omit.From({{$colVal}})
+          {{else}}
+            {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+            {{$to}}.{{$colName}} = omit.From({{$colVal}})
+          {{- end}}
         {{- end}}
       {{- end}}
     {{- if $rel.IsToMany}}}{{end}}
@@ -91,27 +103,37 @@
       setter := &{{$sideAlias.UpSingular}}Setter{
         {{range $map := $side.Mapped -}}
           {{if gt .ExtPosition $side.Position -}}
-            {{$a := $.Aliases.Table .ExternalTable -}}
-            {{$t := getTable $.Tables .ExternalTable -}}
-            {{$c := $t.GetColumn .ExternalColumn -}}
             {{$sideC := $sideTable.GetColumn .Column -}}
             {{$colName := $sideAlias.Column $map.Column -}}
-            {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-            {{if $rel.NeedsMany .ExtPosition -}}
-              {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-            {{end}}
-            {{if and $sideC.Nullable $c.Nullable -}}
-              {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
-              {{$colName}}: omitnull.FromNull({{$colVal}}),
-            {{else if $sideC.Nullable -}}
-              {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
-              {{$colName}}: omitnull.From({{$colVal}}),
-            {{else if $c.Nullable -}}
-              {{$.Importer.Import "github.com/aarondl/opt/omit"}}
-              {{$colName}}: omit.From({{$colVal}}),
-            {{else -}}
-              {{$.Importer.Import "github.com/aarondl/opt/omit"}}
-              {{$colName}}: omit.From({{$colVal}}),
+            {{if .HasValue -}}
+              {{if $sideC.Nullable }}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+                {{$colName}}: omitnull.From({{index .Value 1}}),
+              {{else}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+                {{$colName}}: omit.From({{index .Value 1}}),
+              {{end}}
+            {{- else -}}
+              {{$a := $.Aliases.Table .ExternalTable -}}
+              {{$t := getTable $.Tables .ExternalTable -}}
+              {{$c := $t.GetColumn .ExternalColumn -}}
+              {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+              {{if $rel.NeedsMany .ExtPosition -}}
+                {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+              {{end}}
+              {{if and $sideC.Nullable $c.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.FromNull({{$colVal}}),
+              {{else if $sideC.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.From({{$colVal}}),
+              {{else if $c.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.From({{$colVal}}),
+              {{else -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.From({{$colVal}}),
+              {{- end}}
             {{- end}}
           {{- end}}
         {{- end}}
@@ -136,24 +158,34 @@
     {{- end -}}
       {{range $map := $side.Mapped -}}
         {{if not (and $needsIndividualUpdate (gt .ExtPosition $side.Position)) -}}
-          {{$a := $.Aliases.Table .ExternalTable -}}
-          {{$t := getTable $.Tables .ExternalTable -}}
-          {{$c := $t.GetColumn .ExternalColumn -}}
           {{$sideC := $sideTable.GetColumn .Column -}}
           {{$colName := $sideAlias.Column $map.Column -}}
-          {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-          {{if and $sideC.Nullable $c.Nullable -}}
-            {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
-            {{$colName}}: omitnull.FromNull({{$colVal}}),
-          {{else if $sideC.Nullable -}}
-            {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
-            {{$colName}}: omitnull.From({{$colVal}}),
-          {{else if $c.Nullable -}}
-            {{$.Importer.Import "github.com/aarondl/opt/omit"}}
-            {{$colName}}: omit.From({{$colVal}}),
-          {{else -}}
-            {{$.Importer.Import "github.com/aarondl/opt/omit"}}
-            {{$colName}}: omit.From({{$colVal}}),
+          {{if .HasValue -}}
+            {{if $sideC.Nullable }}
+              {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
+              {{$colName}}: omitnull.From({{index .Value 1}}),
+            {{else}}
+              {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
+              {{$colName}}: omit.From({{index .Value 1}}),
+            {{end}}
+          {{- else -}}
+            {{$a := $.Aliases.Table .ExternalTable -}}
+            {{$t := getTable $.Tables .ExternalTable -}}
+            {{$c := $t.GetColumn .ExternalColumn -}}
+            {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+            {{if and $sideC.Nullable $c.Nullable -}}
+              {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+              {{$colName}}: omitnull.FromNull({{$colVal}}),
+            {{else if $sideC.Nullable -}}
+              {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+              {{$colName}}: omitnull.From({{$colVal}}),
+            {{else if $c.Nullable -}}
+              {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+              {{$colName}}: omit.From({{$colVal}}),
+            {{else -}}
+              {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+              {{$colName}}: omit.From({{$colVal}}),
+            {{- end}}
           {{- end}}
         {{- end}}
       {{- end}}

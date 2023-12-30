@@ -113,7 +113,8 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 						{{- $colAlias := index $from.Columns $where.Column -}}
 						{
 						  Column: ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
-							Value: {{quote $where.Value}},
+							SQLValue: {{quote $where.SQLValue}},
+							GoValue: {{quote $where.GoValue}},
 						},
 						{{end -}}
 					},
@@ -124,7 +125,8 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 						{{- $colAlias := index $to.Columns $where.Column -}}
 						{
 							Column: ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
-							Value: {{quote $where.Value}},
+							SQLValue: {{quote $where.SQLValue}},
+							GoValue: {{quote $where.GoValue}},
 						},
 						{{end -}}
 					},

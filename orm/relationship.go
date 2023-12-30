@@ -143,6 +143,10 @@ type RelSetMapping struct {
 	ExternalEnd    bool
 }
 
+func (r RelSetMapping) HasValue() bool {
+	return r.Value[0] != ""
+}
+
 func (r RelSetDetails) Columns() []string {
 	cols := make([]string, len(r.Mapped))
 	for i, m := range r.Mapped {
