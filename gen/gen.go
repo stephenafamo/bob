@@ -85,7 +85,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	initInflections(s.Config.Inflections)
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
 
-	relationships := drivers.BuildRelationships(dbInfo.Tables)
+	relationships := buildRelationships(dbInfo.Tables)
 	processRelationshipConfig(&s.Config, dbInfo.Tables, relationships)
 	if err := validateRelationships(relationships); err != nil {
 		return fmt.Errorf("validating relationships: %w", err)
@@ -436,7 +436,7 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(config *Config, tables []drivers.Table, relMap drivers.Relationships) {
+func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) {
 	if len(tables) == 0 {
 		return
 	}
@@ -452,7 +452,7 @@ func processRelationshipConfig(config *Config, tables []drivers.Table, relMap dr
 	}
 }
 
-func validateRelationships(rels drivers.Relationships) error {
+func validateRelationships(rels Relationships) error {
 	for table, tableRels := range rels {
 		for _, r := range tableRels {
 			if err := r.Validate(); err != nil {

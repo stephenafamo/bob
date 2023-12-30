@@ -79,7 +79,7 @@ type TemplateData[T any] struct {
 	Tables        []drivers.Table
 	Enums         []drivers.Enum
 	Aliases       Aliases
-	Relationships drivers.Relationships
+	Relationships Relationships
 
 	// Controls what names are output
 	PkgName string
@@ -215,7 +215,7 @@ func (a assetLoader) String() string {
 //nolint:gochecknoglobals
 var templateFunctions = template.FuncMap{
 	"getTable":           drivers.GetTable,
-	"isJoinTable":        drivers.IsJoinTable2,
+	"isJoinTable":        isJoinTableForRel,
 	"titleCase":          strmangle.TitleCase,
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,

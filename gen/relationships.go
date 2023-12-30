@@ -1,24 +1,56 @@
-package drivers
+package gen
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
 )
 
-const SelfJoinSuffix = "__self_join_reverse"
+const selfJoinSuffix = "__self_join_reverse"
 
-func BuildRelationships(tables []Table) Relationships {
+type Relationships map[string][]orm.Relationship
+
+func (r Relationships) Get(table string) []orm.Relationship {
+	return r[table]
+}
+
+// GetInverse returns the Relationship of the other side
+func (rs Relationships) GetInverse(tables []drivers.Table, r orm.Relationship) orm.Relationship {
+	frels, ok := rs[r.Foreign()]
+	if !ok {
+		return orm.Relationship{}
+	}
+
+	toMatch := r.Name
+	if r.Local() == r.Foreign() {
+		hadSuffix := strings.HasSuffix(r.Name, selfJoinSuffix)
+		toMatch = strings.TrimSuffix(r.Name, selfJoinSuffix)
+		if hadSuffix {
+			toMatch += selfJoinSuffix
+		}
+	}
+
+	for _, r2 := range frels {
+		if toMatch == r2.Name {
+			return r2
+		}
+	}
+
+	return orm.Relationship{}
+}
+
+func buildRelationships(tables []drivers.Table) Relationships {
 	relationships := map[string][]orm.Relationship{}
 
-	tableNameMap := make(map[string]Table, len(tables))
+	tableNameMap := make(map[string]drivers.Table, len(tables))
 	for _, t := range tables {
 		tableNameMap[t.Key] = t
 	}
 
 	for _, t1 := range tables {
-		isJoinTable := IsJoinTable(t1)
+		isJoinTable := isJoinTable(t1)
 		fkUniqueMap := make(map[string][2]bool, len(t1.Constraints.Foreign))
 		fkNullableMap := make(map[string]bool, len(t1.Constraints.Foreign))
 
@@ -74,7 +106,7 @@ func BuildRelationships(tables []Table) Relationships {
 				// Skip. Join tables are handled below
 			case t1.Key == t2.Key: // Self join
 				relationships[t2.Key] = append(relationships[t2.Key], orm.Relationship{
-					Name:  fk.Name + SelfJoinSuffix,
+					Name:  fk.Name + selfJoinSuffix,
 					Sides: []orm.RelSide{flipSide},
 				})
 			default:
@@ -156,7 +188,7 @@ func BuildRelationships(tables []Table) Relationships {
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
-func allNullable(t Table, cols ...string) bool {
+func allNullable(t drivers.Table, cols ...string) bool {
 	foundNullable := 0
 	for _, col := range t.Columns {
 		for _, cname := range cols {
@@ -173,7 +205,7 @@ func allNullable(t Table, cols ...string) bool {
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
-func hasExactUnique(t Table, cols ...string) bool {
+func hasExactUnique(t drivers.Table, cols ...string) bool {
 	if len(cols) == 0 {
 		return false
 	}
@@ -214,53 +246,31 @@ func sliceMatch[T comparable, Ts ~[]T](a, b Ts) bool {
 	return matches == len(a)
 }
 
-// Has no matching elements
-func distinctElems[T comparable, Ts ~[]T](a, b Ts) bool {
-	for _, v1 := range a {
-		for _, v2 := range b {
-			if v1 == v2 {
-				return false
-			}
-		}
-	}
-
-	return true
-}
-
 // A composite primary key involving two columns
 // Both primary key columns are also foreign keys
-func IsJoinTable(t Table) bool {
-	if t.Constraints.Primary == nil {
-		return false
-	}
-
+func isJoinTable(t drivers.Table) bool {
 	// Must have exactly 2 foreign keys
 	if len(t.Constraints.Foreign) != 2 {
 		return false
 	}
 
-	// Number of columns must be the number of primary key columns
-	if len(t.Columns) != len(t.Constraints.Primary.Columns) {
+	// Extract the columns names
+	colNames := make([]string, len(t.Columns))
+	for i, c := range t.Columns {
+		colNames[i] = c.Name
+	}
+
+	// All columns must be contained in the foreign keys
+	if !allColsInList(colNames, t.Constraints.Foreign[0].Columns, t.Constraints.Foreign[1].Columns) {
 		return false
 	}
 
-	// length of both foreign keys must be the total length of the columns
-	if len(t.Columns) != (len(t.Constraints.Foreign[0].Columns) + len(t.Constraints.Foreign[1].Columns)) {
-		return false
-	}
-
-	// both foreign keys must have distinct columns
-	if !distinctElems(t.Constraints.Foreign[0].Columns, t.Constraints.Foreign[1].Columns) {
-		return false
-	}
-
-	// It is a join table!!!
-	return true
+	// Must have a unique constraint on all columns
+	return hasExactUnique(t, colNames...)
 }
 
-// A composite primary key involving two columns
-// Both primary key columns are also foreign keys
-func IsJoinTable2(t Table, r orm.Relationship, position int) bool {
+// Used in templates to know if the given table is a join table for this relationship
+func isJoinTableForRel(t drivers.Table, r orm.Relationship, position int) bool {
 	if position == 0 || len(r.Sides) < 2 {
 		return false
 	}
@@ -283,54 +293,35 @@ func IsJoinTable2(t Table, r orm.Relationship, position int) bool {
 		return false
 	}
 
-	// All columns in the table must be in one of the sides
-	// if not, it is not a join table
+	// Extract the columns names
+	colNames := make([]string, len(t.Columns))
+	for i, c := range t.Columns {
+		colNames[i] = c.Name
+	}
+
+	if !allColsInList(colNames, relevantSides[0].ToColumns, relevantSides[1].FromColumns) {
+		return false
+	}
+
+	// Must have a unique constraint on all columns
+	return hasExactUnique(t, colNames...)
+}
+
+func allColsInList(cols, list1, list2 []string) bool {
 ColumnsLoop:
-	for _, col := range t.Columns {
-		for _, sideCol := range relevantSides[0].ToColumns {
-			if col.Name == sideCol {
+	for _, col := range cols {
+		for _, sideCol := range list1 {
+			if col == sideCol {
 				continue ColumnsLoop
 			}
 		}
-		for _, sideCol := range relevantSides[1].FromColumns {
-			if col.Name == sideCol {
+		for _, sideCol := range list2 {
+			if col == sideCol {
 				continue ColumnsLoop
 			}
 		}
 		return false
 	}
 
-	// It is a join table!!!
 	return true
-}
-
-type Relationships map[string][]orm.Relationship
-
-func (r Relationships) Get(table string) []orm.Relationship {
-	return r[table]
-}
-
-// GetInverse returns the Relationship of the other side
-func (rs Relationships) GetInverse(tables []Table, r orm.Relationship) orm.Relationship {
-	frels, ok := rs[r.Foreign()]
-	if !ok {
-		return orm.Relationship{}
-	}
-
-	toMatch := r.Name
-	if r.Local() == r.Foreign() {
-		hadSuffix := strings.HasSuffix(r.Name, SelfJoinSuffix)
-		toMatch = strings.TrimSuffix(r.Name, SelfJoinSuffix)
-		if hadSuffix {
-			toMatch += SelfJoinSuffix
-		}
-	}
-
-	for _, r2 := range frels {
-		if toMatch == r2.Name {
-			return r2
-		}
-	}
-
-	return orm.Relationship{}
 }

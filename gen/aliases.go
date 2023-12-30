@@ -31,7 +31,7 @@ type TableAlias struct {
 //
 // This leaves us with a complete list of Go names for all tables,
 // columns, and relationships.
-func initAliases(a *Aliases, tables []drivers.Table, relMap drivers.Relationships) {
+func initAliases(a *Aliases, tables []drivers.Table, relMap Relationships) {
 	if a.Tables == nil {
 		a.Tables = make(map[string]TableAlias)
 	}

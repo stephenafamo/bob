@@ -284,7 +284,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 
 type aliasPlugin[T any] struct {
 	tables []drivers.Table
-	rels   drivers.Relationships
+	rels   gen.Relationships
 }
 
 func (a *aliasPlugin[T]) Name() string {

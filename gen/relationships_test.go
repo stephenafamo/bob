@@ -1,8 +1,9 @@
-package drivers
+package gen
 
 import (
 	"testing"
 
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -25,19 +26,19 @@ func TestJoinTable(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		var table Table
+		var table drivers.Table
 
-		table.Constraints.Primary = &PrimaryKey{Columns: test.Pkey}
+		table.Constraints.Primary = &drivers.PrimaryKey{Columns: test.Pkey}
 		for _, col := range strmangle.SetMerge(test.Pkey, test.Fkey) {
-			table.Columns = append(table.Columns, Column{Name: col})
+			table.Columns = append(table.Columns, drivers.Column{Name: col})
 		}
 		for _, k := range test.Fkey {
-			table.Constraints.Foreign = append(table.Constraints.Foreign, ForeignKey{
-				Constraint: Constraint{Columns: []string{k}},
+			table.Constraints.Foreign = append(table.Constraints.Foreign, drivers.ForeignKey{
+				Constraint: drivers.Constraint{Columns: []string{k}},
 			})
 		}
 
-		if IsJoinTable(table) != test.Should {
+		if isJoinTable(table) != test.Should {
 			t.Errorf("%d) want: %t, got: %t\nTest: %#v", i, test.Should, !test.Should, test)
 		}
 	}

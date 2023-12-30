@@ -3,7 +3,6 @@ package gen
 import (
 	"strings"
 
-	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 )
@@ -65,7 +64,7 @@ func relAlias(rels []orm.Relationship) map[string]string {
 	}
 
 	for k, alias := range aliases {
-		if strings.HasSuffix(k, drivers.SelfJoinSuffix) {
+		if strings.HasSuffix(k, selfJoinSuffix) {
 			aliases[k] = "Reverse" + alias
 		}
 	}
