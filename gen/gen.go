@@ -16,7 +16,6 @@ import (
 	"text/template"
 
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 	"golang.org/x/mod/modfile"
 )
@@ -86,7 +85,9 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
 
 	relationships := buildRelationships(dbInfo.Tables)
-	processRelationshipConfig(&s.Config, dbInfo.Tables, relationships)
+	if err := processRelationshipConfig(&s.Config, dbInfo.Tables, relationships); err != nil {
+		return fmt.Errorf("processing relationships: %w", err)
+	}
 	if err := validateRelationships(relationships); err != nil {
 		return fmt.Errorf("validating relationships: %w", err)
 	}
@@ -436,11 +437,11 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) {
+func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) error {
 	if len(tables) == 0 {
-		return
+		return nil
 	}
-	flipRelationships(config, tables)
+	flipRelationships(config.Relationships, tables)
 
 	for _, t := range tables {
 		rels, ok := config.Relationships[t.Key]
@@ -450,6 +451,8 @@ func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Re
 
 		relMap[t.Key] = mergeRelationships(relMap[t.Key], rels)
 	}
+
+	return relMap.init(tables)
 }
 
 func validateRelationships(rels Relationships) error {
@@ -462,109 +465,6 @@ func validateRelationships(rels Relationships) error {
 	}
 
 	return nil
-}
-
-func flipRelationships(config *Config, tables []drivers.Table) {
-	for _, rels := range config.Relationships {
-	RelsLoop:
-		for _, rel := range rels {
-			if rel.NoReverse || len(rel.Sides) < 1 {
-				continue
-			}
-			ftable := rel.Sides[len(rel.Sides)-1].To
-
-			// Check if the foreign table already has the
-			// reverse configured
-			existingRels := config.Relationships[ftable]
-			for _, existing := range existingRels {
-				if existing.Name == rel.Name {
-					continue RelsLoop
-				}
-			}
-			config.Relationships[ftable] = append(existingRels, flipRelationship(rel, tables))
-		}
-	}
-}
-
-func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationship {
-	sideLen := len(r.Sides)
-	flipped := orm.Relationship{
-		Name:    r.Name,
-		Ignored: r.Ignored,
-		Sides:   make([]orm.RelSide, sideLen),
-	}
-
-	for i, side := range r.Sides {
-		var from, to drivers.Table
-		for _, t := range tables {
-			if t.Key == side.From {
-				from = t
-			}
-			if t.Key == side.To {
-				to = t
-			}
-			if from.Key != "" && to.Key != "" {
-				break
-			}
-		}
-
-		if from.Key == "" || to.Key == "" {
-			continue
-		}
-
-		flippedSide := orm.RelSide{
-			To:   side.From,
-			From: side.To,
-
-			ToColumns:   side.FromColumns,
-			FromColumns: side.ToColumns,
-			ToWhere:     side.FromWhere,
-			FromWhere:   side.ToWhere,
-
-			ToKey:       !side.ToKey,
-			ToUnique:    side.FromUnique,
-			FromUnique:  side.ToUnique,
-			KeyNullable: side.KeyNullable,
-		}
-		flipped.Sides[sideLen-(1+i)] = flippedSide
-	}
-
-	return flipped
-}
-
-func mergeRelationships(srcs, extras []orm.Relationship) []orm.Relationship {
-Outer:
-	for _, extra := range extras {
-		for i, src := range srcs {
-			if src.Name == extra.Name {
-				srcs[i] = mergeRelationship(src, extra)
-				continue Outer
-			}
-		}
-
-		// No previous relationship was found, add it as-is
-		srcs = append(srcs, extra)
-	}
-
-	final := make([]orm.Relationship, 0, len(srcs))
-	for _, rel := range srcs {
-		if rel.Ignored || len(rel.Sides) < 1 {
-			continue
-		}
-
-		final = append(final, rel)
-	}
-
-	return final
-}
-
-func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
-	src.Ignored = extra.Ignored
-	if len(extra.Sides) > 0 {
-		src.Sides = extra.Sides
-	}
-
-	return src
 }
 
 // initOutFolders creates the folders that will hold the generated output.

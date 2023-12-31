@@ -27,13 +27,19 @@ type RelSide struct {
 	FromWhere []RelWhere `yaml:"from_where"`
 	ToWhere   []RelWhere `yaml:"to_where"`
 
+	//-----------------------------------------
+	// The Uniques are set in Relationships.init()
+	//-----------------------------------------
+
 	// if the origin is unique
-	FromUnique bool `yaml:"from_unique"`
+	FromUnique bool `yaml:"-"`
 	// if the destination is unique
-	ToUnique bool `yaml:"to_unique"`
-	// If the destination columns contain the key
-	// if false, it means the source columns are the foreign key
-	ToKey bool `yaml:"to_key"`
+	ToUnique bool `yaml:"-"`
+
+	// Which side to modify
+	// "From" or "To" : Default is "From"
+	Modify string `yaml:"modify"`
+
 	// If the key is nullable. We need this to know if we can remove the
 	// relationship without deleting it
 	KeyNullable bool `yaml:"key_nullable"`
@@ -98,17 +104,14 @@ func (r Relationship) ForeignPosition() int {
 }
 
 func (r Relationship) IsToMany() bool {
-	for _, side := range r.ValuedSides() {
-		if side.Position == 0 {
-			return false
-		}
-
-		if r.Sides[side.Position-1].ToUnique {
-			return false
+	// If the modifiable part of a side is not unique, it is to-many
+	for i := 0; i < len(r.Sides); i++ {
+		if r.Sides[i].Modify == "to" && !r.Sides[i].ToUnique {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 func (r Relationship) IsRemovable() bool {
@@ -168,16 +171,19 @@ func (r Relationship) NeedsMany(position int) bool {
 		return r.IsToMany()
 	}
 
+	// If there is another "Many" side down the line
+	// this this should not be many
 	for i := position; i < len(r.Sides); i++ {
-		// If there is another "Many" side down the line
-		// this this should not be many
-		if !r.Sides[i].ToUnique {
+		if r.Sides[i].Modify == "to" && !r.Sides[i].ToUnique {
 			return false
 		}
 	}
 
-	// If the key on the side is not unique, then it needs to be many
-	return !r.Sides[position-1].ToUnique
+	if r.Sides[position-1].Modify == "to" && !r.Sides[position-1].ToUnique {
+		return true
+	}
+
+	return false
 }
 
 func (r RelSetDetails) UniqueExternals() []RelSetMapping {
@@ -236,8 +242,8 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 		}
 
 		//nolint:nestif
-		if !side.ToKey {
-			if sideIndex == 0 || !r.Sides[sideIndex-1].ToKey {
+		if side.Modify == "from" {
+			if sideIndex == 0 || r.Sides[sideIndex-1].Modify == "from" {
 				for i, f := range side.FromColumns {
 					fromDeets.Mapped = append(fromDeets.Mapped, RelSetMapping{
 						Column:         f,
@@ -261,7 +267,7 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 
 			if len(r.Sides) > sideIndex+1 {
 				nextSide := r.Sides[sideIndex+1]
-				if !nextSide.ToKey {
+				if nextSide.Modify == "from" {
 					for i, f := range nextSide.FromColumns {
 						toDeets.Mapped = append(toDeets.Mapped, RelSetMapping{
 							Column:         f,

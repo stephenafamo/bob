@@ -12,6 +12,49 @@ const selfJoinSuffix = "__self_join_reverse"
 
 type Relationships map[string][]orm.Relationship
 
+// Set parameters of the relationship (unique, nullables, e.t.c.)
+func (r Relationships) init(tables []drivers.Table) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+
+	for tName, rels := range r {
+		for i, rel := range rels {
+			for j, side := range rel.Sides {
+				from := drivers.GetTable(tables, side.From)
+				to := drivers.GetTable(tables, side.To)
+
+				// Set the uniqueness
+				r[tName][i].Sides[j].FromUnique = hasExactUnique(
+					from, side.FromColumns...,
+				)
+				r[tName][i].Sides[j].ToUnique = hasExactUnique(
+					to, side.ToColumns...,
+				)
+
+				switch strings.ToLower(side.Modify) {
+				case "from", "":
+					r[tName][i].Sides[j].Modify = "from"
+					r[tName][i].Sides[j].KeyNullable = allNullable(
+						from, side.FromColumns...,
+					)
+				case "to":
+					r[tName][i].Sides[j].Modify = "to"
+					r[tName][i].Sides[j].KeyNullable = allNullable(
+						to, side.ToColumns...,
+					)
+				default:
+					return fmt.Errorf(`rel side modify should be "from" or "to",  got %q`, side.Modify)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func (r Relationships) Get(table string) []orm.Relationship {
 	return r[table]
 }
@@ -51,8 +94,6 @@ func buildRelationships(tables []drivers.Table) Relationships {
 
 	for _, t1 := range tables {
 		isJoinTable := isJoinTable(t1)
-		fkUniqueMap := make(map[string][2]bool, len(t1.Constraints.Foreign))
-		fkNullableMap := make(map[string]bool, len(t1.Constraints.Foreign))
 
 		// Build BelongsTo, ToOne and ToMany
 		for _, fk := range t1.Constraints.Foreign {
@@ -60,13 +101,6 @@ func buildRelationships(tables []drivers.Table) Relationships {
 			if !ok {
 				continue // no matching target table
 			}
-
-			localUnique := hasExactUnique(t1, fk.Columns...)
-			foreignUnique := hasExactUnique(t2, fk.ForeignColumns...)
-			fkUniqueMap[fk.Name] = [2]bool{localUnique, foreignUnique}
-
-			localNullable := allNullable(t1, fk.Columns...)
-			fkNullableMap[fk.Name] = localNullable
 
 			pair1 := make(map[string]string, len(fk.Columns))
 			pair2 := make(map[string]string, len(fk.Columns))
@@ -83,10 +117,7 @@ func buildRelationships(tables []drivers.Table) Relationships {
 					FromColumns: fk.Columns,
 					To:          t2.Key,
 					ToColumns:   fk.ForeignColumns,
-					FromUnique:  localUnique,
-					ToUnique:    foreignUnique,
-					ToKey:       false,
-					KeyNullable: localNullable,
+					Modify:      "from",
 				}},
 			})
 
@@ -95,10 +126,7 @@ func buildRelationships(tables []drivers.Table) Relationships {
 				FromColumns: fk.ForeignColumns,
 				To:          t1.Key,
 				ToColumns:   fk.Columns,
-				FromUnique:  foreignUnique,
-				ToUnique:    localUnique,
-				ToKey:       true,
-				KeyNullable: localNullable,
+				Modify:      "to",
 			}
 
 			switch {
@@ -136,20 +164,14 @@ func buildRelationships(tables []drivers.Table) Relationships {
 					FromColumns: r1.Sides[0].ToColumns,
 					To:          t1.Key,
 					ToColumns:   r1.Sides[0].FromColumns,
-					FromUnique:  fkUniqueMap[r1.Name][1],
-					ToUnique:    fkUniqueMap[r1.Name][0],
-					ToKey:       true,
-					KeyNullable: fkNullableMap[r1.Name],
+					Modify:      "to",
 				},
 				{
 					From:        t1.Key,
 					FromColumns: r2.Sides[0].FromColumns,
 					To:          r2.Sides[0].To,
 					ToColumns:   r2.Sides[0].ToColumns,
-					FromUnique:  fkUniqueMap[r2.Name][0],
-					ToUnique:    fkUniqueMap[r2.Name][1],
-					ToKey:       false,
-					KeyNullable: fkNullableMap[r2.Name],
+					Modify:      "from",
 				},
 			},
 		})
@@ -165,26 +187,137 @@ func buildRelationships(tables []drivers.Table) Relationships {
 					FromColumns: r2.Sides[0].ToColumns,
 					To:          t1.Key,
 					ToColumns:   r2.Sides[0].FromColumns,
-					FromUnique:  fkUniqueMap[r2.Name][1],
-					ToUnique:    fkUniqueMap[r2.Name][0],
-					ToKey:       true,
-					KeyNullable: fkNullableMap[r2.Name],
+					Modify:      "to",
 				},
 				{
 					From:        t1.Key,
 					FromColumns: r1.Sides[0].FromColumns,
 					To:          r1.Sides[0].To,
 					ToColumns:   r1.Sides[0].ToColumns,
-					FromUnique:  fkUniqueMap[r1.Name][0],
-					ToUnique:    fkUniqueMap[r1.Name][1],
-					ToKey:       false,
-					KeyNullable: fkNullableMap[r1.Name],
+					Modify:      "from",
 				},
 			},
 		})
 	}
 
 	return relationships
+}
+
+func flipRelationships(relMap Relationships, tables []drivers.Table) {
+	for _, rels := range relMap {
+	RelsLoop:
+		for _, rel := range rels {
+			if rel.NoReverse || len(rel.Sides) < 1 {
+				continue
+			}
+			ftable := rel.Sides[len(rel.Sides)-1].To
+
+			// Check if the foreign table already has the
+			// reverse configured
+			existingRels := relMap[ftable]
+			for _, existing := range existingRels {
+				if existing.Name == rel.Name {
+					continue RelsLoop
+				}
+			}
+
+			relMap[ftable] = append(existingRels, flipRelationship(rel, tables))
+		}
+	}
+}
+
+func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationship {
+	name := r.Name
+	if r.Local() == r.Foreign() {
+		name += selfJoinSuffix
+	}
+
+	sideLen := len(r.Sides)
+	flipped := orm.Relationship{
+		Name:    name,
+		Ignored: r.Ignored,
+		Sides:   make([]orm.RelSide, sideLen),
+	}
+
+	for i, side := range r.Sides {
+		var from, to drivers.Table
+		for _, t := range tables {
+			if t.Key == side.From {
+				from = t
+			}
+			if t.Key == side.To {
+				to = t
+			}
+			if from.Key != "" && to.Key != "" {
+				break
+			}
+		}
+
+		if from.Key == "" || to.Key == "" {
+			continue
+		}
+
+		flippedSide := orm.RelSide{
+			To:   side.From,
+			From: side.To,
+
+			ToColumns:   side.FromColumns,
+			FromColumns: side.ToColumns,
+			ToWhere:     side.FromWhere,
+			FromWhere:   side.ToWhere,
+
+			Modify:      flipModify(side.Modify),
+			ToUnique:    side.FromUnique,
+			FromUnique:  side.ToUnique,
+			KeyNullable: side.KeyNullable,
+		}
+		flipped.Sides[sideLen-(1+i)] = flippedSide
+	}
+
+	return flipped
+}
+
+func flipModify(s string) string {
+	if s == "to" {
+		return "from"
+	}
+
+	return "to"
+}
+
+func mergeRelationships(srcs, extras []orm.Relationship) []orm.Relationship {
+Outer:
+	for _, extra := range extras {
+		for i, src := range srcs {
+			if src.Name == extra.Name {
+				srcs[i] = mergeRelationship(src, extra)
+				continue Outer
+			}
+		}
+
+		// No previous relationship was found, add it as-is
+		srcs = append(srcs, extra)
+	}
+
+	final := make([]orm.Relationship, 0, len(srcs))
+	for _, rel := range srcs {
+		if rel.Ignored || len(rel.Sides) < 1 {
+			continue
+		}
+
+		final = append(final, rel)
+	}
+
+	return final
+}
+
+func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
+	src.Ignored = extra.Ignored
+	if len(extra.Sides) > 0 {
+		src.Sides = extra.Sides
+	}
+
+	return src
 }
 
 // Returns true if the table has a unique constraint on exactly these columns

@@ -359,7 +359,7 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 
 func relIsRequired(t drivers.Table, r orm.Relationship) bool {
 	firstSide := r.Sides[0]
-	if firstSide.ToKey {
+	if firstSide.Modify == "to" {
 		return false
 	}
 
@@ -391,6 +391,11 @@ func neededBridgeRels(tables []drivers.Table, aliases Aliases, r orm.Relationshi
 			continue
 		}
 		if side.TableName == "" {
+			continue
+		}
+
+		sideTable := drivers.GetTable(tables, side.TableName)
+		if isJoinTableForRel(sideTable, r, side.Position) {
 			continue
 		}
 
