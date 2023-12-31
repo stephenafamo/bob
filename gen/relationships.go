@@ -34,8 +34,12 @@ func (r Relationships) init(tables []drivers.Table) (err error) {
 					to, side.ToColumns...,
 				)
 
+				if side.Modify == "" {
+					side.Modify = inferModify(side, tables)
+				}
+
 				switch strings.ToLower(side.Modify) {
-				case "from", "":
+				case "from":
 					r[tName][i].Sides[j].Modify = "from"
 					r[tName][i].Sides[j].KeyNullable = allNullable(
 						from, side.FromColumns...,
@@ -203,7 +207,7 @@ func buildRelationships(tables []drivers.Table) Relationships {
 	return relationships
 }
 
-func flipRelationships(relMap Relationships, tables []drivers.Table) {
+func flipRelationships(relMap Relationships, tables []drivers.Table) error {
 	for _, rels := range relMap {
 	RelsLoop:
 		for _, rel := range rels {
@@ -221,12 +225,19 @@ func flipRelationships(relMap Relationships, tables []drivers.Table) {
 				}
 			}
 
-			relMap[ftable] = append(existingRels, flipRelationship(rel, tables))
+			flipped, err := flipRelationship(rel, tables)
+			if err != nil {
+				return err
+			}
+
+			relMap[ftable] = append(existingRels, flipped)
 		}
 	}
+
+	return nil
 }
 
-func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationship {
+func flipRelationship(r orm.Relationship, tables []drivers.Table) (orm.Relationship, error) {
 	name := r.Name
 	if r.Local() == r.Foreign() {
 		name += selfJoinSuffix
@@ -257,6 +268,11 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationsh
 			continue
 		}
 
+		newModify, err := flipModify(side, tables)
+		if err != nil {
+			return orm.Relationship{}, err
+		}
+
 		flippedSide := orm.RelSide{
 			To:   side.From,
 			From: side.To,
@@ -266,7 +282,7 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationsh
 			ToWhere:     side.FromWhere,
 			FromWhere:   side.ToWhere,
 
-			Modify:      flipModify(side.Modify),
+			Modify:      newModify,
 			ToUnique:    side.FromUnique,
 			FromUnique:  side.ToUnique,
 			KeyNullable: side.KeyNullable,
@@ -274,15 +290,25 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) orm.Relationsh
 		flipped.Sides[sideLen-(1+i)] = flippedSide
 	}
 
-	return flipped
+	return flipped, nil
 }
 
-func flipModify(s string) string {
-	if s == "to" {
-		return "from"
+func flipModify(side orm.RelSide, tables []drivers.Table) (string, error) {
+	side.Modify = strings.ToLower(side.Modify)
+
+	if side.Modify == "" {
+		side.Modify = inferModify(side, tables)
 	}
 
-	return "to"
+	if side.Modify == "from" {
+		return "to", nil
+	}
+
+	if side.Modify == "to" {
+		return "from", nil
+	}
+
+	return "", fmt.Errorf(`rel side modify should be "from" or "to",  got %q`, side.Modify)
 }
 
 func mergeRelationships(srcs, extras []orm.Relationship) []orm.Relationship {
@@ -457,4 +483,32 @@ ColumnsLoop:
 	}
 
 	return true
+}
+
+func inferModify(side orm.RelSide, tables []drivers.Table) string {
+	t1 := drivers.GetTable(tables, side.From)
+	t2 := drivers.GetTable(tables, side.To)
+
+	isT1PK := sliceMatch(side.FromColumns, t1.Constraints.Primary.Columns)
+	isT2PK := sliceMatch(side.ToColumns, t2.Constraints.Primary.Columns)
+
+	switch {
+	case isT1PK && !isT2PK:
+		return "to"
+	case isT2PK && !isT1PK:
+		return "from"
+	}
+
+	isT1Unique := hasExactUnique(t1, side.FromColumns...)
+	isT2Unique := hasExactUnique(t2, side.ToColumns...)
+
+	switch {
+	case isT1Unique && !isT2Unique:
+		return "to"
+	case isT2Unique && !isT1Unique:
+		return "from"
+	}
+
+	// Cannot infer, default to "to"
+	return "to"
 }

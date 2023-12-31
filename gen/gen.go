@@ -441,7 +441,10 @@ func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Re
 	if len(tables) == 0 {
 		return nil
 	}
-	flipRelationships(config.Relationships, tables)
+
+	if err := flipRelationships(config.Relationships, tables); err != nil {
+		return err
+	}
 
 	for _, t := range tables {
 		rels, ok := config.Relationships[t.Key]

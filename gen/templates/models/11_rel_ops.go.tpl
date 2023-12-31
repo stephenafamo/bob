@@ -58,7 +58,7 @@
           {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
           {{if $rel.NeedsMany .ExtPosition -}}
             {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-          {{end}}
+          {{end -}}
           {{if and $sideC.Nullable $c.Nullable }}
             {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
             {{$tblName}}.{{$colName}} = omitnull.FromNull({{$colVal}})
@@ -131,7 +131,7 @@
               {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
               {{if $rel.NeedsMany .ExtPosition -}}
                 {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-              {{end}}
+              {{end -}}
               {{if and $sideC.Nullable $c.Nullable -}}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
                 {{$colName}}: omitnull.FromNull({{$colVal}}),
@@ -168,9 +168,6 @@
     {{if and ($rel.NeedsMany $side.Position) (isJoinTable $sideTable $rel $side.Position) -}}
       setters := make([]*{{$sideAlias.UpSingular}}Setter, count)
       for i := 0; i < count; i++ {
-      {{if and ($rel.IsToMany) (ge $side.Position (sub $rel.ForeignPosition 1)) -}}
-        {{$ftable.DownSingular}}{{$rel.ForeignPosition}} := {{$ftable.DownPlural}}{{$rel.ForeignPosition}}[i]
-      {{end}}
         setters[i] = &{{$sideAlias.UpSingular}}Setter{
     {{- else -}}
         setter := &{{$sideAlias.UpSingular}}Setter{
@@ -192,6 +189,9 @@
             {{$t := getTable $.Tables .ExternalTable -}}
             {{$c := $t.GetColumn .ExternalColumn -}}
             {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+            {{if $rel.NeedsMany .ExtPosition -}}
+              {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+            {{end -}}
             {{if and $sideC.Nullable $c.Nullable -}}
               {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
               {{$colName}}: omitnull.FromNull({{$colVal}}),
