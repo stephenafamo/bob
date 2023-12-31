@@ -65,8 +65,8 @@ func (p relAliasPlugin) PlugTemplateData(data *gen.TemplateData[driver.Extra]) e
 					continue
 				}
 
-				if p.aliases.Tables[table.Key].Relationships[rel.Name] == "" {
-					data.Aliases.Tables[table.Key].Relationships[rel.Name] = strcase.ToCamel(field.Name)
+				if p.aliases[table.Key].Relationships[rel.Name] == "" {
+					data.Aliases[table.Key].Relationships[rel.Name] = strcase.ToCamel(field.Name)
 				}
 			}
 		}

@@ -315,7 +315,7 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 
 	toTable := drivers.GetTable(tables, toTName)
 	toCol := toTable.GetColumn(toColName)
-	to := fmt.Sprintf("%s.%s", varName, aliases.Tables[toTName].Columns[toColName])
+	to := fmt.Sprintf("%s.%s", varName, aliases[toTName].Columns[toColName])
 
 	switch {
 	case (fromOpt == toOpt) && (toCol.Nullable == fromCol.Nullable):
@@ -437,7 +437,7 @@ func relArgs(tables []drivers.Table, aliases Aliases, r orm.Relationship) string
 	ma := []string{}
 	for _, need := range neededBridgeRels(tables, aliases, r) {
 		ma = append(ma, fmt.Sprintf(
-			"%s%d,", aliases.Tables[need.Table].DownSingular, need.Position,
+			"%s%d,", aliases[need.Table].DownSingular, need.Position,
 		))
 	}
 
@@ -454,7 +454,7 @@ func relDependencies(tables []drivers.Table, aliases Aliases, r orm.Relationship
 	}
 	ma := []string{}
 	for _, need := range neededBridgeRels(tables, aliases, r) {
-		alias := aliases.Tables[need.Table]
+		alias := aliases[need.Table]
 		ma = append(ma, fmt.Sprintf(
 			"%s *%s%s%s,", alias.DownSingular, alias.UpSingular, prefix, suffix,
 		))
@@ -468,7 +468,7 @@ func relDependenciesPos(tables []drivers.Table, aliases Aliases, r orm.Relations
 	ma := make([]string, len(needed))
 
 	for i, need := range needed {
-		alias := aliases.Tables[need.Table]
+		alias := aliases[need.Table]
 		if need.Many {
 			ma[i] = fmt.Sprintf(
 				"%s%d %sSlice,", alias.DownPlural, need.Position, alias.UpSingular,
@@ -487,7 +487,7 @@ func relDependenciesTyp(tables []drivers.Table, aliases Aliases, r orm.Relations
 	ma := []string{}
 
 	for _, need := range neededBridgeRels(tables, aliases, r) {
-		alias := aliases.Tables[need.Table]
+		alias := aliases[need.Table]
 		ma = append(ma, fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular))
 	}
 
@@ -498,7 +498,7 @@ func relDependenciesTypSet(tables []drivers.Table, aliases Aliases, r orm.Relati
 	ma := []string{}
 
 	for _, need := range neededBridgeRels(tables, aliases, r) {
-		alias := aliases.Tables[need.Table]
+		alias := aliases[need.Table]
 		ma = append(ma, fmt.Sprintf("%s: %s,", alias.DownSingular, alias.DownSingular))
 	}
 
@@ -527,7 +527,7 @@ func setFactoryDeps(i Importer, tables []drivers.Table, aliases Aliases, r orm.R
 				continue
 			}
 
-			oalias := aliases.Tables[kside.TableName]
+			oalias := aliases[kside.TableName]
 			objVarName := getVarName(aliases, kside.TableName, kside.Start, kside.End, false)
 
 			if mapp.Value != [2]string{} {
@@ -586,7 +586,7 @@ func getVarName(aliases Aliases, tableName string, local, foreign, many bool) st
 		return "o"
 
 	default:
-		alias := aliases.Tables[tableName]
+		alias := aliases[tableName]
 		if many {
 			return alias.DownPlural
 		}

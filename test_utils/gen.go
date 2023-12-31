@@ -296,7 +296,7 @@ func (a *aliasPlugin[T]) PlugState(s *gen.State) error {
 		return nil
 	}
 
-	aliases := gen.Aliases{Tables: make(map[string]gen.TableAlias, len(a.tables))}
+	aliases := make(map[string]gen.TableAlias, len(a.tables))
 	for i, table := range a.tables {
 		tableAlias := gen.TableAlias{
 			UpPlural:     fmt.Sprintf("Alias%dThings", i),
@@ -315,7 +315,7 @@ func (a *aliasPlugin[T]) PlugState(s *gen.State) error {
 			tableAlias.Relationships[rel.Name] = fmt.Sprintf("Alias%dThingRel%d", i, j)
 		}
 
-		aliases.Tables[table.Key] = tableAlias
+		aliases[table.Key] = tableAlias
 	}
 
 	s.Config.Aliases = aliases

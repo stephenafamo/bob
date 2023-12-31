@@ -11,9 +11,7 @@ import (
 )
 
 // Aliases defines aliases for the generation run
-type Aliases struct {
-	Tables map[string]TableAlias `yaml:"tables,omitempty" toml:"tables,omitempty" json:"tables,omitempty"`
-}
+type Aliases map[string]TableAlias
 
 // TableAlias defines the spellings for a table name in Go
 type TableAlias struct {
@@ -31,13 +29,9 @@ type TableAlias struct {
 //
 // This leaves us with a complete list of Go names for all tables,
 // columns, and relationships.
-func initAliases(a *Aliases, tables []drivers.Table, relMap Relationships) {
-	if a.Tables == nil {
-		a.Tables = make(map[string]TableAlias)
-	}
-
+func initAliases(a Aliases, tables []drivers.Table, relMap Relationships) {
 	for _, t := range tables {
-		tableAlias := a.Tables[t.Key]
+		tableAlias := a[t.Key]
 		cleanKey := strings.ReplaceAll(t.Key, ".", "_")
 
 		if len(tableAlias.UpPlural) == 0 {
@@ -79,13 +73,13 @@ func initAliases(a *Aliases, tables []drivers.Table, relMap Relationships) {
 			}
 		}
 
-		a.Tables[t.Key] = tableAlias
+		a[t.Key] = tableAlias
 	}
 }
 
 // Table gets a table alias, panics if not found.
 func (a Aliases) Table(table string) TableAlias {
-	t, ok := a.Tables[table]
+	t, ok := a[table]
 	if !ok {
 		panic("could not find table aliases for: " + table)
 	}

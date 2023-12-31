@@ -92,7 +92,10 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		return fmt.Errorf("validating relationships: %w", err)
 	}
 
-	initAliases(&s.Config.Aliases, dbInfo.Tables, relationships)
+	if s.Config.Aliases == nil {
+		s.Config.Aliases = make(map[string]TableAlias)
+	}
+	initAliases(s.Config.Aliases, dbInfo.Tables, relationships)
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
