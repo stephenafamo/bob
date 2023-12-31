@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/stephenafamo/bob"
 )
@@ -179,8 +180,11 @@ func (r Relationship) NeedsMany(position int) bool {
 		}
 	}
 
-	if r.Sides[position-1].Modify == "to" && !r.Sides[position-1].ToUnique {
-		return true
+	// If this or any others up the line are many, it should be many
+	for i := position - 1; i >= 0; i-- {
+		if r.Sides[i].Modify == "to" && !r.Sides[i].ToUnique {
+			return true
+		}
 	}
 
 	return false
@@ -288,6 +292,15 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 			valuedSides = append(valuedSides, toDeets)
 		}
 	}
+
+	sort.Slice(valuedSides, func(i, j int) bool {
+		for _, iMapped := range valuedSides[i].Mapped {
+			if iMapped.ExtPosition == valuedSides[j].Position {
+				return true
+			}
+		}
+		return false
+	})
 
 	return valuedSides
 }

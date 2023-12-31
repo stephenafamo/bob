@@ -28,11 +28,17 @@
   {{- end -}}
   {{- range $map := $side.UniqueExternals -}}
     {{- $a := $.Aliases.Table .ExternalTable -}}
-    , {{$a.DownSingular}}{{$map.ExtPosition}} *{{$a.UpSingular}}
+    {{- if $rel.NeedsMany .ExtPosition -}}
+      , {{$a.DownPlural}}{{$map.ExtPosition}} {{$a.UpSingular}}Slice
+    {{- else -}}
+      , {{$a.DownSingular}}{{$map.ExtPosition}} *{{$a.UpSingular}}
+    {{- end -}}
   {{- end -}}
   ) ({{if $rel.IsToMany}}{{$sideAlias.UpSingular}}Slice{{else}}*{{$sideAlias.UpSingular}}{{end}}, error) {
+    {{$tblName := $to -}}
     {{if $rel.IsToMany -}}
-      for _, {{$to}} := range {{$ftable.DownPlural}}{{$rel.ForeignPosition}} {
+      {{$tblName = printf "%s%d[i]" $ftable.DownPlural $rel.ForeignPosition -}}
+      for i := range {{$ftable.DownPlural}}{{$rel.ForeignPosition}} {
     {{- end -}}
       {{range $map := $side.Mapped -}}
         {{$sideC := $sideTable.GetColumn .Column -}}
@@ -40,28 +46,31 @@
         {{if .HasValue -}}
           {{if $sideC.Nullable }}
             {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-            {{$to}}.{{$colName}} = omitnull.From({{index .Value 1}})
+            {{$tblName}}.{{$colName}} = omitnull.From({{index .Value 1}})
           {{else}}
             {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-            {{$to}}.{{$colName}} = omit.From({{index .Value 1}})
+            {{$tblName}}.{{$colName}} = omit.From({{index .Value 1}})
           {{end}}
         {{- else -}}
           {{$a := $.Aliases.Table .ExternalTable -}}
           {{$t := getTable $.Tables .ExternalTable -}}
           {{$c := $t.GetColumn .ExternalColumn -}}
           {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+          {{if $rel.NeedsMany .ExtPosition -}}
+            {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+          {{end}}
           {{if and $sideC.Nullable $c.Nullable }}
             {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-            {{$to}}.{{$colName}} = omitnull.FromNull({{$colVal}})
+            {{$tblName}}.{{$colName}} = omitnull.FromNull({{$colVal}})
           {{else if $sideC.Nullable }}
             {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-            {{$to}}.{{$colName}} = omitnull.From({{$colVal}})
+            {{$tblName}}.{{$colName}} = omitnull.From({{$colVal}})
           {{else if $c.Nullable}}
             {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-            {{$to}}.{{$colName}} = omit.FromCond({{$colVal}}.GetOrZero(), {{$colVal}}.IsSet())
+            {{$tblName}}.{{$colName}} = omit.FromCond({{$colVal}}.GetOrZero(), {{$colVal}}.IsSet())
           {{else}}
             {{$.Importer.Import "github.com/aarondl/opt/omit" -}}
-            {{$to}}.{{$colName}} = omit.From({{$colVal}})
+            {{$tblName}}.{{$colName}} = omit.From({{$colVal}})
           {{- end}}
         {{- end}}
       {{- end}}
@@ -98,12 +107,13 @@
     {{- end -}}
   {{- end -}}
   ) ({{if $rel.NeedsMany $side.Position}}{{$sideAlias.UpSingular}}Slice{{else}}*{{$sideAlias.UpSingular}}{{end}}, error) {
-    {{- $needsIndividualUpdate := (and (not $side.End) ($rel.NeedsMany $side.Position)  (not (isJoinTable $sideTable $rel $side.Position))) -}}
+    {{- $uniqueEnd := and $side.End (not (index $rel.Sides (sub $side.Position 1)).ToUnique) -}}
+    {{- $needsIndividualUpdate := (and (not $uniqueEnd) ($rel.NeedsMany $side.Position)  (not (isJoinTable $sideTable $rel $side.Position))) -}}
     {{if $needsIndividualUpdate}}
     for i := range {{$sideAlias.DownPlural}}{{$side.Position}} {
       setter := &{{$sideAlias.UpSingular}}Setter{
         {{range $map := $side.Mapped -}}
-          {{if gt .ExtPosition $side.Position -}}
+          {{if $rel.NeedsMany .ExtPosition -}}
             {{$sideC := $sideTable.GetColumn .Column -}}
             {{$colName := $sideAlias.Column $map.Column -}}
             {{if .HasValue -}}
@@ -147,6 +157,14 @@
     }
     {{end}}
 
+    {{$needsBulkUpdate := false}}
+    {{range $map := $side.Mapped -}}
+        {{if not (or $needsIndividualUpdate ($rel.NeedsMany .ExtPosition)) -}}
+          {{$needsBulkUpdate = true}}{{break}}
+        {{end}}
+    {{end}}
+
+    {{if $needsBulkUpdate -}}
     {{if and ($rel.NeedsMany $side.Position) (isJoinTable $sideTable $rel $side.Position) -}}
       setters := make([]*{{$sideAlias.UpSingular}}Setter, count)
       for i := 0; i < count; i++ {
@@ -158,7 +176,7 @@
         setter := &{{$sideAlias.UpSingular}}Setter{
     {{- end -}}
       {{range $map := $side.Mapped -}}
-        {{if not (and $needsIndividualUpdate (gt .ExtPosition $side.Position)) -}}
+        {{if not (and $needsIndividualUpdate ($rel.NeedsMany .ExtPosition)) -}}
           {{$sideC := $sideTable.GetColumn .Column -}}
           {{$colName := $sideAlias.Column $map.Column -}}
           {{if .HasValue -}}
@@ -209,6 +227,7 @@
     if err != nil {
         return nil, fmt.Errorf("attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}: %w", err)
     }
+    {{end}}
 
     {{if $rel.NeedsMany $side.Position}}
       return {{$sideAlias.DownPlural}}{{$side.Position}}, nil
