@@ -167,7 +167,7 @@ type {{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable] struct {
   {{end -}}
 }
 
-func build{{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable](ctx context.Context, typ string) {{$tAlias.DownSingular}}RelationshipJoins[Q] {
+func build{{$tAlias.UpSingular}}RelationshipJoins[Q dialect.Joinable](ctx context.Context, typ string) {{$tAlias.DownSingular}}RelationshipJoins[Q] {
   return {{$tAlias.DownSingular}}RelationshipJoins[Q]{
 		{{range $.Relationships.Get $table.Key -}}
 			{{$ftable := $.Aliases.Table .Foreign -}}
@@ -180,9 +180,9 @@ func build{{$tAlias.DownSingular}}RelationshipJoins[Q dialect.Joinable](ctx cont
 {{$.Importer.Import "github.com/stephenafamo/bob/clause"}}
 func {{$tAlias.DownPlural}}Join[Q dialect.Joinable](ctx context.Context) joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]] {
 	return joinSet[{{$tAlias.DownSingular}}RelationshipJoins[Q]] {
-	  InnerJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.InnerJoin),
-	  LeftJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.LeftJoin),
-	  RightJoin: build{{$tAlias.DownSingular}}RelationshipJoins[Q](ctx, clause.RightJoin),
+	  InnerJoin: build{{$tAlias.UpSingular}}RelationshipJoins[Q](ctx, clause.InnerJoin),
+	  LeftJoin: build{{$tAlias.UpSingular}}RelationshipJoins[Q](ctx, clause.LeftJoin),
+	  RightJoin: build{{$tAlias.UpSingular}}RelationshipJoins[Q](ctx, clause.RightJoin),
 	}
 }
 {{- end}}
