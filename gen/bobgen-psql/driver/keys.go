@@ -102,10 +102,8 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 				fkey = c.ForeignSchema.String + "." + c.ForeignTable.String
 			}
 			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey{
-				Constraint: drivers.Constraint{
-					Name:    key + "." + c.Name,
-					Columns: c.Columns,
-				},
+				Name:           key + "." + c.Name,
+				Columns:        c.Columns,
 				ForeignTable:   fkey,
 				ForeignColumns: c.ForeignColumns,
 			})

@@ -365,7 +365,8 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 				ret.Uniques[table] = append(ret.Uniques[table], current)
 			case "FOREIGN KEY":
 				ret.FKs[table] = append(ret.FKs[table], drivers.ForeignKey{
-					Constraint:     current,
+					Name:           current.Name,
+					Columns:        current.Columns,
 					ForeignTable:   foreignTable,
 					ForeignColumns: foreignCols,
 				})

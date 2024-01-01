@@ -23,9 +23,9 @@ type Config struct {
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 
-	Aliases       Aliases       `yaml:"aliases"`
-	Constraints   Constraints   `yaml:"constraints"`
-	Relationships Relationships `yaml:"relationships"`
+	Aliases       Aliases       `yaml:"aliases"`       // customize aliases
+	Constraints   Constraints   `yaml:"constraints"`   // define additional constraints
+	Relationships Relationships `yaml:"relationships"` // define additional relationships
 
 	Replacements []Replace   `yaml:"replacements"`
 	Inflections  Inflections `yaml:"inflections"`

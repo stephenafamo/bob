@@ -11,13 +11,14 @@ type PrimaryKey = Constraint
 
 // Constraint represents a primary key constraint in a database
 type Constraint struct {
-	Name    string   `json:"name"`
-	Columns []string `json:"columns"`
+	Name    string   `yaml:"name" json:"name"`
+	Columns []string `yaml:"columns" json:"columns"`
 }
 
 // ForeignKey represents a foreign key constraint in a database
 type ForeignKey struct {
-	Constraint
-	ForeignTable   string   `json:"foreign_table"`
-	ForeignColumns []string `json:"foreign_columns"`
+	Name           string   `yaml:"name" json:"name"`
+	Columns        []string `yaml:"columns" json:"columns"`
+	ForeignTable   string   `yaml:"foreign_table" json:"foreign_table"`
+	ForeignColumns []string `yaml:"foreign_columns" json:"foreign_columns"`
 }

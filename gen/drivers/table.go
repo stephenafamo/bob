@@ -6,20 +6,20 @@ import (
 
 // Table metadata from the database schema.
 type Table struct {
-	Key string `json:"key"`
+	Key string `yaml:"key" json:"key"`
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
-	Schema  string   `json:"schema"`
-	Name    string   `json:"name"`
-	Columns []Column `json:"columns"`
+	Schema  string   `yaml:"schema" json:"schema"`
+	Name    string   `yaml:"name" json:"name"`
+	Columns []Column `yaml:"columns" json:"columns"`
 
-	Constraints Constraints `json:"constraints"`
+	Constraints Constraints `yaml:"constraints" json:"constraints"`
 }
 
 type Constraints struct {
-	Primary *PrimaryKey  `json:"primary"`
-	Foreign []ForeignKey `json:"foreign"`
-	Uniques []Constraint `json:"uniques"`
+	Primary *PrimaryKey  `yaml:"primary" json:"primary"`
+	Foreign []ForeignKey `yaml:"foreign" json:"foreign"`
+	Uniques []Constraint `yaml:"uniques" json:"uniques"`
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).

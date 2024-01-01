@@ -44,8 +44,7 @@ type RelSide struct {
 	// if the destination is unique
 	ToUnique bool `yaml:"-"`
 
-	// Which side to modify
-	// "From" or "To"
+	// Which side to modify, "from" or "to"
 	// If not set, it will try to "guess" which side to modify
 	// - if only one of the sides contains a primary key,
 	//   it will choose to modify the other side

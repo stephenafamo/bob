@@ -385,10 +385,8 @@ func (d *driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.
 
 		if field.Kind == FieldKindObject && len(field.RelationFromFields) > 0 {
 			fks = append(fks, drivers.ForeignKey{
-				Constraint: drivers.Constraint{
-					Name:    field.RelationName,
-					Columns: field.RelationFromFields,
-				},
+				Name:           field.RelationName,
+				Columns:        field.RelationFromFields,
 				ForeignTable:   d.datamodel.ModelByName(field.Type).TableName(),
 				ForeignColumns: field.RelationToFields,
 			})

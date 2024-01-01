@@ -487,10 +487,8 @@ func (d *driver) getKeys(table *schema.Table, colFilter drivers.ColumnFilter) (*
 			keyName := fmt.Sprintf("fk_%s_%d", table.Name, i)
 
 			fks = append(fks, drivers.ForeignKey{
-				Constraint: drivers.Constraint{
-					Name:    keyName,
-					Columns: cols,
-				},
+				Name:           keyName,
+				Columns:        cols,
 				ForeignTable:   ftableKey,
 				ForeignColumns: fcols,
 			})

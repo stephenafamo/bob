@@ -33,9 +33,10 @@ func TestJoinTable(t *testing.T) {
 			table.Columns = append(table.Columns, drivers.Column{Name: col})
 		}
 		for _, k := range test.Fkey {
-			table.Constraints.Foreign = append(table.Constraints.Foreign, drivers.ForeignKey{
-				Constraint: drivers.Constraint{Columns: []string{k}},
-			})
+			table.Constraints.Foreign = append(
+				table.Constraints.Foreign,
+				drivers.ForeignKey{Columns: []string{k}},
+			)
 		}
 
 		if isJoinTable(table) != test.Should {

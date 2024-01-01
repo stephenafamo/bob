@@ -382,10 +382,8 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 		}
 
 		fkeyMap[id] = drivers.ForeignKey{
-			Constraint: drivers.Constraint{
-				Name:    fmt.Sprintf("fk_%s_%d", tableName, id),
-				Columns: append(fkeyMap[id].Columns, col),
-			},
+			Name:           fmt.Sprintf("fk_%s_%d", tableName, id),
+			Columns:        append(fkeyMap[id].Columns, col),
 			ForeignTable:   d.key(schema, ftable),
 			ForeignColumns: append(fkeyMap[id].ForeignColumns, fcol),
 		}
