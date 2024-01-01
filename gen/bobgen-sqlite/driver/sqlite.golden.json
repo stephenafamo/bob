@@ -66,71 +66,43 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_autoinckeywordtest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_autoinckeywordtest_0",
+			"constraints": {
+				"primary": {
+					"name": "pk_main_autoinckeywordtest",
 					"columns": [
-						"user_id",
-						"sponsor_id"
-					],
-					"foreign_table": "videos",
-					"foreign_columns": [
-						"user_id",
-						"sponsor_id"
-					]
-				}
-			],
-			"unique": [
-				{
-					"name": "sqlite_autoindex_autoinckeywordtest_2",
-					"columns": [
-						"something",
-						"another"
+						"id"
 					]
 				},
-				{
-					"name": "sqlite_autoindex_autoinckeywordtest_1",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_autoinckeywordtest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "autoinckeywordtest",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+				"foreign": [
+					{
+						"name": "fk_autoinckeywordtest_0",
+						"columns": [
+							"user_id",
+							"sponsor_id"
+						],
+						"foreign_table": "videos",
+						"foreign_columns": [
+							"user_id",
+							"sponsor_id"
+						]
+					}
+				],
+				"uniques": [
+					{
+						"name": "sqlite_autoindex_autoinckeywordtest_2",
+						"columns": [
+							"something",
+							"another"
+						]
+					},
+					{
+						"name": "sqlite_autoindex_autoinckeywordtest_1",
+						"columns": [
+							"sponsor_id"
+						]
+					}
+				]
+			}
 		},
 		{
 			"key": "autoinctest",
@@ -150,53 +122,27 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_autoinctest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_autoinctest_0",
+			"constraints": {
+				"primary": {
+					"name": "pk_main_autoinctest",
 					"columns": [
 						"id"
-					],
-					"foreign_table": "tags",
-					"foreign_columns": [
-						"id"
 					]
-				}
-			],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_autoinctest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "autoinctest",
-							"To": "tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+				},
+				"foreign": [
+					{
+						"name": "fk_autoinctest_0",
+						"columns": [
+							"id"
+						],
+						"foreign_table": "tags",
+						"foreign_columns": [
+							"id"
+						]
+					}
+				],
+				"uniques": []
+			}
 		},
 		{
 			"key": "has_generated_columns",
@@ -264,16 +210,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_has_generated_columns",
-				"columns": [
-					"a"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": {
+					"name": "pk_main_has_generated_columns",
+					"columns": [
+						"a"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.as_generated_columns",
@@ -341,16 +287,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_as_generated_columns",
-				"columns": [
-					"a"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": {
+					"name": "pk_one_as_generated_columns",
+					"columns": [
+						"a"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.autoinckeywordtest",
@@ -382,16 +328,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_autoinckeywordtest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": {
+					"name": "pk_one_autoinckeywordtest",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.autoinctest",
@@ -411,16 +357,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_autoinctest",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": {
+					"name": "pk_one_autoinctest",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.sponsors",
@@ -440,42 +386,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_sponsors",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.sponsors",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			"constraints": {
+				"primary": {
+					"name": "pk_one_sponsors",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.tags",
@@ -495,58 +415,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_tags",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0fk_video_tags_1",
-					"ByJoinTable": true,
-					"Sides": [
-						{
-							"From": "one.tags",
-							"To": "one.video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"tag_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						},
-						{
-							"From": "one.video_tags",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"video_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			"constraints": {
+				"primary": {
+					"name": "pk_one_tags",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.user_videos",
@@ -590,11 +468,11 @@
 					"imports": null
 				}
 			],
-			"p_key": null,
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": null,
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.users",
@@ -614,42 +492,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_users",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_videos_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.users",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"user_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			"constraints": {
+				"primary": {
+					"name": "pk_one_users",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.video_tags",
@@ -681,89 +533,38 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_video_tags",
-				"columns": [
-					"video_id",
-					"tag_id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_video_tags_0",
+			"constraints": {
+				"primary": {
+					"name": "pk_one_video_tags",
 					"columns": [
+						"video_id",
 						"tag_id"
-					],
-					"foreign_table": "one.tags",
-					"foreign_columns": [
-						"id"
 					]
 				},
-				{
-					"name": "fk_video_tags_1",
-					"columns": [
-						"video_id"
-					],
-					"foreign_table": "one.videos",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [],
-			"is_join_table": true,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.video_tags",
-							"To": "one.tags",
-							"Columns": null,
-							"FromColumns": [
-								"tag_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_video_tags_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.video_tags",
-							"To": "one.videos",
-							"Columns": null,
-							"FromColumns": [
-								"video_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+				"foreign": [
+					{
+						"name": "fk_video_tags_0",
+						"columns": [
+							"tag_id"
+						],
+						"foreign_table": "one.tags",
+						"foreign_columns": [
+							"id"
+						]
+					},
+					{
+						"name": "fk_video_tags_1",
+						"columns": [
+							"video_id"
+						],
+						"foreign_table": "one.videos",
+						"foreign_columns": [
+							"id"
+						]
+					}
+				],
+				"uniques": []
+			}
 		},
 		{
 			"key": "one.videos",
@@ -807,136 +608,44 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_one_videos",
-				"columns": [
-					"id"
+			"constraints": {
+				"primary": {
+					"name": "pk_one_videos",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [
+					{
+						"name": "fk_videos_0",
+						"columns": [
+							"sponsor_id"
+						],
+						"foreign_table": "one.sponsors",
+						"foreign_columns": [
+							"id"
+						]
+					},
+					{
+						"name": "fk_videos_1",
+						"columns": [
+							"user_id"
+						],
+						"foreign_table": "one.users",
+						"foreign_columns": [
+							"id"
+						]
+					}
+				],
+				"uniques": [
+					{
+						"name": "sqlite_autoindex_videos_2",
+						"columns": [
+							"sponsor_id"
+						]
+					}
 				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_videos_0",
-					"columns": [
-						"sponsor_id"
-					],
-					"foreign_table": "one.sponsors",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "fk_videos_1",
-					"columns": [
-						"user_id"
-					],
-					"foreign_table": "one.users",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [
-				{
-					"name": "sqlite_autoindex_videos_2",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0fk_video_tags_1",
-					"ByJoinTable": true,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"video_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						},
-						{
-							"From": "one.video_tags",
-							"To": "one.tags",
-							"Columns": null,
-							"FromColumns": [
-								"tag_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.sponsors",
-							"Columns": null,
-							"FromColumns": [
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "one.videos",
-							"To": "one.users",
-							"Columns": null,
-							"FromColumns": [
-								"user_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			}
 		},
 		{
 			"key": "sponsors",
@@ -956,42 +665,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_sponsors",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "sponsors",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			"constraints": {
+				"primary": {
+					"name": "pk_main_sponsors",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "tags",
@@ -1011,83 +694,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_tags",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_autoinctest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "tags",
-							"To": "autoinctest",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
+			"constraints": {
+				"primary": {
+					"name": "pk_main_tags",
+					"columns": [
+						"id"
+					]
 				},
-				{
-					"Name": "fk_video_tags_0fk_video_tags_1",
-					"ByJoinTable": true,
-					"Sides": [
-						{
-							"From": "tags",
-							"To": "video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"tag_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						},
-						{
-							"From": "video_tags",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"video_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "type_monsters",
@@ -2475,16 +2091,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_type_monsters",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": {
+					"name": "pk_main_type_monsters",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "user_videos",
@@ -2528,11 +2144,11 @@
 					"imports": null
 				}
 			],
-			"p_key": null,
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": null
+			"constraints": {
+				"primary": null,
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "users",
@@ -2552,42 +2168,16 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_users",
-				"columns": [
-					"id"
-				]
-			},
-			"foreign_keys": [],
-			"unique": [],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_videos_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "users",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"user_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			"constraints": {
+				"primary": {
+					"name": "pk_main_users",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
 		},
 		{
 			"key": "video_tags",
@@ -2619,89 +2209,38 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_video_tags",
-				"columns": [
-					"video_id",
-					"tag_id"
-				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_video_tags_0",
+			"constraints": {
+				"primary": {
+					"name": "pk_main_video_tags",
 					"columns": [
+						"video_id",
 						"tag_id"
-					],
-					"foreign_table": "tags",
-					"foreign_columns": [
-						"id"
 					]
 				},
-				{
-					"name": "fk_video_tags_1",
-					"columns": [
-						"video_id"
-					],
-					"foreign_table": "videos",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [],
-			"is_join_table": true,
-			"relationship": [
-				{
-					"Name": "fk_video_tags_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "video_tags",
-							"To": "tags",
-							"Columns": null,
-							"FromColumns": [
-								"tag_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_video_tags_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "video_tags",
-							"To": "videos",
-							"Columns": null,
-							"FromColumns": [
-								"video_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+				"foreign": [
+					{
+						"name": "fk_video_tags_0",
+						"columns": [
+							"tag_id"
+						],
+						"foreign_table": "tags",
+						"foreign_columns": [
+							"id"
+						]
+					},
+					{
+						"name": "fk_video_tags_1",
+						"columns": [
+							"video_id"
+						],
+						"foreign_table": "videos",
+						"foreign_columns": [
+							"id"
+						]
+					}
+				],
+				"uniques": []
+			}
 		},
 		{
 			"key": "videos",
@@ -2745,163 +2284,44 @@
 					"imports": null
 				}
 			],
-			"p_key": {
-				"name": "pk_main_videos",
-				"columns": [
-					"id"
+			"constraints": {
+				"primary": {
+					"name": "pk_main_videos",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [
+					{
+						"name": "fk_videos_0",
+						"columns": [
+							"sponsor_id"
+						],
+						"foreign_table": "sponsors",
+						"foreign_columns": [
+							"id"
+						]
+					},
+					{
+						"name": "fk_videos_1",
+						"columns": [
+							"user_id"
+						],
+						"foreign_table": "users",
+						"foreign_columns": [
+							"id"
+						]
+					}
+				],
+				"uniques": [
+					{
+						"name": "sqlite_autoindex_videos_2",
+						"columns": [
+							"sponsor_id"
+						]
+					}
 				]
-			},
-			"foreign_keys": [
-				{
-					"name": "fk_videos_0",
-					"columns": [
-						"sponsor_id"
-					],
-					"foreign_table": "sponsors",
-					"foreign_columns": [
-						"id"
-					]
-				},
-				{
-					"name": "fk_videos_1",
-					"columns": [
-						"user_id"
-					],
-					"foreign_table": "users",
-					"foreign_columns": [
-						"id"
-					]
-				}
-			],
-			"unique": [
-				{
-					"name": "sqlite_autoindex_videos_2",
-					"columns": [
-						"sponsor_id"
-					]
-				}
-			],
-			"is_join_table": false,
-			"relationship": [
-				{
-					"Name": "fk_autoinckeywordtest_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "autoinckeywordtest",
-							"Columns": null,
-							"FromColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"user_id",
-								"sponsor_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_video_tags_0fk_video_tags_1",
-					"ByJoinTable": true,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "video_tags",
-							"Columns": null,
-							"FromColumns": [
-								"id"
-							],
-							"ToColumns": [
-								"video_id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": true,
-							"ToUnique": false,
-							"KeyNullable": false
-						},
-						{
-							"From": "video_tags",
-							"To": "tags",
-							"Columns": null,
-							"FromColumns": [
-								"tag_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_0",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "sponsors",
-							"Columns": null,
-							"FromColumns": [
-								"sponsor_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": true
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				},
-				{
-					"Name": "fk_videos_1",
-					"ByJoinTable": false,
-					"Sides": [
-						{
-							"From": "videos",
-							"To": "users",
-							"Columns": null,
-							"FromColumns": [
-								"user_id"
-							],
-							"ToColumns": [
-								"id"
-							],
-							"FromWhere": null,
-							"ToWhere": null,
-							"ToKey": false,
-							"ToUnique": true,
-							"KeyNullable": false
-						}
-					],
-					"Ignored": false,
-					"NoReverse": false,
-					"Alias": ""
-				}
-			]
+			}
 		}
 	],
 	"enums": null,
