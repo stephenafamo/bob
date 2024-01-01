@@ -106,14 +106,6 @@ func buildRelationships(tables []drivers.Table) Relationships {
 				continue // no matching target table
 			}
 
-			pair1 := make(map[string]string, len(fk.Columns))
-			pair2 := make(map[string]string, len(fk.Columns))
-			for index, localCol := range fk.Columns {
-				foreignCol := fk.ForeignColumns[index]
-				pair1[localCol] = foreignCol
-				pair2[foreignCol] = localCol
-			}
-
 			relationships[t1.Key] = append(relationships[t1.Key], orm.Relationship{
 				Name: fk.Name,
 				Sides: []orm.RelSide{{
@@ -466,17 +458,14 @@ func isJoinTableForRel(t drivers.Table, r orm.Relationship, position int) bool {
 	return hasExactUnique(t, colNames...)
 }
 
-func allColsInList(cols, list1, list2 []string) bool {
+func allColsInList(cols []string, lists ...[]string) bool {
 ColumnsLoop:
 	for _, col := range cols {
-		for _, sideCol := range list1 {
-			if col == sideCol {
-				continue ColumnsLoop
-			}
-		}
-		for _, sideCol := range list2 {
-			if col == sideCol {
-				continue ColumnsLoop
+		for _, list := range lists {
+			for _, sideCol := range list {
+				if col == sideCol {
+					continue ColumnsLoop
+				}
 			}
 		}
 		return false
@@ -511,4 +500,54 @@ func inferModify(side orm.RelSide, tables []drivers.Table) string {
 
 	// Cannot infer, default to "to"
 	return "to"
+}
+
+// processRelationshipConfig checks any user included relationships and adds them to the tables
+func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) error {
+	if len(tables) == 0 {
+		return nil
+	}
+
+	setColumns(config.Relationships)
+	if err := flipRelationships(config.Relationships, tables); err != nil {
+		return err
+	}
+
+	for _, t := range tables {
+		rels, ok := config.Relationships[t.Key]
+		if !ok {
+			continue
+		}
+
+		relMap[t.Key] = mergeRelationships(relMap[t.Key], rels)
+	}
+
+	return relMap.init(tables)
+}
+
+func validateRelationships(rels Relationships) error {
+	for table, tableRels := range rels {
+		for _, r := range tableRels {
+			if err := r.Validate(); err != nil {
+				return fmt.Errorf("%s: %w", table, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func setColumns(relMap Relationships) {
+	for table, rels := range relMap {
+		for relIdx, rel := range rels {
+			for sideIdx, side := range rel.Sides {
+				relMap[table][relIdx].Sides[sideIdx].FromColumns = make([]string, len(side.Columns))
+				relMap[table][relIdx].Sides[sideIdx].ToColumns = make([]string, len(side.Columns))
+				for colIndex, colpairs := range side.Columns {
+					relMap[table][relIdx].Sides[sideIdx].FromColumns[colIndex] = colpairs[0]
+					relMap[table][relIdx].Sides[sideIdx].ToColumns[colIndex] = colpairs[1]
+				}
+			}
+		}
+	}
 }

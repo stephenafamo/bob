@@ -128,21 +128,5 @@ func GetConfigFromProvider[DriverConfig any](provider koanf.Provider, driverConf
 		return config, driverConfig, err
 	}
 
-	setColumns(&config)
 	return config, driverConfig, nil
-}
-
-func setColumns(c *gen.Config) {
-	for table, rels := range c.Relationships {
-		for relIdx, rel := range rels {
-			for sideIdx, side := range rel.Sides {
-				c.Relationships[table][relIdx].Sides[sideIdx].FromColumns = make([]string, len(side.Columns))
-				c.Relationships[table][relIdx].Sides[sideIdx].ToColumns = make([]string, len(side.Columns))
-				for colIndex, colpairs := range side.Columns {
-					c.Relationships[table][relIdx].Sides[sideIdx].FromColumns[colIndex] = colpairs[0]
-					c.Relationships[table][relIdx].Sides[sideIdx].ToColumns[colIndex] = colpairs[1]
-				}
-			}
-		}
-	}
 }

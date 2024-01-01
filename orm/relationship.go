@@ -40,14 +40,17 @@ type RelSide struct {
 	// Which side to modify
 	// "From" or "To"
 	// If not set, it will try to "guess" which side to modify
-	// - if only one of the sides contains a primary key, it will choose to modify the other side
-	// - If (both or none) of them contains a primary key, it will try with "Unique" columns
+	// - if only one of the sides contains a primary key,
+	//   it will choose to modify the other side
+	// - If (both or none) of them contains a primary key,
+	//   it will try with "Unique" columns
 	// - If it still cannot choose, it defaults to "to"
 	Modify string `yaml:"modify"`
 
 	// If the key is nullable. We need this to know if we can remove the
 	// relationship without deleting it
-	KeyNullable bool `yaml:"key_nullable"`
+	// this is set in Relationships.init()
+	KeyNullable bool `yaml:"-"`
 
 	// Kinda hacky, used for preloading
 	ToExpr func(context.Context) bob.Expression `json:"-" yaml:"-"`

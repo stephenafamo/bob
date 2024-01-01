@@ -439,40 +439,6 @@ func shouldReplaceInTable(t drivers.Table, r Replace) bool {
 	return false
 }
 
-// processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) error {
-	if len(tables) == 0 {
-		return nil
-	}
-
-	if err := flipRelationships(config.Relationships, tables); err != nil {
-		return err
-	}
-
-	for _, t := range tables {
-		rels, ok := config.Relationships[t.Key]
-		if !ok {
-			continue
-		}
-
-		relMap[t.Key] = mergeRelationships(relMap[t.Key], rels)
-	}
-
-	return relMap.init(tables)
-}
-
-func validateRelationships(rels Relationships) error {
-	for table, tableRels := range rels {
-		for _, r := range tableRels {
-			if err := r.Validate(); err != nil {
-				return fmt.Errorf("%s: %w", table, err)
-			}
-		}
-	}
-
-	return nil
-}
-
 // initOutFolders creates the folders that will hold the generated output.
 func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 	if wipe {
