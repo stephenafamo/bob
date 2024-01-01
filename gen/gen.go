@@ -82,6 +82,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	}
 
 	initInflections(s.Config.Inflections)
+	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
 	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
 
 	relationships := buildRelationships(dbInfo.Tables)

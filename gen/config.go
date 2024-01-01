@@ -24,6 +24,7 @@ type Config struct {
 	TagIgnore []string `yaml:"tag_ignore"`
 
 	Aliases       Aliases       `yaml:"aliases"`
+	Constraints   Constraints   `yaml:"constraints"`
 	Relationships Relationships `yaml:"relationships"`
 
 	Replacements []Replace   `yaml:"replacements"`
