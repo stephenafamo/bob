@@ -28,9 +28,16 @@ type RelSide struct {
 	FromWhere []RelWhere `yaml:"from_where"`
 	ToWhere   []RelWhere `yaml:"to_where"`
 
-	//-----------------------------------------
+	// These are columns that exist in the database, but should not be
+	// considered by the relationship when determining if it is a join table
+	// the columns are never set or read, so make sure they have a default value
+	// or operations will fail
+	// the first slice is for the from table, the second is for the to table
+	IgnoredColumns [2][]string `yaml:"-"`
+
+	//--------------------------------------------
 	// The Uniques are set in Relationships.init()
-	//-----------------------------------------
+	//--------------------------------------------
 
 	// if the origin is unique
 	FromUnique bool `yaml:"-"`

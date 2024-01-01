@@ -273,6 +273,9 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) (orm.Relations
 			FromColumns: side.ToColumns,
 			ToWhere:     side.FromWhere,
 			FromWhere:   side.ToWhere,
+			IgnoredColumns: [2][]string{
+				side.IgnoredColumns[1], side.IgnoredColumns[0],
+			},
 
 			Modify:      newModify,
 			ToUnique:    side.FromUnique,
@@ -450,12 +453,23 @@ func isJoinTableForRel(t drivers.Table, r orm.Relationship, position int) bool {
 		colNames[i] = c.Name
 	}
 
-	if !allColsInList(colNames, relevantSides[0].ToColumns, relevantSides[1].FromColumns) {
+	if !allColsInList(
+		colNames,
+		relevantSides[0].IgnoredColumns[1], relevantSides[0].ToColumns,
+		relevantSides[1].IgnoredColumns[0], relevantSides[1].FromColumns,
+	) {
 		return false
 	}
 
+	// These are the columns actually used in the relationship
+	// i.e. not ignored
+	relevantColumns := append(
+		relevantSides[0].ToColumns,
+		relevantSides[1].FromColumns...,
+	)
+
 	// Must have a unique constraint on all columns
-	return hasExactUnique(t, colNames...)
+	return hasExactUnique(t, removeDuplicates(relevantColumns)...)
 }
 
 func allColsInList(cols []string, lists ...[]string) bool {
@@ -541,13 +555,45 @@ func setColumns(relMap Relationships) {
 	for table, rels := range relMap {
 		for relIdx, rel := range rels {
 			for sideIdx, side := range rel.Sides {
-				relMap[table][relIdx].Sides[sideIdx].FromColumns = make([]string, len(side.Columns))
-				relMap[table][relIdx].Sides[sideIdx].ToColumns = make([]string, len(side.Columns))
-				for colIndex, colpairs := range side.Columns {
-					relMap[table][relIdx].Sides[sideIdx].FromColumns[colIndex] = colpairs[0]
-					relMap[table][relIdx].Sides[sideIdx].ToColumns[colIndex] = colpairs[1]
+				from := make([]string, 0, len(side.Columns))
+				to := make([]string, 0, len(side.Columns))
+				var ignored [2][]string
+
+				for _, colpairs := range side.Columns {
+					if colpairs[0] == "" {
+						ignored[1] = append(ignored[1], colpairs[1])
+						continue
+					}
+
+					if colpairs[1] == "" {
+						ignored[0] = append(ignored[0], colpairs[0])
+						continue
+					}
+
+					from = append(from, colpairs[0])
+					to = append(to, colpairs[1])
 				}
+
+				relMap[table][relIdx].Sides[sideIdx].FromColumns = from
+				relMap[table][relIdx].Sides[sideIdx].ToColumns = to
+				relMap[table][relIdx].Sides[sideIdx].IgnoredColumns = ignored
 			}
 		}
 	}
+}
+
+func removeDuplicates[T comparable, Ts ~[]T](slice Ts) Ts {
+	seen := make(map[T]struct{}, len(slice))
+	final := make(Ts, 0, len(slice))
+
+	for _, v := range slice {
+		if _, ok := seen[v]; ok {
+			continue
+		}
+
+		seen[v] = struct{}{}
+		final = append(final, v)
+	}
+
+	return final
 }
