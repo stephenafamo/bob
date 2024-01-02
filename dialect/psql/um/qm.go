@@ -4,6 +4,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -35,6 +36,12 @@ func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 			Expression: name,
 			Alias:      alias,
 		}
+	})
+}
+
+func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
+		q.Set.Set = append(q.Set.Set, internal.ToAnySlice(sets)...)
 	})
 }
 
