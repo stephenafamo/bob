@@ -280,15 +280,30 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		{{- end}}
 	)...)
 
+  {{range $index, $local := $firstSide.FromColumns -}}
+    {{- $fromColAlias := index $firstFrom.Columns $local -}}
+    {{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
+    {{$fromColAlias}}Slice := []{{$fromCol.Type}}{}
+  {{end}}
+
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
-	{{$fAlias.DownPlural}}, err := bob.All(ctx, exec, q, scan.StructMapper[*struct{
-	  {{$fAlias.UpSingular}}
-		{{range $index, $local := $firstSide.FromColumns -}}
-			{{- $fromColAlias := index $firstFrom.Columns $local -}}
-			{{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
-			Related{{$fromColAlias}} {{$fromCol.Type}} `db:"related_{{$firstSide.From}}.{{$fromColAlias}}"`
-		{{end}}
-	}]())
+  mapper := scan.Mod(scan.StructMapper[*{{$fAlias.UpSingular}}](), func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+    return func(row *scan.Row) (any, error) {
+      {{range $index, $local := $firstSide.FromColumns -}}
+        {{- $fromColAlias := index $firstFrom.Columns $local -}}
+        {{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
+        {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromCol.Type}}))
+        row.ScheduleScan("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+      {{end}}
+
+      return nil, nil
+    },
+    func(any, any) error {
+      return nil
+    }
+  })
+
+	{{$fAlias.DownPlural}}, err := bob.Allx[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](ctx, exec, q, mapper)
 	if err != nil {
 		return err
 	}
@@ -300,10 +315,10 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	{{- end}}
 
 	for _, o := range os {
-		for _, rel := range {{$fAlias.DownPlural}} {
+		for i, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{$fromCol := index $firstFrom.Columns $local -}}
-			if o.{{$fromCol}} != rel.Related{{$fromCol}} {
+			if o.{{$fromCol}} != {{$fromCol}}Slice[i] {
 			  continue
 			}
 			{{end}}
@@ -319,9 +334,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 
 
 			{{if $rel.IsToMany -}}
-				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, &rel.{{$fAlias.UpSingular}})
+				o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
 			{{else -}}
-				o.R.{{$relAlias}} =  &rel.{{$fAlias.UpSingular}}
+				o.R.{{$relAlias}} =  rel
 				break
 			{{end -}}
 		}
