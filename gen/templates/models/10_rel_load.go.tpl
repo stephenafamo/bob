@@ -260,6 +260,16 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
   if len(os) == 0 {
 	  return nil
 	}
+  
+  // since we are changing the columns, we need to check if the original columns were set or add the defaults
+  sq := dialect.SelectQuery{}
+  for _, mod := range mods {
+   mod.Apply(&sq)
+  }
+
+	if len(sq.SelectList.Columns) == 0 {
+		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns()))
+	}
 
 	q := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, append(
 		mods, 
