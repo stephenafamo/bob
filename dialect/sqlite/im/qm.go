@@ -4,6 +4,8 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -81,4 +83,42 @@ func OnConflict(columns ...any) mods.Conflict[*dialect.InsertQuery] {
 
 func Returning(clauses ...any) bob.Mod[*dialect.InsertQuery] {
 	return mods.Returning[*dialect.InsertQuery](clauses)
+}
+
+//========================================
+// For use in ON CONFLICT DO UPDATE SET
+//========================================
+
+func Set(sets ...bob.Expression) bob.Mod[*clause.Conflict] {
+	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+		c.Set.Set = append(c.Set.Set, internal.ToAnySlice(sets)...)
+	})
+}
+
+func SetCol(from string) mods.Set[*clause.Conflict] {
+	return mods.Set[*clause.Conflict]{from}
+}
+
+func SetExcluded(cols ...string) bob.Mod[*clause.Conflict] {
+	exprs := make([]any, 0, len(cols))
+	for _, col := range cols {
+		if col == "" {
+			continue
+		}
+		exprs = append(exprs,
+			expr.Join{Exprs: []bob.Expression{
+				expr.Quote(col), expr.Raw("= EXCLUDED."), expr.Quote(col),
+			}},
+		)
+	}
+
+	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+		c.Set.Set = append(c.Set.Set, exprs...)
+	})
+}
+
+func Where(e bob.Expression) bob.Mod[*clause.Conflict] {
+	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+		c.Where.Conditions = append(c.Where.Conditions, e)
+	})
 }

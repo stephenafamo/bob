@@ -54,7 +54,7 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, fromArgs...)
 
-	setArgs, err := bob.ExpressIf(w, d, start+len(args), u.Set, true, " ", "")
+	setArgs, err := bob.ExpressIf(w, d, start+len(args), u.Set, true, " SET\n", "")
 	if err != nil {
 		return nil, err
 	}

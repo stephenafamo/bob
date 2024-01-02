@@ -49,12 +49,13 @@ func TestInsert(t *testing.T) {
 				im.IntoAs("distributors", "d", "did", "dname"),
 				im.Values(psql.Arg(8, "Anvil Distribution")),
 				im.Values(psql.Arg(9, "Sentry Distribution")),
-				im.OnConflict("did").DoUpdate().
-					Set("dname", psql.Concat(
+				im.OnConflict("did").DoUpdate(
+					im.SetCol("dname").To(psql.Concat(
 						psql.Raw("EXCLUDED.dname"), psql.S(" (formerly "),
 						psql.Quote("d", "dname"), psql.S(")"),
-					)).
-					Where(psql.Quote("d", "zipcode").NE(psql.S("21201"))),
+					)),
+					im.Where(psql.Quote("d", "zipcode").NE(psql.S("21201"))),
+				),
 			),
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
@@ -68,10 +69,10 @@ func TestInsert(t *testing.T) {
 				im.IntoAs("distributors", "d", "did", "dname"),
 				im.Values(psql.Arg(8, "Anvil Distribution")),
 				im.Values(psql.Arg(9, "Sentry Distribution")),
-				im.OnConflictOnConstraint("distributors_pkey").
-					DoUpdate().
-					SetExcluded("dname").
-					Where(psql.Quote("d", "zipcode").NE(psql.S("21201"))),
+				im.OnConflictOnConstraint("distributors_pkey").DoUpdate(
+					im.SetExcluded("dname"),
+					im.Where(psql.Quote("d", "zipcode").NE(psql.S("21201"))),
+				),
 			),
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)

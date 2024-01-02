@@ -2,8 +2,10 @@ package im
 
 import (
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -68,39 +70,52 @@ func As(rowAlias string, colAlias ...string) bob.Mod[*dialect.InsertQuery] {
 	})
 }
 
-func OnDuplicateKeyUpdate() *dupKeyUpdater {
-	return &dupKeyUpdater{}
+func OnDuplicateKeyUpdate(clauses ...bob.Mod[*clause.Set]) bob.Mod[*dialect.InsertQuery] {
+	sets := clause.Set{}
+	for _, m := range clauses {
+		m.Apply(&sets)
+	}
+
+	return mods.QueryModFunc[*dialect.InsertQuery](func(q *dialect.InsertQuery) {
+		q.DuplicateKeyUpdate.Set = append(q.DuplicateKeyUpdate.Set, sets.Set...)
+	})
 }
 
-type dupKeyUpdater struct {
-	sets []dialect.Set
+//========================================
+// For use in ON DUPLICATE KEY UPDATE
+//========================================
+
+func Update(exprs ...bob.Expression) bob.Mod[*clause.Set] {
+	return mods.QueryModFunc[*clause.Set](func(c *clause.Set) {
+		c.Set = append(c.Set, internal.ToAnySlice(exprs)...)
+	})
 }
 
-func (s dupKeyUpdater) Apply(q *dialect.InsertQuery) {
-	q.DuplicateKeyUpdate = append(q.DuplicateKeyUpdate, s.sets...)
+func UpdateCol(col string) mods.Set[*clause.Set] {
+	return mods.Set[*clause.Set]{col}
 }
 
-func (s *dupKeyUpdater) SetCol(col string, val any) *dupKeyUpdater {
-	s.sets = append(s.sets, dialect.Set{Col: col, Val: val})
-	return s
-}
-
-func (s *dupKeyUpdater) Set(alias string, cols ...string) *dupKeyUpdater {
-	newCols := make([]dialect.Set, len(cols))
+func UpdateWithAlias(alias string, cols ...string) bob.Mod[*clause.Set] {
+	newCols := make([]any, len(cols))
 	for i, c := range cols {
 		newCols[i] = dialect.Set{Col: c, Val: expr.Quote(alias, c)}
 	}
 
-	s.sets = append(s.sets, newCols...)
-	return s
+	return mods.QueryModFunc[*clause.Set](func(s *clause.Set) {
+		s.Set = append(s.Set, newCols...)
+	})
 }
 
-func (s *dupKeyUpdater) SetValues(cols ...string) *dupKeyUpdater {
-	newCols := make([]dialect.Set, len(cols))
+func UpdateWithValues(cols ...string) bob.Mod[*clause.Set] {
+	newCols := make([]any, len(cols))
 	for i, c := range cols {
-		newCols[i] = dialect.Set{Col: c, Val: dialect.NewFunction("VALUES", expr.Quote(c))}
+		newCols[i] = dialect.Set{
+			Col: c,
+			Val: dialect.NewFunction("VALUES", expr.Quote(c)),
+		}
 	}
 
-	s.sets = append(s.sets, newCols...)
-	return s
+	return mods.QueryModFunc[*clause.Set](func(s *clause.Set) {
+		s.Set = append(s.Set, newCols...)
+	})
 }
