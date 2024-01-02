@@ -115,21 +115,6 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 	{{end -}}
 }
 
-{{block "setter_update_mod" . -}}
-{{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
-	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
-	{{- range $column := $table.Columns -}}
-	{{if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !s.{{$colAlias}}.IsUnset() {
-			um.Set("{{$column.Name}}").ToArg(s.{{$colAlias}}).Apply(q)
-		}
-	{{end -}}
-}
-{{- end}}
-
 {{block "setter_insert_mod" . -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
 {{$table := .Table}}
@@ -149,6 +134,35 @@ func (s {{$tAlias.UpSingular}}Setter) Insert() bob.Mod[*dialect.InsertQuery] {
 	return im.Values(vals...)
 }
 {{- end}}
+
+{{block "setter_update_mod" . -}}
+{{$table := .Table}}
+{{$tAlias := .Aliases.Table $table.Key -}}
+func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
+  um.Set(s.Expressions()...).Apply(q)
+}
+{{- end}}
+
+{{block "setter_expressions" . -}}
+{{$table := .Table}}
+{{$tAlias := .Aliases.Table $table.Key -}}
+func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expression {
+  exprs := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
+
+	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
+	{{range $column := $table.Columns -}}
+	{{if $column.Generated}}{{continue}}{{end -}}
+	{{$colAlias := $tAlias.Column $column.Name -}}
+		if !s.{{$colAlias}}.IsUnset() {
+      exprs = append(exprs, {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...).EQ({{$.Dialect}}.Arg(s.{{$colAlias}})))
+		}
+
+	{{end -}}
+
+  return exprs
+}
+{{- end}}
+
 
 {{- end}}
 

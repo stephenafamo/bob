@@ -19,13 +19,6 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
-	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
-	{{- range $column := .Table.Columns -}}
-	{{if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !s.{{$colAlias}}.IsUnset() {
-			um.Set("{{$table.Name}}", "{{$column.Name}}").ToArg(s.{{$colAlias}}).Apply(q)
-		}
-	{{end -}}
+  um.Set(s.Expressions("{{$table.Name}}")...).Apply(q)
 }
 {{- end}}
