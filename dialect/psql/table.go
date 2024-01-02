@@ -212,8 +212,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 			excludeSetCols = t.setMapping.NonPKs
 		}
 		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).
-			DoUpdate().
-			SetExcluded(excludeSetCols...)
+			DoUpdate(im.SetExcluded(excludeSetCols...))
 	}
 
 	q := Insert(

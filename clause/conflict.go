@@ -28,7 +28,7 @@ func (c Conflict) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 	w.Write([]byte(" DO "))
 	w.Write([]byte(c.Do))
 
-	setArgs, err := bob.ExpressIf(w, d, start+len(args), c.Set, true, " ", "")
+	setArgs, err := bob.ExpressIf(w, d, start+len(args), c.Set, len(c.Set.Set) > 0, " SET\n", "")
 	if err != nil {
 		return nil, err
 	}

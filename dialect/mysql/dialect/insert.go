@@ -21,7 +21,7 @@ type InsertQuery struct {
 	RowAlias           string
 	ColumnAlias        []string
 	Sets               []Set
-	DuplicateKeyUpdate []Set
+	DuplicateKeyUpdate clause.Set
 }
 
 func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -104,7 +104,7 @@ func (i InsertQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 		}
 	}
 
-	updateArgs, err := bob.ExpressSlice(w, d, start+len(args), i.DuplicateKeyUpdate,
+	updateArgs, err := bob.ExpressSlice(w, d, start+len(args), i.DuplicateKeyUpdate.Set,
 		"\nON DUPLICATE KEY UPDATE\n", ",\n", "")
 	if err != nil {
 		return nil, err

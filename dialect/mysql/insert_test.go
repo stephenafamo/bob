@@ -74,12 +74,13 @@ func TestInsert(t *testing.T) {
 				im.Values(mysql.Arg(8, "Anvil Distribution")),
 				im.Values(mysql.Arg(9, "Sentry Distribution")),
 				im.As("new"),
-				im.OnDuplicateKeyUpdate().
-					Set("new", "did").
-					SetCol("dbname", mysql.Concat(
+				im.OnDuplicateKeyUpdate(
+					im.UpdateWithAlias("new", "did"),
+					im.UpdateCol("dbname").To(mysql.Concat(
 						mysql.Quote("new", "dname"), mysql.S(" (formerly "),
 						mysql.Quote("d", "dname"), mysql.S(")"),
 					)),
+				),
 			),
 			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
 				VALUES (?, ?), (?, ?)
@@ -94,7 +95,7 @@ func TestInsert(t *testing.T) {
 				im.Into("distributors", "did", "dname"),
 				im.Values(mysql.Arg(8, "Anvil Distribution")),
 				im.Values(mysql.Arg(9, "Sentry Distribution")),
-				im.OnDuplicateKeyUpdate().SetValues("did", "dbname"),
+				im.OnDuplicateKeyUpdate(im.UpdateWithValues("did", "dbname")),
 			),
 			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
 				VALUES (?, ?), (?, ?)
