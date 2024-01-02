@@ -17,5 +17,5 @@ type Setter[T any, InsertQ any, UpdateQ any] interface {
 	// Act as a mod for the update query
 	bob.Mod[UpdateQ]
 	// Return a mod for the insert query
-	Insert() bob.Mod[InsertQ]
+	InsertMod() bob.Mod[InsertQ]
 }

@@ -101,7 +101,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	)
 
 	for _, row := range rows {
-		row.Insert().Apply(q.Expression)
+		row.InsertMod().Apply(q.Expression)
 	}
 
 	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
@@ -222,7 +222,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	)
 
 	for _, row := range rows {
-		row.Insert().Apply(q.Expression)
+		row.InsertMod().Apply(q.Expression)
 	}
 
 	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
