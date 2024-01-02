@@ -51,7 +51,7 @@ func StraightJoin(e any) bob.Mod[*dialect.UpdateQuery] {
 	return dialect.StraightJoin[*dialect.UpdateQuery](e)
 }
 
-func Set(from ...string) mods.Set[*dialect.UpdateQuery] {
+func SetCol(from ...string) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery](from)
 }
 

@@ -14,7 +14,7 @@ func TestUpdate(t *testing.T) {
 		"simple": {
 			Query: psql.Update(
 				um.Table("films"),
-				um.Set("kind").ToArg("Dramatic"),
+				um.SetCol("kind").ToArg("Dramatic"),
 				um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET "kind" = $1 WHERE (kind = $2)`,
@@ -23,7 +23,7 @@ func TestUpdate(t *testing.T) {
 		"with from": {
 			Query: psql.Update(
 				um.Table("employees"),
-				um.Set("sales_count").To("sales_count + 1"),
+				um.SetCol("sales_count").To("sales_count + 1"),
 				um.From("accounts"),
 				um.Where(psql.Quote("accounts", "name").EQ(psql.Arg("Acme Corporation"))),
 				um.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
@@ -39,7 +39,7 @@ func TestUpdate(t *testing.T) {
 			ExpectedArgs: []any{"Acme Corporation"},
 			Query: psql.Update(
 				um.Table("employees"),
-				um.Set("sales_count").To("sales_count + 1"),
+				um.SetCol("sales_count").To("sales_count + 1"),
 				um.Where(psql.Quote("id").EQ(psql.Group(psql.Select(
 					sm.Columns("sales_person"),
 					sm.From("accounts"),

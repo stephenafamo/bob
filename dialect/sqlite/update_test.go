@@ -15,7 +15,7 @@ func TestUpdate(t *testing.T) {
 		"simple": {
 			Query: sqlite.Update(
 				um.Table("films"),
-				um.Set("kind").ToArg("Dramatic"),
+				um.SetCol("kind").ToArg("Dramatic"),
 				um.Where(sqlite.Quote("kind").EQ(sqlite.Arg("Drama"))),
 			),
 			ExpectedSQL:  `UPDATE films SET "kind" = ?1 WHERE ("kind" = ?2)`,
@@ -24,7 +24,7 @@ func TestUpdate(t *testing.T) {
 		"with from": {
 			Query: sqlite.Update(
 				um.Table("employees"),
-				um.Set("sales_count").To("sales_count + 1"),
+				um.SetCol("sales_count").To("sales_count + 1"),
 				um.From("accounts"),
 				um.Where(sqlite.Quote("accounts", "name").EQ(sqlite.Arg("Acme Corporation"))),
 				um.Where(sqlite.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
@@ -42,7 +42,7 @@ func TestUpdate(t *testing.T) {
 			Query: sqlite.Update(
 				um.TableAs("employees", "e"),
 				um.TableNotIndexed(),
-				um.Set("sales_count").To("sales_count + 1"),
+				um.SetCol("sales_count").To("sales_count + 1"),
 				um.Where(sqlite.Quote("id").EQ(sqlite.Select(
 					sm.Columns("sales_person"),
 					sm.From("accounts"),
