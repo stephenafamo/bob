@@ -60,7 +60,7 @@ func TableNotIndexed() bob.Mod[*dialect.UpdateQuery] {
 	})
 }
 
-func Set(from string) mods.Set[*dialect.UpdateQuery] {
+func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]([]string{from})
 }
 

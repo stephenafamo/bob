@@ -76,15 +76,15 @@ func (s UserSetter) Overwrite(t *User) {
 
 func (s UserSetter) Apply(q *dialect.UpdateQuery) {
 	if !s.ID.IsUnset() {
-		um.Set("id").ToArg(s.ID).Apply(q)
+		um.SetCol("id").ToArg(s.ID).Apply(q)
 	}
 
 	if !s.Name.IsUnset() {
-		um.Set("name").ToArg(s.Name).Apply(q)
+		um.SetCol("name").ToArg(s.Name).Apply(q)
 	}
 
 	if !s.Email.IsUnset() {
-		um.Set("email").ToArg(s.Email).Apply(q)
+		um.SetCol("email").ToArg(s.Email).Apply(q)
 	}
 }
 
