@@ -3,6 +3,7 @@ package um
 import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
 
@@ -57,6 +58,12 @@ func TableNotIndexed() bob.Mod[*dialect.UpdateQuery] {
 	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		var s string
 		q.Table.IndexedBy = &s
+	})
+}
+
+func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
+	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
+		q.Set.Set = append(q.Set.Set, internal.ToAnySlice(sets)...)
 	})
 }
 
