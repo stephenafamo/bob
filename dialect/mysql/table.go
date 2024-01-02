@@ -166,7 +166,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 
 	if t.unretrievable {
 		for _, row := range rows {
-			row.Insert().Apply(q.Expression)
+			row.InsertMod().Apply(q.Expression)
 		}
 		_, err = q.Exec(ctx, exec)
 		if err != nil {
@@ -179,7 +179,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	inserted := make(Tslice, len(rows))
 	for i, row := range rows {
 		q.Expression.Values.Vals = nil
-		row.Insert().Apply(q.Expression)
+		row.InsertMod().Apply(q.Expression)
 		result, err := q.Exec(ctx, exec)
 		if err != nil {
 			return nil, err
@@ -292,7 +292,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	if t.unretrievable {
 		for _, row := range rows {
-			row.Insert().Apply(q.Expression)
+			row.InsertMod().Apply(q.Expression)
 		}
 
 		_, err = q.Exec(ctx, exec)
@@ -306,7 +306,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	upserted := make(Tslice, len(rows))
 	for i, row := range rows {
 		q.Expression.Values.Vals = nil
-		row.Insert().Apply(q.Expression)
+		row.InsertMod().Apply(q.Expression)
 		result, err := q.Exec(ctx, exec)
 		if err != nil {
 			return nil, err

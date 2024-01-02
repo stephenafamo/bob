@@ -9,7 +9,7 @@ var (
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) Insert() bob.Mod[*dialect.InsertQuery] {
+func (s {{$tAlias.UpSingular}}Setter) InsertMod() bob.Mod[*dialect.InsertQuery] {
   vals := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
 	{{range $column := $table.NonGeneratedColumns -}}
 		{{$colAlias := $tAlias.Column $column.Name -}}

@@ -119,7 +119,7 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) Insert() bob.Mod[*dialect.InsertQuery] {
+func (s {{$tAlias.UpSingular}}Setter) InsertMod() bob.Mod[*dialect.InsertQuery] {
   vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
 	{{range $index, $column := $table.NonGeneratedColumns -}}
 		{{$colAlias := $tAlias.Column $column.Name -}}
