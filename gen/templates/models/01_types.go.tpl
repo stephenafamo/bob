@@ -149,12 +149,16 @@ func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
 func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expression {
   exprs := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
 
+  {{$.Importer.Import "github.com/stephenafamo/bob/expr" }}
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if !s.{{$colAlias}}.IsUnset() {
-      exprs = append(exprs, {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...).EQ({{$.Dialect}}.Arg(s.{{$colAlias}})))
+      exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
+        {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), 
+        {{$.Dialect}}.Arg(s.{{$colAlias}}),
+      }})
 		}
 
 	{{end -}}
