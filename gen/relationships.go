@@ -492,8 +492,8 @@ func inferModify(side orm.RelSide, tables []drivers.Table) string {
 	t1 := drivers.GetTable(tables, side.From)
 	t2 := drivers.GetTable(tables, side.To)
 
-	isT1PK := sliceMatch(side.FromColumns, t1.Constraints.Primary.Columns)
-	isT2PK := sliceMatch(side.ToColumns, t2.Constraints.Primary.Columns)
+	isT1PK := t1.Constraints.Primary != nil && sliceMatch(side.FromColumns, t1.Constraints.Primary.Columns)
+	isT2PK := t2.Constraints.Primary != nil && sliceMatch(side.ToColumns, t2.Constraints.Primary.Columns)
 
 	switch {
 	case isT1PK && !isT2PK:
