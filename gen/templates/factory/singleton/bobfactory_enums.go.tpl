@@ -1,4 +1,4 @@
-{{if $.Enums}}
+{{- if $.Enums}}
 {{$.Importer.Import "models" $.ModelsPackage}}
 
 type (
@@ -6,4 +6,4 @@ type (
 		{{$enum.Type}} = models.{{$enum.Type}}
 	{{end}}
 )
-{{end}}
+{{end -}}
