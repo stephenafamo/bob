@@ -138,9 +138,10 @@ sqlite.Insert(
   im.IntoAs("distributors", "d", "did", "dname"),
   im.Values(sqlite.Arg(8, "Anvil Distribution")),
   im.Values(sqlite.Arg(9, "Sentry Distribution")),
-  im.OnConflict("did").DoUpdate().
-    SetExcluded("dname").
-    Where(sqlite.Quote("d", "zipcode").NE(sqlite.S("21201"))),
+  im.OnConflict("did").DoUpdate(
+    im.SetExcluded("dname"),
+    im.Where(sqlite.Quote("d", "zipcode").NE(sqlite.S("21201"))),
+  ),
 )
 ```
 
