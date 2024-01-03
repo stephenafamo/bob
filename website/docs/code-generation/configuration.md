@@ -197,7 +197,8 @@ relationships:
           columns: [[id, team_id]]
           to_where:
             - column: "verified"
-              value: "true"
+              sql_value: "true"
+              go_value: "true"
 ```
 
 ## Inflections
