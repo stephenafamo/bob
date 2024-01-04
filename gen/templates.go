@@ -5,7 +5,6 @@ import (
 	"encoding"
 	"fmt"
 	"io/fs"
-	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
@@ -157,8 +156,7 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
-		firstDir := strings.Split(t.Name, string(filepath.Separator))[0]
-		isTest := firstDir == "test" || strings.HasSuffix(firstDir, "_test")
+		isTest := strings.Contains(t.Name, "_test.go")
 		if testTemplates && !isTest || !testTemplates && isTest {
 			continue
 		}
