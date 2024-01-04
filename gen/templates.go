@@ -264,6 +264,17 @@ var templateFunctions = template.FuncMap{
 
 		return fmt.Sprintf("%q, %q", s1, s2)
 	},
+	"isPrimitiveType": func(name string) bool {
+		switch name {
+		case "int", "int8", "int16", "int32", "int64",
+			"uint", "uint8", "uint16", "uint32", "uint64",
+			"float32", "float64",
+			"string", "bool":
+			return true
+		default:
+			return false
+		}
+	},
 	"uniqueColPairs":        uniqueColPairs,
 	"neededBridgeRels":      neededBridgeRels,
 	"relArgs":               relArgs,
