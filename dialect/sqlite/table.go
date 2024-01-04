@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -77,6 +78,10 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 	slice, err := t.InsertMany(ctx, exec, row)
 	if err != nil {
 		return *new(T), err
+	}
+
+	if len(slice) == 0 {
+		return *new(T), sql.ErrNoRows
 	}
 
 	return slice[0], nil
@@ -169,6 +174,10 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 	slice, err := t.UpsertMany(ctx, exec, updateOnConflict, conflictCols, updateCols, row)
 	if err != nil {
 		return *new(T), err
+	}
+
+	if len(slice) == 0 {
+		return *new(T), sql.ErrNoRows
 	}
 
 	return slice[0], nil
