@@ -138,11 +138,13 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 }
 
 func generate[T any](s *State, data *TemplateData[T]) error {
-	var err error
-	var templates []lazyTemplate
 	knownKeys := make(map[string]struct{})
 
 	for _, o := range s.Outputs {
+		if len(o.Templates) == 0 {
+			continue
+		}
+
 		if _, ok := knownKeys[o.Key]; ok {
 			return fmt.Errorf("Duplicate output key: %q", o.Key)
 		}
@@ -151,9 +153,20 @@ func generate[T any](s *State, data *TemplateData[T]) error {
 		// set the package name for this output
 		data.PkgName = o.PkgName
 
-		templates, err = o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
+		templates, err := o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
 		if err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
+		}
+
+		tplCount := 0
+		if o.templates != nil {
+			tplCount += len(o.templates.Templates())
+		}
+		if o.testTemplates != nil {
+			tplCount += len(o.testTemplates.Templates())
+		}
+		if tplCount == 0 {
+			continue
 		}
 
 		err = o.initOutFolders(templates, s.Config.Wipe)
