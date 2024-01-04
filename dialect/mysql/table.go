@@ -137,6 +137,10 @@ func (t *Table[T, Tslice, Tset]) Insert(ctx context.Context, exec bob.Executor, 
 		return *new(T), err
 	}
 
+	if len(slice) == 0 {
+		return *new(T), sql.ErrNoRows
+	}
+
 	return slice[0], nil
 }
 
@@ -245,6 +249,10 @@ func (t *Table[T, Tslice, Tset]) Upsert(ctx context.Context, exec bob.Executor, 
 	slice, err := t.UpsertMany(ctx, exec, updateOnConflict, updateCols, row)
 	if err != nil {
 		return *new(T), err
+	}
+
+	if len(slice) == 0 {
+		return *new(T), sql.ErrNoRows
 	}
 
 	return slice[0], nil
