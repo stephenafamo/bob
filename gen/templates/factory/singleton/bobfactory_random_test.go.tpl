@@ -1,4 +1,5 @@
 {{$.Importer.Import "testing"}}
+{{$.Importer.Import "github.com/google/go-cmp/cmp"}}
 
 
 {{$doneTypes := dict }}
@@ -10,14 +11,14 @@
     {{- $.Importer.ImportList $column.Imports -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
 
-      func TestRandom_{{replace "." "_" $colTyp}}(t *testing.T) {
+      func TestRandom_{{$colTyp | replace "." "_" | replace "[" "_" | replace "]" "_"}}(t *testing.T) {
         t.Parallel()
 
         seen := make([]{{$colTyp}}, 10)
         for i := 0; i < 10; i++ {
           seen[i] = random[{{$colTyp}}](nil)
           for j := 0; j < i; j++ {
-            if seen[i] == seen[j] {
+            if cmp.Equal(seen[i], seen[j]) {
               t.Fatalf("random[{{$colTyp}}]() returned the same value twice: %v", seen[i])
             }
           }
