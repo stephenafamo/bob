@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"go/format"
 	"io"
 	"io/fs"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/stephenafamo/bob/gen/importers"
+	"mvdan.cc/gofumpt/format"
 )
 
 // Copied from the go source
@@ -74,48 +74,48 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int) error {
+func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int, goVersion string) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
 		templates:     o.templates,
 		dirExtensions: dirExts,
-	}, padding)
+	}, padding, goVersion)
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int) error {
+func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int, goVersion string) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
 		templates:     o.testTemplates,
 		isTest:        true,
 		dirExtensions: dirExts,
-	}, padding)
+	}, padding, goVersion)
 }
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *TemplateData[T], padding int) error {
+func generateSingletonOutput[T any](o *Output, data *TemplateData[T], padding int, goVersion string) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.templates,
-	}, padding)
+	}, padding, goVersion)
 }
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], padding int) error {
+func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], padding int, goVersion string) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.testTemplates,
 		isTest:    true,
-	}, padding)
+	}, padding, goVersion)
 }
 
-func executeTemplates[T any](e executeTemplateData[T], padding int) error {
+func executeTemplates[T any](e executeTemplateData[T], padding int, goVersion string) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			headerOut := templateHeaderByteBuffer
@@ -147,17 +147,19 @@ func executeTemplates[T any](e executeTemplateData[T], padding int) error {
 			fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, fName, out.Len()-prevLen)
 
 			imps := e.data.Importer.ToList()
+			version := ""
 			if isGo {
 				pkgName := e.output.PkgName
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
+				version = goVersion
 				writeFileDisclaimer(headerOut)
 				writePackageName(headerOut, pkgName)
 				writeImports(headerOut, imps)
 			}
 
-			if err := writeFile(e.output.OutFolder, fName, io.MultiReader(headerOut, out), isGo); err != nil {
+			if err := writeFile(e.output.OutFolder, fName, io.MultiReader(headerOut, out), version); err != nil {
 				return err
 			}
 		}
@@ -166,7 +168,7 @@ func executeTemplates[T any](e executeTemplateData[T], padding int) error {
 	return nil
 }
 
-func executeSingletonTemplates[T any](e executeTemplateData[T], padding int) error {
+func executeSingletonTemplates[T any](e executeTemplateData[T], padding int, goVersion string) error {
 	headerOut := templateHeaderByteBuffer
 	out := templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
@@ -193,8 +195,10 @@ func executeSingletonTemplates[T any](e executeTemplateData[T], padding int) err
 		}
 		fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, normalized, out.Len()-prevLen)
 
+		version := ""
 		if isGo {
 			imps := e.data.Importer.ToList()
+			version = goVersion
 
 			pkgName := e.output.PkgName
 			if !usePkg {
@@ -205,7 +209,7 @@ func executeSingletonTemplates[T any](e executeTemplateData[T], padding int) err
 			writeImports(headerOut, imps)
 		}
 
-		if err := writeFile(e.output.OutFolder, normalized, io.MultiReader(headerOut, out), isGo); err != nil {
+		if err := writeFile(e.output.OutFolder, normalized, io.MultiReader(headerOut, out), version); err != nil {
 			return err
 		}
 	}
@@ -235,11 +239,12 @@ func writeImports(out *bytes.Buffer, imps importers.List) {
 
 // writeFile writes to the given folder and filename, formatting the buffer
 // given.
-func writeFile(outFolder string, fileName string, input io.Reader, format bool) error {
+// If goVersion is empty, the file is not formatted.
+func writeFile(outFolder string, fileName string, input io.Reader, goVersion string) error {
 	var byt []byte
 	var err error
-	if format {
-		byt, err = formatBuffer(input)
+	if goVersion != "" {
+		byt, err = formatBuffer(input, goVersion)
 		if err != nil {
 			return err
 		}
@@ -273,13 +278,13 @@ func executeTemplate[T any](buf io.Writer, t *template.Template, name string, da
 	return nil
 }
 
-func formatBuffer(buf io.Reader) ([]byte, error) {
+func formatBuffer(buf io.Reader, version string) ([]byte, error) {
 	src, err := io.ReadAll(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	output, err := format.Source(src)
+	output, err := format.Source(src, format.Options{LangVersion: version})
 	if err == nil {
 		return output, nil
 	}

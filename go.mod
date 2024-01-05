@@ -24,8 +24,9 @@ require (
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.4
 	golang.org/x/mod v0.12.0
-	golang.org/x/tools v0.7.0
+	golang.org/x/tools v0.8.0
 	modernc.org/sqlite v1.20.3
+	mvdan.cc/gofumpt v0.5.0
 )
 
 require (
@@ -45,7 +46,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -64,7 +64,7 @@ require (
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/exp v0.0.0-20230131160201-f062dba9d201 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

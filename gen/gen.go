@@ -76,7 +76,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		return errors.New("no tables found in database")
 	}
 
-	modPkg, err := modelsPackage(s.Outputs)
+	modPkg, version, err := modelsPackage(s.Outputs)
 	if err != nil {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
@@ -134,10 +134,10 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		}
 	}
 
-	return generate(s, data)
+	return generate(s, data, version)
 }
 
-func generate[T any](s *State, data *TemplateData[T]) error {
+func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 	knownKeys := make(map[string]struct{})
 
 	for _, o := range s.Outputs {
@@ -176,12 +176,12 @@ func generate[T any](s *State, data *TemplateData[T]) error {
 
 		padding := outputPadding(o.templates.Templates(), data.Tables)
 
-		if err := generateSingletonOutput(o, data, padding); err != nil {
+		if err := generateSingletonOutput(o, data, padding, goVersion); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
 		}
 
 		if !s.Config.NoTests {
-			if err := generateSingletonTestOutput(o, data, padding); err != nil {
+			if err := generateSingletonTestOutput(o, data, padding, goVersion); err != nil {
 				return fmt.Errorf("unable to generate singleton test template output: %w", err)
 			}
 		}
@@ -196,13 +196,13 @@ func generate[T any](s *State, data *TemplateData[T]) error {
 			data.Table = table
 
 			// Generate the regular templates
-			if err := generateOutput(o, regularDirExtMap, data, padding); err != nil {
+			if err := generateOutput(o, regularDirExtMap, data, padding, goVersion); err != nil {
 				return fmt.Errorf("unable to generate output: %w", err)
 			}
 
 			// Generate the test templates
 			if !s.Config.NoTests {
-				if err := generateTestOutput(o, testDirExtMap, data, padding); err != nil {
+				if err := generateTestOutput(o, testDirExtMap, data, padding, goVersion); err != nil {
 					return fmt.Errorf("unable to generate test output: %w", err)
 				}
 			}
@@ -538,7 +538,8 @@ func normalizeSlashes(path string) string {
 	return path
 }
 
-func modelsPackage(outputs []*Output) (string, error) {
+// Returns the pkg name, and the go version
+func modelsPackage(outputs []*Output) (string, string, error) {
 	var modelsFolder string
 	for _, o := range outputs {
 		if o.Key == "models" {
@@ -547,26 +548,26 @@ func modelsPackage(outputs []*Output) (string, error) {
 	}
 
 	if modelsFolder == "" {
-		return "", nil
+		return "", "", nil
 	}
 
 	modRoot, modFile, err := goModInfo(modelsFolder)
 	if err != nil {
-		return "", fmt.Errorf("getting mod details: %w", err)
+		return "", "", fmt.Errorf("getting mod details: %w", err)
 	}
 
 	fullPath := modelsFolder
 	if !filepath.IsAbs(modelsFolder) {
 		wd, err := os.Getwd()
 		if err != nil {
-			return "", fmt.Errorf("could not get working directory: %w", err)
+			return "", "", fmt.Errorf("could not get working directory: %w", err)
 		}
 
 		fullPath = filepath.Join(wd, modelsFolder)
 	}
 
 	relPath := strings.TrimPrefix(fullPath, modRoot)
-	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), nil
+	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), modFile.Go.Version, nil
 }
 
 // goModInfo returns the main module's root directory
