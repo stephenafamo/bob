@@ -69,66 +69,75 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 	}
 
+	types := map[string]Type{
+		"excellent.Type": {
+			Name:    "excellent.Type",
+			Imports: []string{`"rock.com/excellent"`},
+		},
+		"excellent.NamedType": {
+			Name:    "excellent.NamedType",
+			Imports: []string{`"rock.com/excellent-name"`},
+		},
+		"int": {
+			Name:    "int",
+			Imports: []string{`"context"`},
+		},
+		"contextInt": {
+			Name:    "contextInt",
+			Imports: []string{`"contextual"`},
+		},
+		"big.Int": {
+			Name:    "big.Int",
+			Imports: []string{`"math/big"`},
+		},
+		"xid.ID": {
+			Name:    "xid.ID",
+			Imports: []string{`"github.com/rs/xid"`},
+		},
+	}
+
 	replacements := []Replace{
 		{
 			Match: drivers.Column{
 				DBType: "serial",
 			},
-			Replace: drivers.Column{
-				Type:    "excellent.Type",
-				Imports: []string{`"rock.com/excellent"`},
-			},
+			Replace: "excellent.Type",
 		},
 		{
 			Tables: []string{"named_table"},
 			Match: drivers.Column{
 				DBType: "serial",
 			},
-			Replace: drivers.Column{
-				Type:    "excellent.NamedType",
-				Imports: []string{`"rock.com/excellent-name"`},
-			},
+			Replace: "excellent.NamedType",
 		},
 		{
 			Match: drivers.Column{
 				Type:     "null.String",
 				Nullable: true,
 			},
-			Replace: drivers.Column{
-				Type:    "int",
-				Imports: []string{`"context"`},
-			},
+			Replace: "int",
 		},
 		{
 			Match: drivers.Column{
 				DomainName: "domain name",
 			},
-			Replace: drivers.Column{
-				Type:    "contextInt",
-				Imports: []string{`"contextual"`},
-			},
+			Replace: "contextInt",
 		},
 		{
 			Match: drivers.Column{
 				Name: "by_named",
 			},
-			Replace: drivers.Column{
-				Type:    "big.Int",
-				Imports: []string{`"math/big"`},
-			},
+			Replace: "big.Int",
 		},
 		{
 			Match: drivers.Column{
 				Comment: "xid",
 			},
-			Replace: drivers.Column{
-				Type:    "xid.ID",
-				Imports: []string{`"github.com/rs/xid"`},
-			},
+			Replace: "xid.ID",
 		},
 	}
 
-	processTypeReplacements(replacements, tables)
+	processTypeReplacements(types, replacements, tables)
 
 	if typ := tables[0].Columns[0].Type; typ != "excellent.Type" {
 		t.Error("type was wrong:", typ)
