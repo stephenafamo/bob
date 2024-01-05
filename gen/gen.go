@@ -174,14 +174,12 @@ func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
 
-		padding := outputPadding(o.templates.Templates(), data.Tables)
-
-		if err := generateSingletonOutput(o, data, padding, goVersion); err != nil {
+		if err := generateSingletonOutput(o, data, goVersion); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
 		}
 
 		if !s.Config.NoTests {
-			if err := generateSingletonTestOutput(o, data, padding, goVersion); err != nil {
+			if err := generateSingletonTestOutput(o, data, goVersion); err != nil {
 				return fmt.Errorf("unable to generate singleton test template output: %w", err)
 			}
 		}
@@ -196,13 +194,13 @@ func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 			data.Table = table
 
 			// Generate the regular templates
-			if err := generateOutput(o, regularDirExtMap, data, padding, goVersion); err != nil {
+			if err := generateOutput(o, regularDirExtMap, data, goVersion); err != nil {
 				return fmt.Errorf("unable to generate output: %w", err)
 			}
 
 			// Generate the test templates
 			if !s.Config.NoTests {
-				if err := generateTestOutput(o, testDirExtMap, data, padding, goVersion); err != nil {
+				if err := generateTestOutput(o, testDirExtMap, data, goVersion); err != nil {
 					return fmt.Errorf("unable to generate test output: %w", err)
 				}
 			}
@@ -318,24 +316,6 @@ func groupTemplates(templates *templateList) dirExtMap {
 	}
 
 	return dirs
-}
-
-func outputPadding(tpls []string, tables []drivers.Table) int {
-	longest := 0
-	for _, tplName := range tpls {
-		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
-		if isSingleton && len(normalized) > longest {
-			longest = len(normalized)
-		}
-	}
-
-	for _, t := range tables {
-		if len(t.Name)+6 > longest { // padd for any extra suffix like _model
-			longest = len(t.Name) + 6
-		}
-	}
-
-	return longest
 }
 
 // processTypeReplacements checks the config for type replacements
