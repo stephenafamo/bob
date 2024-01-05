@@ -83,7 +83,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
-	processTypeReplacements(s.Config.Replacements, dbInfo.Tables)
+	processTypeReplacements(s.Config.Types, s.Config.Replacements, dbInfo.Tables)
 
 	relationships := buildRelationships(dbInfo.Tables)
 	if err := processRelationshipConfig(&s.Config, dbInfo.Tables, relationships); err != nil {
@@ -318,9 +318,21 @@ func groupTemplates(templates *templateList) dirExtMap {
 	return dirs
 }
 
+func isPrimitiveType(name string) bool {
+	switch name {
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64",
+		"string", "bool":
+		return true
+	default:
+		return false
+	}
+}
+
 // processTypeReplacements checks the config for type replacements
 // and performs them.
-func processTypeReplacements(replacements []Replace, tables []drivers.Table) {
+func processTypeReplacements(types map[string]Type, replacements []Replace, tables []drivers.Table) {
 	for _, r := range replacements {
 		didMatch := false
 		for i := range tables {
@@ -333,11 +345,23 @@ func processTypeReplacements(replacements []Replace, tables []drivers.Table) {
 			for j := range t.Columns {
 				c := t.Columns[j]
 				if matchColumn(c, r.Match) {
-					t.Columns[j] = columnMerge(c, r.Replace)
 					didMatch = true
+
+					replacement, ok := types[r.Replace]
+					if ok {
+						t.Columns[j].Type = replacement.Name
+						t.Columns[j].Imports = replacement.Imports
+					} else if isPrimitiveType(r.Replace) {
+						t.Columns[j].Type = r.Replace
+						t.Columns[j].Imports = nil
+					} else {
+						fmt.Printf("WARNING: No type found for replacement: %q\n", r.Replace)
+					}
+
 				}
 			}
 		}
+
 		// Print a warning if we didn't match anything
 		if !didMatch {
 			c := r.Match
@@ -396,25 +420,6 @@ func matchColumn(c, m drivers.Column) bool {
 	}
 
 	return true
-}
-
-// columnMerge merges values from src into dst. Bools are copied regardless
-// strings are copied if they have values. Name is excluded because it doesn't make
-// sense to non-programatically replace a name.
-func columnMerge(dst, src drivers.Column) drivers.Column {
-	ret := dst
-	if len(src.Type) != 0 {
-		ret.Type = src.Type
-		ret.Imports = src.Imports
-	}
-	if len(src.Imports) != 0 {
-		ret.Imports = src.Imports
-	}
-	if len(src.DBType) != 0 {
-		ret.DBType = src.DBType
-	}
-
-	return ret
 }
 
 // shouldReplaceInTable checks if tables were specified in types.match in the config.

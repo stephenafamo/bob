@@ -2,6 +2,7 @@ package gen
 
 import (
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/importers"
 )
 
 // Config for the running of the commands
@@ -23,9 +24,10 @@ type Config struct {
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 
-	Aliases       Aliases       `yaml:"aliases"`       // customize aliases
-	Constraints   Constraints   `yaml:"constraints"`   // define additional constraints
-	Relationships Relationships `yaml:"relationships"` // define additional relationships
+	Types         map[string]Type `yaml:"types"`         // register custom types
+	Aliases       Aliases         `yaml:"aliases"`       // customize aliases
+	Constraints   Constraints     `yaml:"constraints"`   // define additional constraints
+	Relationships Relationships   `yaml:"relationships"` // define additional relationships
 
 	Replacements []Replace   `yaml:"replacements"`
 	Inflections  Inflections `yaml:"inflections"`
@@ -36,11 +38,16 @@ type Config struct {
 	Generator string `yaml:"generator"`
 }
 
+type Type struct {
+	Name    string         `json:"name" yaml:"name" toml:"name"`
+	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`
+}
+
 // Replace replaces a column type with something else
 type Replace struct {
 	Tables  []string       `yaml:"tables"`
 	Match   drivers.Column `yaml:"match"`
-	Replace drivers.Column `yaml:"replace"`
+	Replace string         `yaml:"replace"`
 }
 
 type Inflections struct {
