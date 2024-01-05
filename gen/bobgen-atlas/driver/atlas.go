@@ -13,6 +13,7 @@ import (
 	"ariga.io/atlas/sql/postgres"
 	"ariga.io/atlas/sql/schema"
 	"ariga.io/atlas/sql/sqlite"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/volatiletech/strmangle"
@@ -49,10 +50,23 @@ func New(config Config, fs fs.FS) Interface {
 		config.Dir = "."
 	}
 
+	types := helpers.Types()
+
+	switch config.UUIDPkg {
+	case "google":
+		types["uuid.UUID"] = drivers.Type{
+			Imports: importers.List{`"github.com/google/uuid"`},
+		}
+	default:
+		types["uuid.UUID"] = drivers.Type{
+			Imports: importers.List{`"github.com/gofrs/uuid/v5"`},
+		}
+	}
+
 	return &driver{
 		config: config,
 		fs:     fs,
-		types:  BaseTypes(config.UUIDPkg),
+		types:  types,
 	}
 }
 
@@ -377,15 +391,12 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 			c.Type = "pq.Float64Array"
 		case *schema.IntegerType, *postgres.SerialType:
 			c.Type = "pq.Int64Array"
+		case *schema.EnumType:
+			c2 := d.translateColumnType(c, tableKey, t.Type)
+			c.Type = helpers.AddPgEnumArrayType(d.types, c2.Type)
 		default:
 			c2 := d.translateColumnType(c, tableKey, t.Type)
-
-			imports := importers.List{`"github.com/stephenafamo/bob/types/parray"`}
-
-			c.Type = fmt.Sprintf("parray.Array[%s]", c2.Type)
-			d.types[c.Type] = drivers.Type{
-				Imports: append(imports, d.types[c2.Type].Imports...),
-			}
+			c.Type = helpers.AddPgGenericArrayType(d.types, c2.Type)
 		}
 
 	default:
@@ -530,72 +541,4 @@ func (p *driver) getEnums() []drivers.Enum {
 	})
 
 	return enums
-}
-
-func BaseTypes(whichUUID string) drivers.Types {
-	var uuidPkg string
-
-	switch whichUUID {
-	case "google":
-		uuidPkg = `"github.com/google/uuid"`
-	default:
-		uuidPkg = `"github.com/gofrs/uuid/v5"`
-	}
-
-	return drivers.Types{
-		"time.Time": {
-			Imports: importers.List{`"time"`},
-		},
-		"uuid.UUID": {
-			Imports: importers.List{uuidPkg},
-		},
-		"pq.BoolArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Int64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.ByteaArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.StringArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Float64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pgeo.Box": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Circle": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Line": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Lseg": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Path": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Point": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Polygon": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"decimal.Decimal": {
-			Imports: importers.List{`"github.com/shopspring/decimal"`},
-		},
-		"types.HStore": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
-		},
-		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
-				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
-			},
-		},
-	}
 }

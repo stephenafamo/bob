@@ -16,8 +16,12 @@ func random[T any](f *faker.Faker) T {
     switch any(val).(type) {
     default:
       return val
+
     case string:
       return any(strings.Join(f.Lorem().Words(5), " ")).(T)
+
+    case []byte:
+      return any([]byte(random[string](f))).(T)
 
     case bool:
       return any(f.BoolWithChance(50)).(T)
@@ -66,10 +70,13 @@ func random[T any](f *faker.Faker) T {
         {{- $colTyp := $column.Type -}}
         {{- if isPrimitiveType $colTyp}}{{continue}}{{end -}}
         {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-        {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
         {{- $_ :=  set $doneTypes $colTyp nil -}}
+        {{- $typDef :=  index $.Types $colTyp -}}
+        {{- if not $typDef.RandomExpr}}{{continue}}{{end -}}
+        {{- $.Importer.ImportList $typDef.Imports -}}
+        {{- $.Importer.ImportList $typDef.RandomExprImports -}}
         case {{$colTyp}}:
-          return val
+          {{$typDef.RandomExpr}}
 
       {{end -}}
     {{- end}}

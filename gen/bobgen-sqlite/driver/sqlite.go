@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
 	"github.com/volatiletech/strmangle"
@@ -76,20 +76,7 @@ func (d *driver) Capabilities() drivers.Capabilities {
 }
 
 func (d *driver) Types() drivers.Types {
-	return drivers.Types{
-		"time.Time": {
-			Imports: importers.List{`"time"`},
-		},
-		"decimal.Decimal": {
-			Imports: importers.List{`"github.com/shopspring/decimal"`},
-		},
-		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
-				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
-			},
-		},
-	}
+	return helpers.Types()
 }
 
 // Assemble all the information we need to provide back to the driver

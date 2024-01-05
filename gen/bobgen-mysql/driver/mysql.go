@@ -10,8 +10,8 @@ import (
 	"sync"
 
 	"github.com/go-sql-driver/mysql"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
 	"github.com/volatiletech/strmangle"
@@ -302,20 +302,7 @@ func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Co
 }
 
 func (d *driver) Types() drivers.Types {
-	return drivers.Types{
-		"time.Time": {
-			Imports: importers.List{`"time"`},
-		},
-		"decimal.Decimal": {
-			Imports: importers.List{`"github.com/shopspring/decimal"`},
-		},
-		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
-				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
-			},
-		},
-	}
+	return helpers.Types()
 }
 
 func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
