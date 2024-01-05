@@ -74,48 +74,48 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int, goVersion string) error {
+func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], goVersion string) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
 		templates:     o.templates,
 		dirExtensions: dirExts,
-	}, padding, goVersion)
+	}, goVersion)
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], padding int, goVersion string) error {
+func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], goVersion string) error {
 	return executeTemplates(executeTemplateData[T]{
 		output:        o,
 		data:          data,
 		templates:     o.testTemplates,
 		isTest:        true,
 		dirExtensions: dirExts,
-	}, padding, goVersion)
+	}, goVersion)
 }
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *TemplateData[T], padding int, goVersion string) error {
+func generateSingletonOutput[T any](o *Output, data *TemplateData[T], goVersion string) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.templates,
-	}, padding, goVersion)
+	}, goVersion)
 }
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], padding int, goVersion string) error {
+func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], goVersion string) error {
 	return executeSingletonTemplates(executeTemplateData[T]{
 		output:    o,
 		data:      data,
 		templates: o.testTemplates,
 		isTest:    true,
-	}, padding, goVersion)
+	}, goVersion)
 }
 
-func executeTemplates[T any](e executeTemplateData[T], padding int, goVersion string) error {
+func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			headerOut := templateHeaderByteBuffer
@@ -141,10 +141,14 @@ func executeTemplates[T any](e executeTemplateData[T], padding int, goVersion st
 
 			// Skip writing the file if the content is empty
 			if out.Len()-prevLen < 1 {
-				fmt.Fprintf(os.Stderr, "%s/%-*s SKIPPED\n", e.output.OutFolder, padding, fName)
+				fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
+					"== SKIPPED ==", e.output.OutFolder, fName)
 				continue
 			}
-			fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, fName, out.Len()-prevLen)
+
+			fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
+				fmt.Sprintf("%7d bytes", out.Len()-prevLen),
+				e.output.OutFolder, fName)
 
 			imps := e.data.Importer.ToList()
 			version := ""
@@ -168,7 +172,7 @@ func executeTemplates[T any](e executeTemplateData[T], padding int, goVersion st
 	return nil
 }
 
-func executeSingletonTemplates[T any](e executeTemplateData[T], padding int, goVersion string) error {
+func executeSingletonTemplates[T any](e executeTemplateData[T], goVersion string) error {
 	headerOut := templateHeaderByteBuffer
 	out := templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
@@ -190,10 +194,14 @@ func executeSingletonTemplates[T any](e executeTemplateData[T], padding int, goV
 
 		// Skip writing the file if the content is empty
 		if out.Len()-prevLen < 1 {
-			fmt.Fprintf(os.Stderr, "%s/%-*s SKIPPED\n", e.output.OutFolder, padding, normalized)
+			fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
+				"== SKIPPED ==", e.output.OutFolder, normalized)
 			continue
 		}
-		fmt.Fprintf(os.Stderr, "%s/%-*s %d bytes\n", e.output.OutFolder, padding, normalized, out.Len()-prevLen)
+
+		fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
+			fmt.Sprintf("%7d bytes", out.Len()-prevLen),
+			e.output.OutFolder, normalized)
 
 		version := ""
 		if isGo {
