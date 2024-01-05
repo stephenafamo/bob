@@ -70,7 +70,10 @@ func New(config Config) Interface {
 		config.Concurrency = 10
 	}
 
-	return &driver{config: config}
+	return &driver{
+		config: config,
+		types:  BaseTypes(config.UUIDPkg),
+	}
 }
 
 // driver holds the database connection string and a handle
@@ -79,10 +82,15 @@ type driver struct {
 	config Config
 	conn   *sql.DB
 	enums  []Enum
+	types  drivers.Types
 }
 
 func (d *driver) Dialect() string {
 	return "psql"
+}
+
+func (d *driver) Types() drivers.Types {
+	return d.types
 }
 
 func (d *driver) Capabilities() drivers.Capabilities {

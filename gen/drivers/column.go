@@ -3,7 +3,6 @@ package drivers
 import (
 	"strings"
 
-	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -19,11 +18,10 @@ type Column struct {
 	AutoIncr  bool   `json:"autoincr" yaml:"autoincr" toml:"autoincr"`
 
 	// DomainName is the domain type name associated to the column. See here:
-	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
+	// https://www.postgresql.org/docs/16/extend-type-system.html
 	DomainName string `json:"domain_name" yaml:"domain_name" toml:"domain_name"`
 
-	Type    string         `json:"type" yaml:"type" toml:"type"`
-	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`
+	Type string `json:"type" yaml:"type" toml:"type"`
 }
 
 // ColumnNames of the columns.

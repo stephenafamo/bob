@@ -45,6 +45,7 @@ func New(config Config, dialect string, provider Provider, datamodel Datamodel) 
 		config:    config,
 		provider:  provider,
 		datamodel: datamodel,
+		types:     BaseTypes(),
 	}
 }
 
@@ -56,6 +57,7 @@ type driver struct {
 	enums     map[string]drivers.Enum
 	provider  Provider
 	datamodel Datamodel
+	types     drivers.Types
 }
 
 func (d *driver) Dialect() string {
@@ -68,6 +70,10 @@ func (d *driver) PackageName() string {
 
 func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{}
+}
+
+func (d *driver) Types() drivers.Types {
+	return d.types
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -259,20 +265,23 @@ func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 			c.Type = "pq.ByteaArray"
 		case "Decimal":
 			c.Type = "parray.Array[decimal.Decimal]"
-			c.Imports = append(c.Imports, typMap["parray"]...)
-			c.Imports = append(c.Imports, typMap["decimal.Decimal"]...)
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["decimal.Decimal"].Imports...)
+			d.types[c.Type] = drivers.Type{Imports: imports}
 		case "DateTime":
 			c.Type = "parray.Array[time.Time]"
-			c.Imports = append(c.Imports, typMap["parray"]...)
-			c.Imports = append(c.Imports, typMap["time.Time"]...)
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["time.Time"].Imports...)
+			d.types[c.Type] = drivers.Type{Imports: imports}
 		case "Json":
 			c.Type = "parray.Array[types.JSON[json.RawMessage]]"
-			c.Imports = append(c.Imports, typMap["parray"]...)
-			c.Imports = append(c.Imports, typMap["time.Time"]...)
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["types.JSON[json.RawMessage]"].Imports...)
+			d.types[c.Type] = drivers.Type{Imports: imports}
 		default:
 			if enum, ok := d.enums[c.DBType]; ok {
-				c.Imports = append(c.Imports, typMap["parray"]...)
 				c.Type = fmt.Sprintf("parray.EnumArray[%s]", enum.Type)
+				d.types[c.Type] = drivers.Type{Imports: importers.List{parrayImport}}
 			} else {
 				c.Type = "pq.StringArray"
 			}
@@ -280,29 +289,44 @@ func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 		c.DBType += "[]"
 	}
 
-	// fallback to other drivers?
-	c.Imports = append(c.Imports, typMap[c.Type]...)
 	return c
 }
 
-//nolint:gochecknoglobals
-var typMap = map[string]importers.List{
-	"time.Time":                   {`"time"`},
-	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
-	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
-	"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
-	"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
-	"pgeo.Line":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Lseg":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
-	"pgeo.Path":                   {`"github.com/saulortega/pgeo"`},
-	"pgeo.Polygon":                {`"github.com/saulortega/pgeo"`},
-	"pq.ByteaArray":               {`"github.com/lib/pq"`},
-	"pq.Int64Array":               {`"github.com/lib/pq"`},
-	"pq.Float64Array":             {`"github.com/lib/pq"`},
-	"pq.BoolArray":                {`"github.com/lib/pq"`},
-	"pq.StringArray":              {`"github.com/lib/pq"`},
-	"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
+const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
+
+func BaseTypes() drivers.Types {
+	return drivers.Types{
+		"time.Time": {
+			Imports: importers.List{`"time"`},
+		},
+		"pq.BoolArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Int64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.ByteaArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.StringArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Float64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"decimal.Decimal": {
+			Imports: importers.List{`"github.com/shopspring/decimal"`},
+		},
+		"types.HStore": {
+			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
+		},
+		"types.JSON[json.RawMessage]": {
+			Imports: importers.List{
+				`"encoding/json"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+		},
+	}
 }
 
 func (d *driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {

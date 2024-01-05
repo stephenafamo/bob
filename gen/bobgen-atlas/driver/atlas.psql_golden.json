@@ -14,8 +14,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				}
 			],
 			"constraints": {
@@ -43,8 +42,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				}
 			],
 			"constraints": {
@@ -72,8 +70,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "enum_use",
@@ -84,8 +81,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday",
-					"imports": null
+					"type": "Workday"
 				},
 				{
 					"name": "enum_nullable",
@@ -96,8 +92,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday",
-					"imports": null
+					"type": "Workday"
 				},
 				{
 					"name": "bool_zero",
@@ -108,8 +103,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_one",
@@ -120,8 +114,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_two",
@@ -132,8 +125,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_three",
@@ -144,8 +136,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_four",
@@ -156,8 +147,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_five",
@@ -168,8 +158,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "bool_six",
@@ -180,8 +169,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "string_zero",
@@ -192,8 +180,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_one",
@@ -204,8 +191,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_two",
@@ -216,8 +202,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_three",
@@ -228,8 +213,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_four",
@@ -240,8 +224,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_five",
@@ -252,8 +235,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_six",
@@ -264,8 +246,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_seven",
@@ -276,8 +257,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_eight",
@@ -288,8 +268,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_nine",
@@ -300,8 +279,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_ten",
@@ -312,8 +290,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_eleven",
@@ -324,8 +301,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_zero",
@@ -336,8 +312,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_one",
@@ -348,8 +323,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_two",
@@ -360,8 +334,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_three",
@@ -372,8 +345,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_four",
@@ -384,8 +356,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_five",
@@ -396,8 +367,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_six",
@@ -408,8 +378,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_seven",
@@ -420,8 +389,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_eight",
@@ -432,8 +400,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "nonbyte_nine",
@@ -444,8 +411,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "byte_zero",
@@ -456,8 +422,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "byte_one",
@@ -468,8 +433,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "byte_two",
@@ -480,8 +444,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "byte_three",
@@ -492,8 +455,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "byte_four",
@@ -504,8 +466,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "big_int_zero",
@@ -516,8 +477,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_one",
@@ -528,8 +488,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_two",
@@ -540,8 +499,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_three",
@@ -552,8 +510,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_four",
@@ -564,8 +521,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_five",
@@ -576,8 +532,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_six",
@@ -588,8 +543,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_zero",
@@ -600,8 +554,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_one",
@@ -612,8 +565,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_two",
@@ -624,8 +576,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_three",
@@ -636,8 +587,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_four",
@@ -648,8 +598,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_five",
@@ -660,8 +609,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "int_six",
@@ -672,8 +620,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "float_zero",
@@ -684,10 +631,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_one",
@@ -698,10 +642,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_two",
@@ -712,10 +653,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_three",
@@ -726,10 +664,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_four",
@@ -740,10 +675,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_five",
@@ -754,10 +686,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_six",
@@ -768,10 +697,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_seven",
@@ -782,10 +708,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_eight",
@@ -796,10 +719,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "float_nine",
@@ -810,10 +730,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
-					"imports": [
-						"\"github.com/shopspring/decimal\""
-					]
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "bytea_zero",
@@ -824,8 +741,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_one",
@@ -836,8 +752,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_two",
@@ -848,8 +763,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_three",
@@ -860,8 +774,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_four",
@@ -872,8 +785,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_five",
@@ -884,8 +796,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_six",
@@ -896,8 +807,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_seven",
@@ -908,8 +818,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "bytea_eight",
@@ -920,8 +829,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "time_zero",
@@ -932,10 +840,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_one",
@@ -946,10 +851,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_two",
@@ -960,10 +862,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_three",
@@ -974,10 +873,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_four",
@@ -988,10 +884,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_five",
@@ -1002,10 +895,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_six",
@@ -1016,10 +906,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_seven",
@@ -1030,10 +917,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_eight",
@@ -1044,10 +928,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_nine",
@@ -1058,10 +939,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_ten",
@@ -1072,10 +950,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_eleven",
@@ -1086,10 +961,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_twelve",
@@ -1100,10 +972,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_thirteen",
@@ -1114,10 +983,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_fourteen",
@@ -1128,10 +994,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_fifteen",
@@ -1142,10 +1005,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_sixteen",
@@ -1156,10 +1016,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_seventeen",
@@ -1170,10 +1027,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_eighteen",
@@ -1184,10 +1038,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "uuid_zero",
@@ -1198,10 +1049,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "uuid_one",
@@ -1212,10 +1060,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "uuid_two",
@@ -1226,10 +1071,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "uuid_three",
@@ -1240,10 +1082,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "uuid_four",
@@ -1254,10 +1093,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "uuid_five",
@@ -1268,10 +1104,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uuid.UUID",
-					"imports": [
-						"\"github.com/gofrs/uuid/v5\""
-					]
+					"type": "uuid.UUID"
 				},
 				{
 					"name": "integer_default",
@@ -1282,8 +1115,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "varchar_default",
@@ -1294,8 +1126,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "timestamp_notz",
@@ -1306,10 +1137,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "timestamp_tz",
@@ -1320,10 +1148,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "interval_nnull",
@@ -1334,8 +1159,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "interval_null",
@@ -1346,8 +1170,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "json_null",
@@ -1358,11 +1181,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "json_nnull",
@@ -1373,11 +1192,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "jsonb_null",
@@ -1388,11 +1203,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "jsonb_nnull",
@@ -1403,11 +1214,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "box_null",
@@ -1418,10 +1225,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Box",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Box"
 				},
 				{
 					"name": "box_nnull",
@@ -1432,10 +1236,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Box",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Box"
 				},
 				{
 					"name": "cidr_null",
@@ -1446,8 +1247,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "cidr_nnull",
@@ -1458,8 +1258,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "circle_null",
@@ -1470,10 +1269,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Circle",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Circle"
 				},
 				{
 					"name": "circle_nnull",
@@ -1484,10 +1280,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Circle",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Circle"
 				},
 				{
 					"name": "double_prec_null",
@@ -1498,8 +1291,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "double_prec_nnull",
@@ -1510,8 +1302,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "inet_null",
@@ -1522,8 +1313,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "inet_nnull",
@@ -1534,8 +1324,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "line_null",
@@ -1546,10 +1335,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Line",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Line"
 				},
 				{
 					"name": "line_nnull",
@@ -1560,10 +1346,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Line",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Line"
 				},
 				{
 					"name": "lseg_null",
@@ -1574,10 +1357,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Lseg",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Lseg"
 				},
 				{
 					"name": "lseg_nnull",
@@ -1588,10 +1368,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Lseg",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Lseg"
 				},
 				{
 					"name": "macaddr_null",
@@ -1602,8 +1379,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "macaddr_nnull",
@@ -1614,8 +1390,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "money_null",
@@ -1626,8 +1401,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "money_nnull",
@@ -1638,8 +1412,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "path_null",
@@ -1650,10 +1423,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Path",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Path"
 				},
 				{
 					"name": "path_nnull",
@@ -1664,10 +1434,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Path",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Path"
 				},
 				{
 					"name": "pg_lsn_null",
@@ -1678,8 +1445,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "pg_lsn_nnull",
@@ -1690,8 +1456,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "point_null",
@@ -1702,10 +1467,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Point",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Point"
 				},
 				{
 					"name": "point_nnull",
@@ -1716,10 +1478,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Point",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Point"
 				},
 				{
 					"name": "polygon_null",
@@ -1730,10 +1489,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Polygon",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Polygon"
 				},
 				{
 					"name": "polygon_nnull",
@@ -1744,10 +1500,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgeo.Polygon",
-					"imports": [
-						"\"github.com/saulortega/pgeo\""
-					]
+					"type": "pgeo.Polygon"
 				},
 				{
 					"name": "tsquery_null",
@@ -1758,8 +1511,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tsquery_nnull",
@@ -1770,8 +1522,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tsvector_null",
@@ -1782,8 +1533,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tsvector_nnull",
@@ -1794,8 +1544,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "txid_null",
@@ -1806,8 +1555,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "txid_nnull",
@@ -1818,8 +1566,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "xml_null",
@@ -1830,8 +1577,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "xml_nnull",
@@ -1842,8 +1588,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "intarr_null",
@@ -1854,10 +1599,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.Int64Array"
 				},
 				{
 					"name": "intarr_nnull",
@@ -1868,10 +1610,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.Int64Array"
 				},
 				{
 					"name": "boolarr_null",
@@ -1882,10 +1621,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.BoolArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.BoolArray"
 				},
 				{
 					"name": "boolarr_nnull",
@@ -1896,10 +1632,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.BoolArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.BoolArray"
 				},
 				{
 					"name": "varchararr_null",
@@ -1910,10 +1643,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.StringArray"
 				},
 				{
 					"name": "varchararr_nnull",
@@ -1924,10 +1654,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.StringArray"
 				},
 				{
 					"name": "decimalarr_null",
@@ -1938,11 +1665,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]",
-					"imports": [
-						"\"github.com/shopspring/decimal\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[decimal.Decimal]"
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -1953,11 +1676,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]",
-					"imports": [
-						"\"github.com/shopspring/decimal\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[decimal.Decimal]"
 				},
 				{
 					"name": "byteaarr_null",
@@ -1968,10 +1687,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.ByteaArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.ByteaArray"
 				},
 				{
 					"name": "byteaarr_nnull",
@@ -1982,10 +1698,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.ByteaArray",
-					"imports": [
-						"\"github.com/lib/pq\""
-					]
+					"type": "pq.ByteaArray"
 				},
 				{
 					"name": "jsonbarr_null",
@@ -1996,12 +1709,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonbarr_nnull",
@@ -2012,12 +1720,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonarr_null",
@@ -2028,12 +1731,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonarr_nnull",
@@ -2044,12 +1742,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\"",
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "enumarr_null",
@@ -2060,10 +1753,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[Workday]",
-					"imports": [
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[Workday]"
 				},
 				{
 					"name": "enumarr_nnull",
@@ -2074,10 +1764,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[Workday]",
-					"imports": [
-						"\"github.com/stephenafamo/bob/types/parray\""
-					]
+					"type": "parray.Array[Workday]"
 				},
 				{
 					"name": "customarr_null",
@@ -2088,8 +1775,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "customarr_nnull",
@@ -2100,8 +1786,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "domainuint3_nnull",
@@ -2112,8 +1797,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "base",
@@ -2124,8 +1808,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "generated_nnull",
@@ -2136,8 +1819,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "generated_null",
@@ -2148,8 +1830,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -2177,8 +1858,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "email_validated",
@@ -2189,8 +1869,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "primary_email",
@@ -2201,8 +1880,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -2237,8 +1915,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "tag_id",
@@ -2249,8 +1926,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				}
 			],
 			"constraints": {
@@ -2300,8 +1976,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "user_id",
@@ -2312,8 +1987,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				},
 				{
 					"name": "sponsor_id",
@@ -2324,8 +1998,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int",
-					"imports": null
+					"type": "int"
 				}
 			],
 			"constraints": {

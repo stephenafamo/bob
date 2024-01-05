@@ -288,15 +288,12 @@ func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Co
 		c.Type = "bool"
 	case "date", "datetime", "timestamp":
 		c.Type = "time.Time"
-		c.Imports = append(c.Imports, typMap[c.Type]...)
 	case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 		c.Type = "[]byte"
 	case "numeric", "decimal", "dec", "fixed":
 		c.Type = "decimal.Decimal"
-		c.Imports = append(c.Imports, typMap[c.Type]...)
 	case "json":
 		c.Type = "types.JSON[json.RawMessage]"
-		c.Imports = append(c.Imports, typMap[c.Type]...)
 	default:
 		c.Type = "string"
 	}
@@ -304,11 +301,21 @@ func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Co
 	return c
 }
 
-//nolint:gochecknoglobals
-var typMap = map[string]importers.List{
-	"time.Time":                   {`"time"`},
-	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
-	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
+func (d *driver) Types() drivers.Types {
+	return drivers.Types{
+		"time.Time": {
+			Imports: importers.List{`"time"`},
+		},
+		"decimal.Decimal": {
+			Imports: importers.List{`"github.com/shopspring/decimal"`},
+		},
+		"types.JSON[json.RawMessage]": {
+			Imports: importers.List{
+				`"encoding/json"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+		},
+	}
 }
 
 func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {

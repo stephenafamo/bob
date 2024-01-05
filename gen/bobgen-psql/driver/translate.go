@@ -22,8 +22,6 @@ type colInfo struct {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
-	typMap := d.typMap()
-
 	switch c.DBType {
 	case "bigint", "bigserial":
 		c.Type = "int64"
@@ -49,20 +47,20 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "bool"
 	case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
 		c.Type = "time.Time"
-	case "point":
-		c.Type = "pgeo.Point"
+	case "box":
+		c.Type = "pgeo.Box"
+	case "circle":
+		c.Type = "pgeo.Circle"
 	case "line":
 		c.Type = "pgeo.Line"
 	case "lseg":
 		c.Type = "pgeo.Lseg"
-	case "box":
-		c.Type = "pgeo.Box"
 	case "path":
 		c.Type = "pgeo.Path"
+	case "point":
+		c.Type = "pgeo.Point"
 	case "polygon":
 		c.Type = "pgeo.Polygon"
-	case "circle":
-		c.Type = "pgeo.Circle"
 	case "uuid":
 		c.Type = "uuid.UUID"
 	case "ENUM":
@@ -74,9 +72,7 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		}
 	case "ARRAY":
 		var dbType string
-		var imports importers.List
-		c.Type, dbType, imports = d.getArrayType(info)
-		c.Imports = append(c.Imports, imports...)
+		c.Type, dbType = d.getArrayType(info)
 		// Make DBType something like ARRAYinteger for parsing with randomize.Struct
 		c.DBType = dbType + "[]"
 	case "USER-DEFINED":
@@ -94,22 +90,21 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "string"
 	}
 
-	c.Imports = append(c.Imports, typMap[c.Type]...)
 	return c
 }
 
 // getArrayType returns the correct Array type for each database type
-func (d *driver) getArrayType(info colInfo) (string, string, importers.List) {
-	typMap := d.typMap()
-
+func (d *driver) getArrayType(info colInfo) (string, string) {
 	if info.ArrType == "USER-DEFINED" {
 		name := info.UDTName[1:] // postgres prefixes with an underscore
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == name {
-				return fmt.Sprintf("parray.EnumArray[%s]", e.Type), info.UDTName, typMap["parray"]
+				typ := fmt.Sprintf("parray.EnumArray[%s]", e.Type)
+				d.types[typ] = drivers.Type{Imports: importers.List{parrayImport}}
+				return typ, info.UDTName
 			}
 		}
-		return "pq.StringArray", info.ArrType, nil
+		return "pq.StringArray", info.ArrType
 	}
 
 	// If a domain is created with a statement like this: "CREATE DOMAIN
@@ -122,82 +117,126 @@ func (d *driver) getArrayType(info colInfo) (string, string, importers.List) {
 	if info.ArrType != "" {
 		switch info.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "pq.Int64Array", info.ArrType, nil
+			return "pq.Int64Array", info.ArrType
 		case "bytea":
-			return "pq.ByteaArray", info.ArrType, nil
+			return "pq.ByteaArray", info.ArrType
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
-			return "pq.StringArray", info.ArrType, nil
+			return "pq.StringArray", info.ArrType
 		case "boolean":
-			return "pq.BoolArray", info.ArrType, nil
+			return "pq.BoolArray", info.ArrType
 		case "uuid":
-			var imports importers.List
-			imports = append(imports, typMap["parray"]...)
-			imports = append(imports, typMap["uuid.UUID"]...)
-			return "parray.Array[uuid.UUID]", info.ArrType, imports
+			typ := "parray.Array[uuid.UUID]"
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["uuid.UUID"].Imports...)
+			d.types[typ] = drivers.Type{Imports: imports}
+			return typ, info.ArrType
 		case "decimal", "numeric":
-			var imports importers.List
-			imports = append(imports, typMap["parray"]...)
-			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.Array[decimal.Decimal]", info.ArrType, imports
+			typ := "parray.Array[decimal.Decimal]"
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["decimal.Decimal"].Imports...)
+			d.types[typ] = drivers.Type{Imports: imports}
+			return typ, info.ArrType
 		case "double precision", "real":
-			return "pq.Float64Array", info.ArrType, nil
+			return "pq.Float64Array", info.ArrType
 		default:
-			return "pq.StringArray", info.ArrType, nil
+			return "pq.StringArray", info.ArrType
 		}
 	} else {
 		switch info.UDTName {
 		case "_int4", "_int8":
-			return "pq.Int64Array", info.UDTName, nil
+			return "pq.Int64Array", info.UDTName
 		case "_bytea":
-			return "pq.ByteaArray", info.UDTName, nil
+			return "pq.ByteaArray", info.UDTName
 		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_xml":
-			return "pq.StringArray", info.UDTName, nil
+			return "pq.StringArray", info.UDTName
 		case "_bool":
-			return "pq.BoolArray", info.UDTName, nil
+			return "pq.BoolArray", info.UDTName
 		case "_uuid":
-			var imports importers.List
-			imports = append(imports, typMap["parray"]...)
-			imports = append(imports, typMap["uuid.UUID"]...)
-			return "parray.Array[uuid.UUID]", info.ArrType, imports
+			typ := "parray.Array[uuid.UUID]"
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["uuid.UUID"].Imports...)
+			d.types[typ] = drivers.Type{Imports: imports}
+			return typ, info.UDTName
 		case "_numeric":
-			var imports importers.List
-			imports = append(imports, typMap["parray"]...)
-			imports = append(imports, typMap["decimal.Decimal"]...)
-			return "parray.Array[decimal.Decimal]", info.UDTName, imports
+			typ := "parray.Array[decimal.Decimal]"
+			imports := importers.List{parrayImport}
+			imports = append(imports, d.types["decimal.Decimal"].Imports...)
+			d.types[typ] = drivers.Type{Imports: imports}
+			return typ, info.UDTName
 		case "_float4", "_float8":
-			return "pq.Float64Array", info.UDTName, nil
+			return "pq.Float64Array", info.UDTName
 		default:
-			return "pq.StringArray", info.UDTName, nil
+			return "pq.StringArray", info.UDTName
 		}
 	}
 }
 
-func (d *driver) typMap() map[string]importers.List {
+const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
+
+func BaseTypes(whichUUID string) drivers.Types {
 	var uuidPkg string
-	switch d.config.UUIDPkg {
+
+	switch whichUUID {
 	case "google":
 		uuidPkg = `"github.com/google/uuid"`
 	default:
 		uuidPkg = `"github.com/gofrs/uuid/v5"`
 	}
 
-	return map[string]importers.List{
-		"time.Time":                   {`"time"`},
-		"pq.BoolArray":                {`"github.com/lib/pq"`},
-		"pq.Int64Array":               {`"github.com/lib/pq"`},
-		"pq.ByteaArray":               {`"github.com/lib/pq"`},
-		"pq.StringArray":              {`"github.com/lib/pq"`},
-		"pq.Float64Array":             {`"github.com/lib/pq"`},
-		"uuid.UUID":                   {uuidPkg},
-		"pgeo.Box":                    {`"github.com/saulortega/pgeo"`},
-		"pgeo.Line":                   {`"github.com/saulortega/pgeo"`},
-		"pgeo.Lseg":                   {`"github.com/saulortega/pgeo"`},
-		"pgeo.Path":                   {`"github.com/saulortega/pgeo"`},
-		"pgeo.Point":                  {`"github.com/saulortega/pgeo"`},
-		"pgeo.Polygon":                {`"github.com/saulortega/pgeo"`},
-		"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
-		"types.HStore":                {`"github.com/stephenafamo/bob/types"`},
-		"parray":                      {`"github.com/stephenafamo/bob/types/parray"`},
-		"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
+	return drivers.Types{
+		"time.Time": {
+			Imports: importers.List{`"time"`},
+		},
+		"uuid.UUID": {
+			Imports: importers.List{uuidPkg},
+		},
+		"pq.BoolArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Int64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.ByteaArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.StringArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Float64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pgeo.Box": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Circle": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Line": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Lseg": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Path": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Point": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Polygon": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"decimal.Decimal": {
+			Imports: importers.List{`"github.com/shopspring/decimal"`},
+		},
+		"types.HStore": {
+			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
+		},
+		"types.JSON[json.RawMessage]": {
+			Imports: importers.List{
+				`"encoding/json"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+		},
 	}
 }
