@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/takuoki/gocase"
 )
 
@@ -45,7 +45,7 @@ func New(config Config, dialect string, provider Provider, datamodel Datamodel) 
 		config:    config,
 		provider:  provider,
 		datamodel: datamodel,
-		types:     BaseTypes(),
+		types:     helpers.Types(),
 	}
 }
 
@@ -264,24 +264,14 @@ func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 		case "Bytes":
 			c.Type = "pq.ByteaArray"
 		case "Decimal":
-			c.Type = "parray.Array[decimal.Decimal]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["decimal.Decimal"].Imports...)
-			d.types[c.Type] = drivers.Type{Imports: imports}
+			c.Type = helpers.AddPgGenericArrayType(d.types, "decimal.Decimal")
 		case "DateTime":
-			c.Type = "parray.Array[time.Time]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["time.Time"].Imports...)
-			d.types[c.Type] = drivers.Type{Imports: imports}
+			c.Type = helpers.AddPgGenericArrayType(d.types, "time.Time")
 		case "Json":
-			c.Type = "parray.Array[types.JSON[json.RawMessage]]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["types.JSON[json.RawMessage]"].Imports...)
-			d.types[c.Type] = drivers.Type{Imports: imports}
+			c.Type = helpers.AddPgGenericArrayType(d.types, "types.JSON[json.RawMessage]")
 		default:
 			if enum, ok := d.enums[c.DBType]; ok {
-				c.Type = fmt.Sprintf("parray.EnumArray[%s]", enum.Type)
-				d.types[c.Type] = drivers.Type{Imports: importers.List{parrayImport}}
+				c.Type = helpers.AddPgEnumArrayType(d.types, enum.Type)
 			} else {
 				c.Type = "pq.StringArray"
 			}
@@ -290,43 +280,6 @@ func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 	}
 
 	return c
-}
-
-const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
-
-func BaseTypes() drivers.Types {
-	return drivers.Types{
-		"time.Time": {
-			Imports: importers.List{`"time"`},
-		},
-		"pq.BoolArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Int64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.ByteaArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.StringArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Float64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"decimal.Decimal": {
-			Imports: importers.List{`"github.com/shopspring/decimal"`},
-		},
-		"types.HStore": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
-		},
-		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
-				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
-			},
-		},
-	}
 }
 
 func (d *driver) getKeys(model Model, colFilter drivers.ColumnFilter) (*drivers.PrimaryKey, []drivers.Constraint, []drivers.ForeignKey) {

@@ -1753,7 +1753,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[Workday]"
+					"type": "parray.EnumArray[Workday]"
 				},
 				{
 					"name": "enumarr_nnull",
@@ -1764,7 +1764,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[Workday]"
+					"type": "parray.EnumArray[Workday]"
 				},
 				{
 					"name": "customarr_null",

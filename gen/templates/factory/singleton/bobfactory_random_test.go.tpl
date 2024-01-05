@@ -8,8 +8,10 @@
   {{range $column := $table.Columns -}}
     {{- $colTyp := $column.Type -}}
     {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-    {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
+    {{- if eq $colTyp "bool"}}{{continue}}{{end -}}
+    {{- if (index $.Types $column.Type).NoRandomizationTest}}{{continue}}{{end -}}
+    {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
 
       func TestRandom_{{$colTyp | replace "." "_" | replace "[" "_" | replace "]" "_"}}(t *testing.T) {
         t.Parallel()

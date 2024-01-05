@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
 )
 
 type colInfo struct {
@@ -21,23 +21,31 @@ type colInfo struct {
 // translateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
+//
+//nolint:gocyclo
 func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
 	switch c.DBType {
-	case "bigint", "bigserial":
+	case "bigint":
 		c.Type = "int64"
-	case "integer", "serial":
-		c.Type = "int"
+	case "bigserial":
+		c.Type = "uint64"
+	case "integer":
+		c.Type = "int32"
+	case "serial":
+		c.Type = "uint32"
 	case "oid":
 		c.Type = "uint32"
-	case "smallint", "smallserial":
+	case "smallint":
 		c.Type = "int16"
+	case "smallserial":
+		c.Type = "uint16"
 	case "decimal", "numeric":
 		c.Type = "decimal.Decimal"
 	case "double precision":
 		c.Type = "float64"
 	case "real":
 		c.Type = "float32"
-	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
+	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "text", "xml":
 		c.Type = "string"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
@@ -63,11 +71,15 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "pgeo.Polygon"
 	case "uuid":
 		c.Type = "uuid.UUID"
+	case "inet", "cidr":
+		c.Type = "netip.Addr"
+	case "macaddr":
+		c.Type = "net.HardwareAddr"
 	case "ENUM":
 		c.Type = "string"
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
-				c.Type = e.Type
+				c.Type = helpers.AddPgEnumType(d.types, e.Type)
 			}
 		}
 	case "ARRAY":
@@ -99,8 +111,7 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		name := info.UDTName[1:] // postgres prefixes with an underscore
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == name {
-				typ := fmt.Sprintf("parray.EnumArray[%s]", e.Type)
-				d.types[typ] = drivers.Type{Imports: importers.List{parrayImport}}
+				typ := helpers.AddPgEnumArrayType(d.types, e.Type)
 				return typ, info.UDTName
 			}
 		}
@@ -125,16 +136,10 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "boolean":
 			return "pq.BoolArray", info.ArrType
 		case "uuid":
-			typ := "parray.Array[uuid.UUID]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["uuid.UUID"].Imports...)
-			d.types[typ] = drivers.Type{Imports: imports}
+			typ := helpers.AddPgGenericArrayType(d.types, "uuid.UUID")
 			return typ, info.ArrType
 		case "decimal", "numeric":
-			typ := "parray.Array[decimal.Decimal]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["decimal.Decimal"].Imports...)
-			d.types[typ] = drivers.Type{Imports: imports}
+			typ := helpers.AddPgGenericArrayType(d.types, "decimal.Decimal")
 			return typ, info.ArrType
 		case "double precision", "real":
 			return "pq.Float64Array", info.ArrType
@@ -152,91 +157,15 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "_bool":
 			return "pq.BoolArray", info.UDTName
 		case "_uuid":
-			typ := "parray.Array[uuid.UUID]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["uuid.UUID"].Imports...)
-			d.types[typ] = drivers.Type{Imports: imports}
+			typ := helpers.AddPgGenericArrayType(d.types, "uuid.UUID")
 			return typ, info.UDTName
 		case "_numeric":
-			typ := "parray.Array[decimal.Decimal]"
-			imports := importers.List{parrayImport}
-			imports = append(imports, d.types["decimal.Decimal"].Imports...)
-			d.types[typ] = drivers.Type{Imports: imports}
+			typ := helpers.AddPgGenericArrayType(d.types, "decimal.Decimal")
 			return typ, info.UDTName
 		case "_float4", "_float8":
 			return "pq.Float64Array", info.UDTName
 		default:
 			return "pq.StringArray", info.UDTName
 		}
-	}
-}
-
-const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
-
-func BaseTypes(whichUUID string) drivers.Types {
-	var uuidPkg string
-
-	switch whichUUID {
-	case "google":
-		uuidPkg = `"github.com/google/uuid"`
-	default:
-		uuidPkg = `"github.com/gofrs/uuid/v5"`
-	}
-
-	return drivers.Types{
-		"time.Time": {
-			Imports: importers.List{`"time"`},
-		},
-		"uuid.UUID": {
-			Imports: importers.List{uuidPkg},
-		},
-		"pq.BoolArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Int64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.ByteaArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.StringArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pq.Float64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
-		},
-		"pgeo.Box": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Circle": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Line": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Lseg": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Path": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Point": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"pgeo.Polygon": {
-			Imports: importers.List{`"github.com/saulortega/pgeo"`},
-		},
-		"decimal.Decimal": {
-			Imports: importers.List{`"github.com/shopspring/decimal"`},
-		},
-		"types.HStore": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
-		},
-		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
-				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
-			},
-		},
 	}
 }
