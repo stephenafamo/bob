@@ -78,6 +78,7 @@ type TemplateData[T any] struct {
 	Tables        []drivers.Table
 	Enums         []drivers.Enum
 	Aliases       Aliases
+	Types         drivers.Types
 	Relationships Relationships
 
 	// Controls what names are output

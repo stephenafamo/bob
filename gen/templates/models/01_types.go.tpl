@@ -7,7 +7,7 @@ type {{$tAlias.UpSingular}} struct {
 	{{- range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $colTyp := $column.Type -}}
-	{{- $.Importer.ImportList $column.Imports -}}
+	{{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
 	{{- $orig_col_name := $column.Name -}}
 	{{- if $column.Nullable -}}
 		{{- $colTyp = printf "null.Val[%s]" $column.Type -}}

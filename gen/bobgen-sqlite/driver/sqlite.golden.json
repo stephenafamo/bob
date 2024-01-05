@@ -14,8 +14,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "user_id",
@@ -26,8 +25,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "sponsor_id",
@@ -38,8 +36,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "something",
@@ -50,8 +47,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "another",
@@ -62,8 +58,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -118,8 +113,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -158,8 +152,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "b",
@@ -170,8 +163,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "c",
@@ -182,8 +174,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "d",
@@ -194,8 +185,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "e",
@@ -206,8 +196,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -235,8 +224,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "b",
@@ -247,8 +235,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "c",
@@ -259,8 +246,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "d",
@@ -271,8 +257,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "e",
@@ -283,8 +268,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -312,8 +296,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "b",
@@ -324,8 +307,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -353,8 +335,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -382,8 +363,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -411,8 +391,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -440,8 +419,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "video_id",
@@ -452,8 +430,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "sponsor_id",
@@ -464,8 +441,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -488,8 +464,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -517,8 +492,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "tag_id",
@@ -529,8 +503,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -580,8 +553,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "user_id",
@@ -592,8 +564,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "sponsor_id",
@@ -604,8 +575,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -661,8 +631,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -690,8 +659,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -719,8 +687,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "id_two",
@@ -731,8 +698,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "id_three",
@@ -743,8 +709,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "bool_zero",
@@ -755,8 +720,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_one",
@@ -767,8 +731,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_two",
@@ -779,8 +742,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_three",
@@ -791,8 +753,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_four",
@@ -803,8 +764,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_five",
@@ -815,8 +775,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bool_six",
@@ -827,8 +786,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_zero",
@@ -839,8 +797,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_one",
@@ -851,8 +808,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_two",
@@ -863,8 +819,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_three",
@@ -875,8 +830,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_four",
@@ -887,8 +841,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_five",
@@ -899,8 +852,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_six",
@@ -911,8 +863,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_seven",
@@ -923,8 +874,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_eight",
@@ -935,8 +885,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_nine",
@@ -947,8 +896,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_ten",
@@ -959,8 +907,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "string_eleven",
@@ -971,8 +918,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "big_int_zero",
@@ -983,8 +929,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_one",
@@ -995,8 +940,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_two",
@@ -1007,8 +951,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_three",
@@ -1019,8 +962,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_four",
@@ -1031,8 +973,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_five",
@@ -1043,8 +984,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "big_int_six",
@@ -1055,8 +995,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_zero",
@@ -1067,8 +1006,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_one",
@@ -1079,8 +1017,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_two",
@@ -1091,8 +1028,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_three",
@@ -1103,8 +1039,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_four",
@@ -1115,8 +1050,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_five",
@@ -1127,8 +1061,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "int_six",
@@ -1139,8 +1072,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "float_zero",
@@ -1151,8 +1083,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "float_one",
@@ -1163,8 +1094,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "float_two",
@@ -1175,8 +1105,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_three",
@@ -1187,8 +1116,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_four",
@@ -1199,8 +1127,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_five",
@@ -1211,8 +1138,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_six",
@@ -1223,8 +1149,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_seven",
@@ -1235,8 +1160,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_eight",
@@ -1247,8 +1171,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "float_nine",
@@ -1259,8 +1182,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_zero",
@@ -1271,8 +1193,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_one",
@@ -1283,8 +1204,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_two",
@@ -1295,8 +1215,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_three",
@@ -1307,8 +1226,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_four",
@@ -1319,8 +1237,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_five",
@@ -1331,8 +1248,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_six",
@@ -1343,8 +1259,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_seven",
@@ -1355,8 +1270,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "bytea_eight",
@@ -1367,8 +1281,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_zero",
@@ -1379,8 +1292,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_one",
@@ -1391,10 +1303,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_two",
@@ -1405,8 +1314,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_three",
@@ -1417,8 +1325,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_five",
@@ -1429,8 +1336,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_nine",
@@ -1441,8 +1347,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "time_eleven",
@@ -1453,10 +1358,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_twelve",
@@ -1467,10 +1369,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_fifteen",
@@ -1481,10 +1380,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "time_sixteen",
@@ -1495,10 +1391,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "json_null",
@@ -1509,11 +1402,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "json_nnull",
@@ -1524,11 +1413,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]",
-					"imports": [
-						"\"encoding/json\"",
-						"\"github.com/stephenafamo/bob/types\""
-					]
+					"type": "types.JSON[json.RawMessage]"
 				},
 				{
 					"name": "tinyint_null",
@@ -1539,8 +1424,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8",
-					"imports": null
+					"type": "int8"
 				},
 				{
 					"name": "tinyint_nnull",
@@ -1551,8 +1435,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8",
-					"imports": null
+					"type": "int8"
 				},
 				{
 					"name": "tinyint1_null",
@@ -1563,8 +1446,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tinyint1_nnull",
@@ -1575,8 +1457,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tinyint2_null",
@@ -1587,8 +1468,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tinyint2_nnull",
@@ -1599,8 +1479,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "smallint_null",
@@ -1611,8 +1490,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16",
-					"imports": null
+					"type": "int16"
 				},
 				{
 					"name": "smallint_nnull",
@@ -1623,8 +1501,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16",
-					"imports": null
+					"type": "int16"
 				},
 				{
 					"name": "mediumint_null",
@@ -1635,8 +1512,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
-					"imports": null
+					"type": "int32"
 				},
 				{
 					"name": "mediumint_nnull",
@@ -1647,8 +1523,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
-					"imports": null
+					"type": "int32"
 				},
 				{
 					"name": "bigint_null",
@@ -1659,8 +1534,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "bigint_nnull",
@@ -1671,8 +1545,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "float_null",
@@ -1683,8 +1556,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "float_nnull",
@@ -1695,8 +1567,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "double_null",
@@ -1707,8 +1578,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "double_nnull",
@@ -1719,8 +1589,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "doubleprec_null",
@@ -1731,8 +1600,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "doubleprec_nnull",
@@ -1743,8 +1611,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64",
-					"imports": null
+					"type": "float64"
 				},
 				{
 					"name": "real_null",
@@ -1755,8 +1622,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "real_nnull",
@@ -1767,8 +1633,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
-					"imports": null
+					"type": "float32"
 				},
 				{
 					"name": "boolean_null",
@@ -1779,8 +1644,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "boolean_nnull",
@@ -1791,8 +1655,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool",
-					"imports": null
+					"type": "bool"
 				},
 				{
 					"name": "date_null",
@@ -1803,10 +1666,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "date_nnull",
@@ -1817,10 +1677,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "datetime_null",
@@ -1831,10 +1688,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "datetime_nnull",
@@ -1845,10 +1699,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
-					"imports": [
-						"\"time\""
-					]
+					"type": "time.Time"
 				},
 				{
 					"name": "timestamp_null",
@@ -1859,8 +1710,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "timestamp_nnull",
@@ -1871,8 +1721,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "binary_null",
@@ -1883,8 +1732,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "binary_nnull",
@@ -1895,8 +1743,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "varbinary_null",
@@ -1907,8 +1754,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "varbinary_nnull",
@@ -1919,8 +1765,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tinyblob_null",
@@ -1931,8 +1776,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "tinyblob_nnull",
@@ -1943,8 +1787,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "blob_null",
@@ -1955,8 +1798,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "blob_nnull",
@@ -1967,8 +1809,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte",
-					"imports": null
+					"type": "[]byte"
 				},
 				{
 					"name": "mediumblob_null",
@@ -1979,8 +1820,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "mediumblob_nnull",
@@ -1991,8 +1831,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "longblob_null",
@@ -2003,8 +1842,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "longblob_nnull",
@@ -2015,8 +1853,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "varchar_null",
@@ -2027,8 +1864,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "varchar_nnull",
@@ -2039,8 +1875,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "char_null",
@@ -2051,8 +1886,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "char_nnull",
@@ -2063,8 +1897,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "text_null",
@@ -2075,8 +1908,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				},
 				{
 					"name": "text_nnull",
@@ -2087,8 +1919,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
-					"imports": null
+					"type": "string"
 				}
 			],
 			"constraints": {
@@ -2116,8 +1947,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "video_id",
@@ -2128,8 +1958,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "sponsor_id",
@@ -2140,8 +1969,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -2164,8 +1992,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -2193,8 +2020,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "tag_id",
@@ -2205,8 +2031,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {
@@ -2256,8 +2081,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "user_id",
@@ -2268,8 +2092,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				},
 				{
 					"name": "sponsor_id",
@@ -2280,8 +2103,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64",
-					"imports": null
+					"type": "int64"
 				}
 			],
 			"constraints": {

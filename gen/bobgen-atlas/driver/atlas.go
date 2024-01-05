@@ -52,6 +52,7 @@ func New(config Config, fs fs.FS) Interface {
 	return &driver{
 		config: config,
 		fs:     fs,
+		types:  BaseTypes(config.UUIDPkg),
 	}
 }
 
@@ -61,6 +62,7 @@ type driver struct {
 	config Config
 	fs     fs.FS
 	enums  map[string]drivers.Enum
+	types  drivers.Types
 }
 
 func (d *driver) Dialect() string {
@@ -69,6 +71,10 @@ func (d *driver) Dialect() string {
 
 func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{}
+}
+
+func (d *driver) Types() drivers.Types {
+	return d.types
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -312,22 +318,15 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 
 	case *schema.TimeType:
 		c.Type = "time.Time"
-		c.Imports = importers.List{`"time"`}
 
 	case *schema.DecimalType:
 		c.Type = "decimal.Decimal"
-		c.Imports = importers.List{`"github.com/shopspring/decimal"`}
 
 	case *schema.JSONType:
 		c.Type = "types.JSON[json.RawMessage]"
-		c.Imports = importers.List{`"encoding/json"`, `"github.com/stephenafamo/bob/types"`}
 
 	case *schema.UUIDType:
 		c.Type = "uuid.UUID"
-		c.Imports = importers.List{`"github.com/gofrs/uuid/v5"`}
-		if d.config.UUIDPkg == "google" {
-			c.Imports = importers.List{`"github.com/google/uuid"`}
-		}
 
 	case *schema.EnumType:
 		enumName := t.T
@@ -346,33 +345,27 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 			c.Type = "string"
 			break
 		}
-		isPgeo := true
+
 		switch t.T {
-		case "point":
-			c.Type = "pgeo.Point"
+		case "box":
+			c.Type = "pgeo.Box"
+		case "circle":
+			c.Type = "pgeo.Circle"
 		case "line":
 			c.Type = "pgeo.Line"
 		case "lseg":
 			c.Type = "pgeo.Lseg"
-		case "box":
-			c.Type = "pgeo.Box"
 		case "path":
 			c.Type = "pgeo.Path"
+		case "point":
+			c.Type = "pgeo.Point"
 		case "polygon":
 			c.Type = "pgeo.Polygon"
-		case "circle":
-			c.Type = "pgeo.Circle"
 		default:
 			c.Type = "string"
-			isPgeo = false
-		}
-
-		if isPgeo {
-			c.Imports = importers.List{`"github.com/saulortega/pgeo"`}
 		}
 
 	case *postgres.ArrayType:
-		isPq := true
 		switch t.Type.(type) {
 		case *schema.BoolType:
 			c.Type = "pq.BoolArray"
@@ -386,13 +379,13 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 			c.Type = "pq.Int64Array"
 		default:
 			c2 := d.translateColumnType(c, tableKey, t.Type)
-			c.Type = fmt.Sprintf("parray.Array[%s]", c2.Type)
-			c.Imports = append(c2.Imports, `"github.com/stephenafamo/bob/types/parray"`)
-			isPq = false
-		}
 
-		if isPq {
-			c.Imports = importers.List{`"github.com/lib/pq"`}
+			imports := importers.List{`"github.com/stephenafamo/bob/types/parray"`}
+
+			c.Type = fmt.Sprintf("parray.Array[%s]", c2.Type)
+			d.types[c.Type] = drivers.Type{
+				Imports: append(imports, d.types[c2.Type].Imports...),
+			}
 		}
 
 	default:
@@ -537,4 +530,72 @@ func (p *driver) getEnums() []drivers.Enum {
 	})
 
 	return enums
+}
+
+func BaseTypes(whichUUID string) drivers.Types {
+	var uuidPkg string
+
+	switch whichUUID {
+	case "google":
+		uuidPkg = `"github.com/google/uuid"`
+	default:
+		uuidPkg = `"github.com/gofrs/uuid/v5"`
+	}
+
+	return drivers.Types{
+		"time.Time": {
+			Imports: importers.List{`"time"`},
+		},
+		"uuid.UUID": {
+			Imports: importers.List{uuidPkg},
+		},
+		"pq.BoolArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Int64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.ByteaArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.StringArray": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pq.Float64Array": {
+			Imports: importers.List{`"github.com/lib/pq"`},
+		},
+		"pgeo.Box": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Circle": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Line": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Lseg": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Path": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Point": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"pgeo.Polygon": {
+			Imports: importers.List{`"github.com/saulortega/pgeo"`},
+		},
+		"decimal.Decimal": {
+			Imports: importers.List{`"github.com/shopspring/decimal"`},
+		},
+		"types.HStore": {
+			Imports: importers.List{`"github.com/stephenafamo/bob/types"`},
+		},
+		"types.JSON[json.RawMessage]": {
+			Imports: importers.List{
+				`"encoding/json"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+		},
+	}
 }

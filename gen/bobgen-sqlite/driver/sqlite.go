@@ -75,6 +75,23 @@ func (d *driver) Capabilities() drivers.Capabilities {
 	return drivers.Capabilities{}
 }
 
+func (d *driver) Types() drivers.Types {
+	return drivers.Types{
+		"time.Time": {
+			Imports: importers.List{`"time"`},
+		},
+		"decimal.Decimal": {
+			Imports: importers.List{`"github.com/shopspring/decimal"`},
+		},
+		"types.JSON[json.RawMessage]": {
+			Imports: importers.List{
+				`"encoding/json"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+		},
+	}
+}
+
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var err error
@@ -542,13 +559,5 @@ func (driver) translateColumnType(c drivers.Column) drivers.Column {
 		c.Type = "string"
 	}
 
-	c.Imports = append(c.Imports, typMap[c.Type]...)
 	return c
-}
-
-//nolint:gochecknoglobals
-var typMap = map[string]importers.List{
-	"time.Time":                   {`"time"`},
-	"types.JSON[json.RawMessage]": {`"encoding/json"`, `"github.com/stephenafamo/bob/types"`},
-	"decimal.Decimal":             {`"github.com/shopspring/decimal"`},
 }

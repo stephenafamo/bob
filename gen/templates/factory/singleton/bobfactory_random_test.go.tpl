@@ -8,7 +8,7 @@
   {{range $column := $table.Columns -}}
     {{- $colTyp := $column.Type -}}
     {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-    {{- $.Importer.ImportList $column.Imports -}}
+    {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
 
       func TestRandom_{{$colTyp | replace "." "_" | replace "[" "_" | replace "]" "_"}}(t *testing.T) {

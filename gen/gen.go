@@ -5,13 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"text/template"
 
@@ -81,9 +79,18 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
 
+	// Merge in the user-configured types
+	types := driver.Types()
+	if types == nil {
+		types = make(drivers.Types)
+	}
+	for name, def := range s.Config.Types {
+		types[name] = def
+	}
+
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
-	processTypeReplacements(s.Config.Types, s.Config.Replacements, dbInfo.Tables)
+	processTypeReplacements(types, s.Config.Replacements, dbInfo.Tables)
 
 	relationships := buildRelationships(dbInfo.Tables)
 	if err := processRelationshipConfig(&s.Config, dbInfo.Tables, relationships); err != nil {
@@ -107,6 +114,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		Enums:             dbInfo.Enums,
 		ExtraInfo:         dbInfo.ExtraInfo,
 		Aliases:           s.Config.Aliases,
+		Types:             types,
 		Relationships:     relationships,
 		NoTests:           s.Config.NoTests,
 		NoBackReferencing: s.Config.NoBackReferencing,
@@ -210,275 +218,6 @@ func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 	return nil
 }
 
-// initTemplates loads all template folders into the state object.
-//
-// If TemplateDirs is set it uses those, else it pulls from assets.
-// Then it allows drivers to override, followed by replacements. Any
-// user functions passed in by library users will be merged into the
-// template.FuncMap.
-//
-// Because there's the chance for windows paths to jumped in
-// all paths are converted to the native OS's slash style.
-//
-// Later, in order to properly look up imports the paths will
-// be forced back to linux style paths.
-func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
-	var err error
-
-	templates := make(map[string]templateLoader)
-	if len(o.Templates) == 0 {
-		return nil, errors.New("No templates defined")
-	}
-
-	for _, tempFS := range o.Templates {
-		if tempFS == nil {
-			continue
-		}
-		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
-			if err != nil {
-				return fmt.Errorf("in walk err: %w", err)
-			}
-
-			if entry.IsDir() {
-				return nil
-			}
-
-			name := entry.Name()
-			if filepath.Ext(name) == ".tpl" {
-				templates[normalizeSlashes(path)] = assetLoader{fs: tempFS, name: path}
-			}
-
-			return nil
-		})
-		if err != nil {
-			return nil, fmt.Errorf("after walk err: %w", err)
-		}
-	}
-
-	// For stability, sort keys to traverse the map and turn it into a slice
-	keys := make([]string, 0, len(templates))
-	for k := range templates {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	lazyTemplates := make([]lazyTemplate, 0, len(templates))
-	for _, k := range keys {
-		lazyTemplates = append(lazyTemplates, lazyTemplate{
-			Name:   k,
-			Loader: templates[k],
-		})
-	}
-
-	o.templates, err = loadTemplates(lazyTemplates, false, funcs)
-	if err != nil {
-		return nil, fmt.Errorf("loading templates: %w", err)
-	}
-
-	if !notests {
-		o.testTemplates, err = loadTemplates(lazyTemplates, true, funcs)
-		if err != nil {
-			return nil, fmt.Errorf("loading test templates: %w", err)
-		}
-	}
-
-	return lazyTemplates, nil
-}
-
-type dirExtMap map[string]map[string][]string
-
-// groupTemplates takes templates and groups them according to their output directory
-// and file extension.
-func groupTemplates(templates *templateList) dirExtMap {
-	tplNames := templates.Templates()
-	dirs := make(map[string]map[string][]string)
-	for _, tplName := range tplNames {
-		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
-		if isSingleton {
-			continue
-		}
-
-		dir := filepath.Dir(normalized)
-		if dir == "." {
-			dir = ""
-		}
-
-		extensions, ok := dirs[dir]
-		if !ok {
-			extensions = make(map[string][]string)
-			dirs[dir] = extensions
-		}
-
-		ext := getLongExt(tplName)
-		ext = strings.TrimSuffix(ext, ".tpl")
-		slice := extensions[ext]
-		extensions[ext] = append(slice, tplName)
-	}
-
-	return dirs
-}
-
-func isPrimitiveType(name string) bool {
-	switch name {
-	case "int", "int8", "int16", "int32", "int64",
-		"uint", "uint8", "uint16", "uint32", "uint64",
-		"float32", "float64",
-		"string", "bool":
-		return true
-	default:
-		return false
-	}
-}
-
-// processTypeReplacements checks the config for type replacements
-// and performs them.
-func processTypeReplacements(types map[string]Type, replacements []Replace, tables []drivers.Table) {
-	for _, r := range replacements {
-		didMatch := false
-		for i := range tables {
-			t := tables[i]
-
-			if !shouldReplaceInTable(t, r) {
-				continue
-			}
-
-			for j := range t.Columns {
-				c := t.Columns[j]
-				if matchColumn(c, r.Match) {
-					didMatch = true
-
-					replacement, ok := types[r.Replace]
-					if ok {
-						t.Columns[j].Type = replacement.Name
-						t.Columns[j].Imports = replacement.Imports
-					} else if isPrimitiveType(r.Replace) {
-						t.Columns[j].Type = r.Replace
-						t.Columns[j].Imports = nil
-					} else {
-						fmt.Printf("WARNING: No type found for replacement: %q\n", r.Replace)
-					}
-
-				}
-			}
-		}
-
-		// Print a warning if we didn't match anything
-		if !didMatch {
-			c := r.Match
-			fmt.Printf("WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n", c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
-		}
-	}
-}
-
-// matchColumn checks if a column 'c' matches specifiers in 'm'.
-// Anything defined in m is checked against a's values, the
-// match is a done using logical and (all specifiers must match).
-// Bool fields are only checked if a string type field matched first
-// and if a string field matched they are always checked (must be defined).
-//
-// Doesn't care about Unique columns since those can vary independent of type.
-func matchColumn(c, m drivers.Column) bool {
-	matchedSomething := false
-
-	// return true if we matched, or we don't have to match
-	// if we actually matched against something, then additionally set
-	// matchedSomething so we can check boolean values too.
-	matches := func(matcher, value string) bool {
-		if len(matcher) != 0 && matcher != value {
-			return false
-		}
-		matchedSomething = true
-		return true
-	}
-
-	if !matches(m.Name, c.Name) {
-		return false
-	}
-	if !matches(m.Type, c.Type) {
-		return false
-	}
-	if !matches(m.DBType, c.DBType) {
-		return false
-	}
-
-	if !matches(m.DomainName, c.DomainName) {
-		return false
-	}
-	if !matches(m.Comment, c.Comment) {
-		return false
-	}
-
-	if !matchedSomething {
-		return false
-	}
-
-	if m.Generated != c.Generated {
-		return false
-	}
-	if m.Nullable != c.Nullable {
-		return false
-	}
-
-	return true
-}
-
-// shouldReplaceInTable checks if tables were specified in types.match in the config.
-// If tables were set, it checks if the given table is among the specified tables.
-func shouldReplaceInTable(t drivers.Table, r Replace) bool {
-	if len(r.Tables) == 0 {
-		return true
-	}
-
-	for _, replaceInTable := range r.Tables {
-		if replaceInTable == t.Key {
-			return true
-		}
-	}
-
-	return false
-}
-
-// initOutFolders creates the folders that will hold the generated output.
-func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
-	if wipe {
-		if err := os.RemoveAll(o.OutFolder); err != nil {
-			return err
-		}
-	}
-
-	newDirs := make(map[string]struct{})
-	for _, t := range lazyTemplates {
-		// js/00_struct.js.tpl
-		// js/singleton/00_struct.js.tpl
-		// we want the js part only
-		fragments := strings.Split(t.Name, string(os.PathSeparator))
-
-		// Throw away the filename
-		fragments = fragments[0 : len(fragments)-1]
-		if len(fragments) != 0 && fragments[len(fragments)-1] == "singleton" {
-			fragments = fragments[:len(fragments)-1]
-		}
-
-		if len(fragments) == 0 {
-			continue
-		}
-
-		newDirs[strings.Join(fragments, string(os.PathSeparator))] = struct{}{}
-	}
-
-	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
-		return err
-	}
-
-	for d := range newDirs {
-		if err := os.MkdirAll(filepath.Join(o.OutFolder, d), os.ModePerm); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // initInflections adds custom inflections to strmangle's ruleset
 func initInflections(i Inflections) {
 	ruleset := strmangle.GetBoilRuleset()
@@ -513,14 +252,6 @@ func (s *State) initTags() error {
 	}
 
 	return nil
-}
-
-// normalizeSlashes takes a path that was made on linux or windows and converts it
-// to a native path.
-func normalizeSlashes(path string) string {
-	path = strings.ReplaceAll(path, `/`, string(os.PathSeparator))
-	path = strings.ReplaceAll(path, `\`, string(os.PathSeparator))
-	return path
 }
 
 // Returns the pkg name, and the go version

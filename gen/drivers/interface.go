@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/stephenafamo/bob/gen/importers"
 )
 
 // Interface abstracts either a side-effect imported driver or a binary
@@ -18,7 +20,15 @@ type Interface[T any] interface {
 	Capabilities() Capabilities
 	// Assemble the database information into a nice struct
 	Assemble(ctx context.Context) (*DBInfo[T], error)
+	// Custom types defined by the driver
+	Types() Types
 }
+
+type Type struct {
+	Imports importers.List `json:"imports" yaml:"imports" toml:"imports"`
+}
+
+type Types map[string]Type
 
 type Capabilities struct{}
 

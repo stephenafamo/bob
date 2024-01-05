@@ -66,7 +66,7 @@ func random[T any](f *faker.Faker) T {
         {{- $colTyp := $column.Type -}}
         {{- if isPrimitiveType $colTyp}}{{continue}}{{end -}}
         {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-        {{- $.Importer.ImportList $column.Imports -}}
+        {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
         {{- $_ :=  set $doneTypes $colTyp nil -}}
         case {{$colTyp}}:
           return val

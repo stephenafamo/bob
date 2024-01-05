@@ -3,12 +3,14 @@ package gen
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -61,6 +63,122 @@ type Output struct {
 
 	templates     *templateList
 	testTemplates *templateList
+}
+
+// initOutFolders creates the folders that will hold the generated output.
+func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
+	if wipe {
+		if err := os.RemoveAll(o.OutFolder); err != nil {
+			return err
+		}
+	}
+
+	newDirs := make(map[string]struct{})
+	for _, t := range lazyTemplates {
+		// js/00_struct.js.tpl
+		// js/singleton/00_struct.js.tpl
+		// we want the js part only
+		fragments := strings.Split(t.Name, string(os.PathSeparator))
+
+		// Throw away the filename
+		fragments = fragments[0 : len(fragments)-1]
+		if len(fragments) != 0 && fragments[len(fragments)-1] == "singleton" {
+			fragments = fragments[:len(fragments)-1]
+		}
+
+		if len(fragments) == 0 {
+			continue
+		}
+
+		newDirs[strings.Join(fragments, string(os.PathSeparator))] = struct{}{}
+	}
+
+	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
+		return err
+	}
+
+	for d := range newDirs {
+		if err := os.MkdirAll(filepath.Join(o.OutFolder, d), os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// initTemplates loads all template folders into the state object.
+//
+// If TemplateDirs is set it uses those, else it pulls from assets.
+// Then it allows drivers to override, followed by replacements. Any
+// user functions passed in by library users will be merged into the
+// template.FuncMap.
+//
+// Because there's the chance for windows paths to jumped in
+// all paths are converted to the native OS's slash style.
+//
+// Later, in order to properly look up imports the paths will
+// be forced back to linux style paths.
+func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
+	var err error
+
+	templates := make(map[string]templateLoader)
+	if len(o.Templates) == 0 {
+		return nil, errors.New("No templates defined")
+	}
+
+	for _, tempFS := range o.Templates {
+		if tempFS == nil {
+			continue
+		}
+		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return fmt.Errorf("in walk err: %w", err)
+			}
+
+			if entry.IsDir() {
+				return nil
+			}
+
+			name := entry.Name()
+			if filepath.Ext(name) == ".tpl" {
+				templates[normalizeSlashes(path)] = assetLoader{fs: tempFS, name: path}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("after walk err: %w", err)
+		}
+	}
+
+	// For stability, sort keys to traverse the map and turn it into a slice
+	keys := make([]string, 0, len(templates))
+	for k := range templates {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	lazyTemplates := make([]lazyTemplate, 0, len(templates))
+	for _, k := range keys {
+		lazyTemplates = append(lazyTemplates, lazyTemplate{
+			Name:   k,
+			Loader: templates[k],
+		})
+	}
+
+	o.templates, err = loadTemplates(lazyTemplates, false, funcs)
+	if err != nil {
+		return nil, fmt.Errorf("loading templates: %w", err)
+	}
+
+	if !notests {
+		o.testTemplates, err = loadTemplates(lazyTemplates, true, funcs)
+		if err != nil {
+			return nil, fmt.Errorf("loading test templates: %w", err)
+		}
+	}
+
+	return lazyTemplates, nil
 }
 
 type executeTemplateData[T any] struct {
@@ -412,4 +530,45 @@ func outputFilenameParts(filename string) (normalized string, isSingleton, isGo,
 	normalized = strings.Join(remainingFragments, string(os.PathSeparator))
 
 	return normalized, isSingleton, isGo, usePkg
+}
+
+type dirExtMap map[string]map[string][]string
+
+// groupTemplates takes templates and groups them according to their output directory
+// and file extension.
+func groupTemplates(templates *templateList) dirExtMap {
+	tplNames := templates.Templates()
+	dirs := make(map[string]map[string][]string)
+	for _, tplName := range tplNames {
+		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
+		if isSingleton {
+			continue
+		}
+
+		dir := filepath.Dir(normalized)
+		if dir == "." {
+			dir = ""
+		}
+
+		extensions, ok := dirs[dir]
+		if !ok {
+			extensions = make(map[string][]string)
+			dirs[dir] = extensions
+		}
+
+		ext := getLongExt(tplName)
+		ext = strings.TrimSuffix(ext, ".tpl")
+		slice := extensions[ext]
+		extensions[ext] = append(slice, tplName)
+	}
+
+	return dirs
+}
+
+// normalizeSlashes takes a path that was made on linux or windows and converts it
+// to a native path.
+func normalizeSlashes(path string) string {
+	path = strings.ReplaceAll(path, `/`, string(os.PathSeparator))
+	path = strings.ReplaceAll(path, `\`, string(os.PathSeparator))
+	return path
 }

@@ -24,7 +24,7 @@ func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Templa
 // all columns are optional and should be set by mods
 type {{$tAlias.UpSingular}}Template struct {
     {{- range $column := $table.Columns -}}
-        {{- $.Importer.ImportList $column.Imports -}}
+        {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
         {{- $colAlias := $tAlias.Column $column.Name -}}
         {{- $colTyp := $column.Type -}}
         {{- if $column.Nullable -}}
