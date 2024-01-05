@@ -10,7 +10,7 @@
     {{- $.Importer.ImportList $column.Imports -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
 
-      func TestRandom_{{replace $colTyp "." "_"}}(t *testing.T) {
+      func TestRandom_{{replace "." "_" $colTyp}}(t *testing.T) {
         t.Parallel()
 
         seen := make([]{{$colTyp}}, 10)
