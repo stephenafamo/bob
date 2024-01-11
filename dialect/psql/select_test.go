@@ -3,10 +3,10 @@ package psql_test
 import (
 	"testing"
 
-	pg_query "github.com/pganalyze/pg_query_go/v4"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test_utils"
+	pg_query "github.com/wasilibs/go-pgquery"
 )
 
 func TestSelect(t *testing.T) {
