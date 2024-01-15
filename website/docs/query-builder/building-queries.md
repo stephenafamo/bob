@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 1
 description: How to build queries with Bob
-
 ---
 
 # Building Queries
@@ -21,7 +19,7 @@ As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions)
 import "github.com/stephenafamo/bob/dialect/psql/sm"
 cte := psql.Select(
     sm.From("users"),
-    sm.Where(psql.Quote("age").GTE(21)),
+    sm.Where(psql.Quote("age").GTE(psql.Arg(21))),
 )
 
 var cte query.Query
@@ -67,13 +65,13 @@ For example:
 ```go
 // Query: ($1 >= 50) AND ("name" IS NOT NULL)
 // Args: 'Stephen'
-psql.Arg("Stephen").GTE(50).
+psql.Arg("Stephen").GTE(psql.Raw(50)).
 	And(psql.Quote("name").IsNotNull())
 
 // OR
 
 psql.And(
-	psql.Arg("Stephen").GTE(50),
+	psql.Arg("Stephen").GTE(psql.Raw(50)),
 	psql.Quote("name").IsNotNull(),
 )
 ```
