@@ -28,8 +28,8 @@ func TestDelete(t *testing.T) {
 				dm.Where(mysql.Quote("kind").EQ(mysql.Arg("Drama"))),
 			),
 			ExpectedSQL: `DELETE FROM films, actors USING films
-			` + "INNER JOIN film_actors ON ((films.id) = (film_actors.film_id))" + `
-			` + "INNER JOIN actors ON ((film_actors.actor_id) = (actors.id)) WHERE (`kind` = ?)",
+			` + "INNER JOIN film_actors ON (films.id = film_actors.film_id)" + `
+			` + "INNER JOIN actors ON (film_actors.actor_id = actors.id) WHERE (`kind` = ?)",
 			ExpectedArgs: []any{"Drama"},
 		},
 		"with limit and offest": {

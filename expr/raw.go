@@ -23,7 +23,7 @@ func RawQuery(d bob.Dialect, q string, args ...any) bob.BaseQuery[Clause] {
 	}
 }
 
-// A Raw Raw with arguments
+// A Raw Clause with arguments
 type Clause struct {
 	query string // The clause with ? used for placeholders
 	args  []any  // The replacements for the placeholders in order

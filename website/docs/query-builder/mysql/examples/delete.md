@@ -27,8 +27,8 @@ SQL:
 
 ```sql
 DELETE FROM films, actors USING films
-INNER JOIN film_actors ON ((films.id) = (film_actors.film_id))
-INNER JOIN actors ON ((film_actors.actor_id) = (actors.id)) WHERE (`kind` = ?)
+INNER JOIN film_actors ON (films.id = film_actors.film_id)
+INNER JOIN actors ON (film_actors.actor_id = actors.id) WHERE (`kind` = ?)
 ```
 
 Args:

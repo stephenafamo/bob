@@ -14,6 +14,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/um"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -75,17 +76,34 @@ func (s UserSetter) Overwrite(t *User) {
 }
 
 func (s UserSetter) Apply(q *dialect.UpdateQuery) {
-	if !s.ID.IsUnset() {
-		um.SetCol("id").ToArg(s.ID).Apply(q)
-	}
+	um.Set(s.Expressions()...).Apply(q)
+}
 
-	if !s.Name.IsUnset() {
-		um.SetCol("name").ToArg(s.Name).Apply(q)
+func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
+	exprs := make([]bob.Expression, 0, 3)
+
+	if !s.ID.IsUnset() {
+		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
+			Quote(append(prefix, "id")...),
+			Arg(s.ID),
+		}})
 	}
 
 	if !s.Email.IsUnset() {
-		um.SetCol("email").ToArg(s.Email).Apply(q)
+		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
+			Quote(append(prefix, "name")...),
+			Arg(s.Name),
+		}})
 	}
+
+	if !s.Email.IsUnset() {
+		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
+			Quote(append(prefix, "email")...),
+			Arg(s.Email),
+		}})
+	}
+
+	return exprs
 }
 
 var userTable = NewTable[*User, *UserSetter]("", "users")
@@ -119,7 +137,7 @@ func TestUpdate(t *testing.T) {
 
 	err = userTable.Update(ctx, db, &UserSetter{
 		Name:  omit.From("Stephen"),
-		Email: omit.From("stephen@exapmle.com"),
+		Email: omit.From("stephen@example.com"),
 	}, user)
 	if err != nil {
 		t.Errorf("error updating: %v", err)
@@ -134,8 +152,8 @@ func TestUpdate(t *testing.T) {
 	if *user != (User{
 		ID:    1,
 		Name:  "Stephen",
-		Email: "stephen@exapmle.com",
+		Email: "stephen@example.com",
 	}) {
-		t.Fatalf("unexpected retrieved user: %v", err)
+		t.Fatalf("unexpected retrieved user: %#v: %v", *user, err)
 	}
 }
