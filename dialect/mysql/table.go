@@ -159,7 +159,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...),
+		im.Into(t.Name(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...),
 	)
 
 	// To prevent unnecessary work, we will do this before we add the rows
