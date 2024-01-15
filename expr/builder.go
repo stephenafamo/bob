@@ -20,7 +20,7 @@ func X[T bob.Expression, B builder[T]](exp bob.Expression, others ...bob.Express
 
 	// Wrap in parenthesis if not a raw string or string in quotes
 	switch t := exp.(type) {
-	case Raw, rawString, quoted:
+	case Clause, Raw, rawString, quoted:
 		// expected to be printed as it is
 		break
 	case args:
