@@ -25,17 +25,17 @@ type Interface[T any] interface {
 }
 
 type Type struct {
-	Imports importers.List `json:"imports"`
+	Imports importers.List `json:"imports" yaml:"imports"`
 	// To be used in factory.random[T]
 	// a variable `f` of type `faker.Faker` is available
 	// since this is in a generic function, the final return should be like
 	// return any(yourVariableOrExpressions).(T)
-	RandomExpr string `json:"random_expr"`
+	RandomExpr string `json:"random_expr" yaml:"random_expr"`
 	// Additional imports for the randomize expression
-	RandomExprImports importers.List `json:"random_expr_imports"`
+	RandomExprImports importers.List `json:"random_expr_imports" yaml:"random_expr_imports"`
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
-	NoRandomizationTest bool `json:"no_randomization_test"`
+	NoRandomizationTest bool `json:"no_randomization_test" yaml:"no_randomization_test"`
 }
 
 type Types map[string]Type
