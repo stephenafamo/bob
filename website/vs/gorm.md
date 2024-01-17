@@ -10,7 +10,7 @@ sidebar_position: 1
 
 * **GORM** is code-first. It generates the database from your code, using GORM-specific techniques. If you use a different tool for migration, you then have to manually ensure that your GORM models are in sync with your database.
 
-* **Bob** is database-first. You generate your database using the first class tools for your DB (SQL, pgAdmin, migration pacakges). And then generate your models from your database.
+* **Bob** is database-first. You generate your database using the first class tools for your DB (SQL, pgAdmin, migration packages). And then generate your models from your database.
 
 ## Type Safety
 
