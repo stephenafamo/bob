@@ -33,7 +33,7 @@ Bob's philosophy centers around the following:
 
 ## 1. Query Builder
 
-Bob can be used to build queries, this is similar to other pacakges like [squirrel](https://github.com/Masterminds/squirrel) and [goqu](https://github.com/doug-martin/goqu)
+Bob can be used to build queries, this is similar to other packages like [squirrel](https://github.com/Masterminds/squirrel) and [goqu](https://github.com/doug-martin/goqu)
 
 However, Bob strives to be fully spec compliant. As a result, you can build **almost any** query permitted by the dialect. And because the query builders are custom crafted for each dialect. You are almost unable to build an invalid query.
 

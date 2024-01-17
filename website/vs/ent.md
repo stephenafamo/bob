@@ -10,7 +10,7 @@ sidebar_position: 2
 
 * **Ent** is code-first. The schema is defined in code and it then generates the entities using Ent-specific techniques. If you use a different tool for migration, you then have to manually ensure that your Ent schema is in sync with your database.
 
-* **Bob** is database-first. You generate your database using the first class tools for your DB (SQL, pgAdmin, migration pacakges). And then generate your models from your database.
+* **Bob** is database-first. You generate your database using the first class tools for your DB (SQL, pgAdmin, migration packages). And then generate your models from your database.
 
 ## Query Building
 

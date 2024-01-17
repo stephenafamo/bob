@@ -7,7 +7,7 @@ description: Supported features
 
 # How to Use
 
-Import the `psql` package and the query mod pacakges for the different query types
+Import the `psql` package and the query mod packages for the different query types
 
 ```go
 import (
