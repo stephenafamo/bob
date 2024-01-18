@@ -14,7 +14,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -42,7 +42,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -70,7 +70,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "enum_use",
@@ -554,7 +554,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_one",
@@ -565,7 +565,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_two",
@@ -576,7 +576,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_three",
@@ -587,7 +587,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_four",
@@ -598,7 +598,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_five",
@@ -609,7 +609,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_six",
@@ -620,7 +620,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "float_zero",
@@ -1115,7 +1115,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "varchar_default",
@@ -1858,7 +1858,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "email_validated",
@@ -1915,7 +1915,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "tag_id",
@@ -1926,7 +1926,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -1976,7 +1976,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "user_id",
@@ -1987,7 +1987,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "sponsor_id",
@@ -1998,7 +1998,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {

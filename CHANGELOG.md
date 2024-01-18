@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove `Imports` from column definition.
 
+### Fixed
+
+- `INTEGER` columns are now correctly generated as `int32` not `int`
+
 ## [v0.23.2] - 2024-01-04
 
 ### Fixed

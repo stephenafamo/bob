@@ -514,14 +514,16 @@ func (d *driver) schema(schema string) string {
 // https://sqlite.org/datatype3.html
 func (driver) translateColumnType(c drivers.Column) drivers.Column {
 	switch c.DBType {
-	case "INT", "INTEGER", "BIGINT":
-		c.Type = "int64"
 	case "TINYINT", "INT8":
 		c.Type = "int8"
 	case "SMALLINT", "INT2":
 		c.Type = "int16"
 	case "MEDIUMINT":
 		c.Type = "int32"
+	case "INT", "INTEGER":
+		c.Type = "int32"
+	case "BIGINT":
+		c.Type = "int64"
 	case "UNSIGNED BIG INT":
 		c.Type = "uint64"
 	case "CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR",
