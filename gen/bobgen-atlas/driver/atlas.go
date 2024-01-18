@@ -293,7 +293,7 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 		case "mediumint":
 			c.Type = "int32"
 		case "int", "integer":
-			c.Type = "int"
+			c.Type = "int32"
 		case "bigint":
 			c.Type = "int64"
 		default:
@@ -308,7 +308,7 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 		case "smallserial", "serial2":
 			c.Type = "int16"
 		case "serial", "serial4":
-			c.Type = "int"
+			c.Type = "int32"
 		case "bigserial", "serial8":
 			c.Type = "int64"
 		default:

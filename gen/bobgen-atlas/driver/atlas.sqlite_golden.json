@@ -14,7 +14,7 @@
 					"generated": false,
 					"autoincr": true,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "user_id",
@@ -25,7 +25,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "sponsor_id",
@@ -36,7 +36,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "something",
@@ -113,7 +113,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -141,7 +141,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "b",
@@ -152,7 +152,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "c",
@@ -174,7 +174,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "e",
@@ -213,7 +213,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -241,7 +241,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -269,7 +269,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "id_two",
@@ -280,7 +280,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "id_three",
@@ -291,7 +291,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "bool_zero",
@@ -588,7 +588,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_one",
@@ -599,7 +599,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_two",
@@ -610,7 +610,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_three",
@@ -621,7 +621,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_four",
@@ -632,7 +632,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_five",
@@ -643,7 +643,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "int_six",
@@ -654,7 +654,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "float_zero",
@@ -1529,7 +1529,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -1557,7 +1557,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "tag_id",
@@ -1568,7 +1568,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
@@ -1618,7 +1618,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "user_id",
@@ -1629,7 +1629,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				},
 				{
 					"name": "sponsor_id",
@@ -1640,7 +1640,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int"
+					"type": "int32"
 				}
 			],
 			"constraints": {
