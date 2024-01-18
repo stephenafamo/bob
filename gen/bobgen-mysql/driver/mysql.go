@@ -270,9 +270,9 @@ func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Co
 		}
 	case "int", "integer":
 		if unsigned {
-			c.Type = "uint"
+			c.Type = "uint32"
 		} else {
-			c.Type = "int"
+			c.Type = "int32"
 		}
 	case "bigint":
 		if unsigned {
