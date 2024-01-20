@@ -1,5 +1,5 @@
 {{$.Importer.Import "strings"}}
-{{$.Importer.Import "github.com/jaswdr/faker"}}
+{{$.Importer.Import "github.com/jaswdr/faker/v2"}}
 {{$.Importer.Import "github.com/aarondl/opt/null"}}
 
 var defaultFaker = faker.New()

@@ -1,4 +1,4 @@
-{{$.Importer.Import "github.com/jaswdr/faker"}}
+{{$.Importer.Import "github.com/jaswdr/faker/v2"}}
 {{ $table := .Table }}
 {{ $tAlias := .Aliases.Table .Table.Key -}}
 
