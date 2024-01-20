@@ -29,6 +29,7 @@ type Config struct {
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 
+	Types         drivers.Types `yaml:"types"`         // register custom types
 	Aliases       Aliases       `yaml:"aliases"`       // customize aliases
 	Constraints   Constraints   `yaml:"constraints"`   // define additional constraints
 	Relationships Relationships `yaml:"relationships"` // define additional relationships
@@ -52,6 +53,7 @@ type Config struct {
 | struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake" |
 | relation_tag        | Struct tag for the relationship object                                                                          | "-"     |
 | tag_ignore          | List of column names that should have tags values set to '-'                                                    | []      |
+| types               | Register custom types. [See more](#types)                                                                       | "{}     |
 | aliases             | Customize aliases. [See more](#aliases)                                                                         | {}      |
 | constraints         | Define additional constraints. [See more](#constraints)                                                         | {}      |
 | relationships       | Define additional relationships. [See more](#relationships)                                                     | {}      |
@@ -77,6 +79,51 @@ aliases:
       uuid: "ID"
     relationships: # Relationships can be aliased by name
       team_id_fkey: "Owner"
+```
+
+## Types
+
+Custom types can be registered with the `types` key.  
+This will also allow you to edit the configuration of existing types, for example, to change how it is randomized by default.
+
+When defining a type, you should provide the `randomExpr`. This is an expression that returns a random value of the type. It is used in `factory.random[T]()`.
+
+There are things to note about writing the random expression:
+
+- The expression must return a value of type `T`
+- There is an existing variable of `f` which is of type `*faker.Faker`
+
+To prevent generating a test for the random expression, set `no_randomization_test` to `true`. This is useful for low-cardinality types like `bool`.
+
+```yaml
+types:
+  pq.BoolArray:
+    # Imports for the type
+    imports: ['"github.com/lib/pq"']
+    # If true, a test for the random expression will not be generated
+    no_randomization_test: false
+    randomExpr: |-
+      arr := make(pq.BoolArray, f.IntBetween(1, 5))
+      for i := range arr {
+          arr[i] = f.Bool()
+      }
+      return any(arr).(T)
+  netip.Addr:
+    imports: ['"net/netip"']
+    randomExpr: |-
+      var addr [4]byte
+      rand.Read(addr[:])
+      return any(netip.AddrFrom4(addr)).(T)
+    # ADDITIONAL imports for the random expression
+    randomExprImports: ['"crypto/rand"']
+  types.HStore:
+    imports: ['"github.com/stephenafamo/bob/types"']
+    randomExpr: |-
+      hs := make(types.HStore)
+      for i := 0; i < f.IntBetween(1, 5); i++ {
+          arr[random[string](f)] = randomNull[string](f)
+      }
+      return any(hs).(T)
 ```
 
 ## Replacements
@@ -105,12 +152,9 @@ replacements:
       generated: false # Matches the generated value. Defaults to false.
       autoincr: false # Matches the autoincr value. Defaults to false.
 
-    # The replace is what we replace the strings with. You cannot modify any
-    # boolean values in here. But we could change the Go type (the most useful thing)
-    # or the DBType or FullDBType etc. if for some reason we needed to.
-    replace:
-      type: "mynull.String"
-      imports: ['"github.com/me/mynull"']
+    # The replace directive should either reference a pre-configured type, or a type
+    # defined in the `types` configuration.
+    replace: "mynull.String"
 ```
 
 ## Constraints

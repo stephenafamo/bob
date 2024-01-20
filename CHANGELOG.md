@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Format generated files with `gofumpt`
+- Replace key in `replacements` configuration is now a string referring to the type defined in the `types` configuration.
 
 ### Removed
 
