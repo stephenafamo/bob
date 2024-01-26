@@ -9,9 +9,10 @@
     {{- $colTyp := $column.Type -}}
     {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
+    {{- $typInfo :=  index $.Types $column.Type -}}
     {{- if eq $colTyp "bool"}}{{continue}}{{end -}}
-    {{- if (index $.Types $column.Type).NoRandomizationTest}}{{continue}}{{end -}}
-    {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
+    {{- if $typInfo.NoRandomizationTest}}{{continue}}{{end -}}
+    {{- $.Importer.ImportList $typInfo.Imports -}}
 
       func TestRandom_{{$colTyp | replace "." "_" | replace "[" "_" | replace "]" "_"}}(t *testing.T) {
         t.Parallel()
@@ -20,7 +21,9 @@
         for i := 0; i < 10; i++ {
           seen[i] = random[{{$colTyp}}](nil)
           for j := 0; j < i; j++ {
-            if cmp.Equal(seen[i], seen[j]) {
+            if cmp.Equal(seen[i], seen[j]
+              {{- with $typInfo.CmpOptions}}{{$.Importer.ImportList $typInfo.CmpOptionsImports}}, {{join ", " .}}{{end -}}
+            ) {
               t.Fatalf("random[{{$colTyp}}]() returned the same value twice: %v", seen[i])
             }
           }

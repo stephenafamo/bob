@@ -95,6 +95,8 @@ There are things to note about writing the random expression:
 
 To prevent generating a test for the random expression, set `no_randomization_test` to `true`. This is useful for low-cardinality types like `bool`.
 
+When testing the random expression, the value returned is compared to generated previous values using [go-cmp](https://github.com/google/go-cmp/cmp). Sometimes, it is necessary to pass options, and we can do that with the `cmp_options` and `cmp_options_imports` fields.
+
 ```yaml
 types:
   pq.BoolArray:
@@ -110,12 +112,16 @@ types:
       return any(arr).(T)
   netip.Addr:
     imports: ['"net/netip"']
-    randomExpr: |-
+    random_expr: |-
       var addr [4]byte
       rand.Read(addr[:])
       return any(netip.AddrFrom4(addr)).(T)
     # ADDITIONAL imports for the random expression
-    randomExprImports: ['"crypto/rand"']
+    random_expr_imports: ['"crypto/rand"']
+    # Pass options to the go-cmp.Equal function
+    cmp_options: ["cmpopts.EquateComparable(netip.Addr{})"]
+    # ADDITIONAL imports for the options
+    cmp_options_imports: ['"github.com/google/go-cmp/cmp/cmpopts"']
   types.HStore:
     imports: ['"github.com/stephenafamo/bob/types"']
     randomExpr: |-
