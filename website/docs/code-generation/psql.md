@@ -1,9 +1,7 @@
 ---
-
 sidebar_position: 11
 title: PostgreSQL Driver
 description: ORM Generation for PostgreSQL
-
 ---
 
 # Bob Gen for Postgres
@@ -42,13 +40,12 @@ PSQL_DSN="postgres://user:pass@host:port/dbname"
 The values that exist for the drivers:
 
 | Name          | Description                           | Default                  |
-|---------------|---------------------------------------|--------------------------|
+| ------------- | ------------------------------------- | ------------------------ |
 | dsn           | URL to connect to                     |                          |
 | schemas       | Schemas find tables in                | ["public"]               |
 | shared_schema | Schema to not include prefix in model | first value in "schemas" |
 | output        | Folder for generated files            | "models"                 |
 | pkgname       | Package name for generated code       | "models"                 |
-| no_factory    | Skip generation of factories          | false                    |
 | uuid_pkg      | UUID package to use (gofrs or google) | "gofrs"                  |
 | concurrency   | How many tables to fetch in parallel  | 10                       |
 | only          | Only generate these                   |                          |
@@ -58,13 +55,13 @@ Example of Only/Except:
 
 ```yaml
 psql:
-    # Removes public.migrations table, the name column from the addresses table, and
-    # secret_col of any table from being generated. Foreign keys that reference tables
-    # or columns that are no longer generated may cause problems.
-    except:
-        public.migrations:
-        public.addresses:
-            - name
-        "*":
-            - secret_col
+  # Removes public.migrations table, the name column from the addresses table, and
+  # secret_col of any table from being generated. Foreign keys that reference tables
+  # or columns that are no longer generated may cause problems.
+  except:
+    public.migrations:
+    public.addresses:
+      - name
+    "*":
+      - secret_col
 ```

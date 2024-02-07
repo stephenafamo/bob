@@ -1,9 +1,7 @@
 ---
-
 sidebar_position: 13
 title: SQLite Driver
 description: ORM Generation for SQLite
-
 ---
 
 # Bob Gen for SQLite
@@ -42,13 +40,12 @@ SQLITE_DSN="file.db"
 The values that exist for the drivers:
 
 | Name          | Description                               | Default             |
-|---------------|-------------------------------------------|---------------------|
+| ------------- | ----------------------------------------- | ------------------- |
 | dsn           | Path to database                          |                     |
 | attach        | Schemas to attach and the path the the db | map[string]string{} |
 | shared_schema | Schema to not include prefix in model     | "main"              |
 | output        | Folder for generated files                | "models"            |
 | pkgname       | Package name for generated code           | "models"            |
-| no_factory    | Skip generation of factories              | false               |
 | only          | Only generate these                       |                     |
 | except        | Skip generation for these                 |                     |
 
@@ -56,13 +53,13 @@ Example of Only/Except:
 
 ```yaml
 sqlite:
-    # Removes public.migrations table, the name column from the addresses table, and
-    # secret_col of any table from being generated. Foreign keys that reference tables
-    # or columns that are no longer generated may cause problems.
-    except:
-        public.migrations:
-        public.addresses:
-            - name
-        "*":
-            - secret_col
+  # Removes public.migrations table, the name column from the addresses table, and
+  # secret_col of any table from being generated. Foreign keys that reference tables
+  # or columns that are no longer generated may cause problems.
+  except:
+    public.migrations:
+    public.addresses:
+      - name
+    "*":
+      - secret_col
 ```

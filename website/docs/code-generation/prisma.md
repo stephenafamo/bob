@@ -1,9 +1,7 @@
 ---
-
 sidebar_position: 15
 title: Prisma Driver
 description: ORM Generation for Prisma
-
 ---
 
 # Bob Gen for Prisma
@@ -143,26 +141,25 @@ PRISMA_SCHEMA="public"
 
 The values that exist for the drivers:
 
-| Name       | Description                     | Default  |
-|------------|---------------------------------|----------|
-| pkgname    | Package name for generated code | "prisma" |
-| no_factory | Skip generation of factories    | false    |
-| only       | Only generate these             |          |
-| except     | Skip generation for these       |          |
+| Name    | Description                     | Default  |
+| ------- | ------------------------------- | -------- |
+| pkgname | Package name for generated code | "prisma" |
+| only    | Only generate these             |          |
+| except  | Skip generation for these       |          |
 
 Example of Only/Except:
 
 ```yaml
 psql:
-    # Removes Coupon model, the name field of the Product model, and
-    # secret of all Models from being generated. Foreign keys that reference tables
-    # or columns that are no longer generated may cause problems.
-    except:
-        User:
-        Product:
-            - name
-        "*":
-            - secret
+  # Removes Coupon model, the name field of the Product model, and
+  # secret of all Models from being generated. Foreign keys that reference tables
+  # or columns that are no longer generated may cause problems.
+  except:
+    User:
+    Product:
+      - name
+    "*":
+      - secret
 ```
 
 [How to use](..)
