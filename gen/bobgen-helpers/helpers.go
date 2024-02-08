@@ -193,6 +193,8 @@ func Types() drivers.Types {
                 rand.Read(addr[:])
                 return any(netip.AddrFrom4(addr)).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
+			CmpOptions:        []string{"cmpopts.EquateComparable(netip.Addr{})"},
+			CmpOptionsImports: importers.List{`"github.com/google/go-cmp/cmp/cmpopts"`},
 		},
 		"net.HardwareAddr": {
 			Imports: importers.List{`"net"`},
