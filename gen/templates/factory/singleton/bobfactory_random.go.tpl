@@ -86,5 +86,9 @@ func random[T any](f *faker.Faker) T {
 // randomNull is like [Random], but for null types
 // it will often also generate a null value
 func randomNull[T any](f *faker.Faker) null.Val[T] {
+  if f == nil {
+      f = &defaultFaker
+  }
+
   return null.FromCond(random[T](f), f.BoolWithChance(50))
 }
