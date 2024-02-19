@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -72,6 +73,10 @@ func (l List) GetSorted() (List, List) {
 		third = append(third, pkg)
 
 	}
+
+	// Make sure the lists are sorted, so that the output is consistent
+	sort.Sort(std)
+	sort.Sort(third)
 
 	return std, third
 }

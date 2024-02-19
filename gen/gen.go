@@ -10,10 +10,12 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 	"golang.org/x/mod/modfile"
 )
@@ -98,6 +100,13 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	}
 	if err := validateRelationships(relationships); err != nil {
 		return fmt.Errorf("validating relationships: %w", err)
+	}
+
+	// Lets sort the relationships so that we can have a consistent output
+	for _, rels := range relationships {
+		slices.SortFunc(rels, func(a, b orm.Relationship) int {
+			return strings.Compare(a.Name, b.Name)
+		})
 	}
 
 	if s.Config.Aliases == nil {
