@@ -70,6 +70,8 @@ type Relationship struct {
 	Ignored bool
 	// Do not create the inverse of a user configured relationship
 	NoReverse bool `yaml:"no_reverse"`
+	// Makes sure the factories does not require the relationship to be set
+	NoForeign bool `yaml:"no_foreign"`
 }
 
 func (r Relationship) Validate() error {
