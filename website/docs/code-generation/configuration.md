@@ -197,6 +197,7 @@ We can manually describe relationships in the configuration:
 relationships:
   users: # The table name
     - name: "custom_videos_relationship" # A unique identifier used to configure aliases
+      no_foreign: true # If true, the factory will not generate the relationship, even if it's not set already.
       sides:
         - from: "users" # Name of the source of the relationship
           to: "videos" # Table name of the other side of the relation
