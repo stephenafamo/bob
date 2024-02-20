@@ -358,6 +358,11 @@ func columnSetter(i Importer, aliases Aliases, tables []drivers.Table, fromTName
 }
 
 func relIsRequired(t drivers.Table, r orm.Relationship) bool {
+	// The relationship is not required, if its not using foreign keys
+	if r.NeverRequired {
+		return false
+	}
+
 	firstSide := r.Sides[0]
 	if firstSide.Modify == "to" {
 		return false
