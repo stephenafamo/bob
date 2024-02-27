@@ -76,7 +76,7 @@ mysql.Select(
     sm.Columns(
       "status",
       mysql.F("LEAD", "created_date", 1, mysql.F("NOW")).
-        Over("").
+        Over().
         PartitionBy("presale_id").
         OrderBy("created_date").
         Minus(mysql.Quote("created_date")).
