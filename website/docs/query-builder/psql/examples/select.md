@@ -270,3 +270,25 @@ psql.Select(
   sm.From("c"),
 )
 ```
+
+## Window Function Over Window Name
+
+SQL:
+
+```sql
+SELECT avg(salary) OVER (w)
+FROM c 
+WINDOW w AS (PARTITION BY depname ORDER BY salary)
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns(
+    psql.F("avg", "salary").Over().From("w"),
+  ),
+  sm.From("c"),
+  sm.Window("w").PartitionBy("depname").OrderBy("salary"),
+)
+```

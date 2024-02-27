@@ -149,6 +149,18 @@ func TestSelect(t *testing.T) {
 				sm.From("c"),
 			),
 		},
+		"Window function over window name": {
+			ExpectedSQL: `SELECT avg(salary) OVER (w)
+FROM c 
+WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
+			Query: psql.Select(
+				sm.Columns(
+					psql.F("avg", "salary").Over().From("w"),
+				),
+				sm.From("c"),
+				sm.Window("w").PartitionBy("depname").OrderBy("salary"),
+			),
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
