@@ -43,7 +43,7 @@ sm.Window("").PartitionBy("presale_id").OrderBy("created_date")
 // Expressing LEAD(...) OVER(...)
 "LEAD(created_date, 1, NOW()) OVER(PARTITION BY presale_id ORDER BY created_date)"
 psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-    Over("").
+    Over().
     PartitionBy("presale_id").
     OrderBy("created_date")
 
@@ -52,7 +52,7 @@ psql.Select(
     sm.Columns(
         "status",
         psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-            Over("").
+            Over().
             PartitionBy("presale_id").
             OrderBy("created_date").
             Minus("created_date").

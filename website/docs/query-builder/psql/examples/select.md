@@ -150,7 +150,7 @@ psql.Select(
     sm.Columns(
       "status",
       psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-        Over("").
+        Over().
         PartitionBy("presale_id").
         OrderBy("created_date").
         Minus(psql.Quote("created_date")).
@@ -249,5 +249,46 @@ psql.Select(
     sm.LeftJoin("test2").Using("id"),
   )),
   sm.From("c"),
+)
+```
+
+## Window Function Over Empty Frame
+
+SQL:
+
+```sql
+SELECT row_number() OVER () FROM c
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns(
+    psql.F("row_number").Over(),
+  ),
+  sm.From("c"),
+)
+```
+
+## Window Function Over Window Name
+
+SQL:
+
+```sql
+SELECT avg(salary) OVER (w)
+FROM c 
+WINDOW w AS (PARTITION BY depname ORDER BY salary)
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns(
+    psql.F("avg", "salary").Over().From("w"),
+  ),
+  sm.From("c"),
+  sm.Window("w").PartitionBy("depname").OrderBy("salary"),
 )
 ```

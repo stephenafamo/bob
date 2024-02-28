@@ -88,7 +88,7 @@ func TestSelect(t *testing.T) {
 					sm.Columns(
 						"status",
 						psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-							Over("").
+							Over().
 							PartitionBy("presale_id").
 							OrderBy("created_date").
 							Minus(psql.Quote("created_date")).
@@ -138,6 +138,27 @@ func TestSelect(t *testing.T) {
 					sm.LeftJoin("test2").Using("id"),
 				)),
 				sm.From("c"),
+			),
+		},
+		"Window function over empty frame": {
+			ExpectedSQL: "SELECT row_number() OVER () FROM c",
+			Query: psql.Select(
+				sm.Columns(
+					psql.F("row_number").Over(),
+				),
+				sm.From("c"),
+			),
+		},
+		"Window function over window name": {
+			ExpectedSQL: `SELECT avg(salary) OVER (w)
+FROM c 
+WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
+			Query: psql.Select(
+				sm.Columns(
+					psql.F("avg", "salary").Over().From("w"),
+				),
+				sm.From("c"),
+				sm.Window("w").PartitionBy("depname").OrderBy("salary"),
 			),
 		},
 	}

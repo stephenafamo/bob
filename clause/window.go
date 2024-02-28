@@ -23,26 +23,6 @@ type WindowDef struct {
 	Frame
 }
 
-func (wi WindowDef) Valid() bool {
-	if wi.From != "" {
-		return true
-	}
-
-	if len(wi.orderBy) != 0 {
-		return true
-	}
-
-	if len(wi.partitionBy) != 0 {
-		return true
-	}
-
-	if wi.Frame.Defined {
-		return true
-	}
-
-	return false
-}
-
 func (wi *WindowDef) SetFrom(from string) {
 	wi.From = from
 }

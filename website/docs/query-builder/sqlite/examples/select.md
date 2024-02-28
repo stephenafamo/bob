@@ -92,7 +92,7 @@ sqlite.Select(
     sm.Columns(
       "status",
       sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
-        Over("").
+        Over().
         PartitionBy("presale_id").
         OrderBy("created_date").
         Minus(sqlite.Quote("created_date")).

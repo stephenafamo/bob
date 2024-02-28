@@ -34,7 +34,7 @@ func (f *Function) Filter(e ...any) *Function {
 	return f
 }
 
-func (f *Function) Over(window string) *functionOver {
+func (f *Function) Over() *functionOver {
 	fo := &functionOver{
 		function: f,
 	}
@@ -77,7 +77,7 @@ func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, 
 		return nil, err
 	}
 
-	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, wr.def.Valid(), "OVER (", ")")
+	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, true, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
