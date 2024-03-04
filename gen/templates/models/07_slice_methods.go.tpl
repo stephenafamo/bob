@@ -44,7 +44,13 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 		for _, new := range o2 {
 			{{range $column := $table.Constraints.Primary.Columns -}}
 			{{- $colAlias := $tAlias.Column $column -}}
+			{{- $colTyp := ($table.GetColumn $column).Type -}}
+			{{- if $colTyp | eq "[]byte" -}}
+			{{- $.Importer.Import "bytes" -}}
+			if !bytes.Equal(new.{{$colAlias}}, old.{{$colAlias}}) {
+			{{else -}}
 			if new.{{$colAlias}} != old.{{$colAlias}} {
+			{{end -}}
 				continue
 			}
 			{{end -}}
