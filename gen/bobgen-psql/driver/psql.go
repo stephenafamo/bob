@@ -60,10 +60,6 @@ func New(config Config) Interface {
 		config.Schemas = pq.StringArray{"public"}
 	}
 
-	if config.SharedSchema == "" {
-		config.SharedSchema = config.Schemas[0]
-	}
-
 	if config.UUIDPkg == "" {
 		config.UUIDPkg = "gofrs"
 	}
