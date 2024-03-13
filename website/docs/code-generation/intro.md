@@ -14,7 +14,7 @@ Bob is a "database-first" ORM. That means you must first create your database sc
 
 There is also a generator for other schema definitions like [Atlas' schema](https://atlasgo.io/atlas-schema/sql-resources) and [Prisma's schema](https://www.prisma.io/docs/concepts/components/prisma-schema).
 
-## Avaialable Drivers
+## Available Drivers
 
 | Sources    | Driver           |
 |------------|------------------|
