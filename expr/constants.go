@@ -11,6 +11,7 @@ const (
 var (
 	and               = Raw("AND")
 	not               = Raw("NOT")
+	null              = Raw("NULL")
 	isNull            = Raw("IS NULL")
 	isNotNull         = Raw("IS NOT NULL")
 	between           = Raw("BETWEEN")
