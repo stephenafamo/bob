@@ -119,10 +119,6 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	if d.config.SharedSchema == "" {
-		d.config.SharedSchema = realm.Schemas[0].Name
-	}
-
 	d.loadEnums(realm)
 	dbinfo = &DBInfo{
 		Enums:  d.getEnums(),
