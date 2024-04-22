@@ -36,10 +36,12 @@ type Type struct {
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
 	NoRandomizationTest bool `yaml:"no_randomization_test"`
-	// Options to be passed to google.com/go-cmp.Equal in the randomization test
-	CmpOptions []string `yaml:"cmp_options"`
-	// Any options to be imported for the cmp options
-	CmpOptionsImports importers.List `yaml:"cmp_options_imports"`
+	// CompareExpr is used to compare two values of this type
+	// if not provided, == is used
+	// Used AAA and BBB as placeholders for the two values
+	CompareExpr string `yaml:"compare_expr"`
+	// Imports needed for the compare expression
+	CompareExprImports importers.List `yaml:"compare_expr_imports"`
 }
 
 type Types map[string]Type

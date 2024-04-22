@@ -1,5 +1,4 @@
 {{$.Importer.Import "testing"}}
-{{$.Importer.Import "github.com/google/go-cmp/cmp"}}
 
 
 {{$doneTypes := dict }}
@@ -21,9 +20,13 @@
         for i := 0; i < 10; i++ {
           seen[i] = random[{{$colTyp}}](nil)
           for j := 0; j < i; j++ {
-            if cmp.Equal(seen[i], seen[j]
-              {{- with $typInfo.CmpOptions}}{{$.Importer.ImportList $typInfo.CmpOptionsImports}}, {{join ", " .}}{{end -}}
-            ) {
+            {{- with $typInfo.CompareExpr -}}
+              {{- $.Importer.ImportList $typInfo.CompareExprImports -}}
+              if {{replace "AAA" "seen[i]" . | replace "BBB" "seen[j]"}}
+            {{- else -}}
+              if seen[i] == seen[j]
+            {{- end -}}
+            {
               t.Fatalf("random[{{$colTyp}}]() returned the same value twice: %v", seen[i])
             }
           }

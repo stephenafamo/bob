@@ -162,17 +162,28 @@ func AddPgEnumArrayType(types drivers.Types, enum string) string {
 }
 
 func AddPgGenericArrayType(types drivers.Types, singleTyp string) string {
+	singleTypDef := types[singleTyp]
+	singleComparer := strings.ReplaceAll(singleTypDef.CompareExpr, "AAA", "a")
+	singleComparer = strings.ReplaceAll(singleComparer, "BBB", "b")
+	if singleComparer == "" {
+		singleComparer = "a == b"
+	}
+
 	typ := fmt.Sprintf("parray.Array[%s]", singleTyp)
-	imports := importers.List{parrayImport}
-	imports = append(imports, types[singleTyp].Imports...)
 
 	types[typ] = drivers.Type{
-		Imports: imports,
+		Imports: append(importers.List{parrayImport}, singleTypDef.Imports...),
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
                 arr[i] = random[%s](f)
             }
             return any(arr).(T)`, typ, singleTyp),
+		CompareExpr: fmt.Sprintf(`slices.EqualFunc(AAA, BBB, func(a, b %s) bool {
+                return %s
+            })`, singleTyp, singleComparer),
+		CompareExprImports: append(
+			importers.List{`"slices"`},
+			singleTypDef.CompareExprImports...),
 	}
 
 	return typ
@@ -180,12 +191,17 @@ func AddPgGenericArrayType(types drivers.Types, singleTyp string) string {
 
 func Types() drivers.Types {
 	return drivers.Types{
+		"[]byte": {
+			CompareExpr:        `bytes.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"bytes"`},
+		},
 		"time.Time": {
 			Imports: importers.List{`"time"`},
 			RandomExpr: `year := time.Hour * 24 * 365
-                min := time.Now().Add(-1 * year)
+                min := time.Now().Add(-year)
                 max := time.Now().Add(year)
                 return any(f.Time().TimeBetween(min, max)).(T)`,
+			CompareExpr: `AAA.Equal(BBB)`,
 		},
 		"netip.Addr": {
 			Imports: importers.List{`"net/netip"`},
@@ -193,13 +209,13 @@ func Types() drivers.Types {
                 rand.Read(addr[:])
                 return any(netip.AddrFrom4(addr)).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
-			CmpOptions:        []string{"cmpopts.EquateComparable(netip.Addr{})"},
-			CmpOptionsImports: importers.List{`"github.com/google/go-cmp/cmp/cmpopts"`},
 		},
 		"net.HardwareAddr": {
 			Imports: importers.List{`"net"`},
 			RandomExpr: `addr, _ := net.ParseMAC(f.Internet().MacAddress())
                 return any(addr).(T)`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"slices"`},
 		},
 		"pq.BoolArray": {
 			Imports: importers.List{`"github.com/lib/pq"`},
@@ -217,6 +233,8 @@ func Types() drivers.Types {
                     arr[i] = f.Int64()
                 }
                 return any(arr).(T)`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"slices"`},
 		},
 		"pq.ByteaArray": {
 			Imports: importers.List{`"github.com/lib/pq"`},
@@ -225,6 +243,10 @@ func Types() drivers.Types {
                     arr[i] = random[[]byte](f)
                 }
                 return any(arr).(T)`,
+			CompareExpr: `slices.EqualFunc(AAA, BBB, func(a, b []byte) bool {
+                return bytes.Equal(a, b)
+            })`,
+			CompareExprImports: importers.List{`"slices"`, `"bytes"`},
 		},
 		"pq.StringArray": {
 			Imports: importers.List{`"github.com/lib/pq"`},
@@ -233,6 +255,8 @@ func Types() drivers.Types {
                     arr[i] = random[string](f)
                 }
                 return any(arr).(T)`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"slices"`},
 		},
 		"pq.Float64Array": {
 			Imports: importers.List{`"github.com/lib/pq"`},
@@ -241,6 +265,8 @@ func Types() drivers.Types {
                     arr[i] = f.Float64()
                 }
                 return any(arr).(T)`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"slices"`},
 		},
 		"pgeo.Box": {
 			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
@@ -259,16 +285,19 @@ func Types() drivers.Types {
 			RandomExpr: `return any(pgeo.NewRandLseg()).(T)`,
 		},
 		"pgeo.Path": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
-			RandomExpr: `return any(pgeo.NewRandPath()).(T)`,
+			Imports:     importers.List{`"github.com/saulortega/pgeo"`},
+			RandomExpr:  `return any(pgeo.NewRandPath()).(T)`,
+			CompareExpr: `AAA.Closed == BBB.Closed && slices.Equal(AAA.Points, BBB.Points)`,
 		},
 		"pgeo.Point": {
 			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return any(pgeo.NewRandPoint()).(T)`,
 		},
 		"pgeo.Polygon": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
-			RandomExpr: `return any(pgeo.NewRandPolygon()).(T)`,
+			Imports:            importers.List{`"github.com/saulortega/pgeo"`},
+			RandomExpr:         `return any(pgeo.NewRandPolygon()).(T)`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: importers.List{`"slices"`},
 		},
 		"decimal.Decimal": {
 			Imports:    importers.List{`"github.com/shopspring/decimal"`},
@@ -297,7 +326,9 @@ func Types() drivers.Types {
                 }
                 s.WriteRune('}')
                 return any(types.NewJSON[json.RawMessage](s.Bytes())).(T)`,
-			RandomExprImports: importers.List{`"fmt"`, `"bytes"`},
+			RandomExprImports:  importers.List{`"fmt"`, `"bytes"`},
+			CompareExpr:        `bytes.Equal(AAA.Val, BBB.Val)`,
+			CompareExprImports: importers.List{`"bytes"`},
 		},
 	}
 }
