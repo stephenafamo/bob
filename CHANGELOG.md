@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
-- Add new properties `cmp_opts` and `cmp_opts_imports` to the `types` configuration. To enable better control over testing randomization.
+- Add new properties `compare_expr` and `compare_expr_imports` to the `types` configuration. This is used when comparing primary keys and in testing.
 
 ## [v0.25.0] - 2024-01-20
 

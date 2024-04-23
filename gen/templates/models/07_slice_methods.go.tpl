@@ -43,10 +43,17 @@ func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Exe
 	for _, old := range o {
 		for _, new := range o2 {
 			{{range $column := $table.Constraints.Primary.Columns -}}
-			{{- $colAlias := $tAlias.Column $column -}}
-			if new.{{$colAlias}} != old.{{$colAlias}} {
-				continue
-			}
+				{{- $colAlias := $tAlias.Column $column -}}
+				{{- $typInfo :=  index $.Types ($table.GetColumn $column).Type -}}
+				{{- with $typInfo.CompareExpr -}}
+				  {{- $.Importer.ImportList $typInfo.CompareExprImports -}}
+				  if {{replace "AAA" (cat "new." $colAlias) . | replace "BBB" (cat "old." $colAlias)}}
+				{{- else -}}
+				  if new.{{$colAlias}} != old.{{$colAlias}}
+				{{- end -}}
+				{
+				  continue
+				}
 			{{end -}}
 			{{if $.Relationships.Get $table.Key}}new.R = old.R{{end}}
 			*old = *new

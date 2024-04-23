@@ -95,41 +95,44 @@ There are things to note about writing the random expression:
 
 To prevent generating a test for the random expression, set `no_randomization_test` to `true`. This is useful for low-cardinality types like `bool`.
 
-When testing the random expression, the value returned is compared to generated previous values using [go-cmp](https://github.com/google/go-cmp/cmp). Sometimes, it is necessary to pass options, and we can do that with the `cmp_options` and `cmp_options_imports` fields.
+In certain cases, it is necessary to compare values of the type to determine if they are equal.
+In such cases, you can provide a `compareExpr` which is an expression that compares two values of the type. Use the placeholders `AAA` and `BBB` as the types to be compared.
 
 ```yaml
 types:
-  pq.BoolArray:
-    # Imports for the type
-    imports: ['"github.com/lib/pq"']
+  type.JSON[json.RawMessage]:
     # If true, a test for the random expression will not be generated
     no_randomization_test: false
-    randomExpr: |-
-      arr := make(pq.BoolArray, f.IntBetween(1, 5))
-      for i := range arr {
-          arr[i] = f.Bool()
-      }
-      return any(arr).(T)
-  netip.Addr:
-    imports: ['"net/netip"']
+    imports:
+      - '"encoding/json"'
+      - '"github.com/stephenafamo/bob/types"'
+    # To be used in factory.random[T]
+    # a variable `f` of type `faker.Faker` is available
+    # since this is in a generic function, the final return should be like
+    # return any(yourVariableOrExpressions).(T)
     random_expr: |-
-      var addr [4]byte
-      rand.Read(addr[:])
-      return any(netip.AddrFrom4(addr)).(T)
-    # ADDITIONAL imports for the random expression
-    random_expr_imports: ['"crypto/rand"']
-    # Pass options to the go-cmp.Equal function
-    cmp_options: ["cmpopts.EquateComparable(netip.Addr{})"]
-    # ADDITIONAL imports for the options
-    cmp_options_imports: ['"github.com/google/go-cmp/cmp/cmpopts"']
-  types.HStore:
-    imports: ['"github.com/stephenafamo/bob/types"']
-    randomExpr: |-
-      hs := make(types.HStore)
+      s := &bytes.Buffer{}
+      s.WriteRune('{')
       for i := 0; i < f.IntBetween(1, 5); i++ {
-          arr[random[string](f)] = randomNull[string](f)
+          if i > 0 {
+              fmt.Fprint(s, ", ")
+          }
+          fmt.Fprintf(s, "%q:%q", f.Lorem().Word(), f.Lorem().Word())
       }
-      return any(hs).(T)
+      s.WriteRune('}')
+      return any(types.NewJSON[json.RawMessage](s.Bytes())).(T)`
+    # Imports for the random expression
+    random_expr_imports:
+      - '"bytes"'
+      - '"fmt"'
+    # CompareExpr is used to compare two values of this type
+    # if not provided, == is used
+    # Used AAA and BBB as placeholders for the two values
+    compare_expr: |-
+      return bytes.Equal(AAA.Val, BBB.Val)
+    # Imports for the compare expression
+    compare_expr_imports:
+      - '"bytes"'
 ```
 
 ## Replacements
