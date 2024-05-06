@@ -3,7 +3,7 @@ package expr
 import (
 	"testing"
 
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 func TestStatement(t *testing.T) {

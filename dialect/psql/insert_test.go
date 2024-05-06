@@ -6,7 +6,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 func TestInsert(t *testing.T) {

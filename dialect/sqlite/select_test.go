@@ -7,7 +7,7 @@ import (
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
 

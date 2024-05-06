@@ -7,7 +7,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	"github.com/stephenafamo/bob/dialect/sqlite/um"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 func TestUpdate(t *testing.T) {

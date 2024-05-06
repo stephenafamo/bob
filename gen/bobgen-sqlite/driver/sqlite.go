@@ -21,10 +21,6 @@ type (
 )
 
 func New(config Config) Interface {
-	if config.SharedSchema == "" {
-		config.SharedSchema = "main"
-	}
-
 	return &driver{config: config}
 }
 
@@ -82,6 +78,10 @@ func (d *driver) Types() drivers.Types {
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var err error
+
+	if d.config.SharedSchema == "" {
+		d.config.SharedSchema = "main"
+	}
 
 	if d.config.DSN == "" {
 		return nil, fmt.Errorf("database dsn is not set")

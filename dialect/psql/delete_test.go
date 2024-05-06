@@ -5,7 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/dm"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 func TestDelete(t *testing.T) {

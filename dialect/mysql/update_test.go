@@ -6,7 +6,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 func TestUpdate(t *testing.T) {

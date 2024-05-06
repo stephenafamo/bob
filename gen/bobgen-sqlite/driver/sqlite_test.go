@@ -14,7 +14,8 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testfiles "github.com/stephenafamo/bob/test/files"
+	testutils "github.com/stephenafamo/bob/test/utils"
 	_ "modernc.org/sqlite"
 )
 
@@ -36,9 +37,6 @@ func cleanup(t *testing.T, config Config) {
 
 	fmt.Printf(" DONE\n")
 }
-
-//go:embed testdb.sql
-var testDB string
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
@@ -67,8 +65,7 @@ func TestAssemble(t *testing.T) {
 	}
 
 	fmt.Printf("migrating...")
-	_, err = db.Exec(testDB)
-	if err != nil {
+	if err := helpers.Migrate(context.Background(), db, testfiles.SQLiteSchema); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")

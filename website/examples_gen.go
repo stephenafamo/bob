@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"strings"
 
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 var (

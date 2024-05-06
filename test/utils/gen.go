@@ -150,7 +150,6 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 
 func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string, plugins ...gen.Plugin) {
 	t.Helper()
-
 	buf := &bytes.Buffer{}
 
 	cmd := exec.Command("go", "mod", "init", module)
@@ -175,6 +174,7 @@ func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config
 	}
 
 	outputs := helpers.DefaultOutputs(dst, "models", false, tpls)
+
 	if err := gen.Run(
 		context.Background(),
 		&gen.State{Config: config, Outputs: outputs},

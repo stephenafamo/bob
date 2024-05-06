@@ -1,46 +1,54 @@
 package psql
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
 	"testing"
 
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/aarondl/opt/omit"
-	"github.com/jackc/pgx/v5"
+	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
-var dsn = os.Getenv("PSQL_DIALECT_TEST_DSN")
-
 func TestMain(m *testing.M) {
-	if dsn == "" {
-		fmt.Printf("No environment variable PSQL_DIALECT_TEST_DSN")
-		os.Exit(1)
-	}
-	// somehow create the DB
-	config, err := pgx.ParseConfig(dsn)
+	port, err := helpers.GetFreePort()
 	if err != nil {
-		fmt.Printf("could not parse dsn: %v", err)
+		fmt.Printf("could not get a free port: %v\n", err)
 		os.Exit(1)
 	}
 
-	if !strings.Contains(config.Database, "droppable") {
-		fmt.Printf("database name %q must contain %q to ensure that data is not lost", config.Database, "droppable")
+	dbConfig := embeddedpostgres.
+		DefaultConfig().
+		RuntimePath(filepath.Join(os.TempDir(), "psql_driver")).
+		Port(uint32(port)).
+		Logger(&bytes.Buffer{})
+	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"
+
+	postgres := embeddedpostgres.NewDatabase(dbConfig)
+	if err := postgres.Start(); err != nil {
+		fmt.Printf("starting embedded postgres: %v\n", err)
 		os.Exit(1)
 	}
 
 	txdb.Register("txdb", "pgx", dsn)
+	code := m.Run()
+	if err := postgres.Stop(); err != nil {
+		fmt.Printf("could not stop postgres on port %d: %v\n", port, err)
+		os.Exit(1)
+	}
 
-	os.Exit(m.Run())
+	os.Exit(code)
 }
 
 type User struct {
