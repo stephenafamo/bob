@@ -1,42 +1,48 @@
 package driver
 
 import (
+	"bytes"
+	"context"
 	"database/sql"
 	_ "embed"
 	"flag"
 	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
+	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testfiles "github.com/stephenafamo/bob/test/files"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
-//go:embed testdatabase.sql
-var testDB string
-
-var (
-	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
-
-	dsn = os.Getenv("PSQL_DRIVER_TEST_DSN")
-)
+var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
 func TestDriver(t *testing.T) {
-	if dsn == "" {
-		t.Fatalf("No environment variable PSQL_DRIVER_TEST_DSN")
-	}
-	// somehow create the DB
-	config, err := pgx.ParseConfig(dsn)
+	port, err := helpers.GetFreePort()
 	if err != nil {
-		t.Fatalf("could not parse dsn: %v", err)
+		t.Fatalf("could not get a free port: %v", err)
 	}
 
-	if !strings.Contains(config.Database, "droppable") {
-		t.Fatalf("database name %q must contain %q to ensure that data is not lost", config.Database, "droppable")
+	dbConfig := embeddedpostgres.
+		DefaultConfig().
+		RuntimePath(filepath.Join(os.TempDir(), "bobgeb_psql")).
+		Port(uint32(port)).
+		Logger(&bytes.Buffer{})
+	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"
+
+	postgres := embeddedpostgres.NewDatabase(dbConfig)
+	if err := postgres.Start(); err != nil {
+		t.Fatalf("starting embedded postgres: %v", err)
 	}
+	defer func() {
+		if err := postgres.Stop(); err != nil {
+			t.Fatalf("could not stop postgres on port %d: %v", port, err)
+		}
+	}()
 
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
@@ -44,22 +50,8 @@ func TestDriver(t *testing.T) {
 	}
 	defer db.Close()
 
-	fmt.Printf("cleaning tables...")
-	_, err = db.Exec(`DO $$ DECLARE
-    r RECORD;
-		BEGIN
-			FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
-				EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
-			END LOOP;
-		END $$;`)
-	if err != nil {
-		t.Fatalf("could not connect drop all tables: %v", err)
-	}
-	fmt.Printf(" DONE\n")
-
 	fmt.Printf("migrating...")
-	_, err = db.Exec(testDB)
-	if err != nil {
+	if err := helpers.Migrate(context.Background(), db, testfiles.PostgresSchema); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")

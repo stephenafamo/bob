@@ -1,9 +1,12 @@
 package helpers
 
 import (
+	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/fs"
+	"net"
 	"os"
 	"path"
 	"runtime/debug"
@@ -331,4 +334,48 @@ func Types() drivers.Types {
 			CompareExprImports: importers.List{`"bytes"`},
 		},
 	}
+}
+
+func GetFreePort() (int, error) {
+	a, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, fmt.Errorf("resolve localhost:0: %w", err)
+	}
+
+	l, err := net.ListenTCP("tcp", a)
+	if err != nil {
+		return 0, fmt.Errorf("listen on localhost:0: %w", err)
+	}
+	defer l.Close()
+
+	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
+func Migrate(ctx context.Context, db *sql.DB, dir fs.FS) error {
+	err := fs.WalkDir(dir, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		content, err := fs.ReadFile(dir, path)
+		if err != nil {
+			return fmt.Errorf("reading %s: %w", path, err)
+		}
+
+		fmt.Printf("migrating %s...\n", path)
+		if _, err = db.ExecContext(ctx, string(content)); err != nil {
+			return fmt.Errorf("migrating %s: %w", path, err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("migrations finished\n")
+	return nil
 }

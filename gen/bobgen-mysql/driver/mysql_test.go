@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"database/sql"
 	_ "embed"
 	"flag"
@@ -14,11 +15,9 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testfiles "github.com/stephenafamo/bob/test/files"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
-
-//go:embed testdatabase.sql
-var testDB string
 
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
@@ -71,8 +70,7 @@ func TestDriver(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	fmt.Printf("migrating...")
-	_, err = db.Exec(testDB)
-	if err != nil {
+	if err := helpers.Migrate(context.Background(), db, testfiles.MySQLSchema); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")

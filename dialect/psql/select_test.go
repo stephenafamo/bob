@@ -5,7 +5,7 @@ import (
 
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
-	testutils "github.com/stephenafamo/bob/test_utils"
+	testutils "github.com/stephenafamo/bob/test/utils"
 	pg_query "github.com/wasilibs/go-pgquery"
 )
 

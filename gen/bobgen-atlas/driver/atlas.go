@@ -46,20 +46,18 @@ type (
 )
 
 func New(config Config, fs fs.FS) Interface {
-	if config.Dir == "" {
-		config.Dir = "."
-	}
-
 	types := helpers.Types()
 
 	switch config.UUIDPkg {
 	case "google":
 		types["uuid.UUID"] = drivers.Type{
-			Imports: importers.List{`"github.com/google/uuid"`},
+			Imports:    importers.List{`"github.com/google/uuid"`},
+			RandomExpr: `return any(uuid.New()).(T)`,
 		}
 	default:
 		types["uuid.UUID"] = drivers.Type{
-			Imports: importers.List{`"github.com/gofrs/uuid/v5"`},
+			Imports:    importers.List{`"github.com/gofrs/uuid/v5"`},
+			RandomExpr: `return any(uuid.Must(uuid.NewV4())).(T)`,
 		}
 	}
 
