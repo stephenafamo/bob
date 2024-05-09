@@ -25,7 +25,7 @@ create table video_tags (
 	tag_id   int not null,
 
 	primary key (video_id, tag_id),
-	foreign key (video_id) references videos (id),
+	foreign key (video_id) references videos, -- Implicitly references videos(id)
 	foreign key (tag_id) references tags (id)
 );
 
