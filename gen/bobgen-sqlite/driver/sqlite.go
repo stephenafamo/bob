@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aarondl/opt/null"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
@@ -366,12 +367,13 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 	fkeyMap := make(map[int]drivers.ForeignKey)
 	for rows.Next() {
 		var id, seq int
-		var ftable, col, fcol string
+		var ftable, col string
+		var fcolNullable null.Val[string]
 
 		// not used
 		var onupdate, ondelete, match string
 
-		err = rows.Scan(&id, &seq, &ftable, &col, &fcol, &onupdate, &ondelete, &match)
+		err = rows.Scan(&id, &seq, &ftable, &col, &fcolNullable, &onupdate, &ondelete, &match)
 		if err != nil {
 			return nil, err
 		}
@@ -379,6 +381,17 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 		fullFtable := ftable
 		if schema != "main" {
 			fullFtable = fmt.Sprintf("%s.%s", schema, ftable)
+		}
+
+		fcol, _ := fcolNullable.Get()
+		if fcol == "" {
+			fcol, err = stdscan.One(
+				ctx, d.conn, scan.SingleColumnMapper[string],
+				fmt.Sprintf("SELECT name FROM '%s'.pragma_table_info('%s') WHERE pk = ?", schema, ftable), seq+1,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("could not find column %q in table %q: %w", col, ftable, err)
+			}
 		}
 
 		if d.skipKey(fullFtable, fcol) {

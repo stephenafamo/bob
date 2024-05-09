@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `bobgen-sql` a code generation driver for SQL schema files. Supports PostgreSQL and SQLite.
 - Add new properties `compare_expr` and `compare_expr_imports` to the `types` configuration. This is used when comparing primary keys and in testing.
 
+### Fixed
+
+- Properly detect reference columns for implicit foreign keys in SQLite.
+
 ## [v0.25.0] - 2024-01-20
 
 ### Changed
