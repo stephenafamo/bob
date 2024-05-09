@@ -46,6 +46,8 @@ type Config struct {
 }
 
 func RunPostgres(ctx context.Context, state *gen.State, config Config) error {
+	config.fs = os.DirFS(config.Dir)
+
 	d, err := getPsqlDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting psql driver: %w", err)
@@ -105,6 +107,8 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 }
 
 func RunSQLite(ctx context.Context, state *gen.State, config Config) error {
+	config.fs = os.DirFS(config.Dir)
+
 	d, err := getSQLiteDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting sqlite driver: %w", err)
