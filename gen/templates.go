@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -219,6 +220,20 @@ var templateFunctions = template.FuncMap{
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
+	"enumVal": func(val string) string {
+		val = strmangle.TitleCase(val)
+
+		var newval strings.Builder
+		for _, r := range val {
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				newval.WriteRune(r)
+				continue
+			}
+			newval.WriteString(fmt.Sprintf("U%x", r))
+		}
+
+		return newval.String()
+	},
 	"dbTag": func(t drivers.Table, c drivers.Column) string {
 		tag := c.Name
 		if t.Constraints.Primary != nil {

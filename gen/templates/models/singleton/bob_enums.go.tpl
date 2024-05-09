@@ -5,7 +5,7 @@
 	// Enum values for {{$enum.Type}}
 	const (
 	{{range $val := $enum.Values -}}
-		{{- $enumValue := titleCase $val -}}
+		{{- $enumValue := enumVal $val -}}
 		{{$enum.Type}}{{$enumValue}} {{$enum.Type}} = {{quote $val}}
 		{{$allvals = printf "%s%s%s,\n" $allvals $enum.Type $enumValue -}}
 	{{end -}}
