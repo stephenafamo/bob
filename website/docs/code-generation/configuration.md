@@ -129,7 +129,7 @@ types:
     # if not provided, == is used
     # Used AAA and BBB as placeholders for the two values
     compare_expr: |-
-      return bytes.Equal(AAA.Val, BBB.Val)
+      bytes.Equal(AAA.Val, BBB.Val)
     # Imports for the compare expression
     compare_expr_imports:
       - '"bytes"'
