@@ -113,9 +113,9 @@
     for i := range {{$sideAlias.DownPlural}}{{$side.Position}} {
       setter := &{{$sideAlias.UpSingular}}Setter{
         {{range $map := $side.Mapped -}}
+          {{$colName := $sideAlias.Column $map.Column -}}
           {{if $rel.NeedsMany .ExtPosition -}}
             {{$sideC := $sideTable.GetColumn .Column -}}
-            {{$colName := $sideAlias.Column $map.Column -}}
             {{if .HasValue -}}
               {{if $sideC.Nullable }}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
@@ -146,6 +146,10 @@
                 {{$colName}}: omit.From({{$colVal}}),
               {{- end}}
             {{- end}}
+          {{- else}}
+            {{$a := $.Aliases.Table .ExternalTable -}}
+            {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+            {{$colName}}: omit.From({{$colVal}}), 
           {{- end}}
         {{- end}}
       }
