@@ -113,11 +113,14 @@
     for i := range {{$sideAlias.DownPlural}}{{$side.Position}} {
       setter := &{{$sideAlias.UpSingular}}Setter{
         {{range $map := $side.Mapped -}}
+          {{$colName := $sideAlias.Column $map.Column -}}
+          {{$sideColumn := $sideTable.GetColumn .Column -}}
+          {{$tableAlias := $.Aliases.Table .ExternalTable -}}
+          {{$table := getTable $.Tables .ExternalTable -}}
+          {{$column := $table.GetColumn .ExternalColumn -}}
           {{if $rel.NeedsMany .ExtPosition -}}
-            {{$sideC := $sideTable.GetColumn .Column -}}
-            {{$colName := $sideAlias.Column $map.Column -}}
             {{if .HasValue -}}
-              {{if $sideC.Nullable }}
+              {{if $sideColumn.Nullable }}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
                 {{$colName}}: omitnull.From({{index .Value 1}}),
               {{else}}
@@ -125,20 +128,17 @@
                 {{$colName}}: omit.From({{index .Value 1}}),
               {{end}}
             {{- else -}}
-              {{$a := $.Aliases.Table .ExternalTable -}}
-              {{$t := getTable $.Tables .ExternalTable -}}
-              {{$c := $t.GetColumn .ExternalColumn -}}
-              {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+              {{$colVal := printf "%s%d.%s" $tableAlias.DownSingular $map.ExtPosition ($tableAlias.Column $map.ExternalColumn) -}}
               {{if $rel.NeedsMany .ExtPosition -}}
-                {{$colVal = printf "%s%d[i].%s" $a.DownPlural $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
+                {{$colVal = printf "%s%d[i].%s" $tableAlias.DownPlural $map.ExtPosition ($tableAlias.Column $map.ExternalColumn) -}}
               {{end -}}
-              {{if and $sideC.Nullable $c.Nullable -}}
+              {{if and $sideColumn.Nullable $column.Nullable -}}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
                 {{$colName}}: omitnull.FromNull({{$colVal}}),
-              {{else if $sideC.Nullable -}}
+              {{else if $sideColumn.Nullable -}}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
                 {{$colName}}: omitnull.From({{$colVal}}),
-              {{else if $c.Nullable -}}
+              {{else if $column.Nullable -}}
                 {{$.Importer.Import "github.com/aarondl/opt/omit"}}
                 {{$colName}}: omit.FromCond({{$colVal}}.GetOrZero(), {{$colVal}}.IsSet()),
               {{else -}}
@@ -146,6 +146,22 @@
                 {{$colName}}: omit.From({{$colVal}}),
               {{- end}}
             {{- end}}
+          {{- else}}
+
+            {{$colVal := printf "%s%d.%s" $tableAlias.DownSingular $map.ExtPosition ($tableAlias.Column $map.ExternalColumn) -}}
+            {{if and $sideColumn.Nullable $column.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.FromNull({{$colVal}}),
+              {{else if $sideColumn.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.From({{$colVal}}),
+              {{else if $column.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.FromCond({{$colVal}}.GetOrZero(), {{$colVal}}.IsSet()),
+              {{else -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.From({{$colVal}}),
+              {{- end}}
           {{- end}}
         {{- end}}
       }
