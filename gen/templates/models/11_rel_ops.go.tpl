@@ -114,8 +114,8 @@
       setter := &{{$sideAlias.UpSingular}}Setter{
         {{range $map := $side.Mapped -}}
           {{$colName := $sideAlias.Column $map.Column -}}
+          {{$sideC := $sideTable.GetColumn .Column -}}
           {{if $rel.NeedsMany .ExtPosition -}}
-            {{$sideC := $sideTable.GetColumn .Column -}}
             {{if .HasValue -}}
               {{if $sideC.Nullable }}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull" -}}
@@ -150,7 +150,6 @@
             {{$a := $.Aliases.Table .ExternalTable -}}
             {{$t := getTable $.Tables .ExternalTable -}}
             {{$c := $t.GetColumn .ExternalColumn -}}
-            {{$sideC := $sideTable.GetColumn .Column -}}
             {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
             {{if and $sideC.Nullable $c.Nullable -}}
                 {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
