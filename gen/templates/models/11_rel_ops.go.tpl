@@ -148,8 +148,23 @@
             {{- end}}
           {{- else}}
             {{$a := $.Aliases.Table .ExternalTable -}}
+            {{$t := getTable $.Tables .ExternalTable -}}
+            {{$c := $t.GetColumn .ExternalColumn -}}
+            {{$sideC := $sideTable.GetColumn .Column -}}
             {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
-            {{$colName}}: omit.From({{$colVal}}), 
+            {{if and $sideC.Nullable $c.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.FromNull({{$colVal}}),
+              {{else if $sideC.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omitnull"}}
+                {{$colName}}: omitnull.From({{$colVal}}),
+              {{else if $c.Nullable -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.FromCond({{$colVal}}.GetOrZero(), {{$colVal}}.IsSet()),
+              {{else -}}
+                {{$.Importer.Import "github.com/aarondl/opt/omit"}}
+                {{$colName}}: omit.From({{$colVal}}),
+              {{- end}}
           {{- end}}
         {{- end}}
       }
