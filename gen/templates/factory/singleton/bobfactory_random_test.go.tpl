@@ -12,8 +12,15 @@
     {{- if eq $colTyp "bool"}}{{continue}}{{end -}}
     {{- if $typInfo.NoRandomizationTest}}{{continue}}{{end -}}
     {{- $.Importer.ImportList $typInfo.Imports -}}
-
-      func TestRandom_{{$colTyp | replace "." "_" | replace "[" "_" | replace "]" "_"}}(t *testing.T) {
+      func TestRandom_{{
+        $colTyp
+        | replace " " "_"
+        | replace "." "_"
+        | replace "," "_"
+        | replace "*" "_"
+        | replace "[" "_"
+        | replace "]" "_"
+      }}(t *testing.T) {
         t.Parallel()
 
         seen := make([]{{$colTyp}}, 10)

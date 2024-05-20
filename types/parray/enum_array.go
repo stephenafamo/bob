@@ -27,7 +27,7 @@ func (e *EnumArray[T]) Scan(src any) error {
 // Value implements the driver.Valuer interface.
 func (e EnumArray[T]) Value() (driver.Value, error) {
 	if e == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	arr := make(pq.StringArray, len(e))

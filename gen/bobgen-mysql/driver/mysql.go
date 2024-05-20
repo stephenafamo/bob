@@ -48,7 +48,7 @@ func New(config Config) Interface {
 		config.Concurrency = 10
 	}
 
-	return &driver{config: config}
+	return &driver{config: config, types: helpers.Types()}
 }
 
 // driver holds the database connection string and a handle
@@ -59,6 +59,7 @@ type driver struct {
 	conn   *sql.DB
 	dbName string
 
+	types  drivers.Types
 	enums  []drivers.Enum
 	enumMu sync.Mutex
 }
@@ -222,7 +223,8 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			column = d.translateColumnType(column, colFullType)
 		} else {
 			enumTyp := strmangle.TitleCase(tableName + "_" + colName)
-			column.Type = enumTyp
+			column.Type = helpers.EnumType(d.types, enumTyp)
+
 			d.enumMu.Lock()
 			d.enums = append(d.enums, drivers.Enum{
 				Type:   enumTyp,
@@ -302,7 +304,7 @@ func (*driver) translateColumnType(c drivers.Column, fullType string) drivers.Co
 }
 
 func (d *driver) Types() drivers.Types {
-	return helpers.Types()
+	return d.types
 }
 
 func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
