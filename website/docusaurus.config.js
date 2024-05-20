@@ -1,32 +1,32 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const {Joi} = require("@docusaurus/utils-validation")
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const { Joi } = require("@docusaurus/utils-validation");
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Bob',
-  tagline: 'Go SQL Access Toolkit',
-  url: 'https://bob.stephenafamo.com',
-  baseUrl: '/',
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  title: "Bob",
+  tagline: "Go SQL Access Toolkit",
+  url: "https://bob.stephenafamo.com",
+  baseUrl: "/",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+  favicon: "img/favicon.ico",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'stephenafamo', // Usually your GitHub org/user name.
-  projectName: 'bob', // Usually your repo name.
+  organizationName: "stephenafamo", // Usually your GitHub org/user name.
+  projectName: "bob", // Usually your repo name.
 
   webpack: {
     jsLoader: (isServer) => ({
-      loader: require.resolve('esbuild-loader'),
+      loader: require.resolve("esbuild-loader"),
       options: {
-        loader: 'tsx',
-        format: isServer ? 'cjs' : undefined,
-        target: isServer ? 'node12' : 'es2017',
+        loader: "tsx",
+        format: isServer ? "cjs" : undefined,
+        target: isServer ? "node12" : "es2017",
       },
     }),
   },
@@ -35,22 +35,22 @@ const config = {
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
           path: "./docs",
-          sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/stephenafamo/bob/tree/main/website/',
+          sidebarPath: require.resolve("./sidebars.js"),
+          editUrl: "https://github.com/stephenafamo/bob/tree/main/website/",
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve("./src/css/custom.css"),
         },
       }),
     ],
@@ -60,99 +60,103 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Bob - Go SQL Access Toolkit',
+        title: "Bob - Go SQL Access Toolkit",
         items: [
           {
-            type: 'dropdown',
-            label: 'Query Building',
-            position: 'left',
+            type: "dropdown",
+            label: "Query Building",
+            position: "left",
             items: [
               {
-                label: 'Introduction',
-                to: 'docs/query-builder/intro',
+                label: "Introduction",
+                to: "docs/query-builder/intro",
               },
               {
-                label: 'PostgreSQL',
-                to: 'docs/query-builder/psql/how-to-use',
+                label: "PostgreSQL",
+                to: "docs/query-builder/psql/how-to-use",
               },
               {
-                label: 'MySQL',
-                to: 'docs/query-builder/mysql/how-to-use',
+                label: "MySQL",
+                to: "docs/query-builder/mysql/how-to-use",
               },
               {
-                label: 'SQLite',
-                to: 'docs/query-builder/sqlite/how-to-use',
+                label: "SQLite",
+                to: "docs/query-builder/sqlite/how-to-use",
               },
             ],
           },
           {
-            type: 'dropdown',
-            label: 'Code Generation',
-            position: 'left',
+            type: "dropdown",
+            label: "Code Generation",
+            position: "left",
             items: [
               {
-                label: 'Introduction',
-                to: 'docs/code-generation/intro',
+                label: "Introduction",
+                to: "docs/code-generation/intro",
               },
               {
-                label: 'PostgreSQL',
-                to: 'docs/code-generation/psql',
+                label: "PostgreSQL",
+                to: "docs/code-generation/psql",
               },
               {
-                label: 'MySQL',
-                to: 'docs/code-generation/mysql',
+                label: "MySQL",
+                to: "docs/code-generation/mysql",
               },
               {
-                label: 'SQLite',
-                to: 'docs/code-generation/sqlite',
+                label: "SQLite",
+                to: "docs/code-generation/sqlite",
               },
               {
-                label: 'Atlas',
-                to: 'docs/code-generation/atlas',
+                label: "SQL Files",
+                to: "docs/code-generation/sql",
               },
               {
-                label: 'Prisma',
-                to: 'docs/code-generation/prisma',
+                label: "Atlas",
+                to: "docs/code-generation/atlas",
+              },
+              {
+                label: "Prisma",
+                to: "docs/code-generation/prisma",
               },
             ],
           },
           {
-            type: 'dropdown',
-            label: 'VS Others',
-            position: 'left',
+            type: "dropdown",
+            label: "VS Others",
+            position: "left",
             items: [
               {
-                label: 'GORM',
-                to: 'vs/gorm',
+                label: "GORM",
+                to: "vs/gorm",
               },
               {
-                label: 'Ent',
-                to: 'vs/ent',
+                label: "Ent",
+                to: "vs/ent",
               },
               {
-                label: 'SQLBoiler',
-                to: 'vs/sqlboiler',
+                label: "SQLBoiler",
+                to: "vs/sqlboiler",
               },
               {
-                label: 'Jet',
-                to: 'vs/jet',
+                label: "Jet",
+                to: "vs/jet",
               },
             ],
           },
           {
-            href: 'https://github.com/stephenafamo/bob',
-            label: 'GitHub',
-            position: 'right',
+            href: "https://github.com/stephenafamo/bob",
+            label: "GitHub",
+            position: "right",
           },
           {
-            href: 'https://pkg.go.dev/github.com/stephenafamo/bob',
-            label: 'Reference',
-            position: 'right',
+            href: "https://pkg.go.dev/github.com/stephenafamo/bob",
+            label: "Reference",
+            position: "right",
           },
         ],
       },
       footer: {
-        style: 'dark',
+        style: "dark",
         copyright: `Copyright © ${new Date().getFullYear()} Stephen Afam-Osemene. Built with Docusaurus.`,
       },
       prism: {
@@ -163,13 +167,13 @@ const config = {
 
   plugins: [
     [
-      '@docusaurus/plugin-content-docs',
+      "@docusaurus/plugin-content-docs",
       {
-        id: 'comparisons',
-        path: './vs',
-        routeBasePath: 'vs',
-        sidebarPath: require.resolve('./sidebars.js'),
-        editUrl: 'https://github.com/stephenafamo/bob/tree/main/website/',
+        id: "comparisons",
+        path: "./vs",
+        routeBasePath: "vs",
+        sidebarPath: require.resolve("./sidebars.js"),
+        editUrl: "https://github.com/stephenafamo/bob/tree/main/website/",
       },
     ],
     [
@@ -177,39 +181,41 @@ const config = {
         /** @type {import('@docusaurus/types').LoadContext} */
         context,
         /** @type {{websiteID: string}} */
-        options
+        options,
       ) {
-        const url = new URL(context.siteConfig.url)
+        const url = new URL(context.siteConfig.url);
         const isProd = process.env.NODE_ENV === "production";
 
         /** @type {import('Joi').ObjectSchema<{websiteID: string}>} */
         const pluginOptionsSchema = Joi.object({
           websiteID: Joi.string().guid().required(),
-        })
+        });
 
-        const {value: cleanOptions, error} = pluginOptionsSchema.validate(options, {allowUnknown: true})
+        const { value: cleanOptions, error } = pluginOptionsSchema.validate(
+          options,
+          { allowUnknown: true },
+        );
         if (error?.details) {
-          throw (error)
+          throw error;
         }
 
-        const {websiteID} = cleanOptions;
+        const { websiteID } = cleanOptions;
 
         return {
           name: "docusaurus-plugin-analytics",
-          async contentLoaded({actions}) {
+          async contentLoaded({ actions }) {
             actions.setGlobalData(options);
           },
           injectHtmlTags() {
-            let baseUrl = `http://swishink.test`
+            let baseUrl = `http://swishink.test`;
             if (isProd) {
-              baseUrl = `https://swish.ink`
+              baseUrl = `https://swish.ink`;
             }
 
             return {
               postBodyTags: [
                 `<script async defer data-api-url="${baseUrl}/" data-hostname="${websiteID}.${url.hostname}" data-collect-dnt="true" src="${baseUrl}/assets/js/latest.js"></script>`,
                 `<noscript><img src="${baseUrl}/simple.gif?collect-dnt=true&hostname=${websiteID}.${url.hostname}" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>`,
-
               ],
             };
           },
