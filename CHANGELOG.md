@@ -11,10 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `bobgen-sql` a code generation driver for SQL schema files. Supports PostgreSQL and SQLite.
 - Add new properties `compare_expr` and `compare_expr_imports` to the `types` configuration. This is used when comparing primary keys and in testing.
+- Add `never_required` to relationships configuration. This makes sure the factories does not require the relationship to be set. Useful if you're not using foreign keys. (thanks @jacobmolby)
 
 ### Fixed
 
 - Properly detect reference columns for implicit foreign keys in SQLite.
+- Fix panic when generating random values for nullable columns. (thanks @jacobmolby)
+- Sort relationships and imports for deterministic generated code. (thanks @jacobmolby)
+- Correctly allow `OVER ()` with an empty window definition in PostgreSQL. (thanks @relvacode)
+- Set `GROUP BY` to `NULL` if there are no expressions to group by.
+- Replace symbols in enum values with their unicode point to make them valid Go identifiers.
+- Properly detect implicit foreign keys in SQLite.
+- Fix issue with attaching multi-sided relationships. (thanks @jacobmolby)
 
 ## [v0.25.0] - 2024-01-20
 
