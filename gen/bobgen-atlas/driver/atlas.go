@@ -347,7 +347,7 @@ func (d *driver) translateColumnType(c drivers.Column, tableKey string, typ sche
 		}
 
 		if enum, ok := d.enums[enumName]; ok {
-			c.Type = enum.Type
+			c.Type = helpers.EnumType(d.types, enum.Type)
 		} else {
 			c.Type = "string"
 		}

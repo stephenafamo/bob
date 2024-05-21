@@ -72,14 +72,14 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "uuid":
 		c.Type = "uuid.UUID"
 	case "inet", "cidr":
-		c.Type = "netip.Addr"
+		c.Type = "types.Text[netip.Addr, *netip.Addr]"
 	case "macaddr":
-		c.Type = "net.HardwareAddr"
+		c.Type = "types.Stringer[net.HardwareAddr]"
 	case "ENUM":
 		c.Type = "string"
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
-				c.Type = helpers.AddPgEnumType(d.types, e.Type)
+				c.Type = helpers.EnumType(d.types, e.Type)
 			}
 		}
 	case "ARRAY":

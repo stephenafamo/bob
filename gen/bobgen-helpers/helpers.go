@@ -136,9 +136,7 @@ func GetConfigFromProvider[DriverConfig any](provider koanf.Provider, driverConf
 	return config, driverConfig, nil
 }
 
-const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
-
-func AddPgEnumType(types drivers.Types, enum string) string {
+func EnumType(types drivers.Types, enum string) string {
 	types[enum] = drivers.Type{
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`all := all%s()
@@ -147,6 +145,8 @@ func AddPgEnumType(types drivers.Types, enum string) string {
 
 	return enum
 }
+
+const parrayImport = `"github.com/stephenafamo/bob/types/parray"`
 
 func AddPgEnumArrayType(types drivers.Types, enum string) string {
 	typ := fmt.Sprintf("parray.EnumArray[%s]", enum)
@@ -195,8 +195,9 @@ func AddPgGenericArrayType(types drivers.Types, singleTyp string) string {
 func Types() drivers.Types {
 	return drivers.Types{
 		"[]byte": {
-			CompareExpr:        `bytes.Equal(AAA, BBB)`,
-			CompareExprImports: importers.List{`"bytes"`},
+			CompareExpr:         `bytes.Equal(AAA, BBB)`,
+			CompareExprImports:  importers.List{`"bytes"`},
+			NoScannerValuerTest: true,
 		},
 		"time.Time": {
 			Imports: importers.List{`"time"`},
@@ -204,20 +205,28 @@ func Types() drivers.Types {
                 min := time.Now().Add(-year)
                 max := time.Now().Add(year)
                 return any(f.Time().TimeBetween(min, max)).(T)`,
-			CompareExpr: `AAA.Equal(BBB)`,
+			CompareExpr:         `AAA.Equal(BBB)`,
+			NoScannerValuerTest: true,
 		},
-		"netip.Addr": {
-			Imports: importers.List{`"net/netip"`},
+		"types.Text[netip.Addr, *netip.Addr]": {
+			Imports: importers.List{
+				`"net/netip"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])
-                return any(netip.AddrFrom4(addr)).(T)`,
+                ipAddr := netip.AddrFrom4(addr)
+                return any(types.Text[netip.Addr, *netip.Addr]{Val: ipAddr}).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
 		},
-		"net.HardwareAddr": {
-			Imports: importers.List{`"net"`},
+		"types.Stringer[net.HardwareAddr]": {
+			Imports: importers.List{
+				`"net"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
 			RandomExpr: `addr, _ := net.ParseMAC(f.Internet().MacAddress())
-                return any(addr).(T)`,
-			CompareExpr:        `slices.Equal(AAA, BBB)`,
+                return any(types.Stringer[net.HardwareAddr]{Val: addr}).(T)`,
+			CompareExpr:        `slices.Equal(AAA.Val, BBB.Val)`,
 			CompareExprImports: importers.List{`"slices"`},
 		},
 		"pq.BoolArray": {

@@ -36,6 +36,10 @@ type Type struct {
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
 	NoRandomizationTest bool `yaml:"no_randomization_test"`
+	// Set this to true if the test to see if the type implements
+	// the scanner and valuer interfaces should be skipped
+	// this is useful for types that are based on a primitive type
+	NoScannerValuerTest bool `yaml:"no_scanner_valuer_test"`
 	// CompareExpr is used to compare two values of this type
 	// if not provided, == is used
 	// Used AAA and BBB as placeholders for the two values

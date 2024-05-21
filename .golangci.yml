@@ -1,7 +1,6 @@
 # Options for analysis running.
 run:
   timeout: 15m
-  skip-files: [scanto/fakedb_test.go]
 
 linters:
   # # Disable all linters.
@@ -65,3 +64,4 @@ issues:
         - gocyclo
         - dupl
         - gosec
+        - nilnil

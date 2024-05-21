@@ -245,7 +245,7 @@ func (d *driver) translateColumnType(c drivers.Column, isArray bool) drivers.Col
 			c.Type = "types.JSON[json.RawMessage]"
 		default:
 			if enum, ok := d.enums[c.DBType]; ok {
-				c.Type = enum.Type
+				c.Type = helpers.EnumType(d.types, enum.Type)
 			} else {
 				c.Type = "string"
 			}
