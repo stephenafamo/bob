@@ -28,7 +28,7 @@ require (
 	github.com/stephenafamo/sqlparser v0.0.0-20230326220333-c2adaf4c30e8
 	github.com/takuoki/gocase v1.0.0
 	github.com/urfave/cli/v2 v2.23.7
-	github.com/volatiletech/strmangle v0.0.4
+	github.com/volatiletech/strmangle v0.0.6
 	github.com/wasilibs/go-pgquery v0.0.0-20240319230125-b9b2e95c69a7
 	golang.org/x/mod v0.16.0
 	golang.org/x/tools v0.19.0

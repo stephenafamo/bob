@@ -81,7 +81,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday"
+					"type": "UnicodeEnum"
 				},
 				{
 					"name": "enum_nullable",
@@ -92,7 +92,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday"
+					"type": "UnicodeEnum"
 				},
 				{
 					"name": "bool_zero",
@@ -1746,25 +1746,25 @@
 				},
 				{
 					"name": "enumarr_null",
-					"db_type": "_workday[]",
+					"db_type": "_unicode_enum[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[Workday]"
+					"type": "parray.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "enumarr_nnull",
-					"db_type": "_workday[]",
+					"db_type": "_unicode_enum[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[Workday]"
+					"type": "parray.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "customarr_null",
@@ -1880,7 +1880,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday"
+					"type": "UnicodeEnum"
 				},
 				{
 					"name": "enum_nullable",
@@ -1891,7 +1891,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "Workday"
+					"type": "UnicodeEnum"
 				},
 				{
 					"name": "bool_zero",
@@ -3545,25 +3545,25 @@
 				},
 				{
 					"name": "enumarr_null",
-					"db_type": "_workday[]",
+					"db_type": "_unicode_enum[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[Workday]"
+					"type": "parray.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "enumarr_nnull",
-					"db_type": "_workday[]",
+					"db_type": "_unicode_enum[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[Workday]"
+					"type": "parray.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "customarr_null",
@@ -3952,13 +3952,13 @@
 	],
 	"enums": [
 		{
-			"Type": "Workday",
+			"Type": "UnicodeEnum",
 			"Values": [
-				"monday",
-				"tuesday",
-				"wednesday",
-				"thursday",
-				"friday"
+				"hello",
+				"привет",
+				"こんにちは",
+				"안녕하세요",
+				"hello_with_underscore"
 			]
 		}
 	],
