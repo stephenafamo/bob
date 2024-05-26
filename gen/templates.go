@@ -225,7 +225,7 @@ var templateFunctions = template.FuncMap{
 
 		var newval strings.Builder
 		for _, r := range val {
-			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
 				newval.WriteRune(r)
 				continue
 			}

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Use `netip.Prefix` instead of `netip.Addr` for postgres inet column type. This makes it possible to contain a subnet.
+- Allow underscores in enum variable names.
 
 ## [v0.26.0] - 2024-05-21
 
