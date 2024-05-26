@@ -72,7 +72,7 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "uuid":
 		c.Type = "uuid.UUID"
 	case "inet", "cidr":
-		c.Type = "types.Text[netip.Addr, *netip.Addr]"
+		c.Type = "types.Text[netip.Prefix, *netip.Prefix]"
 	case "macaddr":
 		c.Type = "types.Stringer[net.HardwareAddr]"
 	case "ENUM":

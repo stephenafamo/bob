@@ -208,7 +208,7 @@ func Types() drivers.Types {
 			CompareExpr:         `AAA.Equal(BBB)`,
 			NoScannerValuerTest: true,
 		},
-		"types.Text[netip.Addr, *netip.Addr]": {
+		"types.Text[netip.Prefix, *netip.Prefix]": {
 			Imports: importers.List{
 				`"net/netip"`,
 				`"github.com/stephenafamo/bob/types"`,
@@ -216,7 +216,8 @@ func Types() drivers.Types {
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])
                 ipAddr := netip.AddrFrom4(addr)
-                return any(types.Text[netip.Addr, *netip.Addr]{Val: ipAddr}).(T)`,
+                ipPrefix := netip.PrefixFrom(ipAddr, f.IntBetween(0, ipAddr.BitLen()))
+                return any(types.Text[netip.Prefix, *netip.Prefix]{Val: ipPrefix}).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
 		},
 		"types.Stringer[net.HardwareAddr]": {

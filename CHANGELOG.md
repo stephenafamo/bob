@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Use `netip.Prefix` instead of `netip.Addr` for postgres inet column type. This makes it possible to contain a subnet.
+
 ## [v0.26.0] - 2024-05-21
 
 ### Added
