@@ -221,8 +221,6 @@ var templateFunctions = template.FuncMap{
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 	"enumVal": func(val string) string {
-		val = strmangle.TitleCase(val)
-
 		var newval strings.Builder
 		for _, r := range val {
 			if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
@@ -232,7 +230,8 @@ var templateFunctions = template.FuncMap{
 			newval.WriteString(fmt.Sprintf("U%x", r))
 		}
 
-		return newval.String()
+		// Title case after doing unicode replacements or they will be stripped
+		return strmangle.TitleCase(newval.String())
 	},
 	"dbTag": func(t drivers.Table, c drivers.Column) string {
 		tag := c.Name
