@@ -89,6 +89,7 @@ The mod function accepts options:
 
 1. `OnlyColumns`: In the related model, load only these columns.
 1. `ExceptColumns`: In the related model, do not load these columns.
+1. `PreloadAs`: Explicitly sets the table alias for the related model to allow using columns of the related model for the query.
 1. `Loaders`: Other loaders mods can be given as an option to the preloader to load nested relationships. This works for both other preloaders and then-loaders.
 
 ```go
@@ -98,6 +99,14 @@ jet, err := models.Jets(ctx, db,
         psql.ThenLoadPilotLicences(), // will load the pilot's licences
     ),
 ).One()
+```
+
+```go
+jets, err := models.Jets(ctx, db,
+	models.PreloadJetPilot(psql.PreloadAs("pilot")), // "LEFT JOIN "pilots" AS "pilot" ON ("jet"."pilot_id" = "pilot"."id") 
+	models.PreloadJetCoPilot(psql.PreloadAs("copilot")), // "LEFT JOIN "pilots" AS "copilot" ON ("jet"."copilot_id" = "copilot"."id") 
+	sm.OrderBy(psql.Quote("pilot", models.ColumnNames.Pilot.LastName)) // ORDER BY "pilot"."last_name" DESC 
+).All()
 ```
 
 ### ThenLoad
