@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 3
 description: How to use the Generated Models
-
 ---
 
 # Usage
@@ -74,9 +72,9 @@ var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
 
 **JetsTable** gives the full range of capabilites of a Bob model, including
 
-* Flexible queries: One, All, Cursor, Count, Exists
-* Expressions for names and column lists
-* Hooks
+- Flexible queries: One, All, Cursor, Count, Exists
+- Expressions for names and column lists
+- Hooks
 
 [Read the documentation to see how to use](../models/table)
 
@@ -207,7 +205,17 @@ users, err := models.Users(
 ).All()
 ```
 
-Since each query type has its own mods, `SelectWhere`,  `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
+Since each query type has its own mods, `SelectWhere`, `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
+
+:::tip
+
+To use these filters with an aliased table name, use the `AliasedAs` method.
+
+```go
+models.SelectWhere.Users.AliasedAs("u").Name.IsNull()
+```
+
+:::
 
 ### Join Helpers
 
@@ -224,7 +232,7 @@ models.Jets(
 ).All()
 ```
 
-Since each query type has its own mods, `SelectJoins`,  `InsertJoins`, `UpdateJoins` and `DeleteJoins` are all generated.
+Since each query type has its own mods, `SelectJoins`, `InsertJoins`, `UpdateJoins` and `DeleteJoins` are all generated.
 
 ### Column Expressions
 
@@ -243,5 +251,15 @@ psql.Select(
 )
 
 ```
+
+:::tip
+
+To use these expressions with an aliased table name, use the `AliasedAs` method.
+
+```go
+models.JetColumns.AliasedAs("j").Name.IsNull()
+```
+
+:::
 
 [^1]: Some are technically just global variables. But they are never mutated by Bob, or expected to be mutated by the user.

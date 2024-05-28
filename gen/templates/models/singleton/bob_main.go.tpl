@@ -52,7 +52,7 @@ func Where[Q {{$.Dialect}}.Filterable]() struct {
 	}{
 		{{range $table := .Tables -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
-		{{$tAlias.UpPlural}}: {{$tAlias.UpSingular}}Where[Q](),
+		{{$tAlias.UpPlural}}: build{{$tAlias.UpSingular}}Where[Q]({{$tAlias.UpSingular}}Columns),
 		{{end -}}
 	}
 }
