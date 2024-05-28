@@ -44,6 +44,10 @@ func PreloadWhere(f ...func(from, to string) []bob.Expression) PreloadOption {
 	return internal.PreloadWhere[*dialect.SelectQuery](f)
 }
 
+func PreloadAs(alias string) PreloadOption {
+	return internal.PreloadAs[*dialect.SelectQuery](alias)
+}
+
 func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...PreloadOption) Preloader {
 	settings := internal.NewPreloadSettings[T, Ts, *dialect.SelectQuery](cols)
 	for _, o := range opts {
@@ -64,6 +68,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 
 		for i, side := range rel.Sides {
 			alias = fmt.Sprintf("%s_%d", side.To, internal.RandInt())
+			if settings.Alias != "" {
+				alias = settings.Alias
+			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
 				toCol := side.ToColumns[i]
