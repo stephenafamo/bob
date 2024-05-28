@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
+- Add `AliasedAs()` method to `tableColumns` and `tableWhere` types to use a custom alias.
+
+### Removed
+
+- Remove `TableWhere` function from the generated code. It was not used by the rest of the generated code and offered no clear benefit.
+
 ## [v0.26.1] - 2024-05-26
 
 ### Fixed

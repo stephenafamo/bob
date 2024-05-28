@@ -206,17 +206,27 @@ func {{$tAlias.DownPlural}}Join[Q dialect.Joinable](ctx context.Context) joinSet
 {{- end}}
 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-var {{$tAlias.UpSingular}}Columns = struct {
+var {{$tAlias.UpSingular}}Columns = build{{$tAlias.UpSingular}}Columns({{quote $table.Key}})
+type {{$tAlias.DownSingular}}Columns struct {
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{$colAlias}} {{$.Dialect}}.Expression
 	{{end -}}
-}{
-	{{range $column := $table.Columns -}}
-	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{$colAlias}}: {{$.Dialect}}.Quote({{quote $table.Key}}, {{quote $column.Name}}),
-	{{end -}}
 }
+
+func ({{$tAlias.DownSingular}}Columns) AliasedAs(alias string) {{$tAlias.DownSingular}}Columns {
+  return build{{$tAlias.UpSingular}}Columns(alias)
+}
+
+func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Columns {
+  return {{$tAlias.DownSingular}}Columns{
+    {{range $column := $table.Columns -}}
+    {{- $colAlias := $tAlias.Column $column.Name -}}
+    {{$colAlias}}: {{$.Dialect}}.Quote(alias, {{quote $column.Name}}),
+    {{end -}}
+  }
+}
+
 
 type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
 	{{range $column := $table.Columns -}}
@@ -229,14 +239,18 @@ type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
   {{end -}}
 }
 
-func {{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable]() {{$tAlias.DownSingular}}Where[Q] {
+func ({{$tAlias.DownSingular}}Where[Q]) AliasedAs(alias string) {{$tAlias.DownSingular}}Where[Q] {
+	return build{{$tAlias.UpSingular}}Where[Q](build{{$tAlias.UpSingular}}Columns(alias))
+}
+
+func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias.DownSingular}}Columns) {{$tAlias.DownSingular}}Where[Q] {
 	return {{$tAlias.DownSingular}}Where[Q]{
 			{{range $column := $table.Columns -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}
 				{{- if $column.Nullable -}}
-					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}]({{$tAlias.UpSingular}}Columns.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}](cols.{{$colAlias}}),
 				{{- else -}}
-					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}]({{$tAlias.UpSingular}}Columns.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}](cols.{{$colAlias}}),
 				{{- end}}
 			{{end -}}
 	}
