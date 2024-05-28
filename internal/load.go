@@ -53,10 +53,17 @@ type PreloadSettings[Q loadable] struct {
 	SubLoaders  []Preloader[Q]
 	ExtraLoader *AfterPreloader
 	Mods        [][]preloadfilter
+	Alias       string
 }
 
 type PreloadOption[Q loadable] interface {
 	ModifyPreloadSettings(*PreloadSettings[Q])
+}
+
+type PreloadAs[Q loadable] string
+
+func (o PreloadAs[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
+	el.Alias = string(o)
 }
 
 type PreloadOnly[Q loadable] []string
