@@ -357,7 +357,7 @@ func (t *TableQuery[Q, T, Ts]) addReturning() {
 	}
 }
 
-func (t *TableQuery[Q, T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
+func (t *TableQuery[Q, T, Ts]) afterSelect(exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
 			_, err := t.view.AfterSelectHooks.Do(ctx, exec, retrieved)
@@ -390,7 +390,7 @@ func (t *TableQuery[Q, T, Tslice]) One() (T, error) {
 	if err := t.hook(); err != nil {
 		return *new(T), err
 	}
-	return bob.One(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
+	return bob.One(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.exec))
 }
 
 // All matching rows
@@ -399,7 +399,7 @@ func (t *TableQuery[Q, T, Tslice]) All() (Tslice, error) {
 	if err := t.hook(); err != nil {
 		return nil, err
 	}
-	return bob.Allx[T, Tslice](t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
+	return bob.Allx[T, Tslice](t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.exec))
 }
 
 // Cursor to scan through the results
@@ -408,5 +408,5 @@ func (t *TableQuery[Q, T, Tslice]) Cursor() (scan.ICursor[T], error) {
 	if err := t.hook(); err != nil {
 		return nil, err
 	}
-	return bob.Cursor(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.ctx, t.exec))
+	return bob.Cursor(t.ctx, t.exec, t, t.view.scanner, t.afterSelect(t.exec))
 }

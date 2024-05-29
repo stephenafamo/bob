@@ -67,9 +67,9 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		var queryMods mods.QueryMods[*dialect.SelectQuery]
 
 		for i, side := range rel.Sides {
-			alias = fmt.Sprintf("%s_%d", side.To, internal.RandInt())
-			if settings.Alias != "" {
-				alias = settings.Alias
+			alias = settings.Alias
+			if settings.Alias == "" {
+				alias = fmt.Sprintf("%s_%d", side.To, internal.RandInt())
 			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {

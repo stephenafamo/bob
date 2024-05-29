@@ -85,10 +85,10 @@ func (v *View[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer, queryM
 
 // Prepare a statement from an existing query that will be mapped to the view's type
 func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q bob.Query) (bob.QueryStmt[T, Tslice], error) {
-	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, v.scanner, v.afterSelect(ctx, exec))
+	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, v.scanner, v.afterSelect(exec))
 }
 
-func (v *View[T, Ts]) afterSelect(ctx context.Context, exec bob.Executor) bob.ExecOption[T] {
+func (v *View[T, Ts]) afterSelect(exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
 			_, err := v.AfterSelectHooks.Do(ctx, exec, retrieved)
@@ -154,7 +154,7 @@ func (v *ViewQuery[T, Tslice]) One() (T, error) {
 	if err := v.hook(); err != nil {
 		return *new(T), err
 	}
-	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
+	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
 }
 
 // All matching rows
@@ -162,7 +162,7 @@ func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
 	if err := v.hook(); err != nil {
 		return nil, err
 	}
-	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
+	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
 }
 
 // Cursor to scan through the results
@@ -170,7 +170,7 @@ func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
 	if err := v.hook(); err != nil {
 		return nil, err
 	}
-	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.ctx, v.exec))
+	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
 }
 
 // Count the number of matching rows
