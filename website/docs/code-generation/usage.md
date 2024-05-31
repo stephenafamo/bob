@@ -227,12 +227,22 @@ To make joining tables easier, join helpers are generated for each table. The ge
 // INNER JOIN "airports" ON "airports"."id" = "jets"."airport_id"
 models.Jets(
     ctx, db,
-    models.SelectJoins.Jets.InnerJoin.Pilots,
-    models.SelectJoins.Jets.InnerJoin.Airports,
+    models.SelectJoins.Jets.InnerJoin.Pilots(ctx),
+    models.SelectJoins.Jets.InnerJoin.Airports(ctx),
 ).All()
 ```
 
 Since each query type has its own mods, `SelectJoins`, `InsertJoins`, `UpdateJoins` and `DeleteJoins` are all generated.
+
+:::tip
+
+To use these join mods with an aliased table name, use the `AliasedAs` method.
+
+```go
+models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Airports(ctx).AliasedAs("a")
+```
+
+:::
 
 ### Column Expressions
 

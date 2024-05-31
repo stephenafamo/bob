@@ -6,28 +6,50 @@
 {{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](ctx context.Context, typ string) bob.Mod[Q] {
-	return mods.QueryMods[Q]{
-		{{range $index, $side := $rel.Sides -}}
-		{{- $from := $.Aliases.Table $side.From -}}
-		{{- $to := $.Aliases.Table $side.To -}}
-		{{- $toTable := getTable $.Tables $side.To -}}
-		dialect.Join[Q](typ, {{$to.UpPlural}}.NameAs(ctx)).On(
-			{{range $i, $local := $side.FromColumns -}}
-				{{- $fromCol := index $from.Columns $local -}}
-				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
-				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$from.UpSingular}}Columns.{{$fromCol}}),
-			{{- end}}
-			{{- range $where := $side.FromWhere}}
-				{{- $fromCol := index $from.Columns $where.Column}}
-				{{$from.UpSingular}}Columns.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
-			{{- end}}
-			{{- range $where := $side.ToWhere}}
-				{{- $toCol := index $to.Columns $where.Column}}
-				{{$to.UpSingular}}Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
-			{{- end}}
-		),
-		{{end}}
+func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](from {{$tAlias.DownSingular}}Columns, typ string) func(context.Context) modAs[Q, {{$fAlias.DownSingular}}Columns] {
+	return func(ctx context.Context) modAs[Q, {{$fAlias.DownSingular}}Columns]{
+    return modAs[Q, {{$fAlias.DownSingular}}Columns]{
+      c: {{$fAlias.UpSingular}}Columns,
+      f: func(to {{$fAlias.DownSingular}}Columns) bob.Mod[Q] {
+        {{if gt (len $rel.Sides) 1 -}}{{$.Importer.Import "strconv" -}}
+          random := strconv.FormatInt(randInt(), 10)
+        {{- end}}
+        mods := make(mods.QueryMods[Q], 0, {{len $rel.Sides}})
+
+        {{range $index, $side := $rel.Sides -}}
+        {{- $from := $.Aliases.Table $side.From -}}
+        {{- $fromCols := printf "%sColumns" $from.UpSingular -}}
+        {{- $to := $.Aliases.Table $side.To -}}
+        {{- $toCols := printf "%sColumns" $to.UpSingular -}}
+        {{- $toTable := getTable $.Tables $side.To -}}
+        {
+          {{if ne $index 0 -}}
+          from := {{$fromCols}}.AliasedAs({{$fromCols}}.Alias() + random)
+          {{end -}}
+          {{if ne $index (sub (len $rel.Sides) 1) -}}
+          to := {{$toCols}}.AliasedAs({{$toCols}}.Alias() + random)
+          {{end -}}
+          mods = append(mods, dialect.Join[Q](typ, {{$to.UpPlural}}.Name(ctx).As(to.Alias())).On(
+              {{range $i, $local := $side.FromColumns -}}
+                {{- $fromCol := index $from.Columns $local -}}
+                {{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
+                to.{{$toCol}}.EQ(from.{{$fromCol}}),
+              {{- end}}
+              {{- range $where := $side.FromWhere}}
+                {{- $fromCol := index $from.Columns $where.Column}}
+                from.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+              {{- end}}
+              {{- range $where := $side.ToWhere}}
+                {{- $toCol := index $to.Columns $where.Column}}
+                to.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+              {{- end}}
+          ))
+        }
+        {{end}}
+
+        return mods
+      },
+    }
 	}
 }
 {{end}}
