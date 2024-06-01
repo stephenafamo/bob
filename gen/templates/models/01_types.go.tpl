@@ -75,6 +75,7 @@ type {{$tAlias.UpSingular}}Setter struct {
 	{{- range $column := $table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
+	{{- $orig_col_name := $column.Name -}}
 	{{- $colTyp := "" -}}
 		{{- if $column.Nullable -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
@@ -83,7 +84,11 @@ type {{$tAlias.UpSingular}}Setter struct {
 			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
 			{{- $colTyp = printf "omit.Val[%s]" $column.Type -}}
 		{{- end -}}
-		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}"`
+		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
+		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateIgnoreTags $.Tags | trim}}`
+		{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
+			{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateTags $.Tags $tagName | trim}}`
+		{{- end -}}		
 	{{end -}}
 }
 
