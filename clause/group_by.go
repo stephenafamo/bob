@@ -12,6 +12,10 @@ type GroupBy struct {
 	With     string // ROLLUP | CUBE
 }
 
+func (g *GroupBy) SetGroups(groups ...any) {
+	g.Groups = groups
+}
+
 func (g *GroupBy) AppendGroup(e any) {
 	g.Groups = append(g.Groups, e)
 }
@@ -25,6 +29,13 @@ func (g *GroupBy) SetGroupByDistinct(distinct bool) {
 }
 
 func (g GroupBy) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	var args []any
+
+	// don't write anything if there are no groups
+	if len(g.Groups) == 0 {
+		return args, nil
+	}
+
 	w.Write([]byte("GROUP BY "))
 	if g.Distinct {
 		w.Write([]byte("DISTINCT "))
