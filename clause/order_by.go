@@ -11,6 +11,10 @@ type OrderBy struct {
 	Expressions []OrderDef
 }
 
+func (o *OrderBy) SetOrderBy(orders ...OrderDef) {
+	o.Expressions = orders
+}
+
 func (o *OrderBy) AppendOrder(order OrderDef) {
 	o.Expressions = append(o.Expressions, order)
 }
