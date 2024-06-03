@@ -21,6 +21,10 @@ func (s *SelectList) SetSelect(columns ...any) {
 	s.Columns = columns
 }
 
+func (s *SelectList) SetPreloadSelect(columns ...any) {
+	s.PreloadColumns = columns
+}
+
 func (s *SelectList) AppendSelect(columns ...any) {
 	s.Columns = append(s.Columns, columns...)
 }

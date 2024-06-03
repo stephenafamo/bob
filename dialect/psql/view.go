@@ -194,15 +194,31 @@ func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count() (int64, error) {
-	v.BaseQuery.Expression.SelectList.Columns = []any{"count(1)"}
 	if err := v.hook(); err != nil {
 		return 0, err
 	}
-	return bob.One(v.ctx, v.exec, v, scan.SingleColumnMapper[int64])
+	return bob.One(v.ctx, v.exec, asCountQuery(v.BaseQuery), scan.SingleColumnMapper[int64])
 }
 
 // Exists checks if there is any matching row
 func (v *ViewQuery[T, Tslice]) Exists() (bool, error) {
 	count, err := v.Count()
 	return count > 0, err
+}
+
+func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
+	// clone the original query, so it's not being modified silently
+	countQuery := query.Clone()
+	// only select the count
+	countQuery.Expression.SetSelect("count(1)")
+	// don't select any preload columns
+	countQuery.Expression.SetPreloadSelect()
+	// disable mapper mods
+	countQuery.Expression.SetMapperMods()
+	// disable loaders
+	countQuery.Expression.SetLoaders()
+	// set the limit to 1
+	countQuery.Expression.SetLimit(1)
+
+	return countQuery
 }
