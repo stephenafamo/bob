@@ -206,6 +206,7 @@ func (v *ViewQuery[T, Tslice]) Exists() (bool, error) {
 	return count > 0, err
 }
 
+// asCountQuery clones and rewrites an existing query to a count query
 func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
 	// clone the original query, so it's not being modified silently
 	countQuery := query.Clone()
@@ -221,6 +222,8 @@ func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dial
 	countQuery.Expression.SetLimit(1)
 	// remove ordering
 	countQuery.Expression.SetOrderBy()
+	// remove group by
+	countQuery.Expression.SetGroups()
 
 	return countQuery
 }
