@@ -1,5 +1,36 @@
 # Changelog
 
+<!--toc:start-->
+
+- [Changelog](#changelog)
+  - [[Unreleased]](#unreleased)
+  - [[v0.26.1] - 2024-05-26](#v0261-2024-05-26)
+  - [[v0.26.0] - 2024-05-21](#v0260-2024-05-21)
+  - [[v0.25.0] - 2024-01-20](#v0250-2024-01-20)
+  - [[v0.24.0] - 2024-01-20](#v0240-2024-01-20)
+  - [[v0.23.2] - 2024-01-04](#v0232-2024-01-04)
+  - [[v0.23.1] - 2024-01-03](#v0231-2024-01-03)
+  - [[v0.23.0] - 2024-01-03](#v0230-2024-01-03)
+  - [[v0.22.0] - 2023-08-18](#v0220-2023-08-18)
+  - [[v0.21.1] - 2023-05-22](#v0211-2023-05-22)
+  - [[v0.21.0] - 2023-05-09](#v0210-2023-05-09)
+  - [[v0.20.6] - 2023-04-25](#v0206-2023-04-25)
+  - [[v0.20.5] - 2023-04-14](#v0205-2023-04-14)
+  - [[v0.20.4] - 2023-04-07](#v0204-2023-04-07)
+  - [[v0.20.3] - 2023-04-06](#v0203-2023-04-06)
+  - [[v0.20.2] - 2023-04-05](#v0202-2023-04-05)
+  - [[v0.20.1] - 2023-04-04](#v0201-2023-04-04)
+  - [[v0.20.0] - 2023-04-03](#v0200-2023-04-03)
+  - [[v0.19.1] - 2023-03-21](#v0191-2023-03-21)
+  - [[v0.19.0] - 2023-03-19](#v0190-2023-03-19)
+  - [[v0.18.2] - 2023-03-18](#v0182-2023-03-18)
+  - [[v0.18.1] - 2023-03-16](#v0181-2023-03-16)
+  - [[v0.18.0] - 2023-03-12](#v0180-2023-03-12)
+  - [[v0.17.3] - 2023-03-11](#v0173-2023-03-11)
+  - [[v0.17.2] - 2023-03-09](#v0172-2023-03-09)
+
+<!--toc:end-->
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
@@ -7,10 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Code generation now generates struct tags for the generated model Setters as well, if configured through the `Tags` configuration option. Previoulsy, only the model struct fields were tagged.
- 
 ### Added
 
 - Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
@@ -71,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use `netip.Addr` instead of `netip.Prefix` for Postgres `cidr` type.
 - Use `decimal.Decimal` instead of `string` for Postgres `money` type.
 - Use `net.HardwareAddr` for Postgres `macaddr8` type, in addition to the `macaddr` type.
+- Code generation now generates struct tags for the generated model Setters as well, if configured through the `Tags` configuration option. Previoulsy, only the model struct fields were tagged. (thanks @singhsays)
 
 ### Removed
 
