@@ -6,6 +6,7 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/stephenafamo/bob/dialect/sqlite"
+	"github.com/stephenafamo/bob/dialect/sqlite/fm"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
@@ -56,12 +57,9 @@ func TestSelect(t *testing.T) {
 				sm.From(sqlite.Select(
 					sm.Columns(
 						"status",
-						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW")).
-							Over().
-							PartitionBy("presale_id").
-							OrderBy("created_date").
-							Minus(sqlite.Quote("created_date")).
-							As("difference")),
+						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
+							fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+						).Minus(sqlite.Quote("created_date")).As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
 				sm.Where(sqlite.Quote("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),

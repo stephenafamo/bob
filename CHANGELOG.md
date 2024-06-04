@@ -25,6 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     models.SelectJoins.Jets.InnerJoin.Pilots(ctx).AliasedAs("p")
     ```
 
+- Add `fm` mods to all supported dialects (psql, mysql and sqlite). These are mods for functions and are used to modify the function call. For example:
+
+  ```go
+  // import "github.com/stephenafamo/bob/dialect/psql/fm"
+  psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done"))))
+  ```
+
 ### Changed
 
 - Change the function call point for generated relationship join mods. This reduces the amount of allocations and only does the work for the relationship being used.
@@ -45,9 +52,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   items, err := query.All()
   ```
 
+- Changed how functions are modified. Instead of chained methods, the `F()` starter now returns a function which can be called with mods:
+
+  ```go
+  // Before
+  psql.F( "count", "*",).FilterWhere(psql.Quote("status").EQ(psql.S("done"))),
+  // After
+  // import "github.com/stephenafamo/bob/dialect/psql/fm"
+  psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done")))),
+  ```
+
+  This makes it possible to support more queries.
+
 ### Removed
 
 - Remove `TableWhere` function from the generated code. It was not used by the rest of the generated code and offered no clear benefit.
+- Removed `As` starter. It takes an `Expression` and is not needed since the `Expression` has an `As` method which can be used directly.
 
 ## [v0.26.1] - 2024-05-26
 

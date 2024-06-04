@@ -85,12 +85,12 @@ func GroupByDistinct(distinct bool) bob.Mod[*dialect.SelectQuery] {
 	return mods.GroupByDistinct[*dialect.SelectQuery](distinct)
 }
 
-func Window(name string) dialect.WindowMod[*dialect.SelectQuery] {
-	m := dialect.WindowMod[*dialect.SelectQuery]{
+func Window(name string) dialect.WindowsMod[*dialect.SelectQuery] {
+	m := dialect.WindowsMod[*dialect.SelectQuery]{
 		Name: name,
 	}
 
-	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*dialect.SelectQuery]]{
+	m.WindowChain = &dialect.WindowChain[*dialect.WindowsMod[*dialect.SelectQuery]]{
 		Wrap: &m,
 	}
 	return m

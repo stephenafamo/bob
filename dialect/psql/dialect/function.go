@@ -4,25 +4,42 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
 )
 
-func NewFunction(name string, args ...any) Function {
-	return Function{name: name, args: args}
+func NewFunction(name string, args ...any) *Function {
+	f := &Function{name: name, args: args}
+	f.Chain = expr.Chain[Expression, Expression]{Base: f}
+
+	return f
 }
 
 type Function struct {
 	name string
 	args []any
 
-	// Used in value functions. Supported by Sqlite and Postgres
-	filter []any
+	Distinct    bool
+	WithinGroup bool
+	clause.OrderBy
+	Filter []any
+	w      *clause.Window
 
-	alias   string // used when there should be an alias before the columns
-	columns []columnDef
+	Alias   string // used when there should be an alias before the columns
+	Columns []columnDef
 
-	// For chain methods
 	expr.Chain[Expression, Expression]
+}
+
+func (f *Function) SetWindow(w clause.Window) {
+	f.w = &w
+}
+
+func (f *Function) AppendColumn(name, datatype string) {
+	f.Columns = append(f.Columns, columnDef{
+		name:     name,
+		dataType: datatype,
+	})
 }
 
 func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -32,68 +49,63 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 
 	w.Write([]byte(f.name))
 	w.Write([]byte("("))
+
+	if f.Distinct {
+		w.Write([]byte("DISTINCT "))
+	}
+
 	args, err := bob.ExpressSlice(w, d, start, f.args, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
+
+	if !f.WithinGroup {
+		orderArgs, err := bob.ExpressIf(w, d, start+len(args), f.OrderBy,
+			len(f.OrderBy.Expressions) > 0, " ", "")
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, orderArgs...)
+	}
 	w.Write([]byte(")"))
 
-	filterArgs, err := bob.ExpressSlice(w, d, start, f.filter, " FILTER (WHERE ", " AND ", ")")
+	if f.WithinGroup {
+		orderArgs, err := bob.ExpressIf(w, d, start+len(args), f.OrderBy,
+			len(f.OrderBy.Expressions) > 0, " WITHIN GROUP (", ")")
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, orderArgs...)
+	}
+
+	filterArgs, err := bob.ExpressSlice(w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, filterArgs...)
 
-	if len(f.columns) > 0 || len(f.alias) > 0 {
+	if len(f.Columns) > 0 || len(f.Alias) > 0 {
 		w.Write([]byte(" AS "))
 	}
 
-	if len(f.alias) > 0 {
-		w.Write([]byte(f.alias))
+	if len(f.Alias) > 0 {
+		w.Write([]byte(f.Alias))
 		w.Write([]byte(" "))
 	}
 
-	colArgs, err := bob.ExpressSlice(w, d, start+len(args), f.columns, "(", ", ", ")")
+	colArgs, err := bob.ExpressSlice(w, d, start+len(args), f.Columns, "(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, colArgs...)
 
+	winargs, err := bob.ExpressIf(w, d, start+len(args), f.w, f.w != nil, "OVER (", ")")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, winargs...)
+
 	return args, nil
-}
-
-func (f *Function) FilterWhere(e ...any) *functionOver {
-	f.filter = append(f.filter, e...)
-
-	fo := &functionOver{
-		function: f,
-	}
-	fo.WindowChain = &WindowChain[*functionOver]{Wrap: fo}
-	fo.Base = fo
-	return fo
-}
-
-func (f *Function) Over() *functionOver {
-	fo := &functionOver{
-		function: f,
-	}
-	fo.WindowChain = &WindowChain[*functionOver]{Wrap: fo}
-	fo.Base = fo
-	return fo
-}
-
-func (f *Function) As(alias string) *Function {
-	f.alias = alias
-	return f
-}
-
-func (f *Function) Col(name, datatype string) *Function {
-	f.columns = append(f.columns, columnDef{
-		name:     name,
-		dataType: datatype,
-	})
-
-	return f
 }
 
 type columnDef struct {
@@ -105,26 +117,6 @@ func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	w.Write([]byte(c.name + " " + c.dataType))
 
 	return nil, nil
-}
-
-type functionOver struct {
-	function *Function
-	*WindowChain[*functionOver]
-	expr.Chain[Expression, Expression]
-}
-
-func (wr *functionOver) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	fargs, err := bob.Express(w, d, start, wr.function)
-	if err != nil {
-		return nil, err
-	}
-
-	winargs, err := bob.ExpressIf(w, d, start+len(fargs), wr.def, true, "OVER (", ")")
-	if err != nil {
-		return nil, err
-	}
-
-	return append(fargs, winargs...), nil
 }
 
 type Functions []*Function

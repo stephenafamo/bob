@@ -16,26 +16,26 @@ type IWindow interface {
 	SetExclusion(string)
 }
 
-type WindowDef struct {
+type Window struct {
 	From        string // an existing window name
 	orderBy     []any
 	partitionBy []any
 	Frame
 }
 
-func (wi *WindowDef) SetFrom(from string) {
+func (wi *Window) SetFrom(from string) {
 	wi.From = from
 }
 
-func (wi *WindowDef) AddPartitionBy(condition ...any) {
+func (wi *Window) AddPartitionBy(condition ...any) {
 	wi.partitionBy = append(wi.partitionBy, condition...)
 }
 
-func (wi *WindowDef) AddOrderBy(order ...any) {
+func (wi *Window) AddOrderBy(order ...any) {
 	wi.orderBy = append(wi.orderBy, order...)
 }
 
-func (wi WindowDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (wi Window) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if wi.From != "" {
 		w.Write([]byte(wi.From))
 		w.Write([]byte(" "))

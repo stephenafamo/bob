@@ -279,12 +279,20 @@ func (o OrderBy[Q]) NullsLast() OrderBy[Q] {
 	})
 }
 
-type WindowMod[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
-	Name string
+type WindowMod[Q interface{ SetWindow(clause.Window) }] struct {
 	*WindowChain[*WindowMod[Q]]
 }
 
-func (w *WindowMod[Q]) Apply(q Q) {
+func (w WindowMod[Q]) Apply(q Q) {
+	q.SetWindow(w.def)
+}
+
+type WindowsMod[Q interface{ AppendWindow(clause.NamedWindow) }] struct {
+	Name string
+	*WindowChain[*WindowsMod[Q]]
+}
+
+func (w *WindowsMod[Q]) Apply(q Q) {
 	q.AppendWindow(clause.NamedWindow{
 		Name:       w.Name,
 		Definition: w.def,
@@ -292,7 +300,7 @@ func (w *WindowMod[Q]) Apply(q Q) {
 }
 
 type WindowChain[T any] struct {
-	def  clause.WindowDef
+	def  clause.Window
 	Wrap T
 }
 

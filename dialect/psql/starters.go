@@ -4,6 +4,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/mods"
 )
 
 type Expression = dialect.Expression
@@ -15,14 +16,16 @@ var bmod = expr.Builder[Expression, Expression]{}
 //
 //	SQL: generate_series(1, 3)
 //	Go: psql.F("generate_series", 1, 3)
-func F(name string, args ...any) *dialect.Function {
+func F(name string, args ...any) mods.Moddable[*dialect.Function] {
 	f := dialect.NewFunction(name, args...)
 
-	// We have embedded the same function as the chain base
-	// this is so that chained methods can also be used by functions
-	f.Chain.Base = &f
+	return mods.Moddable[*dialect.Function](func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {
+		for _, mod := range mods {
+			mod.Apply(f)
+		}
 
-	return &f
+		return f
+	})
 }
 
 // S creates a string literal
@@ -90,10 +93,4 @@ func Quote(ss ...string) Expression {
 // Go: psql.Raw("where a = ?", "something")
 func Raw(query string, args ...any) Expression {
 	return bmod.Raw(query, args...)
-}
-
-// SQL: a as "alias"
-// Go: psql.As("a", "alias")
-func As(e Expression, alias string) bob.Expression {
-	return expr.OP("AS", e, expr.Quote(alias))
 }
