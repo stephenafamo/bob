@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove `TableWhere` function from the generated code. It was not used by the rest of the generated code and offered no clear benefit.
+- Removed `As` starter. It takes an `Expression` and is not needed since the `Expression` has an `As` method which can be used directly.
 
 ## [v0.26.1] - 2024-05-26
 
