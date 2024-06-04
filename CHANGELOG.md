@@ -64,6 +64,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   This makes it possible to support more queries.
 
+- Use `netip.Addr` instead of `netip.Prefix` for Postgres `cidr` type.
+- Use `decimal.Decimal` instead of `string` for Postgres `money` type.
+- Use `net.HardwareAddr` for Postgres `macaddr8` type, in addition to the `macaddr` type.
+
 ### Removed
 
 - Remove `TableWhere` function from the generated code. It was not used by the rest of the generated code and offered no clear benefit.

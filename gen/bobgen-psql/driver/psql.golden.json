@@ -1247,7 +1247,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "types.Text[netip.Addr, *netip.Addr]"
 				},
 				{
 					"name": "cidr_nnull",
@@ -1258,7 +1258,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "types.Text[netip.Addr, *netip.Addr]"
 				},
 				{
 					"name": "circle_null",
@@ -1401,7 +1401,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "money_nnull",
@@ -1412,7 +1412,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "path_null",
@@ -3046,7 +3046,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "types.Text[netip.Addr, *netip.Addr]"
 				},
 				{
 					"name": "cidr_nnull",
@@ -3057,7 +3057,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "types.Text[netip.Addr, *netip.Addr]"
 				},
 				{
 					"name": "circle_null",
@@ -3200,7 +3200,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "money_nnull",
@@ -3211,7 +3211,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "decimal.Decimal"
 				},
 				{
 					"name": "path_null",
