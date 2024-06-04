@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	pg_query "github.com/wasilibs/go-pgquery"
@@ -55,8 +56,11 @@ func TestSelect(t *testing.T) {
 					psql.F(
 						"json_to_recordset",
 						psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
-					).Col("a", "INTEGER").Col("b", "TEXT"),
-					psql.F("generate_series", 1, 3),
+					)(
+						fm.Columns("a", "INTEGER"),
+						fm.Columns("b", "TEXT"),
+					),
+					psql.F("generate_series", 1, 3)(),
 				).As("x", "p", "q", "s"),
 				sm.OrderBy("p"),
 			),
@@ -87,12 +91,9 @@ func TestSelect(t *testing.T) {
 				sm.From(psql.Select(
 					sm.Columns(
 						"status",
-						psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-							Over().
-							PartitionBy("presale_id").
-							OrderBy("created_date").
-							Minus(psql.Quote("created_date")).
-							As("difference")),
+						psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
+							fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+						).Minus(psql.Quote("created_date")).As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
 				sm.Where(psql.Quote("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
@@ -144,7 +145,7 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL: "SELECT row_number() OVER () FROM c",
 			Query: psql.Select(
 				sm.Columns(
-					psql.F("row_number").Over(),
+					psql.F("row_number")(fm.Over()),
 				),
 				sm.From("c"),
 			),
@@ -155,7 +156,7 @@ FROM c
 WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 			Query: psql.Select(
 				sm.Columns(
-					psql.F("avg", "salary").Over().From("w"),
+					psql.F("avg", "salary")(fm.Over().From("w")),
 				),
 				sm.From("c"),
 				sm.Window("w").PartitionBy("depname").OrderBy("salary"),

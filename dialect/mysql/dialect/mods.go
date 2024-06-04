@@ -341,7 +341,7 @@ func (w WindowMod[Q]) Apply(q Q) {
 }
 
 type WindowChain[T any] struct {
-	def  clause.WindowDef
+	def  clause.Window
 	Wrap T
 }
 
