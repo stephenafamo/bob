@@ -116,8 +116,11 @@ psql.Select(
     psql.F(
       "json_to_recordset",
       psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
-    ).Col("a", "INTEGER").Col("b", "TEXT"),
-    psql.F("generate_series", 1, 3),
+    )(
+      fm.Columns("a", "INTEGER"),
+      fm.Columns("b", "TEXT"),
+    ),
+    psql.F("generate_series", 1, 3)(),
   ).As("x", "p", "q", "s"),
   sm.OrderBy("p"),
 )
@@ -149,12 +152,9 @@ psql.Select(
   sm.From(psql.Select(
     sm.Columns(
       "status",
-      psql.F("LEAD", "created_date", 1, psql.F("NOW")).
-        Over().
-        PartitionBy("presale_id").
-        OrderBy("created_date").
-        Minus(psql.Quote("created_date")).
-        As("difference")),
+      psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
+        fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+      ).Minus(psql.Quote("created_date")).As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
   sm.Where(psql.Quote("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
@@ -265,7 +265,7 @@ Code:
 ```go
 psql.Select(
   sm.Columns(
-    psql.F("row_number").Over(),
+    psql.F("row_number")(fm.Over()),
   ),
   sm.From("c"),
 )
@@ -286,7 +286,7 @@ Code:
 ```go
 psql.Select(
   sm.Columns(
-    psql.F("avg", "salary").Over().From("w"),
+    psql.F("avg", "salary")(fm.Over().From("w")),
   ),
   sm.From("c"),
   sm.Window("w").PartitionBy("depname").OrderBy("salary"),

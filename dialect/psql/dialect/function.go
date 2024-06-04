@@ -19,12 +19,11 @@ type Function struct {
 	name string
 	args []any
 
-	// Used in value functions. Supported by Sqlite and Postgres
 	Distinct    bool
-	Filter      []any
 	WithinGroup bool
 	clause.OrderBy
-	w *clause.Window
+	Filter []any
+	w      *clause.Window
 
 	Alias   string // used when there should be an alias before the columns
 	Columns []columnDef

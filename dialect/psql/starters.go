@@ -1,11 +1,10 @@
 package psql
 
 import (
-	"io"
-
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/mods"
 )
 
 type Expression = dialect.Expression
@@ -13,22 +12,14 @@ type Expression = dialect.Expression
 //nolint:gochecknoglobals
 var bmod = expr.Builder[Expression, Expression]{}
 
-// this wrapper exists so that if psql.F is included without calling the returned
-// function, the expression is still written correctly
-type funcMod func(...bob.Mod[*dialect.Function]) *dialect.Function
-
-func (f funcMod) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return f().WriteSQL(w, d, start)
-}
-
 // F creates a function expression with the given name and args
 //
 //	SQL: generate_series(1, 3)
 //	Go: psql.F("generate_series", 1, 3)
-func F(name string, args ...any) funcMod {
+func F(name string, args ...any) mods.Moddable[*dialect.Function] {
 	f := dialect.NewFunction(name, args...)
 
-	return funcMod(func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {
+	return mods.Moddable[*dialect.Function](func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {
 		for _, mod := range mods {
 			mod.Apply(f)
 		}

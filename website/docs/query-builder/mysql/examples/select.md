@@ -75,12 +75,9 @@ mysql.Select(
   sm.From(mysql.Select(
     sm.Columns(
       "status",
-      mysql.F("LEAD", "created_date", 1, mysql.F("NOW")).
-        Over().
-        PartitionBy("presale_id").
-        OrderBy("created_date").
-        Minus(mysql.Quote("created_date")).
-        As("difference")),
+      mysql.F("LEAD", "created_date", 1, mysql.F("NOW"))(
+        fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+      ).Minus(mysql.Quote("created_date")).As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
   sm.Where(mysql.Quote("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
