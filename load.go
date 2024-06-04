@@ -41,6 +41,10 @@ func (l *Load[Q]) SetLoadContext(ctx context.Context) {
 	l.loadContext = ctx
 }
 
+func (l *Load[Q]) SetMapperMods(mods ...scan.MapperMod) {
+	l.preloadMapperMods = mods
+}
+
 // GetMapperMods implements the [MapperModder] interface
 func (l *Load[Q]) GetMapperMods() []scan.MapperMod {
 	return l.preloadMapperMods
@@ -49,6 +53,11 @@ func (l *Load[Q]) GetMapperMods() []scan.MapperMod {
 // AppendMapperMod adds to the query's mapper mods
 func (l *Load[Q]) AppendMapperMod(f scan.MapperMod) {
 	l.preloadMapperMods = append(l.preloadMapperMods, f)
+}
+
+// SetLoaders sets the query's loaders
+func (l *Load[Q]) SetLoaders(loaders ...Loader) {
+	l.loadFuncs = loaders
 }
 
 // GetLoaders implements the [Loadable] interface

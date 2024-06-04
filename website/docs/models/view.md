@@ -80,3 +80,9 @@ userView.Query(ctx, db).Count()
 // Like One(), but only returns a boolean indicating if the model was found
 userView.Query(ctx, db).Exists()
 ```
+
+:::tip
+
+The `Count()` function clones the current query which can be an expensive operation.
+
+:::

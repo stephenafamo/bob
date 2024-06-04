@@ -35,6 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   // After
   models.SelectJoins.Jets.InnerJoin.Pilots(ctx)
   ```
+  
+- Changed the `Count()` function on `Views` to clone the query instead of changing the existing one. This makes queries reusable and the `Count()` function to behave as one would expect.
+
+  ```go
+  // This now works as expected
+  query := models.Jets.Query(ctx, db, /** list of various mods **/)
+  count, err := query.Count()
+  items, err := query.All()
+  ```
 
 ### Removed
 
