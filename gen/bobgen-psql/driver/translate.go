@@ -39,13 +39,13 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "int16"
 	case "smallserial":
 		c.Type = "uint16"
-	case "decimal", "numeric":
+	case "decimal", "numeric", "money":
 		c.Type = "decimal.Decimal"
 	case "double precision":
 		c.Type = "float64"
 	case "real":
 		c.Type = "float32"
-	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "text", "xml":
+	case "bit", "interval", "uuint", "bit varying", "character", "character varying", "text", "xml":
 		c.Type = "string"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
@@ -71,9 +71,11 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "pgeo.Polygon"
 	case "uuid":
 		c.Type = "uuid.UUID"
-	case "inet", "cidr":
+	case "inet":
 		c.Type = "types.Text[netip.Prefix, *netip.Prefix]"
-	case "macaddr":
+	case "cidr":
+		c.Type = "types.Text[netip.Addr, *netip.Addr]"
+	case "macaddr", "macaddr8":
 		c.Type = "types.Stringer[net.HardwareAddr]"
 	case "ENUM":
 		c.Type = "string"
