@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   // After
   models.SelectJoins.Jets.InnerJoin.Pilots(ctx)
   ```
-  
+
 - Changed the `Count()` function on `Views` to clone the query instead of changing the existing one. This makes queries reusable and the `Count()` function to behave as one would expect.
 
   ```go
@@ -68,6 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove `TableWhere` function from the generated code. It was not used by the rest of the generated code and offered no clear benefit.
 - Removed `As` starter. It takes an `Expression` and is not needed since the `Expression` has an `As` method which can be used directly.
+
+### Fixed
+
+- Fix a bug with `types.Stringer[T]` where the wrong value was returned in the `Value()` method.
 
 ## [v0.26.1] - 2024-05-26
 

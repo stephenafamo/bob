@@ -70,7 +70,7 @@ type Stringer[T interface {
 }
 
 func (s Stringer[T]) Value() (driver.Value, error) {
-	return []byte(s.Val), nil
+	return s.Val.String(), nil
 }
 
 func (s *Stringer[T]) Scan(value any) error {
