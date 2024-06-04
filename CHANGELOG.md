@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Code generation now generates struct tags for the generated model Setters as well, if configured through the `Tags` configuration option. Previoulsy, only the model struct fields were tagged.
+ 
 ### Added
 
 - Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
