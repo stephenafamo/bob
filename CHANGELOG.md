@@ -36,9 +36,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.27.1] - 2024-06-05
 
-- Fixed bug in `Count()` queries not removing the offset from the original query
+### Fixed
+
+- Fixed bug in `Count()` queries not removing the offset from the original query. (thanks @daddz)
 
 ## [v0.27.0] - 2024-06-05
 
