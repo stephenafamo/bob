@@ -224,6 +224,8 @@ func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dial
 	countQuery.Expression.SetOrderBy()
 	// remove group by
 	countQuery.Expression.SetGroups()
+	// remove offset
+	countQuery.Expression.SetOffset(0)
 
 	return countQuery
 }
