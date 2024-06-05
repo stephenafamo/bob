@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 6
 description: Using model factories to speed up testing
-
 ---
 
 # Factories
@@ -170,8 +168,16 @@ Any required relation (i.e. a non-nullable foreign key), will also be created ev
 
 ```go
 // Create a new jet from the template
-jet := jetTemplate.Create(ctx, db)
+jet, err := jetTemplate.Create(ctx, db)
 
 // Create a slice of 5 jets using the template
-jets := jetTemplate.CreateMany(ctx, db, 5)
+jets, err := jetTemplate.CreateMany(ctx, db, 5)
+
+// Must variants panic on error
+jet := jetTemplate.MustCreate(ctx, db)
+jets := jetTemplate.MustCreateMany(ctx, db, 5)
+
+// OrFail variants will fail the test or benchmark if an error occurs
+jet := jetTemplate.CreateOrFail(t, db)
+jets := jetTemplate.CreateManyOrFail(t, db, 5)
 ```
