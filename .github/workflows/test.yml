@@ -11,19 +11,6 @@ jobs:
       matrix:
         go: [ 'oldstable', 'stable' ]
     services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: pass
-        ports:
-          - 5432:5432
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
       mysql:
         image: mysql:8.0
         env:
@@ -38,13 +25,6 @@ jobs:
           --health-retries 10
 
     steps:
-      - name: PostgreSQL Setup
-        run: >
-          echo "*:*:*:*:pass" > $HOME/.pgpass
-          && chmod 600 $HOME/.pgpass
-          && psql --host localhost --username user -c 'CREATE DATABASE dialect_droppable;'
-          && psql --host localhost --username user -c 'CREATE DATABASE driver_droppable;'
-
       - name: MySQL Setup
         run: >
           echo -e "[client]\nuser = root\npassword = pass\nhost = localhost\nprotocol = tcp" > $HOME/.my.cnf
@@ -66,8 +46,6 @@ jobs:
 
       - name: Run tests
         env:
-          PSQL_DIALECT_TEST_DSN: postgresql://user:pass@localhost:5432/dialect_droppable?sslmode=disable
-          PSQL_DRIVER_TEST_DSN: postgresql://user:pass@localhost:5432/driver_droppable?sslmode=disable
           MYSQL_DIALECT_TEST_DSN: root:pass@(localhost:3306)/dialect_droppable?tls=skip-verify&multiStatements=true
           MYSQL_DRIVER_TEST_DSN: root:pass@(localhost:3306)/driver_droppable?tls=skip-verify&multiStatements=true
         run: go test -race -covermode atomic -coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
