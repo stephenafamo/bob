@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done"))))
   ```
 
+- Add `MustCreate`, `MustCreateMany`, `CreateOrFail` and `CreateManyOrFail` methods to generated factory Templates
+
 ### Changed
 
 - Change the function call point for generated relationship join mods. This reduces the amount of allocations and only does the work for the relationship being used.
