@@ -221,15 +221,13 @@ func Types() drivers.Types {
 		},
 		"pgtypes.Inet": {
 			Imports: importers.List{
-				`"net/netip"`,
-				`"strings"`,
 				`"github.com/stephenafamo/bob/types/pgtypes"`,
 			},
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])
                 ipAddr := netip.AddrFrom4(addr)
                 ipPrefix := netip.PrefixFrom(ipAddr, f.IntBetween(0, ipAddr.BitLen()))
-                return any(types.Text[netip.Prefix, *netip.Prefix]{Val: ipPrefix}).(T)`,
+                return any(pgtypes.Inet{Prefix: ipPrefix}).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
 		},
 		"types.Stringer[net.HardwareAddr]": {

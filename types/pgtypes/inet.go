@@ -8,23 +8,23 @@ import (
 )
 
 type Inet struct {
-	Val netip.Prefix
+	netip.Prefix
 }
 
 // Scan implements the sql.Scanner interface.
 func (i *Inet) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
-		return i.Val.UnmarshalBinary(v)
+		return i.Prefix.UnmarshalBinary(v)
 	case string:
 		if strings.Contains(v, "/") {
-			return i.Val.UnmarshalText([]byte(v))
+			return i.Prefix.UnmarshalText([]byte(v))
 		}
 		addr, err := netip.ParseAddr(v)
 		if err != nil {
 			return err
 		}
-		i.Val = netip.PrefixFrom(addr, addr.BitLen())
+		i.Prefix = netip.PrefixFrom(addr, addr.BitLen())
 		return nil
 	default:
 		return fmt.Errorf("cannot scan type %T: %v", src, src)
@@ -33,5 +33,5 @@ func (i *Inet) Scan(src any) error {
 
 // Value implements the driver.Valuer interface.
 func (i Inet) Value() (driver.Value, error) {
-	return i.Val.MarshalText()
+	return i.Prefix.MarshalText()
 }
