@@ -72,7 +72,7 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "uuid":
 		c.Type = "uuid.UUID"
 	case "inet":
-		c.Type = "postgres.Inet"
+		c.Type = "pgtypes.Inet"
 	case "cidr":
 		c.Type = "types.Text[netip.Addr, *netip.Addr]"
 	case "macaddr", "macaddr8":

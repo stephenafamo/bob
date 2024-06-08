@@ -219,11 +219,11 @@ func Types() drivers.Types {
                 return any(types.Text[netip.Addr, *netip.Addr]{Val: ipAddr}).(T)`,
 			RandomExprImports: importers.List{`"crypto/rand"`},
 		},
-		"postgres.Inet": {
+		"pgtypes.Inet": {
 			Imports: importers.List{
 				`"net/netip"`,
 				`"strings"`,
-				`"github.com/stephenafamo/bob/types/postgres"`,
+				`"github.com/stephenafamo/bob/types/pgtypes"`,
 			},
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])

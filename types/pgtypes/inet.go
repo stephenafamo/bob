@@ -1,4 +1,4 @@
-package postgres
+package pgtypes
 
 import (
 	"database/sql/driver"
