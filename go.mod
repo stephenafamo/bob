@@ -1,8 +1,10 @@
-module github.com/stephenafamo/bob
+module github.com/gstarikov/bob
 
 go 1.22
 
 toolchain go1.22.1
+
+replace github.com/stephenafamo/bob v0.27.1 => github.com/gstarikov/bob v0.27.1
 
 require (
 	ariga.io/atlas v0.9.0
