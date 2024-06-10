@@ -1313,7 +1313,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "pgtypes.Inet"
 				},
 				{
 					"name": "inet_nnull",
@@ -1324,7 +1324,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "pgtypes.Inet"
 				},
 				{
 					"name": "line_null",
@@ -3112,7 +3112,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "pgtypes.Inet"
 				},
 				{
 					"name": "inet_nnull",
@@ -3123,7 +3123,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Prefix, *netip.Prefix]"
+					"type": "pgtypes.Inet"
 				},
 				{
 					"name": "line_null",
