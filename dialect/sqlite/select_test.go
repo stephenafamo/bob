@@ -75,6 +75,41 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  `SELECT id, name FROM users WHERE (("id", "employee_id") IN ((?1, ?2), (?3, ?4)))`,
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+
+				"select with order by and limit": {
+			Query: sqlite.Select(
+				sm.Columns("name", "salary"),
+				sm.From("employees"),
+				sm.OrderBy("salary DESC"),
+				sm.Limit(10),
+			),
+			ExpectedSQL: `SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 10`,
+		},
+
+		"select with group by and having": {
+			Query: sqlite.Select(
+				sm.Columns("department", "AVG(salary)"),
+				sm.From("employees"),
+				sm.GroupBy("department"),
+				sm.Having("AVG(salary) > 50000"),
+			),
+			ExpectedSQL: `SELECT department, AVG(salary) FROM employees GROUP BY department HAVING AVG(salary) > 50000`,
+		},
+		
+
+		"select with CTE": {
+			Query: sqlite.Select(
+				sm.With("cte", "column1").As(
+					sqlite.Select(
+						sm.Columns("column1"),
+						sm.From("table1"),
+					),
+				),
+				sm.Columns("column1"),
+				sm.From("cte"),
+			),
+			ExpectedSQL: `WITH cte(column1) AS (SELECT column1 FROM table1) SELECT column1 FROM cte`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
