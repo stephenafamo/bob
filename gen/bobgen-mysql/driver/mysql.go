@@ -112,7 +112,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	return dbinfo, err
 }
 
-// TableNames connects to the postgres database and
+// TableNames connects to the MySQL database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
 func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (drivers.TablesInfo, error) {

@@ -24,7 +24,7 @@ func main() {
 
 	app := &cli.App{
 		Name:      "bobgen-sqlite",
-		Usage:     "Generate models and factories from your PostgreSQL database",
+		Usage:     "Generate models and factories from your SQLite database",
 		UsageText: "bobgen-sqlite [-c FILE]",
 		Version:   helpers.Version(),
 		Flags: []cli.Flag{

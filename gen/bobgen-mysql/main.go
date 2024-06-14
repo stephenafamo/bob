@@ -24,7 +24,7 @@ func main() {
 
 	app := &cli.App{
 		Name:      "bobgen-mysql",
-		Usage:     "Generate models and factories from your PostgreSQL database",
+		Usage:     "Generate models and factories from your MySQL database",
 		UsageText: "bobgen-mysql [-c FILE]",
 		Version:   helpers.Version(),
 		Flags: []cli.Flag{
