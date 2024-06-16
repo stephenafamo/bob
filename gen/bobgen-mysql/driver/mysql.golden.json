@@ -83,6 +83,34 @@
 					"type": "int32"
 				}
 			],
+			"indexes": [
+				{
+					"name": "one",
+					"columns": [
+						"one",
+						"two"
+					]
+				},
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "something",
+					"columns": [
+						"something",
+						"another"
+					]
+				},
+				{
+					"name": "sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "PRIMARY",
@@ -138,6 +166,14 @@
 					"type": "int32"
 				}
 			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "PRIMARY",
@@ -164,6 +200,14 @@
 					"autoincr": true,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
 				}
 			],
 			"constraints": {
@@ -1536,6 +1580,21 @@
 					"type": "string"
 				}
 			],
+			"indexes": [
+				{
+					"name": "int_one",
+					"columns": [
+						"int_one",
+						"int_two"
+					]
+				},
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "PRIMARY",
@@ -1586,6 +1645,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": null,
 				"foreign": null,
@@ -1607,6 +1667,14 @@
 					"autoincr": true,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
 				}
 			],
 			"constraints": {
@@ -1646,6 +1714,21 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"video_id",
+						"tag_id"
+					]
+				},
+				{
+					"name": "tag_id",
+					"columns": [
+						"tag_id"
+					]
 				}
 			],
 			"constraints": {
@@ -1718,6 +1801,26 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				},
+				{
+					"name": "user_id",
+					"columns": [
+						"user_id"
+					]
 				}
 			],
 			"constraints": {

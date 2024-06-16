@@ -386,3 +386,41 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 
 	return ret, nil
 }
+
+func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
+	ret := drivers.DBIndexes{}
+
+	query := `SELECT
+	s.table_name AS table_name,
+	s.index_name AS index_name,
+	s.column_name AS column_name
+	FROM information_schema.statistics s
+	WHERE s.table_schema = ?
+	ORDER BY s.table_name,s.index_name,s.seq_in_index`
+
+	type indexColumn struct {
+		TableName  string
+		IndexName  string
+		ColumnName string
+	}
+	indexColumns, err := stdscan.All(ctx, d.conn, scan.StructMapper[indexColumn](), query, d.dbName)
+	if err != nil {
+		return nil, err
+	}
+	indexColumns = append(indexColumns, indexColumn{})
+
+	var current drivers.Index
+	var table string
+	for i, c := range indexColumns {
+		if i != 0 && (c.TableName != table || c.IndexName != current.Name) {
+			ret[table] = append(ret[table], current)
+			current = drivers.Index{}
+			table = "" //nolint:ineffassign
+		}
+		table = c.TableName
+		current.Name = c.IndexName
+		current.Columns = append(current.Columns, c.ColumnName)
+	}
+
+	return ret, nil
+}

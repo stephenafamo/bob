@@ -17,6 +17,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_sponsors",
@@ -45,6 +46,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_tags",
@@ -1833,6 +1835,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_type_monsters",
@@ -1883,6 +1886,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_users",
@@ -1929,6 +1933,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_video_tags",
@@ -2001,6 +2006,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_videos",

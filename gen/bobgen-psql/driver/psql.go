@@ -419,3 +419,46 @@ func (d *driver) loadEnums(ctx context.Context) error {
 
 	return nil
 }
+
+func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
+	ret := drivers.DBIndexes{}
+
+	query := `SELECT
+	n.nspname AS schema_name,
+	t.relname AS table_name,
+	i.relname AS index_name,
+	ARRAY(
+		SELECT pg_get_indexdef(x.indexrelid, k + 1, true)
+		FROM generate_subscripts(x.indkey, 1) as k
+		ORDER BY k
+	) AS column_names
+	FROM pg_index x
+	JOIN pg_class t ON t.oid = x.indrelid
+	JOIN pg_class i ON i.oid = x.indexrelid
+	JOIN pg_namespace n ON n.oid = t.relnamespace
+	WHERE n.nspname = ANY($1)
+	ORDER BY n.nspname, t.relname, i.relname`
+
+	type indexColumns struct {
+		SchemaName  string
+		TableName   string
+		IndexName   string
+		ColumnNames pq.StringArray
+	}
+	res, err := stdscan.All(ctx, d.conn, scan.StructMapper[indexColumns](), query, d.config.Schemas)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range res {
+		key := r.TableName
+		if r.SchemaName != "" && r.SchemaName != d.config.SharedSchema {
+			key = r.SchemaName + "." + r.TableName
+		}
+		ret[key] = append(ret[key], drivers.Index{
+			Name:    r.IndexName,
+			Columns: r.ColumnNames,
+		})
+	}
+
+	return ret, nil
+}

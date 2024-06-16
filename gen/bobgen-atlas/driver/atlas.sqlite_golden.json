@@ -61,6 +61,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_autoinckeywordtest",
@@ -116,6 +117,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_autoinctest",
@@ -188,6 +190,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_has_generated_columns",
@@ -216,6 +219,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_sponsors",
@@ -244,6 +248,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_tags",
@@ -1504,6 +1509,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_type_monsters",
@@ -1532,6 +1538,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_users",
@@ -1571,6 +1578,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_video_tags",
@@ -1643,6 +1651,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": {
 					"name": "pk_videos",
