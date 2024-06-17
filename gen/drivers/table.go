@@ -12,6 +12,7 @@ type Table struct {
 	Schema  string   `yaml:"schema" json:"schema"`
 	Name    string   `yaml:"name" json:"name"`
 	Columns []Column `yaml:"columns" json:"columns"`
+	Indexes []Index  `yaml:"indexes" json:"indexes"`
 
 	Constraints Constraints `yaml:"constraints" json:"constraints"`
 }

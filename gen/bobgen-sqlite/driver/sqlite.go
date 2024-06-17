@@ -212,6 +212,11 @@ func (d driver) getTable(ctx context.Context, schema, name string) (drivers.Tabl
 		return table, err
 	}
 
+	table.Indexes, err = d.indexes(ctx, schema, name)
+	if err != nil {
+		return table, err
+	}
+
 	return table, nil
 }
 
@@ -562,4 +567,65 @@ func (driver) translateColumnType(c drivers.Column) drivers.Column {
 	}
 
 	return c
+}
+
+func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drivers.Index, error) {
+	//nolint:gosec
+	query := fmt.Sprintf("SELECT name FROM '%s'.pragma_index_list('%s') ORDER BY name ASC", schema, tableName)
+	rows, err := d.conn.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var indexNames []string
+	for rows.Next() {
+		var name string
+		err = rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		indexNames = append(indexNames, name)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	indexes := make([]drivers.Index, len(indexNames))
+	for i, indexName := range indexNames {
+		indexes[i], err = d.getIndexWithColumns(ctx, schema, indexName)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return indexes, nil
+}
+
+func (d *driver) getIndexWithColumns(ctx context.Context, schema, indexName string) (drivers.Index, error) {
+	index := drivers.Index{Name: indexName}
+
+	//nolint:gosec
+	query := fmt.Sprintf("SELECT name FROM '%s'.pragma_index_info('%s') ORDER BY seqno ASC", schema, indexName)
+	rows, err := d.conn.QueryContext(ctx, query)
+	if err != nil {
+		return index, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		err = rows.Scan(&name)
+		if err != nil {
+			return index, err
+		}
+		index.Columns = append(index.Columns, name)
+	}
+
+	if err = rows.Err(); err != nil {
+		return index, err
+	}
+
+	return index, nil
 }

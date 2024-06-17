@@ -87,6 +87,9 @@ type Constructor interface {
 	// Load all constraints in the database, keyed by TableInfo.Key
 	Constraints(context.Context, ColumnFilter) (DBConstraints, error)
 
+	// Load all indexes in the database, keyed by TableInfo.Key
+	Indexes(ctx context.Context) (DBIndexes, error)
+
 	// Load basic info about all tables
 	TablesInfo(context.Context, Filter) (TablesInfo, error)
 	// Load details about a single table
@@ -125,6 +128,14 @@ func BuildDBInfo(ctx context.Context, c Constructor, concurrency int, only, exce
 		ret[i].Constraints.Primary = constraints.PKs[t.Key]
 		ret[i].Constraints.Foreign = constraints.FKs[t.Key]
 		ret[i].Constraints.Uniques = constraints.Uniques[t.Key]
+	}
+
+	indexes, err := c.Indexes(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load indexes: %w", err)
+	}
+	for i, t := range ret {
+		ret[i].Indexes = indexes[t.Key]
 	}
 
 	return ret, nil

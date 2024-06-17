@@ -17,6 +17,14 @@
 					"type": "int32"
 				}
 			],
+			"indexes": [
+				{
+					"name": "sponsors_pkey",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "sponsors_pkey",
@@ -43,6 +51,14 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "tags_pkey",
+					"columns": [
+						"id"
+					]
 				}
 			],
 			"constraints": {
@@ -1833,6 +1849,14 @@
 					"type": "string"
 				}
 			],
+			"indexes": [
+				{
+					"name": "type_monsters_pkey",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "type_monsters_pkey",
@@ -1849,6 +1873,7 @@
 			"schema": "",
 			"name": "type_monsters_mv",
 			"columns": null,
+			"indexes": null,
 			"constraints": {
 				"primary": null,
 				"foreign": null,
@@ -3632,6 +3657,7 @@
 					"type": "string"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": null,
 				"foreign": null,
@@ -3677,6 +3703,7 @@
 					"type": "int32"
 				}
 			],
+			"indexes": null,
 			"constraints": {
 				"primary": null,
 				"foreign": null,
@@ -3753,6 +3780,26 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "users_party_id_key",
+					"columns": [
+						"party_id"
+					]
+				},
+				{
+					"name": "users_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "users_primary_email_key",
+					"columns": [
+						"primary_email"
+					]
 				}
 			],
 			"constraints": {
@@ -3838,6 +3885,15 @@
 					"type": "int32"
 				}
 			],
+			"indexes": [
+				{
+					"name": "video_tags_pkey",
+					"columns": [
+						"video_id",
+						"tag_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "video_tags_pkey",
@@ -3908,6 +3964,20 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "videos_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "videos_sponsor_id_key",
+					"columns": [
+						"sponsor_id"
+					]
 				}
 			],
 			"constraints": {

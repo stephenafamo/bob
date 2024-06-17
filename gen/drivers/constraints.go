@@ -9,8 +9,10 @@ type DBConstraints struct {
 // PrimaryKey represents a primary key constraint in a database
 type PrimaryKey = Constraint
 
-// Constraint represents a primary key constraint in a database
-type Constraint struct {
+// Constraint represents a constraint in a database
+type Constraint NamedColumnList
+
+type NamedColumnList struct {
 	Name    string   `yaml:"name" json:"name"`
 	Columns []string `yaml:"columns" json:"columns"`
 }
