@@ -94,3 +94,9 @@ func Quote(ss ...string) Expression {
 func Raw(query string, args ...any) Expression {
 	return bmod.Raw(query, args...)
 }
+
+// SQL: CAST(a AS int)
+// Go: psql.Cast("a", "int")
+func Cast(exp bob.Expression, typname string) Expression {
+	return bmod.Cast(exp, typname)
+}

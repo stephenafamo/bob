@@ -36,6 +36,14 @@ var (
 	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
 	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
 	PrismaModelTemplates, _ = fs.Sub(prismaTemplates, "bobgen-prisma/templates/models")
+	typesReplacer           = strings.NewReplacer(
+		" ", "_",
+		".", "_",
+		",", "_",
+		"*", "_",
+		"[", "_",
+		"]", "_",
+	)
 )
 
 type Importer map[string]struct{}
@@ -220,6 +228,7 @@ var templateFunctions = template.FuncMap{
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
+	"normalizeType":      NormalizeType,
 	"enumVal": func(val string) string {
 		var newval strings.Builder
 		for _, r := range val {
@@ -656,4 +665,8 @@ func inList[T comparable](s []T, val T) bool {
 	}
 
 	return false
+}
+
+func NormalizeType(val string) string {
+	return typesReplacer.Replace(val)
 }

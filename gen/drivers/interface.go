@@ -25,11 +25,15 @@ type Interface[T any] interface {
 }
 
 type Type struct {
+	// If this type is an alias of another type
+	// this is useful to have custom randomization for a type e.g. xml
+	AliasOf string `yaml:"alias_of"`
+	// Imports needed for the type
 	Imports importers.List `yaml:"imports"`
-	// To be used in factory.random[T]
+	// Any other types that this type depends on
+	DependsOn []string `yaml:"depends_on"`
+	// To be used in factory.random_type
 	// a variable `f` of type `faker.Faker` is available
-	// since this is in a generic function, the final return should be like
-	// return any(yourVariableOrExpressions).(T)
 	RandomExpr string `yaml:"random_expr"`
 	// Additional imports for the randomize expression
 	RandomExprImports importers.List `yaml:"random_expr_imports"`

@@ -78,12 +78,12 @@ func New(config Config) Interface {
 	case "google":
 		types["uuid.UUID"] = drivers.Type{
 			Imports:    importers.List{`"github.com/google/uuid"`},
-			RandomExpr: `return any(uuid.New()).(T)`,
+			RandomExpr: `return uuid.New()`,
 		}
 	default:
 		types["uuid.UUID"] = drivers.Type{
 			Imports:    importers.List{`"github.com/gofrs/uuid/v5"`},
-			RandomExpr: `return any(uuid.Must(uuid.NewV4())).(T)`,
+			RandomExpr: `return uuid.Must(uuid.NewV4())`,
 		}
 	}
 

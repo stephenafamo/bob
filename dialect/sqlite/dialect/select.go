@@ -47,7 +47,7 @@ func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	}
 	args = append(args, selArgs...)
 
-	fromArgs, err := bob.ExpressIf(w, d, start+len(args), s.From, true, "\nFROM ", "")
+	fromArgs, err := bob.ExpressIf(w, d, start+len(args), s.From, s.From.Table != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}

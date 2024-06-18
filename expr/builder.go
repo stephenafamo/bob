@@ -102,3 +102,8 @@ func (e Builder[T, B]) Group(exps ...bob.Expression) T {
 func (e Builder[T, B]) Quote(aa ...string) T {
 	return X[T, B](Quote(aa...))
 }
+
+// quoted and joined... something like "users"."id"
+func (e Builder[T, B]) Cast(exp bob.Expression, typname string) T {
+	return X[T, B](Cast(exp, typname))
+}

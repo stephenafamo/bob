@@ -9,15 +9,14 @@
 func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
 	{{range $column := $table.Columns -}}
   {{- if $column.Default}}{{continue}}{{end -}}
+  {{- if $column.Nullable}}{{continue}}{{end -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
+	{{- $colAlias := $tAlias.Column $column.Name -}}
+  {{- $typDef :=  index $.Types $column.Type -}}
+  {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		if m.{{$colAlias}}.IsUnset() {
-			{{if $column.Nullable -}}
-          m.{{$colAlias}} = omitnull.FromNull(randomNull[{{$column.Type}}](nil))
-			{{- else -}}
-          m.{{$colAlias}} = omit.From(random[{{$column.Type}}](nil))
-			{{- end}}
-  }
+        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil))
+    }
 	{{end -}}
 }
 

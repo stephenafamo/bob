@@ -24,12 +24,13 @@ func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Templa
 // all columns are optional and should be set by mods
 type {{$tAlias.UpSingular}}Template struct {
     {{- range $column := $table.Columns -}}
-        {{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
+        {{- $typDef :=  index $.Types $column.Type -}}
+        {{- $colTyp := or $typDef.AliasOf $column.Type -}}
+        {{- $.Importer.ImportList $typDef.Imports -}}
         {{- $colAlias := $tAlias.Column $column.Name -}}
-        {{- $colTyp := $column.Type -}}
         {{- if $column.Nullable -}}
             {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-            {{- $colTyp = printf "null.Val[%s]" $column.Type -}}
+            {{- $colTyp = printf "null.Val[%s]" $colTyp -}}
         {{- end -}}
         {{$colAlias}} func() {{$colTyp}}
     {{end -}}

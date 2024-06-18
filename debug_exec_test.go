@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -109,11 +108,7 @@ func testDebugExecutor(t *testing.T, f func(Executor, string, ...any) error) {
 			continue
 		}
 
-		unquoted, err := strconv.Unquote(s)
-		if err != nil {
-			t.Fatalf("could not unquote: %s", s)
-		}
-		debugArgs = append(debugArgs, unquoted)
+		debugArgs = append(debugArgs, s)
 	}
 
 	if len(debugArgs) != len(args) {
@@ -123,7 +118,7 @@ func testDebugExecutor(t *testing.T, f func(Executor, string, ...any) error) {
 	for i := range args {
 		argStr := strings.TrimSpace(fmt.Sprint(args[i]))
 		debugStr := strings.TrimSpace(debugArgs[i])
-		if argStr != debugStr {
+		if "string: "+argStr != debugStr {
 			t.Fatalf("wrong debug arg %d.\nExpected: %s\nGot: %s", i, argStr, debugStr)
 		}
 	}
