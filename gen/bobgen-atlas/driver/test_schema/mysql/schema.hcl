@@ -353,12 +353,12 @@ table "type_monsters" {
   column "bytea_seven" {
     null    = false
     type    = binary(1)
-    default = "0x"
+    default = sql("0x0")
   }
   column "bytea_eight" {
     null    = false
     type    = binary(1)
-    default = "0x"
+    default = sql("0x0")
   }
   column "time_zero" {
     null = true

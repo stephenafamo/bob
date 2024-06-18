@@ -820,5 +820,17 @@ enum "workday" {
   schema = schema.public
   values = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 }
+domain "uint3" {
+  schema = schema.public
+  type   = smallint
+  check "uint3_check" {
+    expr = "(VALUE >= 0 AND VALUE <= 7)"
+  }
+}
+
+domain "my_int_array" {
+  schema = schema.public
+  type   = sql("integer[]")
+}
 schema "public" {
 }

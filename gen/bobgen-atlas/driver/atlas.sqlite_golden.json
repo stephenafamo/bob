@@ -61,7 +61,21 @@
 					"type": "string"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "autoinckeywordtest_sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				},
+				{
+					"name": "autoinckeywordtest_something_another",
+					"columns": [
+						"something",
+						"another"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_autoinckeywordtest",
@@ -85,13 +99,13 @@
 				],
 				"uniques": [
 					{
-						"name": "sqlite_autoindex_autoinckeywordtest_1",
+						"name": "autoinckeywordtest_sponsor_id",
 						"columns": [
 							"sponsor_id"
 						]
 					},
 					{
-						"name": "sqlite_autoindex_autoinckeywordtest_2",
+						"name": "autoinckeywordtest_something_another",
 						"columns": [
 							"something",
 							"another"
@@ -219,7 +233,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_sponsors_1",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_sponsors",
@@ -248,7 +269,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_tags_1",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_tags",
@@ -1509,7 +1537,14 @@
 					"type": "string"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_type_monsters_1",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_type_monsters",
@@ -1538,7 +1573,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_users_1",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_users",
@@ -1578,7 +1620,15 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_video_tags_1",
+					"columns": [
+						"video_id",
+						"tag_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_video_tags",
@@ -1651,7 +1701,20 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sqlite_autoindex_videos_1",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "videos_sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_videos",
@@ -1683,7 +1746,7 @@
 				],
 				"uniques": [
 					{
-						"name": "sqlite_autoindex_videos_2",
+						"name": "videos_sponsor_id",
 						"columns": [
 							"sponsor_id"
 						]

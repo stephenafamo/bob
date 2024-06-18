@@ -83,7 +83,34 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "one",
+					"columns": [
+						"one",
+						"two"
+					]
+				},
+				{
+					"name": "something",
+					"columns": [
+						"something",
+						"another"
+					]
+				},
+				{
+					"name": "sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_multi_keys",
@@ -139,7 +166,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_sponsors",
@@ -168,7 +202,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_tags",
@@ -1539,7 +1580,21 @@
 					"type": "string"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "int_one",
+					"columns": [
+						"int_one",
+						"int_two"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_type_monsters",
@@ -1614,7 +1669,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_users",
@@ -1654,7 +1716,21 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"video_id",
+						"tag_id"
+					]
+				},
+				{
+					"name": "tag_id",
+					"columns": [
+						"tag_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_video_tags",
@@ -1727,7 +1803,26 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "sponsor_id",
+					"columns": [
+						"sponsor_id"
+					]
+				},
+				{
+					"name": "user_id",
+					"columns": [
+						"user_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_videos",

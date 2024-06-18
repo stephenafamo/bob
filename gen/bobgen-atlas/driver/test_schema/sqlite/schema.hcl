@@ -47,7 +47,7 @@ table "videos" {
     on_update   = NO_ACTION
     on_delete   = NO_ACTION
   }
-  index "sqlite_autoindex_videos_2" {
+  index "videos_sponsor_id" {
     unique  = true
     columns = [column.sponsor_id]
   }
@@ -298,44 +298,44 @@ table "type_monsters" {
   }
   column "bytea_zero" {
     null = true
-    type = sql("binary")
+    type = clob
   }
   column "bytea_one" {
     null = true
-    type = sql("binary")
+    type = clob
   }
   column "bytea_two" {
     null = false
-    type = sql("binary")
+    type = clob
   }
   column "bytea_three" {
     null    = false
-    type    = sql("binary")
+    type    = clob
     default = "a"
   }
   column "bytea_four" {
     null    = true
-    type    = sql("binary")
+    type    = clob
     default = "b"
   }
   column "bytea_five" {
     null    = false
-    type    = sql("binary")
+    type    = clob
     default = "abcdefghabcdefghabcdefgh"
   }
   column "bytea_six" {
     null    = true
-    type    = sql("binary")
+    type    = clob
     default = "hgfedcbahgfedcbahgfedcba"
   }
   column "bytea_seven" {
     null    = false
-    type    = sql("binary")
+    type    = clob
     default = ""
   }
   column "bytea_eight" {
     null    = false
-    type    = sql("binary")
+    type    = clob
     default = ""
   }
   column "time_zero" {
@@ -506,27 +506,27 @@ table "type_monsters" {
   }
   column "binary_null" {
     null = true
-    type = sql("binary")
+    type = clob
   }
   column "binary_nnull" {
     null = false
-    type = sql("binary")
+    type = clob
   }
   column "varbinary_null" {
     null = true
-    type = sql("varbinary")
+    type = clob
   }
   column "varbinary_nnull" {
     null = false
-    type = sql("varbinary")
+    type = clob
   }
   column "tinyblob_null" {
     null = true
-    type = sql("tinyblob")
+    type = clob
   }
   column "tinyblob_nnull" {
     null = false
-    type = sql("tinyblob")
+    type = clob
   }
   column "blob_null" {
     null = true
@@ -538,19 +538,19 @@ table "type_monsters" {
   }
   column "mediumblob_null" {
     null = true
-    type = sql("mediumblob")
+    type = clob
   }
   column "mediumblob_nnull" {
     null = false
-    type = sql("mediumblob")
+    type = clob
   }
   column "longblob_null" {
     null = true
-    type = sql("longblob")
+    type = clob
   }
   column "longblob_nnull" {
     null = false
-    type = sql("longblob")
+    type = clob
   }
   column "varchar_null" {
     null = true
@@ -620,11 +620,11 @@ table "autoinckeywordtest" {
     on_update   = NO_ACTION
     on_delete   = NO_ACTION
   }
-  index "sqlite_autoindex_autoinckeywordtest_1" {
+  index "autoinckeywordtest_sponsor_id" {
     unique  = true
     columns = [column.sponsor_id]
   }
-  index "sqlite_autoindex_autoinckeywordtest_2" {
+  index "autoinckeywordtest_something_another" {
     unique  = true
     columns = [column.something, column.another]
   }
