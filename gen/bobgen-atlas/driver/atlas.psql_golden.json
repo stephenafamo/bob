@@ -17,7 +17,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "sponsors_pkey",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_sponsors",
@@ -46,7 +53,14 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "tags_pkey",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_tags",
@@ -1835,7 +1849,14 @@
 					"type": "string"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "type_monsters_pkey",
+					"columns": [
+						"id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_type_monsters",
@@ -1886,7 +1907,20 @@
 					"type": "string"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "users_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "users_primary_email_key",
+					"columns": [
+						"primary_email"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_users",
@@ -1933,7 +1967,15 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "video_tags_pkey",
+					"columns": [
+						"video_id",
+						"tag_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_video_tags",
@@ -2006,7 +2048,20 @@
 					"type": "int32"
 				}
 			],
-			"indexes": null,
+			"indexes": [
+				{
+					"name": "videos_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				{
+					"name": "videos_sponsor_id_key",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_videos",
