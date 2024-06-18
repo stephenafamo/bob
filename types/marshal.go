@@ -61,29 +61,3 @@ func (b *Binary[T, Tp]) Scan(value any) error {
 		return fmt.Errorf("cannot scan type %T: %v", value, value)
 	}
 }
-
-type Stringer[T interface {
-	~[]byte | ~string
-	fmt.Stringer
-}] struct {
-	Val T
-}
-
-func (s Stringer[T]) Value() (driver.Value, error) {
-	return s.Val.String(), nil
-}
-
-func (s *Stringer[T]) Scan(value any) error {
-	switch x := value.(type) {
-	case string:
-		s.Val = T(x)
-		return nil
-	case []byte:
-		s.Val = T(x)
-		return nil
-	case nil:
-		return nil
-	default:
-		return fmt.Errorf("cannot scan type %T: %v", value, value)
-	}
-}

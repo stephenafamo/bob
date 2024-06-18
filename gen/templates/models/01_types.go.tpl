@@ -6,11 +6,12 @@
 type {{$tAlias.UpSingular}} struct {
 	{{- range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{- $colTyp := $column.Type -}}
-	{{- $.Importer.ImportList (index $.Types $column.Type).Imports -}}
+  {{- $typDef :=  index $.Types $column.Type -}}
+	{{- $colTyp := or $typDef.AliasOf $column.Type -}}
+	{{- $.Importer.ImportList $typDef.Imports -}}
 	{{- $orig_col_name := $column.Name -}}
 	{{- if $column.Nullable -}}
-		{{- $colTyp = printf "null.Val[%s]" $column.Type -}}
+		{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
 		{{ $.Importer.Import "github.com/aarondl/opt/null"}}
 	{{- end -}}
 	{{- if trim $column.Comment}}{{range $column.Comment | splitList "\n"}}
@@ -76,13 +77,14 @@ type {{$tAlias.UpSingular}}Setter struct {
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $orig_col_name := $column.Name -}}
-	{{- $colTyp := "" -}}
+  {{- $typDef :=  index $.Types $column.Type -}}
+  {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		{{- if $column.Nullable -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-			{{- $colTyp = printf "omitnull.Val[%s]" $column.Type -}}
+			{{- $colTyp = printf "omitnull.Val[%s]" $colTyp -}}
 		{{- else -}}
 			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
-			{{- $colTyp = printf "omit.Val[%s]" $column.Type -}}
+			{{- $colTyp = printf "omit.Val[%s]" $colTyp -}}
 		{{- end -}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
 		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateIgnoreTags $.Tags | trim}}`
@@ -214,11 +216,12 @@ func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Co
 
 type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
 	{{range $column := $table.Columns -}}
-	{{- $colAlias := $tAlias.Column $column.Name -}}
+    {{- $colAlias := $tAlias.Column $column.Name -}}
+    {{- $colTyp := or (index $.Types $column.Type).AliasOf $column.Type -}}
 		{{- if $column.Nullable -}}
-			{{$colAlias}} {{$.Dialect}}.WhereNullMod[Q, {{$column.Type}}]
+			{{$colAlias}} {{$.Dialect}}.WhereNullMod[Q, {{$colTyp}}]
 		{{- else -}}
-			{{$colAlias}} {{$.Dialect}}.WhereMod[Q, {{$column.Type}}]
+			{{$colAlias}} {{$.Dialect}}.WhereMod[Q, {{$colTyp}}]
 		{{- end}}
   {{end -}}
 }
@@ -230,11 +233,12 @@ func ({{$tAlias.DownSingular}}Where[Q]) AliasedAs(alias string) {{$tAlias.DownSi
 func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias.DownSingular}}Columns) {{$tAlias.DownSingular}}Where[Q] {
 	return {{$tAlias.DownSingular}}Where[Q]{
 			{{range $column := $table.Columns -}}
+      {{- $colTyp := or (index $.Types $column.Type).AliasOf $column.Type -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}
 				{{- if $column.Nullable -}}
-					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$column.Type}}](cols.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$colTyp}}](cols.{{$colAlias}}),
 				{{- else -}}
-					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$column.Type}}](cols.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$colTyp}}](cols.{{$colAlias}}),
 				{{- end}}
 			{{end -}}
 	}

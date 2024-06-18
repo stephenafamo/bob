@@ -17,10 +17,11 @@ func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAl
 
 {{range $column := .Table.Columns}}
 {{$colAlias := $tAlias.Column $column.Name -}}
-{{- $colTyp := $column.Type -}}
+{{- $typDef :=  index $.Types $column.Type -}}
+{{- $colTyp := or $typDef.AliasOf $column.Type -}}
 {{- if $column.Nullable -}}
 	{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-	{{- $colTyp = printf "null.Val[%s]" $column.Type -}}
+	{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
 {{- end -}}
 
 // Set the model columns to this value
@@ -50,25 +51,17 @@ func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAl
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
 		o.{{$colAlias}} = func() {{$colTyp}} {
 			{{if $column.Nullable -}}
-				return randomNull[{{$column.Type}}](f)
-			{{- else -}}
-				return random[{{$column.Type}}](f)
-			{{- end}}
-		}
-	})
-}
+      	if f == nil {
+          f = &defaultFaker
+        }
 
-func (m {{$tAlias.DownSingular}}Mods) ensure{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		if o.{{$colAlias}} != nil {
-			return
-		}
+        if f.Bool() {
+          return null.FromPtr[{{or $typDef.AliasOf $column.Type}}](nil)
+        }
 
-		o.{{$colAlias}} = func() {{$colTyp}} {
-			{{if $column.Nullable -}}
-				return randomNull[{{$column.Type}}](f)
+        return null.From(random_{{normalizeType $column.Type}}(f))
 			{{- else -}}
-				return random[{{$column.Type}}](f)
+				return random_{{normalizeType $column.Type}}(f)
 			{{- end}}
 		}
 	})

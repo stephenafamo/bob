@@ -37,6 +37,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added the `pgtypes.Inet` for `inet` type in PostgreSQL. (thanks @gstarikov)
+- Added the `pgtypes.Macaddr` for `macaddr` and `macaddr8` types in PostgreSQL.
+- Added the `pgtypes.LSN` type for the `pg_lsn` type in PostgreSQL.
+- Added the `pgtypes.TxIDSnapshot` type for the `txid_snapshot` type in PostgreSQL.
+- Added the `pgtypes.TSVector` type for the `tsvector` type in PostgreSQL.
+- Added `AliasOf` property to codegen type definitions to allow for defining types that have their own randomization logic.
+- Added `DependsOn` property to codegen type definitions to allow for defining types that depend on other types. This ensures that necessary code for the dependent types is generated.
+- Add `xml` type definition for custom randomization logic.
+- Add the `Cast()` starter to all dialects to build `CAST(expr AS type)` expressions.
+- Load index information for MySQL, PostgreSQL, and SQLite tables. (thanks @mbezhanov)
+
+### Changed
+
+- Changed the `parray` package to `pgtypes`.
+- Moved `HStore` to the `pgtypes` package.
+- Simplified how random expressions are written for types by using standalone functions instead of a single generic function.
+- The default `DebugPrinter` now prints args a bit more nicely by using thier `Value()` method if they implement the `driver.Valuer` interface.
+- Only generate 2 random values when testing random expressions.
+
+### Removed
+
+- Removed `types.Stringer[T]`. It makes assumptions for how the type should be scanned and is not reliable.
+
+### Fixed
+
+- Do not add `FROM` clause to `SELECT` queries that are used as subqueries.
+
 ## [v0.27.1] - 2024-06-05
 
 ### Fixed

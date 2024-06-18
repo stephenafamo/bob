@@ -86,7 +86,7 @@ aliases:
 Custom types can be registered with the `types` key.  
 This will also allow you to edit the configuration of existing types, for example, to change how it is randomized by default.
 
-When defining a type, you should provide the `randomExpr`. This is an expression that returns a random value of the type. It is used in `factory.random[T]()`.
+When defining a type, you should provide the `randomExpr`. This is an expression that returns a random value of the type. It is used in `factory.random_type()`.
 
 There are things to note about writing the random expression:
 
@@ -100,16 +100,25 @@ In such cases, you can provide a `compareExpr` which is an expression that compa
 
 ```yaml
 types:
+  xml:
+    # OPTIONAL: If this type is an alias of another type
+    # this is useful to have custom randomization for a type e.g. xml
+    alias_of: "string"
+    # If this depends on another type, you can specify the type here
+    depends_on:
+      - "string"
+    # The random expression for this type
+    random_expr: |-
+      tag := f.Lorem().Word()
+      return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)
   type.JSON[json.RawMessage]:
     # If true, a test for the random expression will not be generated
     no_randomization_test: false
     imports:
       - '"encoding/json"'
       - '"github.com/stephenafamo/bob/types"'
-    # To be used in factory.random[T]
+    # To be used in factory.random_type
     # a variable `f` of type `faker.Faker` is available
-    # since this is in a generic function, the final return should be like
-    # return any(yourVariableOrExpressions).(T)
     random_expr: |-
       s := &bytes.Buffer{}
       s.WriteRune('{')
@@ -120,7 +129,7 @@ types:
           fmt.Fprintf(s, "%q:%q", f.Lorem().Word(), f.Lorem().Word())
       }
       s.WriteRune('}')
-      return any(types.NewJSON[json.RawMessage](s.Bytes())).(T)`
+      return types.NewJSON[json.RawMessage](s.Bytes())`
     # Imports for the random expression
     random_expr_imports:
       - '"bytes"'

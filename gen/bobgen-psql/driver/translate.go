@@ -45,8 +45,10 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "float64"
 	case "real":
 		c.Type = "float32"
-	case "bit", "interval", "uuint", "bit varying", "character", "character varying", "text", "xml":
+	case "bit", "interval", "uuint", "bit varying", "character", "character varying", "text":
 		c.Type = "string"
+	case "xml":
+		c.Type = "xml"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
 	case "bytea":
@@ -76,7 +78,11 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "cidr":
 		c.Type = "types.Text[netip.Addr, *netip.Addr]"
 	case "macaddr", "macaddr8":
-		c.Type = "types.Stringer[net.HardwareAddr]"
+		c.Type = "pgtypes.Macaddr"
+	case "pg_lsn":
+		c.Type = "pgtypes.LSN"
+	case "txid_snapshot":
+		c.Type = "pgtypes.TxIDSnapshot"
 	case "ENUM":
 		c.Type = "string"
 		for _, e := range d.enums {
@@ -92,7 +98,7 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "USER-DEFINED":
 		switch info.UDTName {
 		case "hstore":
-			c.Type = "types.HStore"
+			c.Type = "pgtypes.HStore"
 			c.DBType = "hstore"
 		case "citext":
 			c.Type = "string"

@@ -1359,7 +1359,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -1370,7 +1370,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "byteaarr_null",
@@ -1403,7 +1403,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]"
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonbarr_nnull",
@@ -1414,7 +1414,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]"
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonarr_null",
@@ -1425,7 +1425,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]"
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "jsonarr_nnull",
@@ -1436,7 +1436,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[types.JSON[json.RawMessage]]"
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]"
 				},
 				{
 					"name": "customarr_null",

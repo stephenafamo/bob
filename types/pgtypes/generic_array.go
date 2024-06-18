@@ -1,4 +1,4 @@
-package parray
+package pgtypes
 
 import (
 	"database/sql/driver"

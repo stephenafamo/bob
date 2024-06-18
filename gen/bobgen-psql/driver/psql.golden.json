@@ -1395,7 +1395,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Stringer[net.HardwareAddr]"
+					"type": "pgtypes.Macaddr"
 				},
 				{
 					"name": "macaddr_nnull",
@@ -1406,7 +1406,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Stringer[net.HardwareAddr]"
+					"type": "pgtypes.Macaddr"
 				},
 				{
 					"name": "money_null",
@@ -1461,7 +1461,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.LSN"
 				},
 				{
 					"name": "pg_lsn_nnull",
@@ -1472,7 +1472,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.LSN"
 				},
 				{
 					"name": "point_null",
@@ -1571,7 +1571,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.TxIDSnapshot"
 				},
 				{
 					"name": "txid_nnull",
@@ -1582,7 +1582,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.TxIDSnapshot"
 				},
 				{
 					"name": "xml_null",
@@ -1593,7 +1593,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "xml"
 				},
 				{
 					"name": "xml_nnull",
@@ -1604,7 +1604,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "xml"
 				},
 				{
 					"name": "intarr_null",
@@ -1681,7 +1681,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -1692,7 +1692,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "byteaarr_null",
@@ -1769,7 +1769,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[UnicodeEnum]"
+					"type": "pgtypes.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "enumarr_nnull",
@@ -1780,7 +1780,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[UnicodeEnum]"
+					"type": "pgtypes.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "customarr_null",
@@ -3203,7 +3203,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Stringer[net.HardwareAddr]"
+					"type": "pgtypes.Macaddr"
 				},
 				{
 					"name": "macaddr_nnull",
@@ -3214,7 +3214,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Stringer[net.HardwareAddr]"
+					"type": "pgtypes.Macaddr"
 				},
 				{
 					"name": "money_null",
@@ -3269,7 +3269,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.LSN"
 				},
 				{
 					"name": "pg_lsn_nnull",
@@ -3280,7 +3280,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.LSN"
 				},
 				{
 					"name": "point_null",
@@ -3379,7 +3379,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.TxIDSnapshot"
 				},
 				{
 					"name": "txid_nnull",
@@ -3390,7 +3390,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "pgtypes.TxIDSnapshot"
 				},
 				{
 					"name": "xml_null",
@@ -3401,7 +3401,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "xml"
 				},
 				{
 					"name": "xml_nnull",
@@ -3412,7 +3412,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "xml"
 				},
 				{
 					"name": "intarr_null",
@@ -3489,7 +3489,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "decimalarr_nnull",
@@ -3500,7 +3500,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.Array[decimal.Decimal]"
+					"type": "pgtypes.Array[decimal.Decimal]"
 				},
 				{
 					"name": "byteaarr_null",
@@ -3577,7 +3577,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[UnicodeEnum]"
+					"type": "pgtypes.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "enumarr_nnull",
@@ -3588,7 +3588,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "parray.EnumArray[UnicodeEnum]"
+					"type": "pgtypes.EnumArray[UnicodeEnum]"
 				},
 				{
 					"name": "customarr_null",

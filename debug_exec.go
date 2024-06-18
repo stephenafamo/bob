@@ -3,6 +3,7 @@ package bob
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"io"
 	"os"
@@ -22,7 +23,11 @@ type writerPrinter struct{ io.Writer }
 func (w writerPrinter) PrintQuery(query string, args ...any) {
 	fmt.Fprintln(w.Writer, query)
 	for i, arg := range args {
-		fmt.Fprintf(w.Writer, "%d: %#v\n", i, arg)
+		val := arg
+		if valuer, ok := val.(driver.Valuer); ok {
+			val, _ = valuer.Value()
+		}
+		fmt.Fprintf(w.Writer, "%d: %T: %v\n", i, arg, val)
 	}
 	fmt.Fprintf(w.Writer, "\n")
 }
