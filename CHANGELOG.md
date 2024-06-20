@@ -67,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Do not add `FROM` clause to `SELECT` queries that are used as subqueries.
+- Enum values are now checked for validity after scanning.
 
 ## [v0.27.1] - 2024-06-05
 
