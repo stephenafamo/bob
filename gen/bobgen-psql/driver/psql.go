@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/aarondl/opt/null"
 	"github.com/lib/pq"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -230,6 +231,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		) AS array_type,
 	c.domain_name,
 	c.column_default,
+	c.character_maximum_length,
 	coalesce(col_description(('"' || c.table_schema || '"."' || c.table_name || '"')::regclass::oid, ordinal_position), '') AS column_comment,
 	c.is_nullable = 'YES' AS is_nullable,
 	(
@@ -288,7 +290,8 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		column_comment,
 		is_nullable,
 		is_generated,
-		is_identity
+		is_identity,
+		character_maximum_length
 	FROM (
 		%s
 	) AS c`, tableQuery) // matviewQuery, tableQuery)
@@ -325,16 +328,18 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		var colName, colType, udtSchema, udtName, comment string
 		var defaultValue, arrayType, domainName *string
 		var nullable, generated, identity bool
-		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
+		var charMaxLen null.Val[int]
+		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity, &charMaxLen); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", info.Key, err)
 		}
 
 		column := drivers.Column{
-			Name:      colName,
-			DBType:    colType,
-			Comment:   comment,
-			Nullable:  nullable,
-			Generated: generated,
+			Name:       colName,
+			DBType:     colType,
+			Comment:    comment,
+			Nullable:   nullable,
+			Generated:  generated,
+			CharMaxLen: charMaxLen,
 		}
 		info := colInfo{
 			UDTSchema: udtSchema,

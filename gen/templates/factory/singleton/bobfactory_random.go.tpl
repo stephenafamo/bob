@@ -3,10 +3,12 @@
 
 var defaultFaker = faker.New()
 
+{{$hasCharMaxLen := false}}
 {{$doneTypes := dict }}
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
+      {{- if $column.CharMaxLen -}}{{- $hasCharMaxLen = true -}}{{- end -}}
       {{- $colTyp := $column.Type -}}
       {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
       {{- $_ :=  set $doneTypes $column.Type nil -}}
@@ -34,3 +36,12 @@ var defaultFaker = faker.New()
       {{$typDef.RandomExpr}}
     }
 {{end -}}
+
+{{- if $hasCharMaxLen -}}
+func truncateString(s string, maxLen int) string {
+	if len(s) > maxLen {
+		return s[:maxLen]
+	}
+	return s
+}
+{{- end -}}
