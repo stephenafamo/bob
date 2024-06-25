@@ -151,6 +151,10 @@ const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
 func AddPgEnumArrayType(types drivers.Types, enumTyp string) string {
 	arrTyp := fmt.Sprintf("pgtypes.EnumArray[%s]", enumTyp)
 
+	// premptively add the enum type
+	// this is to prevent issues if the enum is only used in an array
+	EnumType(types, enumTyp)
+
 	types[arrTyp] = drivers.Type{
 		DependsOn:           []string{enumTyp},
 		Imports:             importers.List{pgtypesImport},

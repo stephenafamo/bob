@@ -38,6 +38,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Also add the enum to the type array if an array of the enum is added. This is to prvent issues if the enum is only used in an array.
+
 ## [v0.28.0] - 2024-06-25
 
 ### Added
