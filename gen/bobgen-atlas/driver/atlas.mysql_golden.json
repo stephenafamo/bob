@@ -88,27 +88,31 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "one",
 					"columns": [
 						"one",
 						"two"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "something",
 					"columns": [
 						"something",
 						"another"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sponsor_id",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -171,7 +175,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -207,7 +212,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1585,14 +1591,16 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "int_one",
 					"columns": [
 						"int_one",
 						"int_two"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1674,7 +1682,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1722,13 +1731,15 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "tag_id",
 					"columns": [
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1808,19 +1819,22 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sponsor_id",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "user_id",
 					"columns": [
 						"user_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {

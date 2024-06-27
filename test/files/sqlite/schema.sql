@@ -252,3 +252,14 @@ create table one.as_generated_columns (
    e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
 );
 
+CREATE TABLE test_index_expressions (
+    col1 int,
+    col2 int,
+    col3 int
+);
+CREATE INDEX idx1 ON test_index_expressions ((col1 + col2));
+CREATE INDEX idx2 ON test_index_expressions ((col1 + col2), col3);
+CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
+CREATE INDEX idx4 ON test_index_expressions (col3);
+CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
+CREATE INDEX idx6 ON test_index_expressions (POW(col3, 2));

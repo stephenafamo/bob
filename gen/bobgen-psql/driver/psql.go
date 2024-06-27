@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 	"sort"
 
 	"github.com/lib/pq"
@@ -14,6 +15,8 @@ import (
 	"github.com/stephenafamo/scan/stdscan"
 	"github.com/volatiletech/strmangle"
 )
+
+var rgxValidColumnName = regexp.MustCompile(`(?i)^[a-z_][a-z0-9_]*$`)
 
 type (
 	Interface = drivers.Interface[any]
@@ -431,7 +434,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 		SELECT pg_get_indexdef(x.indexrelid, k + 1, true)
 		FROM generate_subscripts(x.indkey, 1) as k
 		ORDER BY k
-	) AS column_names
+	) AS index_cols
 	FROM pg_index x
 	JOIN pg_class t ON t.oid = x.indrelid
 	JOIN pg_class i ON i.oid = x.indexrelid
@@ -440,10 +443,10 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 	ORDER BY n.nspname, t.relname, i.relname`
 
 	type indexColumns struct {
-		SchemaName  string
-		TableName   string
-		IndexName   string
-		ColumnNames pq.StringArray
+		SchemaName string
+		TableName  string
+		IndexName  string
+		IndexCols  pq.StringArray // a list of column names and/or expressions
 	}
 	res, err := stdscan.All(ctx, d.conn, scan.StructMapper[indexColumns](), query, d.config.Schemas)
 	if err != nil {
@@ -454,10 +457,16 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 		if r.SchemaName != "" && r.SchemaName != d.config.SharedSchema {
 			key = r.SchemaName + "." + r.TableName
 		}
-		ret[key] = append(ret[key], drivers.Index{
-			Name:    r.IndexName,
-			Columns: r.ColumnNames,
-		})
+		var index drivers.Index
+		index.Name = r.IndexName
+		for _, colName := range r.IndexCols {
+			if rgxValidColumnName.MatchString(colName) {
+				index.Columns = append(index.Columns, colName)
+			} else {
+				index.Expressions = append(index.Expressions, colName)
+			}
+		}
+		ret[key] = append(ret[key], index)
 	}
 
 	return ret, nil

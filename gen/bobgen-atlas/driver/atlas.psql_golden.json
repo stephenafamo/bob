@@ -22,7 +22,8 @@
 					"name": "sponsors_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -58,7 +59,8 @@
 					"name": "tags_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1854,7 +1856,8 @@
 					"name": "type_monsters_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1912,13 +1915,15 @@
 					"name": "users_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "users_primary_email_key",
 					"columns": [
 						"primary_email"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1973,7 +1978,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -2053,13 +2059,15 @@
 					"name": "videos_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "videos_sponsor_id_key",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {

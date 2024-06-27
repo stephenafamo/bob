@@ -22,7 +22,8 @@
 					"name": "sponsors_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -58,7 +59,8 @@
 					"name": "tags_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -68,6 +70,100 @@
 						"id"
 					]
 				},
+				"foreign": null,
+				"uniques": null
+			}
+		},
+		{
+			"key": "test_index_expressions",
+			"schema": "",
+			"name": "test_index_expressions",
+			"columns": [
+				{
+					"name": "col1",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "col2",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "col3",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "idx1",
+					"columns": null,
+					"expressions": [
+						"(col1 + col2)"
+					]
+				},
+				{
+					"name": "idx2",
+					"columns": [
+						"col3"
+					],
+					"expressions": [
+						"(col1 + col2)"
+					]
+				},
+				{
+					"name": "idx3",
+					"columns": [
+						"col1"
+					],
+					"expressions": [
+						"(col2 + col3)"
+					]
+				},
+				{
+					"name": "idx4",
+					"columns": [
+						"col3"
+					],
+					"expressions": null
+				},
+				{
+					"name": "idx5",
+					"columns": [
+						"col1",
+						"col2"
+					],
+					"expressions": null
+				},
+				{
+					"name": "idx6",
+					"columns": null,
+					"expressions": [
+						"pow(col3::double precision, 2::double precision)"
+					]
+				}
+			],
+			"constraints": {
+				"primary": null,
 				"foreign": null,
 				"uniques": null
 			}
@@ -1854,7 +1950,8 @@
 					"name": "type_monsters_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -3787,19 +3884,22 @@
 					"name": "users_party_id_key",
 					"columns": [
 						"party_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "users_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "users_primary_email_key",
 					"columns": [
 						"primary_email"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -3891,7 +3991,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -3971,13 +4072,15 @@
 					"name": "videos_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "videos_sponsor_id_key",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {

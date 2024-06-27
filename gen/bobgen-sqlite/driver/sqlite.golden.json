@@ -66,14 +66,16 @@
 					"name": "sqlite_autoindex_autoinckeywordtest_1",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sqlite_autoindex_autoinckeywordtest_2",
 					"columns": [
 						"something",
 						"another"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -333,14 +335,16 @@
 					"name": "sqlite_autoindex_autoinckeywordtest_1",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sqlite_autoindex_autoinckeywordtest_2",
 					"columns": [
 						"something",
 						"another"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -405,7 +409,8 @@
 					"name": "sqlite_autoindex_sponsors_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -441,7 +446,8 @@
 					"name": "sqlite_autoindex_tags_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -523,7 +529,8 @@
 					"name": "sqlite_autoindex_users_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -571,7 +578,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -651,13 +659,15 @@
 					"name": "sqlite_autoindex_videos_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -721,7 +731,8 @@
 					"name": "sqlite_autoindex_sponsors_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -757,7 +768,8 @@
 					"name": "sqlite_autoindex_tags_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -767,6 +779,100 @@
 						"id"
 					]
 				},
+				"foreign": [],
+				"uniques": []
+			}
+		},
+		{
+			"key": "test_index_expressions",
+			"schema": "",
+			"name": "test_index_expressions",
+			"columns": [
+				{
+					"name": "col1",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "col2",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "col3",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				}
+			],
+			"indexes": [
+				{
+					"name": "idx1",
+					"columns": null,
+					"expressions": [
+						"(col1 + col2)"
+					]
+				},
+				{
+					"name": "idx2",
+					"columns": [
+						"col3"
+					],
+					"expressions": [
+						"(col1 + col2)"
+					]
+				},
+				{
+					"name": "idx3",
+					"columns": [
+						"col1"
+					],
+					"expressions": [
+						"(col2 + col3)"
+					]
+				},
+				{
+					"name": "idx4",
+					"columns": [
+						"col3"
+					],
+					"expressions": null
+				},
+				{
+					"name": "idx5",
+					"columns": [
+						"col1",
+						"col2"
+					],
+					"expressions": null
+				},
+				{
+					"name": "idx6",
+					"columns": null,
+					"expressions": [
+						"POW(col3, 2)"
+					]
+				}
+			],
+			"constraints": {
+				"primary": null,
 				"foreign": [],
 				"uniques": []
 			}
@@ -2025,7 +2131,8 @@
 					"name": "sqlite_autoindex_type_monsters_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -2107,7 +2214,8 @@
 					"name": "sqlite_autoindex_users_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -2155,7 +2263,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -2235,13 +2344,15 @@
 					"name": "sqlite_autoindex_videos_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {

@@ -205,3 +205,15 @@ CREATE TABLE multi_keys (
     UNIQUE(something, another),
     FOREIGN KEY (one, two) REFERENCES type_monsters(int_one, int_two)
 );
+
+CREATE TABLE test_index_expressions (
+    col1 int,
+    col2 int,
+    col3 int
+);
+CREATE INDEX idx1 ON test_index_expressions ((col1 + col2));
+CREATE INDEX idx2 ON test_index_expressions ((col1 + col2), col3);
+CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
+CREATE INDEX idx4 ON test_index_expressions (col3);
+CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
+CREATE INDEX idx6 ON test_index_expressions ((POW(col3, 2)));

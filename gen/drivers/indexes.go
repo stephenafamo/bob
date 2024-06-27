@@ -4,4 +4,8 @@ package drivers
 type DBIndexes map[string][]Index
 
 // Index represents an index in a table
-type Index NamedColumnList
+type Index struct {
+	Name        string   `yaml:"name" json:"name"`
+	Columns     []string `yaml:"columns" json:"columns"`
+	Expressions []string `yaml:"expressions" json:"expressions"`
+}
