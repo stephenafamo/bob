@@ -66,14 +66,16 @@
 					"name": "autoinckeywordtest_sponsor_id",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "autoinckeywordtest_something_another",
 					"columns": [
 						"something",
 						"another"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -238,7 +240,8 @@
 					"name": "sqlite_autoindex_sponsors_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -274,7 +277,8 @@
 					"name": "sqlite_autoindex_tags_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1542,7 +1546,8 @@
 					"name": "sqlite_autoindex_type_monsters_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1578,7 +1583,8 @@
 					"name": "sqlite_autoindex_users_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1626,7 +1632,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {
@@ -1706,13 +1713,15 @@
 					"name": "sqlite_autoindex_videos_1",
 					"columns": [
 						"id"
-					]
+					],
+					"expressions": null
 				},
 				{
 					"name": "videos_sponsor_id",
 					"columns": [
 						"sponsor_id"
-					]
+					],
+					"expressions": null
 				}
 			],
 			"constraints": {

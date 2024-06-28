@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aarondl/opt/null"
 	"github.com/go-sql-driver/mysql"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -393,7 +394,8 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 	query := `SELECT
 	s.table_name AS table_name,
 	s.index_name AS index_name,
-	s.column_name AS column_name
+	s.column_name AS column_name,
+	s.expression AS expression
 	FROM information_schema.statistics s
 	WHERE s.table_schema = ?
 	ORDER BY s.table_name,s.index_name,s.seq_in_index`
@@ -401,7 +403,8 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 	type indexColumn struct {
 		TableName  string
 		IndexName  string
-		ColumnName string
+		ColumnName null.Val[string]
+		Expression null.Val[string]
 	}
 	indexColumns, err := stdscan.All(ctx, d.conn, scan.StructMapper[indexColumn](), query, d.dbName)
 	if err != nil {
@@ -419,7 +422,12 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 		}
 		table = c.TableName
 		current.Name = c.IndexName
-		current.Columns = append(current.Columns, c.ColumnName)
+		if c.ColumnName.IsSet() {
+			current.Columns = append(current.Columns, c.ColumnName.GetOrZero())
+		}
+		if c.Expression.IsSet() {
+			current.Expressions = append(current.Expressions, c.Expression.GetOrZero())
+		}
 	}
 
 	return ret, nil
