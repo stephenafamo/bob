@@ -52,6 +52,40 @@ func TestDelete(t *testing.T) {
 			ExpectedSQL:  "DELETE FROM employees USING accounts WHERE (`accounts`.`name` = ?) AND (`employees`.`id` = `accounts`.`sales_person`)",
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
+
+		"with MaxExecutionTime": {
+			Query: mysql.Delete(
+				dm.From("films"),
+				dm.MaxExecutionTime(1000),
+			),
+			ExpectedSQL:  "DELETE /*+ MAX_EXECUTION_TIME(1000) */ FROM films",
+		},
+		
+		"with LowPriority": {
+	            Query: mysql.Delete(
+	                dm.From("employees"),
+	                dm.LowPriority(),
+	            ),
+	            ExpectedSQL:  "DELETE LOW_PRIORITY FROM employees",
+	            ExpectedArgs: nil,
+	        },
+	
+			"with Ignore": {
+	            Query: mysql.Delete(
+	                dm.From("employees"),
+	                dm.Ignore(),
+	            ),
+	            ExpectedSQL:  "DELETE IGNORE FROM employees",
+	            ExpectedArgs: nil,
+	        },
+	
+			"with FromAs": {
+	            Query: mysql.Delete(
+	                dm.FromAs("employees", "e"),
+	            ),
+	            ExpectedSQL:  "DELETE FROM employees AS `e`",
+	            ExpectedArgs: nil,
+	        },
 	}
 
 	testutils.RunTests(t, examples, formatter)
