@@ -3,6 +3,7 @@
 <!--toc:start-->
 
 - [Changelog](#changelog)
+  - [[v0.28.1] - 2024-06-28](#v0281-2024-06-28)
   - [[v0.28.0] - 2024-06-25](#v0280-2024-06-25)
   - [[v0.27.1] - 2024-06-05](#v0271-2024-06-05)
   - [[v0.27.0] - 2024-06-05](#v0270-2024-06-05)
@@ -38,11 +39,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.28.1] - 2024-06-28
 
 ### Fixed
 
 - Also add the enum to the type array if an array of the enum is added. This is to prvent issues if the enum is only used in an array.
+- Handle null column names in expression indexes. (thanks @mbezhanov)
 
 ## [v0.28.0] - 2024-06-25
 
