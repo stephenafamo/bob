@@ -179,7 +179,7 @@ To fluently build type safe queries, mods are generated to easily add `WHERE` fi
 
 ```go
 // SELECT * FROM "jets" WHERE "jets"."id" = 100
-models.Jets(
+models.Jets.Query(
     ctx, db,
     models.SelectWhere.Jets.ID.EQ(100),
 )
@@ -192,7 +192,7 @@ Where filters can be combined using `WhereOr` and `WhereAnd`. These can be neste
 // WHERE "users"."name" IS NULL
 // OR "users"."email" IS NOT NULL
 // OR ("users"."age" > 21 AND "users"."location" IS NOT NULL)
-users, err := models.Users(
+users, err := models.Users.Query(
     ctx, db,
     psql.WhereOr(
         models.SelectWhere.Users.Name.IsNull(),
@@ -225,7 +225,7 @@ To make joining tables easier, join helpers are generated for each table. The ge
 // SELECT * FROM "jets"
 // INNER JOIN "pilots" ON "pilots"."id" = "jets"."pilot_id"
 // INNER JOIN "airports" ON "airports"."id" = "jets"."airport_id"
-models.Jets(
+models.Jets.Query(
     ctx, db,
     models.SelectJoins.Jets.InnerJoin.Pilots(ctx),
     models.SelectJoins.Jets.InnerJoin.Airports(ctx),
