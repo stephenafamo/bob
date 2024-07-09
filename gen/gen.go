@@ -125,6 +125,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		Aliases:           s.Config.Aliases,
 		Types:             types,
 		Relationships:     relationships,
+		NoFactory:         s.Config.NoFactory,
 		NoTests:           s.Config.NoTests,
 		NoBackReferencing: s.Config.NoBackReferencing,
 		StructTagCasing:   s.Config.StructTagCasing,
@@ -132,6 +133,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,
 		ModelsPackage:     modPkg,
+		DriverName:        dbInfo.DriverName,
 	}
 
 	for _, v := range s.Config.TagIgnore {

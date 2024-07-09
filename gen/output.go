@@ -275,6 +275,9 @@ func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
+				if e.isTest {
+					pkgName = fmt.Sprintf("%s_test", pkgName)
+				}
 				version = goVersion
 				writeFileDisclaimer(headerOut)
 				writePackageName(headerOut, pkgName)

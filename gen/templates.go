@@ -23,19 +23,23 @@ var templates embed.FS
 //go:embed bobgen-mysql/templates
 var mysqlTemplates embed.FS
 
-//go:embed bobgen-sqlite/templates
-var sqliteTemplates embed.FS
-
 //go:embed bobgen-prisma/templates
 var prismaTemplates embed.FS
+
+//go:embed bobgen-psql/templates
+var psqlTemplates embed.FS
+
+//go:embed bobgen-sqlite/templates
+var sqliteTemplates embed.FS
 
 //nolint:gochecknoglobals
 var (
 	ModelTemplates, _       = fs.Sub(templates, "templates/models")
 	FactoryTemplates, _     = fs.Sub(templates, "templates/factory")
 	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
-	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
 	PrismaModelTemplates, _ = fs.Sub(prismaTemplates, "bobgen-prisma/templates/models")
+	PSQLModelTemplates, _   = fs.Sub(psqlTemplates, "bobgen-psql/templates/models")
+	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
 	typesReplacer           = strings.NewReplacer(
 		" ", "_",
 		".", "_",
@@ -97,6 +101,7 @@ type TemplateData[T any] struct {
 	AddSoftDeletes    bool
 	AddEnumTypes      bool
 	EnumNullPrefix    string
+	NoFactory         bool
 	NoTests           bool
 	NoBackReferencing bool
 
@@ -112,6 +117,9 @@ type TemplateData[T any] struct {
 	// Supplied by the driver
 	ExtraInfo     T
 	ModelsPackage string
+
+	// DriverName is the module name of the underlying `database/sql` driver
+	DriverName string
 }
 
 func (t *TemplateData[T]) ResetImports() {

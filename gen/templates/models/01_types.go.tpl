@@ -270,3 +270,21 @@ func build{{$tAlias.UpSingular}}Joins[Q dialect.Joinable](cols {{$tAlias.DownSin
 	}
 }
 {{- end}}
+
+{{ if $table.Constraints.Uniques }}
+var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
+	{{range $constraint := $table.Constraints.Uniques}}
+	{{ $s := $constraint.Name }}
+	{{ if eq "sqlite" $.Dialect }}
+	{{ $s = printf "%s.%s" $table.Name (join (printf ", %s." $table.Name) $constraint.Columns) }}
+	{{ end }}
+	ErrUnique{{join "_and_" $constraint.Columns | camelcase}}: &errUniqueConstraint{s: "{{$s}}"},
+	{{end}}
+}
+
+type {{$tAlias.DownSingular}}Errors struct {
+	{{range $constraint := $table.Constraints.Uniques}}
+	ErrUnique{{join "_and_" $constraint.Columns | camelcase}} error
+	{{ end }}
+}
+{{ end }}

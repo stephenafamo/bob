@@ -61,6 +61,8 @@ type DBInfo[T any] struct {
 	Tables    []Table `json:"tables"`
 	Enums     []Enum  `json:"enums"`
 	ExtraInfo T       `json:"extra_info"`
+	// DriverName is the module name of the underlying `database/sql` driver
+	DriverName string `json:"driver_name"`
 }
 
 type Enum struct {

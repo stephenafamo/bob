@@ -130,3 +130,18 @@ func randInt() int64 {
 
 	return out % 10000
 }
+
+type errUniqueConstraint struct {
+	// s is a string uniquely identifying the constraint in the raw error message returned from the database.
+	s string
+}
+
+func (e *errUniqueConstraint) Error() string {
+  return e.s
+}
+
+{{block "unique_constraint_error_detection_method" . -}}
+func (e *errUniqueConstraint) Is(target error) bool {
+  return false
+}
+{{end}}
