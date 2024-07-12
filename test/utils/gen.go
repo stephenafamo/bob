@@ -134,7 +134,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	aliaser := &aliasPlugin[T]{}
 
 	t.Run("generate", func(t *testing.T) {
-		testDriver[T](t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath, aliaser)
+		testDriver(t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath, aliaser)
 	})
 
 	aliasesFolder := filepath.Join(config.Root, "aliases")
@@ -144,7 +144,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		testDriver[T](t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath, aliaser)
+		testDriver(t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath, aliaser)
 	})
 }
 
