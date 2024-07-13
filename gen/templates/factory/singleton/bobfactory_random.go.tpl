@@ -1,4 +1,3 @@
-{{$.Importer.Import "strings"}}
 {{$.Importer.Import "github.com/jaswdr/faker/v2"}}
 
 var defaultFaker = faker.New()
