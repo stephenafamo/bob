@@ -16,8 +16,10 @@ The configuration is marshalled in to the [Config struct](https://pkg.go.dev/git
 type Config struct {
 	// Struct tags to generate
 	Tags []string `yaml:"tags"`
-	// Disable generating factory for models.
+	// Disable generating factories for models
 	NoFactory bool `yaml:"no_factory"`
+	// Disable generating go test files
+	NoTests bool `yaml:"no_tests"`
 	// Disable back referencing in the loaded relationship structs
 	NoBackReferencing bool `yaml:"no_back_referencing"`
 	// Delete the output folder (rm -rf) before generation to ensure sanity
@@ -47,7 +49,8 @@ type Config struct {
 | Name                | Description                                                                                                     | Default |
 | ------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
 | tags                | Struct tags to generate                                                                                         | []      |
-| no_factory          | Disable generation factories for models                                                                         | false   |
+| no_factory          | Disable generating factories for models                                                                         | false   |
+| no_tests            | Disable generating go test files                                                                                | false   |
 | no_back_referencing | If this is set to true, when relationships are loaded, the parent is not added to the loaded object's relations | false   |
 | wipe                | If to delete the output folder before generation                                                                | false   |
 | struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake" |
