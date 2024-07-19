@@ -40,12 +40,6 @@ var (
 
 //nolint:gochecknoglobals
 var (
-	// templateByteBuffer is re-used by all template construction to avoid
-	// allocating more memory than is needed. This will later be a problem for
-	// concurrency, address it then.
-	templateByteBuffer       = &bytes.Buffer{}
-	templateHeaderByteBuffer = &bytes.Buffer{}
-
 	rgxRemoveNumberedPrefix = regexp.MustCompile(`^[0-9]+_`)
 	rgxSyntaxError          = regexp.MustCompile(`(\d+):\d+: `)
 
@@ -63,6 +57,10 @@ type Output struct {
 
 	templates     *templateList
 	testTemplates *templateList
+
+	// Scratch buffers used as staging area for preparing parsed template data
+	templateByteBuffer       *bytes.Buffer
+	templateHeaderByteBuffer *bytes.Buffer
 }
 
 // initOutFolders creates the folders that will hold the generated output.
@@ -236,9 +234,9 @@ func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], goVers
 func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
-			headerOut := templateHeaderByteBuffer
+			headerOut := e.output.templateHeaderByteBuffer
 			headerOut.Reset()
-			out := templateByteBuffer
+			out := e.output.templateByteBuffer
 			out.Reset()
 
 			isGo := filepath.Ext(ext) == ".go"
@@ -294,8 +292,8 @@ func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
 }
 
 func executeSingletonTemplates[T any](e executeTemplateData[T], goVersion string) error {
-	headerOut := templateHeaderByteBuffer
-	out := templateByteBuffer
+	headerOut := e.output.templateHeaderByteBuffer
+	out := e.output.templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
 		normalized, isSingleton, isGo, usePkg := outputFilenameParts(tplName)
 		if !isSingleton {

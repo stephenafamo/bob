@@ -158,6 +158,8 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 
 func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 	knownKeys := make(map[string]struct{})
+	templateByteBuffer := &bytes.Buffer{}
+	templateHeaderByteBuffer := &bytes.Buffer{}
 
 	for _, o := range s.Outputs {
 		if len(o.Templates) == 0 {
@@ -192,6 +194,10 @@ func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
 		if err != nil {
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
+
+		// assign reusable scratch buffers to provided Output
+		o.templateByteBuffer = templateByteBuffer
+		o.templateHeaderByteBuffer = templateHeaderByteBuffer
 
 		if err := generateSingletonOutput(o, data, goVersion); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
