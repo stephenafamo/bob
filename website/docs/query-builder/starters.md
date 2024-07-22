@@ -66,7 +66,7 @@ There are a number of common starter functions shared by all supported dialects:
   psql.Placeholders(3)
   ```
 
-- `Group(...Expression)`: To easily group a number of expressions. Wraps them in parentheses **AND** seperates them with commas.
+- `Group(...Expression)`: To easily group a number of expressions. Wraps them in parentheses **AND** separates them with commas.
 
   ```go
   // SQL: (a, b, c)

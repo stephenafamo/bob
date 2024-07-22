@@ -47,7 +47,7 @@ type Config struct {
 ```
 
 | Name                | Description                                                                                                     | Default |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
+|---------------------|-----------------------------------------------------------------------------------------------------------------|---------|
 | tags                | Struct tags to generate                                                                                         | []      |
 | no_factory          | Disable generating factories for models                                                                         | false   |
 | no_tests            | Disable generating go test files                                                                                | false   |
@@ -66,9 +66,13 @@ type Config struct {
 
 ## Aliases
 
-Names are automatically generated for you. If you name your database entities properly you will likely have descriptive names generated in the end. However in the case where the names in your database are bad AND unchangeable, or bob's inference doesn't understand the names you do have (even though they are good and correct) you can use aliases to change the name of your tables, columns and relationships in the generated Go code.
+Names are automatically generated for you. If you name your database entities properly you will likely have descriptive names generated in the end. However, in the case where the names in your database are bad AND unchangeable, or Bob's inference doesn't understand the names you do have (even though they are good and correct) you can use aliases to change the name of your tables, columns and relationships in the generated Go code.
 
-_Note: It is not required to provide all parts of all names. Anything left out will be inferred by default._
+:::note
+
+It is not required to provide all parts of all names. Anything left out will be inferred by default.
+
+:::
 
 ```yaml
 # Although team_names works fine without configuration, we use it here for illustrative purposes
@@ -83,6 +87,30 @@ aliases:
     relationships: # Relationships can be aliased by name
       team_id_fkey: "Owner"
 ```
+
+:::tip
+
+For relationship names you can find the key Bob uses by first generating your models and then looking into the generated model file.
+
+The key you need to use for the alias is in a comment in the `modelR` struct:
+
+```go
+// videoR is where relationships are stored.
+type videoR struct {
+    Tags    TagSlice // video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey
+    Sponsor *Sponsor // videos.videos_sponsor_id_fkey
+    User    *User    // videos.videos_user_id_fkey
+}
+```
+
+```yaml
+aliases:
+  team:
+    relationships:
+      "video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey": "MyCustomAlias"
+```
+
+:::
 
 ## Types
 
@@ -204,7 +232,7 @@ constraints:
 
 ## Relationships
 
-Relationships are automatically inferred from foreign key constraints. However, in certain cases, it is either not possible or not desireable to add a foreign key relationship.
+Relationships are automatically inferred from foreign key constraints. However, in certain cases, it is either not possible or not desirable to add a foreign key relationship.
 
 We can manually describe relationships in the configuration:
 
@@ -269,7 +297,7 @@ relationships:
 
 ## Inflections
 
-With inflections, you can control the rules used to generate singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not wnat to create aliases for every instance.
+With inflections, you can control the rules used to generate singular/plural variants. This is useful if a certain word or suffix is used multiple times, and you do not want to create aliases for every instance.
 
 ```yaml
 inflections:

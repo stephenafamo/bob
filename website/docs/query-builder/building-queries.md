@@ -11,7 +11,7 @@ Query building is done with the use of QueryMods.
 
 QueryMods are options applied to a query. Each query type of each dialect defines what mods can be applied to it. This way, the possible options can be built to match the spec as closely as possible.
 
-Despite this custom configuration, the mods are designed to match each other as closely so that switching dialects can be achieved by simply switching imports. However, if using an unspported mod, the error will be displayed at compile time.
+Despite this custom configuration, the mods are designed to match each other as closely so that switching dialects can be achieved by simply switching imports. However, if using an unsupported mod, the error will be displayed at compile time.
 
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
 

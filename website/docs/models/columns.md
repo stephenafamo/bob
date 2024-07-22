@@ -38,7 +38,7 @@ userView.Columns().Only("email")
 
 ## `Except`
 
-Returns the columns list w ithout the given column names.
+Returns the columns list without the given column names.
 
 ```go
 userView.Columns().Except("email")

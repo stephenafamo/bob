@@ -40,7 +40,7 @@ ATLAS_DIALECT=psql
 The values that exist for the drivers:
 
 | Name          | Description                               | Default            |
-| ------------- | ----------------------------------------- | ------------------ |
+|---------------|-------------------------------------------|--------------------|
 | dialect       | Database dialect to use (REQUIRED)        |                    |
 | dir           | Path to directory containing schema files | .                  |
 | shared_schema | Schema to not include prefix in model     | first schema found |

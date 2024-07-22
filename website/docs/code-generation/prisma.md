@@ -142,7 +142,7 @@ PRISMA_SCHEMA="public"
 The values that exist for the drivers:
 
 | Name    | Description                     | Default  |
-| ------- | ------------------------------- | -------- |
+|---------|---------------------------------|----------|
 | pkgname | Package name for generated code | "prisma" |
 | only    | Only generate these             |          |
 | except  | Skip generation for these       |          |

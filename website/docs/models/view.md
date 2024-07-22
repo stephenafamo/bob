@@ -27,7 +27,7 @@ The `NewViewx()` function takes an extra type parameter to determine how slices 
 
 :::
 
-A view model provies the following methods:
+A view model provides the following methods:
 
 ## Name()
 

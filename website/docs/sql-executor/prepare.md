@@ -9,7 +9,7 @@ description: Creates a prepared statement for later queries or executions.
 
 ## Exec Statements
 
-A statment is created with `bob.Prepare()`.
+A statement is created with `bob.Prepare()`.
 
 ```go
 ctx := context.Background()
@@ -20,17 +20,17 @@ if err != nil {
 
 q := psql.Update(...)
 
-// Pepare the statement
+// Prepare the statement
 stmt, err := bob.Prepare(ctx, db, q)
 if err != nil {
     // ...
 }
 ```
 
-Prepared statments can then be reused as many times as we want.
+Prepared statements can then be reused as many times as we want.
 
 ```go
-// Use our prepared statment
+// Use our prepared statement
 _, err := stmt.Exec(ctx)
 if err != nil {
     // ...
@@ -41,18 +41,18 @@ if err != nil {
 
 Statements that are expected to return rows, are instead prepared with `bob.PrepareQuery` or `bob.PrepareQueryx`.
 
-In addition to `Exec`, this statmeenet also has `One`, `All` and `Cursor` methods.
+In addition to `Exec`, this statement also has `One`, `All` and `Cursor` methods.
 
 ```go
 q := psql.Select(...)
 
-// Pepare the statement
+// Prepare the statement
 stmt, err := bob.PrepareQuery(ctx, db, q, scan.StructMapper[userObj]())
 if err != nil {
     // ...
 }
 
-// Use our prepared statment
+// Use our prepared statement
 users, err := stmt.All(ctx)
 if err != nil {
     // ...

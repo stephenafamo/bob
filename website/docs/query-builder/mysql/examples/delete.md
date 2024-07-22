@@ -48,7 +48,7 @@ mysql.Delete(
 )
 ```
 
-## With Limit And Offest
+## With Limit And Offset
 
 SQL:
 

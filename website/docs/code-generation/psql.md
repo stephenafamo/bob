@@ -40,7 +40,7 @@ PSQL_DSN="postgres://user:pass@host:port/dbname"
 The values that exist for the drivers:
 
 | Name          | Description                           | Default                  |
-| ------------- | ------------------------------------- | ------------------------ |
+|---------------|---------------------------------------|--------------------------|
 | dsn           | URL to connect to                     |                          |
 | schemas       | Schemas find tables in                | ["public"]               |
 | shared_schema | Schema to not include prefix in model | first value in "schemas" |

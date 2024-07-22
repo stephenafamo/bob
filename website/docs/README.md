@@ -48,7 +48,7 @@ Bob's executor can build and execute Bob queries in a single call.
 * `One()`: To scan a single row
 * `All()`: To scan all rows
 * `Cursor()`: To loop through rows. Useful for large results
-* `Prepare()`: For prepared statments
+* `Prepare()`: For prepared statements
 
 In addition, the executor covers the usual range of DB activities:
 
@@ -118,7 +118,7 @@ Types are generated for your database tables to use [Bob's models](./models/intr
 
 Some other features not found in many other Go ORMs.
 
-* Finetuned control over relationship loading.
+* Fine-tuned control over relationship loading.
   * Related-Through: Define relationships that cut across multiple tables
   * Related-When: Define relations based on static values (e.g. `WHEN email_confirmed = true`)
   * Loading relationships with left-joins
@@ -138,9 +138,9 @@ Some tools either focus on adding data to the database, other tools focus on ran
 When working with SQL databases,
 this can become frustrating because to truly test inserting a row in a table,
 we often have to insert other related data.
-Without dediecated tools for this, we end up never properly testing our data layer.
+Without dedicated tools for this, we end up never properly testing our data layer.
 
-Inspired by Ruby's factoryBot, **Bob** uses it's knowledge of your database schema to
+Inspired by Ruby's factoryBot, **Bob** uses its knowledge of your database schema to
 generate factories that offer many benefits:
 
 * Set base rules for how new objects are created, defaults are preset for required columns.

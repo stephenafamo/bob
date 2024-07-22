@@ -10,7 +10,7 @@ description: Executes a query and return a single concrete type
 Execute a query and return a type representing a single row
 Similar to `QueryRowContext`, but works directly on a `bob.Query` object.
 
-This function is a wraper around [`scan.One`](https://pkg.go.dev/github.com/stephenafamo/scan#One).
+This function is a wrapper around [`scan.One`](https://pkg.go.dev/github.com/stephenafamo/scan#One).
 
 ```go
 type userObj struct {

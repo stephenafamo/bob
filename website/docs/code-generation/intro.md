@@ -15,7 +15,7 @@ There is also a generator for other schema definitions like [Atlas' schema](http
 ## Available Drivers
 
 | Sources    | Driver           |
-| ---------- | ---------------- |
+|------------|------------------|
 | PostgreSQL | [LINK](./psql)   |
 | MySQL      | [LINK](./mysql)  |
 | SQLite     | [LINK](./sqlite) |

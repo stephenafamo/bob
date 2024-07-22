@@ -9,7 +9,7 @@ description: Working with relationships
 
 Related models are stored in the `R` field of the generated structs. For example, the related pilot of a jet will be `jet.R.Pilot`.
 
-## Relationshp Types
+## Relationship Types
 
 All relationship types have similar usage. The main difference is that `to-one` relations are mapped to a single struct while `to-many` relations are mapped to a slice.
 

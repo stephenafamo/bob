@@ -40,7 +40,7 @@ SQLITE_DSN="file.db"
 The values that exist for the drivers:
 
 | Name          | Description                               | Default             |
-| ------------- | ----------------------------------------- | ------------------- |
+|---------------|-------------------------------------------|---------------------|
 | dsn           | Path to database                          |                     |
 | attach        | Schemas to attach and the path the the db | map[string]string{} |
 | shared_schema | Schema to not include prefix in model     | "main"              |
