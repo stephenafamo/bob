@@ -38,4 +38,4 @@ func AllWorkday() []Workday {
 }
 ```
 
-This type is then used directly in the model to help with type safety and auto completion.
+This type is then used directly in the model to help with type safety and auto-completion.

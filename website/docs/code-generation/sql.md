@@ -40,7 +40,7 @@ SQL_DIALECT=psql
 The values that exist for the drivers:
 
 | Name          | Description                                 | Default                                      |
-| ------------- | ------------------------------------------- | -------------------------------------------- |
+|---------------|---------------------------------------------|----------------------------------------------|
 | dialect       | Database dialect to use (REQUIRED)          |                                              |
 | dir           | Path to directory containing schema files   | .                                            |
 | schemas       | The database schemas to generate models for | public (psql dialect), main (sqlite dialect) |

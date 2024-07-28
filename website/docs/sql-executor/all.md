@@ -10,7 +10,7 @@ description: Execute a query and return a slice of objects.
 Execute a query and return a slice of type representing the results of the query
 Similar to `QueryContext`, but works directly on a `bob.Query` object.
 
-This function is a wraper around [`scan.All`](https://pkg.go.dev/github.com/stephenafamo/scan#All).
+This function is a wrapper around [`scan.All`](https://pkg.go.dev/github.com/stephenafamo/scan#All).
 
 ```go
 type userObj struct {

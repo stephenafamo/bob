@@ -31,9 +31,9 @@ Read more about [the principles](./principles).
 
 | Dialect       | Raw | Select | Insert | Update | Delete |
 |---------------|-----|--------|--------|--------|--------|
-| Postgres      | ✅  | ✅     | ✅     | ✅     | ✅     |
-| MySQL/MariaDB | ✅  | ✅     | ✅     | ✅     | ✅     |
-| SQLite        | ✅  | ✅     | ✅     | ✅     | ✅     |
+| Postgres      | ✅   | ✅      | ✅      | ✅      | ✅      |
+| MySQL/MariaDB | ✅   | ✅      | ✅      | ✅      | ✅      |
+| SQLite        | ✅   | ✅      | ✅      | ✅      | ✅      |
 
 ## Examples
 

@@ -40,7 +40,7 @@ MYSQL_DSN="user:pass@tcp(host:port)/dbname"
 The values that exist for the drivers:
 
 | Name        | Description                          | Default  |
-| ----------- | ------------------------------------ | -------- |
+|-------------|--------------------------------------|----------|
 | dsn         | URL to connect to                    |          |
 | output      | Folder for generated files           | "models" |
 | pkgname     | Package name for generated code      | "models" |

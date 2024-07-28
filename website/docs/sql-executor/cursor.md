@@ -13,7 +13,7 @@ This is useful for queries that return a **large** result and where we would rat
 
 Using this is very similar to using `*sql.Rows` so most Go developers should be familiar with it.
 
-This function is a wraper around [`scan.Cursor`](https://pkg.go.dev/github.com/stephenafamo/scan#Cursor).
+This function is a wrapper around [`scan.Cursor`](https://pkg.go.dev/github.com/stephenafamo/scan#Cursor).
 
 ```go
 type userObj struct {

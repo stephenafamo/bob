@@ -21,7 +21,7 @@ type Query interface {
 }
 ```
 
-The `WriteQuery` method is useful when we want to write to an exisiting `io.Writer`. However we often just want the query string and arguments. So the Query objects have the following methods:
+The `WriteQuery` method is useful when we want to write to an existing `io.Writer`. However, we often just want the query string and arguments. So the Query objects have the following methods:
 
 * `Build() (query string, args []any, err error)`
 * `BuildN(start int) (query string, args []any, err error)`

@@ -70,7 +70,7 @@ var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
 
 :::tip
 
-**JetsTable** gives the full range of capabilites of a Bob model, including
+**JetsTable** gives the full range of capabilities of a Bob model, including
 
 - Flexible queries: One, All, Cursor, Count, Exists
 - Expressions for names and column lists
@@ -97,7 +97,7 @@ err := jet.Update(ctx, db, &models.JetSetter{
 
 UpdateAll is a method on the collection type `JetSlice`.
 
-All rows matching the primary keys of the memebers of the slice are updated with the given values.
+All rows matching the primary keys of the members of the slice are updated with the given values.
 
 ```go
 err := jets.UpdateAll(ctx, db, &JetSetter{
@@ -107,7 +107,7 @@ err := jets.UpdateAll(ctx, db, &JetSetter{
 
 ### Delete
 
-Delete a row from the database mathcing the primary key of the struct.
+Delete a row from the database matching the primary key of the struct.
 
 ```go
 _, err := jet.Delete(ctx, db)
@@ -246,7 +246,7 @@ models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Airports(ctx).AliasedAs("a")
 
 ### Column Expressions
 
-For even more control, expresions are generated for every column to be used in any part of the query.
+For even more control, expressions are generated for every column to be used in any part of the query.
 
 ```go
 // SELECT "jets"."name", count(1) FROM "jets"
