@@ -70,7 +70,7 @@ var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
 
 :::tip
 
-**JetsTable** gives the full range of capabilites of a Bob model, including
+**JetsTable** gives the full range of capabilities of a Bob model, including
 
 - Flexible queries: One, All, Cursor, Count, Exists
 - Expressions for names and column lists
@@ -167,6 +167,38 @@ Use exists to quickly check if a model with a given PK exists.
 
 ```go
 hasJet, err := models.JetExists(ctx, db, 10).All()
+```
+
+## Generated Error Constants
+
+Generated error constants allow for matching against specific errors raised by the underlying database driver.
+
+Take the following database table, for example:
+
+```sql
+CREATE TABLE pilots (
+    id serial PRIMARY KEY NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    UNIQUE (first_name, last_name)
+);
+```
+
+Bob will define the following `struct`:
+
+```go
+type pilotErrors struct {
+    ErrUniqueFirstNameAndLastName error
+}
+```
+
+After that, the `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in the following way:
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
+    log.Fatal(err)
+}
 ```
 
 ## Query Building
