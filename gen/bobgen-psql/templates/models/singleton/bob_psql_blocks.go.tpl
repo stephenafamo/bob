@@ -25,7 +25,7 @@ func (e *errUniqueConstraint) Is(target error) bool {
 	if !ok {
 		return false
 	}
-	return err.Code == "23505" && err.{{$constraintNameField}} == e.s
+	return err.Code == "23505" && (e.s == "" || err.{{$constraintNameField}} == e.s)
 	{{end}}
 }
 {{end}}
