@@ -184,7 +184,7 @@ CREATE TABLE pilots (
 );
 ```
 
-Bob will define the following `struct`:
+Bob will define the following `struct` inside the generated `pilots.go` file:
 
 ```go
 type pilotErrors struct {
@@ -192,12 +192,21 @@ type pilotErrors struct {
 }
 ```
 
-After that, the `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in the following way:
+The `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in the following way:
 
 ```go
 pilot, err := models.Pilots.Insert(ctx, db, setter)
 if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
-    log.Fatal(err)
+    // handle the error
+}
+```
+
+Bob furthermore defines a generic `ErrUniqueConstraint` constant, which can be used for matching and handling all unique constraint errors:
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if errors.Is(models.ErrUniqueConstraint, err) {
+    // handle the error
 }
 ```
 
