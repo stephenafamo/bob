@@ -47,6 +47,8 @@ type Config struct {
 	Concurrency int
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
+	// Which `database/sql` driver to use (the full module name)
+	DriverName string `yaml:"driver_name"`
 
 	//-------
 
@@ -69,6 +71,10 @@ func New(config Config) Interface {
 
 	if config.UUIDPkg == "" {
 		config.UUIDPkg = "gofrs"
+	}
+
+	if config.DriverName == "" {
+		config.DriverName = "github.com/lib/pq"
 	}
 
 	if config.Concurrency < 1 {
@@ -132,7 +138,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 	defer d.conn.Close()
 
-	dbinfo = &DBInfo{}
+	dbinfo = &DBInfo{DriverName: d.config.DriverName}
 
 	// drivers.Tables call translateColumnType which uses Enums
 	if err := d.loadEnums(ctx); err != nil {

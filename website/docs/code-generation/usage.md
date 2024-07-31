@@ -169,6 +169,47 @@ Use exists to quickly check if a model with a given PK exists.
 hasJet, err := models.JetExists(ctx, db, 10).All()
 ```
 
+## Generated Error Constants
+
+Generated error constants allow for matching against specific errors raised by the underlying database driver.
+
+Take the following database table, for example:
+
+```sql
+CREATE TABLE pilots (
+    id serial PRIMARY KEY NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    UNIQUE (first_name, last_name)
+);
+```
+
+Bob will define the following `struct` inside the generated `pilots.go` file:
+
+```go
+type pilotErrors struct {
+    ErrUniqueFirstNameAndLastName error
+}
+```
+
+The `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in the following way:
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
+    // handle the error
+}
+```
+
+Bob furthermore defines a generic `ErrUniqueConstraint` constant, which can be used for matching and handling all unique constraint errors:
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if errors.Is(models.ErrUniqueConstraint, err) {
+    // handle the error
+}
+```
+
 ## Query Building
 
 Several constants[^1] are also generated to help with query building. As with all queries built with [Bob's query builder](../query-builder/intro), the building blocks are expressions and mods.

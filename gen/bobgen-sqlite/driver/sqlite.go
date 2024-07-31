@@ -22,6 +22,9 @@ type (
 )
 
 func New(config Config) Interface {
+	if config.DriverName == "" {
+		config.DriverName = "modernc.org/sqlite"
+	}
 	return &driver{config: config}
 }
 
@@ -39,6 +42,8 @@ type Config struct {
 	Only map[string][]string
 	// List of tables that will be should be ignored. Others are included
 	Except map[string][]string
+	// Which `database/sql` driver to use (the full module name)
+	DriverName string `yaml:"driver_name"`
 
 	// Used in main.go
 
@@ -106,7 +111,12 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	return &DBInfo{Tables: tables}, nil
+	dbinfo := &DBInfo{
+		DriverName: d.config.DriverName,
+		Tables:     tables,
+	}
+
+	return dbinfo, nil
 }
 
 func (d *driver) buildQuery(schema string) (string, []any) {
@@ -428,7 +438,7 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 	return fkeys, nil
 }
 
-// uniques retrieves the foreign keys for a given table name.
+// uniques retrieves the unique keys for a given table name.
 func (d driver) uniques(ctx context.Context, schema, tableName string) ([]drivers.Constraint, error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.index_list('%s')", schema, tableName))
 	if err != nil {

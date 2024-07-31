@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io/fs"
 	"log"
 	"os"
 	"os/signal"
@@ -49,7 +50,10 @@ func run(c *cli.Context) error {
 	}
 
 	d := driver.New(driverConfig)
-	outputs := helpers.DefaultOutputs(driverConfig.Output, driverConfig.Pkgname, config.NoFactory, nil)
+	outputs := helpers.DefaultOutputs(
+		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
+		&helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+	)
 
 	state := &gen.State{
 		Config:  config,

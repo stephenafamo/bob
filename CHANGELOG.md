@@ -41,9 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added error constants for matching against both specific and generic unique constraint errors raised by the underlying database driver.
+
 ### Fixed
 
-- Remove unnecessary import of `strings` in `bobfactory_random.go`.
+- Removed unnecessary import of `strings` in `bobfactory_random.go`.
+- Fixed data races in unit tests.
 
 ## [v0.28.1] - 2024-06-28
 
