@@ -158,6 +158,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	c.data_type,
 	c.column_default,
 	c.extra = 'auto_increment' AS autoincr,
+	c.character_maximum_length,
 	c.is_nullable = 'YES' AS nullable,
 	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated
 	from information_schema.columns as c
@@ -189,7 +190,8 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		var colName, colFullType, colComment, colType string
 		var autoIncr, nullable, generated bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &nullable, &generated); err != nil {
+		var charMaxLen null.Val[int]
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &charMaxLen, &nullable, &generated); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", tableName, err)
 		}
 
@@ -198,12 +200,13 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		}
 
 		column := drivers.Column{
-			Name:      colName,
-			Comment:   colComment,
-			DBType:    colType,
-			Nullable:  nullable,
-			Generated: generated,
-			AutoIncr:  autoIncr,
+			Name:       colName,
+			Comment:    colComment,
+			DBType:     colType,
+			Nullable:   nullable,
+			Generated:  generated,
+			AutoIncr:   autoIncr,
+			CharMaxLen: charMaxLen,
 		}
 
 		if defaultValue != nil {
