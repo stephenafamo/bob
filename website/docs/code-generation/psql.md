@@ -37,6 +37,12 @@ When you use an environment variable it must also be prefixed by the driver name
 PSQL_DSN="postgres://user:pass@host:port/dbname"
 ```
 
+Additionally if ssl mode is to be disabled (you will get connection failed error - `unable to fetch table data: unable to load enums: pq: SSL is not enabled on the server`), you can add `sslmode` to the dsn:
+
+```sh
+PSQL_DSN="postgres://user:pass@host:port/dbname?sslmode=disable"
+``` 
+
 The values that exist for the drivers:
 
 | Name          | Description                           | Default                  |
