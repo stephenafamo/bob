@@ -162,6 +162,14 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 				sm.Window("w").PartitionBy("depname").OrderBy("salary"),
 			),
 		},
+		"select with order by and collate": {
+			Query: psql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.OrderBy("name").Collate("bg-BG-x-icu").Asc(),
+			),
+			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE "bg-BG-x-icu" ASC`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

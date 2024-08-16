@@ -158,12 +158,12 @@ func TestGetOutputFilename(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			notTest := getOutputFilename(tc.SchemaName, tc.TableName, false, tc.IsGo)
 			if diff := cmp.Diff(tc.Expected, notTest); diff != "" {
-				t.Fatalf(diff)
+				t.Fatal(diff)
 			}
 
 			isTest := getOutputFilename(tc.SchemaName, tc.TableName, true, tc.IsGo)
 			if diff := cmp.Diff(tc.Expected+"_test", isTest); diff != "" {
-				t.Fatalf(diff)
+				t.Fatal(diff)
 			}
 		})
 	}
