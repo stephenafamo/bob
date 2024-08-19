@@ -68,6 +68,14 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE ((`id`, `employee_id`) IN ((?, ?), (?, ?)))",
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+		"select with order by and collate": {
+			Query: mysql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.OrderBy("name").Collate("utf8mb4_bg_0900_as_cs").Asc(),
+			),
+			ExpectedSQL: "SELECT id, name FROM users ORDER BY name COLLATE utf8mb4_bg_0900_as_cs ASC",
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

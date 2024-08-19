@@ -75,6 +75,14 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  `SELECT id, name FROM users WHERE (("id", "employee_id") IN ((?1, ?2), (?3, ?4)))`,
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+		"select with order by and collate": {
+			Query: sqlite.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.OrderBy("name").Collate("NOCASE").Asc(),
+			),
+			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE NOCASE ASC`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

@@ -348,7 +348,7 @@ func toMarkdown(destination string, cases []testcase) {
 		}
 
 		if c.doc == "" {
-			c.doc = strings.Title(c.name) //nolint:staticcheck
+			c.doc = strings.Title(c.name)
 		}
 		// write the sql query
 		fmt.Fprintf(buf, "## %s\n\nSQL:\n\n```sql\n%s\n```\n\n", c.doc, c.query)
@@ -380,7 +380,7 @@ func toMarkdown(destination string, cases []testcase) {
 func markdownTitle(s string) string {
 	base := filepath.Base(s)
 	heading := strings.TrimSuffix(base, filepath.Ext(base))
-	return fmt.Sprintf("# %s\n\n", strings.Title(heading)) //nolint:staticcheck
+	return fmt.Sprintf("# %s\n\n", strings.Title(heading))
 }
 
 func reindent(s string) string {
