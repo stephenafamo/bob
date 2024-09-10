@@ -17,6 +17,6 @@ To prevent SQL injection, it is necessary to use parameters in our queries. With
 psql.Select(
     sm.From("users"),
     sm.Where(psql.Quote("id").EQ(psql.Arg(100))),
-    sm.Where(psql.Quote("name".EQ(psql.Arg("Stephen"))),
+    sm.Where(psql.Quote("name").EQ(psql.Arg("Stephen"))),
 )
 ```
