@@ -24,6 +24,13 @@ func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAl
 	{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
 {{- end -}}
 
+{{- $wrapStart := "" -}}
+{{- $wrapEnd := "" -}}
+{{- if $column.CharMaxLen.IsSet -}}
+	{{- $wrapStart = "truncateString(" -}}
+	{{- $wrapEnd = printf `,%d )` $column.CharMaxLen.GetOrZero -}}
+{{- end -}}
+
 // Set the model columns to this value
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
@@ -59,9 +66,9 @@ func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAl
           return null.FromPtr[{{or $typDef.AliasOf $column.Type}}](nil)
         }
 
-        return null.From(random_{{normalizeType $column.Type}}(f))
+        return null.From({{$wrapStart}}random_{{normalizeType $column.Type}}(f){{$wrapEnd}})
 			{{- else -}}
-				return random_{{normalizeType $column.Type}}(f)
+				return {{$wrapStart}}random_{{normalizeType $column.Type}}(f){{$wrapEnd}}
 			{{- end}}
 		}
 	})

@@ -3,6 +3,7 @@ package drivers
 import (
 	"strings"
 
+	"github.com/aarondl/opt/null"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -20,6 +21,8 @@ type Column struct {
 	// DomainName is the domain type name associated to the column. See here:
 	// https://www.postgresql.org/docs/16/extend-type-system.html
 	DomainName string `json:"domain_name" yaml:"domain_name" toml:"domain_name"`
+
+	CharMaxLen null.Val[int] `json:"char_max_len" yaml:"char_max_len" toml:"char_max_len"`
 
 	Type string `json:"type" yaml:"type" toml:"type"`
 }
