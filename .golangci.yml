@@ -53,6 +53,8 @@ linters-settings:
         disabled: true
 
 issues:
+  exclude:
+    - G115
   exclude-rules:
     - path: .
       linters:

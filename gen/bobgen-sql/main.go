@@ -52,6 +52,8 @@ func run(c *cli.Context) error {
 
 	var modelTemplates []fs.FS
 	switch driverConfig.Dialect {
+	case "psql", "postgres":
+		modelTemplates = append(modelTemplates, gen.PSQLModelTemplates)
 	case "mysql":
 		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
 	case "sqlite":

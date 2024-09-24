@@ -30,9 +30,9 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](schema, tableName strin
 	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
 	view, mappings := newView[T, Tslice](schema, tableName)
 	t := &Table[T, Tslice, Tset]{
-		View:       view,
-		pkCols:     internal.FilterNonZero(mappings.PKs),
-		setMapping: setMapping,
+		View:          view,
+		pkCols:        internal.FilterNonZero(mappings.PKs),
+		setterMapping: setMapping,
 	}
 
 	if len(t.pkCols) == 1 {
@@ -52,9 +52,9 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](schema, tableName strin
 // caches ???
 type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
-	pkCols     []string
-	pkExpr     dialect.Expression
-	setMapping mappings.Mapping
+	pkCols        []string
+	pkExpr        dialect.Expression
+	setterMapping mappings.Mapping
 
 	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
 	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
@@ -217,7 +217,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		}
 		// if still empty, use non-PKs
 		if len(excludeSetCols) == 0 {
-			excludeSetCols = t.setMapping.NonPKs
+			excludeSetCols = t.setterMapping.NonPKs
 		}
 		conflictQM = im.OnConflict(internal.ToAnySlice(conflictCols)...).
 			DoUpdate(im.SetExcluded(excludeSetCols...))
@@ -289,7 +289,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TQuery[*dialect.InsertQuery, T, Tslice] {
 	q := &TQuery[*dialect.InsertQuery, T, Tslice]{
-		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...)),
+		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...)),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,

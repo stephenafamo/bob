@@ -31,8 +31,8 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](tableName string, uniqu
 
 	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Tset]{
-		View:       view,
-		setMapping: setMapping,
+		View:          view,
+		setterMapping: setMapping,
 	}
 
 	pkCols := internal.FilterNonZero(mappings.PKs)
@@ -65,8 +65,8 @@ func NewTablex[T orm.Table, Tslice ~[]T, Tset setter[T]](tableName string, uniqu
 // caches ???
 type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
-	pkExpr     dialect.Expression
-	setMapping mappings.Mapping
+	pkExpr        dialect.Expression
+	setterMapping mappings.Mapping
 
 	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
 	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
@@ -159,7 +159,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		im.Into(t.Name(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...),
+		im.Into(t.Name(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...),
 	)
 
 	// To prevent unnecessary work, we will do this before we add the rows
@@ -417,7 +417,7 @@ func (t *Table[T, Tslice, Tset]) uniqueSet(row Tset) ([]string, []any) {
 				break
 			}
 
-			colNames = append(colNames, t.setMapping.All[col])
+			colNames = append(colNames, t.setterMapping.All[col])
 			args = append(args, field.Interface())
 		}
 
@@ -432,7 +432,7 @@ func (t *Table[T, Tslice, Tset]) uniqueSet(row Tset) ([]string, []any) {
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TQuery[*dialect.InsertQuery, T, Tslice] {
 	q := &TQuery[*dialect.InsertQuery, T, Tslice]{
-		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setMapping.NonGenerated)...)),
+		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...)),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,

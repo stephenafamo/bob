@@ -292,3 +292,21 @@ psql.Select(
   sm.Window("w").PartitionBy("depname").OrderBy("salary"),
 )
 ```
+
+## Select With Order By And Collate
+
+SQL:
+
+```sql
+SELECT id, name FROM users ORDER BY name COLLATE "bg-BG-x-icu" ASC
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.OrderBy("name").Collate("bg-BG-x-icu").Asc(),
+)
+```

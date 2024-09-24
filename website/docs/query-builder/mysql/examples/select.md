@@ -109,3 +109,21 @@ mysql.Select(
   sm.Where(mysql.Group(mysql.Quote("id"), mysql.Quote("employee_id")).In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
 )
 ```
+
+## Select With Order By And Collate
+
+SQL:
+
+```sql
+SELECT id, name FROM users ORDER BY name COLLATE utf8mb4_bg_0900_as_cs ASC
+```
+
+Code:
+
+```go
+mysql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.OrderBy("name").Collate("utf8mb4_bg_0900_as_cs").Asc(),
+)
+```

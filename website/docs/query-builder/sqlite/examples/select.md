@@ -125,3 +125,21 @@ sqlite.Select(
   sm.Where(sqlite.Group(sqlite.Quote("id"), sqlite.Quote("employee_id")).In(sqlite.ArgGroup(100, 200), sqlite.ArgGroup(300, 400))),
 )
 ```
+
+## Select With Order By And Collate
+
+SQL:
+
+```sql
+SELECT id, name FROM users ORDER BY name COLLATE NOCASE ASC
+```
+
+Code:
+
+```go
+sqlite.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.OrderBy("name").Collate("NOCASE").Asc(),
+)
+```

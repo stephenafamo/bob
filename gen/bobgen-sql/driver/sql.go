@@ -37,6 +37,8 @@ type Config struct {
 	Concurrency int
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
+	// Which `database/sql` driver to use (the full module name)
+	DriverName string `yaml:"driver_name"`
 
 	Output    string
 	Pkgname   string
@@ -98,6 +100,7 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 		Except:       config.Except,
 		Concurrency:  config.Concurrency,
 		UUIDPkg:      config.UUIDPkg,
+		DriverName:   config.DriverName,
 		Output:       config.Output,
 		Pkgname:      config.Pkgname,
 		NoFactory:    config.NoFactory,
@@ -153,8 +156,9 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 	db.Close() // close early
 
 	d := sqliteDriver.New(sqliteDriver.Config{
-		DSN:    tmp.Name(),
-		Attach: attach,
+		DSN:        tmp.Name(),
+		Attach:     attach,
+		DriverName: config.DriverName,
 
 		SharedSchema: config.SharedSchema,
 		Only:         config.Only,

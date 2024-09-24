@@ -7,7 +7,7 @@ var (
 )
 {{- end -}}
 
-{{define "unique_constraint_error_detection_method"}}
+{{define "unique_constraint_error_detection_method" -}}
 {{$.Importer.Import "strings"}}
 {{$.Importer.Import "mysqlDriver" "github.com/go-sql-driver/mysql"}}
 func (e *errUniqueConstraint) Is(target error) bool {
@@ -17,4 +17,4 @@ func (e *errUniqueConstraint) Is(target error) bool {
   }
   return err.Number == 1062 && strings.Contains(err.Message, e.s)
 }
-{{end}}
+{{- end}}

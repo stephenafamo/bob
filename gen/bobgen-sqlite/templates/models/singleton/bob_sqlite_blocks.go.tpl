@@ -23,7 +23,7 @@ func (s {{$tAlias.UpSingular}}Setter) InsertMod() bob.Mod[*dialect.InsertQuery] 
 }
 {{- end}}
 
-{{define "unique_constraint_error_detection_method"}}
+{{define "unique_constraint_error_detection_method" -}}
 func (e *errUniqueConstraint) Is(target error) bool {
 	{{if not (eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3")}}
 	return false
@@ -47,4 +47,4 @@ func (e *errUniqueConstraint) Is(target error) bool {
 	return err.{{$codeGetter}} == 2067 && strings.Contains(err.Error(), e.s)
 	{{end}}
 }
-{{end}}
+{{- end}}
