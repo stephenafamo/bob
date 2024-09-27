@@ -1,0 +1,114 @@
+{
+	"tables": [
+		{
+			"key": "foo_bar",
+			"schema": "",
+			"name": "foo_bar",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "integer",
+					"default": "nextval('foo_bar_id_seq'::regclass)",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "character varying",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [
+				{
+					"name": "foo_bar_pkey",
+					"columns": [
+						"id"
+					],
+					"expressions": null
+				}
+			],
+			"constraints": {
+				"primary": {
+					"name": "foo_bar_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": null,
+				"uniques": null
+			}
+		},
+		{
+			"key": "foo_baz",
+			"schema": "",
+			"name": "foo_baz",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "integer",
+					"default": "nextval('foo_baz_id_seq'::regclass)",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "character varying",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [
+				{
+					"name": "foo_baz_pkey",
+					"columns": [
+						"id"
+					],
+					"expressions": null
+				}
+			],
+			"constraints": {
+				"primary": {
+					"name": "foo_baz_pkey",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": null,
+				"uniques": null
+			}
+		}
+	],
+	"enums": [
+		{
+			"Type": "UnicodeEnum",
+			"Values": [
+				"hello",
+				"привет",
+				"こんにちは",
+				"안녕하세요",
+				"hello_with_underscore"
+			]
+		}
+	],
+	"extra_info": null,
+	"driver_name": "github.com/lib/pq"
+}

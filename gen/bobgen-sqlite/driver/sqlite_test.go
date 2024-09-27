@@ -3,12 +3,14 @@ package driver
 import (
 	"context"
 	"database/sql"
+	sqlDriver "database/sql/driver"
 	_ "embed"
 	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/stephenafamo/bob/gen"
@@ -16,7 +18,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testutils "github.com/stephenafamo/bob/test/utils"
-	_ "modernc.org/sqlite"
+	"modernc.org/sqlite"
 )
 
 func cleanup(t *testing.T, config Config) {
@@ -57,6 +59,10 @@ func TestAssemble(t *testing.T) {
 	}
 	defer db.Close()
 
+	if err = registerRegexpFunction(); err != nil {
+		t.Fatal(err)
+	}
+
 	for schema, conn := range config.Attach {
 		_, err = db.ExecContext(ctx, fmt.Sprintf("attach database '%s' as %q", conn, schema))
 		if err != nil {
@@ -79,6 +85,93 @@ func TestAssemble(t *testing.T) {
 			name:       "default",
 			config:     config,
 			goldenJson: "sqlite.golden.json",
+		},
+		{
+			name: "include tables",
+			config: Config{
+				DSN:    config.DSN,
+				Attach: config.Attach,
+				Only: map[string][]string{
+					"foo_bar":     nil,
+					"foo_baz":     nil,
+					"one.foo_bar": nil,
+					"one.foo_baz": nil,
+				},
+			},
+			goldenJson: "include-tables.golden.json",
+		},
+		{
+			name: "exclude tables",
+			config: Config{
+				DSN:    config.DSN,
+				Attach: config.Attach,
+				Except: map[string][]string{
+					"foo_bar":     nil,
+					"foo_baz":     nil,
+					"one.foo_bar": nil,
+					"one.foo_baz": nil,
+					"*":           {"secret_col"},
+				},
+			},
+			goldenJson: "exclude-tables.golden.json",
+		},
+		{
+			name: "include + exclude tables",
+			config: Config{
+				DSN:    config.DSN,
+				Attach: config.Attach,
+				Only: map[string][]string{
+					"foo_bar":     nil,
+					"foo_baz":     nil,
+					"one.foo_bar": nil,
+					"one.foo_baz": nil,
+				},
+				Except: map[string][]string{
+					"foo_bar":     nil,
+					"bar_baz":     nil,
+					"one.foo_bar": nil,
+					"one.bar_baz": nil,
+				},
+			},
+			goldenJson: "include-exclude-tables.golden.json",
+		},
+		{
+			name: "include + exclude tables regex",
+			config: Config{
+				DSN:    config.DSN,
+				Attach: config.Attach,
+				Only: map[string][]string{
+					"/^foo/": nil,
+					"/^bar/": nil,
+				},
+				Except: map[string][]string{
+					"/bar$/": nil,
+					"/baz$/": nil,
+				},
+			},
+			goldenJson: "include-exclude-tables-regex.golden.json",
+		},
+		{
+			name: "include + exclude tables mixed",
+			config: Config{
+				DSN:    config.DSN,
+				Attach: config.Attach,
+				Only: map[string][]string{
+					"/^foo/":      nil,
+					"bar_baz":     nil,
+					"bar_qux":     nil,
+					"one.bar_baz": nil,
+					"one.bar_qux": nil,
+				},
+				Except: map[string][]string{
+					"/bar$/":      nil,
+					"foo_baz":     nil,
+					"foo_qux":     nil,
+					"one.foo_baz": nil,
+					"one.foo_qux": nil,
+				},
+			},
+			goldenJson: "include-exclude-tables-mixed.golden.json",
 		},
 	}
 
@@ -109,4 +202,32 @@ func TestAssemble(t *testing.T) {
 			})
 		})
 	}
+}
+
+func registerRegexpFunction() error {
+	return sqlite.RegisterScalarFunction("regexp", 2, func(
+		ctx *sqlite.FunctionContext,
+		args []sqlDriver.Value,
+	) (sqlDriver.Value, error) {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("expected 2 arguments, got %d", len(args))
+		}
+
+		re, ok := args[0].(string)
+		if !ok {
+			return nil, fmt.Errorf("expected string, got %T", args[0])
+		}
+
+		s, ok := args[1].(string)
+		if !ok {
+			return nil, fmt.Errorf("expected string, got %T", args[1])
+		}
+
+		match, err := regexp.MatchString(re, s)
+		if err != nil {
+			return nil, err
+		}
+
+		return match, nil
+	})
 }

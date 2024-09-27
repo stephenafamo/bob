@@ -1,0 +1,55 @@
+{
+	"tables": [
+		{
+			"key": "foo_baz",
+			"schema": "",
+			"name": "foo_baz",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "int",
+					"default": "AUTO_INCREMENT",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": true,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "varchar",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [
+				{
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					],
+					"expressions": null
+				}
+			],
+			"constraints": {
+				"primary": {
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": null,
+				"uniques": null
+			}
+		}
+	],
+	"enums": null,
+	"extra_info": null,
+	"driver_name": "github.com/go-sql-driver/mysql"
+}

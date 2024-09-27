@@ -285,3 +285,28 @@ CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
 CREATE INDEX idx4 ON test_index_expressions (col3);
 CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
 CREATE INDEX idx6 ON test_index_expressions (POW(col3, 2));
+
+CREATE TABLE foo_bar (
+    id SERIAL PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE foo_baz (
+    id SERIAL PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE foo_qux (
+    id SERIAL PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE bar_baz (
+    id SERIAL PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE bar_qux (
+    id SERIAL PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);

@@ -1,0 +1,167 @@
+{
+	"tables": [
+		{
+			"key": "bar_baz",
+			"schema": "",
+			"name": "bar_baz",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "TEXT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [],
+			"constraints": {
+				"primary": {
+					"name": "pk_main_bar_baz",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
+		},
+		{
+			"key": "bar_qux",
+			"schema": "",
+			"name": "bar_qux",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "TEXT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [],
+			"constraints": {
+				"primary": {
+					"name": "pk_main_bar_qux",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
+		},
+		{
+			"key": "one.bar_baz",
+			"schema": "one",
+			"name": "bar_baz",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "TEXT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [],
+			"constraints": {
+				"primary": {
+					"name": "pk_one_bar_baz",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
+		},
+		{
+			"key": "one.bar_qux",
+			"schema": "one",
+			"name": "bar_qux",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "int32"
+				},
+				{
+					"name": "secret_col",
+					"db_type": "TEXT",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string"
+				}
+			],
+			"indexes": [],
+			"constraints": {
+				"primary": {
+					"name": "pk_one_bar_qux",
+					"columns": [
+						"id"
+					]
+				},
+				"foreign": [],
+				"uniques": []
+			}
+		}
+	],
+	"enums": null,
+	"extra_info": null,
+	"driver_name": "modernc.org/sqlite"
+}

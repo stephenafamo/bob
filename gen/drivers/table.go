@@ -2,6 +2,7 @@ package drivers
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Table metadata from the database schema.
@@ -73,6 +74,25 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 type Filter struct {
 	Only   []string
 	Except []string
+}
+
+func (f Filter) ClassifyPatterns(patterns []string) ([]string, []string) {
+	const regexDelimiter = "/"
+	var stringPatterns, regexPatterns []string //nolint:prealloc
+
+	for _, pattern := range patterns {
+		if f.isRegexPattern(pattern, regexDelimiter) {
+			regexPatterns = append(regexPatterns, strings.Trim(pattern, regexDelimiter))
+			continue
+		}
+		stringPatterns = append(stringPatterns, pattern)
+	}
+
+	return stringPatterns, regexPatterns
+}
+
+func (f Filter) isRegexPattern(pattern, delimiter string) bool {
+	return strings.HasPrefix(pattern, delimiter) && strings.HasSuffix(pattern, delimiter)
 }
 
 type ColumnFilter map[string]Filter

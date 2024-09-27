@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/lib/pq"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
@@ -195,17 +196,35 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 	exclude := tableFilter.Except
 
 	if len(include) > 0 {
-		query += fmt.Sprintf(" and %s in (%s)", keyClause, strmangle.Placeholders(true, len(include), 3, 1))
-		for _, w := range include {
-			args = append(args, w)
+		var subqueries []string
+		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(include)
+		if len(stringPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("%s in (%s)", keyClause, strmangle.Placeholders(true, len(stringPatterns), len(args)+1, 1)))
+			for _, w := range stringPatterns {
+				args = append(args, w)
+			}
 		}
+		if len(regexPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("%s ~ (%s)", keyClause, strmangle.Placeholders(true, 1, len(args)+1, 1)))
+			args = append(args, strings.Join(regexPatterns, "|"))
+		}
+		query += fmt.Sprintf(" and (%s)", strings.Join(subqueries, " or "))
 	}
 
 	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and %s not in (%s)", keyClause, strmangle.Placeholders(true, len(exclude), 3+len(include), 1))
-		for _, w := range exclude {
-			args = append(args, w)
+		var subqueries []string
+		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(exclude)
+		if len(stringPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("%s not in (%s)", keyClause, strmangle.Placeholders(true, len(stringPatterns), len(args)+1, 1)))
+			for _, w := range stringPatterns {
+				args = append(args, w)
+			}
 		}
+		if len(regexPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("%s !~ (%s)", keyClause, strmangle.Placeholders(true, 1, len(args)+1, 1)))
+			args = append(args, strings.Join(regexPatterns, "|"))
+		}
+		query += fmt.Sprintf(" and (%s)", strings.Join(subqueries, " and "))
 	}
 
 	query += ` order by table_name;`

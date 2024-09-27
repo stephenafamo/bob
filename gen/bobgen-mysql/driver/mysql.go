@@ -124,17 +124,35 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 	exclude := tableFilter.Except
 
 	if len(include) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(false, len(include), 1, 1)) // third param is not used for ? placeholders
-		for _, w := range include {
-			args = append(args, w)
+		var subqueries []string
+		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(include)
+		if len(stringPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("table_name in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
+			for _, w := range stringPatterns {
+				args = append(args, w)
+			}
 		}
+		if len(regexPatterns) > 0 {
+			subqueries = append(subqueries, "table_name regexp (?)")
+			args = append(args, strings.Join(regexPatterns, "|"))
+		}
+		query += fmt.Sprintf(" and (%s)", strings.Join(subqueries, " or "))
 	}
 
 	if len(exclude) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(false, len(exclude), 1, 1)) // third param is not used for ? placeholders
-		for _, w := range exclude {
-			args = append(args, w)
+		var subqueries []string
+		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(exclude)
+		if len(stringPatterns) > 0 {
+			subqueries = append(subqueries, fmt.Sprintf("table_name not in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
+			for _, w := range stringPatterns {
+				args = append(args, w)
+			}
 		}
+		if len(regexPatterns) > 0 {
+			subqueries = append(subqueries, "table_name not regexp (?)")
+			args = append(args, strings.Join(regexPatterns, "|"))
+		}
+		query += fmt.Sprintf(" and (%s)", strings.Join(subqueries, " and "))
 	}
 
 	query += ` order by table_name;`
