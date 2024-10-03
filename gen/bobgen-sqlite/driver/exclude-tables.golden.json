@@ -171,17 +171,6 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],
@@ -211,103 +200,12 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_bar_qux",
-					"columns": [
-						"id"
-					]
-				},
-				"foreign": [],
-				"uniques": []
-			}
-		},
-		{
-			"key": "foo_bar",
-			"schema": "",
-			"name": "foo_bar",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
-				}
-			],
-			"indexes": [],
-			"constraints": {
-				"primary": {
-					"name": "pk_main_foo_bar",
-					"columns": [
-						"id"
-					]
-				},
-				"foreign": [],
-				"uniques": []
-			}
-		},
-		{
-			"key": "foo_baz",
-			"schema": "",
-			"name": "foo_baz",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
-				}
-			],
-			"indexes": [],
-			"constraints": {
-				"primary": {
-					"name": "pk_main_foo_baz",
 					"columns": [
 						"id"
 					]
@@ -331,17 +229,6 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],
@@ -602,17 +489,6 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],
@@ -642,103 +518,12 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_bar_qux",
-					"columns": [
-						"id"
-					]
-				},
-				"foreign": [],
-				"uniques": []
-			}
-		},
-		{
-			"key": "one.foo_bar",
-			"schema": "one",
-			"name": "foo_bar",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
-				}
-			],
-			"indexes": [],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_foo_bar",
-					"columns": [
-						"id"
-					]
-				},
-				"foreign": [],
-				"uniques": []
-			}
-		},
-		{
-			"key": "one.foo_baz",
-			"schema": "one",
-			"name": "foo_baz",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
-				}
-			],
-			"indexes": [],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_foo_baz",
 					"columns": [
 						"id"
 					]
@@ -762,17 +547,6 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "int32"
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string"
 				}
 			],
 			"indexes": [],

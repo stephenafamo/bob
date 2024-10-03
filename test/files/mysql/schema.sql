@@ -181,7 +181,7 @@ create table type_monsters (
     generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
     generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED,
 
-    INDEX(int_one, int_two)
+    UNIQUE(int_one, int_two)
 );
 
 create view user_videos as
@@ -217,3 +217,24 @@ CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
 CREATE INDEX idx4 ON test_index_expressions (col3);
 CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
 CREATE INDEX idx6 ON test_index_expressions ((POW(col3, 2)));
+
+CREATE TABLE foo_bar (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+CREATE TABLE foo_baz (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+CREATE TABLE foo_qux (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+CREATE TABLE bar_baz (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);
+CREATE TABLE bar_qux (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    secret_col VARCHAR(255) NOT NULL
+);

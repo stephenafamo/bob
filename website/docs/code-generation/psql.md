@@ -57,7 +57,31 @@ The values that exist for the drivers:
 | only          | Only generate these                   |                          |
 | except        | Skip generation for these             |                          |
 
-Example of Only/Except:
+## Only/Except:
+
+The `only` and `except` configuration options can be used to specify which tables to include or exclude from code generation. You can either supply a list of table names or use regular expressions to match multiple tables.
+
+Consider the example below:
+
+```yaml
+psql:
+  only:
+    "/^foo/":
+    bar_baz:
+```
+
+This configuration only generates models for tables that start with `foo` and the table named `bar_baz`.
+
+Alternatively, the following example excludes these tables from code generation rather than including them:
+
+```yaml
+psql:
+  except:
+    "/^foo/":
+    bar_baz:
+```
+
+You may also exclude specific columns:
 
 ```yaml
 psql:

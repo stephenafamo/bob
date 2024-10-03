@@ -263,3 +263,45 @@ CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
 CREATE INDEX idx4 ON test_index_expressions (col3);
 CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
 CREATE INDEX idx6 ON test_index_expressions (POW(col3, 2));
+
+CREATE TABLE foo_bar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE foo_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE foo_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE bar_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE bar_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+
+CREATE TABLE one.foo_bar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE one.foo_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE one.foo_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE one.bar_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE one.bar_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
