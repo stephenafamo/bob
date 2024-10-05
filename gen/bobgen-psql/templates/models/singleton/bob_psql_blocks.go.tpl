@@ -1,4 +1,4 @@
-{{define "unique_constraint_error_detection_method" -}}
+{{- define "unique_constraint_error_detection_method"}}
 func (e *errUniqueConstraint) Is(target error) bool {
 	{{$supportedDrivers := list "github.com/lib/pq" "github.com/jackc/pgx" "github.com/jackc/pgx/v4" "github.com/jackc/pgx/v5"}}
 	{{if not (has $.DriverName $supportedDrivers)}}
@@ -28,4 +28,4 @@ func (e *errUniqueConstraint) Is(target error) bool {
 	return err.Code == "23505" && (e.s == "" || err.{{$constraintNameField}} == e.s)
 	{{end}}
 }
-{{- end}}
+{{end -}}

@@ -1,9 +1,9 @@
-{{define "helpers/join_variables" -}}
+{{- define "helpers/join_variables"}}
 var (
 	SelectJoins = getJoins[*dialect.SelectQuery]
 	UpdateJoins = getJoins[*dialect.UpdateQuery]
 )
-{{- end}}
+{{end -}}
 
 {{define "setter_insert_mod" -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/im" $.Dialect)}}
@@ -21,7 +21,7 @@ func (s {{$tAlias.UpSingular}}Setter) InsertMod() bob.Mod[*dialect.InsertQuery] 
 
 	return im.Values(vals...)
 }
-{{- end}}
+{{end -}}
 
 {{define "unique_constraint_error_detection_method" -}}
 func (e *errUniqueConstraint) Is(target error) bool {
@@ -47,4 +47,4 @@ func (e *errUniqueConstraint) Is(target error) bool {
 	return err.{{$codeGetter}} == 2067 && strings.Contains(err.Error(), e.s)
 	{{end}}
 }
-{{- end}}
+{{end -}}

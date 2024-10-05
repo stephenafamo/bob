@@ -1,5 +1,5 @@
+{{- if and .Table.Constraints.Uniques (not $.NoFactory)}}
 {{$table := .Table}}
-{{if and $table.Constraints.Uniques (not $.NoFactory)}}
 {{$tAlias := .Aliases.Table $table.Key}}
 {{$factoryPackage := printf "%s/factory" $.ModelsPackage }}
 {{$.Importer.Import "factory" $factoryPackage }}
@@ -99,4 +99,4 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		})
 	}
 }
-{{end}}
+{{end -}}

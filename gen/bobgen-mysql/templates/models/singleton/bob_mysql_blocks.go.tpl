@@ -1,4 +1,4 @@
-{{define "helpers/where_variables" -}}
+{{- define "helpers/where_variables"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
@@ -17,4 +17,4 @@ func (e *errUniqueConstraint) Is(target error) bool {
   }
   return err.Number == 1062 && strings.Contains(err.Message, e.s)
 }
-{{- end}}
+{{end -}}
