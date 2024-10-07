@@ -27,7 +27,7 @@ type SelectQuery struct {
 	clause.Limit
 	clause.Offset
 	clause.For
-	bob.Load[*SelectQuery]
+	bob.Load
 }
 
 func (s *SelectQuery) SetInto(i any) {

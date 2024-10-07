@@ -22,7 +22,7 @@ type SelectQuery struct {
 	clause.OrderBy
 	clause.Limit
 	clause.Offset
-	bob.Load[*SelectQuery]
+	bob.Load
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
