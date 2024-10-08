@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove MS SQL artifacts. (thanks @mbezhanov)
+- Remove redundant type parameter from `bob.Load`.
 
 ### Fixed
 

@@ -24,7 +24,7 @@ type SelectQuery struct {
 	clause.Offset
 	clause.Fetch
 	clause.For
-	bob.Load[*SelectQuery]
+	bob.Load
 }
 
 func (s SelectQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {

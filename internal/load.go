@@ -29,7 +29,7 @@ func (l Loader[Q]) Load(ctx context.Context, exec bob.Executor, retrieved any) e
 	return l(ctx, exec, retrieved)
 }
 
-// Apply satisfies the bob.Mod[*dialect.SelectQuery] interface
+// Apply satisfies the bob.Mod[Q] interface
 func (l Loader[Q]) Apply(q Q) {
 	q.AppendLoader(l)
 }
