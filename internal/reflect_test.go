@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"database/sql/driver"
 	"fmt"
 	"io"
@@ -248,7 +249,7 @@ type expression struct {
 
 func expTransformer(e bob.Expression) expression {
 	buf := &bytes.Buffer{}
-	args, err := e.WriteSQL(buf, dialect{}, 1)
+	args, err := e.WriteSQL(context.Background(), buf, dialect{}, 1)
 
 	return expression{
 		Query: buf.String(),

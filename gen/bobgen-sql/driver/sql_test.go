@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	testgen "github.com/stephenafamo/bob/test/gen"
 )
 
 func TestPostgres(t *testing.T) {
@@ -22,7 +22,7 @@ func TestPostgres(t *testing.T) {
 		fs: testfiles.PostgresSchema,
 	}
 
-	testutils.TestDriver(t, testutils.DriverTestConfig[any]{
+	testgen.TestDriver(t, testgen.DriverTestConfig[any]{
 		Root: out,
 		GetDriver: func() drivers.Interface[any] {
 			d, err := getPsqlDriver(context.Background(), config)
@@ -46,7 +46,7 @@ func TestSQLite(t *testing.T) {
 		Schemas: []string{"one"},
 	}
 
-	testutils.TestDriver(t, testutils.DriverTestConfig[any]{
+	testgen.TestDriver(t, testgen.DriverTestConfig[any]{
 		Root: out,
 		GetDriver: func() drivers.Interface[any] {
 			d, err := getSQLiteDriver(context.Background(), config)

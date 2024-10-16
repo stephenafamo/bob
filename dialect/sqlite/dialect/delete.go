@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -16,10 +17,10 @@ type DeleteQuery struct {
 	clause.Returning
 }
 
-func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := bob.ExpressIf(w, dl, start+len(args), d.With,
+	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,
 		len(d.With.CTEs) > 0, "\n", "")
 	if err != nil {
 		return nil, err
@@ -28,20 +29,20 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 
 	w.Write([]byte("DELETE FROM"))
 
-	tableArgs, err := bob.ExpressIf(w, dl, start+len(args), d.From, true, " ", "")
+	tableArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.From, true, " ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, tableArgs...)
 
-	whereArgs, err := bob.ExpressIf(w, dl, start+len(args), d.Where,
+	whereArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Where,
 		len(d.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
 
-	retArgs, err := bob.ExpressIf(w, dl, start+len(args), d.Returning,
+	retArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Returning,
 		len(d.Returning.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err

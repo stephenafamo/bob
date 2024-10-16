@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"errors"
 	"io"
 
@@ -25,7 +26,7 @@ func (s *Combine) SetCombine(c Combine) {
 	*s = c
 }
 
-func (s Combine) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s Combine) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if s.Strategy == "" {
 		return nil, ErrNoCombinationStrategy
 	}
@@ -38,7 +39,7 @@ func (s Combine) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) 
 		w.Write([]byte(" "))
 	}
 
-	args, err := bob.Express(w, d, start, s.Query)
+	args, err := bob.Express(ctx, w, d, start, s.Query)
 	if err != nil {
 		return nil, err
 	}

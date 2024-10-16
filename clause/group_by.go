@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -28,7 +29,7 @@ func (g *GroupBy) SetGroupByDistinct(distinct bool) {
 	g.Distinct = distinct
 }
 
-func (g GroupBy) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (g GroupBy) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	// don't write anything if there are no groups
@@ -41,7 +42,7 @@ func (g GroupBy) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) 
 		w.Write([]byte("DISTINCT "))
 	}
 
-	args, err := bob.ExpressSlice(w, d, start, g.Groups, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, g.Groups, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +60,9 @@ type GroupingSet struct {
 	Type   string // GROUPING SET | CUBE | ROLLUP
 }
 
-func (g GroupingSet) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (g GroupingSet) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(g.Type))
-	args, err := bob.ExpressSlice(w, d, start, g.Groups, " (", ", ", ")")
+	args, err := bob.ExpressSlice(ctx, w, d, start, g.Groups, " (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}

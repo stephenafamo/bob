@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -16,6 +17,6 @@ func (o *Offset) SetOffset(offset any) {
 	o.Count = offset
 }
 
-func (o Offset) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressIf(w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
+func (o Offset) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(ctx, w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
 }

@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -13,9 +14,9 @@ type Distinct struct {
 	On []any
 }
 
-func (di Distinct) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (di Distinct) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("DISTINCT"))
-	return bob.ExpressSlice(w, d, start, di.On, " ON (", ", ", ")")
+	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
 }
 
 func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string) CTEChain[Q] {
@@ -201,7 +202,7 @@ type collation struct {
 	name string
 }
 
-func (c collation) WriteSQL(w io.Writer, d bob.Dialect, _ int) ([]any, error) {
+func (c collation) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, _ int) ([]any, error) {
 	if _, err := w.Write([]byte(" COLLATE ")); err != nil {
 		return nil, err
 	}
@@ -428,8 +429,8 @@ func (w *WindowChain[T]) FromUnboundedPreceding() T {
 
 func (w *WindowChain[T]) FromPreceding(exp any) T {
 	w.def.SetStart(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
+		func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			return bob.ExpressIf(ctx, w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
 	return w.Wrap
@@ -442,8 +443,8 @@ func (w *WindowChain[T]) FromCurrentRow() T {
 
 func (w *WindowChain[T]) FromFollowing(exp any) T {
 	w.def.SetStart(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+		func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			return bob.ExpressIf(ctx, w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)
 	return w.Wrap
@@ -451,8 +452,8 @@ func (w *WindowChain[T]) FromFollowing(exp any) T {
 
 func (w *WindowChain[T]) ToPreceding(exp any) T {
 	w.def.SetEnd(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-			return bob.ExpressIf(w, d, start, exp, true, "", " PRECEDING")
+		func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			return bob.ExpressIf(ctx, w, d, start, exp, true, "", " PRECEDING")
 		}),
 	)
 	return w.Wrap
@@ -465,8 +466,8 @@ func (w *WindowChain[T]) ToCurrentRow(count int) T {
 
 func (w *WindowChain[T]) ToFollowing(exp any) T {
 	w.def.SetEnd(bob.ExpressionFunc(
-		func(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-			return bob.ExpressIf(w, d, start, exp, true, "", " FOLLOWING")
+		func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			return bob.ExpressIf(ctx, w, d, start, exp, true, "", " FOLLOWING")
 		}),
 	)
 	return w.Wrap

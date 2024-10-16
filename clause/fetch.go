@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 	"strconv"
 
@@ -16,7 +17,7 @@ func (f *Fetch) SetFetch(fetch Fetch) {
 	*f = fetch
 }
 
-func (f Fetch) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Fetch) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Count == nil {
 		return nil, nil
 	}

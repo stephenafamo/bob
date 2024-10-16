@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -33,7 +34,7 @@ func (f *Function) SetWindow(w clause.Window) {
 	f.w = &w
 }
 
-func (f Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
@@ -45,12 +46,12 @@ func (f Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 		w.Write([]byte("DISTINCT "))
 	}
 
-	args, err := bob.ExpressSlice(w, d, start, f.args, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, f.args, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	orderArgs, err := bob.ExpressIf(w, d, start+len(args), f.OrderBy,
+	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.OrderBy,
 		len(f.OrderBy.Expressions) > 0, " ", "")
 	if err != nil {
 		return nil, err
@@ -59,13 +60,13 @@ func (f Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error)
 
 	w.Write([]byte(")"))
 
-	filterArgs, err := bob.ExpressSlice(w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
+	filterArgs, err := bob.ExpressSlice(ctx, w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, filterArgs...)
 
-	winargs, err := bob.ExpressIf(w, d, start+len(args), f.w, f.w != nil, "OVER (", ")")
+	winargs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.w, f.w != nil, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}

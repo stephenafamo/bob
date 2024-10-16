@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -14,6 +15,6 @@ func (o *or) SetOr(to string) {
 	o.action = to
 }
 
-func (o or) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressIf(w, d, start, o.action, o.action != "", " OR ", "")
+func (o or) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(ctx, w, d, start, o.action, o.action != "", " OR ", "")
 }

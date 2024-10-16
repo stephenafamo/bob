@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -11,8 +12,8 @@ type Chain[T bob.Expression, B builder[T]] struct {
 }
 
 // WriteSQL satisfies the bob.Expression interface
-func (x Chain[T, B]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.Express(w, d, start, x.Base)
+func (x Chain[T, B]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.Express(ctx, w, d, start, x.Base)
 }
 
 // IS DISTINCT FROM

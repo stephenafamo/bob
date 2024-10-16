@@ -1,16 +1,17 @@
 package bob
 
 import (
+	"context"
 	"fmt"
 	"io"
 )
 
-func Cache(q Query) (BaseQuery[*cached], error) {
-	return CacheN(q, 1)
+func Cache(ctx context.Context, q Query) (BaseQuery[*cached], error) {
+	return CacheN(ctx, q, 1)
 }
 
-func CacheN(q Query, start int) (BaseQuery[*cached], error) {
-	query, args, err := BuildN(q, start)
+func CacheN(ctx context.Context, q Query, start int) (BaseQuery[*cached], error) {
+	query, args, err := BuildN(ctx, q, start)
 	if err != nil {
 		return BaseQuery[*cached]{}, err
 	}
@@ -40,7 +41,7 @@ type cached struct {
 }
 
 // WriteSQL implements Expression.
-func (c *cached) WriteSQL(w io.Writer, d Dialect, start int) ([]any, error) {
+func (c *cached) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
 	if start != c.start {
 		return nil, WrongStartError{Expected: c.start, Got: start}
 	}

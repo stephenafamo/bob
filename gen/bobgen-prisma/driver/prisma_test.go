@@ -13,7 +13,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	testgen "github.com/stephenafamo/bob/test/gen"
 )
 
 //go:embed test_data_model.json
@@ -89,7 +89,7 @@ func testDialect(t *testing.T, tt testCase) {
 		os.RemoveAll(out)
 	}()
 
-	testutils.TestDriver(t, testutils.DriverTestConfig[Extra]{
+	testgen.TestDriver(t, testgen.DriverTestConfig[Extra]{
 		Root: out,
 		GetDriver: func() drivers.Interface[Extra] {
 			return New(Config{}, tt.name, tt.provider, dataModel)

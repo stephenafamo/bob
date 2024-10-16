@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -86,7 +87,7 @@ func (f *From) AppendIndexHint(i IndexHint) {
 	f.IndexHints = append(f.IndexHints, i)
 }
 
-func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f From) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Table == nil {
 		return nil, nil
 	}
@@ -99,7 +100,7 @@ func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte("LATERAL "))
 	}
 
-	args, err := bob.Express(w, d, start, f.Table)
+	args, err := bob.Express(ctx, w, d, start, f.Table)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte(" WITH ORDINALITY"))
 	}
 
-	_, err = bob.ExpressSlice(w, d, start, f.Partitions, " PARTITION (", ", ", ")")
+	_, err = bob.ExpressSlice(ctx, w, d, start, f.Partitions, " PARTITION (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 
 	// No args for index hints
-	_, err = bob.ExpressSlice(w, d, start+len(args), f.IndexHints, "\n", " ", "")
+	_, err = bob.ExpressSlice(ctx, w, d, start+len(args), f.IndexHints, "\n", " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +147,7 @@ func (f From) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte(*f.IndexedBy))
 	}
 
-	joinArgs, err := bob.ExpressSlice(w, d, start+len(args), f.Joins, "\n", "\n", "")
+	joinArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Joins, "\n", "\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -161,20 +162,20 @@ type IndexHint struct {
 	For     string // JOIN, ORDER BY or GROUP BY
 }
 
-func (f IndexHint) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f IndexHint) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Type == "" {
 		return nil, nil
 	}
 	fmt.Fprintf(w, "%s INDEX ", f.Type)
 
-	_, err := bob.ExpressIf(w, d, start, f.For, f.For != "", " FOR ", "")
+	_, err := bob.ExpressIf(ctx, w, d, start, f.For, f.For != "", " FOR ", "")
 	if err != nil {
 		return nil, err
 	}
 
 	// Always include the brackets
 	fmt.Fprint(w, " (")
-	_, err = bob.ExpressSlice(w, d, start, f.Indexes, "", ", ", "")
+	_, err = bob.ExpressSlice(ctx, w, d, start, f.Indexes, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}

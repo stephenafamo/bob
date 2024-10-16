@@ -101,7 +101,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...),
+		im.Into(t.NameAs(), internal.FilterNonZero(t.setterMapping.NonGenerated)...),
 		im.Returning(t.Columns()),
 	)
 
@@ -145,7 +145,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 		pkPairs[i] = row.PrimaryKeyVals()
 	}
 
-	q := Update(um.Table(t.NameAs(ctx)), vals, um.Where(t.pkExpr.In(pkPairs...)))
+	q := Update(um.Table(t.NameAs()), vals, um.Where(t.pkExpr.In(pkPairs...)))
 
 	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
@@ -225,7 +225,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 	}
 
 	q := Insert(
-		im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...),
+		im.Into(t.NameAs(), internal.FilterNonZero(t.setterMapping.NonGenerated)...),
 		im.Returning(t.Columns()),
 		conflictQM,
 	)
@@ -268,7 +268,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 		pkPairs[i] = row.PrimaryKeyVals()
 	}
 
-	q := Delete(dm.From(t.NameAs(ctx)), dm.Where(t.pkExpr.In(pkPairs...)))
+	q := Delete(dm.From(t.NameAs()), dm.Where(t.pkExpr.In(pkPairs...)))
 
 	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
 	if err != nil {
@@ -289,7 +289,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.InsertQuery]) *TableQuery[*dialect.InsertQuery, T, Tslice] {
 	q := &TableQuery[*dialect.InsertQuery, T, Tslice]{
-		BaseQuery: Insert(im.Into(t.NameAs(ctx), internal.FilterNonZero(t.setterMapping.NonGenerated)...)),
+		BaseQuery: Insert(im.Into(t.NameAs(), internal.FilterNonZero(t.setterMapping.NonGenerated)...)),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,
@@ -304,7 +304,7 @@ func (t *Table[T, Tslice, Tset]) InsertQ(ctx context.Context, exec bob.Executor,
 // Starts an update query for this table
 func (t *Table[T, Tslice, Tset]) UpdateQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.UpdateQuery]) *TableQuery[*dialect.UpdateQuery, T, Tslice] {
 	q := &TableQuery[*dialect.UpdateQuery, T, Tslice]{
-		BaseQuery: Update(um.Table(t.NameAs(ctx))),
+		BaseQuery: Update(um.Table(t.NameAs())),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,
@@ -319,7 +319,7 @@ func (t *Table[T, Tslice, Tset]) UpdateQ(ctx context.Context, exec bob.Executor,
 // Starts a delete query for this table
 func (t *Table[T, Tslice, Tset]) DeleteQ(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.DeleteQuery]) *TableQuery[*dialect.DeleteQuery, T, Tslice] {
 	q := &TableQuery[*dialect.DeleteQuery, T, Tslice]{
-		BaseQuery: Delete(dm.From(t.NameAs(ctx))),
+		BaseQuery: Delete(dm.From(t.NameAs())),
 		ctx:       ctx,
 		exec:      exec,
 		view:      t.View,

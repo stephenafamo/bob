@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -33,12 +34,12 @@ func (s *SelectList) AppendPreloadSelect(columns ...any) {
 	s.PreloadColumns = append(s.PreloadColumns, columns...)
 }
 
-func (s SelectList) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectList) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	all := append(s.Columns, s.PreloadColumns...)
 	if len(all) > 0 {
-		colArgs, err := bob.ExpressSlice(w, d, start+len(args), all, "", ", ", "")
+		colArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), all, "", ", ", "")
 		if err != nil {
 			return nil, err
 		}

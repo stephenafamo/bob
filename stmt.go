@@ -21,7 +21,7 @@ type Statement interface {
 // retains the expected methods used by *sql.Stmt
 // This is useful when an existing *sql.Stmt is used in other places in the codebase
 func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
-	query, args, err := Build(q)
+	query, args, err := Build(ctx, q)
 	if err != nil {
 		return Stmt{}, err
 	}

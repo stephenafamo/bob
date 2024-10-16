@@ -1,6 +1,7 @@
 package sm
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -72,10 +73,10 @@ type into struct {
 	lineOptions  lineOptions
 }
 
-func (i into) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i into) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// If it has vars, use INTO var_name, var_name ...
 	if len(i.vars) > 0 {
-		return bob.ExpressSlice(w, d, start, i.vars, "INTO @", ", @", "")
+		return bob.ExpressSlice(ctx, w, d, start, i.vars, "INTO @", ", @", "")
 	}
 
 	// If dumpfile is present, use INTO DUMPFILE 'file_name'
@@ -94,13 +95,13 @@ func (i into) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		return nil, err
 	}
 
-	_, err = bob.ExpressIf(w, d, start, i.characterSet,
+	_, err = bob.ExpressIf(ctx, w, d, start, i.characterSet,
 		i.characterSet != "", "\nCHARACTER SET ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bob.ExpressIf(w, d, start, i.fieldOptions, i.hasFieldOpt, "\n", "")
+	_, err = bob.ExpressIf(ctx, w, d, start, i.fieldOptions, i.hasFieldOpt, "\n", "")
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +116,7 @@ type fieldOptions struct {
 	enclosedByOptional bool
 }
 
-func (f fieldOptions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f fieldOptions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("FIELDS"))
 
 	if f.terminatedBy != "" {
@@ -141,7 +142,7 @@ type lineOptions struct {
 	terminatedBy string
 }
 
-func (l lineOptions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (l lineOptions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("LINES"))
 
 	if l.startingBy != "" {

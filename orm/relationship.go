@@ -1,11 +1,8 @@
 package orm
 
 import (
-	"context"
 	"fmt"
 	"sort"
-
-	"github.com/stephenafamo/bob"
 )
 
 type RelWhere struct {
@@ -57,9 +54,6 @@ type RelSide struct {
 	// relationship without deleting it
 	// this is set in Relationships.init()
 	KeyNullable bool `yaml:"-"`
-
-	// Kinda hacky, used for preloading
-	ToExpr func(context.Context) bob.Expression `json:"-" yaml:"-"`
 }
 
 type Relationship struct {

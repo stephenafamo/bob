@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -16,9 +17,9 @@ type CTE struct {
 	Cycle        CTECycle
 }
 
-func (c CTE) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c CTE) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(c.Name))
-	_, err := bob.ExpressSlice(w, d, start, c.Columns, "(", ", ", ")")
+	_, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -36,20 +37,20 @@ func (c CTE) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	}
 
 	w.Write([]byte("("))
-	args, err := c.Query.WriteQuery(w, start)
+	args, err := c.Query.WriteQuery(ctx, w, start)
 	if err != nil {
 		return nil, err
 	}
 	w.Write([]byte(")"))
 
-	searchArgs, err := bob.ExpressIf(w, d, start+len(args), c.Search,
+	searchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.Search,
 		len(c.Search.Columns) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, searchArgs...)
 
-	cycleArgs, err := bob.ExpressIf(w, d, start+len(args), c.Cycle,
+	cycleArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.Cycle,
 		len(c.Cycle.Columns) > 0, "\n", "")
 	if err != nil {
 		return nil, err
@@ -70,11 +71,11 @@ type CTESearch struct {
 	Set     string
 }
 
-func (c CTESearch) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c CTESearch) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// [ SEARCH { BREADTH | DEPTH } FIRST BY column_name [, ...] SET search_seq_col_name ]
 	fmt.Fprintf(w, "SEARCH %s FIRST BY ", c.Order)
 
-	args, err := bob.ExpressSlice(w, d, start, c.Columns, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -92,25 +93,25 @@ type CTECycle struct {
 	DefaultVal any
 }
 
-func (c CTECycle) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c CTECycle) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	//[ CYCLE column_name [, ...] SET cycle_mark_col_name [ TO cycle_mark_value DEFAULT cycle_mark_default ] USING cycle_path_col_name ]
 	w.Write([]byte("CYCLE "))
 
-	args, err := bob.ExpressSlice(w, d, start, c.Columns, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Fprintf(w, " SET %s", c.Set)
 
-	markArgs, err := bob.ExpressIf(w, d, start+len(args), c.SetVal,
+	markArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.SetVal,
 		c.SetVal != nil, " TO ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, markArgs...)
 
-	defaultArgs, err := bob.ExpressIf(w, d, start+len(args), c.DefaultVal,
+	defaultArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.DefaultVal,
 		c.DefaultVal != nil, " DEFAULT ", "")
 	if err != nil {
 		return nil, err

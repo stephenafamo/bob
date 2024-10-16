@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 
 type Raw []byte
 
-func (r Raw) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (r Raw) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write(r)
 	return nil, nil
 }
@@ -29,9 +30,9 @@ type Clause struct {
 	args  []any  // The replacements for the placeholders in order
 }
 
-func (r Clause) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (r Clause) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately
-	total, args, err := r.convertQuestionMarks(w, d, start)
+	total, args, err := r.convertQuestionMarks(ctx, w, d, start)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (r Clause) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 // convertQuestionMarks converts each occurrence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func (r Clause) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) (int, []any, error) {
+func (r Clause) convertQuestionMarks(ctx context.Context, w io.Writer, d bob.Dialect, startAt int) (int, []any, error) {
 	if startAt == 0 {
 		panic("Not a valid start number.")
 	}
@@ -83,7 +84,7 @@ func (r Clause) convertQuestionMarks(w io.Writer, d bob.Dialect, startAt int) (i
 			arg = r.args[total]
 		}
 		if ex, ok := arg.(bob.Expression); ok {
-			eargs, err := ex.WriteSQL(w, d, startAt)
+			eargs, err := ex.WriteSQL(ctx, w, d, startAt)
 			if err != nil {
 				return total, nil, err
 			}

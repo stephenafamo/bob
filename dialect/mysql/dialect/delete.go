@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -21,10 +22,10 @@ type DeleteQuery struct {
 	clause.Limit
 }
 
-func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := bob.ExpressIf(w, dl, start+len(args), d.With,
+	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,
 		len(d.With.CTEs) > 0, "\n", "")
 	if err != nil {
 		return nil, err
@@ -34,47 +35,47 @@ func (d DeleteQuery) WriteSQL(w io.Writer, dl bob.Dialect, start int) ([]any, er
 	w.Write([]byte("DELETE "))
 
 	// no optimizer hint args
-	_, err = bob.ExpressIf(w, dl, start+len(args), d.hints,
+	_, err = bob.ExpressIf(ctx, w, dl, start+len(args), d.hints,
 		len(d.hints.hints) > 0, "\n", "\n")
 	if err != nil {
 		return nil, err
 	}
 
 	// no modifiers args
-	_, err = bob.ExpressIf(w, dl, start+len(args), d.modifiers,
+	_, err = bob.ExpressIf(ctx, w, dl, start+len(args), d.modifiers,
 		len(d.modifiers.modifiers) > 0, "", " ")
 	if err != nil {
 		return nil, err
 	}
 
-	tableArgs, err := bob.ExpressSlice(w, dl, start+len(args), d.Tables, "FROM ", ", ", "")
+	tableArgs, err := bob.ExpressSlice(ctx, w, dl, start+len(args), d.Tables, "FROM ", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressIf(w, dl, start+len(args), d.From,
+	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.From,
 		d.From.Table != nil, "\nUSING ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, usingArgs...)
 
-	whereArgs, err := bob.ExpressIf(w, dl, start+len(args), d.Where,
+	whereArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Where,
 		len(d.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
 
-	orderArgs, err := bob.ExpressIf(w, dl, start+len(args), d.OrderBy,
+	orderArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.OrderBy,
 		len(d.OrderBy.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, orderArgs...)
 
-	_, err = bob.ExpressIf(w, dl, start+len(args), d.Limit,
+	_, err = bob.ExpressIf(ctx, w, dl, start+len(args), d.Limit,
 		d.Limit.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err

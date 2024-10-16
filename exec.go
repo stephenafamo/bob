@@ -25,7 +25,7 @@ type Executor interface {
 }
 
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
-	sql, args, err := Build(q)
+	sql, args, err := Build(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 
 	var t T
 
-	sql, args, err := Build(q)
+	sql, args, err := Build(ctx, q)
 	if err != nil {
 		return t, err
 	}
@@ -100,7 +100,7 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 		opt(&settings)
 	}
 
-	sql, args, err := Build(q)
+	sql, args, err := Build(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		opt(&settings)
 	}
 
-	sql, args, err := Build(q)
+	sql, args, err := Build(ctx, q)
 	if err != nil {
 		return nil, err
 	}

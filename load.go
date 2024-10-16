@@ -26,19 +26,8 @@ type (
 
 // Load is an embeddable struct that enables Preloading and AfterLoading
 type Load struct {
-	loadContext       context.Context
 	loadFuncs         []Loader
 	preloadMapperMods []scan.MapperMod
-}
-
-// GetLoadContext
-func (l *Load) GetLoadContext() context.Context {
-	return l.loadContext
-}
-
-// SetLoadContext
-func (l *Load) SetLoadContext(ctx context.Context) {
-	l.loadContext = ctx
 }
 
 func (l *Load) SetMapperMods(mods ...scan.MapperMod) {
