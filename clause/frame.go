@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -34,7 +35,7 @@ func (f *Frame) SetExclusion(excl string) {
 	f.Exclusion = excl
 }
 
-func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Frame) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Mode == "" {
 		f.Mode = "RANGE"
 	}
@@ -52,19 +53,19 @@ func (f Frame) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte("BETWEEN "))
 	}
 
-	startArgs, err := bob.Express(w, d, start, f.Start)
+	startArgs, err := bob.Express(ctx, w, d, start, f.Start)
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, startArgs...)
 
-	endArgs, err := bob.ExpressIf(w, d, start, f.End, f.End != nil, " AND ", "")
+	endArgs, err := bob.ExpressIf(ctx, w, d, start, f.End, f.End != nil, " AND ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, endArgs...)
 
-	_, err = bob.ExpressIf(w, d, start, f.Exclusion, f.Exclusion != "", " EXCLUDE ", "")
+	_, err = bob.ExpressIf(ctx, w, d, start, f.Exclusion, f.Exclusion != "", " EXCLUDE ", "")
 	if err != nil {
 		return nil, err
 	}

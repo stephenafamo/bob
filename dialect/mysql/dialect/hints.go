@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -17,8 +18,8 @@ func (h *hints) AppendHint(hint string) {
 	h.hints = append(h.hints, hint)
 }
 
-func (h hints) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressSlice(w, d, start, h.hints, "/*+ ", "\n    ", " */")
+func (h hints) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(ctx, w, d, start, h.hints, "/*+ ", "\n    ", " */")
 }
 
 type hintable interface{ AppendHint(string) }

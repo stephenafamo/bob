@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -64,7 +65,7 @@ func RunTests(t *testing.T, cases Testcases, format FormatFunc) {
 	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := bob.Build(tc.Query)
+			sql, args, err := bob.Build(context.Background(), tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
@@ -100,7 +101,7 @@ func RunExpressionTests(t *testing.T, d bob.Dialect, cases ExpressionTestcases) 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			b := &strings.Builder{}
-			args, err := bob.Express(b, d, 1, tc.Expression)
+			args, err := bob.Express(context.Background(), b, d, 1, tc.Expression)
 			sql := b.String()
 
 			if diff := ErrDiff(tc.ExpectedError, err); diff != "" {

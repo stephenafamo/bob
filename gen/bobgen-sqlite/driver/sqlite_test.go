@@ -17,7 +17,7 @@ import (
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	testgen "github.com/stephenafamo/bob/test/gen"
 	"modernc.org/sqlite"
 )
 
@@ -191,7 +191,7 @@ func TestAssemble(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			testutils.TestDriver(t, testutils.DriverTestConfig[any]{
+			testgen.TestDriver(t, testgen.DriverTestConfig[any]{
 				Root: out,
 				GetDriver: func() drivers.Interface[any] {
 					return New(tt.config)

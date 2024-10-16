@@ -2,6 +2,7 @@ package bob
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"errors"
 	"io"
@@ -24,7 +25,7 @@ func (d dialect) WriteQuoted(w io.Writer, s string) {
 	w.Write([]byte(`"`))
 }
 
-var expression = ExpressionFunc(func(w io.Writer, d Dialect, start int) ([]any, error) {
+var expression = ExpressionFunc(func(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
 	w.Write([]byte("Hello "))
 	d.WriteArg(w, start)
 	w.Write([]byte(" "))
@@ -54,7 +55,7 @@ func compare(t *testing.T, sqlExpected, sqlGotten string, argsExpected, argsGott
 
 func TestExpress(t *testing.T) {
 	w := bytes.NewBuffer(nil)
-	args, err := Express(w, d, 2, expression)
+	args, err := Express(context.Background(), w, d, 2, expression)
 	if err != nil {
 		t.Fatalf("err while expressing")
 	}
@@ -88,7 +89,7 @@ func TestExpress2(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			w := bytes.NewBuffer(nil)
-			args, err := Express(w, d, 1, test.value)
+			args, err := Express(context.Background(), w, d, 1, test.value)
 			if err != nil {
 				t.Fatalf("err while expressing")
 			}
@@ -125,7 +126,7 @@ func TestExpressIf(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			w := bytes.NewBuffer(nil)
-			args, err := ExpressIf(w, d, 1, expression, test.cond, test.prefix, test.suffix)
+			args, err := ExpressIf(context.Background(), w, d, 1, expression, test.cond, test.prefix, test.suffix)
 			if err != nil {
 				t.Fatalf("err while expressing")
 			}
@@ -142,7 +143,7 @@ func TestExpressIf(t *testing.T) {
 
 func TestExpressEmptySlice(t *testing.T) {
 	w := bytes.NewBuffer(nil)
-	args, err := ExpressSlice(w, d, 2, []string{}, "prefix ", ", ", " suffix")
+	args, err := ExpressSlice(context.Background(), w, d, 2, []string{}, "prefix ", ", ", " suffix")
 	if err != nil {
 		t.Fatalf("err while expressing")
 	}
@@ -152,7 +153,7 @@ func TestExpressEmptySlice(t *testing.T) {
 
 func TestExpressSlice(t *testing.T) {
 	w := bytes.NewBuffer(nil)
-	args, err := ExpressSlice(w, d, 2, []string{"one", "two", "three"}, "prefix ", ", ", " suffix")
+	args, err := ExpressSlice(context.Background(), w, d, 2, []string{"one", "two", "three"}, "prefix ", ", ", " suffix")
 	if err != nil {
 		t.Fatalf("err while expressing")
 	}
@@ -170,7 +171,7 @@ func (d dialectWithNamed) WriteNamedArg(w io.Writer, name string) {
 func TestNamedArgs(t *testing.T) {
 	arg := sql.Named("name", "value")
 	w := bytes.NewBuffer(nil)
-	args, err := Express(w, dialectWithNamed{}, 1, arg)
+	args, err := Express(context.Background(), w, dialectWithNamed{}, 1, arg)
 	if err != nil {
 		t.Fatalf("err while expressing")
 	}
@@ -181,7 +182,7 @@ func TestNamedArgs(t *testing.T) {
 func TestErrNoNamedArgs(t *testing.T) {
 	arg := sql.Named("name", "value")
 	w := bytes.NewBuffer(nil)
-	_, err := Express(w, d, 1, arg)
+	_, err := Express(context.Background(), w, d, 1, arg)
 	if !errors.Is(err, ErrNoNamedArgs) {
 		t.Fatalf("Expected to get ErrNoNamedArgs but got %v", err)
 	}

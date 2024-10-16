@@ -1,6 +1,12 @@
 package orm
 
-import "github.com/stephenafamo/bob"
+import (
+	"context"
+	"io"
+
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
+)
 
 type Table interface {
 	// PrimaryKeyVals returns the values of the primary key columns
@@ -18,4 +24,11 @@ type Setter[T any, InsertQ any, UpdateQ any] interface {
 	bob.Mod[UpdateQ]
 	// Return a mod for the insert query
 	InsertMod() bob.Mod[InsertQ]
+}
+
+type SchemaTable string
+
+func (s SchemaTable) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	schema, _ := ctx.Value(CtxUseSchema).(string)
+	return expr.Quote(schema, string(s)).WriteSQL(ctx, w, d, start)
 }

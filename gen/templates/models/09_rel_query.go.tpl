@@ -29,7 +29,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](from {{$tAlias.
           {{if ne $index (sub (len $rel.Sides) 1) -}}
           to := {{$toCols}}.AliasedAs({{$toCols}}.Alias() + random)
           {{end -}}
-          mods = append(mods, dialect.Join[Q](typ, {{$to.UpPlural}}.Name(ctx).As(to.Alias())).On(
+          mods = append(mods, dialect.Join[Q](typ, {{$to.UpPlural}}.Name().As(to.Alias())).On(
               {{range $i, $local := $side.FromColumns -}}
                 {{- $fromCol := index $from.Columns $local -}}
                 {{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
@@ -68,7 +68,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx co
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAs(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -128,7 +128,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := getTable $.Tables $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAs(ctx)).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
 				{{- $fromCol := index $from.Columns $local -}}

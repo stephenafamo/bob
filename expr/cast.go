@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -15,6 +16,6 @@ type cast struct {
 	typname string
 }
 
-func (c cast) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressIf(w, d, start, c.e, c.e != nil, "CAST(", " AS "+c.typname+")")
+func (c cast) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(ctx, w, d, start, c.e, c.e != nil, "CAST(", " AS "+c.typname+")")
 }

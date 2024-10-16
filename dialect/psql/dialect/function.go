@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -42,7 +43,7 @@ func (f *Function) AppendColumn(name, datatype string) {
 	})
 }
 
-func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f *Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
@@ -54,13 +55,13 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 		w.Write([]byte("DISTINCT "))
 	}
 
-	args, err := bob.ExpressSlice(w, d, start, f.args, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, f.args, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 
 	if !f.WithinGroup {
-		orderArgs, err := bob.ExpressIf(w, d, start+len(args), f.OrderBy,
+		orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.OrderBy,
 			len(f.OrderBy.Expressions) > 0, " ", "")
 		if err != nil {
 			return nil, err
@@ -70,7 +71,7 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 	w.Write([]byte(")"))
 
 	if f.WithinGroup {
-		orderArgs, err := bob.ExpressIf(w, d, start+len(args), f.OrderBy,
+		orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.OrderBy,
 			len(f.OrderBy.Expressions) > 0, " WITHIN GROUP (", ")")
 		if err != nil {
 			return nil, err
@@ -78,7 +79,7 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 		args = append(args, orderArgs...)
 	}
 
-	filterArgs, err := bob.ExpressSlice(w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
+	filterArgs, err := bob.ExpressSlice(ctx, w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -93,13 +94,13 @@ func (f *Function) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 		w.Write([]byte(" "))
 	}
 
-	colArgs, err := bob.ExpressSlice(w, d, start+len(args), f.Columns, "(", ", ", ")")
+	colArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Columns, "(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, colArgs...)
 
-	winargs, err := bob.ExpressIf(w, d, start+len(args), f.w, f.w != nil, "OVER (", ")")
+	winargs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.w, f.w != nil, "OVER (", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +114,7 @@ type columnDef struct {
 	dataType string
 }
 
-func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c columnDef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(c.name + " " + c.dataType))
 
 	return nil, nil
@@ -121,12 +122,12 @@ func (c columnDef) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error
 
 type Functions []*Function
 
-func (f Functions) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Functions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {
 		w.Write([]byte("ROWS FROM ("))
 	}
 
-	args, err := bob.ExpressSlice(w, d, start, f, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, f, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}

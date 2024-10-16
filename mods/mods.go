@@ -1,6 +1,7 @@
 package mods
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -26,8 +27,8 @@ func (q QueryModFunc[T]) Apply(query T) {
 // allows for some fluent API, for example with functions
 type Moddable[T bob.Expression] func(...bob.Mod[T]) T
 
-func (m Moddable[T]) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return m().WriteSQL(w, d, start)
+func (m Moddable[T]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return m().WriteSQL(ctx, w, d, start)
 }
 
 type With[Q interface{ AppendWith(clause.CTE) }] clause.CTE

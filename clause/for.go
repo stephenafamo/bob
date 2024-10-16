@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -32,7 +33,7 @@ func (f *For) SetFor(lock For) {
 	*f = lock
 }
 
-func (f For) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f For) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Strength == "" {
 		return nil, nil
 	}
@@ -42,7 +43,7 @@ func (f For) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		fmt.Fprintf(w, "%s ", f.Strength)
 	}
 
-	args, err := bob.ExpressSlice(w, d, start, f.Tables, "OF ", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, f.Tables, "OF ", ", ", "")
 	if err != nil {
 		return nil, err
 	}

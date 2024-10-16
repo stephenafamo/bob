@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -20,7 +21,7 @@ type args struct {
 	grouped bool
 }
 
-func (a args) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (a args) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(a.vals) == 0 {
 		return nil, nil
 	}

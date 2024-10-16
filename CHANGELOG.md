@@ -46,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added error constants for matching against both specific and generic unique constraint errors raised by the underlying database driver. (thanks @mbezhanov)
 - Added support for regular expressions in the `only` and `except` table filters. (thanks @mbezhanov)
 
+### Changed
+
+- `context.Context` is now passed to `Query.WriteQuery()` and `Expression.WriteSQL()` methods. This allows for more control over how the query is built and executed.  
+  This change made is possible to delete some hacks and simplify the codebase.
+  - The `Name()` and `NameAs()` methods of Views/Tables no longer need the context argument since the context will be passed when writing the expression. The API then becomes cleaner.
+  - Preloading mods no longer need to store a context internally. `SetLoadContext()` and `GetLoadContext()` have removed.
+  - The `ToExpr` field in `orm.RelSide` which was used for preloading is no longer needed and has been removed.
+
 ### Removed
 
 - Remove MS SQL artifacts. (thanks @mbezhanov)

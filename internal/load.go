@@ -15,7 +15,6 @@ type Preloadable interface {
 }
 
 type loadable interface {
-	GetLoadContext() context.Context
 	AppendLoader(f ...bob.Loader)
 	AppendMapperMod(f scan.MapperMod)
 }
@@ -100,14 +99,14 @@ func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 // while it can be used as a queryMod, it does not have any direct effect.
 // if using manually, the ApplyPreload method should be called
 // with the query's context AFTER other mods have been applied
-type Preloader[Q loadable] func(ctx context.Context) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
+type Preloader[Q loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
 
 // Apply satisfies bob.Mod[*dialect.SelectQuery].
 // 1. It modifies the query to join the preloading table and the extra columns to retrieve
 // 2. It modifies the mapper to scan the new columns.
 // 3. It calls the original object's Preload method with the loaded object
 func (l Preloader[Q]) Apply(q Q) {
-	mod, mapperMod, afterLoaders := l(q.GetLoadContext())
+	mod, mapperMod, afterLoaders := l("")
 
 	mod.Apply(q)                    // add preload columns
 	q.AppendMapperMod(mapperMod)    // add mapper

@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -21,10 +22,10 @@ type UpdateQuery struct {
 	clause.Limit
 }
 
-func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	withArgs, err := bob.ExpressIf(w, d, start+len(args), u.With,
+	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,
 		len(u.With.CTEs) > 0, "\n", "")
 	if err != nil {
 		return nil, err
@@ -34,47 +35,47 @@ func (u UpdateQuery) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, err
 	w.Write([]byte("UPDATE"))
 
 	// no optimizer hint args
-	_, err = bob.ExpressIf(w, d, start+len(args), u.hints,
+	_, err = bob.ExpressIf(ctx, w, d, start+len(args), u.hints,
 		len(u.hints.hints) > 0, "\n", "\n")
 	if err != nil {
 		return nil, err
 	}
 
 	// no modifiers args
-	_, err = bob.ExpressIf(w, d, start+len(args), u.modifiers,
+	_, err = bob.ExpressIf(ctx, w, d, start+len(args), u.modifiers,
 		len(u.modifiers.modifiers) > 0, " ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	fromArgs, err := bob.ExpressIf(w, d, start+len(args), u.From,
+	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.From,
 		u.From.Table != nil, " ", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, fromArgs...)
 
-	setArgs, err := bob.ExpressIf(w, d, start+len(args), u.Set, true, " SET\n", "")
+	setArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Set, true, " SET\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, setArgs...)
 
-	whereArgs, err := bob.ExpressIf(w, d, start+len(args), u.Where,
+	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Where,
 		len(u.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
 
-	orderArgs, err := bob.ExpressIf(w, d, start+len(args), u.OrderBy,
+	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.OrderBy,
 		len(u.OrderBy.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, orderArgs...)
 
-	_, err = bob.ExpressIf(w, d, start+len(args), u.Limit,
+	_, err = bob.ExpressIf(ctx, w, d, start+len(args), u.Limit,
 		u.Limit.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err

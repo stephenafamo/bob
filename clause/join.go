@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -26,7 +27,7 @@ type Join struct {
 	Using   []string
 }
 
-func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (j Join) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if j.Natural {
 		w.Write([]byte("NATURAL "))
 	}
@@ -34,12 +35,12 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte(j.Type))
 	w.Write([]byte(" "))
 
-	args, err := bob.Express(w, d, start, j.To)
+	args, err := bob.Express(ctx, w, d, start, j.To)
 	if err != nil {
 		return nil, err
 	}
 
-	onArgs, err := bob.ExpressSlice(w, d, start+len(args), j.On, " ON ", " AND ", "")
+	onArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), j.On, " ON ", " AND ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (j Join) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 			w.Write([]byte(", "))
 		}
 
-		_, err = expr.Quote(col).WriteSQL(w, d, 1) // start does not matter
+		_, err = expr.Quote(col).WriteSQL(ctx, w, d, 1) // start does not matter
 		if err != nil {
 			return nil, err
 		}

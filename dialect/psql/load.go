@@ -57,8 +57,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 		o.ModifyPreloadSettings(&settings)
 	}
 
-	return buildPreloader[T](func(ctx context.Context) (string, mods.QueryMods[*dialect.SelectQuery]) {
-		parent, _ := ctx.Value(orm.CtxLoadParentAlias).(string)
+	return buildPreloader[T](func(parent string) (string, mods.QueryMods[*dialect.SelectQuery]) {
 		if parent == "" {
 			parent = rel.Sides[0].From
 		}
@@ -90,7 +89,7 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 			}
 
 			queryMods = append(queryMods, sm.
-				LeftJoin(side.ToExpr(ctx)).
+				LeftJoin(orm.SchemaTable(side.To)).
 				As(alias).
 				On(on...))
 
@@ -105,17 +104,16 @@ func Preload[T any, Ts ~[]T](rel orm.Relationship, cols []string, opts ...Preloa
 	}, rel.Name, settings)
 }
 
-func buildPreloader[T any](f func(context.Context) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt PreloadSettings) Preloader {
-	return func(ctx context.Context) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
-		alias, queryMods := f(ctx)
+func buildPreloader[T any](f func(string) (string, mods.QueryMods[*dialect.SelectQuery]), name string, opt PreloadSettings) Preloader {
+	return func(parent string) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
+		alias, queryMods := f(parent)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
 		extraLoaders := []bob.Loader{opt.ExtraLoader}
 
-		ctx = context.WithValue(ctx, orm.CtxLoadParentAlias, alias)
 		for _, l := range opt.SubLoaders {
-			queryMod, mapperMod, extraLoader := l(ctx)
+			queryMod, mapperMod, extraLoader := l(alias)
 			if queryMod != nil {
 				queryMods = append(queryMods, queryMod)
 			}

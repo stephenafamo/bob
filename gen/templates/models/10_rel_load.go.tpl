@@ -86,11 +86,8 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				{{- $fromTable := getTable $.Tables $side.From -}}
 				{{- $toTable = getTable $.Tables $side.To -}}
 				{
-					From: {{quote $fromTable.Key}},
+					From: TableNames.{{$from.UpPlural}},
 					To: TableNames.{{$to.UpPlural}},
-					ToExpr: func(ctx context.Context) bob.Expression {
-					  return {{$to.UpPlural}}.Name(ctx)
-					},
 					{{if $side.FromColumns -}}
 					FromColumns: []string{
 						{{range $name := $side.FromColumns -}}

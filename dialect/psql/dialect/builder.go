@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"strings"
 
 	"github.com/stephenafamo/bob"
@@ -15,6 +16,10 @@ var (
 	iLike               = expr.Raw("ILIKE")
 )
 
+func NewExpression(exp bob.Expression) Expression {
+	return Expression{}.New(exp)
+}
+
 type Expression struct {
 	expr.Chain[Expression, Expression]
 }
@@ -28,7 +33,7 @@ func (Expression) New(exp bob.Expression) Expression {
 // Implements fmt.Stringer()
 func (x Expression) String() string {
 	w := strings.Builder{}
-	x.WriteSQL(&w, Dialect, 1) //nolint:errcheck
+	x.WriteSQL(context.Background(), &w, Dialect, 1) //nolint:errcheck
 	return w.String()
 }
 

@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -21,8 +22,8 @@ func (t Table) As(alias string, columns ...string) Table {
 	return t
 }
 
-func (t Table) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	args, err := bob.Express(w, d, start, t.Expression)
+func (t Table) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	args, err := bob.Express(ctx, w, d, start, t.Expression)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (t Table) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
 		w.Write([]byte(")"))
 	}
 
-	_, err = bob.ExpressSlice(w, d, start, t.Partitions, " PARTITION (", ", ", ")")
+	_, err = bob.ExpressSlice(ctx, w, d, start, t.Partitions, " PARTITION (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ type Query interface {
 	// start is the index of the args, usually 1.
 	// it is present to allow re-indexing in cases of a subquery
 	// The method returns the value of any args placed
-	WriteQuery(w io.Writer, start int) (args []any, err error)
+	WriteQuery(ctx context.Context, w io.Writer, start int) (args []any, err error)
 }
 
 type Mod[T any] interface {
@@ -32,6 +32,7 @@ type Mod[T any] interface {
 }
 
 var (
+	_ Query        = BaseQuery[Expression]{}
 	_ Loadable     = BaseQuery[Expression]{}
 	_ MapperModder = BaseQuery[Expression]{}
 )
@@ -83,15 +84,15 @@ func (b BaseQuery[E]) Apply(mods ...Mod[E]) {
 	}
 }
 
-func (b BaseQuery[E]) WriteQuery(w io.Writer, start int) ([]any, error) {
-	return b.Expression.WriteSQL(w, b.Dialect, start)
+func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
+	return b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 }
 
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
-func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error) {
+func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.Writer, _ Dialect, start int) ([]any, error) {
 	w.Write([]byte(openPar))
-	args, err := b.Expression.WriteSQL(w, b.Dialect, start)
+	args, err := b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 	w.Write([]byte(closePar))
 
 	return args, err
@@ -99,32 +100,32 @@ func (b BaseQuery[E]) WriteSQL(w io.Writer, _ Dialect, start int) ([]any, error)
 
 // MustBuild builds the query and panics on error
 // useful for initializing queries that need to be reused
-func (q BaseQuery[E]) MustBuild() (string, []any) {
-	return MustBuildN(q, 1)
+func (q BaseQuery[E]) MustBuild(ctx context.Context) (string, []any) {
+	return MustBuildN(ctx, q, 1)
 }
 
 // MustBuildN builds the query and panics on error
 // start numbers the arguments from a different point
-func (q BaseQuery[E]) MustBuildN(start int) (string, []any) {
-	return MustBuildN(q, start)
+func (q BaseQuery[E]) MustBuildN(ctx context.Context, start int) (string, []any) {
+	return MustBuildN(ctx, q, start)
 }
 
 // Convinient function to build query from start
-func (q BaseQuery[E]) Build() (string, []any, error) {
-	return BuildN(q, 1)
+func (q BaseQuery[E]) Build(ctx context.Context) (string, []any, error) {
+	return BuildN(ctx, q, 1)
 }
 
 // Convinient function to build query from a point
-func (q BaseQuery[E]) BuildN(start int) (string, []any, error) {
-	return BuildN(q, start)
+func (q BaseQuery[E]) BuildN(ctx context.Context, start int) (string, []any, error) {
+	return BuildN(ctx, q, start)
 }
 
 // Convinient function to cache a query
-func (q BaseQuery[E]) Cache() (BaseQuery[*cached], error) {
-	return CacheN(q, 1)
+func (q BaseQuery[E]) Cache(ctx context.Context) (BaseQuery[*cached], error) {
+	return CacheN(ctx, q, 1)
 }
 
 // Convinient function to cache a query from a point
-func (q BaseQuery[E]) CacheN(start int) (BaseQuery[*cached], error) {
-	return CacheN(q, start)
+func (q BaseQuery[E]) CacheN(ctx context.Context, start int) (BaseQuery[*cached], error) {
+	return CacheN(ctx, q, start)
 }

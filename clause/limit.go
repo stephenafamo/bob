@@ -1,6 +1,7 @@
 package clause
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -16,6 +17,6 @@ func (l *Limit) SetLimit(limit any) {
 	l.Count = limit
 }
 
-func (l Limit) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressIf(w, d, start, l.Count, l.Count != nil, "LIMIT ", "")
+func (l Limit) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressIf(ctx, w, d, start, l.Count, l.Count != nil, "LIMIT ", "")
 }

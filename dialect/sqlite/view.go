@@ -62,18 +62,17 @@ type View[T any, Tslice ~[]T] struct {
 	SelectQueryHooks orm.Hooks[*dialect.SelectQuery, orm.SkipQueryHooksKey]
 }
 
-func (v *View[T, Tslice]) Name(ctx context.Context) Expression {
+func (v *View[T, Tslice]) Name() Expression {
 	// schema is not empty, never override
 	if v.schema != "" {
 		return Quote(v.schema, v.name)
 	}
 
-	schema, _ := ctx.Value(orm.CtxUseSchema).(string)
-	return Quote(schema, v.name)
+	return Expression{}.New(orm.SchemaTable(v.name))
 }
 
-func (v *View[T, Tslice]) NameAs(ctx context.Context) bob.Expression {
-	return v.Name(ctx).As(v.alias)
+func (v *View[T, Tslice]) NameAs() bob.Expression {
+	return v.Name().As(v.alias)
 }
 
 // Returns a column list
@@ -85,13 +84,12 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 // Adds table name et al
 func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		BaseQuery: Select(sm.From(v.NameAs(ctx))),
+		BaseQuery: Select(sm.From(v.NameAs())),
 		ctx:       ctx,
 		exec:      exec,
 		view:      v,
 	}
 
-	q.Expression.SetLoadContext(ctx)
 	q.Apply(queryMods...)
 
 	return q
@@ -128,23 +126,23 @@ type ViewQuery[T any, Ts ~[]T] struct {
 }
 
 // it is necessary to override this method to be able to add columns if not set
-func (v ViewQuery[T, Ts]) WriteSQL(w io.Writer, _ bob.Dialect, start int) ([]any, error) {
+func (v ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.Writer, _ bob.Dialect, start int) ([]any, error) {
 	// Append the table columns
 	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
 		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
 	}
 
-	return v.Expression.WriteSQL(w, v.Dialect, start)
+	return v.Expression.WriteSQL(ctx, w, v.Dialect, start)
 }
 
 // it is necessary to override this method to be able to add columns if not set
-func (v ViewQuery[T, Ts]) WriteQuery(w io.Writer, start int) ([]any, error) {
+func (v ViewQuery[T, Ts]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
 	// Append the table columns
 	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
 		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
 	}
 
-	return v.BaseQuery.WriteQuery(w, start)
+	return v.BaseQuery.WriteQuery(ctx, w, start)
 }
 
 func (v *ViewQuery[T, Ts]) hook() error {

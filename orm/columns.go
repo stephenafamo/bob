@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"context"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -56,7 +57,7 @@ func (c Columns) Except(cols ...string) Columns {
 	return c
 }
 
-func (c Columns) WriteSQL(w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c Columns) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if len(c.names) == 0 {
 		return nil, nil
 	}
