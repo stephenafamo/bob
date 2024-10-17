@@ -364,6 +364,8 @@
       return nil
     }
 
+    var err error
+
     {{if $rel.InsertEarly -}}
       inserted, err := {{$ftable.UpPlural}}.InsertMany(ctx, exec, related...)
       if err != nil {
