@@ -7,6 +7,5 @@ import (
 
 var (
 	_ bob.Mod[any]                                 = QueryMods[any](nil)
-	_ bob.Mod[any]                                 = QueryModFunc[any](nil)
 	_ bob.Mod[interface{ AppendWith(clause.CTE) }] = With[interface{ AppendWith(clause.CTE) }]{}
 )

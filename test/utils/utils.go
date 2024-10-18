@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"regexp"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/scan"
 )
 
 type Testcases map[string]Testcase
@@ -117,4 +119,14 @@ func RunExpressionTests(t *testing.T, d bob.Dialect, cases ExpressionTestcases) 
 			}
 		})
 	}
+}
+
+type NoopExecutor struct{}
+
+func (n NoopExecutor) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	return nil, nil //nolint:nilnil
+}
+
+func (n NoopExecutor) ExecContext(_ context.Context, _ string, _ ...any) (sql.Result, error) {
+	return nil, nil //nolint:nilnil
 }

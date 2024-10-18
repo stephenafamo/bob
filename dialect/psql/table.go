@@ -56,21 +56,21 @@ type Table[T orm.Table, Tslice ~[]T, Tset setter[T]] struct {
 	pkExpr        dialect.Expression
 	setterMapping mappings.Mapping
 
-	BeforeInsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
-	AfterInsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	BeforeInsertHooks bob.Hooks[[]Tset, bob.SkipModelHooksKey]
+	AfterInsertHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	BeforeUpsertHooks orm.Hooks[[]Tset, orm.SkipModelHooksKey]
-	AfterUpsertHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	BeforeUpsertHooks bob.Hooks[[]Tset, bob.SkipModelHooksKey]
+	AfterUpsertHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	BeforeUpdateHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
-	AfterUpdateHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	BeforeUpdateHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	AfterUpdateHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	BeforeDeleteHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
-	AfterDeleteHooks  orm.Hooks[Tslice, orm.SkipModelHooksKey]
+	BeforeDeleteHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	AfterDeleteHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	InsertQueryHooks orm.Hooks[*dialect.InsertQuery, orm.SkipQueryHooksKey]
-	UpdateQueryHooks orm.Hooks[*dialect.UpdateQuery, orm.SkipQueryHooksKey]
-	DeleteQueryHooks orm.Hooks[*dialect.DeleteQuery, orm.SkipQueryHooksKey]
+	InsertQueryHooks bob.Hooks[*dialect.InsertQuery, bob.SkipQueryHooksKey]
+	UpdateQueryHooks bob.Hooks[*dialect.UpdateQuery, bob.SkipQueryHooksKey]
+	DeleteQueryHooks bob.Hooks[*dialect.DeleteQuery, bob.SkipQueryHooksKey]
 }
 
 // Insert inserts a row into the table with only the set columns in Tset
@@ -95,7 +95,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 
 	var err error
 
-	ctx, err = t.BeforeInsertHooks.Do(ctx, exec, rows)
+	ctx, err = t.BeforeInsertHooks.RunHooks(ctx, exec, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		row.InsertMod().Apply(q.Expression)
 	}
 
-	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	ctx, err = t.InsertQueryHooks.RunHooks(ctx, exec, q.Expression)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (t *Table[T, Tslice, Tset]) InsertMany(ctx context.Context, exec bob.Execut
 		return vals, err
 	}
 
-	_, err = t.AfterInsertHooks.Do(ctx, exec, vals)
+	_, err = t.AfterInsertHooks.RunHooks(ctx, exec, vals)
 	if err != nil {
 		return vals, err
 	}
@@ -135,7 +135,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 		return nil
 	}
 
-	_, err := t.BeforeUpdateHooks.Do(ctx, exec, rows)
+	_, err := t.BeforeUpdateHooks.RunHooks(ctx, exec, rows)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 
 	q := Update(um.Table(t.NameAs()), vals, um.Where(t.pkExpr.In(pkPairs...)))
 
-	ctx, err = t.UpdateQueryHooks.Do(ctx, exec, q.Expression)
+	ctx, err = t.UpdateQueryHooks.RunHooks(ctx, exec, q.Expression)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (t *Table[T, Tslice, Tset]) Update(ctx context.Context, exec bob.Executor, 
 		vals.Overwrite(row)
 	}
 
-	if _, err = t.AfterUpdateHooks.Do(ctx, exec, rows); err != nil {
+	if _, err = t.AfterUpdateHooks.RunHooks(ctx, exec, rows); err != nil {
 		return err
 	}
 
@@ -195,7 +195,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 
 	var err error
 
-	ctx, err = t.BeforeUpsertHooks.Do(ctx, exec, rows)
+	ctx, err = t.BeforeUpsertHooks.RunHooks(ctx, exec, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		row.InsertMod().Apply(q.Expression)
 	}
 
-	ctx, err = t.InsertQueryHooks.Do(ctx, exec, q.Expression)
+	ctx, err = t.InsertQueryHooks.RunHooks(ctx, exec, q.Expression)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (t *Table[T, Tslice, Tset]) UpsertMany(ctx context.Context, exec bob.Execut
 		return vals, err
 	}
 
-	_, err = t.AfterUpsertHooks.Do(ctx, exec, vals)
+	_, err = t.AfterUpsertHooks.RunHooks(ctx, exec, vals)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 		return nil
 	}
 
-	_, err := t.BeforeDeleteHooks.Do(ctx, exec, rows)
+	_, err := t.BeforeDeleteHooks.RunHooks(ctx, exec, rows)
 	if err != nil {
 		return err
 	}
@@ -270,7 +270,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 
 	q := Delete(dm.From(t.NameAs()), dm.Where(t.pkExpr.In(pkPairs...)))
 
-	ctx, err = t.DeleteQueryHooks.Do(ctx, exec, q.Expression)
+	ctx, err = t.DeleteQueryHooks.RunHooks(ctx, exec, q.Expression)
 	if err != nil {
 		return err
 	}
@@ -279,7 +279,7 @@ func (t *Table[T, Tslice, Tset]) Delete(ctx context.Context, exec bob.Executor, 
 		return err
 	}
 
-	if _, err = t.AfterDeleteHooks.Do(ctx, exec, rows); err != nil {
+	if _, err = t.AfterDeleteHooks.RunHooks(ctx, exec, rows); err != nil {
 		return err
 	}
 
@@ -342,12 +342,12 @@ type TableQuery[Q returnable, T any, Ts ~[]T] struct {
 	ctx   context.Context
 	exec  bob.Executor
 	view  *View[T, Ts]
-	hooks *orm.Hooks[Q, orm.SkipQueryHooksKey]
+	hooks *bob.Hooks[Q, bob.SkipQueryHooksKey]
 }
 
 func (t *TableQuery[Q, T, Ts]) hook() error {
 	var err error
-	t.ctx, err = t.hooks.Do(t.ctx, t.exec, t.Expression)
+	t.ctx, err = t.hooks.RunHooks(t.ctx, t.exec, t.Expression)
 	return err
 }
 
@@ -360,7 +360,7 @@ func (t *TableQuery[Q, T, Ts]) addReturning() {
 func (t *TableQuery[Q, T, Ts]) afterSelect(exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			_, err := t.view.AfterSelectHooks.Do(ctx, exec, retrieved)
+			_, err := t.view.AfterSelectHooks.RunHooks(ctx, exec, retrieved)
 			if err != nil {
 				return err
 			}

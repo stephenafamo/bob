@@ -16,13 +16,13 @@ func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func Only() bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(d *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(d *dialect.DeleteQuery) {
 		d.Only = true
 	})
 }
 
 func From(name any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 		}
@@ -30,7 +30,7 @@ func From(name any) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,

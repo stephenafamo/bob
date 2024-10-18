@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"io"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -58,8 +57,8 @@ type View[T any, Tslice ~[]T] struct {
 	allCols orm.Columns
 	scanner scan.Mapper[T]
 
-	AfterSelectHooks orm.Hooks[Tslice, orm.SkipModelHooksKey]
-	SelectQueryHooks orm.Hooks[*dialect.SelectQuery, orm.SkipQueryHooksKey]
+	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
 func (v *View[T, Tslice]) Name() Expression {
@@ -90,6 +89,15 @@ func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 		view:      v,
 	}
 
+	q.BaseQuery.Expression.AppendContextualModFunc(
+		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
+			if len(q.SelectList.Columns) == 0 {
+				q.AppendSelect(v.Columns())
+			}
+			return ctx, nil
+		},
+	)
+
 	q.Apply(queryMods...)
 
 	return q
@@ -108,7 +116,7 @@ func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q
 func (v *View[T, Ts]) afterSelect(exec bob.Executor) bob.ExecOption[T] {
 	return func(es *bob.ExecSettings[T]) {
 		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			_, err := v.AfterSelectHooks.Do(ctx, exec, retrieved)
+			_, err := v.AfterSelectHooks.RunHooks(ctx, exec, retrieved)
 			if err != nil {
 				return err
 			}
@@ -125,29 +133,9 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	view *View[T, Ts]
 }
 
-// it is necessary to override this method to be able to add columns if not set
-func (v ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.Writer, _ bob.Dialect, start int) ([]any, error) {
-	// Append the table columns
-	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
-		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
-	}
-
-	return v.Expression.WriteSQL(ctx, w, v.Dialect, start)
-}
-
-// it is necessary to override this method to be able to add columns if not set
-func (v ViewQuery[T, Ts]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
-	// Append the table columns
-	if len(v.BaseQuery.Expression.SelectList.Columns) == 0 {
-		v.BaseQuery.Expression.AppendSelect(v.view.Columns())
-	}
-
-	return v.BaseQuery.WriteQuery(ctx, w, start)
-}
-
 func (v *ViewQuery[T, Ts]) hook() error {
 	var err error
-	v.ctx, err = v.view.SelectQueryHooks.Do(v.ctx, v.exec, v.Expression)
+	v.ctx, err = v.view.SelectQueryHooks.RunHooks(v.ctx, v.exec, v.Expression)
 	return err
 }
 

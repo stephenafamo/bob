@@ -1,10 +1,17 @@
-package orm
+package bob
 
 import (
 	"context"
 	"sync"
+)
 
-	"github.com/stephenafamo/bob"
+type (
+	// If set to true, query hooks are skipped
+	SkipQueryHooksKey struct{}
+	// If set to true, model hooks are skipped
+	SkipModelHooksKey struct{}
+	// If set to true, contextual mods are skipped
+	SkipContextualModsKey struct{}
 )
 
 // SkipHooks modifies a context to prevent hooks from running for any query
@@ -28,7 +35,7 @@ func SkipQueryHooks(ctx context.Context) context.Context {
 // Hook is a function that can be called during lifecycle of an object
 // the context can be modified and returned
 // The caller is expected to use the returned context for subsequent processing
-type Hook[T any] func(context.Context, bob.Executor, T) (context.Context, error)
+type Hook[T any] func(context.Context, Executor, T) (context.Context, error)
 
 // Hooks is a set of hooks that can be called all at once
 type Hooks[T any, K any] struct {
@@ -37,17 +44,22 @@ type Hooks[T any, K any] struct {
 	key   K
 }
 
-// Add a hook to the set
-func (h *Hooks[T, K]) Add(hook Hook[T]) {
+// AppendHooks a hook to the set
+func (h *Hooks[T, K]) AppendHooks(hooks ...Hook[T]) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.hooks = append(h.hooks, hook)
+	h.hooks = append(h.hooks, hooks...)
 }
 
-// Do calls all the registered hooks.
-// if the context is set to skip hooks using [SkipHooks], then Do simply returns the context
-func (h *Hooks[T, K]) Do(ctx context.Context, exec bob.Executor, o T) (context.Context, error) {
+// GetHooks returns all the hooks in the set
+func (h *Hooks[T, K]) GetHooks() []Hook[T] {
+	return h.hooks
+}
+
+// RunHooks calls all the registered hooks.
+// if the context is set to skip hooks using [SkipHooks], then RunHooks simply returns the context
+func (h *Hooks[T, K]) RunHooks(ctx context.Context, exec Executor, o T) (context.Context, error) {
 	if len(h.hooks) == 0 {
 		return ctx, nil
 	}

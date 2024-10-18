@@ -16,7 +16,7 @@ func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
 }
 
 func Distinct() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.Distinct = true
 	})
 }

@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added error constants for matching against both specific and generic unique constraint errors raised by the underlying database driver. (thanks @mbezhanov)
 - Added support for regular expressions in the `only` and `except` table filters. (thanks @mbezhanov)
+- Added `ContextualMods` which are similar to regular mods but take a context argument. They are applied whenever the query is built.  
+  This makes it cleaner to do certain things, like populating the select columns of a model if none was explicitly added.  
+  The previous way this was done was unreliable since using `q.MustBuild()` would not add the columns while `bob.MustBuild(q)` will add them correctly.
 
 ### Changed
 
@@ -53,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The `Name()` and `NameAs()` methods of Views/Tables no longer need the context argument since the context will be passed when writing the expression. The API then becomes cleaner.
   - Preloading mods no longer need to store a context internally. `SetLoadContext()` and `GetLoadContext()` have removed.
   - The `ToExpr` field in `orm.RelSide` which was used for preloading is no longer needed and has been removed.
+- Moved `orm.Hooks` to `bob.Hooks` since it should not be limited to only ORM queries.
+- Moved `mods.QueryModFunc` to `bob.ModFunc` since it should be available to all packages.
 
 ### Removed
 

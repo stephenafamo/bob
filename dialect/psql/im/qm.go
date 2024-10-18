@@ -18,7 +18,7 @@ func Recursive(r bool) bob.Mod[*dialect.InsertQuery] {
 }
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Columns:    columns,
@@ -27,7 +27,7 @@ func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
 }
 
 func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -37,13 +37,13 @@ func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQu
 }
 
 func OverridingSystem() bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Overriding = "SYSTEM"
 	})
 }
 
 func OverridingUser() bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Overriding = "USER"
 	})
 }
@@ -58,7 +58,7 @@ func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
 
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Query = q
 	})
 }
@@ -93,7 +93,7 @@ func Returning(clauses ...any) bob.Mod[*dialect.InsertQuery] {
 //========================================
 
 func Set(sets ...bob.Expression) bob.Mod[*clause.Conflict] {
-	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+	return bob.ModFunc[*clause.Conflict](func(c *clause.Conflict) {
 		c.Set.Set = append(c.Set.Set, internal.ToAnySlice(sets)...)
 	})
 }
@@ -115,13 +115,13 @@ func SetExcluded(cols ...string) bob.Mod[*clause.Conflict] {
 		)
 	}
 
-	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+	return bob.ModFunc[*clause.Conflict](func(c *clause.Conflict) {
 		c.Set.Set = append(c.Set.Set, exprs...)
 	})
 }
 
 func Where(e bob.Expression) bob.Mod[*clause.Conflict] {
-	return mods.QueryModFunc[*clause.Conflict](func(c *clause.Conflict) {
+	return bob.ModFunc[*clause.Conflict](func(c *clause.Conflict) {
 		c.Where.Conditions = append(c.Where.Conditions, e)
 	})
 }

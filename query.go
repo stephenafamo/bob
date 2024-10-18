@@ -27,10 +27,6 @@ type Query interface {
 	WriteQuery(ctx context.Context, w io.Writer, start int) (args []any, err error)
 }
 
-type Mod[T any] interface {
-	Apply(T)
-}
-
 var (
 	_ Query        = BaseQuery[Expression]{}
 	_ Loadable     = BaseQuery[Expression]{}

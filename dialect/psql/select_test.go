@@ -3,11 +3,18 @@ package psql_test
 import (
 	"testing"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	pg_query "github.com/wasilibs/go-pgquery"
+)
+
+var (
+	_ bob.Loadable     = &dialect.SelectQuery{}
+	_ bob.MapperModder = &dialect.SelectQuery{}
 )
 
 func TestSelect(t *testing.T) {

@@ -17,13 +17,13 @@ func Recursive(r bool) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func Only() bob.Mod[*dialect.UpdateQuery] {
-	return mods.QueryModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
+	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
 		u.Only = true
 	})
 }
 
 func Table(name any) bob.Mod[*dialect.UpdateQuery] {
-	return mods.QueryModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
+	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 		}
@@ -31,7 +31,7 @@ func Table(name any) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
-	return mods.QueryModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
+	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
 		u.Table = clause.Table{
 			Expression: name,
 			Alias:      alias,
@@ -40,7 +40,7 @@ func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
-	return mods.QueryModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
+	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		q.Set.Set = append(q.Set.Set, internal.ToAnySlice(sets)...)
 	})
 }

@@ -16,37 +16,37 @@ func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
 }
 
 func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("DISTINCT")
 	})
 }
 
 func HighPriority() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
 func Straight() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("STRAIGHT_JOIN")
 	})
 }
 
 func SmallResult() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("SQL_SMALL_RESULT")
 	})
 }
 
 func BigResult() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("SQL_BIG_RESULT")
 	})
 }
 
 func BufferResult() bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.AppendModifier("SQL_BUFFER_RESULT")
 	})
 }
@@ -94,7 +94,7 @@ func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
 }
 
 func WithRollup(distinct bool) bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.SetGroupWith("ROLLUP")
 	})
 }
@@ -198,7 +198,7 @@ func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 
 // No need for the leading @
 func Into(var1 string, vars ...string) bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.SetInto(into{
 			vars: append([]string{var1}, vars...),
 		})
@@ -206,7 +206,7 @@ func Into(var1 string, vars ...string) bob.Mod[*dialect.SelectQuery] {
 }
 
 func IntoDumpfile(filename string) bob.Mod[*dialect.SelectQuery] {
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.SetInto(into{
 			dumpfile: filename,
 		})

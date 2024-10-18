@@ -20,7 +20,7 @@ func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
 		on = []any{} // nil means no distinct
 	}
 
-	return mods.QueryModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.Distinct.On = on
 	})
 }
