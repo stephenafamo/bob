@@ -53,31 +53,31 @@ func (c CTEChain[Q]) Materialized() CTEChain[Q] {
 }
 
 func OrAbort[Q interface{ SetOr(string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
+	return bob.ModFunc[Q](func(i Q) {
 		i.SetOr("ABORT")
 	})
 }
 
 func OrFail[Q interface{ SetOr(string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
+	return bob.ModFunc[Q](func(i Q) {
 		i.SetOr("FAIL")
 	})
 }
 
 func OrIgnore[Q interface{ SetOr(string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
+	return bob.ModFunc[Q](func(i Q) {
 		i.SetOr("IGNORE")
 	})
 }
 
 func OrReplace[Q interface{ SetOr(string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
+	return bob.ModFunc[Q](func(i Q) {
 		i.SetOr("REPLACE")
 	})
 }
 
 func OrRollback[Q interface{ SetOr(string) }]() bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(i Q) {
+	return bob.ModFunc[Q](func(i Q) {
 		i.SetOr("ROLLBACK")
 	})
 }

@@ -10,26 +10,26 @@ import (
 )
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Table = name
 		i.Columns = columns
 	})
 }
 
 func LowPriority() bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
 func HighPriority() bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
 func Ignore() bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
@@ -48,14 +48,14 @@ func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
 
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Query = q
 	})
 }
 
 // Insert with Set a = b
 func Set(col string, val any) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.Sets = append(i.Sets, dialect.Set{
 			Col: col,
 			Val: val,
@@ -64,7 +64,7 @@ func Set(col string, val any) bob.Mod[*dialect.InsertQuery] {
 }
 
 func As(rowAlias string, colAlias ...string) bob.Mod[*dialect.InsertQuery] {
-	return mods.QueryModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
 		i.RowAlias = rowAlias
 		i.ColumnAlias = colAlias
 	})
@@ -76,7 +76,7 @@ func OnDuplicateKeyUpdate(clauses ...bob.Mod[*clause.Set]) bob.Mod[*dialect.Inse
 		m.Apply(&sets)
 	}
 
-	return mods.QueryModFunc[*dialect.InsertQuery](func(q *dialect.InsertQuery) {
+	return bob.ModFunc[*dialect.InsertQuery](func(q *dialect.InsertQuery) {
 		q.DuplicateKeyUpdate.Set = append(q.DuplicateKeyUpdate.Set, sets.Set...)
 	})
 }
@@ -86,7 +86,7 @@ func OnDuplicateKeyUpdate(clauses ...bob.Mod[*clause.Set]) bob.Mod[*dialect.Inse
 //========================================
 
 func Update(exprs ...bob.Expression) bob.Mod[*clause.Set] {
-	return mods.QueryModFunc[*clause.Set](func(c *clause.Set) {
+	return bob.ModFunc[*clause.Set](func(c *clause.Set) {
 		c.Set = append(c.Set, internal.ToAnySlice(exprs)...)
 	})
 }
@@ -101,7 +101,7 @@ func UpdateWithAlias(alias string, cols ...string) bob.Mod[*clause.Set] {
 		newCols[i] = dialect.Set{Col: c, Val: expr.Quote(alias, c)}
 	}
 
-	return mods.QueryModFunc[*clause.Set](func(s *clause.Set) {
+	return bob.ModFunc[*clause.Set](func(s *clause.Set) {
 		s.Set = append(s.Set, newCols...)
 	})
 }
@@ -115,7 +115,7 @@ func UpdateWithValues(cols ...string) bob.Mod[*clause.Set] {
 		}
 	}
 
-	return mods.QueryModFunc[*clause.Set](func(s *clause.Set) {
+	return bob.ModFunc[*clause.Set](func(s *clause.Set) {
 		s.Set = append(s.Set, newCols...)
 	})
 }

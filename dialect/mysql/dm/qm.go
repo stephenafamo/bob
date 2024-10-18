@@ -16,25 +16,25 @@ func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func LowPriority() bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
 func Quick() bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
 		i.AppendModifier("QUICK")
 	})
 }
 
 func Ignore() bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
 func From(name any, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
 		u.Tables = append(u.Tables, clause.Table{
 			Expression: name,
 			Partitions: partitions,
@@ -43,7 +43,7 @@ func From(name any, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func FromAs(name any, alias string, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
-	return mods.QueryModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
+	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
 		u.Tables = append(u.Tables, clause.Table{
 			Expression: name,
 			Alias:      alias,

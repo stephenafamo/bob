@@ -140,7 +140,7 @@ func (f FromChain[Q]) ForceIndexForGroupBy(first string, others ...string) FromC
 }
 
 func Partition[Q interface{ AppendPartition(...string) }](partitions ...string) bob.Mod[Q] {
-	return mods.QueryModFunc[Q](func(q Q) {
+	return bob.ModFunc[Q](func(q Q) {
 		q.AppendPartition(partitions...)
 	})
 }

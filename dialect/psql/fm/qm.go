@@ -4,11 +4,10 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/mods"
 )
 
 func Distinct() bob.Mod[*dialect.Function] {
-	return mods.QueryModFunc[*dialect.Function](func(f *dialect.Function) {
+	return bob.ModFunc[*dialect.Function](func(f *dialect.Function) {
 		f.Distinct = true
 	})
 }
@@ -22,13 +21,13 @@ func OrderBy(e any) dialect.OrderBy[*dialect.Function] {
 }
 
 func WithinGroup() bob.Mod[*dialect.Function] {
-	return mods.QueryModFunc[*dialect.Function](func(f *dialect.Function) {
+	return bob.ModFunc[*dialect.Function](func(f *dialect.Function) {
 		f.WithinGroup = true
 	})
 }
 
 func Filter(e ...any) bob.Mod[*dialect.Function] {
-	return mods.QueryModFunc[*dialect.Function](func(f *dialect.Function) {
+	return bob.ModFunc[*dialect.Function](func(f *dialect.Function) {
 		f.Filter = append(f.Filter, e...)
 	})
 }
@@ -42,13 +41,13 @@ func Over() dialect.WindowMod[*dialect.Function] {
 }
 
 func As(alias string) bob.Mod[*dialect.Function] {
-	return mods.QueryModFunc[*dialect.Function](func(f *dialect.Function) {
+	return bob.ModFunc[*dialect.Function](func(f *dialect.Function) {
 		f.Alias = alias
 	})
 }
 
 func Columns(name, datatype string) bob.Mod[*dialect.Function] {
-	return mods.QueryModFunc[*dialect.Function](func(f *dialect.Function) {
+	return bob.ModFunc[*dialect.Function](func(f *dialect.Function) {
 		f.AppendColumn(name, datatype)
 	})
 }

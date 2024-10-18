@@ -6,23 +6,21 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type (
-	// Loadable is an object that has loaders
-	// if a query implements this interface, the loaders are called
-	// after executing the query
-	Loadable interface {
-		GetLoaders() []Loader
-	}
+// Loadable is an object that has loaders
+// if a query implements this interface, the loaders are called
+// after executing the query
+type Loadable interface {
+	GetLoaders() []Loader
+}
 
-	// Loader is an object that is called after the main query is performed
-	// when called from [Exec], retrieved is nil
-	// when called from [One], retrieved is the retrieved object
-	// when called from [All], retrieved is a slice retrieved objects
-	// this is used for loading relationships
-	Loader interface {
-		Load(ctx context.Context, exec Executor, retrieved any) error
-	}
-)
+// Loader is an object that is called after the main query is performed
+// when called from [Exec], retrieved is nil
+// when called from [One], retrieved is the retrieved object
+// when called from [All], retrieved is a slice retrieved objects
+// this is used for loading relationships
+type Loader interface {
+	Load(ctx context.Context, exec Executor, retrieved any) error
+}
 
 // Load is an embeddable struct that enables Preloading and AfterLoading
 type Load struct {

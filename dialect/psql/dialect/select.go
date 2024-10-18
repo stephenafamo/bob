@@ -26,10 +26,16 @@ type SelectQuery struct {
 	clause.Fetch
 	clause.For
 	bob.Load
+	bob.ContextualModdable[*SelectQuery]
 }
 
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	var err error
 	var args []any
+
+	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
+		return nil, err
+	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,
 		len(s.With.CTEs) > 0, "\n", "")
