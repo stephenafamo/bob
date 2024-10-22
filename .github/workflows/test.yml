@@ -33,13 +33,12 @@ jobs:
           && mysql --execute 'CREATE DATABASE driver_droppable;'
 
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-          cache: true
 
       - name: Install Dependencies
         run: go mod download
@@ -75,13 +74,12 @@ jobs:
         go: ['stable' ]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-          cache: true
 
       - name: Install Dependencies
         run: go mod download
