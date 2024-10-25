@@ -310,3 +310,37 @@ psql.Select(
   sm.OrderBy("name").Collate("bg-BG-x-icu").Asc(),
 )
 ```
+
+## With Cross Join
+
+SQL:
+
+```sql
+SELECT id, name, type
+FROM users AS u CROSS JOIN (
+  SELECT id, type
+  FROM clients
+  WHERE ("client_id" = $1)
+) AS "clients"
+WHERE ("id" = $2)
+```
+
+Args:
+
+* `"123"`
+* `100`
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name", "type"),
+  sm.From("users").As("u"),
+  sm.CrossJoin(psql.Select(
+    sm.Columns("id", "type"),
+    sm.From("clients"),
+    sm.Where(psql.Quote("client_id").EQ(psql.Arg("123"))),
+  )).As("clients"),
+  sm.Where(psql.Quote("id").EQ(psql.Arg(100))),
+)
+```

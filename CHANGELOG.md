@@ -78,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Also add the enum to the type array if an array of the enum is added. This is to prvent issues if the enum is only used in an array.
 - Handle null column names in expression indexes. (thanks @mbezhanov)
+- CROSS JOINS now allow aliases
 
 ## [v0.28.0] - 2024-06-25
 

@@ -177,6 +177,26 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 			),
 			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE "bg-BG-x-icu" ASC`,
 		},
+		"with cross join": {
+			Query: psql.Select(
+				sm.Columns("id", "name", "type"),
+				sm.From("users").As("u"),
+				sm.CrossJoin(psql.Select(
+					sm.Columns("id", "type"),
+					sm.From("clients"),
+					sm.Where(psql.Quote("client_id").EQ(psql.Arg("123"))),
+				)).As("clients"),
+				sm.Where(psql.Quote("id").EQ(psql.Arg(100))),
+			),
+			ExpectedSQL: `SELECT id, name, type
+                FROM users AS u CROSS JOIN (
+                  SELECT id, type
+                  FROM clients
+                  WHERE ("client_id" = $1)
+                ) AS "clients"
+                WHERE ("id" = $2)`,
+			ExpectedArgs: []any{"123", 100},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

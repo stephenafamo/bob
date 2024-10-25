@@ -71,11 +71,11 @@ func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.RightJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*dialect.SelectQuery] {
+func CrossJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 
-func StraightJoin(e any) bob.Mod[*dialect.SelectQuery] {
+func StraightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.StraightJoin[*dialect.SelectQuery](e)
 }
 

@@ -191,11 +191,11 @@ func RightJoin[Q Joinable](e any) JoinChain[Q] {
 	return Join[Q](clause.RightJoin, e)
 }
 
-func CrossJoin[Q Joinable](e any) bob.Mod[Q] {
+func CrossJoin[Q Joinable](e any) JoinChain[Q] {
 	return Join[Q](clause.CrossJoin, e)
 }
 
-func StraightJoin[Q Joinable](e any) bob.Mod[Q] {
+func StraightJoin[Q Joinable](e any) JoinChain[Q] {
 	return Join[Q](clause.StraightJoin, e)
 }
 
