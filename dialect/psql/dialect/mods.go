@@ -123,8 +123,13 @@ func FullJoin[Q Joinable](e any) JoinChain[Q] {
 	return Join[Q](clause.FullJoin, e)
 }
 
-func CrossJoin[Q Joinable](e any) bob.Mod[Q] {
-	return Join[Q](clause.CrossJoin, e)
+func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
+	return CrossJoinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: clause.CrossJoin,
+			To:   clause.From{Table: e},
+		}
+	})
 }
 
 type JoinChain[Q Joinable] func() clause.Join
@@ -196,6 +201,22 @@ func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 	jo.Using = using
 
 	return mods.Join[Q](jo)
+}
+
+type CrossJoinChain[Q Joinable] func() clause.Join
+
+func (j CrossJoinChain[Q]) Apply(q Q) {
+	q.AppendJoin(j())
+}
+
+func (j CrossJoinChain[Q]) As(alias string, columns ...string) bob.Mod[Q] {
+	jo := j()
+	jo.To.Alias = alias
+	jo.To.Columns = columns
+
+	return CrossJoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
 type collation struct {

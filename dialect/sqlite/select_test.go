@@ -90,6 +90,26 @@ func TestSelect(t *testing.T) {
 			),
 			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE NOCASE ASC`,
 		},
+		"with cross join": {
+			Query: sqlite.Select(
+				sm.Columns("id", "name", "type"),
+				sm.From("users").As("u"),
+				sm.CrossJoin(sqlite.Select(
+					sm.Columns("id", "type"),
+					sm.From("clients"),
+					sm.Where(sqlite.Quote("client_id").EQ(sqlite.Arg("123"))),
+				)).As("clients"),
+				sm.Where(sqlite.Quote("id").EQ(sqlite.Arg(100))),
+			),
+			ExpectedSQL: `SELECT id, name, type
+                FROM users AS "u" CROSS JOIN (
+                  SELECT id, type
+                  FROM clients
+                  WHERE ("client_id" = ?1)
+                ) AS "clients"
+                WHERE ("id" = ?2)`,
+			ExpectedArgs: []any{"123", 100},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

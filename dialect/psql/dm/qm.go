@@ -58,7 +58,7 @@ func FullJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.FullJoin[*dialect.DeleteQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*dialect.DeleteQuery] {
+func CrossJoin(e any) dialect.CrossJoinChain[*dialect.DeleteQuery] {
 	return dialect.CrossJoin[*dialect.DeleteQuery](e)
 }
 

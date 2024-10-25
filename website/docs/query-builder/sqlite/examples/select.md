@@ -143,3 +143,37 @@ sqlite.Select(
   sm.OrderBy("name").Collate("NOCASE").Asc(),
 )
 ```
+
+## With Cross Join
+
+SQL:
+
+```sql
+SELECT id, name, type
+FROM users AS "u" CROSS JOIN (
+  SELECT id, type
+  FROM clients
+  WHERE ("client_id" = ?1)
+) AS "clients"
+WHERE ("id" = ?2)
+```
+
+Args:
+
+* `"123"`
+* `100`
+
+Code:
+
+```go
+sqlite.Select(
+  sm.Columns("id", "name", "type"),
+  sm.From("users").As("u"),
+  sm.CrossJoin(sqlite.Select(
+    sm.Columns("id", "type"),
+    sm.From("clients"),
+    sm.Where(sqlite.Quote("client_id").EQ(sqlite.Arg("123"))),
+  )).As("clients"),
+  sm.Where(sqlite.Quote("id").EQ(sqlite.Arg(100))),
+)
+```

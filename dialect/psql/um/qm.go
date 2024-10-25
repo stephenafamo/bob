@@ -83,7 +83,7 @@ func FullJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
 	return dialect.FullJoin[*dialect.UpdateQuery](e)
 }
 
-func CrossJoin(e any) bob.Mod[*dialect.UpdateQuery] {
+func CrossJoin(e any) dialect.CrossJoinChain[*dialect.UpdateQuery] {
 	return dialect.CrossJoin[*dialect.UpdateQuery](e)
 }
 
