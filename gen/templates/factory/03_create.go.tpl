@@ -168,7 +168,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 		{{- end}}
 	{{end}}
 
-	m, err := models.{{$tAlias.UpPlural}}.Insert(ctx, exec, opt)
+	m, err := models.{{$tAlias.UpPlural}}.Insert(opt).One(ctx, exec)
 	if err != nil {
 	  return ctx, nil, err
 	}

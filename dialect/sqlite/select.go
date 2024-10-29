@@ -14,5 +14,6 @@ func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) bob.BaseQuery[*dialect.S
 	return bob.BaseQuery[*dialect.SelectQuery]{
 		Expression: q,
 		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeSelect,
 	}
 }

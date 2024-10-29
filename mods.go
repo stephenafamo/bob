@@ -14,6 +14,25 @@ func (m ModFunc[T]) Apply(query T) {
 	m(query)
 }
 
+type Mods[T any] []Mod[T]
+
+func (m Mods[T]) Apply(query T) {
+	for _, v := range m {
+		v.Apply(query)
+	}
+}
+
+// ToMods converts a slice of a type that implements Mod[T] to Mods[T]
+// this is useful since a slice of structs that implement Mod[T]
+// cannot be directly used as a slice of Mod[T]
+func ToMods[T Mod[Q], Q any](r ...T) Mods[Q] {
+	result := make([]Mod[Q], len(r))
+	for i, v := range r {
+		result[i] = v
+	}
+	return result
+}
+
 // ContextualMods are special types of mods that require a context.
 // they are only applied at the point of building the query
 // where possible, prefer using regular mods since they are applied once

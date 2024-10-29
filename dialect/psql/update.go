@@ -14,5 +14,6 @@ func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) bob.BaseQuery[*dialect.U
 	return bob.BaseQuery[*dialect.UpdateQuery]{
 		Expression: q,
 		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeUpdate,
 	}
 }

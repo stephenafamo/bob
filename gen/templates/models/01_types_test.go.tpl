@@ -86,7 +86,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 			tt.applyFn(tpl, obj)
-			_, err = models.{{$tAlias.UpPlural}}.Insert(ctx, exec, tpl.BuildSetter())
+			_, err = models.{{$tAlias.UpPlural}}.Insert(tpl.BuildSetter()).One(ctx, exec)
 			if !errors.Is(models.ErrUniqueConstraint, err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}

@@ -26,6 +26,7 @@ type SelectQuery struct {
 	clause.Fetch
 	clause.For
 	bob.Load
+	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]
 }
 

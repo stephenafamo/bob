@@ -29,6 +29,7 @@ type SelectQuery struct {
 	clause.Offset
 	clause.For
 	bob.Load
+	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]
 }
 

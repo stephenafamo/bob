@@ -14,12 +14,12 @@ type Values struct {
 
 	// for multiple inserts
 	// each sub-slice is one set of values
-	Vals []value
+	Vals []Value
 }
 
-type value []bob.Expression
+type Value []bob.Expression
 
-func (v value) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (v Value) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, v, "(", ", ", ")")
 }
 

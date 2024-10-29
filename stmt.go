@@ -21,6 +21,15 @@ type Statement interface {
 // retains the expected methods used by *sql.Stmt
 // This is useful when an existing *sql.Stmt is used in other places in the codebase
 func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return Stmt{}, err
+		}
+	}
+
 	query, args, err := Build(ctx, q)
 	if err != nil {
 		return Stmt{}, err
@@ -70,21 +79,16 @@ func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
 	return result, nil
 }
 
-func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, []T], error) {
-	return PrepareQueryx[T, []T](ctx, exec, q, m, opts...)
+func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T]) (QueryStmt[T, []T], error) {
+	return PrepareQueryx[T, []T](ctx, exec, q, m)
 }
 
-func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (QueryStmt[T, Ts], error) {
+func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T]) (QueryStmt[T, Ts], error) {
 	var qs QueryStmt[T, Ts]
 
 	s, err := Prepare(ctx, exec, q)
 	if err != nil {
 		return qs, err
-	}
-
-	settings := ExecSettings[T]{}
-	for _, opt := range opts {
-		opt(&settings)
 	}
 
 	if l, ok := q.(MapperModder); ok {
@@ -94,9 +98,9 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 	}
 
 	qs = QueryStmt[T, Ts]{
-		Stmt:     s,
-		mapper:   m,
-		settings: settings,
+		Stmt:      s,
+		queryType: q.Type(),
+		mapper:    m,
 	}
 
 	return qs, nil
@@ -105,8 +109,8 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 type QueryStmt[T any, Ts ~[]T] struct {
 	Stmt
 
-	mapper   scan.Mapper[T]
-	settings ExecSettings[T]
+	queryType QueryType
+	mapper    scan.Mapper[T]
 }
 
 func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
@@ -128,8 +132,8 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 		}
 	}
 
-	if s.settings.AfterSelect != nil {
-		if err := s.settings.AfterSelect(ctx, []T{t}); err != nil {
+	if h, ok := any(t).(HookableType); ok {
+		if err = h.AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
 			return t, err
 		}
 	}
@@ -156,9 +160,15 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 		}
 	}
 
-	if s.settings.AfterSelect != nil {
-		if err := s.settings.AfterSelect(ctx, typedSlice); err != nil {
-			return nil, err
+	if h, ok := any(typedSlice).(HookableType); ok {
+		if err = h.AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
+			return typedSlice, err
+		}
+	} else if _, ok := any(*new(T)).(HookableType); ok {
+		for _, t := range typedSlice {
+			if err = any(t).(HookableType).AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
+				return typedSlice, err
+			}
 		}
 	}
 
@@ -170,6 +180,8 @@ func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor
 	if err != nil {
 		return nil, err
 	}
+
+	_, isHookable := any(*new(T)).(HookableType)
 
 	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
 		before, after := s.mapper(ctx, c)
@@ -186,11 +198,12 @@ func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor
 				}
 			}
 
-			if s.settings.AfterSelect != nil {
-				if err := s.settings.AfterSelect(ctx, []T{t}); err != nil {
+			if isHookable {
+				if err = any(t).(HookableType).AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
 					return t, err
 				}
 			}
+
 			return t, err
 		}
 	})

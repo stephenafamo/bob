@@ -80,13 +80,16 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 	return v.allCols
 }
 
-// Adds table name et al
-func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
+// Starts a select query
+func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		BaseQuery: Select(sm.From(v.NameAs())),
-		ctx:       ctx,
-		exec:      exec,
-		view:      v,
+		Query: orm.Query[*dialect.SelectQuery, T, Tslice]{
+			ExecQuery: orm.ExecQuery[*dialect.SelectQuery, T, Tslice]{
+				BaseQuery: Select(sm.From(v.NameAs())),
+				Scanner:   v.scanner,
+				Hooks:     &v.SelectQueryHooks,
+			},
+		},
 	}
 
 	q.BaseQuery.Expression.AppendContextualModFunc(
@@ -105,90 +108,30 @@ func (v *View[T, Tslice]) Query(ctx context.Context, exec bob.Executor, queryMod
 
 // Prepare a statement that will be mapped to the view's type
 func (v *View[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer, queryMods ...bob.Mod[*dialect.SelectQuery]) (bob.QueryStmt[T, Tslice], error) {
-	return v.PrepareQuery(ctx, exec, v.Query(ctx, nil, queryMods...))
+	return v.PrepareQuery(ctx, exec, v.Query(queryMods...))
 }
 
 // Prepare a statement from an existing query that will be mapped to the view's type
 func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q bob.Query) (bob.QueryStmt[T, Tslice], error) {
-	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, scan.StructMapper[T](), v.afterSelect(exec))
-}
-
-func (v *View[T, Ts]) afterSelect(exec bob.Executor) bob.ExecOption[T] {
-	return func(es *bob.ExecSettings[T]) {
-		es.AfterSelect = func(ctx context.Context, retrieved []T) error {
-			_, err := v.AfterSelectHooks.RunHooks(ctx, exec, retrieved)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		}
-	}
+	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, v.scanner)
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	bob.BaseQuery[*dialect.SelectQuery]
-	ctx  context.Context
-	exec bob.Executor
-	view *View[T, Ts]
-}
-
-func (v *ViewQuery[T, Ts]) hook() error {
-	var err error
-	v.ctx, err = v.view.SelectQueryHooks.RunHooks(v.ctx, v.exec, v.Expression)
-	return err
-}
-
-// Execute the query
-func (v *ViewQuery[T, Tslice]) Exec() (int64, error) {
-	if err := v.hook(); err != nil {
-		return 0, err
-	}
-
-	result, err := v.BaseQuery.Exec(v.ctx, v.exec)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.RowsAffected()
-}
-
-// First matching row
-func (v *ViewQuery[T, Tslice]) One() (T, error) {
-	v.BaseQuery.Expression.Limit.SetLimit(1)
-	if err := v.hook(); err != nil {
-		return *new(T), err
-	}
-	return bob.One(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
-}
-
-// All matching rows
-func (v *ViewQuery[T, Tslice]) All() (Tslice, error) {
-	if err := v.hook(); err != nil {
-		return nil, err
-	}
-	return bob.Allx[T, Tslice](v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
-}
-
-// Cursor to scan through the results
-func (v *ViewQuery[T, Tslice]) Cursor() (scan.ICursor[T], error) {
-	if err := v.hook(); err != nil {
-		return nil, err
-	}
-	return bob.Cursor(v.ctx, v.exec, v, v.view.scanner, v.view.afterSelect(v.exec))
+	orm.Query[*dialect.SelectQuery, T, Ts]
 }
 
 // Count the number of matching rows
-func (v *ViewQuery[T, Tslice]) Count() (int64, error) {
-	if err := v.hook(); err != nil {
+func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
+	ctx, err := v.RunHooks(ctx, exec)
+	if err != nil {
 		return 0, err
 	}
-	return bob.One(v.ctx, v.exec, asCountQuery(v.BaseQuery), scan.SingleColumnMapper[int64])
+	return bob.One(ctx, exec, asCountQuery(v.BaseQuery), scan.SingleColumnMapper[int64])
 }
 
 // Exists checks if there is any matching row
-func (v *ViewQuery[T, Tslice]) Exists() (bool, error) {
-	count, err := v.Count()
+func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
+	count, err := v.Count(ctx, exec)
 	return count > 0, err
 }
 

@@ -165,9 +165,9 @@ func (o *{{$tAlias.UpSingular}}) Load{{$tAlias.UpSingular}}{{$relAlias}}(ctx con
 	o.R.{{$relAlias}} = nil
 
 	{{if $rel.IsToMany -}}
-	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
+	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	{{else -}}
-	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).One()
+	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).One(ctx, exec)
 	{{end -}}
 	if err != nil {
 		return err
@@ -206,7 +206,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	  return nil
 	}
 
-	{{$fAlias.DownPlural}}, err := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, mods...).All()
+	{{$fAlias.DownPlural}}, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns()))
 	}
 
-	q := os.{{relQueryMethodName $tAlias $relAlias}}(ctx, exec, append(
+	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(
 		mods, 
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}

@@ -17,10 +17,17 @@ type InsertQuery struct {
 	clause.Values
 	clause.Conflict
 	clause.Returning
+	bob.EmbeddedHook
+	bob.ContextualModdable[*InsertQuery]
 }
 
 func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	var err error
 	var args []any
+
+	if ctx, err = i.RunContextualMods(ctx, &i); err != nil {
+		return nil, err
+	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.With,
 		len(i.With.CTEs) > 0, "", "\n")

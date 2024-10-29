@@ -14,5 +14,6 @@ func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.I
 	return bob.BaseQuery[*dialect.InsertQuery]{
 		Expression: q,
 		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeInsert,
 	}
 }

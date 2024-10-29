@@ -12,11 +12,15 @@ type (
 		GetMapperMods() []scan.MapperMod
 	}
 
-	ExecSettings[T any] struct {
-		AfterSelect func(ctx context.Context, retrieved []T) error
+	HookableQuery interface {
+		RunHooks(context.Context, Executor) (context.Context, error)
 	}
 
-	ExecOption[T any] func(*ExecSettings[T])
+	// If a type implements this interface,
+	// it will be called after the query has been executed and it is scanned
+	HookableType interface {
+		AfterQueryHook(context.Context, Executor, QueryType) error
+	}
 )
 
 type Executor interface {
@@ -25,6 +29,15 @@ type Executor interface {
 }
 
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	sql, args, err := Build(ctx, q)
 	if err != nil {
 		return nil, err
@@ -46,13 +59,16 @@ func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 	return result, nil
 }
 
-func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (T, error) {
-	settings := ExecSettings[T]{}
-	for _, opt := range opts {
-		opt(&settings)
-	}
-
+func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (T, error) {
 	var t T
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return t, err
+		}
+	}
 
 	sql, args, err := Build(ctx, q)
 	if err != nil {
@@ -78,8 +94,8 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 		}
 	}
 
-	if settings.AfterSelect != nil {
-		if err := settings.AfterSelect(ctx, []T{t}); err != nil {
+	if h, ok := any(t).(HookableType); ok {
+		if err = h.AfterQueryHook(ctx, exec, q.Type()); err != nil {
 			return t, err
 		}
 	}
@@ -87,17 +103,21 @@ func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], o
 	return t, err
 }
 
-func All[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) ([]T, error) {
-	return Allx[T, []T](ctx, exec, q, m, opts...)
+func All[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) ([]T, error) {
+	return Allx[T, []T](ctx, exec, q, m)
 }
 
 // Allx takes 2 type parameters. The second is a special return type of the returned slice
 // this is especially useful for when the the [Query] is [Loadable] and the loader depends on the
 // return value implementing an interface
-func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (Ts, error) {
-	settings := ExecSettings[T]{}
-	for _, opt := range opts {
-		opt(&settings)
+func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (Ts, error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	sql, args, err := Build(ctx, q)
@@ -126,9 +146,15 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 		}
 	}
 
-	if settings.AfterSelect != nil {
-		if err := settings.AfterSelect(ctx, typedSlice); err != nil {
+	if h, ok := any(typedSlice).(HookableType); ok {
+		if err = h.AfterQueryHook(ctx, exec, q.Type()); err != nil {
 			return typedSlice, err
+		}
+	} else if _, ok := any(*new(T)).(HookableType); ok {
+		for _, t := range typedSlice {
+			if err = any(t).(HookableType).AfterQueryHook(ctx, exec, q.Type()); err != nil {
+				return typedSlice, err
+			}
 		}
 	}
 
@@ -136,10 +162,14 @@ func Allx[T any, Ts ~[]T](ctx context.Context, exec Executor, q Query, m scan.Ma
 }
 
 // Cursor returns a cursor that works similar to *sql.Rows
-func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T], opts ...ExecOption[T]) (scan.ICursor[T], error) {
-	settings := ExecSettings[T]{}
-	for _, opt := range opts {
-		opt(&settings)
+func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (scan.ICursor[T], error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	sql, args, err := Build(ctx, q)
@@ -153,10 +183,8 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 		}
 	}
 
-	l, ok := q.(Loadable)
-	if !ok {
-		return scan.Cursor(ctx, exec, m, sql, args...)
-	}
+	l, isLoadable := q.(Loadable)
+	_, isHookable := any(*new(T)).(HookableType)
 
 	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
 		before, after := m(ctx, c)
@@ -166,18 +194,21 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 				return t, err
 			}
 
-			for _, loader := range l.GetLoaders() {
-				err = loader.Load(ctx, exec, t)
-				if err != nil {
+			if isLoadable {
+				for _, loader := range l.GetLoaders() {
+					err = loader.Load(ctx, exec, t)
+					if err != nil {
+						return t, err
+					}
+				}
+			}
+
+			if isHookable {
+				if err = any(t).(HookableType).AfterQueryHook(ctx, exec, q.Type()); err != nil {
 					return t, err
 				}
 			}
 
-			if settings.AfterSelect != nil {
-				if err := settings.AfterSelect(ctx, []T{t}); err != nil {
-					return t, err
-				}
-			}
 			return t, err
 		}
 	})

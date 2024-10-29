@@ -29,7 +29,7 @@ func TestDriver(t *testing.T) {
 
 	dbConfig := embeddedpostgres.
 		DefaultConfig().
-		RuntimePath(filepath.Join(os.TempDir(), "bobgeb_psql")).
+		RuntimePath(filepath.Join(os.TempDir(), "bobgen_psql")).
 		Port(uint32(port)).
 		Logger(&bytes.Buffer{})
 	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"

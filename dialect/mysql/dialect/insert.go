@@ -23,11 +23,19 @@ type InsertQuery struct {
 	ColumnAlias        []string
 	Sets               []Set
 	DuplicateKeyUpdate clause.Set
+
+	bob.Load
+	bob.EmbeddedHook
+	bob.ContextualModdable[*InsertQuery]
 }
 
 func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
+
+	if ctx, err = i.RunContextualMods(ctx, &i); err != nil {
+		return nil, err
+	}
 
 	w.Write([]byte("INSERT "))
 
