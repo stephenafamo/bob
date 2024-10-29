@@ -18,7 +18,7 @@
 {{define "setter_update_mod" -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) Apply(q *dialect.UpdateQuery) {
-  um.Set(s.Expressions("{{$table.Name}}")...).Apply(q)
+func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+  return um.Set(s.Expressions("{{$table.Name}}")...)
 }
 {{- end}}

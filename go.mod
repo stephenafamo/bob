@@ -24,7 +24,7 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/stephenafamo/scan v0.4.2
+	github.com/stephenafamo/scan v0.6.0
 	github.com/stephenafamo/sqlparser v0.0.0-20230326220333-c2adaf4c30e8
 	github.com/takuoki/gocase v1.0.0
 	github.com/urfave/cli/v2 v2.23.7

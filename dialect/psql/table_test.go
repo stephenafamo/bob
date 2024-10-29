@@ -83,8 +83,8 @@ func (s UserSetter) Overwrite(t *User) {
 	}
 }
 
-func (s UserSetter) Apply(q *dialect.UpdateQuery) {
-	um.Set(s.Expressions()...).Apply(q)
+func (s UserSetter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+	return um.Set(s.Expressions()...)
 }
 
 func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
@@ -143,10 +143,10 @@ func TestUpdate(t *testing.T) {
 		t.Fatalf("unexpected inserted user: %v", err)
 	}
 
-	err = userTable.Update(ctx, db, &UserSetter{
+	_, err = userTable.Update(UserSetter{
 		Name:  omit.From("Stephen"),
 		Email: omit.From("stephen@example.com"),
-	}, user)
+	}.UpdateMod(), um.Where(Quote("id").EQ(Arg(user.ID)))).Exec(ctx, db)
 	if err != nil {
 		t.Errorf("error updating: %v", err)
 	}

@@ -15,33 +15,30 @@
 func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArgs}} cols ...string) (*{{$tAlias.UpSingular}}, error) {
 	if len(cols) == 0 {
 		return {{$tAlias.UpPlural}}.Query(
-			ctx, exec,
 			{{range $column := $table.Constraints.Primary.Columns -}}
 			{{- $colAlias := $tAlias.Column $column -}}
 			SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 			{{end -}}
-		).One()
+		).One(ctx, exec)
 	}
 
 	return {{$tAlias.UpPlural}}.Query(
-		ctx, exec,
 		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}
 		sm.Columns({{$tAlias.UpPlural}}.Columns().Only(cols...)),
-	).One()
+	).One(ctx, exec)
 }
 
 // {{$tAlias.UpSingular}}Exists checks the presence of a single record by primary key
 func {{$tAlias.UpSingular}}Exists(ctx context.Context, exec bob.Executor, {{$pkArgs}}) (bool, error) {
 	return {{$tAlias.UpPlural}}.Query(
-		ctx, exec,
 		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
 		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ({{$colAlias}}PK),
 		{{end -}}
-	).Exists()
+	).Exists(ctx, exec)
 }
 
 {{- end}}

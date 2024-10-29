@@ -15,6 +15,16 @@ const (
 	closePar = ")"
 )
 
+type QueryType int
+
+const (
+	QueryTypeUnknown QueryType = iota
+	QueryTypeSelect
+	QueryTypeInsert
+	QueryTypeUpdate
+	QueryTypeDelete
+)
+
 type Query interface {
 	// It should satisfy the Expression interface so that it can be used
 	// in places such as a sub-select
@@ -25,19 +35,16 @@ type Query interface {
 	// it is present to allow re-indexing in cases of a subquery
 	// The method returns the value of any args placed
 	WriteQuery(ctx context.Context, w io.Writer, start int) (args []any, err error)
+	// Type returns the query type
+	Type() QueryType
 }
-
-var (
-	_ Query        = BaseQuery[Expression]{}
-	_ Loadable     = BaseQuery[Expression]{}
-	_ MapperModder = BaseQuery[Expression]{}
-)
 
 // BaseQuery wraps common functionality such as cloning, applying new mods and
 // the actual query interface implementation
 type BaseQuery[E Expression] struct {
 	Expression E
 	Dialect    Dialect
+	QueryType  QueryType
 }
 
 func (b BaseQuery[E]) Clone() BaseQuery[E] {
@@ -54,8 +61,20 @@ func (b BaseQuery[E]) Clone() BaseQuery[E] {
 	}
 }
 
+func (b BaseQuery[E]) Type() QueryType {
+	return b.QueryType
+}
+
 func (b BaseQuery[E]) Exec(ctx context.Context, exec Executor) (sql.Result, error) {
 	return Exec(ctx, exec, b)
+}
+
+func (b BaseQuery[E]) RunHooks(ctx context.Context, exec Executor) (context.Context, error) {
+	if l, ok := any(b.Expression).(HookableQuery); ok {
+		return l.RunHooks(ctx, exec)
+	}
+
+	return ctx, nil
 }
 
 func (b BaseQuery[E]) GetLoaders() []Loader {

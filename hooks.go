@@ -81,3 +81,30 @@ func (h *Hooks[T, K]) RunHooks(ctx context.Context, exec Executor, o T) (context
 
 	return ctx, nil
 }
+
+type EmbeddedHook struct {
+	Hooks []func(context.Context, Executor) (context.Context, error)
+}
+
+func (h *EmbeddedHook) SetHooks(hooks ...func(context.Context, Executor) (context.Context, error)) {
+	h.Hooks = hooks
+}
+
+func (h *EmbeddedHook) AppendHooks(hooks ...func(context.Context, Executor) (context.Context, error)) {
+	h.Hooks = append(h.Hooks, hooks...)
+}
+
+func (h *EmbeddedHook) RunHooks(ctx context.Context, exec Executor) (context.Context, error) {
+	if len(h.Hooks) == 0 {
+		return ctx, nil
+	}
+
+	for _, hook := range h.Hooks {
+		var err error
+		if ctx, err = hook(ctx, exec); err != nil {
+			return ctx, err
+		}
+	}
+
+	return ctx, nil
+}

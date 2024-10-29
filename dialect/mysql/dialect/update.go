@@ -20,10 +20,18 @@ type UpdateQuery struct {
 	clause.Where
 	clause.OrderBy
 	clause.Limit
+	bob.Load
+	bob.EmbeddedHook
+	bob.ContextualModdable[*UpdateQuery]
 }
 
 func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	var err error
 	var args []any
+
+	if ctx, err = u.RunContextualMods(ctx, &u); err != nil {
+		return nil, err
+	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,
 		len(u.With.CTEs) > 0, "\n", "")

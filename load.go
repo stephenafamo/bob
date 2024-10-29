@@ -22,6 +22,15 @@ type Loader interface {
 	Load(ctx context.Context, exec Executor, retrieved any) error
 }
 
+// Loader builds a query mod that makes an extra query after the object is retrieved
+// it can be used to prevent N+1 queries by loading relationships in batches
+type LoaderFunc func(ctx context.Context, exec Executor, retrieved any) error
+
+// Load is called after the original object is retrieved
+func (l LoaderFunc) Load(ctx context.Context, exec Executor, retrieved any) error {
+	return l(ctx, exec, retrieved)
+}
+
 // Load is an embeddable struct that enables Preloading and AfterLoading
 type Load struct {
 	loadFuncs         []Loader

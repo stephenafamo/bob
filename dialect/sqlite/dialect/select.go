@@ -24,6 +24,7 @@ type SelectQuery struct {
 	clause.Limit
 	clause.Offset
 	bob.Load
+	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]
 }
 

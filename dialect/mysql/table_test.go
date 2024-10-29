@@ -1,6 +1,8 @@
 package mysql
 
 import (
+	"bytes"
+	"context"
 	"reflect"
 	"testing"
 
@@ -78,7 +80,7 @@ func TestUniqueSetRow(t *testing.T) {
 	cases := map[string]struct {
 		row  *OptionalWithUnique
 		cols []string
-		args []any
+		args []bob.Expression
 	}{
 		"nil": {
 			row: nil,
@@ -89,7 +91,7 @@ func TestUniqueSetRow(t *testing.T) {
 		"id set": {
 			row:  &OptionalWithUnique{ID: omit.From(10)},
 			cols: []string{"id"},
-			args: []any{omit.From(10)},
+			args: []bob.Expression{Arg(omit.From(10))},
 		},
 		"title/author set": {
 			row: &OptionalWithUnique{
@@ -97,7 +99,7 @@ func TestUniqueSetRow(t *testing.T) {
 				AuthorID: omit.From(1),
 			},
 			cols: []string{"title", "author_id"},
-			args: []any{omit.From("a title"), omit.From(1)},
+			args: []bob.Expression{Arg(omit.From("a title")), Arg(omit.From(1))},
 		},
 		"all set": {
 			row: &OptionalWithUnique{
@@ -106,32 +108,82 @@ func TestUniqueSetRow(t *testing.T) {
 				AuthorID: omit.From(1),
 			},
 			cols: []string{"id"},
-			args: []any{omit.From(10)},
+			args: []bob.Expression{Arg(omit.From(10))},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			cols, args := table2.uniqueSet(tc.row)
+			rowExpr := make([]bob.Expression, 3)
 
-			if diff := cmp.Diff(cols, tc.cols); diff != "" {
+			if tc.row != nil {
+				if tc.row.ID.IsSet() {
+					rowExpr[0] = Arg(tc.row.ID)
+				}
+
+				if tc.row.Title.IsSet() {
+					rowExpr[1] = Arg(tc.row.Title)
+				}
+
+				if tc.row.AuthorID.IsSet() {
+					rowExpr[2] = Arg(tc.row.AuthorID)
+				}
+			}
+
+			cols, args := table2.uniqueSet(bytes.NewBuffer(nil), rowExpr)
+
+			if diff := cmp.Diff(toQuote(tc.cols), table2.uniqueColNames(cols)); diff != "" {
 				t.Errorf("cols: %s", diff)
 			}
 
-			if diff := cmp.Diff(args, tc.args, cmp.Comparer(compareOpt)); diff != "" {
+			if diff := cmp.Diff(tc.args, args, cmp.Comparer(compareArg)); diff != "" {
 				t.Errorf("args: %s", diff)
 			}
 		})
 	}
 }
 
-func compareOpt(a, b interface{ IsSet() bool }) bool {
-	if a.IsSet() != b.IsSet() {
+func toQuote(s []string) []bob.Expression {
+	if len(s) == 0 {
+		return nil
+	}
+
+	exprs := make([]bob.Expression, len(s))
+	for i, v := range s {
+		exprs[i] = Quote(v)
+	}
+	return exprs
+}
+
+func compareArg(a, b bob.Expression) bool {
+	ctx := context.Background()
+	buf := &bytes.Buffer{}
+
+	aArg, aErr := a.WriteSQL(ctx, buf, dialect.Dialect, 1)
+	aStr := buf.String()
+
+	buf.Reset()
+
+	bArg, bErr := b.WriteSQL(ctx, buf, dialect.Dialect, 1)
+	bStr := buf.String()
+
+	if aErr != nil || bErr != nil {
 		return false
 	}
 
-	aVal := reflect.ValueOf(a).MethodByName("GetOrZero").Call(nil)[0].Interface()
-	bVal := reflect.ValueOf(b).MethodByName("GetOrZero").Call(nil)[0].Interface()
+	if aStr != bStr {
+		return false
+	}
 
-	return aVal == bVal
+	if len(aArg) != len(bArg) {
+		return false
+	}
+
+	for i := range aArg {
+		if !reflect.DeepEqual(aArg[i], bArg[i]) {
+			return false
+		}
+	}
+
+	return true
 }

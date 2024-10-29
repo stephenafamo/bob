@@ -77,9 +77,9 @@
     {{- if $rel.IsToMany}}}{{end}}
 
     {{if $rel.IsToMany -}}
-      ret, err := {{$sideAlias.UpPlural}}.InsertMany(ctx, exec, {{$ftable.DownPlural}}{{$rel.ForeignPosition}}...)
+      ret, err := {{$sideAlias.UpPlural}}.Insert(bob.ToMods({{$ftable.DownPlural}}{{$rel.ForeignPosition}}...)).All(ctx, exec)
     {{- else -}}
-      ret, err := {{$sideAlias.UpPlural}}.Insert(ctx, exec, {{$to}})
+      ret, err := {{$sideAlias.UpPlural}}.Insert({{$to}}).One(ctx, exec)
     {{- end}}
     if err != nil {
         return ret, fmt.Errorf("insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}: %w", err)
@@ -166,7 +166,7 @@
         {{- end}}
       }
 
-      err := {{$sideAlias.UpPlural}}.Update(ctx, exec, setter, {{$sideAlias.DownPlural}}{{$side.Position}}[i])
+      err := {{$sideAlias.DownPlural}}{{$side.Position}}[i].Update(ctx, exec, setter)
       if err != nil {
           return nil, fmt.Errorf("attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}, update %d: %w", i, err)
       }
@@ -229,15 +229,15 @@
 
     {{if (isJoinTable $sideTable $rel $side.Position) -}}
       {{if $rel.NeedsMany $side.Position -}}
-        {{$sideAlias.DownPlural}}{{$side.Position}}, err := {{$sideAlias.UpPlural}}.InsertMany(ctx, exec, setters...)
+        {{$sideAlias.DownPlural}}{{$side.Position}}, err := {{$sideAlias.UpPlural}}.Insert(bob.ToMods(setters...)).All(ctx, exec)
       {{- else -}}
-        {{$sideAlias.DownSingular}}{{$side.Position}}, err := {{$sideAlias.UpPlural}}.Insert(ctx, exec, setter)
+        {{$sideAlias.DownSingular}}{{$side.Position}}, err := {{$sideAlias.UpPlural}}.Insert(setter).One(ctx, exec)
       {{- end}}
     {{- else -}}
       {{if $rel.NeedsMany $side.Position -}}
-        err := {{$sideAlias.UpPlural}}.Update(ctx, exec, setter, {{$sideAlias.DownPlural}}{{$side.Position}}...)
+        err := {{$sideAlias.DownPlural}}{{$side.Position}}.UpdateAll(ctx, exec, *setter)
       {{- else -}}
-        err := {{$sideAlias.UpPlural}}.Update(ctx, exec, setter, {{$sideAlias.DownSingular}}{{$side.Position}})
+        err := {{$sideAlias.DownSingular}}{{$side.Position}}.Update(ctx, exec, setter)
       {{- end}}
     {{- end}}
     if err != nil {
@@ -258,7 +258,7 @@
 {{if not $rel.IsToMany -}}
   func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependenciesPos $.Tables $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
     {{if $rel.InsertEarly -}}
-      {{$to}}, err := {{$ftable.UpPlural}}.Insert(ctx, exec, related)
+      {{$to}}, err := {{$ftable.UpPlural}}.Insert(related).One(ctx, exec)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
@@ -367,7 +367,7 @@
     var err error
 
     {{if $rel.InsertEarly -}}
-      inserted, err := {{$ftable.UpPlural}}.InsertMany(ctx, exec, related...)
+      inserted, err := {{$ftable.UpPlural}}.Insert(bob.ToMods(related...)).All(ctx, exec)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }

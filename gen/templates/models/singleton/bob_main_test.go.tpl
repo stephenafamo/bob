@@ -1,3 +1,11 @@
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
+
+{{- range $table := .Tables}}
+	{{$tAlias := $.Aliases.Table $table.Key -}}
+  // Make sure the type {{$tAlias.UpSingular}} runs hooks after queries
+	var _ bob.HookableType = &{{$tAlias.UpSingular}}{}
+{{end}}
+
 {{$doneTypes := dict }}
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}

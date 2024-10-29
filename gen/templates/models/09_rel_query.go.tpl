@@ -1,7 +1,34 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{if $.Relationships.Get $table.Key -}}{{$.Importer.Import "github.com/stephenafamo/bob/mods"}}{{end}}
+{{if $.Relationships.Get $table.Key -}}
+  {{$.Importer.Import "github.com/stephenafamo/bob"}}
+  {{$.Importer.Import "github.com/stephenafamo/bob/mods"}}
+
+  {{$.Importer.Import "context"}}
+  type {{$tAlias.DownSingular}}Joins[Q dialect.Joinable] struct {
+    typ string
+    {{range $.Relationships.Get $table.Key -}}
+    {{- $relAlias := $tAlias.Relationship .Name -}}
+    {{- $fAlias := $.Aliases.Table .Foreign -}}
+    {{$relAlias}} func(context.Context) modAs[Q, {{$fAlias.DownSingular}}Columns]
+    {{end -}}
+  }
+
+  func (j {{$tAlias.DownSingular}}Joins[Q]) aliasedAs(alias string) {{$tAlias.DownSingular}}Joins[Q] {
+    return build{{$tAlias.UpSingular}}Joins[Q](build{{$tAlias.UpSingular}}Columns(alias), j.typ)
+  }
+
+  func build{{$tAlias.UpSingular}}Joins[Q dialect.Joinable](cols {{$tAlias.DownSingular}}Columns, typ string) {{$tAlias.DownSingular}}Joins[Q] {
+    return {{$tAlias.DownSingular}}Joins[Q]{
+      typ: typ,
+      {{range $.Relationships.Get $table.Key -}}
+        {{$ftable := $.Aliases.Table .Foreign -}}
+        {{$relAlias := $tAlias.Relationship .Name -}}
+        {{$relAlias}}: {{$tAlias.DownPlural}}Join{{$relAlias}}[Q](cols, typ),
+      {{end}}
+    }
+  }
+{{end}}
 
 {{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
@@ -58,8 +85,8 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](from {{$tAlias.
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
-func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
-	return {{$fAlias.UpPlural}}.Query(ctx, exec, append(mods,
+func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+	return {{$fAlias.UpPlural}}.Query(append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
@@ -106,7 +133,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(ctx co
 {{$lastFrom := $.Aliases.Table $lastSide.From -}}
 {{$lastTo := $.Aliases.Table $lastSide.To -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $firstSide.FromColumns) 0 -}}
 	PKArgs := make([]bob.Expression, len(os))
 	for i, o := range os {
@@ -119,7 +146,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(c
 	{{- end}}
 
 
-	return {{$fAlias.UpPlural}}.Query(ctx, exec, append(mods,
+	return {{$fAlias.UpPlural}}.Query(append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}

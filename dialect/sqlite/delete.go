@@ -14,5 +14,6 @@ func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.D
 	return bob.BaseQuery[*dialect.DeleteQuery]{
 		Expression: q,
 		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeDelete,
 	}
 }

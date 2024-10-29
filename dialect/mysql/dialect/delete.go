@@ -20,10 +20,18 @@ type DeleteQuery struct {
 	clause.Where
 	clause.OrderBy
 	clause.Limit
+	bob.Load
+	bob.EmbeddedHook
+	bob.ContextualModdable[*DeleteQuery]
 }
 
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+	var err error
 	var args []any
+
+	if ctx, err = d.RunContextualMods(ctx, &d); err != nil {
+		return nil, err
+	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,
 		len(d.With.CTEs) > 0, "\n", "")
