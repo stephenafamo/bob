@@ -405,6 +405,14 @@ func GetFreePort() (int, error) {
 }
 
 func Migrate(ctx context.Context, db *sql.DB, dir fs.FS) error {
+	return MigrateWithOptions(ctx, db, dir, MigrationOpts{})
+}
+
+type MigrationOpts struct {
+	SplitFileIntoStatements bool
+}
+
+func MigrateWithOptions(ctx context.Context, db *sql.DB, dir fs.FS, opts MigrationOpts) error {
 	err := fs.WalkDir(dir, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -419,8 +427,17 @@ func Migrate(ctx context.Context, db *sql.DB, dir fs.FS) error {
 		}
 
 		fmt.Printf("migrating %s...\n", path)
-		if _, err = db.ExecContext(ctx, string(content)); err != nil {
-			return fmt.Errorf("migrating %s: %w", path, err)
+
+		stmts := []string{string(content)}
+
+		if opts.SplitFileIntoStatements {
+			stmts = strings.Split(string(content), ";")
+		}
+
+		for _, stmt := range stmts {
+			if _, err = db.ExecContext(ctx, stmt); err != nil {
+				return fmt.Errorf("migrating %s: %w", path, err)
+			}
 		}
 
 		return nil
