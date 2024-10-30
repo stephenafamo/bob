@@ -4,8 +4,8 @@
 
 ## Links
 
-* [Documentation][docs]
-* [Reference][reference]
+- [Documentation][docs]
+- [Reference][reference]
 
 ## About
 
@@ -33,7 +33,7 @@ Check out [the documentation][docs] for more information.
 ## Support
 
 |               | Queries | Models | ORM Gen | Factory Gen |
-|---------------|---------|--------|---------|-------------|
+| ------------- | ------- | ------ | ------- | ----------- |
 | Postgres      | ✅      | ✅     | ✅      | ✅          |
 | MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
 | SQLite        | ✅      | ✅     | ✅      | ✅          |
@@ -49,3 +49,9 @@ Check out [the documentation][docs] for more information.
 
 [docs]: https://bob.stephenafamo.com/docs
 [reference]: https://pkg.go.dev/github.com/stephenafamo/bob
+
+## Contributing
+
+Thanks to all the people who have contributed to Bob!
+
+[![contributors](https://contributors-img.web.app/image?repo=stephenafamo/bob)](https://github.com/stephenafamo/bob/graphs/contributors)
