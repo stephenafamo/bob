@@ -107,3 +107,7 @@ func (e Builder[T, B]) Quote(aa ...string) T {
 func (e Builder[T, B]) Cast(exp bob.Expression, typname string) T {
 	return X[T, B](Cast(exp, typname))
 }
+
+func (e Builder[T, B]) Case(c Case[bob.Expression]) T {
+	return X[T, B](c)
+}

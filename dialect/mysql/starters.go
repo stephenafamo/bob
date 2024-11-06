@@ -1,6 +1,9 @@
 package mysql
 
 import (
+	"context"
+	"io"
+
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/expr"
@@ -100,3 +103,30 @@ func Raw(query string, args ...any) Expression {
 func Cast(exp bob.Expression, typname string) Expression {
 	return bmod.Cast(exp, typname)
 }
+
+type CaseChain[T bob.Expression] func() expr.Case[T]
+
+func (c CaseChain[T]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return c().WriteSQL(ctx, w, d, start)
+}
+
+func Case() CaseChain[Expression] {
+	return CaseChain[Expression](func() expr.Case[Expression] { return expr.Case[Expression]{} })
+}
+
+func (c CaseChain[T]) When(condition, then T) CaseChain[T] {
+	cExpr := c()
+	cExpr.Whens = append(cExpr.Whens, expr.When{Condition: condition, Then: then})
+	return CaseChain[T](func() expr.Case[T] { return cExpr })
+}
+
+func (c CaseChain[T]) Else(then T) Expression {
+	cExpr := c()
+	cExpr.Else = then
+	var e dialect.Expression
+	return e.New(cExpr)
+}
+
+// func (c CaseChain[T]) As(alias string) T {
+// 	return bmod.X(c())
+// }
