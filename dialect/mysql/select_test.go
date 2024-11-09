@@ -30,16 +30,30 @@ func TestSelect(t *testing.T) {
 				sm.Where(mysql.Quote("id").In(mysql.Arg(100, 200, 300))),
 			),
 		},
-		"select with case": {
-			ExpectedSQL: "SELECT id, name, CASE WHEN (`id` = '1') THEN 'A' ELSE 'B' END FROM users",
+		"case with else": {
+			ExpectedSQL: "SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' ELSE 'B' END) AS `C` FROM users",
 			Query: mysql.Select(
 				sm.Columns(
 					"id",
 					"name",
 					mysql.Case().
 						When(mysql.Quote("id").EQ(mysql.S("1")), mysql.S("A")).
-						Else(mysql.S("B")),
-					// as
+						Else(mysql.S("B")).
+						As("C"),
+				),
+				sm.From("users"),
+			),
+		},
+		"case without else": {
+			ExpectedSQL: "SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' END) AS `C` FROM users",
+			Query: mysql.Select(
+				sm.Columns(
+					"id",
+					"name",
+					mysql.Case().
+						When(mysql.Quote("id").EQ(mysql.S("1")), mysql.S("A")).
+						End().
+						As("C"),
 				),
 				sm.From("users"),
 			),
