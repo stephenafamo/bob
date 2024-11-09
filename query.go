@@ -136,11 +136,11 @@ func (q BaseQuery[E]) BuildN(ctx context.Context, start int) (string, []any, err
 }
 
 // Convinient function to cache a query
-func (q BaseQuery[E]) Cache(ctx context.Context) (BaseQuery[*cached], error) {
-	return CacheN(ctx, q, 1)
+func (q BaseQuery[E]) Cache(ctx context.Context, exec Executor) (BaseQuery[*cached], error) {
+	return CacheN(ctx, exec, q, 1)
 }
 
 // Convinient function to cache a query from a point
-func (q BaseQuery[E]) CacheN(ctx context.Context, start int) (BaseQuery[*cached], error) {
-	return CacheN(ctx, q, start)
+func (q BaseQuery[E]) CacheN(ctx context.Context, exec Executor, start int) (BaseQuery[*cached], error) {
+	return CacheN(ctx, exec, q, start)
 }
