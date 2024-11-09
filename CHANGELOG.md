@@ -96,6 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug preventing specific columns from being excluded when generating models from SQLite. (thanks @mbezhanov)
 - Fixed an issue where invalid code is generated if a configured relationship has `from_where` or `to_where`.
 - Fixed `ModelSlice.ReloadAll()` method for models with multiple primary keys.
+- Removed `bob.Cache()`. With the new implementation of hooks, it becomes inpractical to properly cache a query.
 
 ## [v0.28.1] - 2024-06-28
 
