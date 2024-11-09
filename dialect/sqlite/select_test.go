@@ -30,6 +30,34 @@ func TestSelect(t *testing.T) {
 				sm.Where(sqlite.Quote("id").In(sqlite.Arg(100, 200, 300))),
 			),
 		},
+		"case with else": {
+			ExpectedSQL: `SELECT id, name, (CASE WHEN ("id" = '1') THEN 'A' ELSE 'B' END) AS "C" FROM users`,
+			Query: sqlite.Select(
+				sm.Columns(
+					"id",
+					"name",
+					sqlite.Case().
+						When(sqlite.Quote("id").EQ(sqlite.S("1")), sqlite.S("A")).
+						Else(sqlite.S("B")).
+						As("C"),
+				),
+				sm.From("users"),
+			),
+		},
+		"case without else": {
+			ExpectedSQL: `SELECT id, name, (CASE WHEN ("id" = '1') THEN 'A' END) AS "C" FROM users`,
+			Query: sqlite.Select(
+				sm.Columns(
+					"id",
+					"name",
+					sqlite.Case().
+						When(sqlite.Quote("id").EQ(sqlite.S("1")), sqlite.S("A")).
+						End().
+						As("C"),
+				),
+				sm.From("users"),
+			),
+		},
 		"select distinct": {
 			ExpectedSQL:  `SELECT DISTINCT id, name FROM users WHERE ("id" IN (?1, ?2, ?3))`,
 			ExpectedArgs: []any{100, 200, 300},

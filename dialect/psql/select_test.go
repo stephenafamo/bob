@@ -29,6 +29,34 @@ func TestSelect(t *testing.T) {
 				sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
+		"case with else": {
+			ExpectedSQL: `SELECT id, name, (CASE WHEN (id = '1') THEN 'A' ELSE 'B' END) AS "C" FROM users`,
+			Query: psql.Select(
+				sm.Columns(
+					"id",
+					"name",
+					psql.Case().
+						When(psql.Quote("id").EQ(psql.S("1")), psql.S("A")).
+						Else(psql.S("B")).
+						As("C"),
+				),
+				sm.From("users"),
+			),
+		},
+		"case without else": {
+			ExpectedSQL: `SELECT id, name, (CASE WHEN (id = '1') THEN 'A' END) AS "C" FROM users`,
+			Query: psql.Select(
+				sm.Columns(
+					"id",
+					"name",
+					psql.Case().
+						When(psql.Quote("id").EQ(psql.S("1")), psql.S("A")).
+						End().
+						As("C"),
+				),
+				sm.From("users"),
+			),
+		},
 		"select distinct": {
 			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (id IN ($1, $2, $3))",
 			ExpectedArgs: []any{100, 200, 300},

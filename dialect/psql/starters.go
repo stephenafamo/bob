@@ -100,3 +100,9 @@ func Raw(query string, args ...any) Expression {
 func Cast(exp bob.Expression, typname string) Expression {
 	return bmod.Cast(exp, typname)
 }
+
+// SQL: CASE WHEN a THEN b ELSE c END
+// Go: psql.Case().When("a", "b").Else("c")
+func Case() expr.CaseChain[Expression, Expression] {
+	return expr.NewCase[Expression, Expression]()
+}
