@@ -6,23 +6,43 @@ import (
 	"io"
 )
 
-func Cache(ctx context.Context, q Query) (BaseQuery[*cached], error) {
-	return CacheN(ctx, q, 1)
+func Cache(ctx context.Context, exec Executor, q Query) (BaseQuery[*cached], error) {
+	return CacheN(ctx, exec, q, 1)
 }
 
-func CacheN(ctx context.Context, q Query, start int) (BaseQuery[*cached], error) {
+func CacheN(ctx context.Context, exec Executor, q Query, start int) (BaseQuery[*cached], error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return BaseQuery[*cached]{}, err
+		}
+	}
+
 	query, args, err := BuildN(ctx, q, start)
 	if err != nil {
 		return BaseQuery[*cached]{}, err
 	}
 
-	return BaseQuery[*cached]{
+	cached := BaseQuery[*cached]{
+		QueryType: q.Type(),
 		Expression: &cached{
 			query: []byte(query),
 			args:  args,
 			start: start,
 		},
-	}, nil
+	}
+
+	if l, ok := q.(Loadable); ok {
+		cached.Expression.SetLoaders(l.GetLoaders()...)
+	}
+
+	if m, ok := q.(MapperModder); ok {
+		cached.Expression.SetMapperMods(m.GetMapperMods()...)
+	}
+
+	return cached, nil
 }
 
 type WrongStartError struct {
@@ -38,6 +58,7 @@ type cached struct {
 	query []byte
 	args  []any
 	start int
+	Load
 }
 
 // WriteSQL implements Expression.

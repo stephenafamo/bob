@@ -5,4 +5,8 @@ var (
 	_ Loadable      = BaseQuery[Expression]{}
 	_ MapperModder  = BaseQuery[Expression]{}
 	_ HookableQuery = BaseQuery[Expression]{}
+
+	_ Expression   = &cached{}
+	_ Loadable     = &cached{}
+	_ MapperModder = &cached{}
 )

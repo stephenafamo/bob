@@ -77,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    The same functionality can be achieved by using `modelSlice.Delete()` or creating an `Delete` query using `table.Delete()`.
 - `BeforeInsertHooks` now only takes a single `ModelSetter` at a time.  
    This is because it is not possible to know before executing the queries exactly how many setters are being used since additional rows can be inserted by applying another setter as a mod.
+- `bob.Cache()` now requires an `Executor`. This is used to run any query hooks.
 
 ### Removed
 
