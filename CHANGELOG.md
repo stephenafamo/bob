@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This is how `AfterSeleect/Insert/Update/DeleteHooks` hooks are now implemented.
 - Added `Type() QueryType` method to `bob.Query` to get the type of query it is. Available constants are `Unknown, Select, Insert, Update, Delete`.
 - Postgres and SQLite Update/Delete queries now refresh the models after the query is executed. This is enabled by the `RETURNING` clause, so it is not available in MySQL.
+- Added the `Case()` starter to all dialects to build `CASE` expressions. (thanks @k4n4ry)
 
 ### Changed
 
