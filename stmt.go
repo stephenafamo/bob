@@ -7,43 +7,47 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type Preparer interface {
+type Preparer[P PreparedExecutor] interface {
 	Executor
-	PrepareContext(ctx context.Context, query string) (Statement, error)
+	PrepareContext(ctx context.Context, query string) (P, error)
 }
 
-type Statement interface {
+type PreparedExecutor interface {
 	ExecContext(ctx context.Context, args ...any) (sql.Result, error)
 	QueryContext(ctx context.Context, args ...any) (scan.Rows, error)
+	Close() error
 }
 
-// NewStmt wraps an [*sql.Stmt] and returns a type that implements [Queryer] but still
-// retains the expected methods used by *sql.Stmt
-// This is useful when an existing *sql.Stmt is used in other places in the codebase
-func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
+// Prepare prepares a query using the [Preparer] and returns a [NamedStmt]
+func Prepare[Arg any, P PreparedExecutor](ctx context.Context, exec Preparer[P], q Query) (Stmt[Arg], error) {
 	var err error
 
 	if h, ok := q.(HookableQuery); ok {
 		ctx, err = h.RunHooks(ctx, exec)
 		if err != nil {
-			return Stmt{}, err
+			return Stmt[Arg]{}, err
 		}
 	}
 
 	query, args, err := Build(ctx, q)
 	if err != nil {
-		return Stmt{}, err
+		return Stmt[Arg]{}, err
 	}
 
-	stmt, err := exec.PrepareContext(ctx, query)
+	binder, err := makeBinder[Arg](args)
 	if err != nil {
-		return Stmt{}, err
+		return Stmt[Arg]{}, err
 	}
 
-	s := Stmt{
-		exec:    exec,
-		stmt:    stmt,
-		lenArgs: len(args),
+	stmt, err := exec.PrepareContext(ctx, string(query))
+	if err != nil {
+		return Stmt[Arg]{}, err
+	}
+
+	s := Stmt[Arg]{
+		stmt:   stmt,
+		exec:   exec,
+		binder: binder,
 	}
 
 	if l, ok := q.(Loadable); ok {
@@ -56,15 +60,39 @@ func Prepare(ctx context.Context, exec Preparer, q Query) (Stmt, error) {
 }
 
 // Stmt is similar to *sql.Stmt but implements [Queryer]
-type Stmt struct {
-	stmt    Statement
+// instead of taking a list of args, it takes a struct to bind to the query
+type Stmt[Arg any] struct {
+	stmt    PreparedExecutor
 	exec    Executor
-	lenArgs int
 	loaders []Loader
+	binder  binder[Arg]
+}
+
+type txForStmt[Stmt PreparedExecutor] interface {
+	Executor
+	StmtContext(context.Context, Stmt) Stmt
+}
+
+// InTx returns a new MappedStmt that will be executed in the given transaction
+func InTx[Arg any, S PreparedExecutor](ctx context.Context, s Stmt[Arg], tx txForStmt[S]) Stmt[Arg] {
+	stmt, ok := s.stmt.(S)
+	if !ok {
+		panic("stmt is not an the right type")
+	}
+
+	s.stmt = tx.StmtContext(ctx, stmt)
+	s.exec = tx
+	return s
+}
+
+// Close closes the statement.
+func (s Stmt[Arg]) Close() error {
+	return s.stmt.Close()
 }
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
+func (s Stmt[Arg]) Exec(ctx context.Context, arg Arg) (sql.Result, error) {
+	args := s.binder.toArgs(arg)
 	result, err := s.stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return nil, err
@@ -79,14 +107,18 @@ func (s Stmt) Exec(ctx context.Context, args ...any) (sql.Result, error) {
 	return result, nil
 }
 
-func PrepareQuery[T any](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T]) (QueryStmt[T, []T], error) {
-	return PrepareQueryx[T, []T](ctx, exec, q, m)
+func (s Stmt[Arg]) NamedArgs() []string {
+	return s.binder.list()
 }
 
-func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, m scan.Mapper[T]) (QueryStmt[T, Ts], error) {
-	var qs QueryStmt[T, Ts]
+func PrepareQuery[Arg any, P PreparedExecutor, T any](ctx context.Context, exec Preparer[P], q Query, m scan.Mapper[T]) (QueryStmt[Arg, T, []T], error) {
+	return PrepareQueryx[Arg, P, T, []T](ctx, exec, q, m)
+}
 
-	s, err := Prepare(ctx, exec, q)
+func PrepareQueryx[Arg any, P PreparedExecutor, T any, Ts ~[]T](ctx context.Context, exec Preparer[P], q Query, m scan.Mapper[T]) (QueryStmt[Arg, T, Ts], error) {
+	var qs QueryStmt[Arg, T, Ts]
+
+	s, err := Prepare[Arg](ctx, exec, q)
 	if err != nil {
 		return qs, err
 	}
@@ -97,7 +129,7 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 		}
 	}
 
-	qs = QueryStmt[T, Ts]{
+	qs = QueryStmt[Arg, T, Ts]{
 		Stmt:      s,
 		queryType: q.Type(),
 		mapper:    m,
@@ -106,16 +138,17 @@ func PrepareQueryx[T any, Ts ~[]T](ctx context.Context, exec Preparer, q Query, 
 	return qs, nil
 }
 
-type QueryStmt[T any, Ts ~[]T] struct {
-	Stmt
+type QueryStmt[Arg, T any, Ts ~[]T] struct {
+	Stmt[Arg]
 
 	queryType QueryType
 	mapper    scan.Mapper[T]
 }
 
-func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
+func (s QueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
 	var t T
 
+	args := s.binder.toArgs(arg)
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return t, err
@@ -141,7 +174,8 @@ func (s QueryStmt[T, Ts]) One(ctx context.Context, args ...any) (T, error) {
 	return t, err
 }
 
-func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
+func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
+	args := s.binder.toArgs(arg)
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
@@ -175,7 +209,8 @@ func (s QueryStmt[T, Ts]) All(ctx context.Context, args ...any) (Ts, error) {
 	return typedSlice, err
 }
 
-func (s QueryStmt[T, Ts]) Cursor(ctx context.Context, args ...any) (scan.ICursor[T], error) {
+func (s QueryStmt[Arg, T, Ts]) Cursor(ctx context.Context, arg Arg) (scan.ICursor[T], error) {
+	args := s.binder.toArgs(arg)
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err

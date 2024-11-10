@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Type() QueryType` method to `bob.Query` to get the type of query it is. Available constants are `Unknown, Select, Insert, Update, Delete`.
 - Postgres and SQLite Update/Delete queries now refresh the models after the query is executed. This is enabled by the `RETURNING` clause, so it is not available in MySQL.
 - Added the `Case()` starter to all dialects to build `CASE` expressions. (thanks @k4n4ry)
+- Added `bob.Named()` which is used to add named arguments to the query and bind them later.
+- Added `bob.BindNamed` which takes an argument (struct, map, or a single value type) to be used to bind named arguments in a query. See changes to `bob.Prepare()` for details of which type can be used.
 
 ### Changed
 
@@ -78,6 +80,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BeforeInsertHooks` now only takes a single `ModelSetter` at a time.  
    This is because it is not possible to know before executing the queries exactly how many setters are being used since additional rows can be inserted by applying another setter as a mod.
 - `bob.Cache()` now requires an `Executor`. This is used to run any query hooks.
+- `bob.Prepare()` now requires a type parameter to be used to bind named arguments. The type can either be:
+  - A struct with fields that match the named arguments in the query
+  - A map with string keys. When supplied, the values in the map will be used to bind the named arguments in the query.
+  - When there is only a single named argument, one of the following can be used:
+    - A primitive type (int, bool, string, etc)
+    - `time.Time`
+    - Any type that implements `driver.Valuer`.
 
 ### Removed
 
@@ -89,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `Update` and `Delete` methods from `orm.Table` since they are not needed.  
   It is possible to do the same thing, with similar effor using the the `UpdateQ` and `DeleteQ` methods (which are now renamed to `Update` and `Delete`).
 - `context.Context` and `bob.Executor` are no longer passed when creating a Table/ViewQuery. It is now passed at the point of execution with `Exec/One/All/Cursor`.
+- Remove `Prepare` methods from table and view qureries. Since `bob.Prepare()` now takes a type parameter, it is not possible to prepare from a method since Go does not allow additional type parameters in methods.
 
 ### Fixed
 
