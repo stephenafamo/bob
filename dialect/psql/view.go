@@ -106,16 +106,6 @@ func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *Vie
 	return q
 }
 
-// Prepare a statement that will be mapped to the view's type
-func (v *View[T, Tslice]) Prepare(ctx context.Context, exec bob.Preparer, queryMods ...bob.Mod[*dialect.SelectQuery]) (bob.QueryStmt[T, Tslice], error) {
-	return v.PrepareQuery(ctx, exec, v.Query(queryMods...))
-}
-
-// Prepare a statement from an existing query that will be mapped to the view's type
-func (v *View[T, Tslice]) PrepareQuery(ctx context.Context, exec bob.Preparer, q bob.Query) (bob.QueryStmt[T, Tslice], error) {
-	return bob.PrepareQueryx[T, Tslice](ctx, exec, q, v.scanner)
-}
-
 type ViewQuery[T any, Ts ~[]T] struct {
 	orm.Query[*dialect.SelectQuery, T, Ts]
 }

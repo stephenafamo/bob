@@ -3,7 +3,6 @@
 {{if $.Relationships.Get $table.Key -}}
   {{$.Importer.Import "github.com/stephenafamo/bob"}}
   {{$.Importer.Import "github.com/stephenafamo/bob/mods"}}
-
   {{$.Importer.Import "context"}}
   type {{$tAlias.DownSingular}}Joins[Q dialect.Joinable] struct {
     typ string

@@ -1,12 +1,19 @@
 package bob
 
 var (
-	_ Query         = BaseQuery[Expression]{}
-	_ Loadable      = BaseQuery[Expression]{}
-	_ MapperModder  = BaseQuery[Expression]{}
-	_ HookableQuery = BaseQuery[Expression]{}
+	_ Expression = &cached{}
 
-	_ Expression   = &cached{}
-	_ Loadable     = &cached{}
+	_ Query = BaseQuery[Expression]{}
+	_ Query = BoundQuery[Expression]{}
+
+	_ Loadable = BaseQuery[Expression]{}
+	_ Loadable = BoundQuery[Expression]{}
+	_ Loadable = &cached{}
+
+	_ MapperModder = BaseQuery[Expression]{}
+	_ MapperModder = BoundQuery[Expression]{}
 	_ MapperModder = &cached{}
+
+	_ HookableQuery = BaseQuery[Expression]{}
+	_ HookableQuery = BoundQuery[Expression]{}
 )

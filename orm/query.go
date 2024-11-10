@@ -39,10 +39,6 @@ func (q ExecQuery[Q, T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (c
 	return q.Hooks.RunHooks(ctx, exec, q.BaseQuery.Expression)
 }
 
-func (q ExecQuery[Q, T, Ts]) Prepare(ctx context.Context, exec bob.Preparer) (bob.QueryStmt[T, Ts], error) {
-	return bob.PrepareQueryx[T, Ts](ctx, exec, q, q.Scanner)
-}
-
 // Execute the query
 func (q ExecQuery[Q, T, Ts]) Exec(ctx context.Context, exec bob.Executor) (int64, error) {
 	result, err := bob.Exec(ctx, exec, q)

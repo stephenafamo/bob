@@ -11,8 +11,9 @@ import (
 
 // To pervent unnecessary allocations
 const (
-	openPar  = "("
-	closePar = ")"
+	openPar    = "("
+	closePar   = ")"
+	commaSpace = ", "
 )
 
 type QueryType int
@@ -100,12 +101,25 @@ func (b BaseQuery[E]) Apply(mods ...Mod[E]) {
 }
 
 func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
+	// If it a query, just call its WriteQuery method
+	if e, ok := any(b.Expression).(interface {
+		WriteQuery(context.Context, io.Writer, int) ([]any, error)
+	}); ok {
+		return e.WriteQuery(ctx, w, start)
+	}
+
 	return b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 }
 
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
-func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.Writer, _ Dialect, start int) ([]any, error) {
+func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
+	// If it a query, don't wrap it in parentheses
+	// it may already do this on its own and we don't want to double wrap
+	if e, ok := any(b.Expression).(Query); ok {
+		return e.WriteSQL(ctx, w, d, start)
+	}
+
 	w.Write([]byte(openPar))
 	args, err := b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 	w.Write([]byte(closePar))
@@ -143,4 +157,61 @@ func (q BaseQuery[E]) Cache(ctx context.Context, exec Executor) (BaseQuery[*cach
 // Convinient function to cache a query from a point
 func (q BaseQuery[E]) CacheN(ctx context.Context, exec Executor, start int) (BaseQuery[*cached], error) {
 	return CacheN(ctx, exec, q, start)
+}
+
+func BindNamed[Arg any](ctx context.Context, q Query, args Arg) BoundQuery[Arg] {
+	return BoundQuery[Arg]{Query: q, namedArgs: args}
+}
+
+type BoundQuery[Arg any] struct {
+	Query
+	namedArgs Arg
+}
+
+func (b BoundQuery[Arg]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
+	args, err := b.Query.WriteQuery(ctx, w, start)
+	if err != nil {
+		return nil, err
+	}
+
+	return bindArgs(args, b.namedArgs)
+}
+
+// Satisfies the Expression interface, but uses its own dialect instead
+// of the dialect passed to it
+func (b BoundQuery[E]) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
+	args, err := b.Query.WriteSQL(ctx, w, d, start)
+	if err != nil {
+		return nil, err
+	}
+
+	return bindArgs(args, b.namedArgs)
+}
+
+func (b BoundQuery[E]) Exec(ctx context.Context, exec Executor) (sql.Result, error) {
+	return Exec(ctx, exec, b)
+}
+
+func (b BoundQuery[E]) RunHooks(ctx context.Context, exec Executor) (context.Context, error) {
+	if l, ok := any(b.Query).(HookableQuery); ok {
+		return l.RunHooks(ctx, exec)
+	}
+
+	return ctx, nil
+}
+
+func (b BoundQuery[E]) GetLoaders() []Loader {
+	if l, ok := any(b.Query).(Loadable); ok {
+		return l.GetLoaders()
+	}
+
+	return nil
+}
+
+func (b BoundQuery[E]) GetMapperMods() []scan.MapperMod {
+	if l, ok := any(b.Query).(MapperModder); ok {
+		return l.GetMapperMods()
+	}
+
+	return nil
 }
