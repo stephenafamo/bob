@@ -36,8 +36,9 @@ func TestPostgres(t *testing.T) {
 		config: Config{
 			Dialect: "psql",
 		},
-		schema:     psqlSchemas,
-		goldenJson: "atlas.psql_golden.json",
+		schema:         psqlSchemas,
+		goldenJson:     "atlas.psql_golden.json",
+		modelTemplates: gen.PSQLModelTemplates,
 	}
 	testDialect(t, psqlCase)
 }

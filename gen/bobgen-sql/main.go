@@ -74,7 +74,7 @@ func run(c *cli.Context) error {
 	case "psql", "postgres":
 		return driver.RunPostgres(c.Context, state, driverConfig)
 	case "mysql":
-		return fmt.Errorf("mysql dialect is not supported yet")
+		return driver.RunMySQL(c.Context, state, driverConfig)
 	case "sqlite":
 		return driver.RunSQLite(c.Context, state, driverConfig)
 	default:

@@ -145,6 +145,7 @@ func generate(root root) error {
 		dialect = "psql"
 		driverName = "pgx"
 		driverPkg = "github.com/jackc/pgx/v5/stdlib"
+		modelTemplates = append(modelTemplates, gen.PSQLModelTemplates)
 	case ProviderSQLite:
 		dialect = "sqlite"
 		driverName = "sqlite"

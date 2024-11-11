@@ -8,10 +8,14 @@ import (
 	"os"
 	"path/filepath"
 
+	sqle "github.com/dolthub/go-mysql-server"
+	"github.com/dolthub/go-mysql-server/memory"
+	"github.com/dolthub/go-mysql-server/server"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	mysqlDriver "github.com/stephenafamo/bob/gen/bobgen-mysql/driver"
 	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -104,6 +108,77 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 		Output:       config.Output,
 		Pkgname:      config.Pkgname,
 		NoFactory:    config.NoFactory,
+	}))
+
+	return d, nil
+}
+
+func RunMySQL(ctx context.Context, state *gen.State, config Config) error {
+	config.fs = os.DirFS(config.Dir)
+
+	d, err := getMySQLDriver(ctx, config)
+	if err != nil {
+		return fmt.Errorf("getting mysql driver: %w", err)
+	}
+
+	return gen.Run(ctx, state, d)
+}
+
+func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, error) {
+	port, err := helpers.GetFreePort()
+	if err != nil {
+		return nil, fmt.Errorf("could not get a free port: %w", err)
+	}
+
+	memDB := memory.NewDatabase("bob_droppable")
+	memDB.BaseDatabase.EnablePrimaryKeyIndexes()
+
+	pro := memory.NewDBProvider(memDB)
+	engine := sqle.NewDefault(pro)
+
+	serverConfig := server.Config{
+		Protocol: "tcp",
+		Address:  fmt.Sprintf("localhost:%d", port),
+	}
+	s, err := server.NewServer(serverConfig, engine, memory.NewSessionBuilder(pro), nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating mysql server: %w", err)
+	}
+	go func() {
+		if err = s.Start(); err != nil {
+			panic(fmt.Errorf("starting mysql server: %w", err))
+		}
+	}()
+
+	defer func() {
+		if err := s.Close(); err != nil {
+			fmt.Println("Error stopping mysql:", err)
+		}
+	}()
+
+	dsn := fmt.Sprintf("no_user:@tcp(localhost:%d)/bob_droppable", port)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer db.Close()
+
+	if err := helpers.MigrateWithOptions(ctx, db, config.fs, helpers.MigrationOpts{
+		SplitFileIntoStatements: true,
+	}); err != nil {
+		return nil, fmt.Errorf("migrating: %w", err)
+	}
+	db.Close() // close early
+
+	d := wrapDriver(ctx, mysqlDriver.New(mysqlDriver.Config{
+		Dsn: dsn,
+
+		Only:        config.Only,
+		Except:      config.Except,
+		Concurrency: config.Concurrency,
+		Output:      config.Output,
+		Pkgname:     config.Pkgname,
+		NoFactory:   config.NoFactory,
 	}))
 
 	return d, nil

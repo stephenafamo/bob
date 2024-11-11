@@ -39,6 +39,7 @@ func TestPostgres(t *testing.T) {
 			DriverName: "pgx",
 			DriverPkg:  "github.com/jackc/pgx/v5/stdlib",
 		},
+		modelTemplates: gen.PSQLModelTemplates,
 	})
 }
 
