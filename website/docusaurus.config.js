@@ -110,14 +110,6 @@ const config = {
                 label: "SQL Files",
                 to: "docs/code-generation/sql",
               },
-              {
-                label: "Atlas",
-                to: "docs/code-generation/atlas",
-              },
-              {
-                label: "Prisma",
-                to: "docs/code-generation/prisma",
-              },
             ],
           },
           {
