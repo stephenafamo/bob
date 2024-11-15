@@ -99,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It is possible to do the same thing, with similar effor using the the `UpdateQ` and `DeleteQ` methods (which are now renamed to `Update` and `Delete`).
 - `context.Context` and `bob.Executor` are no longer passed when creating a Table/ViewQuery. It is now passed at the point of execution with `Exec/One/All/Cursor`.
 - Remove `Prepare` methods from table and view qureries. Since `bob.Prepare()` now takes a type parameter, it is not possible to prepare from a method since Go does not allow additional type parameters in methods.
+- Removed the **Prisma** and **Atlas** code generation drivers. It is better for Bob to focus on being able to generate code from the database in the most robust and detailed way and if the user wants, they can use other tools (such as prisma and atlas) to manage migrations before the code generation.
 
 ### Fixed
 

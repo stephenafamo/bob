@@ -10,18 +10,14 @@ import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
 
 Bob is a "database-first" ORM. That means you must first create your database schema. Please use something like [sql-migrate](https://github.com/rubenv/sql-migrate) or some other migration tool to manage this part of the database's life-cycle.
 
-There is also a generator for other schema definitions like [Atlas' schema](https://atlasgo.io/atlas-schema/sql-resources) and [Prisma's schema](https://www.prisma.io/docs/concepts/components/prisma-schema).
-
 ## Available Drivers
 
 | Sources    | Driver           |
-|------------|------------------|
+| ---------- | ---------------- |
 | PostgreSQL | [LINK](./psql)   |
 | MySQL      | [LINK](./mysql)  |
 | SQLite     | [LINK](./sqlite) |
 | SQL files  | [LINK](./sql)    |
-| Atlas      | [LINK](./atlas)  |
-| Prisma     | [LINK](./prisma) |
 
 ## Features
 

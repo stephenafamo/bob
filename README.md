@@ -37,8 +37,6 @@ Check out [the documentation][docs] for more information.
 | Postgres      | ✅      | ✅     | ✅      | ✅          |
 | MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
 | SQLite        | ✅      | ✅     | ✅      | ✅          |
-| Atlas         |         |        | ✅      | ✅          |
-| Prisma        |         |        | ✅      | ✅          |
 
 ## Comparisons
 
