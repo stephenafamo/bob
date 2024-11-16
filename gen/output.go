@@ -179,9 +179,9 @@ func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemp
 	return lazyTemplates, nil
 }
 
-type executeTemplateData[T any] struct {
+type executeTemplateData[T, C, I any] struct {
 	output *Output
-	data   *TemplateData[T]
+	data   *TemplateData[T, C, I]
 
 	templates     *templateList
 	dirExtensions dirExtMap
@@ -190,8 +190,8 @@ type executeTemplateData[T any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], goVersion string) error {
-	return executeTemplates(executeTemplateData[T]{
+func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string) error {
+	return executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
 		templates:     o.templates,
@@ -200,8 +200,8 @@ func generateOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], 
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[T], goVersion string) error {
-	return executeTemplates(executeTemplateData[T]{
+func generateTestOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string) error {
+	return executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
 		templates:     o.testTemplates,
@@ -212,8 +212,8 @@ func generateTestOutput[T any](o *Output, dirExts dirExtMap, data *TemplateData[
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T any](o *Output, data *TemplateData[T], goVersion string) error {
-	return executeSingletonTemplates(executeTemplateData[T]{
+func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], goVersion string) error {
+	return executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
 		templates: o.templates,
@@ -222,8 +222,8 @@ func generateSingletonOutput[T any](o *Output, data *TemplateData[T], goVersion 
 
 // generateSingletonTestOutput processes the templates that should only be run
 // one time.
-func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], goVersion string) error {
-	return executeSingletonTemplates(executeTemplateData[T]{
+func generateSingletonTestOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], goVersion string) error {
+	return executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
 		templates: o.testTemplates,
@@ -231,7 +231,7 @@ func generateSingletonTestOutput[T any](o *Output, data *TemplateData[T], goVers
 	}, goVersion)
 }
 
-func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
+func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			headerOut := e.output.templateHeaderByteBuffer
@@ -291,7 +291,7 @@ func executeTemplates[T any](e executeTemplateData[T], goVersion string) error {
 	return nil
 }
 
-func executeSingletonTemplates[T any](e executeTemplateData[T], goVersion string) error {
+func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string) error {
 	headerOut := e.output.templateHeaderByteBuffer
 	out := e.output.templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
@@ -392,7 +392,7 @@ func writeFile(outFolder string, fileName string, input io.Reader, goVersion str
 
 // executeTemplate takes a template and returns the output of the template
 // execution.
-func executeTemplate[T any](buf io.Writer, t *template.Template, name string, data *TemplateData[T]) (err error) {
+func executeTemplate[T, C, I any](buf io.Writer, t *template.Template, name string, data *TemplateData[T, C, I]) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("failed to execute template: %s\npanic: %+v\n", name, r)

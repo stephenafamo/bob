@@ -7,23 +7,23 @@ type Plugin interface {
 }
 
 // This is called at the very beginning if there are any changes to be made to the state
-type StatePlugin interface {
+type StatePlugin[ConstraintExtra any] interface {
 	Plugin
-	PlugState(*State) error
+	PlugState(*State[ConstraintExtra]) error
 }
 
 // DBInfoPlugin is called immediately after the database information
 // is assembled from the driver
-type DBInfoPlugin[T any] interface {
+type DBInfoPlugin[T, C, I any] interface {
 	Plugin
-	PlugDBInfo(*drivers.DBInfo[T]) error
+	PlugDBInfo(*drivers.DBInfo[T, C, I]) error
 }
 
 // TemplateDataPlugin is called right after assembling the template data, before
 // generating them for each output.
 // NOTE: The PkgName field is overwritten for each output, so mofifying it in a plugin
 // will have no effect. Use a StatePlugin instead
-type TemplateDataPlugin[T any] interface {
+type TemplateDataPlugin[T, C, I any] interface {
 	Plugin
-	PlugTemplateData(*TemplateData[T]) error
+	PlugTemplateData(*TemplateData[T, C, I]) error
 }

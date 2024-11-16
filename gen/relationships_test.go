@@ -26,20 +26,22 @@ func TestJoinTable(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		var table drivers.Table
+		var table drivers.Table[any, any]
 
-		table.Constraints.Primary = &drivers.PrimaryKey{Columns: test.Pkey}
+		table.Constraints.Primary = &drivers.Constraint[any]{Columns: test.Pkey}
 		for _, col := range strmangle.SetMerge(test.Pkey, test.Fkey) {
 			table.Columns = append(table.Columns, drivers.Column{Name: col})
 		}
 		for _, k := range test.Fkey {
 			table.Constraints.Foreign = append(
 				table.Constraints.Foreign,
-				drivers.ForeignKey{Columns: []string{k}},
+				drivers.ForeignKey[any]{
+					Constraint: drivers.Constraint[any]{Columns: []string{k}},
+				},
 			)
 		}
 
-		if isJoinTable(table) != test.Should {
+		if table.IsJoinTable() != test.Should {
 			t.Errorf("%d) want: %t, got: %t\nTest: %#v", i, test.Should, !test.Should, test)
 		}
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 // Config for the running of the commands
-type Config struct {
+type Config[ConstraintExtra any] struct {
 	// Struct tags to generate
 	Tags []string `yaml:"tags"`
 	// Disable generating factories for models
@@ -23,10 +23,10 @@ type Config struct {
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 
-	Types         drivers.Types `yaml:"types"`         // register custom types
-	Aliases       Aliases       `yaml:"aliases"`       // customize aliases
-	Constraints   Constraints   `yaml:"constraints"`   // define additional constraints
-	Relationships Relationships `yaml:"relationships"` // define additional relationships
+	Types         drivers.Types                `yaml:"types"`         // register custom types
+	Aliases       drivers.Aliases              `yaml:"aliases"`       // customize aliases
+	Constraints   Constraints[ConstraintExtra] `yaml:"constraints"`   // define additional constraints
+	Relationships Relationships                `yaml:"relationships"` // define additional relationships
 
 	Replacements []Replace   `yaml:"replacements"`
 	Inflections  Inflections `yaml:"inflections"`

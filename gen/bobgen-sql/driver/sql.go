@@ -47,7 +47,7 @@ type Config struct {
 	fs fs.FS
 }
 
-func RunPostgres(ctx context.Context, state *gen.State, config Config) error {
+func RunPostgres(ctx context.Context, state *gen.State[any], config Config) error {
 	config.fs = os.DirFS(config.Dir)
 
 	d, err := getPsqlDriver(ctx, config)
@@ -109,7 +109,7 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	return d, nil
 }
 
-func RunSQLite(ctx context.Context, state *gen.State, config Config) error {
+func RunSQLite(ctx context.Context, state *gen.State[any], config Config) error {
 	config.fs = os.DirFS(config.Dir)
 
 	d, err := getSQLiteDriver(ctx, config)
@@ -171,17 +171,17 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 	return d, nil
 }
 
-func wrapDriver[T any](ctx context.Context, d drivers.Interface[T]) driver[T] {
+func wrapDriver[T, C, I any](ctx context.Context, d drivers.Interface[T, C, I]) driver[T, C, I] {
 	info, err := d.Assemble(ctx)
-	return driver[T]{d, info, err}
+	return driver[T, C, I]{d, info, err}
 }
 
-type driver[T any] struct {
-	drivers.Interface[T]
-	info *drivers.DBInfo[T]
+type driver[T, C, I any] struct {
+	drivers.Interface[T, C, I]
+	info *drivers.DBInfo[T, C, I]
 	err  error
 }
 
-func (d driver[T]) Assemble(context.Context) (*drivers.DBInfo[T], error) {
+func (d driver[T, C, I]) Assemble(context.Context) (*drivers.DBInfo[T, C, I], error) {
 	return d.info, d.err
 }

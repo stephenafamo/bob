@@ -44,7 +44,7 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	config, driverConfig, err := helpers.GetConfigFromFile[driver.Config](c.String("config"), "sqlite")
+	config, driverConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "sqlite")
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func run(c *cli.Context) error {
 		&helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 	)
 
-	state := &gen.State{
+	state := &gen.State[any]{
 		Config:  config,
 		Outputs: outputs,
 	}

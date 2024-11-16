@@ -16,7 +16,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	{{range $.Relationships.Get $table.Key -}}
 	{{- $fAlias := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
+	{{- $invRel := $.Relationships.GetInverse . -}}
 	case "{{$relAlias}}":
 		{{if .IsToMany -}}
 			rels, ok := retrieved.({{$fAlias.UpSingular}}Slice)
@@ -69,10 +69,10 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 
 
 {{range $rel := $.Relationships.Get $table.Key -}}
-{{- $isToView := relIsView $.Tables $rel -}}
+{{- $isToView := $.Tables.RelIsView $rel -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
+{{- $invRel := $.Relationships.GetInverse . -}}
 {{- if not $rel.IsToMany -}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOption) {{$.Dialect}}.Preloader {
@@ -83,8 +83,8 @@ func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOpt
 				{{range $side := $rel.Sides -}}
 				{{- $from := $.Aliases.Table $side.From -}}
 				{{- $to := $.Aliases.Table $side.To -}}
-				{{- $fromTable := getTable $.Tables $side.From -}}
-				{{- $toTable = getTable $.Tables $side.To -}}
+				{{- $fromTable := $.Tables.Get $side.From -}}
+				{{- $toTable = $.Tables.Get $side.To -}}
 				{
 					From: TableNames.{{$from.UpPlural}},
 					To: TableNames.{{$to.UpPlural}},
@@ -221,8 +221,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $side.FromColumns -}}
 			{{- $foreign := index $side.ToColumns $index -}}
-			{{- $fromColGet := columnGetter $.Tables $side.From $fromAlias $local -}}
-			{{- $toColGet := columnGetter $.Tables $side.To $toAlias $foreign -}}
+			{{- $fromColGet := $.Tables.ColumnGetter $fromAlias $side.From $local -}}
+			{{- $toColGet := $.Tables.ColumnGetter $toAlias $side.To $foreign -}}
 			if o.{{$fromColGet}} != rel.{{$toColGet}} {
 			  continue
 			}
@@ -279,7 +279,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 
   {{range $index, $local := $firstSide.FromColumns -}}
     {{- $fromColAlias := index $firstFrom.Columns $local -}}
-    {{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
+    {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
     {{$fromColAlias}}Slice := []{{$fromCol.Type}}{}
   {{end}}
 
@@ -288,7 +288,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}
-        {{- $fromCol := getColumn $.Tables $firstSide.From $firstFrom $local -}}
+        {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
         {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromCol.Type}}))
         row.ScheduleScan("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
       {{end}}

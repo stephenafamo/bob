@@ -2,10 +2,10 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-{{range $rel := $.Relationships.Get $table.Key -}}{{if not (relIsView $.Tables $rel) -}}
+{{range $rel := $.Relationships.Get $table.Key -}}{{if not ($.Tables.RelIsView $rel) -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $.Relationships.GetInverse $.Tables . -}}
+{{- $invRel := $.Relationships.GetInverse . -}}
 {{- $from := printf "%s%d" $tAlias.DownSingular $rel.LocalPosition}}
 {{- $to := printf "%s%d" $ftable.DownSingular $rel.ForeignPosition}}
 {{if $rel.NeedsMany $rel.ForeignPosition -}}
@@ -15,7 +15,7 @@
 
 
 {{range $index, $side := reverse $valuedSides -}}
-  {{$sideTable := getTable $.Tables $side.TableName}}
+  {{$sideTable := $.Tables.Get $side.TableName}}
   {{$sideAlias := $.Aliases.Table $side.TableName}}
 
 
@@ -53,7 +53,7 @@
           {{end}}
         {{- else -}}
           {{$a := $.Aliases.Table .ExternalTable -}}
-          {{$t := getTable $.Tables .ExternalTable -}}
+          {{$t := $.Tables.Get .ExternalTable -}}
           {{$c := $t.GetColumn .ExternalColumn -}}
           {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
           {{if $rel.NeedsMany .ExtPosition -}}
@@ -91,7 +91,7 @@
 
 
   func attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx context.Context, exec bob.Executor, count int
-  {{- if not (isJoinTable $sideTable $rel $side.Position) -}}
+  {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
     {{- if $rel.NeedsMany $side.Position  -}}
       , {{$sideAlias.DownPlural}}{{$side.Position}} {{$sideAlias.UpSingular}}Slice
     {{- else -}}
@@ -108,7 +108,7 @@
   {{- end -}}
   ) ({{if $rel.NeedsMany $side.Position}}{{$sideAlias.UpSingular}}Slice{{else}}*{{$sideAlias.UpSingular}}{{end}}, error) {
     {{- $uniqueEnd := and $side.End (not (index $rel.Sides (sub $side.Position 1)).ToUnique) -}}
-    {{- $needsIndividualUpdate := (and (not $uniqueEnd) ($rel.NeedsMany $side.Position)  (not (isJoinTable $sideTable $rel $side.Position))) -}}
+    {{- $needsIndividualUpdate := (and (not $uniqueEnd) ($rel.NeedsMany $side.Position)  (not ($sideTable.IsJoinTableForRel $rel $side.Position))) -}}
     {{if $needsIndividualUpdate}}
     for i := range {{$sideAlias.DownPlural}}{{$side.Position}} {
       setter := &{{$sideAlias.UpSingular}}Setter{
@@ -116,7 +116,7 @@
           {{$colName := $sideAlias.Column $map.Column -}}
           {{$sideColumn := $sideTable.GetColumn .Column -}}
           {{$tableAlias := $.Aliases.Table .ExternalTable -}}
-          {{$table := getTable $.Tables .ExternalTable -}}
+          {{$table := $.Tables.Get .ExternalTable -}}
           {{$column := $table.GetColumn .ExternalColumn -}}
           {{if $rel.NeedsMany .ExtPosition -}}
             {{if .HasValue -}}
@@ -181,7 +181,7 @@
     {{end}}
 
     {{if $needsBulkUpdate -}}
-    {{if and ($rel.NeedsMany $side.Position) (isJoinTable $sideTable $rel $side.Position) -}}
+    {{if and ($rel.NeedsMany $side.Position) ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
       setters := make([]*{{$sideAlias.UpSingular}}Setter, count)
       for i := 0; i < count; i++ {
         setters[i] = &{{$sideAlias.UpSingular}}Setter{
@@ -202,7 +202,7 @@
             {{end}}
           {{- else -}}
             {{$a := $.Aliases.Table .ExternalTable -}}
-            {{$t := getTable $.Tables .ExternalTable -}}
+            {{$t := $.Tables.Get .ExternalTable -}}
             {{$c := $t.GetColumn .ExternalColumn -}}
             {{$colVal := printf "%s%d.%s" $a.DownSingular $map.ExtPosition ($a.Column $map.ExternalColumn) -}}
             {{if $rel.NeedsMany .ExtPosition -}}
@@ -225,9 +225,9 @@
         {{- end}}
       {{- end}}
     }
-    {{if and ($rel.NeedsMany $side.Position) (isJoinTable $sideTable $rel $side.Position) -}}}{{end}}
+    {{if and ($rel.NeedsMany $side.Position) ($sideTable.IsJoinTableForRel $rel $side.Position) -}}}{{end}}
 
-    {{if (isJoinTable $sideTable $rel $side.Position) -}}
+    {{if ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
       {{if $rel.NeedsMany $side.Position -}}
         {{$sideAlias.DownPlural}}{{$side.Position}}, err := {{$sideAlias.UpPlural}}.Insert(bob.ToMods(setters...)).All(ctx, exec)
       {{- else -}}
@@ -256,7 +256,7 @@
 {{end}}
 
 {{if not $rel.IsToMany -}}
-  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependenciesPos $.Tables $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
+  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
     {{if $rel.InsertEarly -}}
       {{$to}}, err := {{$ftable.UpPlural}}.Insert(related).One(ctx, exec)
       if err != nil {
@@ -265,7 +265,7 @@
     {{end}}
 
     {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := getTable $.Tables $side.TableName}}
+      {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
 
       {{if eq $side.Position $rel.ForeignPosition -}}
@@ -281,9 +281,9 @@
         {{- else -}}
           _, err
         {{- end -}}
-        {{- if and $show (isJoinTable $sideTable $rel $side.Position) -}}:{{- end -}}
+        {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
         = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, 1
-        {{- if not (isJoinTable $sideTable $rel $side.Position) -}}
+        {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
           , {{$sideAlias.DownSingular}}{{$side.Position}}
         {{- end -}}
       {{- end}}
@@ -312,11 +312,11 @@
     return nil
   }
 
-  func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependenciesPos $.Tables $.Aliases $rel}} {{$to}} *{{$ftable.UpSingular}}) error {
+  func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} {{$to}} *{{$ftable.UpSingular}}) error {
     var err error
 
     {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := getTable $.Tables $side.TableName}}
+      {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
       {{$show := lt $index (len $valuedSides | add -1)}}
       {{if $show -}}
@@ -328,9 +328,9 @@
       {{- else -}}
         _, err
       {{- end -}}
-      {{- if and $show (isJoinTable $sideTable $rel $side.Position) -}}:{{- end -}}
+      {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
       = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, 1
-      {{- if not (isJoinTable $sideTable $rel $side.Position) -}}
+      {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
         , {{$sideAlias.DownSingular}}{{$side.Position}}
       {{- end -}}
       {{- range $map := $side.UniqueExternals -}}
@@ -359,7 +359,7 @@
   }
 
 {{else -}}
-  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependenciesPos $.Tables $.Aliases $rel}} related ...*{{$ftable.UpSingular}}Setter) error {
+  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} related ...*{{$ftable.UpSingular}}Setter) error {
     if len(related) == 0 {
       return nil
     }
@@ -375,7 +375,7 @@
     {{end}}
 
     {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := getTable $.Tables $side.TableName}}
+      {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
       {{if eq $side.Position $rel.ForeignPosition -}}
         {{$to}}, err := insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, related
@@ -390,9 +390,9 @@
         {{- else -}}
           _, err
         {{- end -}}
-        {{- if and $show (isJoinTable $sideTable $rel $side.Position) -}}:{{- end -}}
+        {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
         = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, len(related)
-        {{- if not (isJoinTable $sideTable $rel $side.Position) -}}
+        {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
           , {{if $rel.NeedsMany $side.Position}}{{$sideAlias.DownPlural}}{{else}}{{$sideAlias.DownSingular}}{{end}}{{$side.Position}}
         {{- end -}}
       {{- end}}
@@ -423,7 +423,7 @@
   }
 
 
-  func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{relDependenciesPos $.Tables $.Aliases $rel}} related ...*{{$ftable.UpSingular}}) error {
+  func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} related ...*{{$ftable.UpSingular}}) error {
     if len(related) == 0 {
       return nil
     }
@@ -432,7 +432,7 @@
     {{$to}} := {{$ftable.UpSingular}}Slice(related)
 
     {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := getTable $.Tables $side.TableName}}
+      {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
       {{$show := lt $index (len $valuedSides | add -1)}}
       {{if $show -}}
@@ -444,9 +444,9 @@
       {{- else -}}
         _, err
       {{- end -}}
-      {{- if and $show (isJoinTable $sideTable $rel $side.Position) -}}:{{- end -}}
+      {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
       = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, len(related)
-      {{- if not (isJoinTable $sideTable $rel $side.Position) -}}
+      {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
         , {{if $rel.NeedsMany $side.Position}}{{$sideAlias.DownPlural}}{{else}}{{$sideAlias.DownSingular}}{{end}}{{$side.Position}}
       {{- end -}}
       {{- range $map := $side.UniqueExternals -}}

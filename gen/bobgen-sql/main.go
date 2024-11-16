@@ -45,7 +45,7 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	config, driverConfig, err := helpers.GetConfigFromFile[driver.Config](c.String("config"), "sql")
+	config, driverConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "sql")
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func run(c *cli.Context) error {
 		&helpers.Templates{Models: modelTemplates},
 	)
 
-	state := &gen.State{
+	state := &gen.State[any]{
 		Config:  config,
 		Outputs: outputs,
 	}

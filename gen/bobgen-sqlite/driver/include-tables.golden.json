@@ -34,7 +34,8 @@
 					"name": "pk_main_foo_bar",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -74,7 +75,8 @@
 					"name": "pk_main_foo_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -114,7 +116,8 @@
 					"name": "pk_one_foo_bar",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -154,7 +157,8 @@
 					"name": "pk_one_foo_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []

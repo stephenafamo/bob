@@ -34,7 +34,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -42,7 +43,8 @@
 					"name": "foo_baz_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null

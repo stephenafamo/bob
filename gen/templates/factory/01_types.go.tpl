@@ -66,7 +66,7 @@ type {{$tAlias.DownSingular}}R{{$relAlias}}R struct{
         number int
     {{- end}}
     o *{{$ftable.UpSingular}}Template
-    {{relDependenciesTyp $.Tables $.Aliases .}}
+    {{$.Tables.RelDependenciesTyp $.Aliases .}}
 }
 {{end}}
 

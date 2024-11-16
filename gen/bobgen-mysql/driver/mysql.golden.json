@@ -34,7 +34,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -42,7 +43,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -82,7 +84,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -90,7 +93,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -130,7 +134,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -138,7 +143,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -178,7 +184,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -186,7 +193,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -226,7 +234,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -234,7 +243,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -330,14 +340,16 @@
 						"one",
 						"two"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "PRIMARY",
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "something",
@@ -345,14 +357,16 @@
 						"something",
 						"another"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sponsor_id",
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -360,7 +374,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -369,6 +384,7 @@
 							"one",
 							"two"
 						],
+						"extra": null,
 						"foreign_table": "type_monsters",
 						"foreign_columns": [
 							"int_one",
@@ -382,13 +398,15 @@
 						"columns": [
 							"something",
 							"another"
-						]
+						],
+						"extra": null
 					},
 					{
 						"name": "sponsor_id",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}
@@ -416,7 +434,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -424,7 +443,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -453,7 +473,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -461,7 +482,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -512,7 +534,8 @@
 					"columns": null,
 					"expressions": [
 						"(`col1` + `col2`)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx2",
@@ -521,7 +544,8 @@
 					],
 					"expressions": [
 						"(`col1` + `col2`)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx3",
@@ -530,14 +554,16 @@
 					],
 					"expressions": [
 						"(`col2` + `col3`)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx4",
 					"columns": [
 						"col3"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx5",
@@ -545,14 +571,16 @@
 						"col1",
 						"col2"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx6",
 					"columns": null,
 					"expressions": [
 						"pow(`col3`,2)"
-					]
+					],
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -1927,14 +1955,16 @@
 						"int_one",
 						"int_two"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "PRIMARY",
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -1942,7 +1972,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": [
@@ -1951,7 +1982,8 @@
 						"columns": [
 							"int_one",
 							"int_two"
-						]
+						],
+						"extra": null
 					}
 				]
 			}
@@ -2025,7 +2057,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2033,7 +2066,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -2074,14 +2108,16 @@
 						"video_id",
 						"tag_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "tag_id",
 					"columns": [
 						"tag_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2090,7 +2126,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -2098,6 +2135,7 @@
 						"columns": [
 							"video_id"
 						],
+						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
@@ -2108,6 +2146,7 @@
 						"columns": [
 							"tag_id"
 						],
+						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
@@ -2162,21 +2201,24 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sponsor_id",
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "user_id",
 					"columns": [
 						"user_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2184,7 +2226,8 @@
 					"name": "PRIMARY",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -2192,6 +2235,7 @@
 						"columns": [
 							"user_id"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -2202,6 +2246,7 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
@@ -2213,7 +2258,8 @@
 						"name": "sponsor_id",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}

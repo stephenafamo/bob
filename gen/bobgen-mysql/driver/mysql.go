@@ -21,8 +21,8 @@ import (
 var rgxEnum = regexp.MustCompile(`^enum\([^\)]+\)$`)
 
 type (
-	Interface = drivers.Interface[any]
-	DBInfo    = drivers.DBInfo[any]
+	Interface = drivers.Interface[any, any, any]
+	DBInfo    = drivers.DBInfo[any, any, any]
 )
 
 type Config struct {
@@ -69,10 +69,6 @@ func (d *driver) Dialect() string {
 	return "mysql"
 }
 
-func (d *driver) Capabilities() drivers.Capabilities {
-	return drivers.Capabilities{}
-}
-
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
@@ -100,7 +96,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	dbinfo = &DBInfo{DriverName: "github.com/go-sql-driver/mysql"}
 
-	dbinfo.Tables, err = drivers.BuildDBInfo(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
+	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
 	if err != nil {
 		return nil, err
 	}
@@ -326,11 +322,11 @@ func (d *driver) Types() drivers.Types {
 	return d.types
 }
 
-func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
-	ret := drivers.DBConstraints{
-		PKs:     map[string]*drivers.Constraint{},
-		FKs:     map[string][]drivers.ForeignKey{},
-		Uniques: map[string][]drivers.Constraint{},
+func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints[any], error) {
+	ret := drivers.DBConstraints[any]{
+		PKs:     map[string]*drivers.Constraint[any]{},
+		FKs:     map[string][]drivers.ForeignKey[any]{},
+		Uniques: map[string][]drivers.Constraint[any]{},
 	}
 
 	query := `SELECT
@@ -364,7 +360,7 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 	// Extra for the loop
 	constraints = append(constraints, constraint{})
 
-	var current drivers.Constraint
+	var current drivers.Constraint[any]
 	var table, foreignTable, currentTyp string
 	var foreignCols []string
 	for i, c := range constraints {
@@ -372,23 +368,25 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 			switch currentTyp {
 			case "PRIMARY KEY":
 				// Create a new constraint because it is a pointer
-				ret.PKs[table] = &drivers.Constraint{
+				ret.PKs[table] = &drivers.Constraint[any]{
 					Name:    current.Name,
 					Columns: current.Columns,
 				}
 			case "UNIQUE":
 				ret.Uniques[table] = append(ret.Uniques[table], current)
 			case "FOREIGN KEY":
-				ret.FKs[table] = append(ret.FKs[table], drivers.ForeignKey{
-					Name:           current.Name,
-					Columns:        current.Columns,
+				ret.FKs[table] = append(ret.FKs[table], drivers.ForeignKey[any]{
+					Constraint: drivers.Constraint[any]{
+						Name:    current.Name,
+						Columns: current.Columns,
+					},
 					ForeignTable:   foreignTable,
 					ForeignColumns: foreignCols,
 				})
 			}
 
 			// reset things
-			current = drivers.Constraint{}
+			current = drivers.Constraint[any]{}
 			table, foreignTable, currentTyp, foreignCols = "", "", "", nil //nolint:ineffassign
 		}
 
@@ -406,8 +404,8 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 	return ret, nil
 }
 
-func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
-	ret := drivers.DBIndexes{}
+func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
+	ret := drivers.DBIndexes[any]{}
 
 	query := `SELECT
 	s.table_name AS table_name,
@@ -430,12 +428,12 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 	}
 	indexColumns = append(indexColumns, indexColumn{})
 
-	var current drivers.Index
+	var current drivers.Index[any]
 	var table string
 	for i, c := range indexColumns {
 		if i != 0 && (c.TableName != table || c.IndexName != current.Name) {
 			ret[table] = append(ret[table], current)
-			current = drivers.Index{}
+			current = drivers.Index[any]{}
 			table = "" //nolint:ineffassign
 		}
 		table = c.TableName

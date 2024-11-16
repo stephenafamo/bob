@@ -67,7 +67,8 @@
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sqlite_autoindex_autoinckeywordtest_2",
@@ -75,7 +76,8 @@
 						"something",
 						"another"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -83,7 +85,8 @@
 					"name": "pk_main_autoinckeywordtest",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -92,6 +95,7 @@
 							"user_id",
 							"sponsor_id"
 						],
+						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"user_id",
@@ -105,13 +109,15 @@
 						"columns": [
 							"something",
 							"another"
-						]
+						],
+						"extra": null
 					},
 					{
 						"name": "sqlite_autoindex_autoinckeywordtest_1",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}
@@ -139,7 +145,8 @@
 					"name": "pk_main_autoinctest",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -147,6 +154,7 @@
 						"columns": [
 							"id"
 						],
+						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
@@ -190,7 +198,8 @@
 					"name": "pk_main_bar_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -230,7 +239,8 @@
 					"name": "pk_main_bar_qux",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -270,7 +280,8 @@
 					"name": "pk_main_foo_bar",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -310,7 +321,8 @@
 					"name": "pk_main_foo_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -350,7 +362,8 @@
 					"name": "pk_main_foo_qux",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -423,7 +436,8 @@
 					"name": "pk_main_has_generated_columns",
 					"columns": [
 						"a"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -496,7 +510,8 @@
 					"name": "pk_one_as_generated_columns",
 					"columns": [
 						"a"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -536,7 +551,8 @@
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sqlite_autoindex_autoinckeywordtest_2",
@@ -544,7 +560,8 @@
 						"something",
 						"another"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -552,7 +569,8 @@
 					"name": "pk_one_autoinckeywordtest",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -581,7 +599,8 @@
 					"name": "pk_one_autoinctest",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -621,7 +640,8 @@
 					"name": "pk_one_bar_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -661,7 +681,8 @@
 					"name": "pk_one_bar_qux",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -701,7 +722,8 @@
 					"name": "pk_one_foo_bar",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -741,7 +763,8 @@
 					"name": "pk_one_foo_baz",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -781,7 +804,8 @@
 					"name": "pk_one_foo_qux",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -810,7 +834,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -818,7 +843,8 @@
 					"name": "pk_one_sponsors",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -847,7 +873,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -855,7 +882,8 @@
 					"name": "pk_one_tags",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -930,7 +958,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -938,7 +967,8 @@
 					"name": "pk_one_users",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -979,7 +1009,8 @@
 						"video_id",
 						"tag_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -988,7 +1019,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -996,6 +1028,7 @@
 						"columns": [
 							"tag_id"
 						],
+						"extra": null,
 						"foreign_table": "one.tags",
 						"foreign_columns": [
 							"id"
@@ -1006,6 +1039,7 @@
 						"columns": [
 							"video_id"
 						],
+						"extra": null,
 						"foreign_table": "one.videos",
 						"foreign_columns": [
 							"id"
@@ -1060,14 +1094,16 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -1075,7 +1111,8 @@
 					"name": "pk_one_videos",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -1083,6 +1120,7 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"extra": null,
 						"foreign_table": "one.sponsors",
 						"foreign_columns": [
 							"id"
@@ -1093,6 +1131,7 @@
 						"columns": [
 							"user_id"
 						],
+						"extra": null,
 						"foreign_table": "one.users",
 						"foreign_columns": [
 							"id"
@@ -1104,7 +1143,8 @@
 						"name": "sqlite_autoindex_videos_2",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}
@@ -1132,7 +1172,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -1140,7 +1181,8 @@
 					"name": "pk_main_sponsors",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -1169,7 +1211,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -1177,7 +1220,8 @@
 					"name": "pk_main_tags",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -1228,7 +1272,8 @@
 					"columns": null,
 					"expressions": [
 						"(col1 + col2)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx2",
@@ -1237,7 +1282,8 @@
 					],
 					"expressions": [
 						"(col1 + col2)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx3",
@@ -1246,14 +1292,16 @@
 					],
 					"expressions": [
 						"(col2 + col3)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx4",
 					"columns": [
 						"col3"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx5",
@@ -1261,14 +1309,16 @@
 						"col1",
 						"col2"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx6",
 					"columns": null,
 					"expressions": [
 						"POW(col3, 2)"
-					]
+					],
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2532,7 +2582,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2540,7 +2591,8 @@
 					"name": "pk_main_type_monsters",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -2615,7 +2667,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2623,7 +2676,8 @@
 					"name": "pk_main_users",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [],
 				"uniques": []
@@ -2664,7 +2718,8 @@
 						"video_id",
 						"tag_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2673,7 +2728,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -2681,6 +2737,7 @@
 						"columns": [
 							"tag_id"
 						],
+						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
@@ -2691,6 +2748,7 @@
 						"columns": [
 							"video_id"
 						],
+						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
@@ -2745,14 +2803,16 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2760,7 +2820,8 @@
 					"name": "pk_main_videos",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -2768,6 +2829,7 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
@@ -2778,6 +2840,7 @@
 						"columns": [
 							"user_id"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -2789,7 +2852,8 @@
 						"name": "sqlite_autoindex_videos_2",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}

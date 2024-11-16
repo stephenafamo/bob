@@ -47,7 +47,7 @@ func {{$tAlias.DownPlural}}Join{{$relAlias}}[Q dialect.Joinable](from {{$tAlias.
         {{- $fromCols := printf "%sColumns" $from.UpSingular -}}
         {{- $to := $.Aliases.Table $side.To -}}
         {{- $toCols := printf "%sColumns" $to.UpSingular -}}
-        {{- $toTable := getTable $.Tables $side.To -}}
+        {{- $toTable := $.Tables.Get $side.To -}}
         {
           {{if ne $index 0 -}}
           from := {{$fromCols}}.AliasedAs({{$fromCols}}.Alias() + random)
@@ -92,7 +92,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
-		{{- $fromTable := getTable $.Tables $side.From -}}
+		{{- $fromTable := $.Tables.Get $side.From -}}
 		{{- if gt $index 0 -}}
 		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
 		{{end -}}
@@ -152,7 +152,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
 		{{- $to := $.Aliases.Table $side.To -}}
-		{{- $fromTable := getTable $.Tables $side.From -}}
+		{{- $fromTable := $.Tables.Get $side.From -}}
 		{{- if gt $index 0 -}}
 		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
 			{{range $i, $local := $side.FromColumns -}}

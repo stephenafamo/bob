@@ -20,8 +20,8 @@ import (
 var rgxValidColumnName = regexp.MustCompile(`(?i)^[a-z_][a-z0-9_]*$`)
 
 type (
-	Interface = drivers.Interface[any]
-	DBInfo    = drivers.DBInfo[any]
+	Interface = drivers.Interface[any, any, any]
+	DBInfo    = drivers.DBInfo[any, any, any]
 )
 
 type Enum struct {
@@ -120,10 +120,6 @@ func (d *driver) Types() drivers.Types {
 	return d.types
 }
 
-func (d *driver) Capabilities() drivers.Capabilities {
-	return drivers.Capabilities{}
-}
-
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
@@ -146,7 +142,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("unable to load enums: %w", err)
 	}
 
-	dbinfo.Tables, err = drivers.BuildDBInfo(ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
+	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
 	if err != nil {
 		return nil, err
 	}
@@ -448,8 +444,8 @@ func (d *driver) loadEnums(ctx context.Context) error {
 	return nil
 }
 
-func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
-	ret := drivers.DBIndexes{}
+func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
+	ret := drivers.DBIndexes[any]{}
 
 	query := `SELECT
 	n.nspname AS schema_name,
@@ -482,7 +478,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes, error) {
 		if r.SchemaName != "" && r.SchemaName != d.config.SharedSchema {
 			key = r.SchemaName + "." + r.TableName
 		}
-		var index drivers.Index
+		var index drivers.Index[any]
 		index.Name = r.IndexName
 		for _, colName := range r.IndexCols {
 			if rgxValidColumnName.MatchString(colName) {

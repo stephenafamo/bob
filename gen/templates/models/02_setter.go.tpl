@@ -20,9 +20,9 @@ type {{$tAlias.UpSingular}}Setter struct {
 			{{- $colTyp = printf "omit.Val[%s]" $colTyp -}}
 		{{- end -}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-		{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateIgnoreTags $.Tags | trim}}`
+		{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
 		{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
-			{{$colAlias}} {{$colTyp}} `db:"{{dbTag $table $column}}" {{generateTags $.Tags $tagName | trim}}`
+			{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
 		{{- end -}}		
 	{{end -}}
 }

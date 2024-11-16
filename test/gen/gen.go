@@ -26,15 +26,15 @@ const module = "github.com/stephenafamo/bob/orm/bob-gen-test"
 
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
-type driverWrapper[T any] struct {
-	drivers.Interface[T]
-	info            *drivers.DBInfo[T]
+type driverWrapper[T, C, I any] struct {
+	drivers.Interface[T, C, I]
+	info            *drivers.DBInfo[T, C, I]
 	overwriteGolden bool
 	goldenFile      string
 	once            sync.Once
 }
 
-func (d *driverWrapper[T]) Assemble(context.Context) (*drivers.DBInfo[T], error) {
+func (d *driverWrapper[T, C, I]) Assemble(context.Context) (*drivers.DBInfo[T, C, I], error) {
 	var err error
 
 	d.once.Do(func() {
@@ -48,7 +48,7 @@ func (d *driverWrapper[T]) Assemble(context.Context) (*drivers.DBInfo[T], error)
 	return d.info, nil
 }
 
-func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
+func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 	t.Helper()
 
 	_, err := d.Assemble(context.Background())
@@ -85,18 +85,18 @@ func (d *driverWrapper[T]) TestAssemble(t *testing.T) {
 	}
 }
 
-type DriverTestConfig[T any] struct {
+type DriverTestConfig[T, C, I any] struct {
 	Root            string
 	Templates       *helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
-	GetDriver       func() drivers.Interface[T]
+	GetDriver       func() drivers.Interface[T, C, I]
 }
 
-func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
+func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 	t.Helper()
 
-	var aliases gen.Aliases
+	var aliases drivers.Aliases
 
 	defaultFolder := filepath.Join(config.Root, "default")
 	err := os.Mkdir(defaultFolder, os.ModePerm)
@@ -104,7 +104,7 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.Fatalf("unable to create default folder: %s", err)
 	}
 
-	d := &driverWrapper[T]{
+	d := &driverWrapper[T, C, I]{
 		Interface:       config.GetDriver(),
 		overwriteGolden: config.OverwriteGolden,
 		goldenFile:      config.GoldenFile,
@@ -131,10 +131,10 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 		t.Fatalf("go env GOMOD cmd execution failed: %s", "not in a go module")
 	}
 
-	aliaser := &aliasPlugin[T]{}
+	aliaser := &aliasPlugin[T, C, I]{}
 
 	t.Run("generate", func(t *testing.T) {
-		testDriver(t, defaultFolder, config.Templates, gen.Config{}, d, goModFilePath, aliaser)
+		testDriver(t, defaultFolder, config.Templates, gen.Config[C]{}, d, goModFilePath, aliaser)
 	})
 
 	aliasesFolder := filepath.Join(config.Root, "aliases")
@@ -144,11 +144,11 @@ func TestDriver[T any](t *testing.T, config DriverTestConfig[T]) {
 	}
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		testDriver(t, aliasesFolder, config.Templates, gen.Config{Aliases: aliases}, d, goModFilePath, aliaser)
+		testDriver(t, aliasesFolder, config.Templates, gen.Config[C]{Aliases: aliases}, d, goModFilePath, aliaser)
 	})
 }
 
-func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config, d drivers.Interface[T], modPath string, plugins ...gen.Plugin) {
+func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, plugins ...gen.Plugin) {
 	t.Helper()
 	buf := &bytes.Buffer{}
 
@@ -177,7 +177,7 @@ func testDriver[T any](t *testing.T, dst string, tpls *helpers.Templates, config
 
 	if err := gen.Run(
 		context.Background(),
-		&gen.State{Config: config, Outputs: outputs},
+		&gen.State[C]{Config: config, Outputs: outputs},
 		d, plugins...,
 	); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
@@ -282,23 +282,23 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 	}
 }
 
-type aliasPlugin[T any] struct {
-	tables []drivers.Table
+type aliasPlugin[T, C, I any] struct {
+	tables drivers.Tables[C, I]
 	rels   gen.Relationships
 }
 
-func (a *aliasPlugin[T]) Name() string {
+func (a *aliasPlugin[T, C, I]) Name() string {
 	return "aliaser"
 }
 
-func (a *aliasPlugin[T]) PlugState(s *gen.State) error {
+func (a *aliasPlugin[T, C, I]) PlugState(s *gen.State[C]) error {
 	if a.rels == nil || len(a.tables) == 0 {
 		return nil
 	}
 
-	aliases := make(map[string]gen.TableAlias, len(a.tables))
+	aliases := make(map[string]drivers.TableAlias, len(a.tables))
 	for i, table := range a.tables {
-		tableAlias := gen.TableAlias{
+		tableAlias := drivers.TableAlias{
 			UpPlural:     fmt.Sprintf("Alias%dThings", i),
 			UpSingular:   fmt.Sprintf("Alias%dThing", i),
 			DownPlural:   fmt.Sprintf("alias%dThings", i),
@@ -323,7 +323,7 @@ func (a *aliasPlugin[T]) PlugState(s *gen.State) error {
 	return nil
 }
 
-func (a *aliasPlugin[T]) PlugTemplateData(data *gen.TemplateData[any]) error {
+func (a *aliasPlugin[T, C, I]) PlugTemplateData(data *gen.TemplateData[T, C, I]) error {
 	a.tables = data.Tables
 	a.rels = data.Relationships
 	return nil

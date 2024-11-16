@@ -23,7 +23,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -31,7 +32,8 @@
 					"name": "bar_baz_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -60,7 +62,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -68,7 +71,8 @@
 					"name": "bar_qux_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -97,7 +101,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -105,7 +110,8 @@
 					"name": "foo_qux_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -134,7 +140,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -142,7 +149,8 @@
 					"name": "sponsors_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -171,7 +179,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -179,7 +188,8 @@
 					"name": "tags_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -230,7 +240,8 @@
 					"columns": null,
 					"expressions": [
 						"(col1 + col2)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx2",
@@ -239,7 +250,8 @@
 					],
 					"expressions": [
 						"(col1 + col2)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx3",
@@ -248,14 +260,16 @@
 					],
 					"expressions": [
 						"(col2 + col3)"
-					]
+					],
+					"extra": null
 				},
 				{
 					"name": "idx4",
 					"columns": [
 						"col3"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx5",
@@ -263,14 +277,16 @@
 						"col1",
 						"col2"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "idx6",
 					"columns": null,
 					"expressions": [
 						"pow(col3::double precision, 2::double precision)"
-					]
+					],
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2062,7 +2078,8 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -2070,7 +2087,8 @@
 					"name": "type_monsters_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": null,
 				"uniques": null
@@ -3996,21 +4014,24 @@
 					"columns": [
 						"party_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "users_pkey",
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "users_primary_email_key",
 					"columns": [
 						"primary_email"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -4018,7 +4039,8 @@
 					"name": "users_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -4026,6 +4048,7 @@
 						"columns": [
 							"parent_id"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -4036,6 +4059,7 @@
 						"columns": [
 							"party_id"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -4046,6 +4070,7 @@
 						"columns": [
 							"referrer"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -4057,13 +4082,15 @@
 						"name": "users_party_id_key",
 						"columns": [
 							"party_id"
-						]
+						],
+						"extra": null
 					},
 					{
 						"name": "users_primary_email_key",
 						"columns": [
 							"primary_email"
-						]
+						],
+						"extra": null
 					}
 				]
 			}
@@ -4103,7 +4130,8 @@
 						"video_id",
 						"tag_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -4112,7 +4140,8 @@
 					"columns": [
 						"video_id",
 						"tag_id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -4120,6 +4149,7 @@
 						"columns": [
 							"tag_id"
 						],
+						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
@@ -4130,6 +4160,7 @@
 						"columns": [
 							"video_id"
 						],
+						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
@@ -4184,14 +4215,16 @@
 					"columns": [
 						"id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				},
 				{
 					"name": "videos_sponsor_id_key",
 					"columns": [
 						"sponsor_id"
 					],
-					"expressions": null
+					"expressions": null,
+					"extra": null
 				}
 			],
 			"constraints": {
@@ -4199,7 +4232,8 @@
 					"name": "videos_pkey",
 					"columns": [
 						"id"
-					]
+					],
+					"extra": null
 				},
 				"foreign": [
 					{
@@ -4207,6 +4241,7 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
@@ -4217,6 +4252,7 @@
 						"columns": [
 							"user_id"
 						],
+						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
@@ -4228,7 +4264,8 @@
 						"name": "videos_sponsor_id_key",
 						"columns": [
 							"sponsor_id"
-						]
+						],
+						"extra": null
 					}
 				]
 			}

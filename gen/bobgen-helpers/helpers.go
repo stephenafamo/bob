@@ -71,9 +71,9 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 	return outputs
 }
 
-func GetConfigFromFile[DriverConfig any](configPath, driverConfigKey string) (gen.Config, DriverConfig, error) {
+func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, error) {
 	var provider koanf.Provider
-	var config gen.Config
+	var config gen.Config[ConstraintExtra]
 	var driverConfig DriverConfig
 
 	_, err := os.Stat(configPath)
@@ -85,11 +85,11 @@ func GetConfigFromFile[DriverConfig any](configPath, driverConfigKey string) (ge
 		return config, driverConfig, err
 	}
 
-	return GetConfigFromProvider[DriverConfig](provider, driverConfigKey)
+	return GetConfigFromProvider[ConstraintExtra, DriverConfig](provider, driverConfigKey)
 }
 
-func GetConfigFromProvider[DriverConfig any](provider koanf.Provider, driverConfigKey string) (gen.Config, DriverConfig, error) {
-	var config gen.Config
+func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Provider, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, error) {
+	var config gen.Config[ConstraintExtra]
 	var driverConfig DriverConfig
 
 	k := koanf.New(".")
