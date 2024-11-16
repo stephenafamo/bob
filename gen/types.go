@@ -20,7 +20,7 @@ func isPrimitiveType(name string) bool {
 
 // processTypeReplacements checks the config for type replacements
 // and performs them.
-func processTypeReplacements(types map[string]drivers.Type, replacements []Replace, tables []drivers.Table) {
+func processTypeReplacements[C, I any](types map[string]drivers.Type, replacements []Replace, tables []drivers.Table[C, I]) {
 	for _, r := range replacements {
 		didMatch := false
 		for i := range tables {
@@ -106,7 +106,7 @@ func matchColumn(c, m drivers.Column) bool {
 
 // shouldReplaceInTable checks if tables were specified in types.match in the config.
 // If tables were set, it checks if the given table is among the specified tables.
-func shouldReplaceInTable(t drivers.Table, r Replace) bool {
+func shouldReplaceInTable[C, I any](t drivers.Table[C, I], r Replace) bool {
 	if len(r.Tables) == 0 {
 		return true
 	}

@@ -7,7 +7,7 @@
 func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingular}}) {
     {{- range $index, $rel := $.Relationships.Get $table.Key -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
-        {{- $invRel := $.Relationships.GetInverse $.Tables . -}}
+        {{- $invRel := $.Relationships.GetInverse . -}}
         {{- $ftable := $.Aliases.Table $rel.Foreign -}}
         {{- $invAlias := "" -}}
     {{- if and (not $.NoBackReferencing) $invRel.Name -}}
@@ -24,12 +24,12 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                         rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
                     {{- end}}
                 {{- end}}
-                {{setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                {{$.Tables.SetFactoryDeps $.Importer $.Aliases . false}}
             {{- else -}}
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.toModels(r.number)
-                  {{- $setter := setFactoryDeps $.Importer $.Tables $.Aliases . false}}
+                  {{- $setter := $.Tables.SetFactoryDeps $.Importer $.Aliases . false}}
                   {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
                   for _, rel := range related {
                     {{$setter}}

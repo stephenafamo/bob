@@ -17,8 +17,8 @@ import (
 )
 
 type (
-	Interface = drivers.Interface[any]
-	DBInfo    = drivers.DBInfo[any]
+	Interface = drivers.Interface[any, any, any]
+	DBInfo    = drivers.DBInfo[any, any, any]
 )
 
 func New(config Config) Interface {
@@ -71,10 +71,6 @@ func (d *driver) Destination() string {
 
 func (d *driver) PackageName() string {
 	return d.config.Pkgname
-}
-
-func (d *driver) Capabilities() drivers.Capabilities {
-	return drivers.Capabilities{}
 }
 
 func (d *driver) Types() drivers.Types {
@@ -178,7 +174,7 @@ func (d *driver) buildQuery(schema string) (string, []any) {
 	return query, args
 }
 
-func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
+func (d *driver) tables(ctx context.Context) (drivers.Tables[any, any], error) {
 	mainQuery, mainArgs := d.buildQuery("main")
 	mainTables, err := stdscan.All(ctx, d.conn, scan.SingleColumnMapper[string], mainQuery, mainArgs...)
 	if err != nil {
@@ -186,7 +182,7 @@ func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
 	}
 
 	colFilter := drivers.ParseColumnFilter(mainTables, d.config.Only, d.config.Except)
-	allTables := make([]drivers.Table, len(mainTables))
+	allTables := make(drivers.Tables[any, any], len(mainTables))
 	for i, name := range mainTables {
 		allTables[i], err = d.getTable(ctx, "main", name, colFilter)
 		if err != nil {
@@ -213,10 +209,10 @@ func (d *driver) tables(ctx context.Context) ([]drivers.Table, error) {
 	return allTables, nil
 }
 
-func (d driver) getTable(ctx context.Context, schema, name string, colFilter drivers.ColumnFilter) (drivers.Table, error) {
+func (d driver) getTable(ctx context.Context, schema, name string, colFilter drivers.ColumnFilter) (drivers.Table[any, any], error) {
 	var err error
 
-	table := drivers.Table{
+	table := drivers.Table[any, any]{
 		Key:    d.key(schema, name),
 		Schema: d.schema(schema),
 		Name:   name,
@@ -344,7 +340,7 @@ func (s driver) tableInfo(ctx context.Context, schema, tableName string) ([]info
 }
 
 // primaryKey looks up the primary key for a table.
-func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.PrimaryKey {
+func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.Constraint[any] {
 	var cols []string
 	for _, c := range tinfo {
 		if c.Pk > 0 {
@@ -356,7 +352,7 @@ func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.Prim
 		return nil
 	}
 
-	return &drivers.PrimaryKey{
+	return &drivers.Constraint[any]{
 		Name:    fmt.Sprintf("pk_%s_%s", schema, tableName),
 		Columns: cols,
 	}
@@ -404,14 +400,14 @@ func (d driver) skipKey(table, column string) bool {
 }
 
 // foreignKeys retrieves the foreign keys for a given table name.
-func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]drivers.ForeignKey, error) {
+func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]drivers.ForeignKey[any], error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.foreign_key_list('%s')", schema, tableName))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	fkeyMap := make(map[int]drivers.ForeignKey)
+	fkeyMap := make(map[int]drivers.ForeignKey[any])
 	for rows.Next() {
 		var id, seq int
 		var ftable, col string
@@ -445,9 +441,11 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 			continue
 		}
 
-		fkeyMap[id] = drivers.ForeignKey{
-			Name:           fmt.Sprintf("fk_%s_%d", tableName, id),
-			Columns:        append(fkeyMap[id].Columns, col),
+		fkeyMap[id] = drivers.ForeignKey[any]{
+			Constraint: drivers.Constraint[any]{
+				Name:    fmt.Sprintf("fk_%s_%d", tableName, id),
+				Columns: append(fkeyMap[id].Columns, col),
+			},
 			ForeignTable:   d.key(schema, ftable),
 			ForeignColumns: append(fkeyMap[id].ForeignColumns, fcol),
 		}
@@ -457,7 +455,7 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 		return nil, err
 	}
 
-	fkeys := make([]drivers.ForeignKey, 0, len(fkeyMap))
+	fkeys := make([]drivers.ForeignKey[any], 0, len(fkeyMap))
 
 	for _, fkey := range fkeyMap {
 		fkeys = append(fkeys, fkey)
@@ -471,7 +469,7 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 }
 
 // uniques retrieves the unique keys for a given table name.
-func (d driver) uniques(ctx context.Context, schema, tableName string) ([]drivers.Constraint, error) {
+func (d driver) uniques(ctx context.Context, schema, tableName string) ([]drivers.Constraint[any], error) {
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.index_list('%s')", schema, tableName))
 	if err != nil {
 		return nil, err
@@ -501,7 +499,7 @@ func (d driver) uniques(ctx context.Context, schema, tableName string) ([]driver
 		return nil, err
 	}
 
-	uniques := make([]drivers.Constraint, len(indexes))
+	uniques := make([]drivers.Constraint[any], len(indexes))
 	for i, index := range indexes {
 		uniques[i], err = d.getUniqueIndex(ctx, schema, index)
 		if err != nil {
@@ -512,8 +510,8 @@ func (d driver) uniques(ctx context.Context, schema, tableName string) ([]driver
 	return uniques, nil
 }
 
-func (d driver) getUniqueIndex(ctx context.Context, schema, index string) (drivers.Constraint, error) {
-	unique := drivers.Constraint{Name: index}
+func (d driver) getUniqueIndex(ctx context.Context, schema, index string) (drivers.Constraint[any], error) {
+	unique := drivers.Constraint[any]{Name: index}
 
 	rows, err := d.conn.QueryContext(ctx, fmt.Sprintf("PRAGMA '%s'.index_info('%s')", schema, index))
 	if err != nil {
@@ -611,7 +609,7 @@ func (driver) translateColumnType(c drivers.Column) drivers.Column {
 	return c
 }
 
-func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drivers.Index, error) {
+func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drivers.Index[any], error) {
 	//nolint:gosec
 	query := fmt.Sprintf("SELECT name FROM '%s'.pragma_index_list('%s') ORDER BY name ASC", schema, tableName)
 	rows, err := d.conn.QueryContext(ctx, query)
@@ -634,7 +632,7 @@ func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drive
 		return nil, err
 	}
 
-	indexes := make([]drivers.Index, len(indexNames))
+	indexes := make([]drivers.Index[any], len(indexNames))
 	for i, indexName := range indexNames {
 		indexes[i], err = d.getIndexInformation(ctx, schema, tableName, indexName)
 		if err != nil {
@@ -645,8 +643,8 @@ func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drive
 	return indexes, nil
 }
 
-func (d *driver) getIndexInformation(ctx context.Context, schema, tableName, indexName string) (drivers.Index, error) {
-	var index drivers.Index
+func (d *driver) getIndexInformation(ctx context.Context, schema, tableName, indexName string) (drivers.Index[any], error) {
+	var index drivers.Index[any]
 	index.Name = indexName
 
 	//nolint:gosec

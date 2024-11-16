@@ -2,9 +2,9 @@ package gen
 
 import "github.com/stephenafamo/bob/gen/drivers"
 
-type Constraints map[string]drivers.Constraints
+type Constraints[C any] map[string]drivers.Constraints[C]
 
-func processConstraintConfig(tables []drivers.Table, extras Constraints) {
+func processConstraintConfig[C, I any](tables []drivers.Table[C, I], extras Constraints[C]) {
 	if len(tables) == 0 {
 		return
 	}
@@ -19,7 +19,7 @@ func processConstraintConfig(tables []drivers.Table, extras Constraints) {
 	}
 }
 
-func mergeConstraints(srcs, extras drivers.Constraints) drivers.Constraints {
+func mergeConstraints[C any](srcs, extras drivers.Constraints[C]) drivers.Constraints[C] {
 	if extras.Primary != nil {
 		srcs.Primary = extras.Primary
 	}

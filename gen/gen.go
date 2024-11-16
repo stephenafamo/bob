@@ -28,22 +28,22 @@ var (
 )
 
 // State holds the global data needed by most pieces to run
-type State struct {
-	Config              Config
+type State[ConstraintExtra any] struct {
+	Config              Config[ConstraintExtra]
 	Outputs             []*Output
 	CustomTemplateFuncs template.FuncMap
 }
 
 // Run executes the templates and outputs them to files based on the
 // state given.
-func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plugins ...Plugin) error {
+func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface[T, C, I], plugins ...Plugin) error {
 	if driver.Dialect() == "" {
 		return fmt.Errorf("no dialect specified")
 	}
 
 	// For StatePlugins
 	for _, plugin := range plugins {
-		if statePlug, ok := plugin.(StatePlugin); ok {
+		if statePlug, ok := plugin.(StatePlugin[C]); ok {
 			err := statePlug.PlugState(s)
 			if err != nil {
 				return fmt.Errorf("StatePlugin Error [%s]: %w", statePlug.Name(), err)
@@ -64,7 +64,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 
 	// For DBInfoPlugins
 	for _, plugin := range plugins {
-		if dbPlug, ok := plugin.(DBInfoPlugin[T]); ok {
+		if dbPlug, ok := plugin.(DBInfoPlugin[T, C, I]); ok {
 			err := dbPlug.PlugDBInfo(dbInfo)
 			if err != nil {
 				return fmt.Errorf("StatePlugin Error [%s]: %w", dbPlug.Name(), err)
@@ -110,14 +110,14 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	}
 
 	if s.Config.Aliases == nil {
-		s.Config.Aliases = make(map[string]TableAlias)
+		s.Config.Aliases = make(map[string]drivers.TableAlias)
 	}
 	initAliases(s.Config.Aliases, dbInfo.Tables, relationships)
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
 
-	data := &TemplateData[T]{
+	data := &TemplateData[T, C, I]{
 		Dialect:           driver.Dialect(),
 		Tables:            dbInfo.Tables,
 		Enums:             dbInfo.Enums,
@@ -145,7 +145,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 
 	// For TemplateDataPlugins
 	for _, plugin := range plugins {
-		if tdPlug, ok := plugin.(TemplateDataPlugin[T]); ok {
+		if tdPlug, ok := plugin.(TemplateDataPlugin[T, C, I]); ok {
 			err = tdPlug.PlugTemplateData(data)
 			if err != nil {
 				return fmt.Errorf("TemplateDataPlugin Error [%s]: %w", tdPlug.Name(), err)
@@ -156,7 +156,7 @@ func Run[T any](ctx context.Context, s *State, driver drivers.Interface[T], plug
 	return generate(s, data, version)
 }
 
-func generate[T any](s *State, data *TemplateData[T], goVersion string) error {
+func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion string) error {
 	knownKeys := make(map[string]struct{})
 	templateByteBuffer := &bytes.Buffer{}
 	templateHeaderByteBuffer := &bytes.Buffer{}
@@ -260,7 +260,7 @@ func initInflections(i Inflections) {
 
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
-func (s *State) initTags() error {
+func (s *State[C]) initTags() error {
 	s.Config.Tags = strmangle.RemoveDuplicates(s.Config.Tags)
 	for _, v := range s.Config.Tags {
 		if !rgxValidTag.MatchString(v) {

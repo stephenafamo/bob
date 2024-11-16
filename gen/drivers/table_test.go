@@ -7,11 +7,11 @@ import (
 func TestGetTable(t *testing.T) {
 	t.Parallel()
 
-	tables := []Table{
+	tables := Tables[any, any]{
 		{Key: "one"},
 	}
 
-	tbl := GetTable(tables, "one")
+	tbl := tables.Get("one")
 
 	if tbl.Key != "one" {
 		t.Error("didn't get column")
@@ -21,7 +21,7 @@ func TestGetTable(t *testing.T) {
 func TestGetTableMissing(t *testing.T) {
 	t.Parallel()
 
-	tables := []Table{
+	tables := Tables[any, any]{
 		{Key: "one"},
 	}
 
@@ -31,13 +31,13 @@ func TestGetTableMissing(t *testing.T) {
 		}
 	}()
 
-	GetTable(tables, "missing")
+	tables.Get("missing")
 }
 
 func TestGetColumn(t *testing.T) {
 	t.Parallel()
 
-	table := Table{
+	table := Table[any, any]{
 		Columns: []Column{
 			{Name: "one"},
 		},
@@ -53,7 +53,7 @@ func TestGetColumn(t *testing.T) {
 func TestGetColumnMissing(t *testing.T) {
 	t.Parallel()
 
-	table := Table{
+	table := Table[any, any]{
 		Columns: []Column{
 			{Name: "one"},
 		},
@@ -88,7 +88,7 @@ func TestCanSoftDelete(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		table := Table{
+		table := Table[any, any]{
 			Columns: test.Columns,
 		}
 

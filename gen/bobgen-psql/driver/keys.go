@@ -10,11 +10,11 @@ import (
 	"github.com/stephenafamo/scan/stdscan"
 )
 
-func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints, error) {
-	ret := drivers.DBConstraints{
-		PKs:     map[string]*drivers.Constraint{},
-		FKs:     map[string][]drivers.ForeignKey{},
-		Uniques: map[string][]drivers.Constraint{},
+func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints[any], error) {
+	ret := drivers.DBConstraints[any]{
+		PKs:     map[string]*drivers.Constraint[any]{},
+		FKs:     map[string][]drivers.ForeignKey[any]{},
+		Uniques: map[string][]drivers.Constraint[any]{},
 	}
 
 	query := `SELECT 
@@ -87,12 +87,12 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 
 		switch c.Type {
 		case "p":
-			ret.PKs[key] = &drivers.Constraint{
+			ret.PKs[key] = &drivers.Constraint[any]{
 				Name:    c.Name,
 				Columns: c.Columns,
 			}
 		case "u":
-			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint{
+			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint[any]{
 				Name:    c.Name,
 				Columns: c.Columns,
 			})
@@ -101,9 +101,11 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 			if c.ForeignSchema.Valid && c.ForeignSchema.String != d.config.SharedSchema {
 				fkey = c.ForeignSchema.String + "." + c.ForeignTable.String
 			}
-			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey{
-				Name:           key + "." + c.Name,
-				Columns:        c.Columns,
+			ret.FKs[key] = append(ret.FKs[key], drivers.ForeignKey[any]{
+				Constraint: drivers.Constraint[any]{
+					Name:    key + "." + c.Name,
+					Columns: c.Columns,
+				},
 				ForeignTable:   fkey,
 				ForeignColumns: c.ForeignColumns,
 			})

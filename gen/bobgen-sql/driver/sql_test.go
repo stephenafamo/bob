@@ -22,9 +22,9 @@ func TestPostgres(t *testing.T) {
 		fs: testfiles.PostgresSchema,
 	}
 
-	testgen.TestDriver(t, testgen.DriverTestConfig[any]{
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
 		Root: out,
-		GetDriver: func() drivers.Interface[any] {
+		GetDriver: func() drivers.Interface[any, any, any] {
 			d, err := getPsqlDriver(context.Background(), config)
 			if err != nil {
 				t.Fatalf("getting psql driver: %s", err)
@@ -46,9 +46,9 @@ func TestSQLite(t *testing.T) {
 		Schemas: []string{"one"},
 	}
 
-	testgen.TestDriver(t, testgen.DriverTestConfig[any]{
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
 		Root: out,
-		GetDriver: func() drivers.Interface[any] {
+		GetDriver: func() drivers.Interface[any, any, any] {
 			d, err := getSQLiteDriver(context.Background(), config)
 			if err != nil {
 				t.Fatalf("getting sqlite driver: %s", err)

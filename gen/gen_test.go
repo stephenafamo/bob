@@ -7,7 +7,7 @@ import (
 )
 
 func TestProcessTypeReplacements(t *testing.T) {
-	tables := []drivers.Table{
+	tables := drivers.Tables[any, any]{
 		{
 			Columns: []drivers.Column{
 				{

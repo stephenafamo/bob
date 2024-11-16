@@ -175,9 +175,9 @@ func TestDriver(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			testgen.TestDriver(t, testgen.DriverTestConfig[any]{
+			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
 				Root: out,
-				GetDriver: func() drivers.Interface[any] {
+				GetDriver: func() drivers.Interface[any, any, any] {
 					return New(tt.config)
 				},
 				GoldenFile:      tt.goldenJson,

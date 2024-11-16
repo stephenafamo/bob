@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -13,7 +14,7 @@ const selfJoinSuffix = "__self_join_reverse"
 type Relationships map[string][]orm.Relationship
 
 // Set parameters of the relationship (unique, nullables, e.t.c.)
-func (r Relationships) init(tables []drivers.Table) (err error) {
+func initRelationships[C, I any](r Relationships, tables drivers.Tables[C, I]) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -23,15 +24,15 @@ func (r Relationships) init(tables []drivers.Table) (err error) {
 	for tName, rels := range r {
 		for i, rel := range rels {
 			for j, side := range rel.Sides {
-				from := drivers.GetTable(tables, side.From)
-				to := drivers.GetTable(tables, side.To)
+				from := tables.Get(side.From)
+				to := tables.Get(side.To)
 
 				// Set the uniqueness
-				r[tName][i].Sides[j].FromUnique = hasExactUnique(
-					from, side.FromColumns...,
+				r[tName][i].Sides[j].FromUnique = from.HasExactUnique(
+					side.FromColumns...,
 				)
-				r[tName][i].Sides[j].ToUnique = hasExactUnique(
-					to, side.ToColumns...,
+				r[tName][i].Sides[j].ToUnique = to.HasExactUnique(
+					side.ToColumns...,
 				)
 
 				if side.Modify == "" {
@@ -64,7 +65,7 @@ func (r Relationships) Get(table string) []orm.Relationship {
 }
 
 // GetInverse returns the Relationship of the other side
-func (rs Relationships) GetInverse(tables []drivers.Table, r orm.Relationship) orm.Relationship {
+func (rs Relationships) GetInverse(r orm.Relationship) orm.Relationship {
 	frels, ok := rs[r.Foreign()]
 	if !ok {
 		return orm.Relationship{}
@@ -88,16 +89,16 @@ func (rs Relationships) GetInverse(tables []drivers.Table, r orm.Relationship) o
 	return orm.Relationship{}
 }
 
-func buildRelationships(tables []drivers.Table) Relationships {
+func buildRelationships[C, I any](tables []drivers.Table[C, I]) Relationships {
 	relationships := map[string][]orm.Relationship{}
 
-	tableNameMap := make(map[string]drivers.Table, len(tables))
+	tableNameMap := make(map[string]drivers.Table[C, I], len(tables))
 	for _, t := range tables {
 		tableNameMap[t.Key] = t
 	}
 
 	for _, t1 := range tables {
-		isJoinTable := isJoinTable(t1)
+		isJoinTable := t1.IsJoinTable()
 
 		// Build BelongsTo, ToOne and ToMany
 		for _, fk := range t1.Constraints.Foreign {
@@ -199,7 +200,7 @@ func buildRelationships(tables []drivers.Table) Relationships {
 	return relationships
 }
 
-func flipRelationships(relMap Relationships, tables []drivers.Table) error {
+func flipRelationships[C, I any](relMap Relationships, tables []drivers.Table[C, I]) error {
 	for _, rels := range relMap {
 	RelsLoop:
 		for _, rel := range rels {
@@ -229,7 +230,7 @@ func flipRelationships(relMap Relationships, tables []drivers.Table) error {
 	return nil
 }
 
-func flipRelationship(r orm.Relationship, tables []drivers.Table) (orm.Relationship, error) {
+func flipRelationship[C, I any](r orm.Relationship, tables []drivers.Table[C, I]) (orm.Relationship, error) {
 	name := r.Name
 	if r.Local() == r.Foreign() {
 		name += selfJoinSuffix
@@ -244,7 +245,7 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) (orm.Relations
 	}
 
 	for i, side := range r.Sides {
-		var from, to drivers.Table
+		var from, to drivers.Table[C, I]
 		for _, t := range tables {
 			if t.Key == side.From {
 				from = t
@@ -289,7 +290,7 @@ func flipRelationship(r orm.Relationship, tables []drivers.Table) (orm.Relations
 	return flipped, nil
 }
 
-func flipModify(side orm.RelSide, tables []drivers.Table) (string, error) {
+func flipModify[C, I any](side orm.RelSide, tables []drivers.Table[C, I]) (string, error) {
 	side.Modify = strings.ToLower(side.Modify)
 
 	if side.Modify == "" {
@@ -343,7 +344,7 @@ func mergeRelationship(src, extra orm.Relationship) orm.Relationship {
 }
 
 // Returns true if the table has a unique constraint on exactly these columns
-func allNullable(t drivers.Table, cols ...string) bool {
+func allNullable[C, I any](t drivers.Table[C, I], cols ...string) bool {
 	foundNullable := 0
 	for _, col := range t.Columns {
 		for _, cname := range cols {
@@ -359,142 +360,12 @@ func allNullable(t drivers.Table, cols ...string) bool {
 	return false
 }
 
-// Returns true if the table has a unique constraint on exactly these columns
-func hasExactUnique(t drivers.Table, cols ...string) bool {
-	if len(cols) == 0 {
-		return false
-	}
+func inferModify[C, I any](side orm.RelSide, tables drivers.Tables[C, I]) string {
+	t1 := tables.Get(side.From)
+	t2 := tables.Get(side.To)
 
-	// Primary keys are unique
-	if t.Constraints.Primary != nil && sliceMatch(t.Constraints.Primary.Columns, cols) {
-		return true
-	}
-
-	// Check other unique constrints
-	for _, u := range t.Constraints.Uniques {
-		if sliceMatch(u.Columns, cols) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func sliceMatch[T comparable, Ts ~[]T](a, b Ts) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	if len(a) == 0 {
-		return false
-	}
-
-	var matches int
-	for _, v1 := range a {
-		for _, v2 := range b {
-			if v1 == v2 {
-				matches++
-			}
-		}
-	}
-
-	return matches == len(a)
-}
-
-// A composite primary key involving two columns
-// Both primary key columns are also foreign keys
-func isJoinTable(t drivers.Table) bool {
-	// Must have exactly 2 foreign keys
-	if len(t.Constraints.Foreign) != 2 {
-		return false
-	}
-
-	// Extract the columns names
-	colNames := make([]string, len(t.Columns))
-	for i, c := range t.Columns {
-		colNames[i] = c.Name
-	}
-
-	// All columns must be contained in the foreign keys
-	if !allColsInList(colNames, t.Constraints.Foreign[0].Columns, t.Constraints.Foreign[1].Columns) {
-		return false
-	}
-
-	// Must have a unique constraint on all columns
-	return hasExactUnique(t, colNames...)
-}
-
-// Used in templates to know if the given table is a join table for this relationship
-func isJoinTableForRel(t drivers.Table, r orm.Relationship, position int) bool {
-	if position == 0 || len(r.Sides) < 2 {
-		return false
-	}
-
-	if position == len(r.Sides) {
-		return false
-	}
-
-	if t.Key != r.Sides[position-1].To {
-		panic(fmt.Sprintf(
-			"table name does not match relationship position, expected %s got %s",
-			t.Key, r.Sides[position-1].To,
-		))
-	}
-
-	relevantSides := r.Sides[position-1 : position+1]
-
-	// If the external mappings are not unique, it is not a join table
-	if !relevantSides[0].FromUnique || !relevantSides[1].ToUnique {
-		return false
-	}
-
-	// Extract the columns names
-	colNames := make([]string, len(t.Columns))
-	for i, c := range t.Columns {
-		colNames[i] = c.Name
-	}
-
-	if !allColsInList(
-		colNames,
-		relevantSides[0].IgnoredColumns[1], relevantSides[0].ToColumns,
-		relevantSides[1].IgnoredColumns[0], relevantSides[1].FromColumns,
-	) {
-		return false
-	}
-
-	// These are the columns actually used in the relationship
-	// i.e. not ignored
-	relevantColumns := append(
-		relevantSides[0].ToColumns,
-		relevantSides[1].FromColumns...,
-	)
-
-	// Must have a unique constraint on all columns
-	return hasExactUnique(t, removeDuplicates(relevantColumns)...)
-}
-
-func allColsInList(cols []string, lists ...[]string) bool {
-ColumnsLoop:
-	for _, col := range cols {
-		for _, list := range lists {
-			for _, sideCol := range list {
-				if col == sideCol {
-					continue ColumnsLoop
-				}
-			}
-		}
-		return false
-	}
-
-	return true
-}
-
-func inferModify(side orm.RelSide, tables []drivers.Table) string {
-	t1 := drivers.GetTable(tables, side.From)
-	t2 := drivers.GetTable(tables, side.To)
-
-	isT1PK := t1.Constraints.Primary != nil && sliceMatch(side.FromColumns, t1.Constraints.Primary.Columns)
-	isT2PK := t2.Constraints.Primary != nil && sliceMatch(side.ToColumns, t2.Constraints.Primary.Columns)
+	isT1PK := t1.Constraints.Primary != nil && internal.SliceMatch(side.FromColumns, t1.Constraints.Primary.Columns)
+	isT2PK := t2.Constraints.Primary != nil && internal.SliceMatch(side.ToColumns, t2.Constraints.Primary.Columns)
 
 	switch {
 	case isT1PK && !isT2PK:
@@ -503,8 +374,8 @@ func inferModify(side orm.RelSide, tables []drivers.Table) string {
 		return "from"
 	}
 
-	isT1Unique := hasExactUnique(t1, side.FromColumns...)
-	isT2Unique := hasExactUnique(t2, side.ToColumns...)
+	isT1Unique := t1.HasExactUnique(side.FromColumns...)
+	isT2Unique := t2.HasExactUnique(side.ToColumns...)
 
 	switch {
 	case isT1Unique && !isT2Unique:
@@ -518,7 +389,7 @@ func inferModify(side orm.RelSide, tables []drivers.Table) string {
 }
 
 // processRelationshipConfig checks any user included relationships and adds them to the tables
-func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Relationships) error {
+func processRelationshipConfig[C, I any](config *Config[C], tables []drivers.Table[C, I], relMap Relationships) error {
 	if len(tables) == 0 {
 		return nil
 	}
@@ -537,7 +408,7 @@ func processRelationshipConfig(config *Config, tables []drivers.Table, relMap Re
 		relMap[t.Key] = mergeRelationships(relMap[t.Key], rels)
 	}
 
-	return relMap.init(tables)
+	return initRelationships(relMap, tables)
 }
 
 func validateRelationships(rels Relationships) error {
@@ -581,20 +452,4 @@ func setColumns(relMap Relationships) {
 			}
 		}
 	}
-}
-
-func removeDuplicates[T comparable, Ts ~[]T](slice Ts) Ts {
-	seen := make(map[T]struct{}, len(slice))
-	final := make(Ts, 0, len(slice))
-
-	for _, v := range slice {
-		if _, ok := seen[v]; ok {
-			continue
-		}
-
-		seen[v] = struct{}{}
-		final = append(final, v)
-	}
-
-	return final
 }
