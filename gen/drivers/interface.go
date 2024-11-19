@@ -69,9 +69,10 @@ type Enum struct {
 type TablesInfo []TableInfo
 
 type TableInfo struct {
-	Key    string
-	Schema string
-	Name   string
+	Key     string
+	Schema  string
+	Name    string
+	Comment string
 }
 
 func (t TablesInfo) Keys() []string {
@@ -86,20 +87,20 @@ func (t TablesInfo) Keys() []string {
 // such that the drivers.Tables method can be used to reduce duplication in driver
 // implementations.
 type Constructor[ConstraintExtra, IndexExtra any] interface {
-	// Load all constraints in the database, keyed by TableInfo.Key
-	Constraints(context.Context, ColumnFilter) (DBConstraints[ConstraintExtra], error)
-
-	// Load all indexes in the database, keyed by TableInfo.Key
-	Indexes(ctx context.Context) (DBIndexes[IndexExtra], error)
-
 	// Load basic info about all tables
 	TablesInfo(context.Context, Filter) (TablesInfo, error)
 	// Load details about a single table
 	TableDetails(ctx context.Context, info TableInfo, filter ColumnFilter) (schema, name string, _ []Column, _ error)
+	// Load all table comments, keyed by TableInfo.Key
+	Comments(ctx context.Context) (map[string]string, error)
+	// Load all constraints in the database, keyed by TableInfo.Key
+	Constraints(context.Context, ColumnFilter) (DBConstraints[ConstraintExtra], error)
+	// Load all indexes in the database, keyed by TableInfo.Key
+	Indexes(ctx context.Context) (DBIndexes[IndexExtra], error)
 }
 
-// TablesConcurrently is a concurrent version of BuildDBInfo. It returns the
-// metadata for all tables, minus the tables specified in the excludes.
+// This returns the metadata for all tables,
+// minus the tables specified in the excludes.
 func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 	ctx context.Context, c Constructor[ConstraintExtra, IndexExtra],
 	concurrency int, only, except map[string][]string,
@@ -125,6 +126,14 @@ func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 		return nil, fmt.Errorf("unable to load tables: %w", err)
 	}
 
+	comments, err := c.Comments(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load comments: %w", err)
+	}
+	for i, t := range ret {
+		ret[i].Comment = comments[t.Key]
+	}
+
 	constraints, err := c.Constraints(ctx, colFilter)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load constraints: %w", err)
@@ -133,6 +142,7 @@ func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 		ret[i].Constraints.Primary = constraints.PKs[t.Key]
 		ret[i].Constraints.Foreign = constraints.FKs[t.Key]
 		ret[i].Constraints.Uniques = constraints.Uniques[t.Key]
+		ret[i].Constraints.Checks = constraints.Checks[t.Key]
 	}
 
 	indexes, err := c.Indexes(ctx)

@@ -9,19 +9,19 @@ import (
 // Column holds information about a database column.
 // Types are Go types, converted by TranslateColumnType.
 type Column struct {
-	Name      string `json:"name" yaml:"name" toml:"name"`
-	DBType    string `json:"db_type" yaml:"db_type" toml:"db_type"`
-	Default   string `json:"default" yaml:"default" toml:"default"`
-	Comment   string `json:"comment" yaml:"comment" toml:"comment"`
-	Nullable  bool   `json:"nullable" yaml:"nullable" toml:"nullable"`
-	Generated bool   `json:"generated" yaml:"generated" toml:"generated"`
-	AutoIncr  bool   `json:"autoincr" yaml:"autoincr" toml:"autoincr"`
+	Name      string `json:"name" yaml:"name"`
+	DBType    string `json:"db_type" yaml:"db_type"`
+	Default   string `json:"default" yaml:"default"`
+	Comment   string `json:"comment" yaml:"comment"`
+	Nullable  bool   `json:"nullable" yaml:"nullable"`
+	Generated bool   `json:"generated" yaml:"generated"`
+	AutoIncr  bool   `json:"autoincr" yaml:"autoincr"`
 
 	// DomainName is the domain type name associated to the column. See here:
 	// https://www.postgresql.org/docs/16/extend-type-system.html
-	DomainName string `json:"domain_name" yaml:"domain_name" toml:"domain_name"`
+	DomainName string `json:"domain_name" yaml:"domain_name"`
 
-	Type string `json:"type" yaml:"type" toml:"type"`
+	Type string `json:"type" yaml:"type"`
 }
 
 // ColumnNames of the columns.

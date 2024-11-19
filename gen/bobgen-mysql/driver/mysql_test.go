@@ -159,8 +159,19 @@ func TestDriver(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if i > 0 {
+				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, any]{
+					GetDriver: func() drivers.Interface[any, any, any] {
+						return New(tt.config)
+					},
+					GoldenFile:      tt.goldenJson,
+					OverwriteGolden: *flagOverwriteGolden,
+					Templates:       &helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
+				})
+				return
+			}
 			out, err := os.MkdirTemp("", "bobgen_mysql_")
 			if err != nil {
 				t.Fatalf("unable to create tempdir: %s", err)

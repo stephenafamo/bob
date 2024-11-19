@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/aarondl/opt/null"
 	"github.com/go-sql-driver/mysql"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -165,17 +164,17 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	args := []any{tableName, schema}
 
 	query := `
-	select
-	c.column_name,
-	c.column_type,
-	c.column_comment,
-	c.data_type,
-	c.column_default,
-	c.extra = 'auto_increment' AS autoincr,
-	c.is_nullable = 'YES' AS nullable,
-	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated
-	from information_schema.columns as c
-	where table_name = ? and table_schema = ?`
+    select
+    c.column_name,
+    c.column_type,
+    c.column_comment,
+    c.data_type,
+    c.column_default,
+    c.extra = 'auto_increment' AS autoincr,
+    c.is_nullable = 'YES' AS nullable,
+    (c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated
+    from information_schema.columns as c
+    where table_name = ? and table_schema = ?`
 
 	if len(filter.Only) > 0 {
 		query += fmt.Sprintf(" and c.column_name in (%s)", strings.Repeat(",?", len(filter.Only))[1:])
@@ -330,19 +329,19 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 	}
 
 	query := `SELECT
-	tc.table_name AS table_name,
-	tc.constraint_name AS name,
-	tc.constraint_type AS type,
-	kcu.column_name AS column_name,
-	referenced_table_name AS foreign_table,
-	referenced_column_name AS foreign_column
-	FROM information_schema.table_constraints AS tc
-	LEFT JOIN information_schema.key_column_usage AS kcu 
-		ON kcu.table_name = tc.table_name 
-		AND kcu.table_schema = tc.table_schema 
-		AND kcu.constraint_name = tc.constraint_name
-	WHERE tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY') AND tc.table_schema = ?
-	ORDER BY tc.table_name, tc.constraint_name, tc.constraint_type, kcu.ordinal_position`
+    tc.table_name AS table_name,
+    tc.constraint_name AS name,
+    tc.constraint_type AS type,
+    kcu.column_name AS column_name,
+    referenced_table_name AS foreign_table,
+    referenced_column_name AS foreign_column
+    FROM information_schema.table_constraints AS tc
+    LEFT JOIN information_schema.key_column_usage AS kcu 
+        ON kcu.table_name = tc.table_name 
+        AND kcu.table_schema = tc.table_schema 
+        AND kcu.constraint_name = tc.constraint_name
+    WHERE tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY') AND tc.table_schema = ?
+    ORDER BY tc.table_name, tc.constraint_name, tc.constraint_type, kcu.ordinal_position`
 
 	type constraint struct {
 		TableName     string
@@ -408,19 +407,27 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 	ret := drivers.DBIndexes[any]{}
 
 	query := `SELECT
-	s.table_name AS table_name,
-	s.index_name AS index_name,
-	s.column_name AS column_name,
-	s.expression AS expression
-	FROM information_schema.statistics s
-	WHERE s.table_schema = ?
-	ORDER BY s.table_name,s.index_name,s.seq_in_index`
+        s.table_name AS table_name,
+        s.index_name AS index_name,
+        s.column_name AS column_name,
+        s.expression AS expression,
+        NOT s.non_unique AS is_unique,
+        s.collation = 'D' AS descending,
+        s.index_type as type,
+        s.index_comment as comment
+    FROM information_schema.statistics s
+    WHERE s.table_schema = ?
+    ORDER BY s.table_name, s.index_name, s.seq_in_index`
 
 	type indexColumn struct {
 		TableName  string
 		IndexName  string
-		ColumnName null.Val[string]
-		Expression null.Val[string]
+		ColumnName sql.NullString
+		Expression sql.NullString
+		IsUnique   bool
+		Descending bool
+		Type       string
+		Comment    string
 	}
 	indexColumns, err := stdscan.All(ctx, d.conn, scan.StructMapper[indexColumn](), query, d.dbName)
 	if err != nil {
@@ -436,14 +443,51 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 			current = drivers.Index[any]{}
 			table = "" //nolint:ineffassign
 		}
+
 		table = c.TableName
 		current.Name = c.IndexName
-		if c.ColumnName.IsSet() {
-			current.Columns = append(current.Columns, c.ColumnName.GetOrZero())
+		current.Type = c.Type
+		current.Unique = c.IsUnique
+		current.Comment = c.Comment
+
+		col := drivers.IndexColumn{
+			Name: c.ColumnName.String,
+			Desc: c.Descending,
 		}
-		if c.Expression.IsSet() {
-			current.Expressions = append(current.Expressions, c.Expression.GetOrZero())
+
+		if c.Expression.Valid {
+			col.Name = c.Expression.String
+			col.IsExpression = true
 		}
+
+		current.Columns = append(current.Columns, col)
+	}
+
+	return ret, nil
+}
+
+func (d *driver) Comments(ctx context.Context) (map[string]string, error) {
+	ret := map[string]string{}
+
+	query := `SELECT
+        table_name as name,
+        table_comment as comment
+    FROM information_schema.tables
+    WHERE table_comment != table_type AND table_schema = ?`
+
+	type comment struct {
+		Name    string
+		Comment string
+	}
+
+	for c, err := range stdscan.Each(
+		ctx, d.conn, scan.StructMapper[comment](),
+		query, d.dbName,
+	) {
+		if err != nil {
+			return nil, err
+		}
+		ret[c.Name] = c.Comment
 	}
 
 	return ret, nil

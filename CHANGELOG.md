@@ -59,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `Case()` starter to all dialects to build `CASE` expressions. (thanks @k4n4ry)
 - Added `bob.Named()` which is used to add named arguments to the query and bind them later.
 - Added `bob.BindNamed` which takes an argument (struct, map, or a single value type) to be used to bind named arguments in a query. See changes to `bob.Prepare()` for details of which type can be used.
+- Indexes now include more information such as the type, unique and comment fields.
+- Constraints now include a comment field.
+- Added `Checks` field to DBConstraints so that drivers can also load check constraints. (not yet supported by the SQLite driver).
+- Added comments field to Table definitions.
 
 ### Changed
 
@@ -87,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - A primitive type (int, bool, string, etc)
     - `time.Time`
     - Any type that implements `driver.Valuer`.
+- `Index` columns are no longer just strings, but are a struct to include more information such as the sort order.
 
 ### Removed
 
@@ -100,6 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `context.Context` and `bob.Executor` are no longer passed when creating a Table/ViewQuery. It is now passed at the point of execution with `Exec/One/All/Cursor`.
 - Remove `Prepare` methods from table and view qureries. Since `bob.Prepare()` now takes a type parameter, it is not possible to prepare from a method since Go does not allow additional type parameters in methods.
 - Removed the **Prisma** and **Atlas** code generation drivers. It is better for Bob to focus on being able to generate code from the database in the most robust and detailed way and if the user wants, they can use other tools (such as prisma and atlas) to manage migrations before the code generation.
+- Removed `Expressions` from Index definitions. It is now merged with the `Columns` field with an `IsExpression` field to indicate if the column is an expression.
 
 ### Fixed
 

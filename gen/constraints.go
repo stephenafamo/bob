@@ -26,6 +26,7 @@ func mergeConstraints[C any](srcs, extras drivers.Constraints[C]) drivers.Constr
 
 	srcs.Uniques = append(srcs.Uniques, extras.Uniques...)
 	srcs.Foreign = append(srcs.Foreign, extras.Foreign...)
+	srcs.Checks = append(srcs.Checks, extras.Checks...)
 
 	return srcs
 }

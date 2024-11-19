@@ -1,8 +1,6 @@
 module github.com/stephenafamo/bob
 
-go 1.22
-
-toolchain go1.22.1
+go 1.23
 
 require (
 	github.com/DATA-DOG/go-txdb v0.1.6
@@ -21,7 +19,7 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/stephenafamo/scan v0.6.0
+	github.com/stephenafamo/scan v0.6.1
 	github.com/stephenafamo/sqlparser v0.0.0-20241111104950-b04fa8a26c9c
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.6

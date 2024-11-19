@@ -19,12 +19,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "bar_baz_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -33,11 +46,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "bar_qux",
@@ -58,12 +74,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "bar_qux_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -72,11 +101,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_qux",
@@ -97,12 +129,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "foo_qux_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -111,11 +156,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "sponsors",
@@ -136,12 +184,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "sponsors_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -150,11 +211,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "tags",
@@ -175,12 +239,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "tags_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -189,11 +266,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "test_index_expressions",
@@ -236,64 +316,157 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "idx1",
-					"columns": null,
-					"expressions": [
-						"(col1 + col2)"
+					"columns": [
+						{
+							"name": "(col1 + col2)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
-					"extra": null
+					"unique": false,
+					"comment": "This is an index",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "idx2",
 					"columns": [
-						"col3"
+						{
+							"name": "(col1 + col2)",
+							"desc": false,
+							"is_expression": true
+						},
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": [
-						"(col1 + col2)"
-					],
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false,
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "idx3",
 					"columns": [
-						"col1"
+						{
+							"name": "col1",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "(col2 + col3)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
-					"expressions": [
-						"(col2 + col3)"
-					],
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false,
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "idx4",
 					"columns": [
-						"col3"
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "idx5",
 					"columns": [
-						"col1",
-						"col2"
+						{
+							"name": "col1",
+							"desc": true,
+							"is_expression": false
+						},
+						{
+							"name": "col2",
+							"desc": true,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							true,
+							true
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "idx6",
-					"columns": null,
-					"expressions": [
-						"pow(col3::double precision, 2::double precision)"
+					"columns": [
+						{
+							"name": "pow(col3::double precision, 2::double precision)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "type_monsters",
@@ -2074,12 +2247,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "type_monsters_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -2088,11 +2274,24 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": [
+					{
+						"name": "check_not_null",
+						"columns": [
+							"bool_two"
+						],
+						"expression": "(bool_two IS NOT NULL)",
+						"comment": "This is a constraint",
+						"extra": null
+					}
+				]
+			},
+			"comment": "This is a table"
 		},
 		{
 			"key": "type_monsters_mv",
@@ -2103,8 +2302,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": "This is a materialized view"
 		},
 		{
 			"key": "type_monsters_v",
@@ -3887,8 +4088,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": "This is a view"
 		},
 		{
 			"key": "user_videos",
@@ -3933,8 +4136,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "users",
@@ -4010,28 +4215,67 @@
 			],
 			"indexes": [
 				{
-					"name": "users_party_id_key",
-					"columns": [
-						"party_id"
-					],
-					"expressions": null,
-					"extra": null
-				},
-				{
+					"type": "btree",
 					"name": "users_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
+					"name": "users_party_id_key",
+					"columns": [
+						{
+							"name": "party_id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
+				},
+				{
+					"type": "btree",
 					"name": "users_primary_email_key",
 					"columns": [
-						"primary_email"
+						{
+							"name": "primary_email",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -4040,6 +4284,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -4048,33 +4293,36 @@
 						"columns": [
 							"parent_id"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "users.users_party_id_fkey",
 						"columns": [
 							"party_id"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "users.users_referrer_fkey",
 						"columns": [
 							"referrer"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -4083,6 +4331,7 @@
 						"columns": [
 							"party_id"
 						],
+						"comment": "",
 						"extra": null
 					},
 					{
@@ -4090,10 +4339,13 @@
 						"columns": [
 							"primary_email"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "video_tags",
@@ -4125,13 +4377,31 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "video_tags_pkey",
 					"columns": [
-						"video_id",
-						"tag_id"
+						{
+							"name": "video_id",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "tag_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false,
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -4141,6 +4411,7 @@
 						"video_id",
 						"tag_id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -4149,26 +4420,30 @@
 						"columns": [
 							"tag_id"
 						],
-						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "video_tags.video_tags_video_id_fkey",
 						"columns": [
 							"video_id"
 						],
-						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "videos",
@@ -4211,20 +4486,46 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "videos_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				},
 				{
+					"type": "btree",
 					"name": "videos_sponsor_id_key",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -4233,6 +4534,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -4241,22 +4543,24 @@
 						"columns": [
 							"sponsor_id"
 						],
-						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "videos.videos_user_id_fkey",
 						"columns": [
 							"user_id"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -4265,10 +4569,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": [

@@ -13,9 +13,9 @@ type colInfo struct {
 	// ArrType is the underlying data type of the Postgres
 	// ARRAY type. See here:
 	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
-	ArrType   string `json:"arr_type" yaml:"arr_type" toml:"arr_type"`
-	UDTName   string `json:"udt_name" yaml:"udt_name" toml:"udt_name"`
-	UDTSchema string `json:"udt_schema" yaml:"udt_schema" toml:"udt_schema"`
+	ArrType   string `json:"arr_type" yaml:"arr_type"`
+	UDTName   string `json:"udt_name" yaml:"udt_name"`
+	UDTSchema string `json:"udt_schema" yaml:"udt_schema"`
 }
 
 // translateColumnType converts postgres database types to Go types, for example

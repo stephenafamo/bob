@@ -13,12 +13,12 @@ type Table[ConstraintExtra, IndexExtra any] struct {
 	Key string `yaml:"key" json:"key"`
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
-	Schema  string              `yaml:"schema" json:"schema"`
-	Name    string              `yaml:"name" json:"name"`
-	Columns []Column            `yaml:"columns" json:"columns"`
-	Indexes []Index[IndexExtra] `yaml:"indexes" json:"indexes"`
-
+	Schema      string                       `yaml:"schema" json:"schema"`
+	Name        string                       `yaml:"name" json:"name"`
+	Columns     []Column                     `yaml:"columns" json:"columns"`
+	Indexes     []Index[IndexExtra]          `yaml:"indexes" json:"indexes"`
 	Constraints Constraints[ConstraintExtra] `yaml:"constraints" json:"constraints"`
+	Comment     string                       `json:"comment" yaml:"comment"`
 }
 
 func (t Table[C, I]) DBTag(c Column) string {
@@ -78,7 +78,6 @@ func (t Table[C, I]) GetColumn(name string) Column {
 // Returns true if the table has a unique constraint on exactly these columns
 func (t Table[C, I]) HasExactUnique(cols ...string) bool {
 	if len(cols) == 0 {
-		fmt.Printf(" false\n")
 		return false
 	}
 
@@ -88,8 +87,11 @@ func (t Table[C, I]) HasExactUnique(cols ...string) bool {
 	}
 
 	// Check other unique constrints
-	for _, u := range t.Constraints.Uniques {
-		if internal.SliceMatch(u.Columns, cols) {
+	for _, u := range t.Indexes {
+		if !u.Unique || u.HasExpressionColumn() {
+			continue
+		}
+		if internal.SliceMatch(u.NonExpressionColumns(), cols) {
 			return true
 		}
 	}
@@ -190,12 +192,12 @@ func (t Table[C, I]) IsJoinTableForRel(r orm.Relationship, position int) bool {
 
 func (t Table[C, I]) UniqueColPairs() string {
 	ret := make([]string, 0, len(t.Constraints.Uniques)+1)
-	if t.Constraints.Primary != nil {
-		ret = append(ret, fmt.Sprintf("%#v", t.Constraints.Primary.Columns))
-	}
 
-	for _, unique := range t.Constraints.Uniques {
-		ret = append(ret, fmt.Sprintf("%#v", unique.Columns))
+	for _, unique := range t.Indexes {
+		if !unique.Unique || unique.HasExpressionColumn() {
+			continue
+		}
+		ret = append(ret, fmt.Sprintf("%#v", unique.NonExpressionColumns()))
 	}
 
 	return strings.Join(ret, ", ")

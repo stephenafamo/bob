@@ -63,21 +63,57 @@
 			],
 			"indexes": [
 				{
-					"name": "sqlite_autoindex_autoinckeywordtest_1",
+					"type": "pk",
+					"name": "pk_main_autoinckeywordtest",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				},
 				{
+					"type": "u",
 					"name": "sqlite_autoindex_autoinckeywordtest_2",
 					"columns": [
-						"something",
-						"another"
+						{
+							"name": "something",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "another",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "u",
+					"name": "sqlite_autoindex_autoinckeywordtest_1",
+					"columns": [
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -86,6 +122,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -95,12 +132,13 @@
 							"user_id",
 							"sponsor_id"
 						],
-						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"user_id",
 							"sponsor_id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -110,6 +148,7 @@
 							"something",
 							"another"
 						],
+						"comment": "",
 						"extra": null
 					},
 					{
@@ -117,10 +156,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "autoinctest",
@@ -139,13 +181,31 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_autoinctest",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_autoinctest",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -154,15 +214,18 @@
 						"columns": [
 							"id"
 						],
-						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "bar_baz",
@@ -181,18 +244,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_bar_baz",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_bar_baz",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "bar_qux",
@@ -211,18 +294,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_bar_qux",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_bar_qux",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_qux",
@@ -241,18 +344,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_foo_qux",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_foo_qux",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "has_generated_columns",
@@ -315,18 +438,38 @@
 					"type": "string"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_has_generated_columns",
+					"columns": [
+						{
+							"name": "a",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_has_generated_columns",
 					"columns": [
 						"a"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.as_generated_columns",
@@ -389,18 +532,38 @@
 					"type": "string"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_as_generated_columns",
+					"columns": [
+						{
+							"name": "a",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_as_generated_columns",
 					"columns": [
 						"a"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.autoinckeywordtest",
@@ -432,21 +595,20 @@
 			],
 			"indexes": [
 				{
-					"name": "sqlite_autoindex_autoinckeywordtest_1",
+					"type": "pk",
+					"name": "pk_one_autoinckeywordtest",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
-				},
-				{
-					"name": "sqlite_autoindex_autoinckeywordtest_2",
-					"columns": [
-						"something",
-						"another"
-					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -455,11 +617,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.autoinctest",
@@ -478,18 +643,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_autoinctest",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_autoinctest",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.bar_baz",
@@ -508,18 +693,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_bar_baz",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_bar_baz",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.bar_qux",
@@ -538,18 +743,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_bar_qux",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_bar_qux",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.foo_qux",
@@ -568,18 +793,38 @@
 					"type": "int32"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_foo_qux",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_foo_qux",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.sponsors",
@@ -600,12 +845,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_sponsors_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -614,11 +867,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.tags",
@@ -639,12 +895,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_tags_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -653,11 +917,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.user_videos",
@@ -702,8 +969,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.users",
@@ -724,12 +993,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_users_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -738,11 +1015,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.video_tags",
@@ -774,13 +1054,25 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_video_tags_1",
 					"columns": [
-						"video_id",
-						"tag_id"
+						{
+							"name": "video_id",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "tag_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -790,6 +1082,7 @@
 						"video_id",
 						"tag_id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -798,26 +1091,30 @@
 						"columns": [
 							"tag_id"
 						],
-						"extra": null,
 						"foreign_table": "one.tags",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "fk_video_tags_1",
 						"columns": [
 							"video_id"
 						],
-						"extra": null,
 						"foreign_table": "one.videos",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.videos",
@@ -860,20 +1157,36 @@
 			],
 			"indexes": [
 				{
-					"name": "sqlite_autoindex_videos_1",
-					"columns": [
-						"id"
-					],
-					"expressions": null,
-					"extra": null
-				},
-				{
+					"type": "u",
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "pk",
+					"name": "sqlite_autoindex_videos_1",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -882,6 +1195,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -890,22 +1204,24 @@
 						"columns": [
 							"sponsor_id"
 						],
-						"extra": null,
 						"foreign_table": "one.sponsors",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "fk_videos_1",
 						"columns": [
 							"user_id"
 						],
-						"extra": null,
 						"foreign_table": "one.users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -914,10 +1230,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "sponsors",
@@ -938,12 +1257,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_sponsors_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -952,11 +1279,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "tags",
@@ -977,12 +1307,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_tags_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -991,11 +1329,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "test_index_expressions",
@@ -1038,64 +1379,124 @@
 			],
 			"indexes": [
 				{
-					"name": "idx1",
-					"columns": null,
-					"expressions": [
-						"(col1 + col2)"
-					],
-					"extra": null
-				},
-				{
-					"name": "idx2",
+					"type": "c",
+					"name": "idx6",
 					"columns": [
-						"col3"
+						{
+							"name": "POW(col3, 2)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
-					"expressions": [
-						"(col1 + col2)"
-					],
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				},
 				{
-					"name": "idx3",
-					"columns": [
-						"col1"
-					],
-					"expressions": [
-						"(col2 + col3)"
-					],
-					"extra": null
-				},
-				{
-					"name": "idx4",
-					"columns": [
-						"col3"
-					],
-					"expressions": null,
-					"extra": null
-				},
-				{
+					"type": "c",
 					"name": "idx5",
 					"columns": [
-						"col1",
-						"col2"
+						{
+							"name": "col1",
+							"desc": true,
+							"is_expression": false
+						},
+						{
+							"name": "col2",
+							"desc": true,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				},
 				{
-					"name": "idx6",
-					"columns": null,
-					"expressions": [
-						"POW(col3, 2)"
+					"type": "c",
+					"name": "idx4",
+					"columns": [
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"extra": null
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "c",
+					"name": "idx3",
+					"columns": [
+						{
+							"name": "col1",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "(col2 + col3)",
+							"desc": false,
+							"is_expression": true
+						}
+					],
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "c",
+					"name": "idx2",
+					"columns": [
+						{
+							"name": "(col1 + col2)",
+							"desc": false,
+							"is_expression": true
+						},
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "c",
+					"name": "idx1",
+					"columns": [
+						{
+							"name": "(col1 + col2)",
+							"desc": false,
+							"is_expression": true
+						}
+					],
+					"unique": false,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
 				"primary": null,
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "type_monsters",
@@ -2348,12 +2749,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_type_monsters_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -2362,11 +2771,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "user_videos",
@@ -2411,8 +2823,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "users",
@@ -2433,12 +2847,20 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_users_1",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -2447,11 +2869,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "video_tags",
@@ -2483,13 +2908,25 @@
 			],
 			"indexes": [
 				{
+					"type": "pk",
 					"name": "sqlite_autoindex_video_tags_1",
 					"columns": [
-						"video_id",
-						"tag_id"
+						{
+							"name": "video_id",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "tag_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -2499,6 +2936,7 @@
 						"video_id",
 						"tag_id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -2507,26 +2945,30 @@
 						"columns": [
 							"tag_id"
 						],
-						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "fk_video_tags_1",
 						"columns": [
 							"video_id"
 						],
-						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "videos",
@@ -2569,20 +3011,36 @@
 			],
 			"indexes": [
 				{
-					"name": "sqlite_autoindex_videos_1",
-					"columns": [
-						"id"
-					],
-					"expressions": null,
-					"extra": null
-				},
-				{
+					"type": "u",
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "pk",
+					"name": "sqlite_autoindex_videos_1",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
 				}
 			],
 			"constraints": {
@@ -2591,6 +3049,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -2599,22 +3058,24 @@
 						"columns": [
 							"sponsor_id"
 						],
-						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "fk_videos_1",
 						"columns": [
 							"user_id"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -2623,10 +3084,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": null,
