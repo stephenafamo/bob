@@ -33,15 +33,15 @@ A lot of other helpful methods and functions are generated, but let us look at t
 // Jet is an object representing the database table.
 // The required methods to satisfy orm.Table are also generated
 type Jet struct {
-    ID         int              `db:"id,pk" json:"id" toml:"id" yaml:"id"`
-    PilotID    int              `db:"pilot_id" json:"pilot_id" toml:"pilot_id" yaml:"pilot_id"`
-    AirportID  int              `db:"airport_id" json:"airport_id" toml:"airport_id" yaml:"airport_id"`
-    Name       string           `db:"name" json:"name" toml:"name" yaml:"name"`
-    Color      null.Val[string] `db:"color" json:"color,omitempty" toml:"color" yaml:"color,omitempty"`
-    UUID       string           `db:"uuid" json:"uuid" toml:"uuid" yaml:"uuid"`
-    Identifier string           `db:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
-    Cargo      []byte           `db:"cargo" json:"cargo" toml:"cargo" yaml:"cargo"`
-    Manifest   []byte           `db:"manifest" json:"manifest" toml:"manifest" yaml:"manifest"`
+    ID         int              `db:"id,pk" json:"id" yaml:"id"`
+    PilotID    int              `db:"pilot_id" json:"pilot_id" yaml:"pilot_id"`
+    AirportID  int              `db:"airport_id" json:"airport_id" yaml:"airport_id"`
+    Name       string           `db:"name" json:"name" yaml:"name"`
+    Color      null.Val[string] `db:"color" json:"color,omitempty" yaml:"color,omitempty"`
+    UUID       string           `db:"uuid" json:"uuid" yaml:"uuid"`
+    Identifier string           `db:"identifier" json:"identifier" yaml:"identifier"`
+    Cargo      []byte           `db:"cargo" json:"cargo" yaml:"cargo"`
+    Manifest   []byte           `db:"manifest" json:"manifest" yaml:"manifest"`
 }
 
 // JetSetter is used for insert/upsert/update operations

@@ -28,18 +28,38 @@
 					"type": "string"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_main_foo_baz",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_main_foo_baz",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "one.foo_baz",
@@ -69,18 +89,38 @@
 					"type": "string"
 				}
 			],
-			"indexes": [],
+			"indexes": [
+				{
+					"type": "pk",
+					"name": "pk_one_foo_baz",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				}
+			],
 			"constraints": {
 				"primary": {
 					"name": "pk_one_foo_baz",
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [],
-				"uniques": []
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": null,

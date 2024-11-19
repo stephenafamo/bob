@@ -30,11 +30,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -44,11 +50,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "bar_qux",
@@ -80,11 +89,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -94,11 +109,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_bar",
@@ -130,11 +148,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -144,11 +168,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_baz",
@@ -180,11 +207,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -194,11 +227,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_qux",
@@ -230,11 +266,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -244,11 +286,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "multi_keys",
@@ -335,37 +380,69 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "one",
 					"columns": [
-						"one",
-						"two"
+						{
+							"name": "one",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "two",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": false,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "something",
 					"columns": [
-						"something",
-						"another"
+						{
+							"name": "something",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "another",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "sponsor_id",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -375,6 +452,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -384,12 +462,13 @@
 							"one",
 							"two"
 						],
-						"extra": null,
 						"foreign_table": "type_monsters",
 						"foreign_columns": [
 							"int_one",
 							"int_two"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -399,6 +478,7 @@
 							"something",
 							"another"
 						],
+						"comment": "",
 						"extra": null
 					},
 					{
@@ -406,10 +486,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "sponsors",
@@ -430,11 +513,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -444,11 +533,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "tags",
@@ -469,11 +561,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -483,11 +581,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "test_index_expressions",
@@ -530,64 +631,112 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "idx1",
-					"columns": null,
-					"expressions": [
-						"(`col1` + `col2`)"
+					"columns": [
+						{
+							"name": "(`col1` + `col2`)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
+					"unique": false,
+					"comment": "This is an index",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "idx2",
 					"columns": [
-						"col3"
+						{
+							"name": "(`col1` + `col2`)",
+							"desc": false,
+							"is_expression": true
+						},
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": [
-						"(`col1` + `col2`)"
-					],
+					"unique": false,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "idx3",
 					"columns": [
-						"col1"
+						{
+							"name": "col1",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "(`col2` + `col3`)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
-					"expressions": [
-						"(`col2` + `col3`)"
-					],
+					"unique": false,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "idx4",
 					"columns": [
-						"col3"
+						{
+							"name": "col3",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": false,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "idx5",
 					"columns": [
-						"col1",
-						"col2"
+						{
+							"name": "col1",
+							"desc": true,
+							"is_expression": false
+						},
+						{
+							"name": "col2",
+							"desc": true,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": false,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "idx6",
-					"columns": null,
-					"expressions": [
-						"pow(`col3`,2)"
+					"columns": [
+						{
+							"name": "pow(`col3`,2)",
+							"desc": false,
+							"is_expression": true
+						}
 					],
+					"unique": false,
+					"comment": "",
 					"extra": null
 				}
 			],
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "type_monsters",
@@ -598,7 +747,7 @@
 					"name": "id",
 					"db_type": "int",
 					"default": "AUTO_INCREMENT",
-					"comment": "comment on ID",
+					"comment": "This is another column",
 					"nullable": false,
 					"generated": false,
 					"autoincr": true,
@@ -1950,20 +2099,36 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "int_one",
 					"columns": [
-						"int_one",
-						"int_two"
+						{
+							"name": "int_one",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "int_two",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -1973,6 +2138,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
@@ -1983,10 +2149,13 @@
 							"int_one",
 							"int_two"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": "This is a table"
 		},
 		{
 			"key": "user_videos",
@@ -2031,8 +2200,10 @@
 			"constraints": {
 				"primary": null,
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "users",
@@ -2053,11 +2224,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -2067,11 +2244,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "video_tags",
@@ -2103,20 +2283,36 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"video_id",
-						"tag_id"
+						{
+							"name": "video_id",
+							"desc": false,
+							"is_expression": false
+						},
+						{
+							"name": "tag_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "tag_id",
 					"columns": [
-						"tag_id"
+						{
+							"name": "tag_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": false,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -2127,6 +2323,7 @@
 						"video_id",
 						"tag_id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -2135,26 +2332,30 @@
 						"columns": [
 							"video_id"
 						],
-						"extra": null,
 						"foreign_table": "videos",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "video_tags_ibfk_2",
 						"columns": [
 							"tag_id"
 						],
-						"extra": null,
 						"foreign_table": "tags",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "videos",
@@ -2176,7 +2377,7 @@
 					"name": "user_id",
 					"db_type": "int",
 					"default": "",
-					"comment": "this is a comment",
+					"comment": "This is a column",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
@@ -2197,27 +2398,45 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "sponsor_id",
 					"columns": [
-						"sponsor_id"
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				},
 				{
+					"type": "BTREE",
 					"name": "user_id",
 					"columns": [
-						"user_id"
+						{
+							"name": "user_id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": false,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -2227,6 +2446,7 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": [
@@ -2235,22 +2455,24 @@
 						"columns": [
 							"user_id"
 						],
-						"extra": null,
 						"foreign_table": "users",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					},
 					{
 						"name": "videos_ibfk_2",
 						"columns": [
 							"sponsor_id"
 						],
-						"extra": null,
 						"foreign_table": "sponsors",
 						"foreign_columns": [
 							"id"
-						]
+						],
+						"comment": "",
+						"extra": null
 					}
 				],
 				"uniques": [
@@ -2259,10 +2481,13 @@
 						"columns": [
 							"sponsor_id"
 						],
+						"comment": "",
 						"extra": null
 					}
-				]
-			}
+				],
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": [

@@ -30,12 +30,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "bar_qux_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -44,11 +57,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		},
 		{
 			"key": "foo_qux",
@@ -80,12 +96,25 @@
 			],
 			"indexes": [
 				{
+					"type": "btree",
 					"name": "foo_qux_pkey",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
-					"extra": null
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"nulls_first": [
+							false
+						],
+						"nulls_not_distinct": false,
+						"where_clause": "",
+						"include": []
+					}
 				}
 			],
 			"constraints": {
@@ -94,11 +123,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": [

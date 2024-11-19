@@ -111,6 +111,8 @@ github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97 h1:XItoZNmhOih
 github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97/go.mod h1:bM3Vmw1IakoaXocHmMIGgJFYob0vuK+CFWiJHQvz0jQ=
 github.com/stephenafamo/scan v0.6.0 h1:N0joyP/wriC9VvP6w9SDxHIuQGatW4c2YW7Z5L4m45s=
 github.com/stephenafamo/scan v0.6.0/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
+github.com/stephenafamo/scan v0.6.1 h1:nXokGCQwYazMuyvdNAoK0T8Z76FWcpMvDdtengpz6PU=
+github.com/stephenafamo/scan v0.6.1/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
 github.com/stephenafamo/sqlparser v0.0.0-20241111104950-b04fa8a26c9c h1:JFga++XBnZG2xlnvQyHJkeBWZ9G9mGdtgvLeSRbp/BA=
 github.com/stephenafamo/sqlparser v0.0.0-20241111104950-b04fa8a26c9c/go.mod h1:4iveRk8mkzQZxDuK/W0MGLrGmu/igyDYWNDD4a6v0r0=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

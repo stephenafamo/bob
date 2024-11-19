@@ -30,11 +30,17 @@
 			],
 			"indexes": [
 				{
+					"type": "BTREE",
 					"name": "PRIMARY",
 					"columns": [
-						"id"
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
 					],
-					"expressions": null,
+					"unique": true,
+					"comment": "",
 					"extra": null
 				}
 			],
@@ -44,11 +50,14 @@
 					"columns": [
 						"id"
 					],
+					"comment": "",
 					"extra": null
 				},
 				"foreign": null,
-				"uniques": null
-			}
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
 		}
 	],
 	"enums": null,

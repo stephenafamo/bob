@@ -93,6 +93,27 @@ type DriverTestConfig[T, C, I any] struct {
 	GetDriver       func() drivers.Interface[T, C, I]
 }
 
+type AssembleTestConfig[T, C, I any] struct {
+	Templates       *helpers.Templates
+	OverwriteGolden bool
+	GoldenFile      string
+	GetDriver       func() drivers.Interface[T, C, I]
+}
+
+func TestAssemble[T, C, I any](t *testing.T, config AssembleTestConfig[T, C, I]) {
+	t.Helper()
+
+	d := &driverWrapper[T, C, I]{
+		Interface:       config.GetDriver(),
+		overwriteGolden: config.OverwriteGolden,
+		goldenFile:      config.GoldenFile,
+	}
+
+	t.Run("assemble", func(t *testing.T) {
+		d.TestAssemble(t)
+	})
+}
+
 func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 	t.Helper()
 

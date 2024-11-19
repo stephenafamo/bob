@@ -175,8 +175,20 @@ func TestAssemble(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if i > 0 {
+				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
+					GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+						return New(tt.config)
+					},
+					GoldenFile:      tt.goldenJson,
+					OverwriteGolden: *flagOverwriteGolden,
+					Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+				})
+				return
+			}
+
 			out, err := os.MkdirTemp("", "bobgen_sqlite_")
 			if err != nil {
 				t.Fatalf("unable to create tempdir: %s", err)
@@ -191,9 +203,9 @@ func TestAssemble(t *testing.T) {
 				os.RemoveAll(out)
 			}()
 
-			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
+			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root: out,
-				GetDriver: func() drivers.Interface[any, any, any] {
+				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(tt.config)
 				},
 				GoldenFile:      tt.goldenJson,
