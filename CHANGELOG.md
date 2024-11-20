@@ -3,6 +3,7 @@
 <!--toc:start-->
 
 - [Changelog](#changelog)
+  - [[v0.29.0] - 2024-11-20](#v0290-2024-11-20)
   - [[v0.28.1] - 2024-06-28](#v0281-2024-06-28)
   - [[v0.28.0] - 2024-06-25](#v0280-2024-06-25)
   - [[v0.27.1] - 2024-06-05](#v0271-2024-06-05)
@@ -40,6 +41,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v0.29.0] - 2024-11-20
 
 ### Added
 
