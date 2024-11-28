@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)
+
 ## [v0.29.0] - 2024-11-20
 
 ### Added

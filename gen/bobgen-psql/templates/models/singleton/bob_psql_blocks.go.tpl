@@ -1,5 +1,5 @@
 {{- define "unique_constraint_error_detection_method"}}
-func (e *errUniqueConstraint) Is(target error) bool {
+func (e *UniqueConstraintError) Is(target error) bool {
 	{{$supportedDrivers := list "github.com/lib/pq" "github.com/jackc/pgx" "github.com/jackc/pgx/v4" "github.com/jackc/pgx/v5"}}
 	{{if not (has $.DriverName $supportedDrivers)}}
 	return false

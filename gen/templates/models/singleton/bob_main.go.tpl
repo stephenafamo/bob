@@ -132,19 +132,19 @@ func randInt() int64 {
 }
 
 // ErrUniqueConstraint captures all unique constraint errors by explicitly leaving `s` empty.
-var ErrUniqueConstraint = &errUniqueConstraint{s: ""}
+var ErrUniqueConstraint = &UniqueConstraintError{s: ""}
 
-type errUniqueConstraint struct {
+type UniqueConstraintError struct {
 	// s is a string uniquely identifying the constraint in the raw error message returned from the database.
 	s string
 }
 
-func (e *errUniqueConstraint) Error() string {
+func (e *UniqueConstraintError) Error() string {
   return e.s
 }
 
 {{block "unique_constraint_error_detection_method" . -}}
-func (e *errUniqueConstraint) Is(target error) bool {
+func (e *UniqueConstraintError) Is(target error) bool {
   return false
 }
 {{end}}
