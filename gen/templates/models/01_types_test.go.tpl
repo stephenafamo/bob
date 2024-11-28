@@ -50,7 +50,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 	}
 	tests := []struct{
 		name        string
-		expectedErr error
+		expectedErr *models.UniqueConstraintError
 		applyFn     func(tpl *factory.{{$tAlias.UpSingular}}Template, obj *models.{{$tAlias.UpSingular}})
 	}{
 	{{range $constraint := $table.Constraints.Uniques}}
@@ -91,6 +91,12 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
 			if !errors.Is(tt.expectedErr, err) {
+				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
+			}
+			if !models.ErrUniqueConstraint.Is(err) {
+				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
+			}
+			if !tt.expectedErr.Is(err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
 			if err = tx.Rollback(); err != nil {

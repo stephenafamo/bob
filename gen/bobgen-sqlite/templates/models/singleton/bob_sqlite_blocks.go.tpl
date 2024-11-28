@@ -35,7 +35,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 {{- end}}
 
 {{define "unique_constraint_error_detection_method" -}}
-func (e *errUniqueConstraint) Is(target error) bool {
+func (e *UniqueConstraintError) Is(target error) bool {
 	{{if not (eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3")}}
 	return false
 	{{else}}

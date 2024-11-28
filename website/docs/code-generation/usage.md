@@ -188,15 +188,25 @@ Bob will define the following `struct` inside the generated `pilots.go` file:
 
 ```go
 type pilotErrors struct {
-    ErrUniqueFirstNameAndLastName error
+    ErrUniqueFirstNameAndLastName *UniqueConstraintError
 }
 ```
 
-The `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in the following way:
+The `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in one of the following ways:
+
 
 ```go
 pilot, err := models.Pilots.Insert(ctx, db, setter)
 if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
+    // handle the error
+}
+```
+
+or
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if models.PilotErrors.ErrUniqueFirstNameAndLastName.Is(err) {
     // handle the error
 }
 ```
@@ -209,6 +219,17 @@ if errors.Is(models.ErrUniqueConstraint, err) {
     // handle the error
 }
 ```
+
+or
+
+```go
+pilot, err := models.Pilots.Insert(ctx, db, setter)
+if models.ErrUniqueConstraint.Is(err) {
+    // handle the error
+}
+```
+
+When using the `errors.Is()` variant, be mindful that the order of arguments matters due to Go's internal implementation. The first argument should be the error constant, while the second argument should be the actual error returned from the database. If you flip the arguments, the function won't work as intended and won't catch the unique constraint error.
 
 ## Query Building
 

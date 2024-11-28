@@ -138,13 +138,13 @@ var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
 	{{ if eq "sqlite" $.Dialect }}
 	{{ $s = printf "%s.%s" $table.Name (join (printf ", %s." $table.Name) $constraint.Columns) }}
 	{{ end }}
-	ErrUnique{{join "_and_" $constraint.Columns | camelcase}}: &errUniqueConstraint{s: "{{$s}}"},
+	ErrUnique{{join "_and_" $constraint.Columns | camelcase}}: &UniqueConstraintError{s: "{{$s}}"},
 	{{end}}
 }
 
 type {{$tAlias.DownSingular}}Errors struct {
 	{{range $constraint := $table.Constraints.Uniques}}
-	ErrUnique{{join "_and_" $constraint.Columns | camelcase}} error
+	ErrUnique{{join "_and_" $constraint.Columns | camelcase}} *UniqueConstraintError
 	{{ end }}
 }
 {{ end }}
