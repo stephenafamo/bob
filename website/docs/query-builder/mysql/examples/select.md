@@ -24,6 +24,54 @@ mysql.Select(
 )
 ```
 
+## Case With Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' ELSE 'B' END) AS `C` FROM users
+```
+
+Code:
+
+```go
+mysql.Select(
+  sm.Columns(
+    "id",
+    "name",
+    mysql.Case().
+      When(mysql.Quote("id").EQ(mysql.S("1")), mysql.S("A")).
+      Else(mysql.S("B")).
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
+## Case Without Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' END) AS `C` FROM users
+```
+
+Code:
+
+```go
+mysql.Select(
+  sm.Columns(
+    "id",
+    "name",
+    mysql.Case().
+      When(mysql.Quote("id").EQ(mysql.S("1")), mysql.S("A")).
+      End().
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
 ## Select Distinct
 
 SQL:

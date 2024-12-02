@@ -225,6 +225,14 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
                 WHERE ("id" = $2)`,
 			ExpectedArgs: []any{"123", 100},
 		},
+		"with locking locking": {
+			Query: psql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.ForUpdate("users").SkipLocked(),
+			),
+			ExpectedSQL: `SELECT id, name FROM users FOR UPDATE OF users SKIP LOCKED`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

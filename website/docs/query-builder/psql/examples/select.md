@@ -24,6 +24,54 @@ psql.Select(
 )
 ```
 
+## Case With Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN (id = '1') THEN 'A' ELSE 'B' END) AS "C" FROM users
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns(
+    "id",
+    "name",
+    psql.Case().
+      When(psql.Quote("id").EQ(psql.S("1")), psql.S("A")).
+      Else(psql.S("B")).
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
+## Case Without Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN (id = '1') THEN 'A' END) AS "C" FROM users
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns(
+    "id",
+    "name",
+    psql.Case().
+      When(psql.Quote("id").EQ(psql.S("1")), psql.S("A")).
+      End().
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
 ## Select Distinct
 
 SQL:
@@ -342,5 +390,23 @@ psql.Select(
     sm.Where(psql.Quote("client_id").EQ(psql.Arg("123"))),
   )).As("clients"),
   sm.Where(psql.Quote("id").EQ(psql.Arg(100))),
+)
+```
+
+## With Locking Locking
+
+SQL:
+
+```sql
+SELECT id, name FROM users FOR UPDATE OF users SKIP LOCKED
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.ForUpdate("users").SkipLocked(),
 )
 ```

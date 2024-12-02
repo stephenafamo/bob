@@ -24,6 +24,54 @@ sqlite.Select(
 )
 ```
 
+## Case With Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN ("id" = '1') THEN 'A' ELSE 'B' END) AS "C" FROM users
+```
+
+Code:
+
+```go
+sqlite.Select(
+  sm.Columns(
+    "id",
+    "name",
+    sqlite.Case().
+      When(sqlite.Quote("id").EQ(sqlite.S("1")), sqlite.S("A")).
+      Else(sqlite.S("B")).
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
+## Case Without Else
+
+SQL:
+
+```sql
+SELECT id, name, (CASE WHEN ("id" = '1') THEN 'A' END) AS "C" FROM users
+```
+
+Code:
+
+```go
+sqlite.Select(
+  sm.Columns(
+    "id",
+    "name",
+    sqlite.Case().
+      When(sqlite.Quote("id").EQ(sqlite.S("1")), sqlite.S("A")).
+      End().
+      As("C"),
+  ),
+  sm.From("users"),
+)
+```
+
 ## Select Distinct
 
 SQL:
