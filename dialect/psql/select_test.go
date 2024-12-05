@@ -225,7 +225,7 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
                 WHERE ("id" = $2)`,
 			ExpectedArgs: []any{"123", 100},
 		},
-		"with locking locking": {
+		"with locking": {
 			Query: psql.Select(
 				sm.Columns("id", "name"),
 				sm.From("users"),

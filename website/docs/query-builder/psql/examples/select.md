@@ -393,7 +393,7 @@ psql.Select(
 )
 ```
 
-## With Locking Locking
+## With Locking
 
 SQL:
 
