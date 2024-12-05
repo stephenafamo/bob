@@ -83,11 +83,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The mod capability for `orm.Setter` is now reversed. It should now be a mod for Insert and have a method that returns a mod for Update.  
    This makes more sense since one would at most use one setter during updates, but can use multiple setters in a bulk insert.
 - `table.InsertQ` has been renamed to `table.Insert`. The old implementation of `Insert` has been removed.  
-   The same functionality can be achieved by using `modelSlice.Insert()` or creating an `Insert` query using `table.Insert()`.
+   The same functionality can be achieved in the following way:
+
+  ```go
+  //----------------------------------------------
+  // OLD WAY
+  //----------------------------------------------
+  user, err := models.Users.Insert(ctx, db, setter) // insert one
+  users, err := models.Users.InsertMany(ctx, db, setters...) // insert many
+
+  //----------------------------------------------
+  // NEW WAY
+  //----------------------------------------------
+  user, err := models.Users.Insert(setter).One(ctx, db) // insert one
+  users, err := models.Users.Insert(setters[0], setters[1]).All(ctx, db) // insert many
+
+  // For cases where you already have a slice of setters and you want to pass them all, you can use `bob.ToMods`
+  users, err := models.Users.Insert(bob.ToMods(setters)).All(ctx, db) // insert many
+  ```
+
 - `table.UpdateQ` has been renamed to `table.Update`. The old implementation of `Update` has been removed.  
-   The same functionality can be achieved by using `modelSlice.Update()` or creating an `Update` query using `table.Update()`.
+   The same functionality can be achieved by using `model.Update()` or `modelSlice.UpdateAll()`.
 - `table.DeleteQ` has been renamed to `table.Delete`. The old implementation of `Delete` has been removed.  
-   The same functionality can be achieved by using `modelSlice.Delete()` or creating an `Delete` query using `table.Delete()`.
+   The same functionality can be achieved by using `modelSlice.DeleteAll()` or creating an `Delete` query using `table.Delete()`.
 - `BeforeInsertHooks` now only takes a single `ModelSetter` at a time.  
    This is because it is not possible to know before executing the queries exactly how many setters are being used since additional rows can be inserted by applying another setter as a mod.
 - `bob.Cache()` now requires an `Executor`. This is used to run any query hooks.
