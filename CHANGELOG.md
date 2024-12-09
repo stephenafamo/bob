@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)
+- Fix random value generation for pq.Float64Array factory (thanks @felipeparaujo)
 
 ## [v0.29.0] - 2024-11-20
 
