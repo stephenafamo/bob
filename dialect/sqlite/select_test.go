@@ -116,7 +116,7 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.OrderBy("name").Collate("NOCASE").Asc(),
 			),
-			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE NOCASE ASC`,
+			ExpectedSQL: `SELECT id, name FROM users ORDER BY name COLLATE "NOCASE" ASC`,
 		},
 		"with cross join": {
 			Query: sqlite.Select(

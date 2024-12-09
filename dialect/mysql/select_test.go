@@ -109,7 +109,7 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.OrderBy("name").Collate("utf8mb4_bg_0900_as_cs").Asc(),
 			),
-			ExpectedSQL: "SELECT id, name FROM users ORDER BY name COLLATE utf8mb4_bg_0900_as_cs ASC",
+			ExpectedSQL: "SELECT id, name FROM users ORDER BY name COLLATE `utf8mb4_bg_0900_as_cs` ASC",
 		},
 	}
 

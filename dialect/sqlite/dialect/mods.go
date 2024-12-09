@@ -2,7 +2,6 @@ package dialect
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -251,17 +250,6 @@ func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
 	})
 }
 
-type collation struct {
-	name string
-}
-
-func (c collation) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, _ int) ([]any, error) {
-	if _, err := fmt.Fprintf(w, " COLLATE %s", c.name); err != nil {
-		return nil, err
-	}
-	return nil, nil
-}
-
 type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
@@ -270,7 +258,7 @@ func (s OrderBy[Q]) Apply(q Q) {
 
 func (o OrderBy[Q]) Collate(collationName string) OrderBy[Q] {
 	order := o()
-	order.Collation = &collation{name: collationName}
+	order.Collation = collationName
 
 	return OrderBy[Q](func() clause.OrderDef {
 		return order

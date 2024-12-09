@@ -28,7 +28,7 @@ type OrderDef struct {
 	Expression any
 	Direction  string // ASC | DESC | USING operator
 	Nulls      string // FIRST | LAST
-	Collation  bob.Expression
+	Collation  string
 }
 
 func (o OrderDef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -37,11 +37,9 @@ func (o OrderDef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 		return nil, err
 	}
 
-	if o.Collation != nil {
-		_, err = o.Collation.WriteSQL(ctx, w, d, start)
-		if err != nil {
-			return nil, err
-		}
+	if o.Collation != "" {
+		w.Write([]byte(" COLLATE "))
+		d.WriteQuoted(w, o.Collation)
 	}
 
 	if o.Direction != "" {
