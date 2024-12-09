@@ -12,21 +12,19 @@ type expression interface {
 	RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error)
 }
 
-type ExecQuery[Q expression, T any, Ts ~[]T] struct {
+type ExecQuery[Q expression] struct {
 	bob.BaseQuery[Q]
-	Scanner scan.Mapper[T]
-	Hooks   *bob.Hooks[Q, bob.SkipQueryHooksKey]
+	Hooks *bob.Hooks[Q, bob.SkipQueryHooksKey]
 }
 
-func (q ExecQuery[Q, T, Ts]) Clone() ExecQuery[Q, T, Ts] {
-	return ExecQuery[Q, T, Ts]{
+func (q ExecQuery[Q]) Clone() ExecQuery[Q] {
+	return ExecQuery[Q]{
 		BaseQuery: q.BaseQuery.Clone(),
-		Scanner:   q.Scanner,
 		Hooks:     q.Hooks,
 	}
 }
 
-func (q ExecQuery[Q, T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
+func (q ExecQuery[Q]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
 	ctx, err := q.Expression.RunHooks(ctx, exec)
 	if err != nil {
 		return ctx, err
@@ -40,7 +38,7 @@ func (q ExecQuery[Q, T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (c
 }
 
 // Execute the query
-func (q ExecQuery[Q, T, Ts]) Exec(ctx context.Context, exec bob.Executor) (int64, error) {
+func (q ExecQuery[Q]) Exec(ctx context.Context, exec bob.Executor) (int64, error) {
 	result, err := bob.Exec(ctx, exec, q)
 	if err != nil {
 		return 0, err
@@ -50,7 +48,8 @@ func (q ExecQuery[Q, T, Ts]) Exec(ctx context.Context, exec bob.Executor) (int64
 }
 
 type Query[Q expression, T any, Ts ~[]T] struct {
-	ExecQuery[Q, T, Ts]
+	ExecQuery[Q]
+	Scanner scan.Mapper[T]
 }
 
 func (q Query[Q, T, Ts]) Clone() Query[Q, T, Ts] {

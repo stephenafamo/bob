@@ -101,11 +101,11 @@ type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Tslice] {
 	q := &insertQuery[T, Tslice]{
-		ExecQuery: orm.ExecQuery[*dialect.InsertQuery, T, Tslice]{
+		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
 			BaseQuery: Insert(im.Into(t.Name(), t.nonGeneratedCols...)),
-			Scanner:   t.scanner,
 			Hooks:     &t.InsertQueryHooks,
 		},
+		scanner:       t.scanner,
 		getInserted:   t.getInserted,
 		unretrievable: t.unretrievable,
 		hooks:         &t.AfterInsertHooks,
@@ -117,10 +117,9 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 }
 
 // Starts an update query for this table
-func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery, T, Tslice] {
-	q := &orm.ExecQuery[*dialect.UpdateQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery] {
+	q := &orm.ExecQuery[*dialect.UpdateQuery]{
 		BaseQuery: Update(um.Table(t.NameAs())),
-		Scanner:   t.scanner,
 		Hooks:     &t.UpdateQueryHooks,
 	}
 	q.Apply(queryMods...)
@@ -129,10 +128,9 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 }
 
 // Starts a delete query for this table
-func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery, T, Tslice] {
-	q := &orm.ExecQuery[*dialect.DeleteQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery] {
+	q := &orm.ExecQuery[*dialect.DeleteQuery]{
 		BaseQuery: Delete(dm.From(t.NameAs())),
-		Scanner:   t.scanner,
 		Hooks:     &t.DeleteQueryHooks,
 	}
 
@@ -142,7 +140,8 @@ func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuer
 }
 
 type insertQuery[T orm.Model, Ts ~[]T] struct {
-	orm.ExecQuery[*dialect.InsertQuery, T, Ts]
+	orm.ExecQuery[*dialect.InsertQuery]
+	scanner       scan.Mapper[T]
 	unretrievable bool
 	getInserted   func([]clause.Value, []sql.Result) (bob.Query, error)
 	hooks         *bob.Hooks[Ts, bob.SkipModelHooksKey]
@@ -159,7 +158,7 @@ func (t *insertQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, err
 		return *new(T), err
 	}
 
-	return bob.One(ctx, exec, q, t.Scanner)
+	return bob.One(ctx, exec, q, t.scanner)
 }
 
 // Insert Many
@@ -173,7 +172,7 @@ func (t *insertQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, er
 		return nil, err
 	}
 
-	return bob.Allx[T, Ts](ctx, exec, q, t.Scanner)
+	return bob.Allx[T, Ts](ctx, exec, q, t.scanner)
 }
 
 // Insert Many and return a cursor
@@ -187,7 +186,7 @@ func (t *insertQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (sca
 		return nil, err
 	}
 
-	return bob.Cursor(ctx, exec, q, t.Scanner)
+	return bob.Cursor(ctx, exec, q, t.scanner)
 }
 
 // inserts all and returns the select query

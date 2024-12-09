@@ -66,11 +66,11 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice]{
-			ExecQuery: orm.ExecQuery[*dialect.SelectQuery, T, Tslice]{
+			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
 				BaseQuery: Select(sm.From(v.NameAs())),
-				Scanner:   v.scanner,
 				Hooks:     &v.SelectQueryHooks,
 			},
+			Scanner: v.scanner,
 		},
 	}
 

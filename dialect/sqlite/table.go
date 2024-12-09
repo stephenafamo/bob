@@ -71,11 +71,11 @@ type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 // Starts an insert query for this table
 func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *orm.Query[*dialect.InsertQuery, T, Tslice] {
 	q := &orm.Query[*dialect.InsertQuery, T, Tslice]{
-		ExecQuery: orm.ExecQuery[*dialect.InsertQuery, T, Tslice]{
+		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
 			BaseQuery: Insert(im.Into(t.NameAs())),
-			Scanner:   t.scanner,
 			Hooks:     &t.InsertQueryHooks,
 		},
+		Scanner: t.scanner,
 	}
 
 	q.Expression.AppendContextualModFunc(
@@ -95,11 +95,11 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 // Starts an Update query for this table
 func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.Query[*dialect.UpdateQuery, T, Tslice] {
 	q := &orm.Query[*dialect.UpdateQuery, T, Tslice]{
-		ExecQuery: orm.ExecQuery[*dialect.UpdateQuery, T, Tslice]{
+		ExecQuery: orm.ExecQuery[*dialect.UpdateQuery]{
 			BaseQuery: Update(um.Table(t.NameAs())),
-			Scanner:   t.scanner,
 			Hooks:     &t.UpdateQueryHooks,
 		},
+		Scanner: t.scanner,
 	}
 
 	q.Expression.AppendContextualModFunc(
@@ -119,11 +119,11 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 // Starts a Delete query for this table
 func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.Query[*dialect.DeleteQuery, T, Tslice] {
 	q := &orm.Query[*dialect.DeleteQuery, T, Tslice]{
-		ExecQuery: orm.ExecQuery[*dialect.DeleteQuery, T, Tslice]{
+		ExecQuery: orm.ExecQuery[*dialect.DeleteQuery]{
 			BaseQuery: Delete(dm.From(t.NameAs())),
-			Scanner:   t.scanner,
 			Hooks:     &t.DeleteQueryHooks,
 		},
+		Scanner: t.scanner,
 	}
 
 	q.Expression.AppendContextualModFunc(
