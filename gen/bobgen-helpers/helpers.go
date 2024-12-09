@@ -338,7 +338,7 @@ func Types() drivers.Types {
 			Imports: importers.List{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.Float64Array, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = f.Float64()
+                    arr[i] = f.Float64(10, -1_000_000, 1_000_000)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
