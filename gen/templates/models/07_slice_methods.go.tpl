@@ -31,7 +31,11 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 {{$pkCols := $table.Constraints.Primary.Columns}}
 {{$multiPK := gt (len $pkCols) 1}}
 func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
-   return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Name}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
+  if len(o) == 0 {
+    return {{$.Dialect}}.Raw("NULL")
+  }
+
+  return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Name}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
     .In(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
       pkPairs := make([]bob.Expression, len(o))
       for i, row := range o {
@@ -131,18 +135,30 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteMod() bob.Mod[*dialect.DeleteQuery] {
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (o {{$tAlias.UpSingular}}Slice) UpdateAll(ctx context.Context, exec bob.Executor, vals {{$tAlias.UpSingular}}Setter) error {
+  if len(o) == 0 {
+    return nil
+  }
+
 	_, err := {{$tAlias.UpPlural}}.Update(vals.UpdateMod(), o.UpdateMod()).All(ctx, exec)
   return err
 }
 {{- end}}
 
 func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Executor) error {
+  if len(o) == 0 {
+    return nil
+  }
+
 	_, err := {{$tAlias.UpPlural}}.Delete(o.DeleteMod()).Exec(ctx, exec)
   return err
 }
 
 
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
+  if len(o) == 0 {
+    return nil
+  }
+
 	o2, err := {{$tAlias.UpPlural}}.Query(sm.Where(o.pkIN())).All(ctx, exec)
 	if err != nil {
 		return err

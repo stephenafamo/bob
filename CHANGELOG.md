@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)
 - Collation in `clause.OrderDef` is now a string not an expression and is always quoted
+- Calling `UpdateAll`, `DeleteAll` and `ReloadAll` on an empty model slice now returns nil without running any queries.
 
 ### Removed
 
@@ -54,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix random value generation for pq.Float64Array factory (thanks @felipeparaujo)
+- Using the `UpdateMod()` and `DeleteMod()` methods on an empty model slice now appends `WHERE primary_key IN NULL` which will return no results. Instead of `WHERE primary_key IN ()` which is a syntax error.
 
 ## [v0.29.0] - 2024-11-20
 
