@@ -7,12 +7,7 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type expression interface {
-	bob.Expression
-	RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error)
-}
-
-type ExecQuery[Q expression] struct {
+type ExecQuery[Q bob.Expression] struct {
 	bob.BaseQuery[Q]
 	Hooks *bob.Hooks[Q, bob.SkipQueryHooksKey]
 }
@@ -25,7 +20,9 @@ func (q ExecQuery[Q]) Clone() ExecQuery[Q] {
 }
 
 func (q ExecQuery[Q]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
-	ctx, err := q.Expression.RunHooks(ctx, exec)
+	var err error
+
+	ctx, err = q.BaseQuery.RunHooks(ctx, exec)
 	if err != nil {
 		return ctx, err
 	}
@@ -47,7 +44,7 @@ func (q ExecQuery[Q]) Exec(ctx context.Context, exec bob.Executor) (int64, error
 	return result.RowsAffected()
 }
 
-type Query[Q expression, T any, Ts ~[]T] struct {
+type Query[Q bob.Expression, T any, Ts ~[]T] struct {
 	ExecQuery[Q]
 	Scanner scan.Mapper[T]
 }
