@@ -67,7 +67,29 @@ type Output struct {
 func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 	if wipe {
 		if err := os.RemoveAll(o.OutFolder); err != nil {
-			return err
+			return fmt.Errorf("unable to wipe output folder: %w", err)
+		}
+	}
+
+	files, err := os.ReadDir(o.OutFolder)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("unable to read output folder: %w", err)
+	}
+
+	for _, d := range files {
+		if d.IsDir() {
+			continue
+		}
+
+		name := d.Name()
+		name = name[:len(name)-len(filepath.Ext(name))]
+
+		if !strings.HasSuffix(name, ".bob") && !strings.HasSuffix(name, ".bob_test") {
+			continue
+		}
+
+		if err := os.Remove(filepath.Join(o.OutFolder, d.Name())); err != nil {
+			return fmt.Errorf("unable to remove old file: %w", err)
 		}
 	}
 
@@ -249,7 +271,12 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 				}
 			}
 
-			fName := getOutputFilename(e.data.Table.Schema, e.data.Table.Name, e.isTest, isGo)
+			fName := getOutputFilename(e.data.Table.Schema, e.data.Table.Name, isGo)
+			fName += ".bob"
+			if e.isTest {
+				fName += "_test"
+			}
+
 			fName += ext
 			if len(dir) != 0 {
 				fName = filepath.Join(dir, fName)
@@ -295,12 +322,10 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVe
 	headerOut := e.output.templateHeaderByteBuffer
 	out := e.output.templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
-		normalized, isSingleton, isGo, usePkg := outputFilenameParts(tplName)
+		normalized, isSingleton, isGo := outputFilenameParts(tplName)
 		if !isSingleton {
 			continue
 		}
-
-		dir, _ := filepath.Split(normalized)
 
 		headerOut.Reset()
 		out.Reset()
@@ -327,12 +352,8 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVe
 			imps := e.data.Importer.ToList()
 			version = goVersion
 
-			pkgName := e.output.PkgName
-			if !usePkg {
-				pkgName = filepath.Base(dir)
-			}
 			writeFileDisclaimer(headerOut)
-			writePackageName(headerOut, pkgName)
+			writePackageName(headerOut, e.output.PkgName)
 			writeImports(headerOut, imps)
 		}
 
@@ -447,7 +468,7 @@ func getLongExt(filename string) string {
 	return filename[index:]
 }
 
-func getOutputFilename(schema, tableName string, isTest, isGo bool) string {
+func getOutputFilename(schema, tableName string, isGo bool) string {
 	output := tableName
 	if strings.HasPrefix(output, "_") {
 		output = "und" + output
@@ -459,10 +480,6 @@ func getOutputFilename(schema, tableName string, isTest, isGo bool) string {
 
 	if schema != "" {
 		output += "." + schema
-	}
-
-	if isTest {
-		output += "_test"
 	}
 
 	return output
@@ -508,7 +525,7 @@ func stringSliceToMap(slice []string) map[string]struct{} {
 // templates_test/js/hello.js.tpl
 //
 //nolint:nonamedreturns
-func outputFilenameParts(filename string) (normalized string, isSingleton, isGo, usePkg bool) {
+func outputFilenameParts(filename string) (normalized string, isSingleton, isGo bool) {
 	fragments := strings.Split(filename, string(os.PathSeparator))
 	isSingleton = len(fragments) > 1 && fragments[len(fragments)-2] == "singleton"
 
@@ -522,15 +539,21 @@ func outputFilenameParts(filename string) (normalized string, isSingleton, isGo,
 	newFilename := remainingFragments[len(remainingFragments)-1]
 	newFilename = strings.TrimSuffix(newFilename, ".tpl")
 	newFilename = rgxRemoveNumberedPrefix.ReplaceAllString(newFilename, "")
-	remainingFragments[len(remainingFragments)-1] = newFilename
-
 	ext := filepath.Ext(newFilename)
 	isGo = ext == ".go"
 
-	usePkg = len(remainingFragments) == 1
+	remainingFragments[len(remainingFragments)-1] = newFilename
 	normalized = strings.Join(remainingFragments, string(os.PathSeparator))
 
-	return normalized, isSingleton, isGo, usePkg
+	if isSingleton {
+		fNameWithoutExt := newFilename[:len(newFilename)-len(ext)]
+		if !strings.HasSuffix(fNameWithoutExt, ".bob") &&
+			!strings.HasSuffix(fNameWithoutExt, ".bob_test") {
+			panic(fmt.Sprintf("singleton file name must end with .bob or .bob_test: %s", filename))
+		}
+	}
+
+	return normalized, isSingleton, isGo
 }
 
 type dirExtMap map[string]map[string][]string
@@ -541,7 +564,7 @@ func groupTemplates(templates *templateList) dirExtMap {
 	tplNames := templates.Templates()
 	dirs := make(map[string]map[string][]string)
 	for _, tplName := range tplNames {
-		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
+		normalized, isSingleton, _ := outputFilenameParts(tplName)
 		if isSingleton {
 			continue
 		}

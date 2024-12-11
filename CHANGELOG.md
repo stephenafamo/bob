@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)
 - Collation in `clause.OrderDef` is now a string not an expression and is always quoted
 - Calling `UpdateAll`, `DeleteAll` and `ReloadAll` on an empty model slice now returns nil without running any queries.
+- Generated files now end with `.bob.go` instead of `.go` and are always cleaned up before generating new files. Singleton templates are now required to have a `.bob.go.tpl` extension.
+
+### Deprecated
+
+- Deprecated the `wipe` option to delete all files in the output folder. Files are now generated with a `.bob.go` extension and are always cleaned up before generating new files.
 
 ### Removed
 
