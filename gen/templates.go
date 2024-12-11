@@ -2,10 +2,8 @@ package gen
 
 import (
 	"embed"
-	"encoding"
 	"fmt"
 	"io/fs"
-	"sort"
 	"strings"
 	"text/template"
 	"unicode"
@@ -121,102 +119,17 @@ func (t *TemplateData[T, C, I]) ResetImports() {
 	t.Importer = make(Importer)
 }
 
-type templateList struct {
-	*template.Template
-}
-
-type templateNameList []string
-
-func (t templateNameList) Len() int {
-	return len(t)
-}
-
-func (t templateNameList) Swap(k, j int) {
-	t[k], t[j] = t[j], t[k]
-}
-
-func (t templateNameList) Less(k, j int) bool {
-	// Make sure "struct" goes to the front
-	if t[k] == "struct.tpl" {
-		return true
+func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {
+	_, err := tpl.New(name).
+		Funcs(sprig.GenericFuncMap()).
+		Funcs(templateFunctions).
+		Funcs(customFuncs).
+		Parse(content)
+	if err != nil {
+		return fmt.Errorf("failed to parse template: %s: %w", name, err)
 	}
 
-	res := strings.Compare(t[k], t[j])
-	return res <= 0
-}
-
-// Templates returns the name of all the templates defined in the template list
-func (t templateList) Templates() []string {
-	tplList := t.Template.Templates()
-
-	if len(tplList) == 0 {
-		return nil
-	}
-
-	ret := make([]string, 0, len(tplList))
-	for _, tpl := range tplList {
-		if name := tpl.Name(); strings.HasSuffix(name, ".tpl") {
-			ret = append(ret, name)
-		}
-	}
-
-	sort.Sort(templateNameList(ret))
-
-	return ret
-}
-
-func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs template.FuncMap) (*templateList, error) {
-	tpl := template.New("")
-
-	for _, t := range lazyTemplates {
-		isTest := strings.Contains(t.Name, "_test.go")
-		if testTemplates && !isTest || !testTemplates && isTest {
-			continue
-		}
-
-		byt, err := t.Loader.Load()
-		if err != nil {
-			return nil, fmt.Errorf("failed to load template: %s: %w", t.Name, err)
-		}
-
-		_, err = tpl.New(t.Name).
-			Funcs(sprig.GenericFuncMap()).
-			Funcs(templateFunctions).
-			Funcs(customFuncs).
-			Parse(string(byt))
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse template: %s: %w", t.Name, err)
-		}
-	}
-
-	return &templateList{Template: tpl}, nil
-}
-
-type lazyTemplate struct {
-	Name   string         `json:"name"`
-	Loader templateLoader `json:"loader"`
-}
-
-type templateLoader interface {
-	encoding.TextMarshaler
-	Load() ([]byte, error)
-}
-
-type assetLoader struct {
-	fs   fs.FS
-	name string
-}
-
-func (a assetLoader) Load() ([]byte, error) {
-	return fs.ReadFile(a.fs, string(a.name))
-}
-
-func (a assetLoader) MarshalText() ([]byte, error) {
-	return []byte(a.String()), nil
-}
-
-func (a assetLoader) String() string {
-	return "asset:" + string(a.name)
+	return nil
 }
 
 // templateFunctions is a map of some helper functions that get passed into the

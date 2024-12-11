@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -55,16 +56,20 @@ type Output struct {
 	OutFolder string
 	Templates []fs.FS
 
-	templates     *templateList
-	testTemplates *templateList
+	singletonTemplates *template.Template
+	tableTemplates     *template.Template
 
 	// Scratch buffers used as staging area for preparing parsed template data
 	templateByteBuffer       *bytes.Buffer
 	templateHeaderByteBuffer *bytes.Buffer
 }
 
+func (o *Output) numTemplates() int {
+	return len(o.singletonTemplates.Templates()) + len(o.tableTemplates.Templates())
+}
+
 // initOutFolders creates the folders that will hold the generated output.
-func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
+func (o *Output) initOutFolders(wipe bool) error {
 	if wipe {
 		if err := os.RemoveAll(o.OutFolder); err != nil {
 			return fmt.Errorf("unable to wipe output folder: %w", err)
@@ -93,34 +98,8 @@ func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 		}
 	}
 
-	newDirs := make(map[string]struct{})
-	for _, t := range lazyTemplates {
-		// js/00_struct.js.tpl
-		// js/singleton/00_struct.js.tpl
-		// we want the js part only
-		fragments := strings.Split(t.Name, string(os.PathSeparator))
-
-		// Throw away the filename
-		fragments = fragments[0 : len(fragments)-1]
-		if len(fragments) != 0 && fragments[len(fragments)-1] == "singleton" {
-			fragments = fragments[:len(fragments)-1]
-		}
-
-		if len(fragments) == 0 {
-			continue
-		}
-
-		newDirs[strings.Join(fragments, string(os.PathSeparator))] = struct{}{}
-	}
-
 	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
 		return err
-	}
-
-	for d := range newDirs {
-		if err := os.MkdirAll(filepath.Join(o.OutFolder, d), os.ModePerm); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -138,77 +117,75 @@ func (o *Output) initOutFolders(lazyTemplates []lazyTemplate, wipe bool) error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (o *Output) initTemplates(funcs template.FuncMap, notests bool) ([]lazyTemplate, error) {
-	var err error
-
-	templates := make(map[string]templateLoader)
+func (o *Output) initTemplates(funcs template.FuncMap) error {
 	if len(o.Templates) == 0 {
-		return nil, errors.New("No templates defined")
+		return errors.New("No templates defined")
 	}
 
-	for _, tempFS := range o.Templates {
+	o.singletonTemplates = template.New("")
+	o.tableTemplates = template.New("")
+
+	if err := addTemplates(o.singletonTemplates, o.Templates, funcs, "singleton"); err != nil {
+		return fmt.Errorf("failed to add singleton templates: %w", err)
+	}
+
+	if err := addTemplates(o.tableTemplates, o.Templates, funcs, "."); err != nil {
+		return fmt.Errorf("failed to add table templates: %w", err)
+	}
+
+	return nil
+}
+
+func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMap, dir string) error {
+	all := make(map[string]fs.FS)
+	for _, tempFS := range tempFSs {
 		if tempFS == nil {
 			continue
 		}
-		err := fs.WalkDir(tempFS, ".", func(path string, entry fs.DirEntry, err error) error {
-			if err != nil {
-				return fmt.Errorf("in walk err: %w", err)
-			}
 
+		entries, err := fs.ReadDir(tempFS, dir)
+		if err != nil {
+			return fmt.Errorf("failed to read dir %q: %w", dir, err)
+		}
+
+		for _, entry := range entries {
 			if entry.IsDir() {
-				return nil
+				continue
 			}
 
-			name := entry.Name()
-			if filepath.Ext(name) == ".tpl" {
-				templates[normalizeSlashes(path)] = assetLoader{fs: tempFS, name: path}
+			path := entry.Name()
+			if filepath.Ext(path) != ".tpl" {
+				continue
 			}
 
-			return nil
-		})
-		if err != nil {
-			return nil, fmt.Errorf("after walk err: %w", err)
+			all[filepath.Join(dir, path)] = tempFS
 		}
 	}
 
-	// For stability, sort keys to traverse the map and turn it into a slice
-	keys := make([]string, 0, len(templates))
-	for k := range templates {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
+	paths := slices.Collect(maps.Keys(all))
+	slices.Sort(paths)
 
-	lazyTemplates := make([]lazyTemplate, 0, len(templates))
-	for _, k := range keys {
-		lazyTemplates = append(lazyTemplates, lazyTemplate{
-			Name:   k,
-			Loader: templates[k],
-		})
-	}
-
-	o.templates, err = loadTemplates(lazyTemplates, false, funcs)
-	if err != nil {
-		return nil, fmt.Errorf("loading templates: %w", err)
-	}
-
-	if !notests {
-		o.testTemplates, err = loadTemplates(lazyTemplates, true, funcs)
+	for _, path := range paths {
+		content, err := fs.ReadFile(all[path], path)
 		if err != nil {
-			return nil, fmt.Errorf("loading test templates: %w", err)
+			return fmt.Errorf("failed to read template: %s: %w", path, err)
+		}
+
+		err = loadTemplate(tpl, funcs, normalizeSlashes(path), string(content))
+		if err != nil {
+			return fmt.Errorf("failed to load template: %s: %w", path, err)
 		}
 	}
 
-	return lazyTemplates, nil
+	return nil
 }
 
 type executeTemplateData[T, C, I any] struct {
 	output *Output
 	data   *TemplateData[T, C, I]
 
-	templates     *templateList
+	templates     *template.Template
 	dirExtensions dirExtMap
-
-	isTest bool
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
@@ -216,9 +193,9 @@ func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateDat
 	return executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
-		templates:     o.templates,
+		templates:     o.tableTemplates,
 		dirExtensions: dirExts,
-	}, goVersion)
+	}, goVersion, false)
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
@@ -226,10 +203,9 @@ func generateTestOutput[T, C, I any](o *Output, dirExts dirExtMap, data *Templat
 	return executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
-		templates:     o.testTemplates,
-		isTest:        true,
+		templates:     o.tableTemplates,
 		dirExtensions: dirExts,
-	}, goVersion)
+	}, goVersion, true)
 }
 
 // generateSingletonOutput processes the templates that should only be run
@@ -238,8 +214,8 @@ func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I]
 	return executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
-		templates: o.templates,
-	}, goVersion)
+		templates: o.singletonTemplates,
+	}, goVersion, false)
 }
 
 // generateSingletonTestOutput processes the templates that should only be run
@@ -248,12 +224,11 @@ func generateSingletonTestOutput[T, C, I any](o *Output, data *TemplateData[T, C
 	return executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
-		templates: o.testTemplates,
-		isTest:    true,
-	}, goVersion)
+		templates: o.singletonTemplates,
+	}, goVersion, true)
 }
 
-func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string) error {
+func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string, tests bool) error {
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			headerOut := e.output.templateHeaderByteBuffer
@@ -265,15 +240,26 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 
 			prevLen := out.Len()
 			e.data.ResetImports()
+
+			matchingTemplates := 0
 			for _, tplName := range tplNames {
-				if err := executeTemplate(out, e.templates.Template, tplName, e.data); err != nil {
+				if tests != strings.Contains(tplName, "_test.go") {
+					continue
+				}
+				matchingTemplates++
+
+				if err := executeTemplate(out, e.templates, tplName, e.data); err != nil {
 					return err
 				}
 			}
 
+			if matchingTemplates == 0 {
+				continue
+			}
+
 			fName := getOutputFilename(e.data.Table.Schema, e.data.Table.Name, isGo)
 			fName += ".bob"
-			if e.isTest {
+			if tests {
 				fName += "_test"
 			}
 
@@ -300,7 +286,7 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
-				if e.isTest {
+				if tests {
 					pkgName = fmt.Sprintf("%s_test", pkgName)
 				}
 				version = goVersion
@@ -318,21 +304,26 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 	return nil
 }
 
-func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string) error {
+func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string, tests bool) error {
 	headerOut := e.output.templateHeaderByteBuffer
 	out := e.output.templateByteBuffer
-	for _, tplName := range e.templates.Templates() {
-		normalized, isSingleton, isGo := outputFilenameParts(tplName)
-		if !isSingleton {
+	for _, tpl := range e.templates.Templates() {
+		if !strings.HasSuffix(tpl.Name(), ".tpl") {
 			continue
 		}
+
+		if tests != strings.Contains(tpl.Name(), "_test.go") {
+			continue
+		}
+
+		normalized, _, isGo := outputFilenameParts(tpl.Name())
 
 		headerOut.Reset()
 		out.Reset()
 		prevLen := out.Len()
 
 		e.data.ResetImports()
-		if err := executeTemplate(out, e.templates.Template, tplName, e.data); err != nil {
+		if err := executeTemplate(out, e.templates, tpl.Name(), e.data); err != nil {
 			return err
 		}
 
@@ -560,11 +551,15 @@ type dirExtMap map[string]map[string][]string
 
 // groupTemplates takes templates and groups them according to their output directory
 // and file extension.
-func groupTemplates(templates *templateList) dirExtMap {
+func groupTemplates(templates *template.Template) dirExtMap {
 	tplNames := templates.Templates()
 	dirs := make(map[string]map[string][]string)
-	for _, tplName := range tplNames {
-		normalized, isSingleton, _ := outputFilenameParts(tplName)
+	for _, tpl := range tplNames {
+		if !strings.HasSuffix(tpl.Name(), ".tpl") {
+			continue
+		}
+
+		normalized, isSingleton, _ := outputFilenameParts(tpl.Name())
 		if isSingleton {
 			continue
 		}
@@ -580,10 +575,16 @@ func groupTemplates(templates *templateList) dirExtMap {
 			dirs[dir] = extensions
 		}
 
-		ext := getLongExt(tplName)
+		ext := getLongExt(tpl.Name())
 		ext = strings.TrimSuffix(ext, ".tpl")
 		slice := extensions[ext]
-		extensions[ext] = append(slice, tplName)
+		extensions[ext] = append(slice, tpl.Name())
+	}
+
+	for _, exts := range dirs {
+		for _, tplNames := range exts {
+			slices.Sort(tplNames)
+		}
 	}
 
 	return dirs
