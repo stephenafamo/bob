@@ -174,24 +174,15 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 		// set the package name for this output
 		data.PkgName = o.PkgName
 
-		templates, err := o.initTemplates(s.CustomTemplateFuncs, s.Config.NoTests)
-		if err != nil {
+		if err := o.initTemplates(s.CustomTemplateFuncs); err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
 		}
 
-		tplCount := 0
-		if o.templates != nil {
-			tplCount += len(o.templates.Templates())
-		}
-		if o.testTemplates != nil {
-			tplCount += len(o.testTemplates.Templates())
-		}
-		if tplCount == 0 {
+		if o.numTemplates() == 0 {
 			continue
 		}
 
-		err = o.initOutFolders(templates, s.Config.Wipe)
-		if err != nil {
+		if err := o.initOutFolders(s.Config.Wipe); err != nil {
 			return fmt.Errorf("unable to initialize the output folders: %w", err)
 		}
 
@@ -199,35 +190,18 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 		o.templateByteBuffer = templateByteBuffer
 		o.templateHeaderByteBuffer = templateHeaderByteBuffer
 
-		if err := generateSingletonOutput(o, data, goVersion); err != nil {
+		if err := generateSingletonOutput(o, data, goVersion, s.Config.NoTests); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
 		}
 
-		if !s.Config.NoTests {
-			if err := generateSingletonTestOutput(o, data, goVersion); err != nil {
-				return fmt.Errorf("unable to generate singleton test template output: %w", err)
-			}
-		}
-
-		var regularDirExtMap, testDirExtMap dirExtMap
-		regularDirExtMap = groupTemplates(o.templates)
-		if !s.Config.NoTests {
-			testDirExtMap = groupTemplates(o.testTemplates)
-		}
+		dirExtMap := groupTemplates(o.tableTemplates)
 
 		for _, table := range data.Tables {
 			data.Table = table
 
 			// Generate the regular templates
-			if err := generateOutput(o, regularDirExtMap, data, goVersion); err != nil {
+			if err := generateOutput(o, dirExtMap, data, goVersion, s.Config.NoTests); err != nil {
 				return fmt.Errorf("unable to generate output: %w", err)
-			}
-
-			// Generate the test templates
-			if !s.Config.NoTests {
-				if err := generateTestOutput(o, testDirExtMap, data, goVersion); err != nil {
-					return fmt.Errorf("unable to generate test output: %w", err)
-				}
 			}
 		}
 	}

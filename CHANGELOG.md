@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Collation in `clause.OrderDef` is now a string not an expression and is always quoted
 - Calling `UpdateAll`, `DeleteAll` and `ReloadAll` on an empty model slice now returns nil without running any queries.
 - Generated files now end with `.bob.go` instead of `.go` and are always cleaned up before generating new files. Singleton templates are now required to have a `.bob.go.tpl` extension.
+- The expected structure for templates have been changed:
+  - Previously, singleton templates should be kept in a `singleton` folder. Now, any template not inside a folder is considered a singleton template.
+  - Previoulsy, templates in the root folder are merged and run for each table. Now, this will happen to templates in the `table/` folder.
+  - Previoulsy, the entire file tree and every subdirectory is walked to find templates. Now only templates in the root folder and the `table/` folder are considered.
 
 ### Deprecated
 
