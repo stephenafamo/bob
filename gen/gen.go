@@ -190,14 +190,8 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 		o.templateByteBuffer = templateByteBuffer
 		o.templateHeaderByteBuffer = templateHeaderByteBuffer
 
-		if err := generateSingletonOutput(o, data, goVersion); err != nil {
+		if err := generateSingletonOutput(o, data, goVersion, s.Config.NoTests); err != nil {
 			return fmt.Errorf("singleton template output: %w", err)
-		}
-
-		if !s.Config.NoTests {
-			if err := generateSingletonTestOutput(o, data, goVersion); err != nil {
-				return fmt.Errorf("unable to generate singleton test template output: %w", err)
-			}
 		}
 
 		dirExtMap := groupTemplates(o.tableTemplates)
@@ -206,15 +200,8 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 			data.Table = table
 
 			// Generate the regular templates
-			if err := generateOutput(o, dirExtMap, data, goVersion); err != nil {
+			if err := generateOutput(o, dirExtMap, data, goVersion, s.Config.NoTests); err != nil {
 				return fmt.Errorf("unable to generate output: %w", err)
-			}
-
-			// Generate the test templates
-			if !s.Config.NoTests {
-				if err := generateTestOutput(o, dirExtMap, data, goVersion); err != nil {
-					return fmt.Errorf("unable to generate test output: %w", err)
-				}
 			}
 		}
 	}

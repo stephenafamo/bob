@@ -63,25 +63,19 @@ func TestOutputFilenameParts(t *testing.T) {
 	tests := []struct {
 		Filename string
 
-		Normalized  string
-		IsSingleton bool
-		IsGo        bool
+		Normalized string
+		IsGo       bool
 	}{
-		{"00_struct.go.tpl", "struct.go", false, true},
-		{"singleton/00_struct.bob.go.tpl", "struct.bob.go", true, true},
-		{"notpkg/00_struct.go.tpl", "notpkg/struct.go", false, true},
-		{"js/singleton/00_struct.bob.js.tpl", "js/struct.bob.js", true, false},
-		{"js/00_struct.js.tpl", "js/struct.js", false, false},
+		{"00_struct.go.tpl", "struct.go", true},
+		{"notpkg/00_struct.go.tpl", "notpkg/struct.go", true},
+		{"js/00_struct.js.tpl", "js/struct.js", false},
 	}
 
 	for i, test := range tests {
-		normalized, isSingleton, isGo := outputFilenameParts(test.Filename)
+		normalized, isGo := outputFilenameParts(test.Filename)
 
 		if normalized != test.Normalized {
 			t.Errorf("%d) normalized wrong, want: %s, got: %s", i, test.Normalized, normalized)
-		}
-		if isSingleton != test.IsSingleton {
-			t.Errorf("%d) isSingleton wrong, want: %t, got: %t", i, test.IsSingleton, isSingleton)
 		}
 		if isGo != test.IsGo {
 			t.Errorf("%d) isGo wrong, want: %t, got: %t", i, test.IsGo, isGo)

@@ -125,25 +125,37 @@ func (o *Output) initTemplates(funcs template.FuncMap) error {
 	o.singletonTemplates = template.New("")
 	o.tableTemplates = template.New("")
 
-	if err := addTemplates(o.singletonTemplates, o.Templates, funcs, "singleton"); err != nil {
+	if err := addTemplates(o.singletonTemplates, o.Templates, funcs, ".", true); err != nil {
 		return fmt.Errorf("failed to add singleton templates: %w", err)
 	}
 
-	if err := addTemplates(o.tableTemplates, o.Templates, funcs, "."); err != nil {
+	if err := addTemplates(o.tableTemplates, o.Templates, funcs, "table", false); err != nil {
 		return fmt.Errorf("failed to add table templates: %w", err)
 	}
 
 	return nil
 }
 
-func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMap, dir string) error {
-	all := make(map[string]fs.FS)
+func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMap, dir string, singletons bool) error {
+	type details struct {
+		fs       fs.FS
+		fullPath string
+	}
+	all := make(map[string]details)
+
 	for _, tempFS := range tempFSs {
 		if tempFS == nil {
 			continue
 		}
 
-		entries, err := fs.ReadDir(tempFS, dir)
+		if dir != "" {
+			tempFS, _ = fs.Sub(tempFS, dir)
+			if tempFS == nil {
+				continue
+			}
+		}
+
+		entries, err := fs.ReadDir(tempFS, ".")
 		if err != nil {
 			return fmt.Errorf("failed to read dir %q: %w", dir, err)
 		}
@@ -153,12 +165,25 @@ func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMa
 				continue
 			}
 
-			path := entry.Name()
-			if filepath.Ext(path) != ".tpl" {
+			name := entry.Name()
+			ext := filepath.Ext(name)
+			if ext != ".tpl" {
 				continue
 			}
 
-			all[filepath.Join(dir, path)] = tempFS
+			if singletons {
+				ext2 := filepath.Ext(name[:len(name)-len(ext)])
+				fNameWithoutExts := filepath.Base(name[:len(name)-len(ext)-len(ext2)])
+				if !strings.HasSuffix(fNameWithoutExts, ".bob") &&
+					!strings.HasSuffix(fNameWithoutExts, ".bob_test") {
+					panic(fmt.Sprintf("singleton file name must end with .bob or .bob_test: %s", name))
+				}
+			}
+
+			all[name] = details{
+				fs:       tempFS,
+				fullPath: filepath.Join(dir, name),
+			}
 		}
 	}
 
@@ -166,14 +191,15 @@ func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMa
 	slices.Sort(paths)
 
 	for _, path := range paths {
-		content, err := fs.ReadFile(all[path], path)
+		details := all[path]
+		content, err := fs.ReadFile(details.fs, path)
 		if err != nil {
-			return fmt.Errorf("failed to read template: %s: %w", path, err)
+			return fmt.Errorf("failed to read template: %s: %w", details.fullPath, err)
 		}
 
-		err = loadTemplate(tpl, funcs, normalizeSlashes(path), string(content))
+		err = loadTemplate(tpl, funcs, path, string(content))
 		if err != nil {
-			return fmt.Errorf("failed to load template: %s: %w", path, err)
+			return fmt.Errorf("failed to load template: %s: %w", details.fullPath, err)
 		}
 	}
 
@@ -189,43 +215,56 @@ type executeTemplateData[T, C, I any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string) error {
-	return executeTemplates(executeTemplateData[T, C, I]{
+func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string, noTests bool) error {
+	if err := executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
 		templates:     o.tableTemplates,
 		dirExtensions: dirExts,
-	}, goVersion, false)
-}
+	}, goVersion, false); err != nil {
+		return fmt.Errorf("execute templates: %w", err)
+	}
 
-// generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string) error {
-	return executeTemplates(executeTemplateData[T, C, I]{
+	if noTests {
+		return nil
+	}
+
+	if err := executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
 		templates:     o.tableTemplates,
 		dirExtensions: dirExts,
-	}, goVersion, true)
+	}, goVersion, true); err != nil {
+		return fmt.Errorf("execute test templates: %w", err)
+	}
+
+	return nil
 }
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], goVersion string) error {
-	return executeSingletonTemplates(executeTemplateData[T, C, I]{
+func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], goVersion string, noTests bool) error {
+	if err := executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
 		templates: o.singletonTemplates,
-	}, goVersion, false)
-}
+	}, goVersion, false); err != nil {
+		return fmt.Errorf("execute singleton templates: %w", err)
+	}
 
-// generateSingletonTestOutput processes the templates that should only be run
-// one time.
-func generateSingletonTestOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], goVersion string) error {
-	return executeSingletonTemplates(executeTemplateData[T, C, I]{
+	if noTests {
+		return nil
+	}
+
+	if err := executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
 		templates: o.singletonTemplates,
-	}, goVersion, true)
+	}, goVersion, true); err != nil {
+		return fmt.Errorf("execute singleton test templates: %w", err)
+	}
+
+	return nil
 }
 
 func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion string, tests bool) error {
@@ -316,7 +355,7 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVe
 			continue
 		}
 
-		normalized, _, isGo := outputFilenameParts(tpl.Name())
+		normalized, isGo := outputFilenameParts(tpl.Name())
 
 		headerOut.Reset()
 		out.Reset()
@@ -516,35 +555,19 @@ func stringSliceToMap(slice []string) map[string]struct{} {
 // templates_test/js/hello.js.tpl
 //
 //nolint:nonamedreturns
-func outputFilenameParts(filename string) (normalized string, isSingleton, isGo bool) {
+func outputFilenameParts(filename string) (normalized string, isGo bool) {
 	fragments := strings.Split(filename, string(os.PathSeparator))
-	isSingleton = len(fragments) > 1 && fragments[len(fragments)-2] == "singleton"
 
-	var remainingFragments []string
-	for _, f := range fragments {
-		if f != "singleton" {
-			remainingFragments = append(remainingFragments, f)
-		}
-	}
-
-	newFilename := remainingFragments[len(remainingFragments)-1]
+	newFilename := fragments[len(fragments)-1]
 	newFilename = strings.TrimSuffix(newFilename, ".tpl")
 	newFilename = rgxRemoveNumberedPrefix.ReplaceAllString(newFilename, "")
 	ext := filepath.Ext(newFilename)
 	isGo = ext == ".go"
 
-	remainingFragments[len(remainingFragments)-1] = newFilename
-	normalized = strings.Join(remainingFragments, string(os.PathSeparator))
+	fragments[len(fragments)-1] = newFilename
+	normalized = strings.Join(fragments, string(os.PathSeparator))
 
-	if isSingleton {
-		fNameWithoutExt := newFilename[:len(newFilename)-len(ext)]
-		if !strings.HasSuffix(fNameWithoutExt, ".bob") &&
-			!strings.HasSuffix(fNameWithoutExt, ".bob_test") {
-			panic(fmt.Sprintf("singleton file name must end with .bob or .bob_test: %s", filename))
-		}
-	}
-
-	return normalized, isSingleton, isGo
+	return normalized, isGo
 }
 
 type dirExtMap map[string]map[string][]string
@@ -559,11 +582,7 @@ func groupTemplates(templates *template.Template) dirExtMap {
 			continue
 		}
 
-		normalized, isSingleton, _ := outputFilenameParts(tpl.Name())
-		if isSingleton {
-			continue
-		}
-
+		normalized, _ := outputFilenameParts(tpl.Name())
 		dir := filepath.Dir(normalized)
 		if dir == "." {
 			dir = ""
@@ -588,12 +607,4 @@ func groupTemplates(templates *template.Template) dirExtMap {
 	}
 
 	return dirs
-}
-
-// normalizeSlashes takes a path that was made on linux or windows and converts it
-// to a native path.
-func normalizeSlashes(path string) string {
-	path = strings.ReplaceAll(path, `/`, string(os.PathSeparator))
-	path = strings.ReplaceAll(path, `\`, string(os.PathSeparator))
-	return path
 }
