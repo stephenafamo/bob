@@ -35,7 +35,7 @@ func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
     return {{$.Dialect}}.Raw("NULL")
   }
 
-  return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Name}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
+  return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
     .In(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
       pkPairs := make([]bob.Expression, len(o))
       for i, row := range o {
