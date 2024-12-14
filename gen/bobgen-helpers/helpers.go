@@ -281,7 +281,7 @@ func Types() drivers.Types {
                 ipAddr := netip.AddrFrom4(addr)
                 ipPrefix := netip.PrefixFrom(ipAddr, f.IntBetween(0, ipAddr.BitLen()))
                 return pgtypes.Inet{Prefix: ipPrefix}`,
-			RandomExprImports: importers.List{`"crypto/rand"`},
+			RandomExprImports: importers.List{`"crypto/rand"`, `"net/netip"`},
 		},
 		"pgtypes.Macaddr": {
 			Imports: importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
