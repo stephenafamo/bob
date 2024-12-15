@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix random value generation for pq.Float64Array factory (thanks @felipeparaujo)
 - Using the `UpdateMod()` and `DeleteMod()` methods on an empty model slice now appends `WHERE primary_key IN NULL` which will return no results. Instead of `WHERE primary_key IN ()` which is a syntax error.
+- Ensure `net/netip` is imported for the `pgtypes.Inet` random expression (thanks @plunkettscott)
 
 ## [v0.29.0] - 2024-11-20
 
