@@ -3403,6 +3403,7 @@
 			"comment": ""
 		}
 	],
+	"query_folders": null,
 	"enums": null,
 	"extra_info": null,
 	"driver_name": "modernc.org/sqlite"

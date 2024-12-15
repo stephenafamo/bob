@@ -54,9 +54,10 @@ type Types map[string]Type
 
 // DBInfo is the database's table data and dialect.
 type DBInfo[DBExtra, ConstraintExtra, IndexExtra any] struct {
-	Tables    []Table[ConstraintExtra, IndexExtra] `json:"tables"`
-	Enums     []Enum                               `json:"enums"`
-	ExtraInfo DBExtra                              `json:"extra_info"`
+	Tables       Tables[ConstraintExtra, IndexExtra] `json:"tables"`
+	QueryFolders []QueryFolder                       `json:"query_folders"`
+	Enums        []Enum                              `json:"enums"`
+	ExtraInfo    DBExtra                             `json:"extra_info"`
 	// DriverName is the module name of the underlying `database/sql` driver
 	DriverName string `json:"driver_name"`
 }

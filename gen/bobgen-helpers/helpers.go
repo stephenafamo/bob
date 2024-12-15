@@ -35,6 +35,7 @@ func Version() string {
 type Templates struct {
 	Models  []fs.FS
 	Factory []fs.FS
+	Queries []fs.FS
 }
 
 func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Templates) []*gen.Output {
@@ -56,6 +57,10 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 			OutFolder: destination,
 			PkgName:   pkgname,
 			Templates: append(templates.Models, gen.ModelTemplates),
+		},
+		{
+			Key:       "queries",
+			Templates: append(templates.Queries, gen.QueriesTemplates),
 		},
 	}
 

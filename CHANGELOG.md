@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a new field `QueryFolders` to `gen/drivers.DBInfo` for drivers to be able to include information about parsed queries.
+- Added `gen/QueriesTemplates` which in the future will contain base templates for generating code for parsed qureries.
+- Added a `QueryTemplate` field to `bobgen_helpers.Templates` for drivers to include additional templates for queries.
+- Added a new reserved output key `queries`. This is handled specially for each query folder supplied by the driver.
+
 ### Changed
 
 - Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)

@@ -50,6 +50,14 @@ var (
 type Output struct {
 	// The key has to be unique in a gen.State
 	// it also makes it possible to target modifing a specific output
+	// There are special keys that are reserved for internal use
+	// * "models" - for model templates.
+	//    This is also used to set `ModelsPackage` in the template data
+	// * "factory" - for factory templates
+	// * "queries" - for query templates.
+	//    - This is run once for each query folder
+	//    - The PkgName is set to the folder name in each run
+	//    - The OutFolder is set to the same folder
 	Key string
 
 	PkgName   string
@@ -58,6 +66,7 @@ type Output struct {
 
 	singletonTemplates *template.Template
 	tableTemplates     *template.Template
+	queryTemplates     *template.Template
 
 	// Scratch buffers used as staging area for preparing parsed template data
 	templateByteBuffer       *bytes.Buffer
@@ -65,12 +74,15 @@ type Output struct {
 }
 
 func (o *Output) numTemplates() int {
-	return len(o.singletonTemplates.Templates()) + len(o.tableTemplates.Templates())
+	return 0 +
+		len(o.singletonTemplates.Templates()) +
+		len(o.tableTemplates.Templates()) +
+		len(o.queryTemplates.Templates())
 }
 
 // initOutFolders creates the folders that will hold the generated output.
 func (o *Output) initOutFolders(wipe bool) error {
-	if wipe {
+	if wipe && !strings.Contains(o.OutFolder, "quer") {
 		if err := os.RemoveAll(o.OutFolder); err != nil {
 			return fmt.Errorf("unable to wipe output folder: %w", err)
 		}
@@ -99,7 +111,7 @@ func (o *Output) initOutFolders(wipe bool) error {
 	}
 
 	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
-		return err
+		return fmt.Errorf("unable to create output folder %q: %w", o.OutFolder, err)
 	}
 
 	return nil
@@ -124,6 +136,7 @@ func (o *Output) initTemplates(funcs template.FuncMap) error {
 
 	o.singletonTemplates = template.New("")
 	o.tableTemplates = template.New("")
+	o.queryTemplates = template.New("")
 
 	if err := addTemplates(o.singletonTemplates, o.Templates, funcs, ".", true); err != nil {
 		return fmt.Errorf("failed to add singleton templates: %w", err)
@@ -131,6 +144,10 @@ func (o *Output) initTemplates(funcs template.FuncMap) error {
 
 	if err := addTemplates(o.tableTemplates, o.Templates, funcs, "table", false); err != nil {
 		return fmt.Errorf("failed to add table templates: %w", err)
+	}
+
+	if err := addTemplates(o.queryTemplates, o.Templates, funcs, "query", false); err != nil {
+		return fmt.Errorf("failed to add query templates: %w", err)
 	}
 
 	return nil
@@ -157,6 +174,9 @@ func addTemplates(tpl *template.Template, tempFSs []fs.FS, funcs template.FuncMa
 
 		entries, err := fs.ReadDir(tempFS, ".")
 		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				continue
+			}
 			return fmt.Errorf("failed to read dir %q: %w", dir, err)
 		}
 
@@ -215,11 +235,11 @@ type executeTemplateData[T, C, I any] struct {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateData[T, C, I], goVersion string, noTests bool) error {
+func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, tpl *template.Template, data *TemplateData[T, C, I], goVersion string, noTests bool) error {
 	if err := executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
-		templates:     o.tableTemplates,
+		templates:     tpl,
 		dirExtensions: dirExts,
 	}, goVersion, false); err != nil {
 		return fmt.Errorf("execute templates: %w", err)
@@ -232,7 +252,7 @@ func generateOutput[T, C, I any](o *Output, dirExts dirExtMap, data *TemplateDat
 	if err := executeTemplates(executeTemplateData[T, C, I]{
 		output:        o,
 		data:          data,
-		templates:     o.tableTemplates,
+		templates:     tpl,
 		dirExtensions: dirExts,
 	}, goVersion, true); err != nil {
 		return fmt.Errorf("execute test templates: %w", err)

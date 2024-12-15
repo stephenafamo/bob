@@ -30,6 +30,7 @@ var sqliteTemplates embed.FS
 var (
 	ModelTemplates, _       = fs.Sub(templates, "templates/models")
 	FactoryTemplates, _     = fs.Sub(templates, "templates/factory")
+	QueriesTemplates, _     = fs.Sub(templates, "templates/queries")
 	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
 	PSQLModelTemplates, _   = fs.Sub(psqlTemplates, "bobgen-psql/templates/models")
 	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
@@ -82,6 +83,9 @@ type TemplateData[T, C, I any] struct {
 
 	Table         drivers.Table[C, I]
 	Tables        drivers.Tables[C, I]
+	QueryFile     drivers.QueryFile
+	QueryFolder   drivers.QueryFolder
+	QueryFolders  []drivers.QueryFolder
 	Enums         []drivers.Enum
 	Aliases       drivers.Aliases
 	Types         drivers.Types
