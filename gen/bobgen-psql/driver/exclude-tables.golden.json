@@ -4578,6 +4578,7 @@
 			"comment": ""
 		}
 	],
+	"query_folders": null,
 	"enums": [
 		{
 			"Type": "UnicodeEnum",

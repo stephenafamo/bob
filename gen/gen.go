@@ -120,6 +120,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	data := &TemplateData[T, C, I]{
 		Dialect:           driver.Dialect(),
 		Tables:            dbInfo.Tables,
+		QueryFolders:      dbInfo.QueryFolders,
 		Enums:             dbInfo.Enums,
 		ExtraInfo:         dbInfo.ExtraInfo,
 		Aliases:           s.Config.Aliases,
@@ -162,17 +163,14 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 	templateHeaderByteBuffer := &bytes.Buffer{}
 
 	for _, o := range s.Outputs {
-		if len(o.Templates) == 0 {
-			continue
-		}
-
 		if _, ok := knownKeys[o.Key]; ok {
 			return fmt.Errorf("Duplicate output key: %q", o.Key)
 		}
 		knownKeys[o.Key] = struct{}{}
 
-		// set the package name for this output
-		data.PkgName = o.PkgName
+		if len(o.Templates) == 0 {
+			continue
+		}
 
 		if err := o.initTemplates(s.CustomTemplateFuncs); err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
@@ -182,26 +180,66 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 			continue
 		}
 
-		if err := o.initOutFolders(s.Config.Wipe); err != nil {
-			return fmt.Errorf("unable to initialize the output folders: %w", err)
+		iterator := slices.Values([]struct{}{{}})
+
+		if o.Key == "queries" {
+			iterator = func(yield func(struct{}) bool) {
+				for _, folder := range data.QueryFolders {
+					o.PkgName = filepath.Base(folder.Path)
+					o.OutFolder = folder.Path
+					data.QueryFolder = folder
+
+					if !yield(struct{}{}) {
+						return
+					}
+				}
+			}
 		}
 
-		// assign reusable scratch buffers to provided Output
-		o.templateByteBuffer = templateByteBuffer
-		o.templateHeaderByteBuffer = templateHeaderByteBuffer
+		for range iterator {
+			// set the package name for this output
+			data.PkgName = o.PkgName
 
-		if err := generateSingletonOutput(o, data, goVersion, s.Config.NoTests); err != nil {
-			return fmt.Errorf("singleton template output: %w", err)
-		}
+			if err := o.initOutFolders(s.Config.Wipe); err != nil {
+				return fmt.Errorf("unable to initialize the output folders: %w", err)
+			}
 
-		dirExtMap := groupTemplates(o.tableTemplates)
+			// assign reusable scratch buffers to provided Output
+			o.templateByteBuffer = templateByteBuffer
+			o.templateHeaderByteBuffer = templateHeaderByteBuffer
 
-		for _, table := range data.Tables {
-			data.Table = table
+			if err := generateSingletonOutput(o, data, goVersion, s.Config.NoTests); err != nil {
+				return fmt.Errorf("singleton template output: %w", err)
+			}
 
-			// Generate the regular templates
-			if err := generateOutput(o, dirExtMap, data, goVersion, s.Config.NoTests); err != nil {
-				return fmt.Errorf("unable to generate output: %w", err)
+			dirExtMap := groupTemplates(o.tableTemplates)
+
+			for _, table := range data.Tables {
+				data.Table = table
+
+				// Generate the regular templates
+				if err := generateOutput(o, dirExtMap, o.tableTemplates, data, goVersion, s.Config.NoTests); err != nil {
+					return fmt.Errorf("unable to generate output: %w", err)
+				}
+			}
+
+			if len(data.QueryFolder.Files) == 0 {
+				continue
+			}
+
+			dirExtMap = groupTemplates(o.queryTemplates)
+			for _, file := range data.QueryFolder.Files {
+				data.QueryFile = file
+
+				// We do this so that the name of the file is correct
+				base := filepath.Base(file.Path)
+				data.Table = drivers.Table[C, I]{
+					Name: base[:len(base)-4],
+				}
+
+				if err := generateOutput(o, dirExtMap, o.queryTemplates, data, goVersion, s.Config.NoTests); err != nil {
+					return fmt.Errorf("unable to generate output: %w", err)
+				}
 			}
 		}
 	}
