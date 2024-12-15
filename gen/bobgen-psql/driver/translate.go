@@ -3,10 +3,15 @@ package driver
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/importers"
 )
+
+const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
 
 type colInfo struct {
 	// Postgres only extension bits
@@ -87,7 +92,9 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "string"
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
+				d.mu.Lock()
 				c.Type = helpers.EnumType(d.types, e.Type)
+				d.mu.Unlock()
 			}
 		}
 	case "ARRAY":
@@ -119,7 +126,7 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		name := info.UDTName[1:] // postgres prefixes with an underscore
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == name {
-				typ := helpers.AddPgEnumArrayType(d.types, e.Type)
+				typ := d.addPgEnumArrayType(d.types, e.Type)
 				return typ, info.UDTName
 			}
 		}
@@ -144,10 +151,10 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "boolean":
 			return "pq.BoolArray", info.ArrType
 		case "uuid":
-			typ := helpers.AddPgGenericArrayType(d.types, "uuid.UUID")
+			typ := d.addPgGenericArrayType(d.types, "uuid.UUID")
 			return typ, info.ArrType
 		case "decimal", "numeric":
-			typ := helpers.AddPgGenericArrayType(d.types, "decimal.Decimal")
+			typ := d.addPgGenericArrayType(d.types, "decimal.Decimal")
 			return typ, info.ArrType
 		case "double precision", "real":
 			return "pq.Float64Array", info.ArrType
@@ -165,10 +172,10 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "_bool":
 			return "pq.BoolArray", info.UDTName
 		case "_uuid":
-			typ := helpers.AddPgGenericArrayType(d.types, "uuid.UUID")
+			typ := d.addPgGenericArrayType(d.types, "uuid.UUID")
 			return typ, info.UDTName
 		case "_numeric":
-			typ := helpers.AddPgGenericArrayType(d.types, "decimal.Decimal")
+			typ := d.addPgGenericArrayType(d.types, "decimal.Decimal")
 			return typ, info.UDTName
 		case "_float4", "_float8":
 			return "pq.Float64Array", info.UDTName
@@ -176,4 +183,61 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 			return "pq.StringArray", info.UDTName
 		}
 	}
+}
+
+func (d *driver) addPgEnumArrayType(types drivers.Types, enumTyp string) string {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	arrTyp := fmt.Sprintf("pgtypes.EnumArray[%s]", enumTyp)
+
+	// premptively add the enum type
+	// this is to prevent issues if the enum is only used in an array
+	helpers.EnumType(types, enumTyp)
+
+	types[arrTyp] = drivers.Type{
+		DependsOn:           []string{enumTyp},
+		Imports:             importers.List{pgtypesImport},
+		NoRandomizationTest: true, // enums are often not random enough
+		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
+            for i := range arr {
+                arr[i] = random_%s(f)
+            }
+            return arr`, arrTyp, gen.NormalizeType(enumTyp)),
+	}
+
+	return arrTyp
+}
+
+func (d *driver) addPgGenericArrayType(types drivers.Types, singleTyp string) string {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	singleTypDef := types[singleTyp]
+	singleComparer := strings.ReplaceAll(singleTypDef.CompareExpr, "AAA", "a")
+	singleComparer = strings.ReplaceAll(singleComparer, "BBB", "b")
+	if singleComparer == "" {
+		singleComparer = "a == b"
+	}
+
+	typ := fmt.Sprintf("pgtypes.Array[%s]", singleTyp)
+
+	types[typ] = drivers.Type{
+		DependsOn: []string{singleTyp},
+		Imports:   append(importers.List{pgtypesImport}, singleTypDef.Imports...),
+		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
+            for i := range arr {
+                arr[i] = random_%s(f)
+            }
+            return arr`, typ, gen.NormalizeType(singleTyp)),
+		CompareExpr: fmt.Sprintf(`slices.EqualFunc(AAA, BBB, func(a, b %s) bool {
+                return %s
+            })`, singleTyp, singleComparer),
+		CompareExprImports: append(append(
+			importers.List{`"slices"`},
+			singleTypDef.CompareExprImports...),
+			singleTypDef.Imports...),
+	}
+
+	return typ
 }

@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/lib/pq"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
@@ -116,6 +117,7 @@ type driver struct {
 	conn   *sql.DB
 	enums  []Enum
 	types  drivers.Types
+	mu     sync.Mutex
 }
 
 func (d *driver) Dialect() string {

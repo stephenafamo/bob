@@ -237,9 +237,9 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			column = d.translateColumnType(column, colFullType)
 		} else {
 			enumTyp := strmangle.TitleCase(tableName + "_" + colName)
-			column.Type = helpers.EnumType(d.types, enumTyp)
 
 			d.enumMu.Lock()
+			column.Type = helpers.EnumType(d.types, enumTyp)
 			d.enums = append(d.enums, drivers.Enum{
 				Type:   enumTyp,
 				Values: parseEnumVals(colFullType),

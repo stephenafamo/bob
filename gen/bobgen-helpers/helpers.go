@@ -146,59 +146,6 @@ func EnumType(types drivers.Types, enum string) string {
 	return enum
 }
 
-const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
-
-func AddPgEnumArrayType(types drivers.Types, enumTyp string) string {
-	arrTyp := fmt.Sprintf("pgtypes.EnumArray[%s]", enumTyp)
-
-	// premptively add the enum type
-	// this is to prevent issues if the enum is only used in an array
-	EnumType(types, enumTyp)
-
-	types[arrTyp] = drivers.Type{
-		DependsOn:           []string{enumTyp},
-		Imports:             importers.List{pgtypesImport},
-		NoRandomizationTest: true, // enums are often not random enough
-		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
-            for i := range arr {
-                arr[i] = random_%s(f)
-            }
-            return arr`, arrTyp, gen.NormalizeType(enumTyp)),
-	}
-
-	return arrTyp
-}
-
-func AddPgGenericArrayType(types drivers.Types, singleTyp string) string {
-	singleTypDef := types[singleTyp]
-	singleComparer := strings.ReplaceAll(singleTypDef.CompareExpr, "AAA", "a")
-	singleComparer = strings.ReplaceAll(singleComparer, "BBB", "b")
-	if singleComparer == "" {
-		singleComparer = "a == b"
-	}
-
-	typ := fmt.Sprintf("pgtypes.Array[%s]", singleTyp)
-
-	types[typ] = drivers.Type{
-		DependsOn: []string{singleTyp},
-		Imports:   append(importers.List{pgtypesImport}, singleTypDef.Imports...),
-		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
-            for i := range arr {
-                arr[i] = random_%s(f)
-            }
-            return arr`, typ, gen.NormalizeType(singleTyp)),
-		CompareExpr: fmt.Sprintf(`slices.EqualFunc(AAA, BBB, func(a, b %s) bool {
-                return %s
-            })`, singleTyp, singleComparer),
-		CompareExprImports: append(append(
-			importers.List{`"slices"`},
-			singleTypDef.CompareExprImports...),
-			singleTypDef.Imports...),
-	}
-
-	return typ
-}
-
 func Types() drivers.Types {
 	return drivers.Types{
 		"bool": {
