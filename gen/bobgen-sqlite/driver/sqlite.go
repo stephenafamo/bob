@@ -38,6 +38,8 @@ type Config struct {
 	// The database schemas to generate models for
 	// a map of the schema name to the DSN
 	Attach map[string]string
+	// Folders containing query files
+	Queries []string `yaml:"queries"`
 	// The name of this schema will not be included in the generated models
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
@@ -108,12 +110,18 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	tables, err := d.tables(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting tables: %w", err)
+	}
+
+	queries, err := newParser(tables).parseFolders(d.config.Queries...)
+	if err != nil {
+		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
 
 	dbinfo := &DBInfo{
-		DriverName: d.config.DriverName,
-		Tables:     tables,
+		DriverName:   d.config.DriverName,
+		Tables:       tables,
+		QueryFolders: queries,
 	}
 
 	return dbinfo, nil
@@ -351,7 +359,8 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, d.translateColumnType(column))
+		column.Type = translateColumnType(column.DBType)
+		columns = append(columns, column)
 	}
 
 	return columns, nil
@@ -538,43 +547,41 @@ func (d *driver) schema(schema string) string {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html
-func (driver) translateColumnType(c drivers.Column) drivers.Column {
-	switch c.DBType {
+func translateColumnType(dbType string) string {
+	switch dbType {
 	case "TINYINT", "INT8":
-		c.Type = "int8"
+		return "int8"
 	case "SMALLINT", "INT2":
-		c.Type = "int16"
+		return "int16"
 	case "MEDIUMINT":
-		c.Type = "int32"
+		return "int32"
 	case "INT", "INTEGER":
-		c.Type = "int32"
+		return "int32"
 	case "BIGINT":
-		c.Type = "int64"
+		return "int64"
 	case "UNSIGNED BIG INT":
-		c.Type = "uint64"
+		return "uint64"
 	case "CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR",
 		"NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB":
-		c.Type = "string"
+		return "string"
 	case "BLOB":
-		c.Type = "[]byte"
+		return "[]byte"
 	case "FLOAT", "REAL":
-		c.Type = "float32"
+		return "float32"
 	case "DOUBLE", "DOUBLE PRECISION":
-		c.Type = "float64"
+		return "float64"
 	case "NUMERIC", "DECIMAL":
-		c.Type = "decimal.Decimal"
+		return "decimal.Decimal"
 	case "BOOLEAN":
-		c.Type = "bool"
+		return "bool"
 	case "DATE", "DATETIME":
-		c.Type = "time.Time"
+		return "time.Time"
 	case "JSON":
-		c.Type = "types.JSON[json.RawMessage]"
+		return "types.JSON[json.RawMessage]"
 
 	default:
-		c.Type = "string"
+		return "string"
 	}
-
-	return c
 }
 
 func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drivers.Index[IndexExtra], error) {

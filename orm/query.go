@@ -69,3 +69,24 @@ func (q Query[Q, T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error)
 func (q Query[Q, T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	return bob.Cursor(ctx, exec, q, q.Scanner)
 }
+
+type ModExpression[Q bob.Expression] interface {
+	bob.Mod[Q]
+	bob.Expression
+}
+
+type ModExecQuery[Q bob.Expression] struct {
+	ExecQuery[ModExpression[Q]]
+}
+
+func (q ModExecQuery[Q]) Apply(e Q) {
+	q.Expression.Apply(e)
+}
+
+type ModQuery[Q bob.Expression, T any, Ts ~[]T] struct {
+	Query[ModExpression[Q], T, Ts]
+}
+
+func (q ModQuery[Q, T, Ts]) Apply(e Q) {
+	q.Expression.Apply(e)
+}

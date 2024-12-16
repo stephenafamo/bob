@@ -1,5 +1,7 @@
 package drivers
 
+import "github.com/stephenafamo/bob"
+
 type QueryFolder struct {
 	Path  string
 	Files []QueryFile
@@ -11,13 +13,22 @@ type QueryFile struct {
 }
 
 type Query struct {
-	Name        string `yaml:"name"`
-	SQL         string `yaml:"raw"`
-	RowName     string `yaml:"row_name"`
-	GenerateRow bool   `yaml:"generate_row"`
+	Type        bob.QueryType `yaml:"type"`
+	Name        string        `yaml:"name"`
+	SQL         string        `yaml:"raw"`
+	RowName     string        `yaml:"row_name"`
+	GenerateRow bool          `yaml:"generate_row"`
 
-	Columns []QueryArg `yaml:"columns"`
-	Args    []QueryArg `yaml:"args"`
+	Columns []QueryArg              `yaml:"columns"`
+	Args    []QueryArg              `yaml:"args"`
+	Mods    func(Importer) []string `yaml:"mods"`
+}
+
+type QueryCol struct {
+	Name     string `yaml:"name"`
+	Nullable bool   `yaml:"nullable"`
+	TypeName string `yaml:"type"`
+	Refs     []Ref  `yaml:"refs"`
 }
 
 type QueryArg struct {
