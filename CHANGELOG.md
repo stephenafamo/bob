@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Using the `UpdateMod()` and `DeleteMod()` methods on an empty model slice now appends `WHERE primary_key IN NULL` which will return no results. Instead of `WHERE primary_key IN ()` which is a syntax error.
 - Ensure `net/netip` is imported for the `pgtypes.Inet` random expression (thanks @plunkettscott)
 - Fix a data race when adding enum types.
+- Fix missing schema in table alias in pkEQ and pkIN clauses (thanks @adatob).
 
 ## [v0.29.0] - 2024-11-20
 
