@@ -19,7 +19,7 @@ type SelectQuery struct {
 	clause.GroupBy
 	clause.Having
 	clause.Windows
-	clause.Combine
+	clause.Combines
 	clause.OrderBy
 	clause.Limit
 	clause.Offset
@@ -89,8 +89,8 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, windowArgs...)
 
-	combineArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Combine,
-		s.Combine.Query != nil, "\n", "")
+	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
+		s.Combines.Queries, "\n", "\n", "")
 	if err != nil {
 		return nil, err
 	}

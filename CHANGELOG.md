@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated error constant generation to employ specific error types for making error matching easier. (thanks @mbezhanov)
 - Collation in `clause.OrderDef` is now a string not an expression and is always quoted
 - Calling `UpdateAll`, `DeleteAll` and `ReloadAll` on an empty model slice now returns nil without running any queries.
+- `UNION`, `INTERSECT` and `EXCEPT` mods now append to the query instead of replacing it.
 - Generated files now end with `.bob.go` instead of `.go` and are always cleaned up before generating new files. Singleton templates are now required to have a `.bob.go.tpl` extension.
 - The expected structure for templates have been changed:
   - Previously, singleton templates should be kept in a `singleton` folder. Now, any template not inside a folder is considered a singleton template.

@@ -123,10 +123,10 @@ func (f Fetch[Q]) Apply(q Q) {
 	q.SetFetch(clause.Fetch(f))
 }
 
-type Combine[Q interface{ SetCombine(clause.Combine) }] clause.Combine
+type Combine[Q interface{ AppendCombine(clause.Combine) }] clause.Combine
 
 func (f Combine[Q]) Apply(q Q) {
-	q.SetCombine(clause.Combine(f))
+	q.AppendCombine(clause.Combine(f))
 }
 
 type For[Q interface{ SetFor(clause.For) }] clause.For

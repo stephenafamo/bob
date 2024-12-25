@@ -16,6 +16,14 @@ const (
 	Except    = "EXCEPT"
 )
 
+type Combines struct {
+	Queries []Combine
+}
+
+func (c *Combines) AppendCombine(combine Combine) {
+	c.Queries = append(c.Queries, combine)
+}
+
 type Combine struct {
 	Strategy string
 	Query    bob.Query

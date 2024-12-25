@@ -233,6 +233,21 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 			),
 			ExpectedSQL: `SELECT id, name FROM users FOR UPDATE OF users SKIP LOCKED`,
 		},
+		"Multiple Unions": {
+			Query: psql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Union(psql.Select(
+					sm.Columns("id", "name"),
+					sm.From("admins"),
+				)),
+				sm.Union(psql.Select(
+					sm.Columns("id", "name"),
+					sm.From("mods"),
+				)),
+			),
+			ExpectedSQL: `SELECT id, name FROM users UNION select id, name FROM admins UNION select id, name FROM mods`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
