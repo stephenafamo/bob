@@ -4,6 +4,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
+	"github.com/stephenafamo/bob/mods"
 )
 
 func Distinct() bob.Mod[*dialect.Function] {
@@ -26,10 +27,11 @@ func Filter(e ...any) bob.Mod[*dialect.Function] {
 	})
 }
 
-func Over() dialect.WindowMod[*dialect.Function] {
-	m := dialect.WindowMod[*dialect.Function]{}
-	m.WindowChain = &dialect.WindowChain[*dialect.WindowMod[*dialect.Function]]{
-		Wrap: &m,
+func Over(winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.Function] {
+	w := clause.Window{}
+	for _, mod := range winMods {
+		mod.Apply(&w)
 	}
-	return m
+
+	return mods.Window[*dialect.Function](w)
 }

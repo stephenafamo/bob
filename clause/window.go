@@ -7,38 +7,24 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type IWindow interface {
-	SetFrom(string)
-	AddPartitionBy(...any)
-	AddOrderBy(...any)
-	SetMode(string)
-	SetStart(any)
-	SetEnd(any)
-	SetExclusion(string)
-}
-
 type Window struct {
-	From        string // an existing window name
-	orderBy     []any
+	BasedOn string // an existing window name
+	OrderBy
 	partitionBy []any
 	Frame
 }
 
-func (wi *Window) SetFrom(from string) {
-	wi.From = from
+func (wi *Window) SetBasedOn(from string) {
+	wi.BasedOn = from
 }
 
 func (wi *Window) AddPartitionBy(condition ...any) {
 	wi.partitionBy = append(wi.partitionBy, condition...)
 }
 
-func (wi *Window) AddOrderBy(order ...any) {
-	wi.orderBy = append(wi.orderBy, order...)
-}
-
 func (wi Window) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	if wi.From != "" {
-		w.Write([]byte(wi.From))
+	if wi.BasedOn != "" {
+		w.Write([]byte(wi.BasedOn))
 		w.Write([]byte(" "))
 	}
 
@@ -47,7 +33,8 @@ func (wi Window) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 		return nil, err
 	}
 
-	orderArgs, err := bob.ExpressSlice(ctx, w, d, start, wi.orderBy, "ORDER BY ", ", ", "")
+	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), wi.OrderBy,
+		len(wi.OrderBy.Expressions) > 0, " ", "")
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +51,7 @@ func (wi Window) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 
 type NamedWindow struct {
 	Name       string
-	Definition any
+	Definition Window
 }
 
 func (n NamedWindow) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {

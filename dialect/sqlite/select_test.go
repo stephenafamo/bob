@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite/fm"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
+	"github.com/stephenafamo/bob/dialect/sqlite/wm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
@@ -93,7 +94,10 @@ func TestSelect(t *testing.T) {
 					sm.Columns(
 						"status",
 						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
-							fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+							fm.Over(
+								wm.PartitionBy("presale_id"),
+								wm.OrderBy("created_date"),
+							),
 						).Minus(sqlite.Quote("created_date")).As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),

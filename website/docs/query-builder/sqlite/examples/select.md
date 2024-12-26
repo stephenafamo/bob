@@ -140,7 +140,10 @@ sqlite.Select(
     sm.Columns(
       "status",
       sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
-        fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+        fm.Over(
+          wm.PartitionBy("presale_id"),
+          wm.OrderBy("created_date"),
+        ),
       ).Minus(sqlite.Quote("created_date")).As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
@@ -179,7 +182,7 @@ sqlite.Select(
 SQL:
 
 ```sql
-SELECT id, name FROM users ORDER BY name COLLATE NOCASE ASC
+SELECT id, name FROM users ORDER BY name COLLATE "NOCASE" ASC
 ```
 
 Code:

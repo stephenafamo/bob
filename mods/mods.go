@@ -89,10 +89,16 @@ func (d Having[Q]) Apply(q Q) {
 	q.AppendHaving(d...)
 }
 
-type Window[Q interface{ AppendWindow(clause.NamedWindow) }] clause.NamedWindow
+type Window[Q interface{ SetWindow(clause.Window) }] clause.Window
 
-func (f Window[Q]) Apply(q Q) {
-	q.AppendWindow(clause.NamedWindow(f))
+func (w Window[Q]) Apply(q Q) {
+	q.SetWindow(clause.Window(w))
+}
+
+type NamedWindow[Q interface{ AppendWindow(clause.NamedWindow) }] clause.NamedWindow
+
+func (w NamedWindow[Q]) Apply(q Q) {
+	q.AppendWindow(clause.NamedWindow(w))
 }
 
 type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] clause.OrderDef

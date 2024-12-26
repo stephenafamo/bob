@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `gen/QueriesTemplates` which in the future will contain base templates for generating code for parsed qureries.
 - Added a `QueryTemplate` field to `bobgen_helpers.Templates` for drivers to include additional templates for queries.
 - Added a new reserved output key `queries`. This is handled specially for each query folder supplied by the driver.
+- Added new `wm` package to each dialect for mods that modify `Window` clauses.
 
 ### Changed
 
@@ -25,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Previously, singleton templates should be kept in a `singleton` folder. Now, any template not inside a folder is considered a singleton template.
   - Previoulsy, templates in the root folder are merged and run for each table. Now, this will happen to templates in the `table/` folder.
   - Previoulsy, the entire file tree and every subdirectory is walked to find templates. Now only templates in the root folder and the `table/` folder are considered.
+- Change `From` in `clause.Window` to `BasedOn` to avoid confusion with `FromPreceding` and `FromFollowing`. Also change `SetFrom` to `SetBasedOn`.
+- Embed `clause.OrderBy` in `clause.Window` to make it possible to reuse `OrderBy` mods in window definitions.
+- Change the `Definition` field in `clause.NamedWindow` from `any` to `clause.Window` for extra type safety.
+- `sm.Window` now takes mods to modify the window clause.
+- `fm.Over` now takes mods to modify the window for the window function.
 
 ### Deprecated
 
@@ -34,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove redundatnt type parameters from `orm.ExecQuery`.
 - Remove unnecessary interface in `orm.Query` and `orm.ExecQuery`.
+- Remove the redundant `clause.IWindow` interface.
+- Remove `dialect.WindowMod` and `dialect.WindowMods` which use chainable methods to modify `Window` clauses. This is now handled by the `wm` package which used mods.
 
 ### Fixed
 

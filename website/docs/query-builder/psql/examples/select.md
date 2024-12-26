@@ -201,7 +201,10 @@ psql.Select(
     sm.Columns(
       "status",
       psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
-        fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+        fm.Over(
+          wm.PartitionBy("presale_id"),
+          wm.OrderBy("created_date"),
+        ),
       ).Minus(psql.Quote("created_date")).As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
@@ -334,10 +337,10 @@ Code:
 ```go
 psql.Select(
   sm.Columns(
-    psql.F("avg", "salary")(fm.Over().From("w")),
+    psql.F("avg", "salary")(fm.Over(wm.BasedOn("w"))),
   ),
   sm.From("c"),
-  sm.Window("w").PartitionBy("depname").OrderBy("salary"),
+  sm.Window("w", wm.PartitionBy("depname"), wm.OrderBy("salary")),
 )
 ```
 
@@ -408,5 +411,30 @@ psql.Select(
   sm.Columns("id", "name"),
   sm.From("users"),
   sm.ForUpdate("users").SkipLocked(),
+)
+```
+
+## Multiple Unions
+
+SQL:
+
+```sql
+SELECT id, name FROM users UNION select id, name FROM admins UNION select id, name FROM mods
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Union(psql.Select(
+    sm.Columns("id", "name"),
+    sm.From("admins"),
+  )),
+  sm.Union(psql.Select(
+    sm.Columns("id", "name"),
+    sm.From("mods"),
+  )),
 )
 ```

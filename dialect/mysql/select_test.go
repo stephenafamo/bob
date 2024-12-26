@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/fm"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
+	"github.com/stephenafamo/bob/dialect/mysql/wm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
 )
@@ -86,7 +87,10 @@ func TestSelect(t *testing.T) {
 					sm.Columns(
 						"status",
 						mysql.F("LEAD", "created_date", 1, mysql.F("NOW"))(
-							fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+							fm.Over(
+								wm.PartitionBy("presale_id"),
+								wm.OrderBy("created_date"),
+							),
 						).Minus(mysql.Quote("created_date")).As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),

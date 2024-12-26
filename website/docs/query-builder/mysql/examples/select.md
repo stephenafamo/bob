@@ -124,7 +124,10 @@ mysql.Select(
     sm.Columns(
       "status",
       mysql.F("LEAD", "created_date", 1, mysql.F("NOW"))(
-        fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+        fm.Over(
+          wm.PartitionBy("presale_id"),
+          wm.OrderBy("created_date"),
+        ),
       ).Minus(mysql.Quote("created_date")).As("difference")),
     sm.From("presales_presalestatus")),
   ).As("differnce_by_status"),
@@ -163,7 +166,7 @@ mysql.Select(
 SQL:
 
 ```sql
-SELECT id, name FROM users ORDER BY name COLLATE utf8mb4_bg_0900_as_cs ASC
+SELECT id, name FROM users ORDER BY name COLLATE `utf8mb4_bg_0900_as_cs` ASC
 ```
 
 Code:

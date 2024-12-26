@@ -8,6 +8,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/dialect/psql/wm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 	pg_query "github.com/wasilibs/go-pgquery"
 )
@@ -127,7 +128,10 @@ func TestSelect(t *testing.T) {
 					sm.Columns(
 						"status",
 						psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
-							fm.Over().PartitionBy("presale_id").OrderBy("created_date"),
+							fm.Over(
+								wm.PartitionBy("presale_id"),
+								wm.OrderBy("created_date"),
+							),
 						).Minus(psql.Quote("created_date")).As("difference")),
 					sm.From("presales_presalestatus")),
 				).As("differnce_by_status"),
@@ -191,10 +195,10 @@ FROM c
 WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 			Query: psql.Select(
 				sm.Columns(
-					psql.F("avg", "salary")(fm.Over().From("w")),
+					psql.F("avg", "salary")(fm.Over(wm.BasedOn("w"))),
 				),
 				sm.From("c"),
-				sm.Window("w").PartitionBy("depname").OrderBy("salary"),
+				sm.Window("w", wm.PartitionBy("depname"), wm.OrderBy("salary")),
 			),
 		},
 		"select with order by and collate": {

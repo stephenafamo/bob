@@ -63,15 +63,16 @@ func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
 	}
 }
 
-func Window(name string) dialect.WindowsMod[*dialect.SelectQuery] {
-	m := dialect.WindowsMod[*dialect.SelectQuery]{
-		Name: name,
+func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
+	w := clause.Window{}
+	for _, mod := range winMods {
+		mod.Apply(&w)
 	}
 
-	m.WindowChain = &dialect.WindowChain[*dialect.WindowsMod[*dialect.SelectQuery]]{
-		Wrap: &m,
-	}
-	return m
+	return mods.NamedWindow[*dialect.SelectQuery](clause.NamedWindow{
+		Name:       name,
+		Definition: w,
+	})
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
