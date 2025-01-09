@@ -74,6 +74,10 @@ func (v *View[T, Tslice]) NameAs() bob.Expression {
 	return v.Name().As(v.alias)
 }
 
+func (v *View[T, Tslice]) Alias() string {
+	return v.alias
+}
+
 // Returns a column list
 func (v *View[T, Tslice]) Columns() orm.Columns {
 	// get the schema
