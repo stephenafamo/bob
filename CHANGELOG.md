@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.30.0] - 2025-01-16
+
 ### Added
 
 - Added a new field `QueryFolders` to `gen/drivers.DBInfo` for drivers to be able to include information about parsed queries.
