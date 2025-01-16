@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `QueryTemplate` field to `bobgen_helpers.Templates` for drivers to include additional templates for queries.
 - Added a new reserved output key `queries`. This is handled specially for each query folder supplied by the driver.
 - Added new `wm` package to each dialect for mods that modify `Window` clauses.
-- Added a new method `Alias` for `View` struct, for each dialect. It returns the alias of the view.
+- Added a new method `Alias` for `View` struct, for each dialect. It returns the alias of the view. (thanks @Nitjsefni7)
 
 ### Changed
 
