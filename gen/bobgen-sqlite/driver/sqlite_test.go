@@ -1,16 +1,19 @@
 package driver
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	sqlDriver "database/sql/driver"
-	_ "embed"
+	"embed"
 	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stephenafamo/bob/gen"
@@ -21,7 +24,7 @@ import (
 	"modernc.org/sqlite"
 )
 
-func cleanup(t *testing.T, config Config) {
+func cleanupSQLite(t *testing.T, config Config) {
 	t.Helper()
 
 	fmt.Printf("cleaning...")
@@ -40,9 +43,36 @@ func cleanup(t *testing.T, config Config) {
 	fmt.Printf(" DONE\n")
 }
 
+func cleanupLibSQL(t *testing.T, db *sql.DB) {
+	t.Helper()
+
+	fmt.Printf("cleaning...")
+
+	// Find all tables
+	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+
+	// Drop each table
+	for rows.Next() {
+		var tableName string
+		if err = rows.Scan(&tableName); err != nil {
+			t.Fatalf("could not delete existing db: %v", err)
+		}
+		_, err = db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %q;", tableName))
+		if err != nil {
+			t.Fatalf("could not delete %q table: %v", tableName, err)
+		}
+	}
+
+	fmt.Printf(" DONE\n")
+}
+
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-func TestAssemble(t *testing.T) {
+func TestAssembleSQLite(t *testing.T) {
 	ctx := context.Background()
 
 	config := Config{
@@ -50,32 +80,94 @@ func TestAssemble(t *testing.T) {
 		Attach: map[string]string{"one": "./test1.db"},
 	}
 
-	cleanup(t, config)
-	t.Cleanup(func() { cleanup(t, config) })
+	cleanupSQLite(t, config)
+	t.Cleanup(func() { cleanupSQLite(t, config) })
 
-	db, err := sql.Open("sqlite", config.DSN)
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
+	db := connect(t, "sqlite", config.DSN)
 	defer db.Close()
 
-	if err = registerRegexpFunction(); err != nil {
+	if err := registerRegexpFunction(); err != nil {
 		t.Fatal(err)
 	}
 
+	attach(t, ctx, db, config)
+
+	fmt.Printf("migrating...")
+	migrate(t, db, testfiles.SQLiteSchema)
+	fmt.Printf(" DONE\n")
+
+	assemble(t, config)
+}
+
+func TestAssembleLibSQL(t *testing.T) {
+	ctx := context.Background()
+
+	err := adjustGoldenFiles()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	config := Config{
+		DSN:    "ws://localhost:8080",
+		Attach: map[string]string{"one": "one"},
+	}
+
+	db := connect(t, "libsql", config.DSN)
+
+	attach(t, ctx, db, config)
+
+	fmt.Printf("migrating...")
+	dbHttpDefault := connect(t, "libsql", "http://localhost:8080")
+	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema)
+	dbHttpOne := connect(t, "libsql", "http://one.localhost:8080")
+	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema)
+	fmt.Printf(" DONE\n")
+
+	t.Cleanup(func() {
+		cleanupLibSQL(t, dbHttpDefault)
+		cleanupLibSQL(t, dbHttpOne)
+		dbHttpDefault.Close()
+		dbHttpOne.Close()
+		err = restoreGoldenFiles()
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	assemble(t, config)
+}
+
+func connect(t *testing.T, driverName, dsn string) *sql.DB {
+	t.Helper()
+	db, err := sql.Open(driverName, dsn)
+	if err != nil {
+		t.Fatalf("failed to connect to database: %v", err)
+	}
+	return db
+}
+
+func attach(t *testing.T, ctx context.Context, db *sql.DB, config Config) {
+	t.Helper()
 	for schema, conn := range config.Attach {
-		_, err = db.ExecContext(ctx, fmt.Sprintf("attach database '%s' as %q", conn, schema))
+		if strings.HasPrefix(conn, "./") {
+			conn = strconv.Quote(conn)
+		}
+		_, err := db.ExecContext(ctx, fmt.Sprintf("attach database %s as %s", conn, schema))
 		if err != nil {
 			t.Fatalf("could not attach %q: %v", conn, err)
 		}
 	}
+}
 
-	fmt.Printf("migrating...")
-	if err := helpers.Migrate(context.Background(), db, testfiles.SQLiteSchema); err != nil {
+func migrate(t *testing.T, db *sql.DB, schema embed.FS) {
+	t.Helper()
+	if err := helpers.Migrate(context.Background(), db, schema); err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf(" DONE\n")
+}
 
+func assemble(t *testing.T, config Config) {
+	t.Helper()
 	tests := []struct {
 		name       string
 		config     Config
@@ -242,4 +334,54 @@ func registerRegexpFunction() error {
 
 		return match, nil
 	})
+}
+
+var goldenFiles = []string{
+	"exclude-tables.golden.json",
+	"include-exclude-tables.golden.json",
+	"include-exclude-tables-mixed.golden.json",
+	"include-exclude-tables-regex.golden.json",
+	"include-tables.golden.json",
+	"sqlite.golden.json",
+}
+
+func adjustGoldenFiles() error {
+	for _, f := range goldenFiles {
+		err := replaceStringInFile(f, "modernc.org/sqlite", "github.com/tursodatabase/libsql-client-go/libsql")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func restoreGoldenFiles() error {
+	for _, f := range goldenFiles {
+		err := replaceStringInFile(f, "github.com/tursodatabase/libsql-client-go/libsql", "modernc.org/sqlite")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func replaceStringInFile(filename, oldStr, newStr string) error {
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		return err
+	}
+	perm := fileInfo.Mode().Perm()
+
+	input, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	output := bytes.ReplaceAll(input, []byte(oldStr), []byte(newStr))
+
+	err = os.WriteFile(filename, output, perm)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

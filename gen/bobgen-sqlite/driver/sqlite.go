@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/aarondl/opt/null"
@@ -13,6 +15,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"github.com/volatiletech/strmangle"
 	_ "modernc.org/sqlite"
 )
@@ -93,14 +96,18 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("database dsn is not set")
 	}
 
-	d.conn, err = sql.Open("sqlite", d.config.DSN)
+	driverName := d.inferDriver()
+	d.conn, err = sql.Open(driverName, d.config.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer d.conn.Close()
 
 	for schema, dsn := range d.config.Attach {
-		_, err = d.conn.ExecContext(ctx, fmt.Sprintf("attach database '%s' as %s", dsn, schema))
+		if driverName == "sqlite" {
+			dsn = strconv.Quote(dsn)
+		}
+		_, err = d.conn.ExecContext(ctx, fmt.Sprintf("attach database %s as %s", dsn, schema))
 		if err != nil {
 			return nil, fmt.Errorf("could not attach %q: %w", schema, err)
 		}
@@ -111,12 +118,38 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
+	if driverName == "libsql" {
+		d.config.DriverName = "github.com/tursodatabase/libsql-client-go/libsql"
+	}
 	dbinfo := &DBInfo{
 		DriverName: d.config.DriverName,
 		Tables:     tables,
 	}
 
 	return dbinfo, nil
+}
+
+func (d *driver) inferDriver() string {
+	driverName := "sqlite"
+	if !strings.Contains(d.config.DSN, "://") {
+		return driverName
+	}
+	dsn, _ := url.Parse(d.config.DSN)
+	if dsn == nil {
+		return driverName
+	}
+	libsqlSchemes := map[string]bool{
+		"libsql": true,
+		"file":   true,
+		"https":  true,
+		"http":   true,
+		"wss":    true,
+		"ws":     true,
+	}
+	if libsqlSchemes[dsn.Scheme] {
+		driverName = "libsql"
+	}
+	return driverName
 }
 
 func (d *driver) buildQuery(schema string) (string, []any) {
@@ -135,13 +168,13 @@ func (d *driver) buildQuery(schema string) (string, []any) {
 			}
 		}
 		if len(include) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("name in (%s)", strmangle.Placeholders(true, len(include), 1, 1)))
+			subqueries = append(subqueries, fmt.Sprintf("name in (%s)", strmangle.Placeholders(false, len(include), 1, 1)))
 			for _, w := range include {
 				args = append(args, w)
 			}
 		}
 		if len(regexPatterns) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("name regexp (%s)", strmangle.Placeholders(true, 1, len(args)+1, 1)))
+			subqueries = append(subqueries, fmt.Sprintf("name regexp (%s)", strmangle.Placeholders(false, 1, len(args)+1, 1)))
 			args = append(args, strings.Join(regexPatterns, "|"))
 		}
 		if len(subqueries) > 0 {
@@ -159,13 +192,13 @@ func (d *driver) buildQuery(schema string) (string, []any) {
 			}
 		}
 		if len(exclude) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("name not in (%s)", strmangle.Placeholders(true, len(exclude), 1+len(args), 1)))
+			subqueries = append(subqueries, fmt.Sprintf("name not in (%s)", strmangle.Placeholders(false, len(exclude), 1+len(args), 1)))
 			for _, w := range exclude {
 				args = append(args, w)
 			}
 		}
 		if len(regexPatterns) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("name not regexp (%s)", strmangle.Placeholders(true, 1, len(args)+1, 1)))
+			subqueries = append(subqueries, fmt.Sprintf("name not regexp (%s)", strmangle.Placeholders(false, 1, len(args)+1, 1)))
 			args = append(args, strings.Join(regexPatterns, "|"))
 		}
 		if len(subqueries) > 0 {

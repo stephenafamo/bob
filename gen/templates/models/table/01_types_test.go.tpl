@@ -41,6 +41,10 @@
 	{{$.Importer.Import "_" $.DriverName }}
 	{{$sqlDriverName = "sqlite3"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
+{{ else if eq $.DriverName "github.com/tursodatabase/libsql-client-go/libsql" }}
+	{{$.Importer.Import "_" $.DriverName }}
+	{{$sqlDriverName = "libsql"}}
+	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ end }}
 
 func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
@@ -80,7 +84,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 			}
 			exec := bob.New(tx)
 			f := factory.New()
-			tpl := f.New{{$tAlias.UpSingular}}()
+			tpl := f.New{{$tAlias.UpSingular}}(factory.{{$tAlias.UpSingular}}Mods.RandomizeAllColumns(nil))
 			obj, err := tpl.Create(ctx, exec)
 			if err != nil {
 				t.Fatal(err)
