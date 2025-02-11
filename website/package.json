@@ -20,7 +20,7 @@
     "@mdx-js/react": "^1.6.22",
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
-    "esbuild-loader": "^2.21.0",
+    "esbuild-loader": "^4.3.0",
     "postcss": "^8.5.1",
     "prism-react-renderer": "^1.3.5",
     "react": "^17.0.2",
