@@ -97,12 +97,18 @@ func New(config Config) Interface {
 			Imports:    importers.List{`"github.com/google/uuid"`},
 			RandomExpr: `return uuid.New()`,
 		}
+	case "x":
+		types["uuid.UUID"] = drivers.Type{
+			Imports:    importers.List{`"github.com/twitter-payments/orchestrator/internal/uuid"`},
+			RandomExpr: `return uuid.New()`,
+		}
 	default:
 		types["uuid.UUID"] = drivers.Type{
 			Imports:    importers.List{`"github.com/gofrs/uuid/v5"`},
 			RandomExpr: `return uuid.Must(uuid.NewV4())`,
 		}
 	}
+	//
 
 	return &driver{
 		config: config,

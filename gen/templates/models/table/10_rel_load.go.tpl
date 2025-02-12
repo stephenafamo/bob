@@ -223,7 +223,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- $foreign := index $side.ToColumns $index -}}
 			{{- $fromColGet := $.Tables.ColumnGetter $fromAlias $side.From $local -}}
 			{{- $toColGet := $.Tables.ColumnGetter $toAlias $side.To $foreign -}}
-			if o.{{$fromColGet}} != rel.{{$toColGet}} {
+			{{- $typInfo :=  index $.Types ($table.GetColumn $local).Type -}}
+        	{{- with $typInfo.CompareExpr -}}
+          	  {{$.Importer.ImportList $typInfo.CompareExprImports -}}
+          	  if !{{replace "AAA" (cat "o." $fromColGet) . | replace "BBB" (cat "rel." $toColGet)}}
+        	{{- else -}}
+          	  if o.{{$fromColGet}} != rel.{{$toColGet}}
+        	{{- end -}}
+			{
 			  continue
 			}
 			{{end}}

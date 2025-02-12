@@ -8,9 +8,9 @@
 
 	// Enum values for {{$enum.Type}}
 	const (
-	{{range $val := $enum.Values -}}
+	{{range $i, $val := $enum.Values -}}
 		{{- $enumValue := enumVal $val -}}
-		{{$enum.Type}}{{$enumValue}} {{$enum.Type}} = {{quote $val}}
+		{{$enum.Type}}{{$enumValue}} {{$enum.Type}} = {{ $i }}
 		{{$allvals = append $allvals (printf "%s%s" $enum.Type $enumValue) -}}
 	{{end -}}
 	)
@@ -21,10 +21,30 @@
     }
 	}
 
-	type {{$enum.Type}} string
+	type {{$enum.Type}} int32
 
   func (e {{$enum.Type}}) String() string {
-    return string(e)
+		switch e {
+		{{range $val := $enum.Values -}}
+		{{- $enumValue := enumVal $val -}}
+		case {{$enum.Type}}{{$enumValue}}:
+			return {{printf "%q" $val}}
+		{{end}}
+		default:
+      panic(fmt.Errorf("enum value %d invalid for {{printf "%s" $enum.Type}}", e))
+		}
+  }
+
+  func Parse{{$enum.Type}}(s string) ({{$enum.Type}}, error) {
+  	switch s {
+  	{{range $val := $enum.Values -}}
+    {{- $enumValue := enumVal $val -}}
+	  case {{printf "%q" $val}}:
+		  return {{$enum.Type}}{{$enumValue}}, nil
+	  {{end}}
+  	default:
+  	    return {{$enum.Type}}(0), fmt.Errorf("unable to parse %s for {{printf "%s" $enum.Type}}", s)
+  	}
   }
 
   func (e {{$enum.Type}}) Valid() bool {
@@ -37,7 +57,10 @@
   }
 
   func (e {{$enum.Type}}) MarshalText() ([]byte, error) {
-    return []byte(e), nil
+    if !e.Valid() {
+			return []byte{}, nil
+		}
+		return []byte(e.String()), nil
   }
 
   func (e *{{$enum.Type}}) UnmarshalText(text []byte) error {
@@ -45,7 +68,7 @@
   }
 
   func (e {{$enum.Type}}) MarshalBinary() ([]byte, error) {
-    return []byte(e), nil
+    return []byte(e.String()), nil
   }
 
   func (e *{{$enum.Type}}) UnmarshalBinary(data []byte) error {
@@ -53,15 +76,23 @@
   }
 
   func (e {{$enum.Type}}) Value() (driver.Value, error) {
-    return string(e), nil
+    return e.String(), nil
   }
 
   func (e *{{$enum.Type}}) Scan(value any) error {
     switch x := value.(type) {
     case string:
-      *e = {{$enum.Type}}(x)
+      ee, err := Parse{{$enum.Type}}(x)
+      if err != nil {
+        return err
+      }
+      *e = ee
     case []byte:
-      *e = {{$enum.Type}}(x)
+      ee, err := Parse{{$enum.Type}}(string(x))
+      if err != nil {
+        return err
+      }
+      *e = ee
     case nil:
       return fmt.Errorf("cannot nil into {{$enum.Type}}")
     default:
