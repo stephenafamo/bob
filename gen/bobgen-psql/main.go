@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/stephenafamo/bob/gen"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/bobgen-psql/driver"
+	"github.com/twitter-payments/bob/gen"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/gen/bobgen-psql/driver"
 	"github.com/urfave/cli/v2"
 )
 

@@ -4,14 +4,14 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/dm"
-	"github.com/stephenafamo/bob/dialect/psql/im"
-	"github.com/stephenafamo/bob/dialect/psql/um"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/bob/orm"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/psql/dialect"
+	"github.com/twitter-payments/bob/dialect/psql/dm"
+	"github.com/twitter-payments/bob/dialect/psql/im"
+	"github.com/twitter-payments/bob/dialect/psql/um"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/internal/mappings"
+	"github.com/twitter-payments/bob/orm"
 )
 
 type setter[T any] interface {

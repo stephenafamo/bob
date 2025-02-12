@@ -10,10 +10,10 @@ import (
 	"sync"
 
 	"github.com/go-sql-driver/mysql"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/gen/drivers"
 	"github.com/volatiletech/strmangle"
 )
 

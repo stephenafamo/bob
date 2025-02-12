@@ -1,7 +1,7 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{$.Importer.Import "context"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}}Slice is retrieved from the database
@@ -25,8 +25,8 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/sm" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dialect" $.Dialect)}}
 
 {{$pkCols := $table.Constraints.Primary.Columns}}
 {{$multiPK := gt (len $pkCols) 1}}

@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/clause"
+	"github.com/twitter-payments/bob/dialect/psql/dialect"
 )
 
 func BasedOn(name string) bob.Mod[*clause.Window] {

@@ -26,7 +26,7 @@ func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] 
 {{define "one_update" -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/um" $.Dialect)}}
 // Update uses an executor to update the {{$tAlias.UpSingular}}
 func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
 	_, err := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ())).Exec(ctx, exec)

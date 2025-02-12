@@ -3,9 +3,9 @@ package mysql_test
 import (
 	"testing"
 
-	"github.com/stephenafamo/bob/dialect/mysql"
-	"github.com/stephenafamo/bob/dialect/mysql/dm"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	"github.com/twitter-payments/bob/dialect/mysql"
+	"github.com/twitter-payments/bob/dialect/mysql/dm"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 func TestDelete(t *testing.T) {

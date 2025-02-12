@@ -1,8 +1,8 @@
 package um
 
 import (
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/mysql/dialect"
 )
 
 func QBName(name string) bob.Mod[*dialect.UpdateQuery] {

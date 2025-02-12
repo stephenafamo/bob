@@ -8,11 +8,11 @@ import (
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
-	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
-	"github.com/stephenafamo/bob/gen/drivers"
-	testfiles "github.com/stephenafamo/bob/test/files"
-	testgen "github.com/stephenafamo/bob/test/gen"
+	psqlDriver "github.com/twitter-payments/bob/gen/bobgen-psql/driver"
+	sqliteDriver "github.com/twitter-payments/bob/gen/bobgen-sqlite/driver"
+	"github.com/twitter-payments/bob/gen/drivers"
+	testfiles "github.com/twitter-payments/bob/test/files"
+	testgen "github.com/twitter-payments/bob/test/gen"
 )
 
 func TestPostgres(t *testing.T) {

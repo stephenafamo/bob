@@ -9,7 +9,7 @@
 {{$pkArgs = printf "%s%sPK %s," $pkArgs $colAlias $column.Type}}
 {{end -}}
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/sm" $.Dialect)}}
 // Find{{$tAlias.UpSingular}} retrieves a single record by primary key
 // If cols is empty Find will return all columns.
 func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArgs}} cols ...string) (*{{$tAlias.UpSingular}}, error) {

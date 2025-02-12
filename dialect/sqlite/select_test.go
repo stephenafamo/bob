@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
-	"github.com/stephenafamo/bob/dialect/sqlite/fm"
-	"github.com/stephenafamo/bob/dialect/sqlite/sm"
-	"github.com/stephenafamo/bob/dialect/sqlite/wm"
-	testutils "github.com/stephenafamo/bob/test/utils"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/sqlite"
+	"github.com/twitter-payments/bob/dialect/sqlite/dialect"
+	"github.com/twitter-payments/bob/dialect/sqlite/fm"
+	"github.com/twitter-payments/bob/dialect/sqlite/sm"
+	"github.com/twitter-payments/bob/dialect/sqlite/wm"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 var (

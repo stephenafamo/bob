@@ -147,7 +147,7 @@ types:
     no_randomization_test: false
     imports:
       - '"encoding/json"'
-      - '"github.com/stephenafamo/bob/types"'
+      - '"github.com/twitter-payments/bob/types"'
     # To be used in factory.random_type
     # a variable `f` of type `faker.Faker` is available
     random_expr: |-

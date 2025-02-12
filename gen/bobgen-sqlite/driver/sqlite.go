@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/aarondl/opt/null"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/gen/drivers"
 	"github.com/volatiletech/strmangle"
 	_ "modernc.org/sqlite"
 )

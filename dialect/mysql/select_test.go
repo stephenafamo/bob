@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/mysql"
-	"github.com/stephenafamo/bob/dialect/mysql/dialect"
-	"github.com/stephenafamo/bob/dialect/mysql/fm"
-	"github.com/stephenafamo/bob/dialect/mysql/sm"
-	"github.com/stephenafamo/bob/dialect/mysql/wm"
-	testutils "github.com/stephenafamo/bob/test/utils"
 	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/mysql"
+	"github.com/twitter-payments/bob/dialect/mysql/dialect"
+	"github.com/twitter-payments/bob/dialect/mysql/fm"
+	"github.com/twitter-payments/bob/dialect/mysql/sm"
+	"github.com/twitter-payments/bob/dialect/mysql/wm"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 var (

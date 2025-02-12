@@ -1,6 +1,6 @@
 package gen
 
-import "github.com/stephenafamo/bob/gen/drivers"
+import "github.com/twitter-payments/bob/gen/drivers"
 
 type Plugin interface {
 	Name() string

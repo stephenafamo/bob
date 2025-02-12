@@ -12,13 +12,13 @@ import (
 	"github.com/aarondl/opt/omit"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/um"
-	"github.com/stephenafamo/bob/expr"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/psql/dialect"
+	"github.com/twitter-payments/bob/dialect/psql/um"
+	"github.com/twitter-payments/bob/expr"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/orm"
 )
 
 func TestMain(m *testing.M) {

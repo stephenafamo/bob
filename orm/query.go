@@ -3,8 +3,8 @@ package orm
 import (
 	"context"
 
-	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/scan"
+	"github.com/twitter-payments/bob"
 )
 
 type ExecQuery[Q bob.Expression] struct {

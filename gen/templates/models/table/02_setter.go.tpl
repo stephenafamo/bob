@@ -57,7 +57,7 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 
 {{block "setter_insert_mod" . -}}
 {{$.Importer.Import "io"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
@@ -91,14 +91,14 @@ func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] 
 {{- end}}
 
 {{block "setter_expressions" . -}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expression {
   exprs := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
 
-  {{$.Importer.Import "github.com/stephenafamo/bob/expr" }}
-	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
+  {{$.Importer.Import "github.com/twitter-payments/bob/expr" }}
+	{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/um" $.Dialect)}}
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}

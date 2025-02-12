@@ -11,11 +11,11 @@ Import the `mysql` package and the query mod packages for the different query ty
 
 ```go
 import (
-    "github.com/stephenafamo/bob/dialect/mysql"
-    "github.com/stephenafamo/bob/dialect/mysql/sm"
-    "github.com/stephenafamo/bob/dialect/mysql/im"
-    "github.com/stephenafamo/bob/dialect/mysql/um"
-    "github.com/stephenafamo/bob/dialect/mysql/dm"
+    "github.com/twitter-payments/bob/dialect/mysql"
+    "github.com/twitter-payments/bob/dialect/mysql/sm"
+    "github.com/twitter-payments/bob/dialect/mysql/im"
+    "github.com/twitter-payments/bob/dialect/mysql/um"
+    "github.com/twitter-payments/bob/dialect/mysql/dm"
 )
 
 func main() {

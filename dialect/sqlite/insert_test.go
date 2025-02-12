@@ -3,10 +3,10 @@ package sqlite_test
 import (
 	"testing"
 
-	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/im"
-	"github.com/stephenafamo/bob/dialect/sqlite/sm"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	"github.com/twitter-payments/bob/dialect/sqlite"
+	"github.com/twitter-payments/bob/dialect/sqlite/im"
+	"github.com/twitter-payments/bob/dialect/sqlite/sm"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 func TestInsert(t *testing.T) {

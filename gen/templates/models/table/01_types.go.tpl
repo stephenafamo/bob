@@ -50,7 +50,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{- end}}
 
 {{if $.Relationships.Get $table.Key -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dialect" $.Dialect)}}
 // {{$tAlias.DownSingular}}R is where relationships are stored.
 type {{$tAlias.DownSingular}}R struct {
 	{{range $.Relationships.Get $table.Key -}}
@@ -71,7 +71,7 @@ type {{$tAlias.DownSingular}}ColumnNames struct {
   {{end -}}
 }
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s" $.Dialect)}}
 var {{$tAlias.UpSingular}}Columns = build{{$tAlias.UpSingular}}Columns({{quote $table.Key}})
 
 type {{$tAlias.DownSingular}}Columns struct {

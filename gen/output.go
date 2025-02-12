@@ -16,7 +16,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/twitter-payments/bob/gen/importers"
 	"mvdan.cc/gofumpt/format"
 )
 

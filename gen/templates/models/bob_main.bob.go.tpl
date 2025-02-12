@@ -28,7 +28,7 @@ var ColumnNames = struct {
 }
 
 {{block "helpers/where_variables" . -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
 	InsertWhere = Where[*dialect.InsertQuery]()
@@ -37,7 +37,7 @@ var (
 )
 {{- end}}
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s" $.Dialect)}}
 func Where[Q {{$.Dialect}}.Filterable]() struct {
 	{{range $table := .Tables -}}
 	{{$tAlias := $.Aliases.Table $table.Key -}}
@@ -86,7 +86,7 @@ type joins[Q dialect.Joinable] struct {
 		{{end}}{{end}}
 }
 
-{{$.Importer.Import "github.com/stephenafamo/bob/clause"}}
+{{$.Importer.Import "github.com/twitter-payments/bob/clause"}}
 func buildJoinSet[Q interface { aliasedAs(string) Q }, C any, F func(C, string) Q](c C, f F) joinSet[Q] {
 	return joinSet[Q] {
 	  InnerJoin: f(c, clause.InnerJoin),
@@ -104,7 +104,7 @@ func getJoins[Q dialect.Joinable]() joins[Q] {
 	}
 }
 
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 
 type modAs[Q any, C interface{ AliasedAs(string) C }] struct {
   c C

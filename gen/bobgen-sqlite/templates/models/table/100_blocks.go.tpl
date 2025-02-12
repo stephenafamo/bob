@@ -1,6 +1,6 @@
 {{define "setter_insert_mod" -}}
 {{$.Importer.Import "io"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {

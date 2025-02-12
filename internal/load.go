@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/orm"
 )
 
 type Preloadable interface {

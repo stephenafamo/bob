@@ -11,11 +11,11 @@ Import the `sqlite` package and the query mod packages for the different query t
 
 ```go
 import (
-    "github.com/stephenafamo/bob/dialect/sqlite"
-    "github.com/stephenafamo/bob/dialect/sqlite/sm"
-    "github.com/stephenafamo/bob/dialect/sqlite/im"
-    "github.com/stephenafamo/bob/dialect/sqlite/um"
-    "github.com/stephenafamo/bob/dialect/sqlite/dm"
+    "github.com/twitter-payments/bob/dialect/sqlite"
+    "github.com/twitter-payments/bob/dialect/sqlite/sm"
+    "github.com/twitter-payments/bob/dialect/sqlite/im"
+    "github.com/twitter-payments/bob/dialect/sqlite/um"
+    "github.com/twitter-payments/bob/dialect/sqlite/dm"
 )
 
 func main() {

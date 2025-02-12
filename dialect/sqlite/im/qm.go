@@ -1,12 +1,12 @@
 package im
 
 import (
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/mods"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/clause"
+	"github.com/twitter-payments/bob/dialect/sqlite/dialect"
+	"github.com/twitter-payments/bob/expr"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/mods"
 )
 
 func With(name string, columns ...string) dialect.CTEChain[*dialect.InsertQuery] {

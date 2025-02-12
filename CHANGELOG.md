@@ -218,7 +218,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `fm` mods to all supported dialects (psql, mysql and sqlite). These are mods for functions and are used to modify the function call. For example:
 
   ```go
-  // import "github.com/stephenafamo/bob/dialect/psql/fm"
+  // import "github.com/twitter-payments/bob/dialect/psql/fm"
   psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done"))))
   ```
 
@@ -250,7 +250,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   // Before
   psql.F( "count", "*",).FilterWhere(psql.Quote("status").EQ(psql.S("done"))),
   // After
-  // import "github.com/stephenafamo/bob/dialect/psql/fm"
+  // import "github.com/twitter-payments/bob/dialect/psql/fm"
   psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done")))),
   ```
 

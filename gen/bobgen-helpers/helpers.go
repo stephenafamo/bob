@@ -17,9 +17,9 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
-	"github.com/stephenafamo/bob/gen"
-	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/twitter-payments/bob/gen"
+	"github.com/twitter-payments/bob/gen/drivers"
+	"github.com/twitter-payments/bob/gen/importers"
 )
 
 const DefaultConfigPath = "./bobgen.yaml"
@@ -216,7 +216,7 @@ func Types() drivers.Types {
 		"types.Text[netip.Addr, *netip.Addr]": {
 			Imports: importers.List{
 				`"net/netip"`,
-				`"github.com/stephenafamo/bob/types"`,
+				`"github.com/twitter-payments/bob/types"`,
 			},
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])
@@ -226,7 +226,7 @@ func Types() drivers.Types {
 		},
 		"pgtypes.Inet": {
 			Imports: importers.List{
-				`"github.com/stephenafamo/bob/types/pgtypes"`,
+				`"github.com/twitter-payments/bob/types/pgtypes"`,
 			},
 			RandomExpr: `var addr [4]byte
                 rand.Read(addr[:])
@@ -236,7 +236,7 @@ func Types() drivers.Types {
 			RandomExprImports: importers.List{`"crypto/rand"`, `"net/netip"`},
 		},
 		"pgtypes.Macaddr": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports: importers.List{`"github.com/twitter-payments/bob/types/pgtypes"`},
 			RandomExpr: `addr, _ := net.ParseMAC(f.Internet().MacAddress())
                 return pgtypes.Macaddr{Addr: addr}`,
 			RandomExprImports:  importers.List{`"net"`},
@@ -332,11 +332,11 @@ func Types() drivers.Types {
 			RandomExpr: `return decimal.New(f.Int64Between(0, 1000), 0)`,
 		},
 		"pgtypes.LSN": {
-			Imports:    importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports:    importers.List{`"github.com/twitter-payments/bob/types/pgtypes"`},
 			RandomExpr: `return pgtypes.LSN(f.UInt64())`,
 		},
 		"pgtypes.TxIDSnapshot": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports: importers.List{`"github.com/twitter-payments/bob/types/pgtypes"`},
 			RandomExpr: `active := make([]string, f.IntBetween(1, 5))
                 for i := range active {
                     active[i] = strconv.FormatUint(f.UInt64(), 10)
@@ -352,7 +352,7 @@ func Types() drivers.Types {
 		},
 		"pgtypes.HStore": {
 			DependsOn: []string{"string"},
-			Imports:   importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports:   importers.List{`"github.com/twitter-payments/bob/types/pgtypes"`},
 			RandomExpr: `hs := make(pgtypes.HStore)
                 for i := 0; i < f.IntBetween(1, 5); i++ {
                     arr[random_string(f)] = null.FromCond(random_string(f), f.Bool())
@@ -362,7 +362,7 @@ func Types() drivers.Types {
 		"types.JSON[json.RawMessage]": {
 			Imports: importers.List{
 				`"encoding/json"`,
-				`"github.com/stephenafamo/bob/types"`,
+				`"github.com/twitter-payments/bob/types"`,
 			},
 			RandomExpr: `s := &bytes.Buffer{}
                 s.WriteRune('{')

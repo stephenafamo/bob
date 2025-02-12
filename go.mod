@@ -1,4 +1,4 @@
-module github.com/stephenafamo/bob
+module github.com/twitter-payments/bob
 
 go 1.23
 
@@ -81,5 +81,3 @@ require (
 	modernc.org/token v1.1.0 // indirect
 )
 
-// replace github.com/pingcap/tidb => github.com/pingcap/tidb v1.1.0-beta.0.20230311041313-145b7cdf72fe
-// replace github.com/stephenafamo/sqlparser => ../sqlparser

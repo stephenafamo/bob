@@ -10,11 +10,11 @@ import (
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/lib/pq"
-	"github.com/stephenafamo/bob/gen"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
-	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
-	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/twitter-payments/bob/gen"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	psqlDriver "github.com/twitter-payments/bob/gen/bobgen-psql/driver"
+	sqliteDriver "github.com/twitter-payments/bob/gen/bobgen-sqlite/driver"
+	"github.com/twitter-payments/bob/gen/drivers"
 )
 
 type Config struct {

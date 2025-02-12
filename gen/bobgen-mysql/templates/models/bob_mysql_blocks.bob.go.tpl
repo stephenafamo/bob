@@ -1,5 +1,5 @@
 {{- define "helpers/where_variables"}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
 	UpdateWhere = Where[*dialect.UpdateQuery]()

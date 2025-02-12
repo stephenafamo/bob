@@ -11,11 +11,11 @@ Import the `psql` package and the query mod packages for the different query typ
 
 ```go
 import (
-    "github.com/stephenafamo/bob/dialect/psql"
-    "github.com/stephenafamo/bob/dialect/psql/sm"
-    "github.com/stephenafamo/bob/dialect/psql/im"
-    "github.com/stephenafamo/bob/dialect/psql/um"
-    "github.com/stephenafamo/bob/dialect/psql/dm"
+    "github.com/twitter-payments/bob/dialect/psql"
+    "github.com/twitter-payments/bob/dialect/psql/sm"
+    "github.com/twitter-payments/bob/dialect/psql/im"
+    "github.com/twitter-payments/bob/dialect/psql/um"
+    "github.com/twitter-payments/bob/dialect/psql/dm"
 )
 
 func main() {

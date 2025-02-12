@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/expr"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/clause"
+	"github.com/twitter-payments/bob/expr"
 )
 
 func NewFunction(name string, args ...any) *Function {

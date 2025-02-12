@@ -10,11 +10,11 @@ import (
 	"sync"
 
 	"github.com/lib/pq"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/gen/drivers"
+	"github.com/twitter-payments/bob/gen/importers"
 	"github.com/volatiletech/strmangle"
 )
 

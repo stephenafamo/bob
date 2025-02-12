@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/clause"
 )
 
 // Trying to represent the query structure as documented in

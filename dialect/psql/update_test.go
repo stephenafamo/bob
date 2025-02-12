@@ -3,10 +3,10 @@ package psql_test
 import (
 	"testing"
 
-	"github.com/stephenafamo/bob/dialect/psql"
-	"github.com/stephenafamo/bob/dialect/psql/sm"
-	"github.com/stephenafamo/bob/dialect/psql/um"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	"github.com/twitter-payments/bob/dialect/psql"
+	"github.com/twitter-payments/bob/dialect/psql/sm"
+	"github.com/twitter-payments/bob/dialect/psql/um"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 func TestUpdate(t *testing.T) {

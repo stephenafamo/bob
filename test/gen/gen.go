@@ -17,12 +17,12 @@ import (
 	"testing"
 
 	"github.com/nsf/jsondiff"
-	"github.com/stephenafamo/bob/gen"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/twitter-payments/bob/gen"
+	helpers "github.com/twitter-payments/bob/gen/bobgen-helpers"
+	"github.com/twitter-payments/bob/gen/drivers"
 )
 
-const module = "github.com/stephenafamo/bob/orm/bob-gen-test"
+const module = "github.com/twitter-payments/bob/orm/bob-gen-test"
 
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 

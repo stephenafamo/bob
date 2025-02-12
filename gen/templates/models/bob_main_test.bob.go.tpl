@@ -1,4 +1,4 @@
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 
 {{- range $table := .Tables}}
 	{{$tAlias := $.Aliases.Table $table.Key -}}

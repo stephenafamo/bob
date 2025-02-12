@@ -3,9 +3,9 @@ package sqlite_test
 import (
 	"testing"
 
-	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/dm"
-	testutils "github.com/stephenafamo/bob/test/utils"
+	"github.com/twitter-payments/bob/dialect/sqlite"
+	"github.com/twitter-payments/bob/dialect/sqlite/dm"
+	testutils "github.com/twitter-payments/bob/test/utils"
 )
 
 func TestDelete(t *testing.T) {

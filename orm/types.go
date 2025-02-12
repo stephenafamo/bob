@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/expr"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/expr"
 )
 
 type Model interface {

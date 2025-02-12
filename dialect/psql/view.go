@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/sm"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/psql/dialect"
+	"github.com/twitter-payments/bob/dialect/psql/sm"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/internal/mappings"
+	"github.com/twitter-payments/bob/orm"
 )
 
 // UseSchema modifies a context to add a schema that will be used when

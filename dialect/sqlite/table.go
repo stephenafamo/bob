@@ -4,14 +4,14 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
-	"github.com/stephenafamo/bob/dialect/sqlite/dm"
-	"github.com/stephenafamo/bob/dialect/sqlite/im"
-	"github.com/stephenafamo/bob/dialect/sqlite/um"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/bob/orm"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/sqlite/dialect"
+	"github.com/twitter-payments/bob/dialect/sqlite/dm"
+	"github.com/twitter-payments/bob/dialect/sqlite/im"
+	"github.com/twitter-payments/bob/dialect/sqlite/um"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/internal/mappings"
+	"github.com/twitter-payments/bob/orm"
 )
 
 type setter[T any] interface {

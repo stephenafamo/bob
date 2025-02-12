@@ -13,9 +13,9 @@ import (
 
 	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/internal/mappings"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/expr"
+	"github.com/twitter-payments/bob/internal/mappings"
 )
 
 type User struct {

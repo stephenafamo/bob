@@ -16,7 +16,7 @@ Despite this custom configuration, the mods are designed to match each other as 
 As an example, both `SELECT` and `INSERT` can use CTEs(Common Table Expressions), but while `INSERT` can take an `INTO` expression, `SELECT` instead needs a `FROM`
 
 ```go
-import "github.com/stephenafamo/bob/dialect/psql/sm"
+import "github.com/twitter-payments/bob/dialect/psql/sm"
 cte := psql.Select(
     sm.From("users"),
     sm.Where(psql.Quote("age").GTE(psql.Arg(21))),
@@ -28,7 +28,7 @@ psql.Select(
     sm.From("projects"),
 )
 
-import "github.com/stephenafamo/bob/dialect/psql/insert/im"
+import "github.com/twitter-payments/bob/dialect/psql/insert/im"
 psql.Insert(
     im.With("adults").As(cte), // works as well
     im.From("projects"), // ERROR: Does not compile!!!

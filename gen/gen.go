@@ -14,8 +14,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/orm"
+	"github.com/twitter-payments/bob/gen/drivers"
+	"github.com/twitter-payments/bob/orm"
 	"github.com/volatiletech/strmangle"
 	"golang.org/x/mod/modfile"
 )

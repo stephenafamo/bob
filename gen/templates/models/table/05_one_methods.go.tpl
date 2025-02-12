@@ -1,7 +1,7 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{$.Importer.Import "context"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}} is retrieved from the database
@@ -25,7 +25,7 @@ func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Ex
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dialect" $.Dialect)}}
 
 // PrimaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
 func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
@@ -53,7 +53,7 @@ func (o *{{$tAlias.UpSingular}}) pkEQ() dialect.Expression {
 {{block "one_update" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/um" $.Dialect)}}
 // Update uses an executor to update the {{$tAlias.UpSingular}}
 func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
 	v, err := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ())).One(ctx, exec)
@@ -68,7 +68,7 @@ func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, 
 }
 {{- end}}
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dm" $.Dialect)}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/dm" $.Dialect)}}
 // Delete deletes a single {{$tAlias.UpSingular}} record with an executor
 func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) error {
 	_, err := {{$tAlias.UpPlural}}.Delete(dm.Where(o.pkEQ())).Exec(ctx, exec)

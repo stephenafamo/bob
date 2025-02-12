@@ -1,8 +1,8 @@
 package psql
 
 import (
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/dialect/psql/dialect"
 )
 
 func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {

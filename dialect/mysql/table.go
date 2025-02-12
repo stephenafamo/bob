@@ -7,17 +7,17 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/dialect/mysql/dialect"
-	"github.com/stephenafamo/bob/dialect/mysql/dm"
-	"github.com/stephenafamo/bob/dialect/mysql/im"
-	"github.com/stephenafamo/bob/dialect/mysql/sm"
-	"github.com/stephenafamo/bob/dialect/mysql/um"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
+	"github.com/twitter-payments/bob"
+	"github.com/twitter-payments/bob/clause"
+	"github.com/twitter-payments/bob/dialect/mysql/dialect"
+	"github.com/twitter-payments/bob/dialect/mysql/dm"
+	"github.com/twitter-payments/bob/dialect/mysql/im"
+	"github.com/twitter-payments/bob/dialect/mysql/sm"
+	"github.com/twitter-payments/bob/dialect/mysql/um"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/internal/mappings"
+	"github.com/twitter-payments/bob/orm"
 )
 
 type setter[T any] interface {

@@ -6,7 +6,7 @@
 {{$.Importer.Import "context" -}}
 {{$.Importer.Import "database/sql" -}}
 {{$.Importer.Import "errors" -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect) -}}
+{{$.Importer.Import (printf "github.com/twitter-payments/bob/dialect/%s/sm" $.Dialect) -}}
 func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	if o == nil {
 		return nil
@@ -74,7 +74,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $invRel := $.Relationships.GetInverse . -}}
 {{- if not $rel.IsToMany -}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/twitter-payments/bob/orm"}}
 func Preload{{$tAlias.UpSingular}}{{$relAlias}}(opts ...{{$.Dialect}}.PreloadOption) {{$.Dialect}}.Preloader {
 	return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
 			Name: "{{$relAlias}}",

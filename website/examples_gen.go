@@ -15,7 +15,7 @@ import (
 	"regexp"
 	"strings"
 
-	testutils "github.com/stephenafamo/bob/test/utils"
+	testutils "github.com/twitter-payments/bob/test/utils"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

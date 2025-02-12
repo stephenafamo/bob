@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/orm"
+	"github.com/twitter-payments/bob/internal"
+	"github.com/twitter-payments/bob/orm"
 )
 
 type Tables[C, I any] []Table[C, I]
@@ -275,7 +275,7 @@ func (tables Tables[C, I]) SetFactoryDeps(i Importer, aliases Aliases, r orm.Rel
 				oGetter := tables.ColumnGetter(oalias, kside.TableName, mapp.Column)
 
 				if kside.TableName == r.Local() {
-					i.Import("github.com/stephenafamo/bob/orm")
+					i.Import("github.com/twitter-payments/bob/orm")
 					mret = append(mret, fmt.Sprintf(`if %s.%s != %s {
 								return &orm.RelationshipChainError{
 									Table1: %q, Column1: %q, Value: %q,

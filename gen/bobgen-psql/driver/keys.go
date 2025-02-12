@@ -5,9 +5,9 @@ import (
 	"database/sql"
 
 	"github.com/lib/pq"
-	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
+	"github.com/twitter-payments/bob/gen/drivers"
 )
 
 func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drivers.DBConstraints[any], error) {

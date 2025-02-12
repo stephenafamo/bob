@@ -2,7 +2,7 @@
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "testing"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/twitter-payments/bob"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 
