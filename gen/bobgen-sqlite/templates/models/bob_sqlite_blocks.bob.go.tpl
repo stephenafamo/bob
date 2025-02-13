@@ -7,9 +7,11 @@ var (
 
 {{define "unique_constraint_error_detection_method" -}}
 func (e *UniqueConstraintError) Is(target error) bool {
-	{{if not (eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3")}}
-	return false
-	{{else}}
+	{{if eq $.DriverName "github.com/tursodatabase/libsql-client-go/libsql"}}
+		{{$.Importer.Import "strings"}}
+		{{$.Importer.Import "fmt"}}
+	return strings.Contains(target.Error(), fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", e.s))
+	{{else if eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3"}}
 		{{$errType := ""}}
 		{{$codeGetter := ""}}
 		{{$.Importer.Import "strings"}}
@@ -27,6 +29,8 @@ func (e *UniqueConstraintError) Is(target error) bool {
 		return false
 	}
 	return err.{{$codeGetter}} == 2067 && strings.Contains(err.Error(), e.s)
+	{{else}}
+	return false
 	{{end}}
 }
 {{end -}}
