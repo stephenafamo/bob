@@ -189,13 +189,6 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
-	"indexColumnNames": func(columns []drivers.IndexColumn) []string {
-		names := make([]string, len(columns))
-		for i, col := range columns {
-			names[i] = col.Name
-		}
-		return names
-	},
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
