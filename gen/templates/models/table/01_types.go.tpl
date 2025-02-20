@@ -145,7 +145,7 @@ var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
 	{{ if $index.Unique }} 
 	{{ $s := $index.Name }}
 	{{ if eq "sqlite" $.Dialect }}
-	{{ $s = printf "%s.%s" $table.Name (join (printf ", %s." $table.Name) (indexColumnNames $index.Columns) }}
+	{{ $s = printf "%s.%s" $table.Name (join (printf ", %s." $table.Name) (indexColumnNames $index.Columns)) }}
 	{{ end }}
 	ErrUnique{{join "_and_" (indexColumnNames $index.Columns) | camelcase}}: &UniqueConstraintError{s: "{{$s}}"},
 	{{ end }}
