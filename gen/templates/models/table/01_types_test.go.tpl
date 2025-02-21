@@ -54,6 +54,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		applyFn     func(tpl *factory.{{$tAlias.UpSingular}}Template, obj *models.{{$tAlias.UpSingular}})
 	}{
 	{{range $index := $table.Indexes}}
+		{{ if $index.Unique }}
 		{{- $errName := printf "ErrUnique%s" ($index.Name | camelcase) -}}
 		{
 			name: "{{$errName}}",
@@ -68,6 +69,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 				)
 			},
 		},
+		{{ end }}
 	{{end}}
 	}
 
