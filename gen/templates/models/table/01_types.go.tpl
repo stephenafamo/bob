@@ -131,20 +131,28 @@ func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias
 	}
 }
 
-{{ if $table.Constraints.Uniques }}
+{{ $hasUniqueIndex := false }}
+{{range $index := $table.Indexes}}
+{{ if $index.Unique }} 
+	{{ $hasUniqueIndex = true }}
+	{{ break }}
+{{ end }} 
+{{end -}}
+
+{{ if $hasUniqueIndex }}
 var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
-	{{range $constraint := $table.Constraints.Uniques}}
-	{{ $s := $constraint.Name }}
-	{{ if eq "sqlite" $.Dialect }}
-	{{ $s = printf "%s.%s" $table.Name (join (printf ", %s." $table.Name) $constraint.Columns) }}
+	{{range $index := $table.Indexes}}
+	{{ if $index.Unique }}
+	ErrUnique{{$index.Name | camelcase}}: &UniqueConstraintError{s: "{{$index.Name}}"},
 	{{ end }}
-	ErrUnique{{join "_and_" $constraint.Columns | camelcase}}: &UniqueConstraintError{s: "{{$s}}"},
 	{{end}}
 }
 
 type {{$tAlias.DownSingular}}Errors struct {
-	{{range $constraint := $table.Constraints.Uniques}}
-	ErrUnique{{join "_and_" $constraint.Columns | camelcase}} *UniqueConstraintError
+	{{range $index := $table.Indexes}}
+	{{ if $index.Unique }} 
+	ErrUnique{{$index.Name | camelcase}} *UniqueConstraintError
 	{{ end }}
+	{{end}}
 }
 {{ end }}

@@ -53,21 +53,23 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		expectedErr *models.UniqueConstraintError
 		applyFn     func(tpl *factory.{{$tAlias.UpSingular}}Template, obj *models.{{$tAlias.UpSingular}})
 	}{
-	{{range $constraint := $table.Constraints.Uniques}}
-		{{- $errName := printf "ErrUnique%s" (join "_and_" $constraint.Columns | camelcase) -}}
+	{{range $index := $table.Indexes}}
+		{{ if $index.Unique }}
+		{{- $errName := printf "ErrUnique%s" ($index.Name | camelcase) -}}
 		{
 			name: "{{$errName}}",
 			expectedErr: models.{{$tAlias.UpSingular}}Errors.{{$errName}},
 			applyFn: func(tpl *factory.{{$tAlias.UpSingular}}Template, obj *models.{{$tAlias.UpSingular}}) {
 				tpl.Apply(
 					factory.{{$tAlias.UpSingular}}Mods.RandomizeAllColumns(nil),
-					{{range $columnName := $constraint.Columns}}
-					{{- $colAlias := $tAlias.Column $columnName -}}
+					{{range $indexColumn := $index.Columns}}
+					{{- $colAlias := $tAlias.Column $indexColumn.Name -}}
 					factory.{{$tAlias.UpSingular}}Mods.{{$colAlias}}(obj.{{$colAlias}}),
 					{{end}}
 				)
 			},
 		},
+		{{ end }}
 	{{end}}
 	}
 

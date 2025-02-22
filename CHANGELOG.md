@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Generates error constants with unique indexes instead of unique constraints. (thanks @tlietz)
+
 ## [v0.30.0] - 2025-01-16
 
 ### Added
