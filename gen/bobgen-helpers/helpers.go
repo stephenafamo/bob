@@ -355,7 +355,7 @@ func Types() drivers.Types {
 			Imports:   importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `hs := make(pgtypes.HStore)
                 for i := 0; i < f.IntBetween(1, 5); i++ {
-                    arr[random_string(f)] = null.FromCond(random_string(f), f.Bool())
+                    hs[random_string(f)] = null.FromCond(random_string(f), f.Bool())
                 }
                 return hs`,
 		},
