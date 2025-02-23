@@ -21,6 +21,7 @@ require (
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/stephenafamo/scan v0.6.1
 	github.com/stephenafamo/sqlparser v0.0.0-20241111104950-b04fa8a26c9c
+	github.com/tursodatabase/libsql-client-go v0.0.0-20240902231107-85af5b9d094d
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.6
 	github.com/wasilibs/go-pgquery v0.0.0-20240319230125-b9b2e95c69a7
@@ -36,6 +37,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
+	github.com/coder/websocket v1.8.12 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
