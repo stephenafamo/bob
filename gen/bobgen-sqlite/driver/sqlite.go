@@ -600,7 +600,7 @@ func (driver) translateColumnType(c drivers.Column) drivers.Column {
 		c.Type = "bool"
 	case "DATE", "DATETIME":
 		c.Type = "time.Time"
-	case "JSON":
+	case "JSON", "JSONB":
 		c.Type = "types.JSON[json.RawMessage]"
 
 	default:
