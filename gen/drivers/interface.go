@@ -48,7 +48,7 @@ type Type struct {
 	CompareExpr string `yaml:"compare_expr"`
 	// Imports needed for the compare expression
 	CompareExprImports importers.List `yaml:"compare_expr_imports"`
-	// If factory generation should have "pkgname." prefix
+	// If factory generation should have "models." prefix
 	InGeneratedPackage bool `yaml:"in_generated_package"`
 }
 
