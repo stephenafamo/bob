@@ -1,6 +1,7 @@
 {{$.Importer.Import "strings"}}
 {{$.Importer.Import "github.com/jaswdr/faker/v2"}}
 
+
 var defaultFaker = faker.New()
 
 {{$doneTypes := dict }}
@@ -26,7 +27,10 @@ var defaultFaker = faker.New()
     */}}{{- end -}}
     {{- $.Importer.ImportList $typDef.Imports -}}
     {{- $.Importer.ImportList $typDef.RandomExprImports -}}
-    func random_{{normalizeType $colTyp}}(f *faker.Faker) {{or $typDef.AliasOf $colTyp}} {
+    {{- if $typDef.InGeneratedPackage -}}
+      {{$.Importer.Import "models" $.ModelsPackage}}
+    {{- end -}}
+    func random_{{normalizeType $colTyp}}(f *faker.Faker) {{getType $colTyp $typDef}} {
       if f == nil {
         f = &defaultFaker
       }

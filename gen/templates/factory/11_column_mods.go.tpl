@@ -18,7 +18,7 @@ func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAl
 {{range $column := .Table.Columns}}
 {{$colAlias := $tAlias.Column $column.Name -}}
 {{- $typDef :=  index $.Types $column.Type -}}
-{{- $colTyp := or $typDef.AliasOf $column.Type -}}
+{{- $colTyp := getType $column.Type $typDef -}}
 {{- if $column.Nullable -}}
 	{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
 	{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
@@ -56,7 +56,7 @@ func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAl
         }
 
         if f.Bool() {
-          return null.FromPtr[{{or $typDef.AliasOf $column.Type}}](nil)
+          return null.FromPtr[{{getType $column.Type $typDef}}](nil)
         }
 
         return null.From(random_{{normalizeType $column.Type}}(f))
