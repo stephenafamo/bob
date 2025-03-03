@@ -189,6 +189,7 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
+	"getType":            getType,
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
@@ -204,4 +205,20 @@ func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
 
 func NormalizeType(val string) string {
 	return typesReplacer.Replace(val)
+}
+
+// Gets the type for a db column. Used if you have types defined inside the
+// models dir, which needs the models prefix in the factory files.
+func getType(columnType string, typedef drivers.Type) string {
+
+	prefix := ""
+	if typedef.InGeneratedPackage {
+		prefix = "models."
+	}
+
+	if typedef.AliasOf != "" {
+		return prefix + typedef.AliasOf
+	}
+
+	return prefix + columnType
 }
