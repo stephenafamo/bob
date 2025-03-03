@@ -300,6 +300,7 @@ var templateFunctions = template.FuncMap{
 	"setFactoryDeps":        setFactoryDeps,
 	"relIsView":             relIsView,
 	"relQueryMethodName":    relQueryMethodName,
+	"getType":               getType,
 }
 
 func getColumn(t []drivers.Table, table string, a TableAlias, column string) drivers.Column {
@@ -669,4 +670,20 @@ func inList[T comparable](s []T, val T) bool {
 
 func NormalizeType(val string) string {
 	return typesReplacer.Replace(val)
+}
+
+// Gets the type for a db column. Used if you have types defined inside the
+// models dir, which needs the models prefix in the factory files.
+func getType(column drivers.Column, typedef drivers.Type) string {
+
+	prefix := ""
+	if typedef.InGeneratedPackage {
+		prefix = "models."
+	}
+
+	if typedef.AliasOf != "" {
+		return prefix + typedef.AliasOf
+	}
+
+	return prefix + column.Type
 }
