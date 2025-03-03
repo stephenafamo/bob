@@ -210,7 +210,6 @@ func NormalizeType(val string) string {
 // Gets the type for a db column. Used if you have types defined inside the
 // models dir, which needs the models prefix in the factory files.
 func getType(columnType string, typedef drivers.Type) string {
-
 	prefix := ""
 	if typedef.InGeneratedPackage {
 		prefix = "models."
