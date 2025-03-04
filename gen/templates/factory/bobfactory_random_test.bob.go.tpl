@@ -5,7 +5,8 @@
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
-    {{- $colTyp := $column.Type -}}
+    {{- $typDef :=  index $.Types $column.Type -}}
+    {{- $colTyp := getType $column.Type $typDef -}}
     {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
     {{- $_ :=  set $doneTypes $colTyp nil -}}
     {{- $typInfo :=  index $.Types $column.Type -}}

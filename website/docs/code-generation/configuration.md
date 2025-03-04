@@ -142,6 +142,14 @@ types:
     random_expr: |-
       tag := f.Lorem().Word()
       return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)
+  LocalType:
+    # Set this to true if your custom type is declared in the generated package (i.e. "models").
+    # If this is not the case, "models." will not be prefixed in the generated factory.
+    in_generated_package: true
+    no_randomization_test: true
+    random_expr: |
+      localType := models.LocalType{}
+      return localType
   type.JSON[json.RawMessage]:
     # If true, a test for the random expression will not be generated
     no_randomization_test: false
