@@ -10,11 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for libSQL. (thanks @mbezhanov)
-- Added support for declaring types inside the models package.
+- Added support for declaring types inside the models package. (thanks @jacobmolby)
 
 ### Changed
 
 - Generates error constants with unique indexes instead of unique constraints. (thanks @tlietz)
+
+### Fixed
+
+- Used `Equal` method for comparing decimals. (thanks @jalaziz)
+- Update `golang.org/x/mod` dependency to enable parsing of Go 1.23 modules. (thanks @m110)
 
 ## [v0.30.0] - 2025-01-16
 
