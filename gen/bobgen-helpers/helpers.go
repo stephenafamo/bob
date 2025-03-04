@@ -328,8 +328,9 @@ func Types() drivers.Types {
 			CompareExprImports: importers.List{`"slices"`},
 		},
 		"decimal.Decimal": {
-			Imports:    importers.List{`"github.com/shopspring/decimal"`},
-			RandomExpr: `return decimal.New(f.Int64Between(0, 1000), 0)`,
+			Imports:     importers.List{`"github.com/shopspring/decimal"`},
+			RandomExpr:  `return decimal.New(f.Int64Between(0, 1000), 0)`,
+			CompareExpr: `AAA.Equal(BBB)`,
 		},
 		"pgtypes.LSN": {
 			Imports:    importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
