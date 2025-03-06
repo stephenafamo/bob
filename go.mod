@@ -1,6 +1,6 @@
 module github.com/stephenafamo/bob
 
-go 1.23
+go 1.24
 
 require (
 	github.com/DATA-DOG/go-txdb v0.1.6
@@ -25,7 +25,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.6
 	github.com/wasilibs/go-pgquery v0.0.0-20240319230125-b9b2e95c69a7
-	golang.org/x/mod v0.17.0
+	golang.org/x/mod v0.24.0
 	golang.org/x/text v0.14.0
 	golang.org/x/tools v0.21.0
 	modernc.org/sqlite v1.20.3
