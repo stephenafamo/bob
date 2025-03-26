@@ -58,9 +58,9 @@ A setter is necessary because if we run `userTable.Insert(User{})`, due to Go's 
 Typically, we can leave out fields that we never intend to manually set, such as auto increment or generated columns.
 
 ```go
-userTable.Insert(ctx, db, UserSetter{
+userTable.Insert(&UserSetter{
     Name: omit.From("Stephen"), // we know the name was set and not the email
-}) 
+}).One(ctx, db) 
 ```
 
 :::tip
@@ -74,13 +74,12 @@ See [Code Generation](../code-generation/intro) for more information.
 
 Like a [View](./view) the `Query()` method starts a SELECT query on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
-In addition, a Table also has `InsertQ`, `UpdateQ` and `DeleteQ` which begin insert, update and delete queries on the table. As you may expect, they can also accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
+In addition, a Table also has `Insert`, `Update` and `Delete` which begin insert, update and delete queries on the table. As you may expect, they can also accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
-// UPDATE "users" SET "kind" = $1
-updateQ := userTable.UpdateQ(
-    ctx, db, 
-    um.Set("kind").ToArg("Dramatic"),
+// UPDATE "users" SET "kind" = $1 RETURNING *;
+updateQ := userTable.Update(
+    um.SetCol("kind").ToArg("Dramatic"),
     um.Returning("*"),
 )
 ```
@@ -88,33 +87,46 @@ updateQ := userTable.UpdateQ(
 The query can then be executed with the `Exec()` method which returns the rows affected and an error. If the dialect supports the `RETURNING` clause, `One()`, `All()` and `Cursor()` methods are also included.
 
 ```go
-rowsAffected, _ := updateQ.Exec()
-user, _ := updateQ.One()
-users, _ := updateQ.All()
-userCursor, _ := updateQ.Cursor()
+rowsAffected, _ := updateQ.Exec(ctx, db)
+user, _ := updateQ.One(ctx, db)
+users, _ := updateQ.All(ctx, db)
+userCursor, _ := updateQ.Cursor(ctx, db)
 ```
 
 ## Insert
 
 ```go
 // INSERT INTO "users" ("id") VALUES (100)
-user, err := models.UsersTable.Insert(ctx, db, &UserSetter{
+user, err := models.UsersTable.Insert(&UserSetter{
     ID: omit.From(100),
     // add other columns
-})
+}).One(ctx, db)
 ```
 
-## InsertMany
+## Insert Many
 
 Bulk insert models
 
 ```go
 // INSERT INTO "users" ("id") VALUES (100), (101), (102)
-users, err := models.UsersTable.InsertMany(ctx, db,
+users, err := models.UsersTable.Insert(
     &UserSetter{ID: omit.From(100)},
     &UserSetter{ID: omit.From(101)},
     &UserSetter{ID: omit.From(102)},
-)
+).All(ctx, db)
+```
+
+Bulk insert with an existing slice of setters
+
+```go
+// INSERT INTO "users" ("id") VALUES (100), (101), (102)
+setters := []*UserSetter{
+    {ID: omit.From(100)},
+    {ID: omit.From(101)},
+    {ID: omit.From(102)},
+}
+
+users, err := models.UserTable.Insert(bob.ToMods(setters...)).All(ctx, db)
 ```
 
 ## Update
@@ -122,8 +134,17 @@ users, err := models.UsersTable.InsertMany(ctx, db,
 ```go
 // UPDATE "users"
 // SET "vehicle_id" = 200
-// WHERE "users"."id" IN (1, 2)
-err := models.UsersTable.Update(ctx, db, &UserSetter{VehicleID: omit.From(200)}, user1, user2)
+// WHERE ("users"."id" = 1)
+err := user.Update(ctx, db, &UserSetter{VehicleID: omit.From(200)})
+```
+
+## Update Many
+
+```go
+// UPDATE "users"
+// SET "vehicle_id" = 200
+// WHERE ("users"."id" IN (1, 2))
+err := users.UpdateAll(ctx, db, UserSetter{VehicleID: omit.From(200)})
 ```
 
 ## Upsert
@@ -135,16 +156,34 @@ The method signature for this varies by dialect.
 :::
 
 ```go
-// INSERT INTO "users" ("id") VALUES (100) ON CONFLICT DO UPDATE SET "id" = EXCLUDED."id"
-user, err := models.UsersTable.Upsert(ctx, db, true, nil, nil, &UserSetter{
-    ID: omit.From(100),
-    // add other columns
-})
+// PostgreSQL and SQLite
+// INSERT INTO "users" ("id", "email") VALUES (1, "bob@foo.bar") ON CONFLICT (id) DO UPDATE SET "email" = EXCLUDED."email"
+user, err := models.UsersTable.Insert(
+	&UserSetter{
+		ID: omit.From(1),
+		Email: omit.From("bob@foo.bar"),
+	},
+	im.OnConflict("id").DoUpdate(im.SetExcluded("email"))).One(ctx, db)
+
+// MySQL
+user, err := models.UsersTable.Insert(
+    &UserSetter{
+        ID: omit.From(1),
+        Email: omit.From("bob@foo.bar"),
+    },
+    im.OnDuplicateKeyUpdate(im.UpdateWithValues("email"))).One(ctx, db)
 ```
 
 ## Delete
 
 ```go
 // DELETE FROM "users" WHERE "id" = 100
-err := models.UsersTable.Delete(ctx, db, user)
+err := user.Delete(ctx, db)
+```
+
+## Delete Many
+
+```go
+// DELETE FROM "users" WHERE "id" IN (100, 101)
+err := users.Delete(ctx, db)
 ```

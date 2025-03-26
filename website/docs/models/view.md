@@ -66,19 +66,19 @@ The query can then be executed with `One()`, `All()`, `Cursor()`, `Count()` or `
 
 ```go
 // SELECT * FROM "users" LIMIT 1
-userView.Query(ctx, db).One()
+userView.Query().One(ctx, db)
 
 // SELECT * FROM "users"
-userView.Query(ctx, db).All()
+userView.Query().All(ctx, db)
 
 // Like All, but returns a cursor for moving through large results
-userView.Query(ctx, db).Cursor()
+userView.Query().Cursor(ctx, db)
 
 // SELECT count(1) FROM "users"
-userView.Query(ctx, db).Count()
+userView.Query().Count(ctx, db)
 
 // Like One(), but only returns a boolean indicating if the model was found
-userView.Query(ctx, db).Exists()
+userView.Query().Exists(ctx, db)
 ```
 
 :::tip

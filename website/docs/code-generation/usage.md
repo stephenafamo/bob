@@ -100,7 +100,7 @@ UpdateAll is a method on the collection type `JetSlice`.
 All rows matching the primary keys of the members of the slice are updated with the given values.
 
 ```go
-err := jets.UpdateAll(ctx, db, &JetSetter{
+err := jets.UpdateAll(ctx, db, JetSetter{
     AirportID: omit.From(100),
 })
 ```
@@ -196,7 +196,7 @@ The `struct` is initialized and exported through a `PilotErrors` variable, which
 
 
 ```go
-pilot, err := models.Pilots.Insert(ctx, db, setter)
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
 if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
     // handle the error
 }
@@ -205,7 +205,7 @@ if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
 or
 
 ```go
-pilot, err := models.Pilots.Insert(ctx, db, setter)
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
 if models.PilotErrors.ErrUniqueFirstNameAndLastName.Is(err) {
     // handle the error
 }
@@ -214,7 +214,7 @@ if models.PilotErrors.ErrUniqueFirstNameAndLastName.Is(err) {
 Bob furthermore defines a generic `ErrUniqueConstraint` constant, which can be used for matching and handling all unique constraint errors:
 
 ```go
-pilot, err := models.Pilots.Insert(ctx, db, setter)
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
 if errors.Is(models.ErrUniqueConstraint, err) {
     // handle the error
 }
@@ -223,7 +223,7 @@ if errors.Is(models.ErrUniqueConstraint, err) {
 or
 
 ```go
-pilot, err := models.Pilots.Insert(ctx, db, setter)
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
 if models.ErrUniqueConstraint.Is(err) {
     // handle the error
 }
@@ -241,10 +241,7 @@ To fluently build type safe queries, mods are generated to easily add `WHERE` fi
 
 ```go
 // SELECT * FROM "jets" WHERE "jets"."id" = 100
-models.Jets.Query(
-    ctx, db,
-    models.SelectWhere.Jets.ID.EQ(100),
-)
+models.Jets.Query(models.SelectWhere.Jets.ID.EQ(100))
 ```
 
 Where filters can be combined using `WhereOr` and `WhereAnd`. These can be nested to create even more complex queries.
@@ -255,7 +252,6 @@ Where filters can be combined using `WhereOr` and `WhereAnd`. These can be neste
 // OR "users"."email" IS NOT NULL
 // OR ("users"."age" > 21 AND "users"."location" IS NOT NULL)
 users, err := models.Users.Query(
-    ctx, db,
     psql.WhereOr(
         models.SelectWhere.Users.Name.IsNull(),
         models.SelectWhere.Users.Email.IsNotNull(),
@@ -264,7 +260,7 @@ users, err := models.Users.Query(
             models.SelectWhere.Users.Location.IsNotNull(),
         ),
     ),
-).All()
+).All(ctx, db)
 ```
 
 Since each query type has its own mods, `SelectWhere`, `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
@@ -288,10 +284,9 @@ To make joining tables easier, join helpers are generated for each table. The ge
 // INNER JOIN "pilots" ON "pilots"."id" = "jets"."pilot_id"
 // INNER JOIN "airports" ON "airports"."id" = "jets"."airport_id"
 models.Jets.Query(
-    ctx, db,
     models.SelectJoins.Jets.InnerJoin.Pilots(ctx),
     models.SelectJoins.Jets.InnerJoin.Airports(ctx),
-).All()
+).All(ctx, db)
 ```
 
 Since each query type has its own mods, `SelectJoins`, `InsertJoins`, `UpdateJoins` and `DeleteJoins` are all generated.
