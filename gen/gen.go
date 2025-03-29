@@ -312,7 +312,8 @@ func modelsPackage(outputs []*Output) (string, string, error) {
 	}
 
 	relPath := strings.TrimPrefix(fullPath, modRoot)
-	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), modFile.Go.Version, nil
+
+	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), getGoVersion(modFile), nil
 }
 
 // goModInfo returns the main module's root directory
@@ -368,4 +369,13 @@ func findGoMod(path string) (string, error) {
 	}
 
 	return out, nil
+}
+
+// getGoVersion returns the required go version from the package
+func getGoVersion(modFile *modfile.File) string {
+	if modFile.Toolchain != nil {
+		return modFile.Toolchain.Name
+	}
+
+	return strings.Join(modFile.Go.Syntax.Token, "")
 }
