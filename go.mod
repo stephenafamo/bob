@@ -10,7 +10,9 @@ require (
 	github.com/fergusstrange/embedded-postgres v1.26.0
 	github.com/go-sql-driver/mysql v1.7.2-0.20231213112541-0004702b931d
 	github.com/google/go-cmp v0.6.0
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jaswdr/faker/v2 v2.3.3
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/providers/confmap v0.1.0
 	github.com/knadh/koanf/providers/env v0.1.0
@@ -29,7 +31,7 @@ require (
 	golang.org/x/text v0.14.0
 	golang.org/x/tools v0.21.0
 	modernc.org/sqlite v1.20.3
-	mvdan.cc/gofumpt v0.5.0
+	mvdan.cc/gofumpt v0.7.0
 )
 
 require (
@@ -42,7 +44,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

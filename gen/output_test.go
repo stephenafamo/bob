@@ -30,7 +30,7 @@ func TestWriteFile(t *testing.T) {
 	writePackageName(buf, "pkg")
 	fmt.Fprintf(buf, "func hello() {}\n\n\nfunc world() {\nreturn\n}\n\n\n\n")
 
-	if err := writeFile("", "", buf, "v1"); err != nil {
+	if err := writeFile("", "", buf, "go1.23"); err != nil {
 		t.Error(err)
 	}
 
