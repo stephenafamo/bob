@@ -223,9 +223,18 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 			{{- $foreign := index $side.ToColumns $index -}}
 			{{- $fromColGet := $.Tables.ColumnGetter $fromAlias $side.From $local -}}
 			{{- $toColGet := $.Tables.ColumnGetter $toAlias $side.To $foreign -}}
-			if o.{{$fromColGet}} != rel.{{$toColGet}} {
-			  continue
-			}
+			{{- $fromCol := $.Tables.GetColumn $side.From $local -}}
+			{{- $typInfo := index $.Types $fromCol.Type -}}
+			{{- with $typInfo.CompareExpr -}}
+				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
+				if {{replace "AAA" (cat "o." $fromColGet) . | replace "BBB" (cat "rel." $toColGet)}} {
+					continue
+				}
+			{{- else -}}
+				if o.{{$fromColGet}} != rel.{{$toColGet}} {
+					continue
+				}
+			{{- end}}
 			{{end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
@@ -314,10 +323,18 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$tAlias.UpSingular}}{{$relAlias}}(ct
 	for _, o := range os {
 		for i, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
-			{{$fromCol := index $firstFrom.Columns $local -}}
-			if o.{{$fromCol}} != {{$fromCol}}Slice[i] {
-			  continue
-			}
+			{{- $fromCol := index $firstFrom.Columns $local -}}
+			{{- $typInfo := index $.Types ($.Tables.GetColumn $firstSide.From $local).Type -}}
+			{{- with $typInfo.CompareExpr -}}
+				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
+				if {{replace "AAA" (cat "o." $fromCol) . | replace "BBB" (cat $fromCol "Slice[i]")}} {
+					continue
+				}
+			{{- else -}}
+				if o.{{$fromCol}} != {{$fromCol}}Slice[i] {
+					continue
+				}
+			{{- end}}
 			{{end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
