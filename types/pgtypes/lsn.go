@@ -8,7 +8,7 @@ import (
 type LSN uint64
 
 // Scan implements the sql.Scanner interface.
-func (lsn *LSN) Scan(src interface{}) error {
+func (lsn *LSN) Scan(src any) error {
 	if src == nil {
 		return fmt.Errorf("cannot scan nil")
 	}

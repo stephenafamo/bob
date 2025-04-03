@@ -11,7 +11,7 @@ type Macaddr struct {
 }
 
 // Scan implements the database/sql Scanner interface.
-func (dst *Macaddr) Scan(src interface{}) error {
+func (dst *Macaddr) Scan(src any) error {
 	if src == nil {
 		return fmt.Errorf("cannot scan nil")
 	}

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update `mvdan.cc/gofumpt` and give precedence to toolchain when calculating the Go version.
 - Add custom comparison support when loading relationships.
+- Fix issue with scanning Postgres inet type.
 
 ## [v0.31.0] - 2025-03-26
 
