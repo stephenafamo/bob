@@ -64,10 +64,10 @@ func (n NamedWindow) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 }
 
 type Windows struct {
-	Windows []NamedWindow
+	Windows []bob.Expression
 }
 
-func (wi *Windows) AppendWindow(w NamedWindow) {
+func (wi *Windows) AppendWindow(w bob.Expression) {
 	wi.Windows = append(wi.Windows, w)
 }
 

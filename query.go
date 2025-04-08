@@ -26,6 +26,21 @@ const (
 	QueryTypeDelete
 )
 
+func (q QueryType) String() string {
+	switch q {
+	case QueryTypeSelect:
+		return "SELECT"
+	case QueryTypeInsert:
+		return "INSERT"
+	case QueryTypeUpdate:
+		return "UPDATE"
+	case QueryTypeDelete:
+		return "DELETE"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 type Query interface {
 	// It should satisfy the Expression interface so that it can be used
 	// in places such as a sub-select

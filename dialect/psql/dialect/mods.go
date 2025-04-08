@@ -19,7 +19,7 @@ func (di Distinct) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, sta
 	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
 }
 
-func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string) CTEChain[Q] {
+func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {
 	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{
 			Name:    name,
@@ -219,7 +219,7 @@ func (j CrossJoinChain[Q]) As(alias string, columns ...string) bob.Mod[Q] {
 	})
 }
 
-type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef
+type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
 	q.AppendOrder(s())
@@ -279,10 +279,10 @@ func (o OrderBy[Q]) Collate(collationName string) OrderBy[Q] {
 	})
 }
 
-type CTEChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
+type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
 
 func (c CTEChain[Q]) Apply(q Q) {
-	q.AppendWith(c())
+	q.AppendCTE(c())
 }
 
 func (c CTEChain[Q]) As(q bob.Query) CTEChain[Q] {

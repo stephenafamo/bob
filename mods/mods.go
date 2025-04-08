@@ -25,10 +25,10 @@ func (m Moddable[T]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	return m().WriteSQL(ctx, w, d, start)
 }
 
-type With[Q interface{ AppendWith(clause.CTE) }] clause.CTE
+type With[Q interface{ AppendCTE(clause.CTE) }] clause.CTE
 
 func (f With[Q]) Apply(q Q) {
-	q.AppendWith(clause.CTE(f))
+	q.AppendCTE(clause.CTE(f))
 }
 
 type Recursive[Q interface{ SetRecursive(bool) }] bool
@@ -95,7 +95,7 @@ func (w Window[Q]) Apply(q Q) {
 	q.SetWindow(clause.Window(w))
 }
 
-type NamedWindow[Q interface{ AppendWindow(clause.NamedWindow) }] clause.NamedWindow
+type NamedWindow[Q interface{ AppendWindow(bob.Expression) }] clause.NamedWindow
 
 func (w NamedWindow[Q]) Apply(q Q) {
 	q.AppendWindow(clause.NamedWindow(w))

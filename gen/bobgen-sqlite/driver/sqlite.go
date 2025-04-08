@@ -12,6 +12,7 @@ import (
 
 	"github.com/aarondl/opt/null"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	"github.com/stephenafamo/bob/gen/bobgen-sqlite/driver/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
@@ -23,9 +24,7 @@ import (
 type (
 	Interface  = drivers.Interface[any, any, IndexExtra]
 	DBInfo     = drivers.DBInfo[any, any, IndexExtra]
-	IndexExtra = struct {
-		Partial bool `json:"partial"`
-	}
+	IndexExtra = parser.IndexExtra
 )
 
 func New(config Config) Interface {
@@ -41,6 +40,8 @@ type Config struct {
 	// The database schemas to generate models for
 	// a map of the schema name to the DSN
 	Attach map[string]string
+	// Folders containing query files
+	Queries []string `yaml:"queries"`
 	// The name of this schema will not be included in the generated models
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
@@ -115,15 +116,21 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	tables, err := d.tables(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting tables: %w", err)
+	}
+
+	queries, err := parser.New(tables).ParseFolders(d.config.Queries...)
+	if err != nil {
+		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
 
 	if driverName == "libsql" {
 		d.config.DriverName = "github.com/tursodatabase/libsql-client-go/libsql"
 	}
 	dbinfo := &DBInfo{
-		DriverName: d.config.DriverName,
-		Tables:     tables,
+		DriverName:   d.config.DriverName,
+		Tables:       tables,
+		QueryFolders: queries,
 	}
 
 	return dbinfo, nil
@@ -384,7 +391,8 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, d.translateColumnType(column))
+		column.Type = parser.TranslateColumnType(column.DBType)
+		columns = append(columns, column)
 	}
 
 	return columns, nil
@@ -565,49 +573,6 @@ func (d *driver) schema(schema string) string {
 	}
 
 	return schema
-}
-
-// TranslateColumnType converts sqlite database types to Go types, for example
-// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
-// as a Column object.
-// https://sqlite.org/datatype3.html
-func (driver) translateColumnType(c drivers.Column) drivers.Column {
-	switch c.DBType {
-	case "TINYINT", "INT8":
-		c.Type = "int8"
-	case "SMALLINT", "INT2":
-		c.Type = "int16"
-	case "MEDIUMINT":
-		c.Type = "int32"
-	case "INT", "INTEGER":
-		c.Type = "int32"
-	case "BIGINT":
-		c.Type = "int64"
-	case "UNSIGNED BIG INT":
-		c.Type = "uint64"
-	case "CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR",
-		"NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB":
-		c.Type = "string"
-	case "BLOB":
-		c.Type = "[]byte"
-	case "FLOAT", "REAL":
-		c.Type = "float32"
-	case "DOUBLE", "DOUBLE PRECISION":
-		c.Type = "float64"
-	case "NUMERIC", "DECIMAL":
-		c.Type = "decimal.Decimal"
-	case "BOOLEAN":
-		c.Type = "bool"
-	case "DATE", "DATETIME":
-		c.Type = "time.Time"
-	case "JSON":
-		c.Type = "types.JSON[json.RawMessage]"
-
-	default:
-		c.Type = "string"
-	}
-
-	return c
 }
 
 func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drivers.Index[IndexExtra], error) {

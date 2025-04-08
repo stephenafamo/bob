@@ -7,11 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added templates for query generation.
+- Added `clause.OrderBy.ClearOrderBy()`
+- Added `expr.ToArgs` and `expr.ToArgGroup` functions to convert slices of a type to args.
+- Add `queries` key to `bobgen-sql` and `bobgen-sqlite` configuration. This is used to specify what folder to search for queries in.
+- Implement the SQLite query parser for `SELECT` statements.
+- Add templates for query generation.
+- Add `camelCase` template function.
+- Add types to the `orm` package to be used in generated queries. `orm.ArgWithPosition`, `orm.ModExpression`, `orm.ModExecQuery` and `orm.ModQuery`.
+- Add function `orm.ArgsToExpression` for use in the generated code.
+- Add `String()` method to `bob.QueryType`
+
 ### Fixed
 
 - Update `mvdan.cc/gofumpt` and give precedence to toolchain when calculating the Go version.
 - Add custom comparison support when loading relationships.
 - Fix issue with scanning Postgres inet type.
+
+### Changed
+
+- `clause.With` now takes `bob.Expression` instead of `clause.CTE`. This makes it easier to use in generated queries without reconstruction an `CTE`.
+- `clause.OrderBy` now takes `bob.Expression` instead of `clause.OrderDef`. This makes it easier to use in generated queries without reconstruction an `OrderDef`.
+- `clause.Windows` now takes `bob.Expression` instead of `clause.NamedWindow`. This makes it easier to use in generated queries without reconstruction the window.
+- Several changes to the `drivers.Query` type as support is added for the new query parser.
+
+### Removed
+
+- Removed `clause.OrderBy.SetOrderBy()` as it was only being used to clear the set order by clauses.
 
 ## [v0.31.0] - 2025-03-26
 

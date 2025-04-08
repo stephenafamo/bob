@@ -143,6 +143,7 @@ func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, co
 //nolint:gochecknoglobals
 var templateFunctions = template.FuncMap{
 	"titleCase":          strmangle.TitleCase,
+	"camelCase":          strmangle.CamelCase,
 	"ignore":             strmangle.Ignore,
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,

@@ -27,16 +27,17 @@ Bob's philosophy centres around the following:
 1. SQL Executor for convenient scanning of results
 1. Models for convenient database queries
 1. Code generation of Models and Factories from your database schema
+1. Code generation of Queries similar to [`sqlc`](https://sqlc.dev).
 
 Check out [the documentation][docs] for more information.
 
 ## Support
 
-|               | Queries | Models | ORM Gen | Factory Gen |
-| ------------- | ------- | ------ | ------- | ----------- |
-| Postgres      | ✅      | ✅     | ✅      | ✅          |
-| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |
-| SQLite        | ✅      | ✅     | ✅      | ✅          |
+|               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
+| ------------- | ------- | ------ | ------- | ----------- | --------- |
+| Postgres      | ✅      | ✅     | ✅      | ✅          |           |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |           |
+| SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
 
 ## Comparisons
 

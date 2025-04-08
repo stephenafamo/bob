@@ -9,10 +9,10 @@ import (
 
 type With struct {
 	Recursive bool
-	CTEs      []CTE
+	CTEs      []bob.Expression
 }
 
-func (w *With) AppendWith(cte CTE) {
+func (w *With) AppendCTE(cte bob.Expression) {
 	w.CTEs = append(w.CTEs, cte)
 }
 

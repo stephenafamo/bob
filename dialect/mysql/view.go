@@ -126,7 +126,7 @@ func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dial
 	// set the limit to 1
 	countQuery.Expression.SetLimit(1)
 	// remove ordering
-	countQuery.Expression.SetOrderBy()
+	countQuery.Expression.ClearOrderBy()
 	// remove group by
 	countQuery.Expression.SetGroups()
 	// remove offset
