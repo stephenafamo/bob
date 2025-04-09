@@ -7,7 +7,7 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string) CTEChain[Q] {
+func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {
 	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{
 			Name:    name,
@@ -16,10 +16,10 @@ func With[Q interface{ AppendWith(clause.CTE) }](name string, columns ...string)
 	})
 }
 
-type CTEChain[Q interface{ AppendWith(clause.CTE) }] func() clause.CTE
+type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
 
 func (c CTEChain[Q]) Apply(q Q) {
-	q.AppendWith(c())
+	q.AppendCTE(c())
 }
 
 func (c CTEChain[Q]) As(q bob.Query) CTEChain[Q] {
@@ -247,7 +247,7 @@ func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
 	})
 }
 
-type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] func() clause.OrderDef
+type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
 	q.AppendOrder(s())

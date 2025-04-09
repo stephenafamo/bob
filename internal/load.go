@@ -151,7 +151,7 @@ func (a *AfterPreloader) Collect(v any) error {
 	}
 
 	if reflect.TypeOf(v) != a.oneType {
-		return fmt.Errorf("Expected to receive %s but got %T", a.oneType.String(), v)
+		return fmt.Errorf("expected to receive %s but got %T", a.oneType.String(), v)
 	}
 
 	a.collected = append(a.collected, v)

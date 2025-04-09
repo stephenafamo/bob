@@ -39,16 +39,17 @@ SQLITE_DSN="file.db"
 
 The values that exist for the drivers:
 
-| Name          | Description                                       | Default               |
-|---------------|---------------------------------------------------|-----------------------|
-| dsn           | Path to database                                  |                       |
-| driver_name   | Driver to use for generating driver-specific code | `modernc.org/sqlite`  |
-| attach        | Schemas to attach and the path to the db          | map[string]string{}   |
-| shared_schema | Schema to not include prefix in model             | "main"                |
-| output        | Folder for generated files                        | "models"              |
-| pkgname       | Package name for generated code                   | "models"              |
-| only          | Only generate these                               |                       |
-| except        | Skip generation for these                         |                       |
+| Name          | Description                                       | Default              |
+| ------------- | ------------------------------------------------- | -------------------- |
+| dsn           | Path to database                                  |                      |
+| driver_name   | Driver to use for generating driver-specific code | `modernc.org/sqlite` |
+| attach        | Schemas to attach and the path to the db          | map[string]string{}  |
+| shared_schema | Schema to not include prefix in model             | "main"               |
+| queries       | List of folders containing query files            | []string{}           |
+| output        | Folder for generated files                        | "models"             |
+| pkgname       | Package name for generated code                   | "models"             |
+| only          | Only generate these                               |                      |
+| except        | Skip generation for these                         |                      |
 
 ## Driver-specific code
 
@@ -61,7 +62,7 @@ For SQLite, the supported drivers are:
 
 Bob leverages driver-specific code to perform precise error matching for [generated error constants](./usage#generated-error-constants).
 
-## Only/Except:
+## Only/Except
 
 The `only` and `except` configuration options can be used to specify which tables to include or exclude from code generation. You can either supply a list of table names or use regular expressions to match multiple tables.
 

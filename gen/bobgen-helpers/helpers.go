@@ -86,7 +86,7 @@ func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConf
 		// set the provider if provided
 		provider = file.Provider(configPath)
 	}
-	if err != nil && !(configPath == DefaultConfigPath && errors.Is(err, os.ErrNotExist)) {
+	if err != nil && (configPath != DefaultConfigPath || !errors.Is(err, os.ErrNotExist)) {
 		return config, driverConfig, err
 	}
 

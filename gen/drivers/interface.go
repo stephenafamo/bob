@@ -5,6 +5,7 @@ package drivers
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"sync"
 
@@ -213,7 +214,7 @@ type concurrencyLimiter chan struct{}
 
 func newConcurrencyLimiter(capacity int) concurrencyLimiter {
 	ret := make(concurrencyLimiter, capacity)
-	for i := 0; i < capacity; i++ {
+	for range capacity {
 		ret <- struct{}{}
 	}
 
@@ -231,20 +232,10 @@ func (c concurrencyLimiter) put() {
 func Skip(name string, include, exclude []string) bool {
 	switch {
 	case len(include) > 0:
-		for _, i := range include {
-			if i == name {
-				return false
-			}
-		}
-		return true
+		return !slices.Contains(include, name)
 
 	case len(exclude) > 0:
-		for _, i := range exclude {
-			if i == name {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(exclude, name)
 
 	default:
 		return false

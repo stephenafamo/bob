@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -51,7 +52,15 @@ func (tables Tables[C, I]) ColumnGetter(alias TableAlias, table, column string) 
 	panic("unknown table " + table)
 }
 
-type Importer interface{ Import(...string) string }
+type Importer interface {
+	Import(...string) string
+	ImportList(list importers.List) string
+}
+
+type dummyImporter struct{}
+
+func (dummyImporter) Import(...string) string          { return "" }
+func (dummyImporter) ImportList(importers.List) string { return "" }
 
 func (tables Tables[C, I]) columnSetter(i Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
 	fromTable := tables.Get(fromTName)

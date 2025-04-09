@@ -36,7 +36,7 @@ var (
 // This file is meant to be re-generated in place and/or deleted at any time.
 
 `
-	noEditDisclaimer = []byte(fmt.Sprintf(noEditDisclaimerFmt, " "))
+	noEditDisclaimer = fmt.Appendf(nil, noEditDisclaimerFmt, " ")
 )
 
 //nolint:gochecknoglobals
@@ -131,7 +131,7 @@ func (o *Output) initOutFolders(wipe bool) error {
 // be forced back to linux style paths.
 func (o *Output) initTemplates(funcs template.FuncMap) error {
 	if len(o.Templates) == 0 {
-		return errors.New("No templates defined")
+		return errors.New("no templates defined")
 	}
 
 	o.singletonTemplates = template.New("")
@@ -345,7 +345,7 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
-				if tests {
+				if tests && e.output.Key != "queries" {
 					pkgName = fmt.Sprintf("%s_test", pkgName)
 				}
 				version = goVersion
@@ -466,7 +466,7 @@ func writeFile(outFolder string, fileName string, input io.Reader, goVersion str
 func executeTemplate[T, C, I any](buf io.Writer, t *template.Template, name string, data *TemplateData[T, C, I]) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("failed to execute template: %s\npanic: %+v\n", name, r)
+			err = fmt.Errorf("failed to execute template: %s\npanic: %+v", name, r)
 		}
 	}()
 

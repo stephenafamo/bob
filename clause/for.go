@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-var ErrNoLockStrength = errors.New("No lock strength specified")
+var ErrNoLockStrength = errors.New("no lock strength specified")
 
 const (
 	LockStrengthUpdate      = "UPDATE"

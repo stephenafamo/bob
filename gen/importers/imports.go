@@ -88,7 +88,7 @@ func (l List) Format() []byte {
 	}
 
 	if len(l) == 1 {
-		return []byte(fmt.Sprintf("import %s", l[0]))
+		return fmt.Appendf(nil, "import %s", l[0])
 	}
 
 	standard, thirdparty := l.GetSorted()

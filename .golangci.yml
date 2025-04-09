@@ -1,32 +1,16 @@
-# Options for analysis running.
-run:
-  timeout: 15m
-
+version: "2"
 linters:
-  # # Disable all linters.
-  # # Default: false
-  disable-all: true
-  # # Enable specific linter
-  # # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  default: none
   enable:
-    # defaults
-    - revive
     - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-    # extras
     - errname
     - errorlint
-    - gci
     - gochecknoglobals
     - gocyclo
     - godox
-    - gofumpt
     - gosec
+    - govet
+    - ineffassign
     - maintidx
     - misspell
     - nakedret
@@ -39,31 +23,48 @@ linters:
     - prealloc
     - predeclared
     - revive
+    - staticcheck
     - thelper
     - unparam
-
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (io.Writer).Write
-      - (*text/template.Template).Parse
-  revive:
+    - unused
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.Writer).Write
+        - (*text/template.Template).Parse
+    revive:
+      rules:
+        - name: receiver-naming
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: receiver-naming
-        disabled: true
-
-issues:
-  exclude:
-    - G115
-  exclude-rules:
-    - path: .
-      linters:
-        - typecheck
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - gochecknoglobals
-        - gocyclo
-        - dupl
-        - gosec
-        - nilnil
+      - linters:
+          - dupl
+          - gochecknoglobals
+          - gocyclo
+          - gosec
+          - nilnil
+        path: _test\.go
+      - path: (.+)\.go$
+        text: G115
+      - linters: [staticcheck]
+        text: "QF1008:"
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

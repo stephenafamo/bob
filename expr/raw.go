@@ -57,11 +57,7 @@ func (r Clause) convertQuestionMarks(ctx context.Context, w io.Writer, d bob.Dia
 	var args []any
 
 	clause := r.query
-	for {
-		if paramIndex >= len(clause) {
-			break
-		}
-
+	for paramIndex < len(clause) {
 		clause = clause[paramIndex:]
 		paramIndex = strings.IndexByte(clause, '?')
 

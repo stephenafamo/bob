@@ -32,3 +32,10 @@ func (s SchemaTable) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	schema, _ := ctx.Value(CtxUseSchema).(string)
 	return expr.Quote(schema, string(s)).WriteSQL(ctx, w, d, start)
 }
+
+type ArgWithPosition struct {
+	Name       string
+	Start      int
+	Stop       int
+	Expression bob.Expression
+}

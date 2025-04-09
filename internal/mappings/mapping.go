@@ -70,7 +70,7 @@ func GetMappings(typ reflect.Type) Mapping {
 
 	// Go through the struct fields and populate the map.
 	// Recursively go into any child structs, adding a prefix where necessary
-	for i := 0; i < typ.NumField(); i++ {
+	for i := range typ.NumField() {
 		field := typ.Field(i)
 
 		// Don't consider unexported fields

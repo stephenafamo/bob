@@ -2,6 +2,9 @@ package orm
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"iter"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/scan"
@@ -68,4 +71,58 @@ func (q Query[Q, T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error)
 // Cursor to scan through the results
 func (q Query[Q, T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	return bob.Cursor(ctx, exec, q, q.Scanner)
+}
+
+type ModExpression[Q bob.Expression] interface {
+	bob.Mod[Q]
+	bob.Expression
+}
+
+type ModExecQuery[Q bob.Expression] struct {
+	ExecQuery[ModExpression[Q]]
+}
+
+func (q ModExecQuery[Q]) Apply(e Q) {
+	q.Expression.Apply(e)
+}
+
+type ModQuery[Q bob.Expression, T any, Ts ~[]T] struct {
+	Query[ModExpression[Q], T, Ts]
+}
+
+func (q ModQuery[Q, T, Ts]) Apply(e Q) {
+	q.Expression.Apply(e)
+}
+
+func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {
+	return bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+		args := []any{}
+
+		for queryArg := range argIter {
+			if to < queryArg.Start {
+				w.Write([]byte(querySQL[from:to]))
+				return args, nil
+			}
+
+			if from <= queryArg.Start {
+				if to < queryArg.Stop {
+					return nil, fmt.Errorf("arg %q end(%d) is greater than to(%d)", queryArg.Name, queryArg.Stop, to)
+				}
+
+				w.Write([]byte(querySQL[from:queryArg.Start]))
+
+				arg, err := bob.Express(ctx, w, d, start, queryArg.Expression)
+				if err != nil {
+					return nil, err
+				}
+				args = append(args, arg...)
+
+				start += len(arg)
+				from = queryArg.Stop
+			}
+		}
+
+		w.Write([]byte(querySQL[from:to]))
+		return args, nil
+	})
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-var ErrNoCombinationStrategy = errors.New("Combination strategy must be set")
+var ErrNoCombinationStrategy = errors.New("combination strategy must be set")
 
 const (
 	Union     = "UNION"
@@ -47,7 +47,7 @@ func (s Combine) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 		w.Write([]byte(" "))
 	}
 
-	args, err := bob.Express(ctx, w, d, start, s.Query)
+	args, err := s.Query.WriteQuery(ctx, w, start)
 	if err != nil {
 		return nil, err
 	}

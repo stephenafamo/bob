@@ -23,6 +23,8 @@ type Config struct {
 	Dialect string
 	// Where the SQL files are
 	Dir string
+	// Folders containing query files
+	Queries []string `yaml:"queries"`
 	// The database schemas to generate models for
 	Schemas []string
 	// The name of this schema will not be included in the generated models
@@ -158,6 +160,7 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 	d := sqliteDriver.New(sqliteDriver.Config{
 		DSN:        tmp.Name(),
 		Attach:     attach,
+		Queries:    config.Queries,
 		DriverName: config.DriverName,
 
 		SharedSchema: config.SharedSchema,

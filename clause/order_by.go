@@ -9,14 +9,14 @@ import (
 )
 
 type OrderBy struct {
-	Expressions []OrderDef
+	Expressions []bob.Expression
 }
 
-func (o *OrderBy) SetOrderBy(orders ...OrderDef) {
-	o.Expressions = orders
+func (o *OrderBy) ClearOrderBy() {
+	o.Expressions = nil
 }
 
-func (o *OrderBy) AppendOrder(order OrderDef) {
+func (o *OrderBy) AppendOrder(order bob.Expression) {
 	o.Expressions = append(o.Expressions, order)
 }
 
