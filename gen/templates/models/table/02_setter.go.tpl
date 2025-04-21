@@ -65,6 +65,8 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
   })
 
+  q.AppendInsertExprs(s.Expressions("{{$table.Name}}"))
+
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
     vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
