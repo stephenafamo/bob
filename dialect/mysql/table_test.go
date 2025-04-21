@@ -76,7 +76,6 @@ type WithoutAutoIncrSetter struct {
 }
 
 func (s WithoutAutoIncrSetter) Apply(q *dialect.InsertQuery) {
-
 	q.AppendInsertExprs(s.Expressions("without_auto_incr"))
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -93,7 +92,6 @@ func (s WithoutAutoIncrSetter) Apply(q *dialect.InsertQuery) {
 			vals[1] = Arg(s.Language)
 		}
 		return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
-
 	}))
 }
 
@@ -223,7 +221,6 @@ func TestUniqueSetRow(t *testing.T) {
 }
 
 func TestRetrievalWithoutAutoIncr(t *testing.T) {
-
 	if table3.unretrievable {
 		t.Fatalf("table3 marked as unretrievable")
 	}
@@ -267,7 +264,6 @@ func TestRetrievalWithoutAutoIncr(t *testing.T) {
 			},
 		},
 	}, formatter)
-
 }
 
 func toQuote(s []string) []Expression {
