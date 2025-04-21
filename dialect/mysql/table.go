@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/dm"
 	"github.com/stephenafamo/bob/dialect/mysql/im"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
@@ -143,7 +143,7 @@ type insertQuery[T orm.Model, Ts ~[]T] struct {
 	orm.ExecQuery[*dialect.InsertQuery]
 	scanner       scan.Mapper[T]
 	unretrievable bool
-	getInserted   func([]clause.Value, []sql.Result) (bob.Query, error)
+	getInserted   func([][]bob.Expression, []sql.Result) (bob.Query, error)
 	hooks         *bob.Hooks[Ts, bob.SkipModelHooksKey]
 }
 
@@ -239,10 +239,10 @@ func (t *insertQuery[T, Ts]) insertAll(ctx context.Context, exec bob.Executor) (
 	// Restore the values
 	t.Expression.Values.Vals = oldVals
 
-	return t.getInserted(oldVals, results)
+	return t.getInserted(t.Expression.InsertExprs, results)
 }
 
-func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.Result) (bob.Query, error) {
+func (t *Table[T, Tslice, Tset]) getInserted(insertExprs [][]bob.Expression, results []sql.Result) (bob.Query, error) {
 	w := &bytes.Buffer{}
 
 	if t.unretrievable {
@@ -255,9 +255,14 @@ func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.
 	query.QueryType = bob.QueryTypeInsert
 
 	var autoIncrArgs []bob.Expression
-	idArgs := make([][]bob.Expression, len(t.uniqueIdx))
+	// first index is the index used by the t.uniqueIdx under that index there
+	// is an slice of the different args needed to retrieve a single insert. So
+	// if there was 2 inserts it would be a slice with 2 elements, each of which
+	// would also have n elements (where n is the number of unique columns in
+	// the table index)
+	uniqueIdxRetrivalArgsGroups := make([][][]bob.Expression, len(t.uniqueIdx))
 
-	for i, val := range vals {
+	for i, val := range insertExprs {
 		if t.autoIncrementColumn != "" {
 			lastID, err := results[i].LastInsertId()
 			if err != nil {
@@ -266,12 +271,13 @@ func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.
 
 			autoIncrArgs = append(autoIncrArgs, Arg(lastID))
 		} else {
+			// uIdx is the index of t.uniqueIdx (which is an array of the
+			// different unique indices that the table has)
 			uIdx, uArgs := t.uniqueSet(w, val)
 			if uIdx == -1 || len(uArgs) == 0 {
 				return nil, orm.ErrCannotRetrieveRow
 			}
-
-			idArgs[uIdx] = append(idArgs[uIdx], ArgGroup(internal.ToAnySlice(uArgs)...))
+			uniqueIdxRetrivalArgsGroups[uIdx] = append(uniqueIdxRetrivalArgsGroups[uIdx], uArgs)
 		}
 	}
 
@@ -280,18 +286,32 @@ func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.
 		filters = append(filters, Quote(t.autoIncrementColumn).In(autoIncrArgs...))
 	}
 
-	for i, args := range idArgs {
-		if len(args) == 0 {
+	for i, argGroups := range uniqueIdxRetrivalArgsGroups {
+		if len(argGroups) == 0 {
 			continue
 		}
 
 		uCols := t.uniqueIdx[i]
 		if len(uCols) == 1 {
-			filters = append(filters, Quote(t.setterMapping.All[uCols[0]]).In(args...))
+
+			flattenedArgs := make([]bob.Expression, 0, len(argGroups))
+			for _, argGroup := range argGroups {
+				flattenedArgs = append(flattenedArgs, argGroup...)
+			}
+
+			filters = append(filters, Quote(t.setterMapping.All[uCols[0]]).In(flattenedArgs...))
 			continue
 		}
 
-		filters = append(filters, Group(t.uniqueColNames(i)...).In(args...))
+		colNames := t.uniqueColNames(i)
+
+		for _, argGroup := range argGroups {
+			var filterGroup []bob.Expression
+			for j, colName := range colNames {
+				filterGroup = append(filterGroup, sm.Where(colName.EQ(argGroup[j])).E)
+			}
+			filters = append(filters, And(filterGroup...))
+		}
 	}
 
 	query.Apply(sm.Where(Or(filters...)))
@@ -338,16 +358,19 @@ func isDefaultOrNull(w *bytes.Buffer, e bob.Expression) bool {
 }
 
 func (t *Table[T, Tslice, Tset]) uniqueSet(w *bytes.Buffer, row []bob.Expression) (int, []bob.Expression) {
-	if len(row) != len(t.nonGeneratedCols) {
-		return -1, nil
-	}
-
 Outer:
 	for i, u := range t.uniqueIdx {
 		colVals := make([]bob.Expression, 0, len(u))
 
 		for _, col := range u {
 			field := row[col]
+			// we need to extract the value from the expressions. The generated
+			// models Expressions func is using expr.Join to construct the
+			// insert query.
+			joinExpr, ok := field.(expr.Join)
+			if ok {
+				field = joinExpr.Exprs[len(joinExpr.Exprs)-1]
+			}
 
 			if field == nil || isDefaultOrNull(w, field) {
 				continue Outer
@@ -364,13 +387,13 @@ Outer:
 	return -1, nil
 }
 
-func (t *Table[T, Tslice, Tset]) uniqueColNames(i int) []bob.Expression {
+func (t *Table[T, Tslice, Tset]) uniqueColNames(i int) []Expression {
 	if i < 0 || i >= len(t.uniqueIdx) {
 		return nil
 	}
 
 	u := t.uniqueIdx[i]
-	colNames := make([]bob.Expression, len(u))
+	colNames := make([]Expression, len(u))
 
 	for i, col := range u {
 		colNames[i] = Quote(t.setterMapping.All[col])

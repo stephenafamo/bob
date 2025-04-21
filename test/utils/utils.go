@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/scan"
@@ -56,7 +57,7 @@ func QueryDiff(a, b string, clean FormatFunc) (string, error) {
 }
 
 func ArgsDiff(a, b []any) string {
-	return cmp.Diff(a, b)
+	return cmp.Diff(a, b, cmp.AllowUnexported(omit.Val[string]{}))
 }
 
 func ErrDiff(a, b error) string {

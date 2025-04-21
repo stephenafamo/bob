@@ -23,10 +23,19 @@ type InsertQuery struct {
 	ColumnAlias        []string
 	Sets               []Set
 	DuplicateKeyUpdate clause.Set
+	InsertExprs        [][]bob.Expression
 
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*InsertQuery]
+}
+
+func (i *InsertQuery) AppendInsertExprs(exprs []bob.Expression) *InsertQuery {
+	if i.InsertExprs == nil {
+		i.InsertExprs = make([][]bob.Expression, 0)
+	}
+	i.InsertExprs = append(i.InsertExprs, exprs)
+	return i
 }
 
 func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
