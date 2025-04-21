@@ -187,21 +187,21 @@ func TestUniqueSetRow(t *testing.T) {
 			if tc.row != nil {
 				if tc.row.ID.IsSet() {
 					rowExpr[0] = expr.Join{Sep: " = ", Exprs: []bob.Expression{
-						Quote(append([]string{"prefix"}, "a")...),
+						Quote(append([]string{"prefix"}, "id")...),
 						Arg(tc.row.ID),
 					}}
 				}
 
 				if tc.row.Title.IsSet() {
 					rowExpr[1] = expr.Join{Sep: " = ", Exprs: []bob.Expression{
-						Quote(append([]string{"prefix"}, "b")...),
+						Quote(append([]string{"prefix"}, "title")...),
 						Arg(tc.row.Title),
 					}}
 				}
 
 				if tc.row.AuthorID.IsSet() {
 					rowExpr[2] = expr.Join{Sep: " = ", Exprs: []bob.Expression{
-						Quote(append([]string{"prefix"}, "c")...),
+						Quote(append([]string{"prefix"}, "author_id")...),
 						Arg(tc.row.AuthorID),
 					}}
 				}
