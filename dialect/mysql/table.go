@@ -166,6 +166,9 @@ func (t *insertQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, err
 // and then attempt to retrieve all the rows using a SELECT query.
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
+//
+// If inserting multiple rows without an AUTO_INCREMENT column, the order of the returned rows ARE NOT GUARANTEED
+// to be the same as the order of the inserted rows
 func (t *insertQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
 	q, err := t.insertAll(ctx, exec)
 	if err != nil {
@@ -180,6 +183,9 @@ func (t *insertQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, er
 // and then attempt to retrieve all the rows using a SELECT query.
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
+//
+// If inserting multiple rows without an AUTO_INCREMENT column, the order of the returned rows ARE NOT GUARANTEED
+// to be the same as the order of the inserted rows
 func (t *insertQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	q, err := t.insertAll(ctx, exec)
 	if err != nil {
