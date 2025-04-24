@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -198,15 +199,15 @@ func (t *insertQuery[T, Ts]) insertAll(ctx context.Context, exec bob.Executor) (
 			return nil, err
 		}
 
-		return nil, orm.ErrCannotRetrieveRow
+		return nil, fmt.Errorf("unretrievable: %w", orm.ErrCannotRetrieveRow)
 	}
 
 	if t.Expression.Values.Query != nil {
-		return nil, orm.ErrCannotRetrieveRow
+		return nil, fmt.Errorf("nil query: %w", orm.ErrCannotRetrieveRow)
 	}
 
 	if len(t.Expression.Values.Vals) == 0 {
-		return nil, orm.ErrCannotRetrieveRow
+		return nil, fmt.Errorf("no values: %w", orm.ErrCannotRetrieveRow)
 	}
 
 	var err error
@@ -246,7 +247,7 @@ func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.
 	w := &bytes.Buffer{}
 
 	if t.unretrievable {
-		return nil, orm.ErrCannotRetrieveRow
+		return nil, fmt.Errorf("unretrievable: %w", orm.ErrCannotRetrieveRow)
 	}
 
 	query := Select(sm.From(t.NameAs()))
@@ -268,10 +269,10 @@ func (t *Table[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.
 		} else {
 			uIdx, uArgs := t.uniqueSet(w, val)
 			if uIdx == -1 || len(uArgs) == 0 {
-				return nil, orm.ErrCannotRetrieveRow
+				return nil, fmt.Errorf("no unique index found: %w", orm.ErrCannotRetrieveRow)
 			}
 
-			idArgs[uIdx] = append(idArgs[uIdx], ArgGroup(internal.ToAnySlice(uArgs)...))
+			idArgs[uIdx] = append(idArgs[uIdx], Group(uArgs...))
 		}
 	}
 

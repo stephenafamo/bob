@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue with scanning Postgres inet type.
 - Set `Arg` and `ArgGroup` to `NULL` if there are no values.
 - Do not call `BeforeInsertHooks` in the insert mod of a view.
+- Fix issue with retrieving inserted rows with the MySQL driver.
 
 ### Changed
 
