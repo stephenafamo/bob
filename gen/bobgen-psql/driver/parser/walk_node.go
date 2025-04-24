@@ -270,7 +270,7 @@ func (w *walker) walk(a any) nodeInfo {
 		w.updatePosition(a.Location)
 		info = w.reflectWalk(reflect.ValueOf(a))
 		if a.Name != "" {
-			info.end = w.getEndOfTokenAfter(info.end+1, pg.Token_IDENT)
+			info = info.addChild("Name", w.findIdentOrUnreserved(info.end+1))
 			w.maybeSetName(info.position(), a.Name)
 		}
 		valPos := info.children["Val"].position()

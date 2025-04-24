@@ -308,7 +308,6 @@ func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, sources ...query
 	if target == nil {
 		return nil
 	}
-	fmt.Println("getStarColumns", target.String())
 
 	fields := target.GetResTarget().GetVal().GetColumnRef().GetFields()
 	if len(fields) == 0 {

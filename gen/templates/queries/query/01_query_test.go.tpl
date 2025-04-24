@@ -6,10 +6,19 @@
 {{$.Importer.Import "github.com/google/go-cmp/cmp"}}
 
 {{range $query := $.QueryFile.Queries}}
+{{$upperName := title $query.Name}}
+{{$lowerName := untitle $query.Name}}
+{{$queryType := (lower $query.Type.String | titleCase)}}
 {{$args := list }}
 {{range $arg := $query.Args -}}
-  {{ $argName := camelCase $arg.Col.Name }}
+  {{ $argName := titleCase $arg.Col.Name }}
   {{ $argType := ($arg.Type $.Importer $.Types) }}
+  {{if gt (len $arg.Children) 0}}
+    {{ $argType = printf "%s_%s" $upperName $argName }}
+    {{if $arg.CanBeMultiple}}
+      {{ $argType = printf "[]%s" $argType }}
+    {{end}}
+  {{end}}
   {{- if $arg.CanBeMultiple -}}
     {{$args = append $args (printf "%s{zero[%s]()}" $argType (substr 2 (len $argType) $argType)) }}
   {{- else -}}
@@ -17,9 +26,6 @@
   {{- end -}}
 {{end}}
 
-{{$upperName := title $query.Name}}
-{{$lowerName := untitle $query.Name}}
-{{$queryType := (lower $query.Type.String | titleCase)}}
 
 func Test{{$upperName}} (t *testing.T) {
   var sb strings.Builder

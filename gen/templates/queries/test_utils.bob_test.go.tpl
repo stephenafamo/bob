@@ -13,7 +13,8 @@ func zero[T any]() (z T) {
     return pg_query.Deparse(aTree)
   }
 {{else}}
+  {{$.Importer.Import "testutils" "github.com/stephenafamo/bob/test/utils"}}
   func formatQuery(query string) (string, error) {
-    return query, nil
+    return testutils.Clean(query), nil
   }
 {{end}}
