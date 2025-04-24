@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add custom comparison support when loading relationships.
 - Fix issue with scanning Postgres inet type.
 - Set `Arg` and `ArgGroup` to `NULL` if there are no values.
+- Do not call `BeforeInsertHooks` in the insert mod of a view.
 
 ### Changed
 

@@ -61,9 +61,11 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
-  q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-    return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
-  })
+  {{if $table.Constraints.Primary -}}
+    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
+      return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
+    })
+  {{end}}
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
     vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
