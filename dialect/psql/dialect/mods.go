@@ -354,16 +354,16 @@ func (c CTEChain[Q]) CycleValue(value, defaultVal any) CTEChain[Q] {
 	})
 }
 
-type LockChain[Q interface{ SetFor(clause.For) }] func() clause.For
+type LockChain[Q interface{ AppendLock(bob.Expression) }] func() clause.Lock
 
 func (l LockChain[Q]) Apply(q Q) {
-	q.SetFor(l())
+	q.AppendLock(l())
 }
 
 func (l LockChain[Q]) NoWait() LockChain[Q] {
 	lock := l()
 	lock.Wait = clause.LockWaitNoWait
-	return LockChain[Q](func() clause.For {
+	return LockChain[Q](func() clause.Lock {
 		return lock
 	})
 }
@@ -371,7 +371,7 @@ func (l LockChain[Q]) NoWait() LockChain[Q] {
 func (l LockChain[Q]) SkipLocked() LockChain[Q] {
 	lock := l()
 	lock.Wait = clause.LockWaitSkipLocked
-	return LockChain[Q](func() clause.For {
+	return LockChain[Q](func() clause.Lock {
 		return lock
 	})
 }

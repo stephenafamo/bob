@@ -5,25 +5,17 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 
 {{range $query := $.QueryFile.Queries}}
+{{if $query.Args}}
+  {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
+{{end}}
 
 {{$upperName := titleCase $query.Name}}
 {{$lowerName := untitle $query.Name}}
 {{$flatArgs := $query.ArgsByPosition}}
-{{$args := list }}
-{{range $arg := $query.Args -}}
-  {{if $arg.CanBeMultiple}}
-    {{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
-  {{end}}
-  {{ $argName := camelCase $arg.Col.Name }}
-  {{ $argType := ($arg.Type $.Importer $.Types) }}
-  {{$args = append $args (printf "%s %s" $argName $argType) }}
-{{end}}
-
 {{$queryRowName := $query.Config.RowName}}
 {{if not $query.Config.GenerateRow}}
   {{- $typDef :=  index $.Types $queryRowName -}}
@@ -37,15 +29,36 @@
 
 const {{$lowerName}}SQL = `{{replace "`" "`+\"`\"+`" $query.SQL}}`
 
+{{$args := list }}
+{{range $arg := $query.Args -}}
+  {{if $arg.CanBeMultiple}}
+    {{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
+  {{end}}
+
+  {{ $argName := titleCase $arg.Col.Name }}
+  {{ $argType := ($arg.Type $.Importer $.Types) }}
+
+  {{if gt (len $arg.Children) 0}}
+    {{ $argType = printf "%s_%s" $upperName $argName }}
+    type {{$argType}} {{$arg.TypeDef $.Importer $.Types}}
+    {{if $arg.CanBeMultiple}}
+      {{ $argType = printf "[]%s" $argType }}
+    {{end}}
+  {{end}}
+
+  {{$args = append $args (printf "%s %s" $argName $argType) }}
+{{end}}
+
+
 {{if $query.Columns -}}
 func {{$upperName}} ({{join ", " $args}}) orm.ModQuery[{{$dialectType}}, {{$colParams}}] {
 {{- else -}}
-func {{$upperName}} ({{join ", " $args}}) orm.ModQuery[{{$dialectType}}] {
+func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
 {{end}}
   var expressionTypArgs {{$lowerName}}
 
   {{range $arg := $query.Args -}}
-    expressionTypArgs.{{camelCase $arg.Col.Name}} = {{$arg.ToExpression $.Dialect $lowerName (camelCase $arg.Col.Name)}}
+    expressionTypArgs.{{titleCase $arg.Col.Name}} = {{$arg.ToExpression $.Dialect $lowerName (titleCase $arg.Col.Name)}}
   {{end}}
 
 {{if $query.Columns -}}
@@ -84,7 +97,7 @@ type {{$queryRowName}} struct {
 
 type {{$lowerName}} struct {
   {{range $arg := $query.Args -}}
-    {{camelCase $arg.Col.Name}} bob.Expression
+    {{titleCase $arg.Col.Name}} bob.Expression
   {{end}}
 }
 
@@ -95,7 +108,7 @@ func (o {{$lowerName}}) args() iter.Seq[orm.ArgWithPosition]  {
         Name: "{{camelCase $flatArg.Name}}",
         Start: {{$flatArg.Start}},
         Stop: {{$flatArg.Stop}},
-        Expression: o.{{camelCase $flatArg.Name}},
+        Expression: o.{{titleCase $flatArg.Name}},
       }) {
           return
       }

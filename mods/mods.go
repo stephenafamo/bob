@@ -135,10 +135,10 @@ func (f Combine[Q]) Apply(q Q) {
 	q.AppendCombine(clause.Combine(f))
 }
 
-type For[Q interface{ SetFor(clause.For) }] clause.For
+type For[Q interface{ SetFor(clause.Lock) }] clause.Lock
 
 func (f For[Q]) Apply(q Q) {
-	q.SetFor(clause.For(f))
+	q.SetFor(clause.Lock(f))
 }
 
 type Values[Q interface{ AppendValues(vals ...bob.Expression) }] []bob.Expression

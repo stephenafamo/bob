@@ -10,7 +10,7 @@ import DocCardList from '@theme/DocCardList';
 
 |               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
 | ------------- | ------- | ------ | ------- | ----------- | --------- |
-| Postgres      | ✅      | ✅     | ✅      | ✅          |           |
+| Postgres      | ✅      | ✅     | ✅      | ✅          | ✅        |
 | MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |           |
 | SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
 

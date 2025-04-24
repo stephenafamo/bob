@@ -98,6 +98,7 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 
 		Schemas:      pq.StringArray(config.Schemas),
 		SharedSchema: config.SharedSchema,
+		Queries:      config.Queries,
 		Only:         config.Only,
 		Except:       config.Except,
 		Concurrency:  config.Concurrency,

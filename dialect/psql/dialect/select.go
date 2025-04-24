@@ -24,7 +24,7 @@ type SelectQuery struct {
 	clause.Limit
 	clause.Offset
 	clause.Fetch
-	clause.For
+	clause.Locks
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]
@@ -122,18 +122,19 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, offsetArgs...)
 
-	_, err = bob.ExpressIf(ctx, w, d, start+len(args), s.Fetch,
+	fetchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Fetch,
 		s.Fetch.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
+	args = append(args, fetchArgs...)
 
-	forArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.For,
-		s.For.Strength != "", "\n", "")
+	lockArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), s.Locks.Locks,
+		"\n", "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, forArgs...)
+	args = append(args, lockArgs...)
 
 	w.Write([]byte("\n"))
 	return args, nil
