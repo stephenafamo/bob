@@ -651,7 +651,7 @@
 				},
 				{
 					"name": "enum_use",
-					"db_type": "ENUM",
+					"db_type": "public.unicode_enum",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -662,7 +662,7 @@
 				},
 				{
 					"name": "enum_nullable",
-					"db_type": "ENUM",
+					"db_type": "public.unicode_enum",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2490,7 +2490,7 @@
 				},
 				{
 					"name": "enum_use",
-					"db_type": "ENUM",
+					"db_type": "public.unicode_enum",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
@@ -2501,7 +2501,7 @@
 				},
 				{
 					"name": "enum_nullable",
-					"db_type": "ENUM",
+					"db_type": "public.unicode_enum",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,

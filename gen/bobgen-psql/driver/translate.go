@@ -90,6 +90,7 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 		c.Type = "pgtypes.TxIDSnapshot"
 	case "ENUM":
 		c.Type = "string"
+		c.DBType = info.UDTSchema + "." + info.UDTName
 		for _, e := range d.enums {
 			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
 				d.mu.Lock()
