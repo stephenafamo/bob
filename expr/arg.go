@@ -22,12 +22,12 @@ type args struct {
 }
 
 func (a args) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	if len(a.vals) == 0 {
-		return nil, nil
-	}
-
 	if a.grouped {
 		w.Write([]byte(openPar))
+	}
+
+	if len(a.vals) == 0 {
+		w.Write([]byte("NULL"))
 	}
 
 	for k := range a.vals {
