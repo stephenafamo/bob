@@ -67,6 +67,9 @@ func (w WhereMod[Q, C]) GTE(val C) mods.Where[Q] {
 }
 
 func (w WhereMod[Q, C]) In(slice ...C) mods.Where[Q] {
+	if len(slice) == 0 {
+		return mods.Where[Q]{E: expr.Raw("(1=0)")}
+	}
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -75,6 +78,9 @@ func (w WhereMod[Q, C]) In(slice ...C) mods.Where[Q] {
 }
 
 func (w WhereMod[Q, C]) NotIn(slice ...C) mods.Where[Q] {
+	if len(slice) == 0 {
+		return mods.Where[Q]{E: expr.Raw("(1=1)")}
+	}
 	values := make([]any, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
