@@ -23,12 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Update `mvdan.cc/gofumpt` and give precedence to toolchain when calculating the Go version.
+- Update `mvdan.cc/gofumpt` and give precedence to toolchain when calculating the Go version. (thanks @isgj)
 - Add custom comparison support when loading relationships.
 - Fix issue with scanning Postgres inet type.
 - Set `Arg` and `ArgGroup` to `NULL` if there are no values.
 - Do not call `BeforeInsertHooks` in the insert mod of a view.
 - Fix issue with retrieving inserted rows with the MySQL driver.
+- Add custom comparison for relationship loading. (thanks @kostaspt)
 
 ### Changed
 
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `clause.For` renemaed to `clause.Locks` and can now take multiple locks.
 - `clause.Fetch` now takes `any` instead of an integer.
 - Several changes to the `drivers.Query` type as support is added for the new query parser.
+- Enum types can now be matched by `db_type` in bobgen-psql as `schema.enum_type`. (thanks @abramlab)
 
 ### Removed
 
