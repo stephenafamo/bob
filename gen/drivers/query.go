@@ -1,8 +1,11 @@
 package drivers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -203,17 +206,19 @@ type QueryCol struct {
 	TypeName string         `json:"type"`
 }
 
-func (q QueryCol) Merge(other QueryCol) QueryCol {
-	if other.Name != "" {
-		q.Name = other.Name
-	}
+func (q QueryCol) Merge(others ...QueryCol) QueryCol {
+	for _, other := range others {
+		if other.Name != "" {
+			q.Name = other.Name
+		}
 
-	if other.TypeName != "" {
-		q.TypeName = other.TypeName
-	}
+		if other.TypeName != "" {
+			q.TypeName = other.TypeName
+		}
 
-	if other.Nullable.IsSet() {
-		q.Nullable = other.Nullable
+		if other.Nullable.IsSet() {
+			q.Nullable = other.Nullable
+		}
 	}
 
 	return q
@@ -245,27 +250,26 @@ func (c QueryCol) Type(i Importer, types Types) string {
 }
 
 func (c QueryArg) Type(i Importer, types Types) string {
-	if len(c.Children) == 0 {
-		if c.CanBeMultiple {
-			return "[]" + c.Col.Type(i, types)
-		}
+	if c.CanBeMultiple {
+		return "[]" + c.TypeDef(i, types)
+	}
+	return c.TypeDef(i, types)
+}
 
+func (c QueryArg) TypeDef(i Importer, types Types) string {
+	if len(c.Children) == 0 {
 		return c.Col.Type(i, types)
 	}
 
 	var sb strings.Builder
 	sb.WriteString("struct{\n")
 	for _, child := range c.Children {
-		sb.WriteString(strmangle.CamelCase(child.Col.Name))
+		sb.WriteString(strmangle.TitleCase(child.Col.Name))
 		sb.WriteString(" ")
 		sb.WriteString(child.Type(i, types))
 		sb.WriteString("\n")
 	}
 	sb.WriteString("}")
-
-	if c.CanBeMultiple {
-		return "[]" + sb.String()
-	}
 
 	return sb.String()
 }
@@ -305,7 +309,7 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
 
 	start := a.Positions[0][0]
 	for _, child := range a.Children {
-		childName := strmangle.CamelCase(child.Col.Name)
+		childName := strmangle.TitleCase(child.Col.Name)
 		sb.WriteString(fmt.Sprintf(`
             w.Write([]byte(%sSQL[%d:%d]))
             %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)
@@ -329,4 +333,69 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
     `, queryName, start, a.Positions[0][1]))
 
 	return sb.String()
+}
+
+type QueryParser interface {
+	ParseQueries(ctx context.Context, s string) ([]Query, error)
+}
+
+func ParseFolders(ctx context.Context, parser QueryParser, paths ...string) ([]QueryFolder, error) {
+	allQueries := make([]QueryFolder, 0, len(paths))
+	for _, path := range paths {
+		queries, err := parseFolder(ctx, parser, path)
+		if err != nil {
+			return nil, fmt.Errorf("parse folder: %w", err)
+		}
+
+		allQueries = append(allQueries, queries)
+	}
+
+	return allQueries, nil
+}
+
+func parseFolder(ctx context.Context, parser QueryParser, path string) (QueryFolder, error) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return QueryFolder{}, fmt.Errorf("read dir: %w", err)
+	}
+
+	files := make([]QueryFile, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(entry.Name()) != ".sql" {
+			continue
+		}
+
+		file, err := parseFile(ctx, parser, filepath.Join(path, entry.Name()))
+		if err != nil {
+			return QueryFolder{}, fmt.Errorf("parse file: %w", err)
+		}
+
+		files = append(files, file)
+	}
+
+	return QueryFolder{
+		Path:  path,
+		Files: files,
+	}, nil
+}
+
+func parseFile(ctx context.Context, parser QueryParser, path string) (QueryFile, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return QueryFile{}, fmt.Errorf("read file: %w", err)
+	}
+
+	queries, err := parser.ParseQueries(ctx, string(file))
+	if err != nil {
+		return QueryFile{}, fmt.Errorf("parse multi queries: %w", err)
+	}
+
+	return QueryFile{
+		Path:    path,
+		Queries: queries,
+	}, nil
 }

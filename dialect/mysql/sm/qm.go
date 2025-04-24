@@ -180,8 +180,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 }
 
 func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
 			Tables:   tables,
 		}
@@ -189,8 +189,8 @@ func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthShare,
 			Tables:   tables,
 		}

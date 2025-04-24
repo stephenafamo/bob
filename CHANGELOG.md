@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `clause.OrderBy.ClearOrderBy()`
 - Added `expr.ToArgs` and `expr.ToArgGroup` functions to convert slices of a type to args.
 - Add `queries` key to `bobgen-sql` and `bobgen-sqlite` configuration. This is used to specify what folder to search for queries in.
+- Implement the Postgres query parser for `SELECT` statements.
 - Implement the SQLite query parser for `SELECT` statements.
 - Add templates for query generation.
 - Add `camelCase` template function.
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `clause.With` now takes `bob.Expression` instead of `clause.CTE`. This makes it easier to use in generated queries without reconstruction an `CTE`.
 - `clause.OrderBy` now takes `bob.Expression` instead of `clause.OrderDef`. This makes it easier to use in generated queries without reconstruction an `OrderDef`.
 - `clause.Windows` now takes `bob.Expression` instead of `clause.NamedWindow`. This makes it easier to use in generated queries without reconstruction the window.
+- `clause.For` renemaed to `clause.Locks` and can now take multiple locks.
+- `clause.Fetch` now takes `any` instead of an integer.
 - Several changes to the `drivers.Query` type as support is added for the new query parser.
 
 ### Removed

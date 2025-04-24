@@ -117,7 +117,7 @@ func Offset(count any) bob.Mod[*dialect.SelectQuery] {
 	}
 }
 
-func Fetch(count int64, withTies bool) bob.Mod[*dialect.SelectQuery] {
+func Fetch(count any, withTies bool) bob.Mod[*dialect.SelectQuery] {
 	return mods.Fetch[*dialect.SelectQuery]{
 		Count:    &count,
 		WithTies: withTies,
@@ -173,8 +173,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 }
 
 func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
 			Tables:   tables,
 		}
@@ -182,8 +182,8 @@ func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 func ForNoKeyUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthNoKeyUpdate,
 			Tables:   tables,
 		}
@@ -191,8 +191,8 @@ func ForNoKeyUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthShare,
 			Tables:   tables,
 		}
@@ -200,8 +200,8 @@ func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 func ForKeyShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.For {
-		return clause.For{
+	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+		return clause.Lock{
 			Strength: clause.LockStrengthKeyShare,
 			Tables:   tables,
 		}

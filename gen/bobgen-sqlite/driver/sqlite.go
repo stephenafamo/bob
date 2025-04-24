@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -119,7 +120,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("getting tables: %w", err)
 	}
 
-	queries, err := parser.New(tables).ParseFolders(d.config.Queries...)
+	queries, err := drivers.ParseFolders(ctx, parser.New(tables), d.config.Queries...)
 	if err != nil {
 		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
@@ -449,12 +450,7 @@ func (d driver) skipKey(table, column string) bool {
 			return false
 		}
 
-		for _, filteredCol := range filter {
-			if filteredCol == column {
-				return false
-			}
-		}
-		return true
+		return !slices.Contains(filter, column)
 	}
 
 	if len(d.config.Except) > 0 {
@@ -467,10 +463,8 @@ func (d driver) skipKey(table, column string) bool {
 			return true
 		}
 
-		for _, filteredCol := range filter {
-			if filteredCol == column {
-				return true
-			}
+		if slices.Contains(filter, column) {
+			return true
 		}
 	}
 
@@ -704,7 +698,7 @@ func (d driver) splitColumnDefinitions(ddl string) []string {
 	var defs []string
 	var i, pOpen int
 
-	for j := 0; j < len(ddl); j++ {
+	for j := range len(ddl) {
 		if ddl[j] == '(' {
 			pOpen++
 		}

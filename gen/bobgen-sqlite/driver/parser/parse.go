@@ -1,10 +1,9 @@
 package parser
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/aarondl/opt/omit"
@@ -22,68 +21,7 @@ type Parser struct {
 	db tables
 }
 
-func (p Parser) ParseFolders(paths ...string) ([]drivers.QueryFolder, error) {
-	allQueries := make([]drivers.QueryFolder, 0, len(paths))
-	for _, path := range paths {
-		queries, err := p.parseFolder(path)
-		if err != nil {
-			return nil, fmt.Errorf("parse folder: %w", err)
-		}
-
-		allQueries = append(allQueries, queries)
-	}
-
-	return allQueries, nil
-}
-
-func (p Parser) parseFolder(path string) (drivers.QueryFolder, error) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return drivers.QueryFolder{}, fmt.Errorf("read dir: %w", err)
-	}
-
-	files := make([]drivers.QueryFile, 0, len(entries))
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		if filepath.Ext(entry.Name()) != ".sql" {
-			continue
-		}
-
-		file, err := p.parseFile(filepath.Join(path, entry.Name()))
-		if err != nil {
-			return drivers.QueryFolder{}, fmt.Errorf("parse file: %w", err)
-		}
-
-		files = append(files, file)
-	}
-
-	return drivers.QueryFolder{
-		Path:  path,
-		Files: files,
-	}, nil
-}
-
-func (p Parser) parseFile(path string) (drivers.QueryFile, error) {
-	file, err := os.ReadFile(path)
-	if err != nil {
-		return drivers.QueryFile{}, fmt.Errorf("read file: %w", err)
-	}
-
-	queries, err := p.parseMultiQueries(string(file))
-	if err != nil {
-		return drivers.QueryFile{}, fmt.Errorf("parse multi queries: %w", err)
-	}
-
-	return drivers.QueryFile{
-		Path:    path,
-		Queries: queries,
-	}, nil
-}
-
-func (p Parser) parseMultiQueries(s string) ([]drivers.Query, error) {
+func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, error) {
 	v := NewVisitor(p.db)
 	infos, err := p.parse(v, s)
 	if err != nil {

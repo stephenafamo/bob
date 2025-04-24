@@ -58,23 +58,23 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 
 		if start < cursor {
 			// rule starts before cursor, skip it
-			// fmt.Printf("Skipping rule %d: %s[%d-%d] starts before cursor(%d), %#v\n", i, r.ruleType(), start, end, cursor, r)
+			// fmt.Printf("Skipping rule %d: %s[%d-%d] starts before cursor(%d), %q, %#v\n", i, r.ruleType(), start, end, cursor, s[start:end], r)
 			continue
 		}
 
 		if end < cursor {
 			// rule is before cursor, skip it
-			// fmt.Printf("Skipping rule %d: %s[%d-%d] ends before cursor(%d), %#v\n", i, r.ruleType(), start, end, cursor, r)
+			// fmt.Printf("Skipping rule %d: %s[%d-%d] ends before cursor(%d), %q, %#v\n", i, r.ruleType(), start, end, cursor, s[start:end], r)
 			continue
 		}
 
 		if start > len(s) {
 			// rule is after the string, skip it
-			// fmt.Printf("Skipping rule %d: %s[%d-%d] out of bounds(%d), %#v\n", i, r.ruleType(), start, end, len(s), r)
+			// fmt.Printf("Skipping rule %d: %s[%d-%d] out of bounds(%d), %q, %#v\n", i, r.ruleType(), start, end, len(s), s[start:end], r)
 			continue
 		}
 
-		// fmt.Printf("Applying rule %d: %s[%d-%d] cursor(%d), %#v\n", i, r.ruleType(), start, end, cursor, r)
+		// fmt.Printf("Applying rule %d: %s[%d-%d] cursor(%d), %q, %#v\n", i, r.ruleType(), start, end, cursor, s[start:end], r)
 
 		buf.WriteString(s[cursor:start])
 		cursor = start

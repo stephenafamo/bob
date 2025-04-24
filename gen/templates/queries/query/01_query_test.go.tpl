@@ -47,7 +47,7 @@ func Test{{$upperName}}Mod (t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queryDiff, err := testutils.QueryDiff({{$lowerName}}SQL, sb.String(), nil)
+	queryDiff, err := testutils.QueryDiff({{$lowerName}}SQL, sb.String(), formatQuery)
   if err != nil {
     t.Fatal(err)
   }

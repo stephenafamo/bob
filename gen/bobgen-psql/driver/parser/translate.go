@@ -1,10 +1,11 @@
-package driver
+package parser
 
 import (
 	"fmt"
-	"os"
 	"strings"
+	"sync"
 
+	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -13,7 +14,14 @@ import (
 
 const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
 
-type colInfo struct {
+type Enum struct {
+	Schema string
+	Name   string
+	Type   string
+	Values pq.StringArray
+}
+
+type ColInfo struct {
 	// Postgres only extension bits
 	// ArrType is the underlying data type of the Postgres
 	// ARRAY type. See here:
@@ -23,24 +31,26 @@ type colInfo struct {
 	UDTSchema string `json:"udt_schema" yaml:"udt_schema"`
 }
 
-// translateColumnType converts postgres database types to Go types, for example
-// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
-// as a Column object.
-//
+type Translator struct {
+	Enums []Enum
+	Types drivers.Types
+	mu    sync.Mutex
+}
+
 //nolint:gocyclo
-func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Column {
+func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers.Column {
 	switch c.DBType {
-	case "bigint":
+	case "bigint", "int8":
 		c.Type = "int64"
 	case "bigserial":
 		c.Type = "uint64"
-	case "integer":
+	case "integer", "int", "int4":
 		c.Type = "int32"
 	case "serial":
 		c.Type = "uint32"
 	case "oid":
 		c.Type = "uint32"
-	case "smallint":
+	case "smallint", "int2":
 		c.Type = "int16"
 	case "smallserial":
 		c.Type = "uint16"
@@ -91,19 +101,18 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 	case "ENUM":
 		c.Type = "string"
 		c.DBType = info.UDTSchema + "." + info.UDTName
-		for _, e := range d.enums {
+		for _, e := range t.Enums {
 			if e.Schema == info.UDTSchema && e.Name == info.UDTName {
-				d.mu.Lock()
-				c.Type = helpers.EnumType(d.types, e.Type)
-				d.mu.Unlock()
+				t.mu.Lock()
+				c.Type = helpers.EnumType(t.Types, e.Type)
+				t.mu.Unlock()
 			}
 		}
 	case "ARRAY":
 		var dbType string
-		c.Type, dbType = d.getArrayType(info)
-		// Make DBType something like ARRAYinteger for parsing with randomize.Struct
+		c.Type, dbType = t.getArrayType(info)
 		c.DBType = dbType + "[]"
-	case "USER-DEFINED":
+	default:
 		switch info.UDTName {
 		case "hstore":
 			c.Type = "pgtypes.HStore"
@@ -112,26 +121,22 @@ func (d *driver) translateColumnType(c drivers.Column, info colInfo) drivers.Col
 			c.Type = "string"
 		default:
 			c.Type = "string"
-			fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", info.UDTName)
 		}
-	default:
-		c.Type = "string"
 	}
 
 	return c
 }
 
-// getArrayType returns the correct Array type for each database type
-func (d *driver) getArrayType(info colInfo) (string, string) {
+func (t *Translator) getArrayType(info ColInfo) (string, string) {
 	if info.ArrType == "USER-DEFINED" {
 		name := info.UDTName[1:] // postgres prefixes with an underscore
-		for _, e := range d.enums {
+		for _, e := range t.Enums {
 			if e.Schema == info.UDTSchema && e.Name == name {
-				typ := d.addPgEnumArrayType(d.types, e.Type)
+				typ := t.addPgEnumArrayType(t.Types, e.Type)
 				return typ, info.UDTName
 			}
 		}
-		return "pq.StringArray", info.ArrType
+		return "pq.StringArray", name
 	}
 
 	// If a domain is created with a statement like this: "CREATE DOMAIN
@@ -152,10 +157,10 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "boolean":
 			return "pq.BoolArray", info.ArrType
 		case "uuid":
-			typ := d.addPgGenericArrayType(d.types, "uuid.UUID")
+			typ := t.addPgGenericArrayType(t.Types, "uuid.UUID")
 			return typ, info.ArrType
 		case "decimal", "numeric":
-			typ := d.addPgGenericArrayType(d.types, "decimal.Decimal")
+			typ := t.addPgGenericArrayType(t.Types, "decimal.Decimal")
 			return typ, info.ArrType
 		case "double precision", "real":
 			return "pq.Float64Array", info.ArrType
@@ -173,10 +178,10 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 		case "_bool":
 			return "pq.BoolArray", info.UDTName
 		case "_uuid":
-			typ := d.addPgGenericArrayType(d.types, "uuid.UUID")
+			typ := t.addPgGenericArrayType(t.Types, "uuid.UUID")
 			return typ, info.UDTName
 		case "_numeric":
-			typ := d.addPgGenericArrayType(d.types, "decimal.Decimal")
+			typ := t.addPgGenericArrayType(t.Types, "decimal.Decimal")
 			return typ, info.UDTName
 		case "_float4", "_float8":
 			return "pq.Float64Array", info.UDTName
@@ -186,9 +191,9 @@ func (d *driver) getArrayType(info colInfo) (string, string) {
 	}
 }
 
-func (d *driver) addPgEnumArrayType(types drivers.Types, enumTyp string) string {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 
 	arrTyp := fmt.Sprintf("pgtypes.EnumArray[%s]", enumTyp)
 
@@ -210,7 +215,7 @@ func (d *driver) addPgEnumArrayType(types drivers.Types, enumTyp string) string 
 	return arrTyp
 }
 
-func (d *driver) addPgGenericArrayType(types drivers.Types, singleTyp string) string {
+func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string) string {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 

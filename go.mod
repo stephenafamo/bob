@@ -9,6 +9,7 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/fergusstrange/embedded-postgres v1.26.0
 	github.com/go-sql-driver/mysql v1.7.2-0.20231213112541-0004702b931d
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/google/go-cmp v0.6.0
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/knadh/koanf/parsers/yaml v0.1.0
@@ -18,13 +19,13 @@ require (
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/lib/pq v1.10.7
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
+	github.com/pganalyze/pg_query_go/v6 v6.1.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/stephenafamo/scan v0.6.2
 	github.com/stephenafamo/sqlparser v0.0.0-20250408111851-b937299b5b7d
 	github.com/tursodatabase/libsql-client-go v0.0.0-20240902231107-85af5b9d094d
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.6
-	github.com/wasilibs/go-pgquery v0.0.0-20240319230125-b9b2e95c69a7
 	golang.org/x/mod v0.24.0
 	golang.org/x/text v0.17.0
 	golang.org/x/tools v0.31.0
@@ -55,13 +56,11 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
-	github.com/pganalyze/pg_query_go/v5 v5.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
-	github.com/tetratelabs/wazero v1.7.0 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect

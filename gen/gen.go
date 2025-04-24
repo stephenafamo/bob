@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
@@ -84,9 +85,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if types == nil {
 		types = make(drivers.Types)
 	}
-	for name, def := range s.Config.Types {
-		types[name] = def
-	}
+	maps.Copy(types, s.Config.Types)
 
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)

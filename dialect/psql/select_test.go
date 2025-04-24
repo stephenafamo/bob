@@ -3,6 +3,7 @@ package psql_test
 import (
 	"testing"
 
+	pg_query "github.com/pganalyze/pg_query_go/v6"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
@@ -10,7 +11,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/wm"
 	testutils "github.com/stephenafamo/bob/test/utils"
-	pg_query "github.com/wasilibs/go-pgquery"
 )
 
 var (

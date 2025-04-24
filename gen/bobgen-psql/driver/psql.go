@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/lib/pq"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	"github.com/stephenafamo/bob/gen/bobgen-psql/driver/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/importers"
 	"github.com/stephenafamo/scan"
@@ -31,13 +31,6 @@ type (
 	}
 )
 
-type Enum struct {
-	Schema string
-	Name   string
-	Type   string
-	Values pq.StringArray
-}
-
 type Config struct {
 	// The database connection string
 	Dsn string
@@ -47,6 +40,8 @@ type Config struct {
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
 	SharedSchema string `yaml:"shared_schema"`
+	// Folders containing query files
+	Queries []string `yaml:"queries"`
 	// List of tables that will be included. Others are ignored
 	Only map[string][]string
 	// List of tables that will be should be ignored. Others are included
@@ -105,19 +100,17 @@ func New(config Config) Interface {
 	}
 
 	return &driver{
-		config: config,
-		types:  types,
+		config:     config,
+		translator: &parser.Translator{Types: types},
 	}
 }
 
 // driver holds the database connection string and a handle
 // to the database connection.
 type driver struct {
-	config Config
-	conn   *sql.DB
-	enums  []Enum
-	types  drivers.Types
-	mu     sync.Mutex
+	config     Config
+	conn       *sql.DB
+	translator *parser.Translator
 }
 
 func (d *driver) Dialect() string {
@@ -125,7 +118,7 @@ func (d *driver) Dialect() string {
 }
 
 func (d *driver) Types() drivers.Types {
-	return d.types
+	return d.translator.Types
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -155,8 +148,8 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, err
 	}
 
-	dbinfo.Enums = make([]drivers.Enum, len(d.enums))
-	for i, e := range d.enums {
+	dbinfo.Enums = make([]drivers.Enum, len(d.translator.Enums))
+	for i, e := range d.translator.Enums {
 		dbinfo.Enums[i] = drivers.Enum{
 			Type:   e.Type,
 			Values: e.Values,
@@ -166,6 +159,11 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	sort.Slice(dbinfo.Enums, func(i, j int) bool {
 		return dbinfo.Enums[i].Type < dbinfo.Enums[j].Type
 	})
+
+	dbinfo.QueryFolders, err = drivers.ParseFolders(ctx, parser.New(d.conn, dbinfo.Tables, d.translator), d.config.Queries...)
+	if err != nil {
+		return nil, fmt.Errorf("parse query folders: %w", err)
+	}
 
 	return dbinfo, err
 }
@@ -368,7 +366,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			Nullable:  nullable,
 			Generated: generated,
 		}
-		info := colInfo{
+		info := parser.ColInfo{
 			UDTSchema: udtSchema,
 			UDTName:   udtName,
 		}
@@ -399,7 +397,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			column.Default = "NULL"
 		}
 
-		columns = append(columns, d.translateColumnType(column, info))
+		columns = append(columns, d.translator.TranslateColumnType(column, info))
 	}
 
 	schema := info.Schema
@@ -411,7 +409,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 }
 
 func (d *driver) loadEnums(ctx context.Context) error {
-	if d.enums != nil {
+	if d.translator.Enums != nil {
 		return nil
 	}
 
@@ -423,17 +421,17 @@ func (d *driver) loadEnums(ctx context.Context) error {
 		GROUP BY schema, name`
 
 	var err error
-	d.enums, err = stdscan.All(
+	d.translator.Enums, err = stdscan.All(
 		ctx, d.conn,
-		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (Enum, error)) {
+		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (parser.Enum, error)) {
 			return func(r *scan.Row) (any, error) {
-					var e Enum
+					var e parser.Enum
 					r.ScheduleScan("schema", &e.Schema)
 					r.ScheduleScan("name", &e.Name)
 					r.ScheduleScan("values", &e.Values)
 					return &e, nil
-				}, func(a any) (Enum, error) {
-					e := a.(*Enum)
+				}, func(a any) (parser.Enum, error) {
+					e := a.(*parser.Enum)
 					if e.Schema != "" && e.Schema != d.config.SharedSchema {
 						e.Type = strmangle.TitleCase(e.Schema + "_" + e.Name)
 					} else {
