@@ -26,6 +26,11 @@
 {{$queryType := (lower $query.Type.String | titleCase)}}
 {{$dialectType := printf "*dialect.%sQuery" $queryType}}
 {{$colParams :=  printf "%s, %s" $queryRowName (or $query.Config.RowSliceName (printf "[]%s" $queryRowName)) }}
+{{if eq (len $query.Columns) 1}}
+  {{$col := index $query.Columns 0}}
+  {{$colType := $col.Type $.Importer $.Types}}
+  {{$colParams =  printf "%s, %s" $colType (or $query.Config.RowSliceName (printf "[]%s" $colType)) }}
+{{end}}
 
 const {{$lowerName}}SQL = `{{replace "`" "`+\"`\"+`" $query.SQL}}`
 
@@ -71,6 +76,13 @@ func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
           QueryType:  bob.QueryType{{$queryType}},
         },
       },
+      {{if gt (len $query.Columns) 1 -}}
+        {{- $.Importer.Import "github.com/stephenafamo/scan" -}}
+        Scanner: scan.StructMapper[{{$queryRowName}}](),
+      {{- else -}}
+        {{- $col := index $query.Columns 0 -}}
+        Scanner: scan.ColumnMapper[{{$col.Type $.Importer $.Types}}]("{{$col.DBName}}"),
+      {{- end}}
     },
   }
 }
