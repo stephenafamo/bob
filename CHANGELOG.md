@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.33.1] - 2025-04-26
+
+### Changed
+
+- When a query returns only one column, instead of returning a struct with one field, it will return the type of the column. This is to make it easier to use the generated code.
+
+### Fixed
+
+- Fix panic when scanning returned rows from generated queries.
+
 ## [v0.33.0] - 2025-04-26
 
 ### Added
