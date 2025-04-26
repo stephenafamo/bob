@@ -16,25 +16,29 @@ type combine struct {
 	Info       nodeInfo
 }
 
+func (w *walker) modWithClause(with *pg.WithClause, info nodeInfo) {
+	cteInfos := info.children["Ctes"]
+	if with.Recursive {
+		w.mods.WriteString("q.SetRecursive(true)\n")
+	}
+	if len(with.Ctes) > 0 {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(cteInfos.start),
+				int(cteInfos.end-1),
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+}
+
 //nolint:gocyclo,maintidx
 func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	if withInfo, ok := info.children["WithClause"]; ok {
-		cteInfos := withInfo.children["Ctes"]
-		if stmt.SelectStmt.WithClause.Recursive {
-			w.mods.WriteString("q.SetRecursive(true)\n")
-		}
-		if len(stmt.SelectStmt.WithClause.Ctes) > 0 {
-			w.editRules = append(w.editRules,
-				internal.RecordPoints(
-					int(cteInfos.start),
-					int(cteInfos.end-1),
-					func(start, end int) error {
-						fmt.Fprintf(w.mods, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
+		w.modWithClause(stmt.SelectStmt.WithClause, withInfo)
 	}
 
 	main := stmt.SelectStmt
@@ -265,5 +269,107 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 
 		w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
 		fmt.Fprintf(w.mods, "q.AppendLock(%#v)\n", bobLock)
+	}
+}
+
+func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
+	if withInfo, ok := info.children["WithClause"]; ok {
+		w.modWithClause(stmt.InsertStmt.WithClause, withInfo)
+	}
+
+	if intoInfo, ok := info.children["Relation"]; ok {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(intoInfo.start),
+				int(intoInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.Table.Expression = o.expr(%d, %d)\n", start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+
+	colNames := make([]string, len(stmt.InsertStmt.Cols))
+	for i := range stmt.InsertStmt.Cols {
+		colNameInfo := info.children["Cols"].children[strconv.Itoa(i)]
+		colNames[i] = w.names[colNameInfo.position()]
+	}
+	if len(colNames) > 0 {
+		fmt.Fprintf(w.mods, "q.Table.Columns = %#v\n", colNames)
+	}
+
+	selectStmt := stmt.InsertStmt.GetSelectStmt().GetSelectStmt()
+	selectInfo := info.children["SelectStmt"].children["SelectStmt"]
+
+	vals := selectStmt.GetValuesLists()
+	valsInfo := selectInfo.children["ValuesLists"]
+
+	if selectStmt != nil && len(vals) == 0 {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(selectInfo.start),
+				int(selectInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, `q.Query = bob.BaseQuery[bob.Expression]{
+						Expression: o.expr(%d, %d),
+						Dialect: dialect.Dialect,
+						QueryType: bob.QueryTypeSelect,
+						}
+					`, start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+
+	for i := range vals {
+		itemsInfo := valsInfo.
+			children[strconv.Itoa(i)].
+			children["List"].
+			children["Items"]
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(itemsInfo.start),
+				int(itemsInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.AppendValues(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+
+	switch stmt.InsertStmt.Override {
+	case pg.OverridingKind_OVERRIDING_USER_VALUE:
+		fmt.Fprintln(w.mods, `q.Overriding = "USER"`)
+	case pg.OverridingKind_OVERRIDING_SYSTEM_VALUE:
+		fmt.Fprintln(w.mods, `q.Overriding = "SYSTEM"`)
+	}
+
+	if conflictInfo, ok := info.children["OnConflictClause"]; ok {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(conflictInfo.start),
+				int(conflictInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.SetConflict(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+
+	if returnInfo, ok := info.children["ReturningList"]; ok {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(returnInfo.start),
+				int(returnInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
 	}
 }

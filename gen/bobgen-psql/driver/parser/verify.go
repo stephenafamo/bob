@@ -8,7 +8,11 @@ import (
 
 func verifySelectStatement(stmt *pg.SelectStmt, info nodeInfo) error {
 	if stmt == nil {
-		return nil
+		return fmt.Errorf("nil statement")
+	}
+
+	if len(stmt.ValuesLists) > 0 {
+		return fmt.Errorf("VALUES statement is not supported")
 	}
 
 	if hasMultipleFromTables(stmt) {

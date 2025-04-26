@@ -40,7 +40,7 @@ const {{$lowerName}}SQL = `{{replace "`" "`+\"`\"+`" $query.SQL}}`
 
   {{if gt (len $arg.Children) 0}}
     {{ $argType = printf "%s_%s" $upperName $argName }}
-    type {{$argType}} {{$arg.TypeDef $.Importer $.Types}}
+    type {{$argType}} = {{$arg.TypeDef $.Importer $.Types}}
     {{if $arg.CanBeMultiple}}
       {{ $argType = printf "[]%s" $argType }}
     {{end}}

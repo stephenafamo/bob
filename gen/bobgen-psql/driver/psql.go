@@ -160,7 +160,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return dbinfo.Enums[i].Type < dbinfo.Enums[j].Type
 	})
 
-	dbinfo.QueryFolders, err = drivers.ParseFolders(ctx, parser.New(d.conn, dbinfo.Tables, d.translator), d.config.Queries...)
+	dbinfo.QueryFolders, err = drivers.ParseFolders(ctx, parser.New(d.conn, dbinfo.Tables, d.config.SharedSchema, d.translator), d.config.Queries...)
 	if err != nil {
 		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
