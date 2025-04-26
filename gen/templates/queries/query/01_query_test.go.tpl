@@ -12,12 +12,14 @@
 {{$args := list }}
 {{range $arg := $query.Args -}}
   {{ $argName := titleCase $arg.Col.Name }}
-  {{ $argType := ($arg.Type $.Importer $.Types) }}
+  {{ $argType := "" }}
   {{if gt (len $arg.Children) 0}}
     {{ $argType = printf "%s_%s" $upperName $argName }}
     {{if $arg.CanBeMultiple}}
       {{ $argType = printf "[]%s" $argType }}
     {{end}}
+  {{else}}
+    {{ $argType = ($arg.Type $.Importer $.Types) }}
   {{end}}
   {{- if $arg.CanBeMultiple -}}
     {{$args = append $args (printf "%s{zero[%s]()}" $argType (substr 2 (len $argType) $argType)) }}
@@ -134,12 +136,20 @@ func Test{{$upperName}}Scan (t *testing.T) {
 		t.Fatal("Error connecting to database")
 	}
 
-	query, args, err := bob.Build(context.Background(), {{$upperName}}({{join ", " $args}}))
+  ctxTx, cancel := context.WithCancel(context.Background())
+  defer cancel()
+
+  tx, err := db.BeginTx(ctxTx, nil)
+  if err != nil {
+    t.Fatalf("Error starting transaction: %v", err)
+  }
+
+	query, args, err := bob.Build(ctxTx, {{$upperName}}({{join ", " $args}}))
   if err != nil {
     t.Fatal(err)
   }
 
-  rows, err := db.Query(query, args...)
+  rows, err := tx.Query(query, args...)
   if err != nil {
     t.Fatal(err)
   }

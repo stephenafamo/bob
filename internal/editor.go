@@ -83,10 +83,7 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 			return "", fmt.Errorf("rule %d: cursor %d, %w", i, cursor, err)
 		}
 
-		cursor = end
-		if cursor > len(s) {
-			return "", fmt.Errorf("out of segment cursor(%d) %s[%d-%d]: %w", len(s), r.ruleType(), start, end, OutOfBoundsError(cursor))
-		}
+		cursor = min(end, len(s))
 	}
 
 	return buf.String() + s[cursor:], nil

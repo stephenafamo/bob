@@ -55,8 +55,8 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, valArgs...)
 
-	conflictArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.Conflict,
-		i.Conflict.Do != "", "\n", "")
+	conflictArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.Conflict.Expression,
+		i.Conflict.Expression != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}

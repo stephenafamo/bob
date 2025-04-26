@@ -8,17 +8,21 @@ import (
 )
 
 type Conflict struct {
+	Expression bob.Expression
+}
+
+func (c *Conflict) SetConflict(conflict bob.Expression) {
+	c.Expression = conflict
+}
+
+type ConflictClause struct {
 	Do     string // DO NOTHING | DO UPDATE
 	Target ConflictTarget
 	Set
 	Where
 }
 
-func (c *Conflict) SetConflict(conflict Conflict) {
-	*c = conflict
-}
-
-func (c Conflict) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c ConflictClause) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	w.Write([]byte("ON CONFLICT"))
 
 	args, err := bob.ExpressIf(ctx, w, d, start, c.Target, true, "", "")

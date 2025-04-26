@@ -12,26 +12,6 @@ import (
 
 type tables = drivers.Tables[any, IndexExtra]
 
-func getTableSource(db tables, schema, name string) queryResult {
-	for _, table := range db {
-		if table.Schema != schema || table.Name != name {
-			continue
-		}
-
-		source := queryResult{
-			schema:  table.Schema,
-			name:    table.Name,
-			columns: make([]col, len(table.Columns)),
-		}
-		for j, column := range table.Columns {
-			source.columns[j] = col{name: column.Name, nullable: column.Nullable}
-		}
-		return source
-	}
-
-	return queryResult{}
-}
-
 type IndexExtra = struct {
 	NullsFirst    []bool   `json:"nulls_first"` // same length as Columns
 	NullsDistinct bool     `json:"nulls_not_distinct"`
@@ -50,8 +30,9 @@ func (i position) LitterDump(w io.Writer) {
 }
 
 type joinedInfo struct {
-	node *pg.Node
-	info nodeInfo
+	node     *pg.Node
+	info     nodeInfo
+	joinType pg.JoinType
 }
 
 func (j joinedInfo) LitterDump(w io.Writer) {

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 	"sync/atomic"
 
@@ -16,14 +15,20 @@ import (
 	"github.com/stephenafamo/bob/internal"
 )
 
-func New(db *sql.DB, t tables, translator *Translator) *Parser {
-	return &Parser{conn: db, db: t, translator: translator}
+func New(db *sql.DB, t tables, sharedSchema string, translator *Translator) *Parser {
+	return &Parser{
+		conn:         db,
+		db:           t,
+		sharedSchema: sharedSchema,
+		translator:   translator,
+	}
 }
 
 type Parser struct {
-	conn       *sql.DB
-	db         tables
-	translator *Translator
+	conn         *sql.DB
+	db           tables
+	sharedSchema string
+	translator   *Translator
 }
 
 func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, error) {
@@ -47,7 +52,7 @@ func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, e
 		default:
 			end = int32(len(s))
 		}
-		stmtStr := s[start:end]
+		stmtStr := strings.Trim(s[start:end], " \t\n;")
 
 		queries[i], err = p.ParseQuery(ctx, stmtStr)
 		if err != nil {
@@ -69,12 +74,6 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("scan: %w", err)
 	}
 
-	comment, err := getQueryComment(input, scanResult)
-	if err != nil {
-		return drivers.Query{}, fmt.Errorf("get comment: %w", err)
-	}
-	name, configStr, _ := strings.Cut(comment, " ")
-
 	parseResult, err := pg.Parse(input)
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("parse single: %w", err)
@@ -85,16 +84,16 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	}
 
 	w := walker{
-		db:          p.db,
-		input:       input,
-		tokens:      scanResult.GetTokens(),
-		mods:        &strings.Builder{},
-		editRules:   getFormatRules(scanResult.GetTokens()),
-		nullability: make(map[position]nullable),
-		names:       make(map[position]string),
-		groups:      make(map[argPos]struct{}),
-		multiple:    make(map[[2]int]struct{}),
-		atom:        &atomic.Int64{},
+		db:           p.db,
+		sharedSchema: p.sharedSchema,
+		input:        input,
+		tokens:       scanResult.GetTokens(),
+		mods:         &strings.Builder{},
+		nullability:  make(map[position]nullable),
+		names:        make(map[position]string),
+		groups:       make(map[argPos]struct{}),
+		multiple:     make(map[[2]int]struct{}),
+		atom:         &atomic.Int64{},
 	}
 
 	stmt := parseResult.Stmts[0]
@@ -103,6 +102,12 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	case *pg.Node_SelectStmt:
 		info = info.children["SelectStmt"]
 		w.modSelectStatement(node, info)
+		if err := verifySelectStatement(node.SelectStmt, info); err != nil {
+			return drivers.Query{}, fmt.Errorf("verify select statement: %w", err)
+		}
+	case *pg.Node_InsertStmt:
+		info = info.children["InsertStmt"]
+		w.modInsertStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
@@ -119,10 +124,16 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("expected %d args, got %d", len(resTypes), len(source.columns))
 	}
 
-	formatted, err := internal.EditString(input, w.editRules...)
+	formatted, err := w.formattedQuery()
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("format: %w", err)
 	}
+
+	comment, err := w.getQueryComment(info.start)
+	if err != nil {
+		return drivers.Query{}, fmt.Errorf("get comment: %w", err)
+	}
+	name, configStr, _ := strings.Cut(comment, " ")
 
 	// fmt.Printf("Names: %v\n", litter.Sdump(w.names))
 	// fmt.Printf("Nullability: %v\n", litter.Sdump(w.nullability))
@@ -148,7 +159,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 
 		Columns: make([]drivers.QueryCol, len(source.columns)),
 		Args:    w.getArgs(argTypes),
-		Mods:    stmtToMod{w},
+		Mods:    w,
 	}
 
 	for i, col := range source.columns {
@@ -157,9 +168,8 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 			DBName:   col.name,
 			Nullable: omit.From(col.nullable),
 			TypeName: resTypes[i],
-			// TypeName: "string",
 		}.Merge(drivers.ParseQueryColumnConfig(
-			getConfigComment(input, scanResult.GetTokens(), col.pos),
+			w.getConfigComment(col.pos),
 		))
 	}
 
@@ -181,68 +191,24 @@ func getQueryType(stmt *pg.Node) bob.QueryType {
 	}
 }
 
-func getQueryComment(input string, scanResult *pg.ScanResult) (string, error) {
-	for _, token := range scanResult.GetTokens() {
-		if token.GetToken() == pg.Token_SQL_COMMENT {
-			comment := input[token.GetStart()+2 : token.GetEnd()]
-			return strings.TrimSpace(comment), nil
-		}
-
-		if token.GetKeywordKind() == pg.KeywordKind_RESERVED_KEYWORD {
-			return "", fmt.Errorf("no comment before keyword: %s", token.String())
-		}
-	}
-
-	return "", fmt.Errorf("no comment found")
-}
-
-type stmtToMod struct {
-	walker
-}
-
-func (s stmtToMod) IncludeInTemplate(i drivers.Importer) string {
-	for _, im := range s.imports {
+func (w walker) IncludeInTemplate(i drivers.Importer) string {
+	for _, im := range w.imports {
 		i.Import(im...)
 	}
-	return s.mods.String()
+	return w.mods.String()
 }
 
-func (s stmtToMod) GoString() string {
-	return s.mods.String()
-}
-
-func getFormatRules(tokens []*pg.ScanToken) []internal.EditRule {
+func (w *walker) formattedQuery() (string, error) {
 	var rules []internal.EditRule
-	for _, token := range tokens {
+	for _, token := range w.tokens {
 		// fmt.Printf("Token: %s\n", token.String())
 		switch token.GetToken() {
 		case pg.Token_SQL_COMMENT:
-			rules = append(rules, internal.Delete(int(token.GetStart()), int(token.GetEnd()-1)))
+			rules = append(rules, internal.Delete(int(token.GetStart()), int(token.GetEnd())))
 		case pg.Token_C_COMMENT:
 			rules = append(rules, internal.Delete(int(token.GetStart()), int(token.GetEnd()-1)))
 		}
 	}
-	return rules
-}
 
-func getConfigComment(input string, tokens []*pg.ScanToken, pos position) string {
-	if pos == (position{}) {
-		return ""
-	}
-
-	index := sort.Search(len(tokens), func(i int) bool {
-		return tokens[i].End > pos[1]
-	})
-
-	if index >= len(tokens) {
-		return ""
-	}
-
-	nextToken := tokens[index]
-	if nextToken.GetToken() != pg.Token_C_COMMENT {
-		return ""
-	}
-
-	comment := input[nextToken.GetStart()+2 : nextToken.GetEnd()-2]
-	return strings.TrimSpace(comment)
+	return internal.EditString(w.input, append(rules, w.editRules...)...)
 }
