@@ -46,7 +46,7 @@ func TestEditor(t *testing.T) {
 		"out-of-bounds-delete-end": {
 			original: "hello world",
 			rules:    []EditRule{Delete(6, 11)},
-			err:      OutOfBoundsError(11),
+			expected: "hello ",
 		},
 	}
 

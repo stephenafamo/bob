@@ -31,9 +31,9 @@ var ColumnNames = struct {
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()
-	InsertWhere = Where[*dialect.InsertQuery]()
 	UpdateWhere = Where[*dialect.UpdateQuery]()
 	DeleteWhere = Where[*dialect.DeleteQuery]()
+	OnConflictWhere = Where[*clause.ConflictClause]() // Used in ON CONFLICT DO UPDATE
 )
 {{- end}}
 

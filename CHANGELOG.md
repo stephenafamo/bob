@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support to generate code for `INSERT` queries in `bobgen-psql`.
 - `clause.Confict` now takes `bob.Expression`, and the fields are now moved to a `clause.ConflictClause` struct.
 
+### Changed
+
+- Make grouped types in generated queries a type alias.
+
+### Removed
+
+- Remove `models.InsertWhere` in generated code since it is not correct.
+
 ### Fixed
 
 - Fix issue with column query annotations in `bobgen-psql`.
@@ -19,10 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue with correctly detecting the comment for the query annotation in `bobgen-psql`.
 - Use a transaction in generated query tests.
 - Account for LEFT, RIGHT and FULL joins when determining the nullability of a column.
-
-### Changed
-
-- Make grouped types in generated queries a type alias.
+- Generate WHERE helpers for `ON CONFLICT` clauses.
 
 ## [v0.32.0] - 2025-04-24
 

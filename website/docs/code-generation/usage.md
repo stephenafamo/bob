@@ -194,7 +194,6 @@ type pilotErrors struct {
 
 The `struct` is initialized and exported through a `PilotErrors` variable, which can be used for error matching in one of the following ways:
 
-
 ```go
 pilot, err := models.Pilots.Insert(setter).One(ctx, db)
 if errors.Is(models.PilotErrors.ErrUniqueFirstNameAndLastName, err) {
@@ -263,7 +262,7 @@ users, err := models.Users.Query(
 ).All(ctx, db)
 ```
 
-Since each query type has its own mods, `SelectWhere`, `InsertWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
+Since each query type has its own mods, `SelectWhere`, `UpdateWhere` and `DeleteWhere` are all generated.
 
 :::tip
 
