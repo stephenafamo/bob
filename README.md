@@ -49,6 +49,81 @@ Check out [the documentation][docs] for more information.
 [docs]: https://bob.stephenafamo.com/docs
 [reference]: https://pkg.go.dev/github.com/stephenafamo/bob
 
+## The layers of Bob
+
+### Layer 1: [The query builder](https://bob.stephenafamo.com/docs/query-builder/intro) - Similar to [squirrel](https://github.com/Masterminds/squirrel)
+
+This is just a fluent query builder that has no concept of your DB, and by extension cannot offer any type-safety.
+
+The main reason, I consider it better than most alternatives is that since each dialect is hand-crafted, it can support building ANY query for that dialect.
+
+However, each dialect is also independent, so you don't have to worry about creating an invalid query.
+
+> **IMPORTANT: Queries are built using "Query Mods"**
+
+```go
+psql.Select(
+    sm.From("users"), // This is a query mod
+    sm.Where(psql.Quote("age").GTE(psql.Arg(21))), // This is also a mod
+)
+```
+
+### Layer 2: [ORM Code Generation](https://bob.stephenafamo.com/docs/code-generation/intro) - Similar to [SQLBoiler](https://github.com/volatiletech/sqlboiler)
+
+This is where the type safety comes.
+
+A full ORM, and query mods that is based on the database schema. If you use the generated query mods, these will ensure correct type safety.
+
+Here is the above query using generated query-mods.
+
+```go
+models.Users.Query(
+    models.SelectWhere.Users.Age.GTE(21), // This is type-safe
+)
+```
+
+### Layer 3: [Factory Code Generation](https://bob.stephenafamo.com/docs/code-generation/factories) - Inspired by [Ruby's FactoryBot](https://github.com/thoughtbot/factory_bot)
+
+Factories make testing much much easier. Especially when the test depends on a database entry that depends on relations in other tables (e.g. testing comments that rely on posts which in turn rely on users).
+
+With knowledge of the database schema, Bob can generate factories for each table.
+
+```go
+// Quickly create a 10 comments (posts and users are created appropriately)
+comments, err := f.NewComment().CreateMany(ctx, db, 10)
+```
+
+### Layer 4: Generating code for [SQL Queries](https://bob.stephenafamo.com/docs/code-generation/queries) - similar to [sqlc](https://github.com/sqlc-dev/sqlc)
+
+I believe this is the final peice of the puzzle, and extends the type-safety to hand-crafted SQL queries.
+
+For example, you could generate code for the query:
+
+```sql
+-- UserPosts
+SELECT * FROM posts WHERE user_id = $1
+```
+
+This will generate a function `UserPosts` that takes an `int32`.
+
+```go
+// UserPosts
+userPosts, err := queries.UserPosts(1).All(ctx, db)
+```
+
+Then, if you need to, you can add an extra filter to get only published posts.
+
+However whether it is type safe or not depends on if you use the generated mods or not:
+
+```go
+// Get only published posts
+query := psql.Select(
+    UserPosts(1),
+    models.PostWhere.Status.EQ("published"), // type-safe
+    sm.Where(psql.Quote("posts", "status").Eq(psql.Arg("published"))), // not type-safe
+)
+```
+
 ## Contributing
 
 Thanks to all the people who have contributed to Bob!

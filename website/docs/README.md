@@ -143,6 +143,22 @@ generate factories that offer many benefits:
 - Build models based on the model templates and use them in tests.
 - Insert the model in the database to truly test your application. Bob will help you by inserting any dependent models.
 
+### Generating code for SQL Queries
+
+Bob can generate code for queries. For example, for the following query:
+
+```sql
+-- UserPosts
+SELECT * FROM posts WHERE user_id = $1
+```
+
+This will generate a function `UserPosts` that takes an `int32`.
+
+```go
+// UserPosts
+userPosts, err := queries.UserPosts(1).All(ctx, db)
+```
+
 <DocCardList items={[
 {
 type: 'link',
