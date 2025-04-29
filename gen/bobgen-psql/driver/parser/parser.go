@@ -115,6 +115,10 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	case *pg.Node_UpdateStmt:
 		info = info.children["UpdateStmt"]
 		w.modUpdateStatement(node, info)
+
+	case *pg.Node_DeleteStmt:
+		info = info.children["DeleteStmt"]
+		w.modDeleteStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
