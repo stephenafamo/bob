@@ -65,6 +65,10 @@ func run(c *cli.Context) error {
 		&helpers.Templates{Models: modelTemplates},
 	)
 
+	if driverConfig.Pattern == "" {
+		driverConfig.Pattern = "*.sql"
+	}
+
 	state := &gen.State[any]{
 		Config:  config,
 		Outputs: outputs,

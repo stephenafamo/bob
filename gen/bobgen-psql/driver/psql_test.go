@@ -51,7 +51,7 @@ func TestDriver(t *testing.T) {
 	defer db.Close()
 
 	fmt.Printf("migrating...")
-	if err := helpers.Migrate(context.Background(), db, testfiles.PostgresSchema); err != nil {
+	if err := helpers.Migrate(context.Background(), db, testfiles.PostgresSchema, "psql/*.sql"); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")

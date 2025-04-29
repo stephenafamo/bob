@@ -21,8 +21,8 @@ type Config struct {
 	// What dialect to generate with
 	// psql | mysql | sqlite
 	Dialect string
-	// Where the SQL files are
-	Dir string
+	// Glob pattern to match migration files
+	Pattern string
 	// Folders containing query files
 	Queries []string `yaml:"queries"`
 	// The database schemas to generate models for
@@ -50,8 +50,6 @@ type Config struct {
 }
 
 func RunPostgres(ctx context.Context, state *gen.State[any], config Config) error {
-	config.fs = os.DirFS(config.Dir)
-
 	d, err := getPsqlDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting psql driver: %w", err)
@@ -88,7 +86,7 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	}
 	defer db.Close()
 
-	if err := helpers.Migrate(ctx, db, config.fs); err != nil {
+	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
 		return nil, fmt.Errorf("migrating: %w", err)
 	}
 	db.Close() // close early
@@ -113,8 +111,6 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 }
 
 func RunSQLite(ctx context.Context, state *gen.State[any], config Config) error {
-	config.fs = os.DirFS(config.Dir)
-
 	d, err := getSQLiteDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting sqlite driver: %w", err)
@@ -153,7 +149,7 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 		}
 	}
 
-	if err := helpers.Migrate(ctx, db, config.fs); err != nil {
+	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
 		return nil, fmt.Errorf("migrating: %w", err)
 	}
 	db.Close() // close early

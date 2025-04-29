@@ -21,7 +21,8 @@ func TestPostgres(t *testing.T) {
 	defer cleanup()
 
 	config := Config{
-		fs: testfiles.PostgresSchema,
+		Pattern: "psql/*.sql",
+		fs:      testfiles.PostgresSchema,
 	}
 
 	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, psqlDriver.IndexExtra]{
@@ -44,8 +45,9 @@ func TestSQLite(t *testing.T) {
 	defer cleanup()
 
 	config := Config{
-		fs:      testfiles.SQLiteSchema,
 		Schemas: []string{"one"},
+		Pattern: "sqlite/*.sql",
+		fs:      testfiles.SQLiteSchema,
 	}
 
 	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, sqliteDriver.IndexExtra]{
