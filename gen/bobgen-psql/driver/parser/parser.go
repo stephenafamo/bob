@@ -100,14 +100,20 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	info := w.walk(stmt.Stmt)
 	switch node := stmt.Stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
+		if len(node.SelectStmt.ValuesLists) > 0 {
+			return drivers.Query{}, fmt.Errorf("VALUES statement is not supported")
+		}
+
 		info = info.children["SelectStmt"]
 		w.modSelectStatement(node, info)
-		if err := verifySelectStatement(node.SelectStmt, info); err != nil {
-			return drivers.Query{}, fmt.Errorf("verify select statement: %w", err)
-		}
+
 	case *pg.Node_InsertStmt:
 		info = info.children["InsertStmt"]
 		w.modInsertStatement(node, info)
+
+	case *pg.Node_UpdateStmt:
+		info = info.children["UpdateStmt"]
+		w.modUpdateStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)

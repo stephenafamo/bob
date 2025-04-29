@@ -21,30 +21,19 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 	case *pg.Node_InsertStmt:
 		return w.getInsertSource(stmt.InsertStmt, info)
 
-	case *pg.Node_RangeVar:
-		sub := stmt.RangeVar
-		source := w.getTableSource(
-			sub.GetSchemaname(),
-			sub.GetRelname(),
-		)
-		if sub.Alias == nil {
-			return source
-		}
-		source.name = sub.Alias.Aliasname
-		if len(source.columns) != len(sub.Alias.Colnames) {
-			return source
-		}
+	case *pg.Node_UpdateStmt:
+		return w.getUpdateSource(stmt.UpdateStmt, info, cloned...)
 
-		colInfos := info.children["Alias"].children["Colnames"]
-		for i := range sub.Alias.Colnames {
-			aliasName := w.names[colInfos.children[strconv.Itoa(i)].position()]
-			if aliasName != "" {
-				source.columns[i].name = aliasName
-			}
+	case *pg.Node_RangeVar:
+		if rangeInfo, ok := info.children["RangeVar"]; ok {
+			info = rangeInfo
 		}
-		return source
+		return w.getTableSource(stmt.RangeVar, info)
 
 	case *pg.Node_RangeSubselect:
+		if subSelInfo, ok := info.children["RangeSubselect"]; ok {
+			info = subSelInfo
+		}
 		sub := stmt.RangeSubselect
 		source := w.getSource(sub.Subquery, info.children["Subquery"], cloned...)
 		if sub.Alias == nil {
@@ -69,7 +58,12 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 	}
 }
 
-func (w *walker) getTableSource(schema, name string) queryResult {
+func (w *walker) getTableSource(sub *pg.RangeVar, info nodeInfo) queryResult {
+	schema := w.names[info.children["Schemaname"].position()]
+	name := w.names[info.children["Relname"].position()]
+
+	source := queryResult{}
+
 	for _, table := range w.db {
 		if table.Name != name {
 			continue
@@ -82,7 +76,7 @@ func (w *walker) getTableSource(schema, name string) queryResult {
 			continue
 		}
 
-		source := queryResult{
+		source = queryResult{
 			schema:  table.Schema,
 			name:    table.Name,
 			columns: make([]col, len(table.Columns)),
@@ -90,10 +84,29 @@ func (w *walker) getTableSource(schema, name string) queryResult {
 		for j, column := range table.Columns {
 			source.columns[j] = col{name: column.Name, nullable: column.Nullable}
 		}
+
+		break
+	}
+
+	if source.name == "" || sub.Alias == nil {
 		return source
 	}
 
-	return queryResult{}
+	source.schema = "" // empty schema for aliased tables
+	source.name = sub.Alias.Aliasname
+	if len(source.columns) != len(sub.Alias.Colnames) {
+		return source
+	}
+
+	colInfos := info.children["Alias"].children["Colnames"]
+	for i := range sub.Alias.Colnames {
+		aliasName := w.names[colInfos.children[strconv.Itoa(i)].position()]
+		if aliasName != "" {
+			source.columns[i].name = aliasName
+		}
+	}
+
+	return source
 }
 
 func (w *walker) getSelectSource(stmt *pg.SelectStmt, info nodeInfo, sources ...queryResult) queryResult {
@@ -108,42 +121,10 @@ func (w *walker) getSelectSource(stmt *pg.SelectStmt, info nodeInfo, sources ...
 		}
 	}
 
-	if stmt.WithClause != nil {
-		cteInfos := info.children["WithClause"].children["Ctes"]
-		for i, cte := range stmt.WithClause.Ctes {
-			cteNodeWrap, ok := cte.Node.(*pg.Node_CommonTableExpr)
-			if !ok {
-				continue
-			}
-
-			cteNode := cteNodeWrap.CommonTableExpr
-			cteInfo := cteInfos.children[strconv.Itoa(i)]
-
-			stmtSource := w.getSource(
-				cteNode.Ctequery, cteInfo.children["Ctequery"], sources...,
-			)
-			stmtSource.mustBeQualified = true
-
-			if len(cteNode.Aliascolnames) != len(stmtSource.columns) {
-				sources = append(sources, stmtSource)
-				continue
-			}
-
-			aliasInfos := cteInfo.children["Aliascolnames"]
-			for j := range cteNode.Aliascolnames {
-				alias := w.names[aliasInfos.children[strconv.Itoa(j)].position()]
-				if alias != "" {
-					stmtSource.columns[j].name = alias
-				}
-			}
-
-			sources = append(sources, stmtSource)
-		}
-	}
+	sources = w.addSourcesOfWithClause(stmt.WithClause, info.children["WithClause"], sources...)
 
 	main := stmt
 	mainInfo := info
-
 	for main.Larg != nil {
 		main = main.Larg
 		mainInfo = mainInfo.children["Larg"]
@@ -153,10 +134,84 @@ func (w *walker) getSelectSource(stmt *pg.SelectStmt, info nodeInfo, sources ...
 		return w.getSourceFromTargets(main.TargetList, mainInfo.children["TargetList"].children, sources...)
 	}
 
-	var joinedNodes []joinedInfo
-
 	from := main.FromClause[0]
 	fromInfo := mainInfo.children["FromClause"].children["0"]
+	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+
+	return w.getSourceFromTargets(main.TargetList, mainInfo.children["TargetList"].children, sources...)
+}
+
+func (w *walker) getInsertSource(stmt *pg.InsertStmt, info nodeInfo) queryResult {
+	table := w.getTableSource(stmt.Relation, info.children["Relation"])
+	return w.getSourceFromTargets(stmt.ReturningList, info.children["ReturningList"].children, table)
+}
+
+func (w *walker) getUpdateSource(stmt *pg.UpdateStmt, info nodeInfo, sources ...queryResult) queryResult {
+	sources = w.addSourcesOfWithClause(stmt.WithClause, info.children["WithClause"], sources...)
+
+	table := w.getTableSource(stmt.Relation, info.children["Relation"])
+	sources = append(sources, table)
+
+	if len(stmt.FromClause) == 0 {
+		return w.getSourceFromTargets(
+			stmt.ReturningList,
+			info.children["ReturningList"].children,
+			sources...,
+		)
+	}
+
+	from := stmt.FromClause[0]
+	fromInfo := info.children["FromClause"].children["0"]
+	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+
+	return w.getSourceFromTargets(
+		stmt.ReturningList,
+		info.children["ReturningList"].children,
+		sources...,
+	)
+}
+
+func (w *walker) addSourcesOfWithClause(with *pg.WithClause, info nodeInfo, sources ...queryResult) []queryResult {
+	if with == nil {
+		return sources
+	}
+
+	cteInfos := info.children["Ctes"]
+	for i, cte := range with.Ctes {
+		cteNodeWrap, ok := cte.Node.(*pg.Node_CommonTableExpr)
+		if !ok {
+			continue
+		}
+
+		cteNode := cteNodeWrap.CommonTableExpr
+		cteInfo := cteInfos.children[strconv.Itoa(i)]
+
+		stmtSource := w.getSource(
+			cteNode.Ctequery, cteInfo.children["Ctequery"], sources...,
+		)
+		stmtSource.mustBeQualified = true
+
+		if len(cteNode.Aliascolnames) != len(stmtSource.columns) {
+			sources = append(sources, stmtSource)
+			continue
+		}
+
+		aliasInfos := cteInfo.children["Aliascolnames"]
+		for j := range cteNode.Aliascolnames {
+			alias := w.names[aliasInfos.children[strconv.Itoa(j)].position()]
+			if alias != "" {
+				stmtSource.columns[j].name = alias
+			}
+		}
+
+		sources = append(sources, stmtSource)
+	}
+
+	return sources
+}
+
+func (w *walker) addSourcesOfFromItem(from *pg.Node, fromInfo nodeInfo, sources ...queryResult) []queryResult {
+	var joinedNodes []joinedInfo
 
 	for {
 		join := from.GetJoinExpr()
@@ -224,15 +279,7 @@ func (w *walker) getSelectSource(stmt *pg.SelectStmt, info nodeInfo, sources ...
 		joinSources = append(joinSources, joinSource)
 	}
 
-	sources = append(sources, joinSources...)
-	return w.getSourceFromTargets(main.TargetList, mainInfo.children["TargetList"].children, sources...)
-}
-
-func (w *walker) getInsertSource(stmt *pg.InsertStmt, info nodeInfo) queryResult {
-	schemaName := w.names[info.children["Relation"].children["Schemaname"].position()]
-	tableName := w.names[info.children["Relation"].children["Relname"].position()]
-	table := w.getTableSource(schemaName, tableName)
-	return w.getSourceFromTargets(stmt.ReturningList, info.children["ReturningList"].children, table)
+	return append(sources, joinSources...)
 }
 
 func (w *walker) getSourceFromTargets(targets []*pg.Node, infos map[string]nodeInfo, sources ...queryResult) queryResult {

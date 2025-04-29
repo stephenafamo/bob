@@ -344,6 +344,10 @@ func (w *walker) walkSelectStmt(a *pg.SelectStmt) nodeInfo {
 		)...,
 	)
 
+	if err := verifySelectStatement(a, info); err != nil {
+		w.errors = append(w.errors, err)
+	}
+
 	return info
 }
 
@@ -362,9 +366,7 @@ func (w *walker) walkInsertStmt(a *pg.InsertStmt) nodeInfo {
 		colNames[i] = w.names[colNameInfo.position()]
 	}
 
-	schemaName := w.names[info.children["Relation"].children["Schemaname"].position()]
-	tableName := w.names[info.children["Relation"].children["Relname"].position()]
-	table := w.getTableSource(schemaName, tableName)
+	table := w.getTableSource(a.Relation, info.children["Relation"])
 	if len(a.Cols) == 0 {
 		colNames = make([]string, len(table.columns))
 		for i := range table.columns {
@@ -476,6 +478,7 @@ func (w *walker) walkColumnRef(a *pg.ColumnRef) nodeInfo {
 func (w *walker) walkResTarget(a *pg.ResTarget) nodeInfo {
 	w.updatePosition(a.Location)
 	info := w.reflectWalk(reflect.ValueOf(a))
+
 	if a.Name != "" {
 		nameInfo := newNodeInfo()
 		index := sort.Search(len(w.tokens), func(i int) bool {
@@ -500,9 +503,14 @@ func (w *walker) walkResTarget(a *pg.ResTarget) nodeInfo {
 		info = info.addChild("Name", nameInfo)
 		w.maybeSetName(info.position(), a.Name)
 	}
+
 	valPos := info.children["Val"].position()
 	w.maybeSetName(info.position(), w.names[valPos])
 	w.setNull(info.position(), w.nullability[valPos])
+
+	if a.Name != "" {
+		w.maybeSetName(valPos, a.Name)
+	}
 
 	return info
 }
