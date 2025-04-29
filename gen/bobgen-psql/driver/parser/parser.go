@@ -13,6 +13,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
+	pgparse "github.com/wasilibs/go-pgquery"
 )
 
 func New(db *sql.DB, t tables, sharedSchema string, translator *Translator) *Parser {
@@ -32,7 +33,7 @@ type Parser struct {
 }
 
 func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, error) {
-	stmts, err := pg.Parse(s)
+	stmts, err := pgparse.Parse(s)
 	if err != nil {
 		return nil, fmt.Errorf("parse formatted: %w", err)
 	}
@@ -69,12 +70,12 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
 	}
 
-	scanResult, err := pg.Scan(input)
+	scanResult, err := pgparse.Scan(input)
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("scan: %w", err)
 	}
 
-	parseResult, err := pg.Parse(input)
+	parseResult, err := pgparse.Parse(input)
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("parse single: %w", err)
 	}

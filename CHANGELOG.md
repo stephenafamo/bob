@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support to generate code for `UPDATE` queries in `bobgen-psql`.
 
+### Changed
+
+- Changed to non-cgo version of postgres parser.
+
 ## [v0.33.1] - 2025-04-26
 
 ### Changed
