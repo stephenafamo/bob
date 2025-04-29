@@ -11,10 +11,6 @@ func verifySelectStatement(stmt *pg.SelectStmt, info nodeInfo) error {
 		return fmt.Errorf("nil statement")
 	}
 
-	if len(stmt.ValuesLists) > 0 {
-		return fmt.Errorf("VALUES statement is not supported")
-	}
-
 	if hasMultipleFromTables(stmt) {
 		return fmt.Errorf("multiple FROM tables are not supported, convert to a CROSS JOIN")
 	}
