@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -10,8 +9,8 @@ import (
 	"syscall"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/gen/bobgen-atlas/driver"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
-	"github.com/stephenafamo/bob/gen/bobgen-sql/driver"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,9 +23,9 @@ func main() {
 	defer cancel()
 
 	app := &cli.App{
-		Name:      "bobgen-sql",
-		Usage:     "Generate models and factories from your SQL schema files",
-		UsageText: "bobgen-sql [-c FILE]",
+		Name:      "bobgen-atlas",
+		Usage:     "Generate models and factories from your Atlas schema files",
+		UsageText: "bobgen-atlas [-c FILE]",
 		Version:   helpers.Version(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -45,14 +44,14 @@ func main() {
 }
 
 func run(c *cli.Context) error {
-	config, driverConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "sql")
+	config, driverConfig, err := helpers.GetConfigFromFile[driver.Config](c.String("config"), "atlas")
 	if err != nil {
 		return err
 	}
 
 	var modelTemplates []fs.FS
 	switch driverConfig.Dialect {
-	case "psql", "postgres":
+	case "psql":
 		modelTemplates = append(modelTemplates, gen.PSQLModelTemplates)
 	case "mysql":
 		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
@@ -60,24 +59,16 @@ func run(c *cli.Context) error {
 		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
 	}
 
+	d := driver.New(driverConfig, os.DirFS(driverConfig.Dir))
 	outputs := helpers.DefaultOutputs(
 		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
 		&helpers.Templates{Models: modelTemplates},
 	)
 
-	state := &gen.State[any]{
+	state := &gen.State{
 		Config:  config,
 		Outputs: outputs,
 	}
 
-	switch driverConfig.Dialect {
-	case "psql", "postgres":
-		return driver.RunPostgres(c.Context, state, driverConfig)
-	case "mysql":
-		return driver.RunMySQL(c.Context, state, driverConfig)
-	case "sqlite":
-		return driver.RunSQLite(c.Context, state, driverConfig)
-	default:
-		return fmt.Errorf("unsupported dialect %s", driverConfig.Dialect)
-	}
+	return gen.Run(c.Context, state, d)
 }
