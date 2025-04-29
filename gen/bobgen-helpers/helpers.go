@@ -404,29 +404,26 @@ func GetFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func Migrate(ctx context.Context, db *sql.DB, dir fs.FS) error {
-	err := fs.WalkDir(dir, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			return nil
-		}
+func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {
+	if dir == nil {
+		dir = os.DirFS(".")
+	}
 
-		content, err := fs.ReadFile(dir, path)
-		if err != nil {
-			return fmt.Errorf("reading %s: %w", path, err)
-		}
-
-		fmt.Printf("migrating %s...\n", path)
-		if _, err = db.ExecContext(ctx, string(content)); err != nil {
-			return fmt.Errorf("migrating %s: %w", path, err)
-		}
-
-		return nil
-	})
+	matchedFiles, err := fs.Glob(dir, pattern)
 	if err != nil {
-		return err
+		return fmt.Errorf("globbing %s: %w", pattern, err)
+	}
+
+	for _, filePath := range matchedFiles {
+		content, err := fs.ReadFile(dir, filePath)
+		if err != nil {
+			return fmt.Errorf("reading %s: %w", filePath, err)
+		}
+
+		fmt.Printf("migrating %s...\n", filePath)
+		if _, err = db.ExecContext(ctx, string(content)); err != nil {
+			return fmt.Errorf("migrating %s: %w", filePath, err)
+		}
 	}
 
 	fmt.Printf("migrations finished\n")

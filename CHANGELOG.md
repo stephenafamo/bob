@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed to non-cgo version of postgres parser.
+- Changed the `dir` configuration for `bobgen-sql` to `pattern` and it now takes a glob pattern. This allows excluding certain files from being included (e.g. `.down.sql` files).
 
 ## [v0.33.1] - 2025-04-26
 

@@ -93,7 +93,7 @@ func TestAssembleSQLite(t *testing.T) {
 	attach(t, ctx, db, config)
 
 	fmt.Printf("migrating...")
-	migrate(t, db, testfiles.SQLiteSchema)
+	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
 	fmt.Printf(" DONE\n")
 
 	assemble(t, config)
@@ -118,9 +118,9 @@ func TestAssembleLibSQL(t *testing.T) {
 
 	fmt.Printf("migrating...")
 	dbHttpDefault := connect(t, "libsql", "http://localhost:8080")
-	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema)
+	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
 	dbHttpOne := connect(t, "libsql", "http://one.localhost:8080")
-	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema)
+	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
 	fmt.Printf(" DONE\n")
 
 	t.Cleanup(func() {
@@ -159,9 +159,9 @@ func attach(t *testing.T, ctx context.Context, db *sql.DB, config Config) {
 	}
 }
 
-func migrate(t *testing.T, db *sql.DB, schema embed.FS) {
+func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	t.Helper()
-	if err := helpers.Migrate(context.Background(), db, schema); err != nil {
+	if err := helpers.Migrate(context.Background(), db, schema, pattern); err != nil {
 		t.Fatal(err)
 	}
 }

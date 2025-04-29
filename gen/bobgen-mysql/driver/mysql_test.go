@@ -70,7 +70,7 @@ func TestDriver(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	fmt.Printf("migrating...")
-	if err := helpers.Migrate(context.Background(), db, testfiles.MySQLSchema); err != nil {
+	if err := helpers.Migrate(context.Background(), db, testfiles.MySQLSchema, "mysql/*.sql"); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf(" DONE\n")
