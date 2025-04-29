@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added support to generate code for `UPDATE` queries in `bobgen-psql`.
+- Added support to generate code for `UPDATE`, and `DELETE` queries in `bobgen-psql`.
 
 ### Changed
 

@@ -11,7 +11,7 @@ func verifySelectStatement(stmt *pg.SelectStmt, info nodeInfo) error {
 		return fmt.Errorf("nil statement")
 	}
 
-	if hasMultipleFromTables(stmt) {
+	if len(stmt.FromClause) > 0 {
 		return fmt.Errorf("multiple FROM tables are not supported, convert to a CROSS JOIN")
 	}
 
@@ -22,12 +22,28 @@ func verifySelectStatement(stmt *pg.SelectStmt, info nodeInfo) error {
 	return nil
 }
 
-func hasMultipleFromTables(stmt *pg.SelectStmt) bool {
-	if stmt.FromClause == nil {
-		return false
+func verifyUpdateStatement(stmt *pg.UpdateStmt, _ nodeInfo) error {
+	if stmt == nil {
+		return fmt.Errorf("nil statement")
 	}
 
-	return len(stmt.FromClause) > 1
+	if len(stmt.FromClause) > 0 {
+		return fmt.Errorf("multiple FROM tables are not supported, convert to a CROSS JOIN")
+	}
+
+	return nil
+}
+
+func verifyDeleteStatement(stmt *pg.DeleteStmt, _ nodeInfo) error {
+	if stmt == nil {
+		return fmt.Errorf("nil statement")
+	}
+
+	if len(stmt.UsingClause) > 0 {
+		return fmt.Errorf("multiple USING tables are not supported, convert to a CROSS JOIN")
+	}
+
+	return nil
 }
 
 func isFetchWithTiesAfterOffset(stmt *pg.SelectStmt, info nodeInfo) bool {

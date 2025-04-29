@@ -24,6 +24,9 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 	case *pg.Node_UpdateStmt:
 		return w.getUpdateSource(stmt.UpdateStmt, info, cloned...)
 
+	case *pg.Node_DeleteStmt:
+		return w.getDeleteSource(stmt.DeleteStmt, info, cloned...)
+
 	case *pg.Node_RangeVar:
 		if rangeInfo, ok := info.children["RangeVar"]; ok {
 			info = rangeInfo
@@ -162,6 +165,31 @@ func (w *walker) getUpdateSource(stmt *pg.UpdateStmt, info nodeInfo, sources ...
 
 	from := stmt.FromClause[0]
 	fromInfo := info.children["FromClause"].children["0"]
+	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+
+	return w.getSourceFromTargets(
+		stmt.ReturningList,
+		info.children["ReturningList"].children,
+		sources...,
+	)
+}
+
+func (w *walker) getDeleteSource(stmt *pg.DeleteStmt, info nodeInfo, sources ...queryResult) queryResult {
+	sources = w.addSourcesOfWithClause(stmt.WithClause, info.children["WithClause"], sources...)
+
+	table := w.getTableSource(stmt.Relation, info.children["Relation"])
+	sources = append(sources, table)
+
+	if len(stmt.UsingClause) == 0 {
+		return w.getSourceFromTargets(
+			stmt.ReturningList,
+			info.children["ReturningList"].children,
+			sources...,
+		)
+	}
+
+	from := stmt.UsingClause[0]
+	fromInfo := info.children["UsingClause"].children["0"]
 	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
 
 	return w.getSourceFromTargets(
