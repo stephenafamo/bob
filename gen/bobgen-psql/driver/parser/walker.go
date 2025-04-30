@@ -278,6 +278,7 @@ func (w *walker) reflectWalk(reflected reflect.Value) nodeInfo {
 	LocationField := refStruct.FieldByName("Location")
 	if LocationField.IsValid() && LocationField.Kind() == reflect.Int32 {
 		info.start = int32(LocationField.Int())
+		w.updatePosition(info.start)
 		info.end = w.getEnd(info.start)
 	}
 
@@ -288,9 +289,6 @@ func (w *walker) reflectWalk(reflected reflect.Value) nodeInfo {
 		}
 
 		if fieldType.Name == "Location" {
-			if fieldType.Type.Kind() == reflect.Int32 {
-				w.updatePosition(int32(refStruct.Field(i).Int()))
-			}
 			continue
 		}
 
@@ -604,6 +602,7 @@ func (w *walker) walkAlias(a *pg.Alias) nodeInfo {
 func (w *walker) walkString(a *pg.String) nodeInfo {
 	info := newNodeInfo()
 	identifierInfo := w.findIdentOrUnreserved(w.position)
+
 	if identifierInfo.isValid() {
 		quoted := w.input[identifierInfo.start:identifierInfo.end]
 		unquoted, err := strconv.Unquote(quoted)
