@@ -336,6 +336,10 @@ func (w *walker) walkSelectStmt(a *pg.SelectStmt) nodeInfo {
 	info := w.reflectWalk(reflect.ValueOf(a))
 	info.start = w.getStartOfTokenBefore(info.start, pg.Token_SELECT, pg.Token_VALUES)
 
+	if err := verifySelectStatement(a, info); err != nil {
+		w.errors = append(w.errors, err)
+	}
+
 	if len(a.ValuesLists) != 1 {
 		return info
 	}
@@ -349,10 +353,6 @@ func (w *walker) walkSelectStmt(a *pg.SelectStmt) nodeInfo {
 			},
 		)...,
 	)
-
-	if err := verifySelectStatement(a, info); err != nil {
-		w.errors = append(w.errors, err)
-	}
 
 	return info
 }
