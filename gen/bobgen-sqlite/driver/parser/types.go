@@ -60,7 +60,7 @@ type returnColumn struct {
 }
 
 type exprInfo struct {
-	expr                 sqliteparser.IExprContext
+	expr                 node
 	ExprDescription      string
 	Type                 exprTypes
 	ExprRef              sqliteparser.IExprContext
@@ -88,6 +88,9 @@ type node interface {
 	GetRuleIndex() int
 	GetParent() antlr.Tree
 	GetText() string
+
+	GetParser() antlr.Parser
+	GetSourceInterval() antlr.Interval
 }
 
 type nodeKey struct {
@@ -181,7 +184,7 @@ type ref struct {
 }
 
 func (r ref) key() string {
-	if r.schema == "" {
+	if r.schema == "" || r.schema == "main" {
 		return r.table
 	}
 	return r.schema + "." + r.table
@@ -237,7 +240,6 @@ func makeRef(sources querySources, ctx *sqliteparser.Expr_qualified_column_nameC
 		}
 	}
 
-	// fmt.Printf("could not find column name: %q.%q.%q in %#v\n", schema, table, column, sources)
 	return nil
 }
 
@@ -260,7 +262,7 @@ func typeFromRef(db tables, schema, table, column string) exprType {
 	}
 
 	key := fmt.Sprintf("%s.%s", schema, table)
-	if schema == "" {
+	if schema == "" || schema == "main" {
 		key = table
 	}
 

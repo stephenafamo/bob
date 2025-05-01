@@ -10,7 +10,6 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
@@ -24,7 +23,6 @@ func NewVisitor(db tables) *visitor {
 		exprs:     make(map[nodeKey]exprInfo),
 		names:     make(map[nodeKey]exprName),
 		atom:      &atomic.Int64{},
-		mods:      &strings.Builder{},
 	}
 }
 
@@ -40,8 +38,17 @@ type visitor struct {
 	// Refresh these for each statement
 	stmtRules []internal.EditRule
 	atom      *atomic.Int64
-	mods      *strings.Builder
-	imports   [][]string
+}
+
+func (v *visitor) childVisitor() *visitor {
+	return &visitor{
+		db:        v.db,
+		exprs:     v.exprs,
+		names:     v.names,
+		functions: v.functions,
+		atom:      v.atom,
+		sources:   slices.Clone(v.sources),
+	}
 }
 
 func (v *visitor) Visit(tree antlr.ParseTree) any { return tree.Accept(v) }
@@ -102,10 +109,9 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				continue
 			}
 
+			v.sources = nil
 			v.stmtRules = slices.Clone(v.baseRules)
 			v.atom = &atomic.Int64{}
-			v.mods = &strings.Builder{}
-			v.imports = nil
 
 			resp := child.(antlr.ParseTree).Accept(v)
 			if v.err != nil {
@@ -119,25 +125,33 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				return nil
 			}
 
+			var imports [][]string
+			queryType := bob.QueryTypeUnknown
+			mods := &strings.Builder{}
+
+			switch child := child.(type) {
+			case *sqliteparser.Select_stmtContext:
+				queryType = bob.QueryTypeSelect
+				imports = v.modSelect_stmt(child, mods)
+			case *sqliteparser.Insert_stmtContext:
+				queryType = bob.QueryTypeInsert
+				v.modInsert_stmt(child, mods)
+			case *sqliteparser.Update_stmtContext:
+				queryType = bob.QueryTypeUpdate
+			case *sqliteparser.Delete_stmtContext:
+				queryType = bob.QueryTypeDelete
+			}
+
 			allresp[i] = stmtInfo{
+				queryType: queryType,
 				stmt:      stmt,
 				columns:   info,
 				editRules: slices.Clone(v.stmtRules),
 				comment:   v.getCommentToLeft(stmt),
-				mods:      v.mods,
-				imports:   slices.Clone(v.imports),
+				mods:      mods,
+				imports:   imports,
 			}
 
-			switch child.(type) {
-			case *sqliteparser.Select_stmtContext:
-				allresp[i].queryType = bob.QueryTypeSelect
-			case *sqliteparser.Insert_stmtContext:
-				allresp[i].queryType = bob.QueryTypeInsert
-			case *sqliteparser.Update_stmtContext:
-				allresp[i].queryType = bob.QueryTypeUpdate
-			case *sqliteparser.Delete_stmtContext:
-				allresp[i].queryType = bob.QueryTypeDelete
-			}
 		}
 	}
 
@@ -438,6 +452,20 @@ func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
 		})
 	}
 
+	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		ctx.GetStart().GetStart(),
+		ctx.GetStop().GetStop(),
+		func(start, end int) error {
+			v.updateExprInfo(exprInfo{
+				expr:            ctx,
+				ExprDescription: "LIST",
+				EditedPosition:  [2]int{start, end},
+				isGroup:         true,
+			})
+			return nil
+		},
+	)...)
+
 	return v.VisitChildren(ctx)
 }
 
@@ -476,7 +504,6 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 			ExprDescription:      "IN RHS",
 			ExprRef:              lhs,
 			IgnoreRefNullability: true,
-			isGroup:              true,
 			CanBeMultiple:        singleIn,
 		})
 		childRefs[key(child)] = func() ([]string, []string) {
@@ -511,19 +538,17 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 			childRefs: grandChildRefs,
 		})
 
-		v.stmtRules = append(v.stmtRules,
-			internal.RecordPoints(
-				childList.GetStart().GetStart(),
-				childList.GetStop().GetStop(),
-				func(start, end int) error {
-					v.updateExprInfo(exprInfo{
-						expr:           childList,
-						EditedPosition: [2]int{start, end},
-					})
-					return nil
-				},
-			)...,
-		)
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			childList.GetStart().GetStart(),
+			childList.GetStop().GetStop(),
+			func(start, end int) error {
+				v.updateExprInfo(exprInfo{
+					expr:           childList,
+					EditedPosition: [2]int{start, end},
+				})
+				return nil
+			},
+		)...)
 	}
 
 	v.addName(rhsList, exprName{
@@ -977,11 +1002,13 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 
 	v.updateExprInfo(info)
 
+	// So it does not refer the same atomic
+	a := v.atom
 	v.stmtRules = append(v.stmtRules, internal.EditCallback(
 		internal.ReplaceFromFunc(
 			ctx.GetStart().GetStart(), ctx.GetStop().GetStop(),
 			func() string {
-				return fmt.Sprintf("?%d", v.atom.Add(1))
+				return fmt.Sprintf("?%d", a.Add(1))
 			},
 		),
 		func(start, end int, _, _ string) error {
@@ -1079,7 +1106,79 @@ func (v *visitor) VisitValues_clause(ctx *sqliteparser.Values_clauseContext) any
 }
 
 func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
-	return v.VisitChildren(ctx)
+	v2 := v.childVisitor()
+	v2.VisitChildren(ctx)
+	if v2.err != nil {
+		v.err = fmt.Errorf("insert stmt: %w", v2.err)
+		return nil
+	}
+	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+
+	tableName := getName(ctx.Table_name())
+	tableSource := v.getSourceFromTable(ctx)
+	v.sources = append(v.sources, tableSource)
+
+	columns := ctx.AllColumn_name()
+	colNames := make([]string, len(columns))
+	for i := range columns {
+		colNames[i] = getName(columns[i])
+	}
+	if len(colNames) == 0 {
+		colNames = make([]string, len(tableSource.columns))
+		for i := range tableSource.columns {
+			colNames[i] = tableSource.columns[i].name
+		}
+	}
+
+	if values := ctx.Values_clause(); values != nil {
+		rows := values.AllValue_row()
+		for _, row := range rows {
+			v.addName(row, exprName{
+				names: func() []string { return []string{tableName} },
+			})
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				row.GetStart().GetStart(),
+				row.GetStop().GetStop(),
+				func(start, end int) error {
+					v.updateExprInfo(exprInfo{
+						expr:            row,
+						ExprDescription: "ROW",
+						EditedPosition:  [2]int{start, end},
+						isGroup:         true,
+						CanBeMultiple:   len(rows) == 1,
+					})
+					return nil
+				},
+			)...)
+
+			for valIndex, value := range row.AllExpr() {
+				v.updateExprInfo(exprInfo{
+					expr:            value,
+					ExprDescription: "ROW Value",
+					Type: []exprType{typeFromRef(
+						v.db,
+						getName(ctx.Schema_name()),
+						tableName,
+						colNames[valIndex],
+					)},
+				})
+
+				if valIndex < len(colNames) {
+					v.addName(value, exprName{
+						names: func() []string { return []string{colNames[valIndex]} },
+					})
+				}
+			}
+		}
+	}
+
+	returning := ctx.Returning_clause()
+	if returning == nil {
+		return returns{}
+	}
+
+	source := v.sourceFromColumns(returning.AllResult_column())
+	return source.columns
 }
 
 func (v *visitor) VisitReturning_clause(ctx *sqliteparser.Returning_clauseContext) any {
@@ -1104,19 +1203,9 @@ func (v *visitor) VisitReindex_stmt(ctx *sqliteparser.Reindex_stmtContext) any {
 
 // Should return a stmt info
 func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
-	v.modSelect_stmt(ctx, v.mods)
-
 	// Create a new visitor, to not mix sources
 	// however, we clone any existing sources to the new visitor
-	v2 := &visitor{
-		db:        v.db,
-		exprs:     v.exprs,
-		names:     v.names,
-		sources:   slices.Clone(v.sources),
-		functions: v.functions,
-		atom:      v.atom,
-		mods:      &strings.Builder{},
-	}
+	v2 := v.childVisitor()
 
 	if ctx.With_clause() != nil {
 		ctx.With_clause().Accept(v2)
@@ -1142,15 +1231,7 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
 
 	for i, compound := range ctx.AllCompound_select() {
-		v3 := &visitor{
-			db:        v.db,
-			exprs:     v.exprs,
-			names:     v.names,
-			sources:   slices.Clone(v2.sources),
-			functions: v.functions,
-			atom:      v.atom,
-			mods:      &strings.Builder{},
-		}
+		v3 := v.childVisitor()
 
 		coreSource, ok := v3.visitSelect_core(compound.Select_core()).(querySource)
 		if v3.err != nil {
@@ -1223,272 +1304,7 @@ func (v *visitor) visitSelect_core(ctx sqliteparser.ISelect_coreContext) any {
 		return nil
 	}
 
-	// Get the return columns
-	var returnSource querySource
-
-	for _, resultColumn := range ctx.AllResult_column() {
-		switch {
-		case resultColumn.STAR() != nil: // Has a STAR: * OR table_name.*
-			table := getName(resultColumn.Table_name())
-			hasTable := table != "" // the result column is table_name.*
-
-			start := resultColumn.GetStart().GetStart()
-			stop := resultColumn.GetStop().GetStop()
-			v.stmtRules = append(v.stmtRules, internal.Delete(start, stop))
-
-			buf := &strings.Builder{}
-			var i int
-			for _, source := range v.sources {
-				if source.cte {
-					continue
-				}
-				if hasTable && source.name != table {
-					continue
-				}
-
-				returnSource.columns = append(returnSource.columns, source.columns...)
-
-				if i > 0 {
-					buf.WriteString(", ")
-				}
-				expandQuotedSource(buf, source)
-				i++
-			}
-			v.stmtRules = append(v.stmtRules, internal.Insert(stop, buf.String()))
-
-		case resultColumn.Expr() != nil: // expr (AS_? alias)?
-			expr := resultColumn.Expr()
-			alias := getName(resultColumn.Alias())
-			if alias == "" {
-				if expr, ok := expr.(*sqliteparser.Expr_qualified_column_nameContext); ok {
-					alias = getName(expr.Column_name())
-				}
-			}
-
-			returnSource.columns = append(returnSource.columns, returnColumn{
-				name:    alias,
-				options: v.getCommentToRight(expr),
-				config:  drivers.ParseQueryColumnConfig(v.getCommentToRight(expr)),
-				typ:     v.exprs[key(resultColumn.Expr())].Type,
-			})
-		}
-	}
-
-	return returnSource
-}
-
-//nolint:nestif
-func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strings.Builder) {
-	if with := ctx.With_clause(); with != nil {
-		if with.RECURSIVE_() != nil {
-			sb.WriteString("q.SetRecursive(true)\n")
-		}
-		for _, cte := range with.AllCommon_table_expression() {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					cte.GetStart().GetStart(),
-					cte.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-	}
-
-	{
-		core := ctx.Select_core()
-
-		if distinct := core.DISTINCT_(); distinct != nil {
-			sb.WriteString("q.Distinct = true\n")
-		}
-
-		allResults := core.AllResult_column()
-		if len(allResults) > 0 {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					allResults[0].GetStart().GetStart(),
-					allResults[len(allResults)-1].GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendSelect(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-
-		if from := core.From_item(); from != nil {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					from.GetStart().GetStart(),
-					from.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-
-		if where := core.Where_stmt(); where != nil {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					where.GetStart().GetStart()+len("WHERE "),
-					where.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-
-		if groupBy := core.Group_by_stmt(); groupBy != nil {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					groupBy.GetStart().GetStart(),
-					groupBy.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendGroup(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-
-		if having := core.GetHavingExpr(); having != nil {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					having.GetStart().GetStart(),
-					having.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendHaving(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-
-		for _, window := range core.AllWindow_stmt() {
-			v.stmtRules = append(v.stmtRules,
-				internal.RecordPoints(
-					window.GetStart().GetStart(),
-					window.GetStop().GetStop(),
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendWindow(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...,
-			)
-		}
-	}
-
-	compounds := ctx.AllCompound_select()
-
-	if len(compounds) > 0 {
-		v.imports = append(v.imports, []string{"github.com/stephenafamo/bob/clause"})
-	}
-
-	for _, compound := range ctx.AllCompound_select() {
-		strategy := strings.ToUpper(compound.Compound_operator().GetText())
-		all := compound.Compound_operator().ALL_() != nil
-		if all {
-			strategy = strategy[:len(strategy)-3]
-		}
-		v.stmtRules = append(v.stmtRules,
-			internal.RecordPoints(
-				compound.Select_core().GetStart().GetStart(),
-				compound.Select_core().GetStop().GetStop(),
-				func(start, end int) error {
-					fmt.Fprintf(sb, `
-                        q.AppendCombine(clause.Combine{
-                            Strategy: "%s",
-                            All: %t,
-                            Query: bob.BaseQuery[bob.Expression]{
-                                Expression: o.expr(%d, %d),
-                                QueryType: bob.QueryTypeSelect,
-                                Dialect: dialect.Dialect,
-                            },
-                        })
-                    `, strategy, all, start, end)
-					return nil
-				},
-			)...,
-		)
-	}
-
-	if order := ctx.Order_by_stmt(); order != nil {
-		v.stmtRules = append(v.stmtRules,
-			internal.RecordPoints(
-				order.GetStart().GetStart()+len("ORDER BY "),
-				order.GetStop().GetStop(),
-				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...,
-		)
-	}
-
-	if limit := ctx.Limit_stmt(); limit != nil {
-		limiter := limit.GetFirstExpr()
-		comma := limit.COMMA()
-		if comma != nil {
-			limiter = limit.GetLastExpr()
-		}
-
-		v.stmtRules = append(v.stmtRules,
-			internal.RecordPoints(
-				limiter.GetStart().GetStart(),
-				limiter.GetStop().GetStop(),
-				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...,
-		)
-
-		if comma == nil {
-			if offset := limit.GetLastExpr(); offset != nil {
-				v.stmtRules = append(v.stmtRules,
-					internal.RecordPoints(
-						offset.GetStart().GetStart(),
-						offset.GetStop().GetStop(),
-						func(start, end int) error {
-							fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
-							return nil
-						},
-					)...,
-				)
-			}
-		} else {
-			var s string
-			v.stmtRules = append(v.stmtRules, internal.EditCallback(
-				internal.Delete(
-					limit.GetFirstExpr().GetStart().GetStart()-1,
-					comma.GetSymbol().GetStop(),
-				),
-				func(_, _ int, before, after string) error {
-					s = before
-					return nil
-				}),
-			)
-
-			v.stmtRules = append(v.stmtRules, internal.EditCallback(
-				internal.InsertFromFunc(
-					limit.GetLastExpr().GetStop().GetStop()+1,
-					func() string {
-						return fmt.Sprintf(" OFFSET %s", s[1:len(s)-1])
-					},
-				),
-				func(start, end int, _, _ string) error {
-					fmt.Fprintf(sb, "q.SetOffset(%q)\n", s[1:len(s)-1])
-					return nil
-				}),
-			)
-		}
-	}
+	return v.sourceFromColumns(ctx.AllResult_column())
 }
 
 func (v *visitor) VisitResult_column(ctx *sqliteparser.Result_columnContext) any {
@@ -1554,54 +1370,7 @@ func (v *visitor) VisitTable_or_subquery(ctx *sqliteparser.Table_or_subqueryCont
 func (v *visitor) visitTable_or_subquery(ctx sqliteparser.ITable_or_subqueryContext) querySource {
 	switch {
 	case ctx.Table_name() != nil:
-		schema := getName(ctx.Schema_name())
-		v.quoteIdentifiable(ctx.Schema_name())
-
-		tableName := getName(ctx.Table_name())
-		v.quoteIdentifiable(ctx.Table_name())
-
-		alias := getName(ctx.Table_alias())
-		v.quoteIdentifiable(ctx.Table_alias())
-
-		hasAlias := alias != ""
-		if alias == "" {
-			alias = tableName
-		}
-
-		// First check the sources to see if the table exists
-		// do this ONLY if no schema is provided
-		if schema == "" {
-			for _, source := range v.sources {
-				if source.name == tableName {
-					return querySource{
-						name:    alias,
-						columns: source.columns,
-					}
-				}
-			}
-		}
-
-		for _, table := range v.db {
-			if table.Schema == schema && table.Name == tableName {
-				source := querySource{
-					name:    alias,
-					columns: make([]returnColumn, len(table.Columns)),
-				}
-				if !hasAlias {
-					source.schema = schema
-				}
-				for i, col := range table.Columns {
-					source.columns[i] = returnColumn{
-						name: col.Name,
-						typ:  exprTypes{typeFromRef(v.db, table.Schema, table.Name, col.Name)},
-					}
-				}
-				return source
-			}
-		}
-
-		v.err = fmt.Errorf("table not found: %s", tableName)
-		return querySource{}
+		return v.getSourceFromTable(ctx)
 
 	case ctx.Select_stmt() != nil:
 		columns, ok := ctx.Select_stmt().Accept(v).(returns)
@@ -1673,9 +1442,6 @@ func (v *visitor) VisitFrame_clause(ctx *sqliteparser.Frame_clauseContext) any {
 }
 
 func (v *visitor) VisitWith_clause(ctx *sqliteparser.With_clauseContext) any {
-	if ctx.RECURSIVE_() != nil {
-		v.mods.WriteString(`q.SetRecursive(true)`)
-	}
 	return v.VisitChildren(ctx)
 }
 
