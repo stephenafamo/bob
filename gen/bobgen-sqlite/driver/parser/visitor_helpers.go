@@ -13,44 +13,6 @@ import (
 )
 
 //---------------------------------------------------------------------------
-// Print helpers
-//---------------------------------------------------------------------------
-
-func (v *visitor) printExprs(input string, start, stop int, exprs ...exprInfo) string {
-	s := &strings.Builder{}
-	fmt.Fprintf(
-		s,
-		"%20s | %5s | %-25s | %-25s | %-15s | %-15s | %s\n",
-		"TYPE", "Null?", "DBType", "Name", "Position", "Text", "Options",
-	)
-
-	fmt.Fprintln(s, strings.Repeat("-", 140))
-
-	for _, expr := range exprs {
-		if expr.expr.GetStart().GetStart() < start || expr.expr.GetStop().GetStop() > stop {
-			continue
-		}
-
-		types := strings.Split(expr.ExprDescription, ",")
-		dbType := v.getDBType(expr)
-		fmt.Fprintf(
-			s,
-			"%20s | %5t | %-25s | %-25s | %-15s | %-15s | %s\n",
-			types[0], dbType.Nullable(), v.getDBType(expr),
-			v.getNameString(expr.expr), fmt.Sprint(expr.EditedPosition),
-			input[expr.expr.GetStart().GetStart():expr.expr.GetStop().GetStop()+1],
-			expr.options+"----"+expr.queryArgKey,
-		)
-		for _, typ := range types[1:] {
-			fmt.Fprintf(s, "%20s | %5s | %-25s | %-25s | %-15s | %-15s | %s\n", typ, "", "", "", "", "", "")
-		}
-		fmt.Fprintf(s, "%20s | %5s | %-25s | %-25s | %-15s | %-15s | %s\n", "", "", "", "", "", "", "")
-	}
-
-	return s.String()
-}
-
-//---------------------------------------------------------------------------
 // Type helpers
 //---------------------------------------------------------------------------
 
@@ -97,69 +59,6 @@ func (v *visitor) getDBType(e exprInfo) exprTypes {
 	}
 
 	return DBType
-}
-
-func (v *visitor) getArgs(start, stop int) []exprInfo {
-	exprs := make([]exprInfo, 0, len(v.exprs))
-	groups := make([]exprInfo, 0, len(v.exprs))
-
-	// Only get bind expressions
-	for _, expr := range v.exprs {
-		if expr.expr.GetStart().GetStart() < start || expr.expr.GetStop().GetStop() > stop {
-			continue
-		}
-
-		if expr.isGroup {
-			groups = append(groups, expr)
-		}
-
-		if _, ok := expr.expr.(*sqliteparser.Expr_bindContext); !ok {
-			continue
-		}
-
-		exprs = append(exprs, expr)
-	}
-
-GroupLoop:
-	for _, group := range groups {
-		for _, expr := range exprs {
-			if key(group.expr) == key(expr.expr) {
-				continue
-			}
-
-			if expr.expr.GetStart().GetStart() >= group.expr.GetStart().GetStart() &&
-				expr.expr.GetStop().GetStop() <= group.expr.GetStop().GetStop() {
-				exprs = append(exprs, group)
-				continue GroupLoop
-			}
-		}
-	}
-
-	// We want to sort the exprs by the order they appear in the input
-	slices.SortFunc(exprs, func(i, j exprInfo) int {
-		iKey := key(i.expr)
-		jKey := key(j.expr)
-
-		if iKey.start != jKey.start {
-			return iKey.start - jKey.start
-		}
-
-		if iKey.stop != jKey.stop {
-			return jKey.stop - iKey.stop
-		}
-
-		return iKey.rule - jKey.rule
-	})
-
-	for i, expr := range exprs {
-		exprs[i].options = v.getCommentToRight(expr.expr)
-		// Merge in case the name is configured in the bind
-		exprs[i].config = exprs[i].config.Merge(
-			drivers.ParseQueryColumnConfig(v.getCommentToRight(expr.expr)),
-		)
-	}
-
-	return exprs
 }
 
 func (v *visitor) updateExprInfo(info exprInfo) {
@@ -309,12 +208,7 @@ func (v *visitor) addLRName(ctx interface {
 // Comment getter
 // ---------------------------------------------------------------------------
 
-func (v *visitor) getCommentToLeft(ctx interface {
-	GetParser() antlr.Parser
-	GetStart() antlr.Token
-	GetSourceInterval() antlr.Interval
-},
-) string {
+func (v *visitor) getCommentToLeft(ctx node) string {
 	stream, isCommon := ctx.GetParser().GetTokenStream().(*antlr.CommonTokenStream)
 	if !isCommon {
 		return ""
@@ -331,12 +225,7 @@ func (v *visitor) getCommentToLeft(ctx interface {
 	return ""
 }
 
-func (v *visitor) getCommentToRight(ctx interface {
-	GetParser() antlr.Parser
-	GetStop() antlr.Token
-	GetSourceInterval() antlr.Interval
-},
-) string {
+func (v *visitor) getCommentToRight(ctx node) string {
 	stream, isCommon := ctx.GetParser().GetTokenStream().(*antlr.CommonTokenStream)
 	if !isCommon {
 		return ""
@@ -406,6 +295,126 @@ func expandQuotedSource(buf *strings.Builder, source querySource) {
 			fmt.Fprintf(buf, "%q.%q", source.name, col.name)
 		}
 	}
+}
+
+func (v *visitor) getSourceFromTable(ctx interface {
+	Schema_name() sqliteparser.ISchema_nameContext
+	Table_name() sqliteparser.ITable_nameContext
+	Table_alias() sqliteparser.ITable_aliasContext
+},
+) querySource {
+	schema := getName(ctx.Schema_name())
+	v.quoteIdentifiable(ctx.Schema_name())
+
+	tableName := getName(ctx.Table_name())
+	v.quoteIdentifiable(ctx.Table_name())
+
+	alias := getName(ctx.Table_alias())
+	v.quoteIdentifiable(ctx.Table_alias())
+
+	hasAlias := alias != ""
+	if alias == "" {
+		alias = tableName
+	}
+
+	// First check the sources to see if the table exists
+	// do this ONLY if no schema is provided
+	if schema == "" {
+		for _, source := range v.sources {
+			if source.name == tableName {
+				return querySource{
+					name:    alias,
+					columns: source.columns,
+				}
+			}
+		}
+	}
+
+	for _, table := range v.db {
+		if table.Name != tableName {
+			continue
+		}
+
+		switch {
+		case table.Schema == schema: // schema matches
+		case table.Schema == "" && schema == "main": // schema is shared
+		default:
+			continue
+		}
+
+		source := querySource{
+			name:    alias,
+			columns: make([]returnColumn, len(table.Columns)),
+		}
+		if !hasAlias {
+			source.schema = schema
+		}
+		for i, col := range table.Columns {
+			source.columns[i] = returnColumn{
+				name: col.Name,
+				typ:  exprTypes{typeFromRef(v.db, table.Schema, table.Name, col.Name)},
+			}
+		}
+		return source
+	}
+
+	v.err = fmt.Errorf("table not found: %s", tableName)
+	return querySource{}
+}
+
+func (v *visitor) sourceFromColumns(columns []sqliteparser.IResult_columnContext) querySource {
+	// Get the return columns
+	var returnSource querySource
+
+	for _, resultColumn := range columns {
+		switch {
+		case resultColumn.STAR() != nil: // Has a STAR: * OR table_name.*
+			table := getName(resultColumn.Table_name())
+			hasTable := table != "" // the result column is table_name.*
+
+			start := resultColumn.GetStart().GetStart()
+			stop := resultColumn.GetStop().GetStop()
+			v.stmtRules = append(v.stmtRules, internal.Delete(start, stop))
+
+			buf := &strings.Builder{}
+			var i int
+			for _, source := range v.sources {
+				if source.cte {
+					continue
+				}
+				if hasTable && source.name != table {
+					continue
+				}
+
+				returnSource.columns = append(returnSource.columns, source.columns...)
+
+				if i > 0 {
+					buf.WriteString(", ")
+				}
+				expandQuotedSource(buf, source)
+				i++
+			}
+			v.stmtRules = append(v.stmtRules, internal.Insert(stop, buf.String()))
+
+		case resultColumn.Expr() != nil: // expr (AS_? alias)?
+			expr := resultColumn.Expr()
+			alias := getName(resultColumn.Alias())
+			if alias == "" {
+				if expr, ok := expr.(*sqliteparser.Expr_qualified_column_nameContext); ok {
+					alias = getName(expr.Column_name())
+				}
+			}
+
+			returnSource.columns = append(returnSource.columns, returnColumn{
+				name:    alias,
+				options: v.getCommentToRight(expr),
+				config:  drivers.ParseQueryColumnConfig(v.getCommentToRight(expr)),
+				typ:     v.exprs[key(resultColumn.Expr())].Type,
+			})
+		}
+	}
+
+	return returnSource
 }
 
 // ---------------------------------------------------------------------------

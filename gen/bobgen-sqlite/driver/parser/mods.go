@@ -1,0 +1,297 @@
+package parser
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/stephenafamo/bob/internal"
+	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
+)
+
+func (v *visitor) modWith_clause(ctx interface {
+	With_clause() sqliteparser.IWith_clauseContext
+}, sb *strings.Builder,
+) {
+	with := ctx.With_clause()
+	if with == nil {
+		return
+	}
+
+	if with.RECURSIVE_() != nil {
+		sb.WriteString("q.SetRecursive(true)\n")
+	}
+	for _, cte := range with.AllCommon_table_expression() {
+		v.stmtRules = append(v.stmtRules,
+			internal.RecordPoints(
+				cte.GetStart().GetStart(),
+				cte.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
+	}
+}
+
+func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strings.Builder) [][]string {
+	var imports [][]string
+
+	v.modWith_clause(ctx, sb)
+
+	{
+		core := ctx.Select_core()
+
+		if distinct := core.DISTINCT_(); distinct != nil {
+			sb.WriteString("q.Distinct = true\n")
+		}
+
+		allResults := core.AllResult_column()
+		if len(allResults) > 0 {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				allResults[0].GetStart().GetStart(),
+				allResults[len(allResults)-1].GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendSelect(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+
+		if from := core.From_item(); from != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				from.GetStart().GetStart(),
+				from.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+
+		if where := core.Where_stmt(); where != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				where.WHERE_().GetSymbol().GetStop()+1,
+				where.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+
+		if groupBy := core.Group_by_stmt(); groupBy != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				groupBy.GetStart().GetStart(),
+				groupBy.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendGroup(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+
+		if having := core.GetHavingExpr(); having != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				having.GetStart().GetStart(),
+				having.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendHaving(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+
+		for _, window := range core.AllWindow_stmt() {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				window.GetStart().GetStart(),
+				window.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendWindow(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+	}
+
+	compounds := ctx.AllCompound_select()
+
+	if len(compounds) > 0 {
+		imports = append(imports, []string{"github.com/stephenafamo/bob/clause"})
+	}
+
+	for _, compound := range ctx.AllCompound_select() {
+		strategy := strings.ToUpper(compound.Compound_operator().GetText())
+		all := compound.Compound_operator().ALL_() != nil
+		if all {
+			strategy = strategy[:len(strategy)-3]
+		}
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			compound.Select_core().GetStart().GetStart(),
+			compound.Select_core().GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, `
+                        q.AppendCombine(clause.Combine{
+                            Strategy: "%s",
+                            All: %t,
+                            Query: bob.BaseQuery[bob.Expression]{
+                                Expression: o.expr(%d, %d),
+                                QueryType: bob.QueryTypeSelect,
+                                Dialect: dialect.Dialect,
+                            },
+                        })
+                    `, strategy, all, start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if order := ctx.Order_by_stmt(); order != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			order.BY_().GetSymbol().GetStop()+1,
+			order.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if limit := ctx.Limit_stmt(); limit != nil {
+		if limit.COMMA() != nil {
+			v.err = fmt.Errorf("LIMIT with comma is not supported")
+		}
+
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			limit.GetFirstExpr().GetStart().GetStart(),
+			limit.GetFirstExpr().GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+
+		if offset := limit.GetLastExpr(); offset != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				offset.GetStart().GetStart(),
+				offset.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+	}
+
+	return imports
+}
+
+func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strings.Builder) {
+	v.modWith_clause(ctx, sb)
+
+	if ctx.INSERT_() == nil {
+		v.err = fmt.Errorf("REPLACE INTO is not supported. Use INSERT OR REPLACE INTO instead")
+		return
+	}
+
+	if or := ctx.GetUpsert_action(); or != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			or.GetStart(), or.GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	table := ctx.Table_name()
+	v.quoteIdentifiable(table)
+
+	tableStart := table.GetStart().GetStart()
+	tableStop := table.GetStop().GetStop()
+
+	if schema := ctx.Schema_name(); schema != nil {
+		v.quoteIdentifiable(schema)
+		tableStart = schema.GetStart().GetStart()
+	}
+
+	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		tableStart, tableStop,
+		func(start, end int) error {
+			fmt.Fprintf(sb, "q.Table.Expression = o.raw(%d, %d)\n", start, end)
+			return nil
+		},
+	)...)
+
+	if alias := ctx.Table_alias(); alias != nil {
+		v.quoteIdentifiable(alias)
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			alias.GetStart().GetStart(),
+			alias.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.Table.Alias = %q\n", getName(alias))
+				return nil
+			},
+		)...)
+	}
+
+	allColumns := ctx.AllColumn_name()
+	if len(allColumns) > 0 {
+		colNames := make([]string, len(allColumns))
+		for i, col := range allColumns {
+			colNames[i] = getName(col)
+		}
+		fmt.Fprintf(sb, "q.Table.Columns = %#v\n", colNames)
+	}
+
+	if values := ctx.Values_clause(); values != nil {
+		for _, value := range values.AllValue_row() {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				value.OPEN_PAR().GetSymbol().GetStart()+1,
+				value.CLOSE_PAR().GetSymbol().GetStop()-1,
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.AppendValues(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+	}
+
+	if selectStmt := ctx.Select_stmt(); selectStmt != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			selectStmt.GetStart().GetStart(),
+			selectStmt.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
+						Expression: o.expr(%d, %d),
+						Dialect: dialect.Dialect,
+						QueryType: bob.QueryTypeSelect,
+						}
+					`, start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if upsert := ctx.Upsert_clause(); upsert != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			upsert.GetStart().GetStart(),
+			upsert.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetConflict(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if returning := ctx.Returning_clause(); returning != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			returning.RETURNING_().GetSymbol().GetStop()+1,
+			returning.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+}

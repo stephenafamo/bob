@@ -128,6 +128,10 @@ func (o {{$lowerName}}) args() iter.Seq[orm.ArgWithPosition]  {
   }
 }
 
+func (o {{$lowerName}}) raw(from, to int) string {
+  return {{$lowerName}}SQL[from:to]
+}
+
 func (o {{$lowerName}}) expr(from, to int) bob.Expression {
   return orm.ArgsToExpression({{$lowerName}}SQL, from, to, o.args())
 }

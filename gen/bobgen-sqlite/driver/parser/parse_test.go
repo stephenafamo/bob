@@ -26,10 +26,10 @@ func (p Parser) debugParse(s string) error {
 		fmt.Printf("\n\nName: %s\n", info.comment)
 		fmt.Printf("Query:\n%s\n\n", formatted)
 		fmt.Printf("Cols:\n%s\n\n", info.columns.Print())
-		fmt.Printf(
-			"Args:\n%s\n\n",
-			v.printExprs(s, stmtStart, stmtStop, v.getArgs(stmtStart, stmtStop)...),
-		)
+		// fmt.Printf(
+		// 	"Args:\n%s\n\n",
+		// 	v.printExprs(s, stmtStart, stmtStop, v.getArgs(stmtStart, stmtStop)...),
+		// )
 	}
 
 	return nil

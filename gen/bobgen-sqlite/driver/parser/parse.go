@@ -47,39 +47,6 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			}.Merge(col.config)
 		}
 
-		args := v.getArgs(stmtStart, stmtStop)
-		keys := make(map[string]int, len(args))
-		names := make(map[string]int, len(args))
-		queryArgs := make([]drivers.QueryArg, 0, len(args))
-		for _, arg := range args {
-			// If the key is already in the map, append the position
-			key := arg.queryArgKey
-			if oldIndex, ok := keys[key]; ok && key != "" {
-				queryArgs[oldIndex].Positions = append(
-					queryArgs[oldIndex].Positions, arg.EditedPosition,
-				)
-				continue
-			}
-			keys[arg.queryArgKey] = len(queryArgs)
-
-			name := v.getNameString(arg.expr)
-			index := names[name]
-			names[name] = index + 1
-			if index > 0 {
-				name = fmt.Sprintf("%s_%d", name, index+1)
-			}
-
-			queryArgs = append(queryArgs, drivers.QueryArg{
-				Col: drivers.QueryCol{
-					Name:     name,
-					Nullable: omit.From(arg.Type.Nullable()),
-					TypeName: v.getDBType(arg).Type(p.db),
-				}.Merge(arg.config),
-				Positions:     [][2]int{arg.EditedPosition},
-				CanBeMultiple: arg.CanBeMultiple,
-			})
-		}
-
 		name, configStr, _ := strings.Cut(info.comment, " ")
 		queries[i] = drivers.Query{
 			Name: name,
@@ -93,7 +60,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			}.Merge(drivers.ParseQueryConfig(configStr)),
 
 			Columns: cols,
-			Args:    groupArgs(queryArgs),
+			Args:    v.getArgs(stmtStart, stmtStop),
 			Mods:    stmtToMod{info},
 		}
 	}
@@ -162,45 +129,6 @@ type errorListener struct {
 
 func (el *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol any, line, column int, msg string, e antlr.RecognitionException) {
 	el.err = msg
-}
-
-func groupArgs(args []drivers.QueryArg) []drivers.QueryArg {
-	newArgs := make([]drivers.QueryArg, 0, len(args))
-
-Outer:
-	for i, arg := range args {
-		if len(arg.Positions) != 1 {
-			newArgs = append(newArgs, args[i])
-			continue
-		}
-
-		for j, arg2 := range args {
-			if i == j {
-				continue
-			}
-
-			if len(arg2.Positions) != 1 {
-				continue
-			}
-
-			if arg2.Positions[0][0] <= arg.Positions[0][0] &&
-				arg2.Positions[0][1] >= arg.Positions[0][1] {
-				// arg2 is a parent of arg
-				// since arg1 has a parent, it should be skipped
-				continue Outer
-			}
-
-			if arg.Positions[0][0] <= arg2.Positions[0][0] &&
-				arg.Positions[0][1] >= arg2.Positions[0][1] {
-				// arg is a parent of arg2
-				args[i].Children = append(args[i].Children, arg2)
-			}
-		}
-
-		newArgs = append(newArgs, args[i])
-	}
-
-	return newArgs
 }
 
 //nolint:gochecknoglobals
