@@ -126,11 +126,11 @@ func (v *visitor) getArgs(start, stop int) []drivers.QueryArg {
 			continue
 		}
 
-		switch {
-		case len(group.Children) == 0:
+		switch len(group.Children) {
+		case 0:
 			// Do nothing
 			continue
-		case len(group.Children) == 1:
+		case 1:
 			if !group.CanBeMultiple {
 				allArgs = append(allArgs, group.Children[0])
 				continue

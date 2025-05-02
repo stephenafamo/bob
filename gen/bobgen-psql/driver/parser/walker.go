@@ -146,7 +146,7 @@ func (w *walker) setMultiple(pos [2]int) {
 }
 
 func (w *walker) updatePosition(pos int32) {
-	if pos <= w.position {
+	if pos <= 0 {
 		return
 	}
 	w.position = pos
@@ -603,16 +603,18 @@ func (w *walker) walkString(a *pg.String) nodeInfo {
 	info := newNodeInfo()
 	identifierInfo := w.findIdentOrUnreserved(w.position)
 
-	if identifierInfo.isValid() {
-		quoted := w.input[identifierInfo.start:identifierInfo.end]
-		unquoted, err := strconv.Unquote(quoted)
-		if err != nil {
-			unquoted = quoted
-		}
-		if strings.EqualFold(a.GetSval(), unquoted) {
-			info = identifierInfo
-			w.maybeSetName(info.position(), unquoted)
-		}
+	if !identifierInfo.isValid() {
+		return info
+	}
+
+	quoted := w.input[identifierInfo.start:identifierInfo.end]
+	unquoted, err := strconv.Unquote(quoted)
+	if err != nil {
+		unquoted = quoted
+	}
+	if strings.EqualFold(a.GetSval(), unquoted) {
+		info = identifierInfo
+		w.maybeSetName(info.position(), unquoted)
 	}
 
 	return info
@@ -651,34 +653,26 @@ func (w *walker) walkList(a *pg.List) nodeInfo {
 	info.start = w.getStartOfTokenBefore(info.start, openParToken)
 	info.end = w.getEndOfTokenAfter(info.end, closeParToken)
 
+	w.editRules = append(w.editRules, internal.RecordPoints(
+		int(info.start), int(info.end-1),
+		func(start, end int) error {
+			w.setGroup(argPos{
+				original: info.position(),
+				edited:   [2]int{start, end},
+			})
+			return nil
+		},
+	)...)
+
 	itemsInfo := info.children["Items"]
 	if len(a.Items) == 1 {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(itemsInfo.start), int(itemsInfo.end-1),
-				func(start, end int) error {
-					w.setMultiple([2]int{start, end})
-					w.setGroup(argPos{
-						original: itemsInfo.position(),
-						edited:   [2]int{start, end},
-					})
-					return nil
-				},
-			)...,
-		)
-	} else {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(info.start), int(info.end-1),
-				func(start, end int) error {
-					w.setGroup(argPos{
-						original: info.position(),
-						edited:   [2]int{start, end},
-					})
-					return nil
-				},
-			)...,
-		)
+		w.editRules = append(w.editRules, internal.RecordPoints(
+			int(itemsInfo.start), int(itemsInfo.end-1),
+			func(start, end int) error {
+				w.setMultiple([2]int{start, end})
+				return nil
+			},
+		)...)
 	}
 
 	return info

@@ -145,7 +145,7 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 
 	groups := slices.Collect(maps.Keys(w.groups))
 	slices.SortStableFunc(groups, func(a, b argPos) int {
-		return (a.edited[1] - a.edited[0] - (b.edited[1] - b.edited[0]))
+		return (a.edited[1] - a.edited[0]) - (b.edited[1] - b.edited[0])
 	})
 
 	argIsInGroup := make([]bool, len(args))
@@ -190,22 +190,22 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 		})
 		fixDuplicateArgNames(groupChildren)
 
-		_, multiple := w.multiple[group.edited]
-		groupConfig := drivers.ParseQueryColumnConfig(
-			w.getConfigComment(group.original),
-		)
+		name := fmt.Sprintf("group%d", group.edited[0])
+		if computedName, ok := w.names[group.original]; ok && computedName != "" {
+			name = computedName
+		}
 
+		_, multiple := w.multiple[group.edited]
 		groupArgs[groupIndex] = drivers.QueryArg{
 			Col: drivers.QueryCol{
-				Name:     fmt.Sprintf("group%d", group.edited[0]),
+				Name:     name,
 				Nullable: omit.From(false),
-			}.Merge(groupConfig),
+			}.Merge(drivers.ParseQueryColumnConfig(
+				w.getConfigComment(group.original),
+			)),
 			Children:      groupChildren,
 			Positions:     [][2]int{{int(group.edited[0]), int(group.edited[1])}},
 			CanBeMultiple: multiple,
-		}
-		if name, ok := w.names[group.original]; ok && name != "" {
-			groupArgs[groupIndex].Col.Name = name
 		}
 	}
 
@@ -226,13 +226,11 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 			// Do nothing
 			continue
 		case 1:
-			// If the child arg has the same positions as the group, we can just use the child arg
-			if group.Children[0].Positions[0][0] == group.Positions[0][0] &&
-				group.Children[0].Positions[0][1] == group.Positions[0][1] {
+			if !group.CanBeMultiple {
 				allArgs = append(allArgs, group.Children[0])
-			} else {
-				allArgs = append(allArgs, group)
+				continue
 			}
+			fallthrough
 		default:
 			allArgs = append(allArgs, group)
 		}
