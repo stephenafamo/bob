@@ -54,7 +54,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			Type: info.queryType,
 
 			Config: drivers.QueryConfig{
-				RowName:      info.comment + "Row",
+				RowName:      name + "Row",
 				RowSliceName: "",
 				GenerateRow:  true,
 			}.Merge(drivers.ParseQueryConfig(configStr)),

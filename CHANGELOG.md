@@ -11,11 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support to generate code for `INSERT` queries in `bobgen-sqlite`.
 
+### Fixed
+
+- Use correct row name for generated queries in `bobgen-sqlite`.
+- Properly select query comment in `bobgen-sqlite`.
+
 ## [v0.34.2] - 2025-05-01
 
 ### Fixed
 
-- Fix bug with `bobgen-sql` parsing of string identifiers in certain cases.
+- Fix bug with `bobgen-psql` parsing of string identifiers in certain cases.
 
 ## [v0.34.1] - 2025-04-30
 

@@ -216,7 +216,7 @@ func (v *visitor) getCommentToLeft(ctx node) string {
 
 	tokenIndex := ctx.GetStart().GetTokenIndex()
 	hiddenTokens := stream.GetHiddenTokensToLeft(tokenIndex, 1)
-	for _, token := range hiddenTokens {
+	for _, token := range slices.Backward(hiddenTokens) {
 		if token.GetTokenType() == sqliteparser.SQLiteParserSINGLE_LINE_COMMENT {
 			return strings.TrimSpace(token.GetText()[2:])
 		}
