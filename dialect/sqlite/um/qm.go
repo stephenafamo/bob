@@ -48,13 +48,13 @@ func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 	})
 }
 
-func TableIndexedBy(i string) bob.Mod[*dialect.UpdateQuery] {
+func IndexedBy(i string) bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		q.Table.IndexedBy = &i
 	})
 }
 
-func TableNotIndexed() bob.Mod[*dialect.UpdateQuery] {
+func NotIndexed() bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
 		var s string
 		q.Table.IndexedBy = &s
@@ -101,4 +101,16 @@ func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
 
 func Returning(clauses ...any) bob.Mod[*dialect.UpdateQuery] {
 	return mods.Returning[*dialect.UpdateQuery](clauses)
+}
+
+func Limit(count any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Limit[*dialect.UpdateQuery]{
+		Count: count,
+	}
+}
+
+func Offset(count any) bob.Mod[*dialect.UpdateQuery] {
+	return mods.Offset[*dialect.UpdateQuery]{
+		Count: count,
+	}
 }

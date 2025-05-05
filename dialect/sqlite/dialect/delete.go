@@ -15,6 +15,8 @@ type DeleteQuery struct {
 	clause.From
 	clause.Where
 	clause.Returning
+	clause.Limit
+	clause.Offset
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]
@@ -56,6 +58,20 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, 
 		return nil, err
 	}
 	args = append(args, retArgs...)
+
+	limitArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Limit,
+		d.Limit.Count != nil, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, limitArgs...)
+
+	offsetArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Offset,
+		d.Offset.Count != nil, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, offsetArgs...)
 
 	return args, nil
 }

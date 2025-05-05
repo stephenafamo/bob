@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added support to generate code for `INSERT` and `UPDATE` queries in `bobgen-sqlite`.
+- Added support to generate code for `INSERT`, `UPDATE` and `DELETE` queries in `bobgen-sqlite`.
+- Added `LIMIT` and `OFFSET` to the SQLite Update and Delete queries.
+- Added `IndexedBy` and `NotIndexed` mods to the SQLite Delete queries.
+
+### Changed
+
+- Changed the INDEXED BY and NOT INDEXED mods for SQLite update queries from `TableIndexedBy` and `TableNotIndexed` to `IndexedBy` and `NotIndexed`.
 
 ### Fixed
 
