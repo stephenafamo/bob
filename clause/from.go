@@ -143,8 +143,7 @@ func (f From) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 	case *f.IndexedBy == "":
 		w.Write([]byte(" NOT INDEXED"))
 	default:
-		w.Write([]byte(" INDEXED BY "))
-		w.Write([]byte(*f.IndexedBy))
+		fmt.Fprintf(w, " INDEXED BY %q", *f.IndexedBy)
 	}
 
 	joinArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Joins, "\n", "\n", "")

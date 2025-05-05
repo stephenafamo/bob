@@ -138,6 +138,7 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				v.modInsert_stmt(child, mods)
 			case *sqliteparser.Update_stmtContext:
 				queryType = bob.QueryTypeUpdate
+				v.modUpdate_stmt(child, mods)
 			case *sqliteparser.Delete_stmtContext:
 				queryType = bob.QueryTypeDelete
 			}
@@ -1106,17 +1107,17 @@ func (v *visitor) VisitValues_clause(ctx *sqliteparser.Values_clauseContext) any
 }
 
 func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
-	v2 := v.childVisitor()
-	v2.VisitChildren(ctx)
-	if v2.err != nil {
-		v.err = fmt.Errorf("insert stmt: %w", v2.err)
-		return nil
-	}
-	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
-
 	tableName := getName(ctx.Table_name())
 	tableSource := v.getSourceFromTable(ctx)
 	v.sources = append(v.sources, tableSource)
+
+	// v2 := v.childVisitor()
+	v.VisitChildren(ctx)
+	if v.err != nil {
+		v.err = fmt.Errorf("insert stmt: %w", v.err)
+		return nil
+	}
+	// v.stmtRules = append(v.stmtRules, v2.stmtRules...)
 
 	columns := ctx.AllColumn_name()
 	colNames := make([]string, len(columns))
@@ -1217,15 +1218,9 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 
 	// Should return a source
 	// Use the first select core to get the columns
-	sourceAny := v2.visitSelect_core(ctx.Select_core())
-	source, ok := sourceAny.(querySource)
+	source := v2.visitSelect_core(ctx.Select_core())
 	if v2.err != nil {
 		v.err = fmt.Errorf("select core 0: %w", v2.err)
-		return nil
-	}
-
-	if !ok {
-		v.err = fmt.Errorf("could not get source from select core 0: %T", sourceAny)
 		return nil
 	}
 	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
@@ -1233,14 +1228,10 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 	for i, compound := range ctx.AllCompound_select() {
 		v3 := v.childVisitor()
 
-		coreSource, ok := v3.visitSelect_core(compound.Select_core()).(querySource)
+		coreSource := v3.visitSelect_core(compound.Select_core())
 		if v3.err != nil {
 			v.err = fmt.Errorf("select core %d: %w", i, v3.err)
 			return nil
-		}
-
-		if !ok {
-			v.err = fmt.Errorf("could not get source from select core %d", i)
 		}
 
 		if len(source.columns) != len(coreSource.columns) {
@@ -1290,18 +1281,18 @@ func (v *visitor) VisitSelect_core(ctx *sqliteparser.Select_coreContext) any {
 }
 
 // Should return a query source
-func (v *visitor) visitSelect_core(ctx sqliteparser.ISelect_coreContext) any {
+func (v *visitor) visitSelect_core(ctx sqliteparser.ISelect_coreContext) querySource {
 	v.visitFrom_item(ctx.From_item())
 	if v.err != nil {
 		v.err = fmt.Errorf("from item: %w", v.err)
-		return nil
+		return querySource{}
 	}
 
 	// Evaluate all the expressions
 	v.VisitChildren(ctx)
 	if v.err != nil {
 		v.err = fmt.Errorf("select core children: %w", v.err)
-		return nil
+		return querySource{}
 	}
 
 	return v.sourceFromColumns(ctx.AllResult_column())
@@ -1406,6 +1397,59 @@ func (v *visitor) VisitCompound_operator(ctx *sqliteparser.Compound_operatorCont
 }
 
 func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
+	table := ctx.Qualified_table_name()
+	tableName := getName(table.Table_name())
+	tableSource := v.getSourceFromTable(table)
+	v.sources = append(v.sources, tableSource)
+
+	v2 := v.childVisitor()
+	v2.VisitChildren(ctx)
+	if v2.err != nil {
+		v.err = fmt.Errorf("insert stmt: %w", v2.err)
+		return nil
+	}
+	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+
+	exprs := ctx.AllExpr()
+	for i, nameOrList := range ctx.AllColumn_name_or_list() {
+		nameExpr := nameOrList.Column_name()
+		if nameExpr == nil {
+			continue
+		}
+		colName := getName(nameExpr)
+		expr := exprs[i]
+		v.updateExprInfo(exprInfo{
+			expr:            expr,
+			ExprDescription: "SET Expr",
+			Type: []exprType{typeFromRef(
+				v.db,
+				getName(table.Schema_name()),
+				tableName,
+				colName,
+			)},
+		})
+
+		v.addName(expr, exprName{
+			names: func() []string { return []string{colName} },
+		})
+	}
+
+	v.visitFrom_item(ctx.From_item())
+	if v.err != nil {
+		v.err = fmt.Errorf("from item: %w", v.err)
+		return querySource{}
+	}
+
+	returning := ctx.Returning_clause()
+	if returning == nil {
+		return returns{}
+	}
+
+	source := v.sourceFromColumns(returning.AllResult_column())
+	return source.columns
+}
+
+func (v *visitor) VisitColumn_name_or_list(ctx *sqliteparser.Column_name_or_listContext) any {
 	return v.VisitChildren(ctx)
 }
 

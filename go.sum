@@ -113,6 +113,8 @@ github.com/stephenafamo/scan v0.6.2 h1:mEjx1P1MuimqALCXfZEV8+KAiVcByrgngqKatgHag
 github.com/stephenafamo/scan v0.6.2/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
 github.com/stephenafamo/sqlparser v0.0.0-20250501212547-09538e10bd8d h1:FaWdZSpwnv2K0VuDgtkjoHNx0eSWJOExwRL+PqHihSc=
 github.com/stephenafamo/sqlparser v0.0.0-20250501212547-09538e10bd8d/go.mod h1:2ATW++wFz7Mvc/N+nUtQnU+9VIGAxrn8m9JCLDSWMsQ=
+github.com/stephenafamo/sqlparser v0.0.0-20250505135607-597088c9b512 h1:W1+lSj8HQY/p0acWnQ6N1oKHrgzIMhKDKc3HIyeTB4c=
+github.com/stephenafamo/sqlparser v0.0.0-20250505135607-597088c9b512/go.mod h1:2ATW++wFz7Mvc/N+nUtQnU+9VIGAxrn8m9JCLDSWMsQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=

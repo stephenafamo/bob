@@ -76,8 +76,8 @@ func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
           QueryType:  bob.QueryType{{$queryType}},
         },
       },
+      {{- $.Importer.Import "github.com/stephenafamo/scan" -}}
       {{if gt (len $query.Columns) 1 -}}
-        {{- $.Importer.Import "github.com/stephenafamo/scan" -}}
         Scanner: scan.StructMapper[{{$queryRowName}}](),
       {{- else -}}
         {{- $col := index $query.Columns 0 -}}

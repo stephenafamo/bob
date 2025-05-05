@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added support to generate code for `INSERT` queries in `bobgen-sqlite`.
+- Added support to generate code for `INSERT` and `UPDATE` queries in `bobgen-sqlite`.
 
 ### Fixed
 

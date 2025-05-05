@@ -394,7 +394,7 @@ func (v *visitor) sourceFromColumns(columns []sqliteparser.IResult_columnContext
 				expandQuotedSource(buf, source)
 				i++
 			}
-			v.stmtRules = append(v.stmtRules, internal.Insert(stop, buf.String()))
+			v.stmtRules = append(v.stmtRules, internal.Insert(start, buf.String()))
 
 		case resultColumn.Expr() != nil: // expr (AS_? alias)?
 			expr := resultColumn.Expr()
