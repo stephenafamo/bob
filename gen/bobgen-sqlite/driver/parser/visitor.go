@@ -141,6 +141,7 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				v.modUpdate_stmt(child, mods)
 			case *sqliteparser.Delete_stmtContext:
 				queryType = bob.QueryTypeDelete
+				v.modDelete_stmt(child, mods)
 			}
 
 			allresp[i] = stmtInfo{
@@ -248,7 +249,26 @@ func (v *visitor) VisitCreate_virtual_table_stmt(ctx *sqliteparser.Create_virtua
 }
 
 func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
-	return v.VisitChildren(ctx)
+	v.sources = append(
+		v.sources,
+		v.getSourceFromTable(ctx.Qualified_table_name()),
+	)
+
+	v2 := v.childVisitor()
+	v2.VisitChildren(ctx)
+	if v2.err != nil {
+		v.err = fmt.Errorf("insert stmt: %w", v2.err)
+		return nil
+	}
+	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+
+	returning := ctx.Returning_clause()
+	if returning == nil {
+		return returns{}
+	}
+
+	source := v.sourceFromColumns(returning.AllResult_column())
+	return source.columns
 }
 
 func (v *visitor) VisitDetach_stmt(ctx *sqliteparser.Detach_stmtContext) any {
