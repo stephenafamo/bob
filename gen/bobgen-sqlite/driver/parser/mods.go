@@ -295,3 +295,143 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 		)...)
 	}
 }
+
+func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strings.Builder) {
+	v.modWith_clause(ctx, sb)
+
+	if or := ctx.GetUpsert_action(); or != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			or.GetStart(), or.GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	qualifiedTable := ctx.Qualified_table_name()
+	table := qualifiedTable.Table_name()
+	v.quoteIdentifiable(table)
+
+	tableStart := table.GetStart().GetStart()
+	tableStop := table.GetStop().GetStop()
+
+	if schema := qualifiedTable.Schema_name(); schema != nil {
+		v.quoteIdentifiable(schema)
+		tableStart = schema.GetStart().GetStart()
+	}
+
+	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		tableStart, tableStop,
+		func(start, end int) error {
+			fmt.Fprintf(sb, "q.Table.Table = o.raw(%d, %d)\n", start, end)
+			return nil
+		},
+	)...)
+
+	if alias := qualifiedTable.Table_alias(); alias != nil {
+		v.quoteIdentifiable(alias)
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			alias.GetStart().GetStart(),
+			alias.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.Table.Alias = %q\n", getName(alias))
+				return nil
+			},
+		)...)
+	}
+
+	indexName := qualifiedTable.Index_name()
+	switch {
+	case indexName != nil: // INDEXED BY
+		fmt.Fprintf(
+			sb,
+			"index := %q; q.Table.IndexedBy = &index\n",
+			getName(indexName),
+		)
+	case ctx.Qualified_table_name().NOT_() != nil: // NOT INDEXED
+		sb.WriteString("index := \"\"; q.Table.IndexedBy = &index\n")
+	}
+
+	cols := ctx.AllColumn_name_or_list()
+	exprs := ctx.AllExpr()
+
+	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		cols[0].GetStart().GetStart(),
+		exprs[len(exprs)-1].GetStop().GetStop(),
+		func(start, end int) error {
+			fmt.Fprintf(sb, "q.AppendSet(o.expr(%d, %d))\n", start, end)
+			return nil
+		},
+	)...)
+
+	if from := ctx.From_item(); from != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			from.GetStart().GetStart(),
+			from.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if where := ctx.Where_stmt(); where != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			where.WHERE_().GetSymbol().GetStop()+1,
+			where.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if returning := ctx.Returning_clause(); returning != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			returning.RETURNING_().GetSymbol().GetStop()+1,
+			returning.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if order := ctx.Order_by_stmt(); order != nil {
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			order.BY_().GetSymbol().GetStop()+1,
+			order.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+	}
+
+	if limit := ctx.Limit_stmt(); limit != nil {
+		if limit.COMMA() != nil {
+			v.err = fmt.Errorf("LIMIT with comma is not supported")
+		}
+
+		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			limit.GetFirstExpr().GetStart().GetStart(),
+			limit.GetFirstExpr().GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				return nil
+			},
+		)...)
+
+		if offset := limit.GetLastExpr(); offset != nil {
+			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+				offset.GetStart().GetStart(),
+				offset.GetStop().GetStop(),
+				func(start, end int) error {
+					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...)
+		}
+	}
+}

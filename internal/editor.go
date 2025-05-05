@@ -11,8 +11,8 @@ type RuleType int
 const (
 	CopyRuleType RuleType = iota
 	InsertRuleType
-	ReplaceRuleType
 	DeleteRuleType
+	ReplaceRuleType
 )
 
 func (r RuleType) String() string {
