@@ -1,7 +1,6 @@
 package driver
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	sqlDriver "database/sql/driver"
@@ -23,6 +22,8 @@ import (
 	testgen "github.com/stephenafamo/bob/test/gen"
 	"modernc.org/sqlite"
 )
+
+var libSQLAddress = os.Getenv("LIBSQL_TEST_SERVER")
 
 func cleanupSQLite(t *testing.T, config Config) {
 	t.Helper()
@@ -67,6 +68,25 @@ func cleanupLibSQL(t *testing.T, db *sql.DB) {
 		}
 	}
 
+	// Find all tables
+	viewRows, err := db.Query("SELECT name FROM sqlite_master WHERE type='view' AND name NOT LIKE 'sqlite_%';")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer viewRows.Close()
+
+	// Drop each table
+	for viewRows.Next() {
+		var viewName string
+		if err = viewRows.Scan(&viewName); err != nil {
+			t.Fatalf("could not delete existing db: %v", err)
+		}
+		_, err = db.Exec(fmt.Sprintf("DROP VIEW IF EXISTS %q;", viewName))
+		if err != nil {
+			t.Fatalf("could not delete %q view: %v", viewName, err)
+		}
+	}
+
 	fmt.Printf(" DONE\n")
 }
 
@@ -96,19 +116,14 @@ func TestAssembleSQLite(t *testing.T) {
 	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config)
+	assemble(t, config, nil)
 }
 
 func TestAssembleLibSQL(t *testing.T) {
 	ctx := context.Background()
 
-	err := adjustGoldenFiles()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	config := Config{
-		DSN:    "ws://localhost:8080",
+		DSN:    "ws://" + libSQLAddress,
 		Attach: map[string]string{"one": "one"},
 	}
 
@@ -116,10 +131,14 @@ func TestAssembleLibSQL(t *testing.T) {
 
 	attach(t, ctx, db, config)
 
+	dbHttpDefault := connect(t, "libsql", "http://"+libSQLAddress)
+	dbHttpOne := connect(t, "libsql", "http://one."+libSQLAddress)
+
+	cleanupLibSQL(t, dbHttpDefault)
+	cleanupLibSQL(t, dbHttpOne)
+
 	fmt.Printf("migrating...")
-	dbHttpDefault := connect(t, "libsql", "http://localhost:8080")
 	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
-	dbHttpOne := connect(t, "libsql", "http://one.localhost:8080")
 	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
 	fmt.Printf(" DONE\n")
 
@@ -128,13 +147,15 @@ func TestAssembleLibSQL(t *testing.T) {
 		cleanupLibSQL(t, dbHttpOne)
 		dbHttpDefault.Close()
 		dbHttpOne.Close()
-		err = restoreGoldenFiles()
-		if err != nil {
-			t.Fatal(err)
-		}
 	})
 
-	assemble(t, config)
+	assemble(t, config, func(b []byte) []byte {
+		return []byte(strings.ReplaceAll(
+			string(b),
+			"modernc.org/sqlite",
+			"github.com/tursodatabase/libsql-client-go/libsql",
+		))
+	})
 }
 
 func connect(t *testing.T, driverName, dsn string) *sql.DB {
@@ -166,7 +187,7 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	}
 }
 
-func assemble(t *testing.T, config Config) {
+func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 	t.Helper()
 	tests := []struct {
 		name       string
@@ -275,6 +296,7 @@ func assemble(t *testing.T, config Config) {
 						return New(tt.config)
 					},
 					GoldenFile:      tt.goldenJson,
+					GoldenFileMod:   mod,
 					OverwriteGolden: *flagOverwriteGolden,
 					Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 				})
@@ -301,6 +323,7 @@ func assemble(t *testing.T, config Config) {
 					return New(tt.config)
 				},
 				GoldenFile:      tt.goldenJson,
+				GoldenFileMod:   mod,
 				OverwriteGolden: *flagOverwriteGolden,
 				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 			})
@@ -334,54 +357,4 @@ func registerRegexpFunction() error {
 
 		return match, nil
 	})
-}
-
-var goldenFiles = []string{
-	"exclude-tables.golden.json",
-	"include-exclude-tables.golden.json",
-	"include-exclude-tables-mixed.golden.json",
-	"include-exclude-tables-regex.golden.json",
-	"include-tables.golden.json",
-	"sqlite.golden.json",
-}
-
-func adjustGoldenFiles() error {
-	for _, f := range goldenFiles {
-		err := replaceStringInFile(f, "modernc.org/sqlite", "github.com/tursodatabase/libsql-client-go/libsql")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func restoreGoldenFiles() error {
-	for _, f := range goldenFiles {
-		err := replaceStringInFile(f, "github.com/tursodatabase/libsql-client-go/libsql", "modernc.org/sqlite")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func replaceStringInFile(filename, oldStr, newStr string) error {
-	fileInfo, err := os.Stat(filename)
-	if err != nil {
-		return err
-	}
-	perm := fileInfo.Mode().Perm()
-
-	input, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-	output := bytes.ReplaceAll(input, []byte(oldStr), []byte(newStr))
-
-	err = os.WriteFile(filename, output, perm)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

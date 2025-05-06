@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed the INDEXED BY and NOT INDEXED mods for SQLite update queries from `TableIndexedBy` and `TableNotIndexed` to `IndexedBy` and `NotIndexed`.
+- Use `LIBSQL_TEST_SERVER` environment variable to run tests against a libSQL server instead of the hardcoded `localhost:8080`.
 
 ### Fixed
 

@@ -31,6 +31,7 @@ type driverWrapper[T, C, I any] struct {
 	info            *drivers.DBInfo[T, C, I]
 	overwriteGolden bool
 	goldenFile      string
+	goldenFileMod   func([]byte) []byte
 	once            sync.Once
 }
 
@@ -77,6 +78,10 @@ func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if d.goldenFileMod != nil {
+		want = d.goldenFileMod(want)
+	}
+
 	opts := jsondiff.DefaultConsoleOptions()
 	opts.SkipMatches = true
 	_, s := jsondiff.Compare(want, got, &opts)
@@ -90,6 +95,7 @@ type DriverTestConfig[T, C, I any] struct {
 	Templates       *helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
+	GoldenFileMod   func([]byte) []byte
 	GetDriver       func() drivers.Interface[T, C, I]
 }
 
@@ -97,6 +103,7 @@ type AssembleTestConfig[T, C, I any] struct {
 	Templates       *helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
+	GoldenFileMod   func([]byte) []byte
 	GetDriver       func() drivers.Interface[T, C, I]
 }
 
@@ -107,6 +114,7 @@ func TestAssemble[T, C, I any](t *testing.T, config AssembleTestConfig[T, C, I])
 		Interface:       config.GetDriver(),
 		overwriteGolden: config.OverwriteGolden,
 		goldenFile:      config.GoldenFile,
+		goldenFileMod:   config.GoldenFileMod,
 	}
 
 	t.Run("assemble", func(t *testing.T) {
@@ -129,6 +137,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		Interface:       config.GetDriver(),
 		overwriteGolden: config.OverwriteGolden,
 		goldenFile:      config.GoldenFile,
+		goldenFileMod:   config.GoldenFileMod,
 	}
 
 	t.Run("assemble", func(t *testing.T) {
