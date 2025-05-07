@@ -12,11 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support to generate code for `INSERT`, `UPDATE` and `DELETE` queries in `bobgen-sqlite`.
 - Added `LIMIT` and `OFFSET` to the SQLite Update and Delete queries.
 - Added `IndexedBy` and `NotIndexed` mods to the SQLite Delete queries.
+- Added the `Transactor` and `Transaction` interfaces.
+- Added the `SeparatePackageForTests` attribute to generation outputs to indicate if generated tests should have their own package.
+- Added the `RandomColumnNotNull` mod to factories to generate random values for non-nullable columns without the chance of being null.
+- Added the `WithOneRelations` mod to factories to include every relation for a factory template.
 
 ### Changed
 
 - Changed the INDEXED BY and NOT INDEXED mods for SQLite update queries from `TableIndexedBy` and `TableNotIndexed` to `IndexedBy` and `NotIndexed`.
 - Use `LIBSQL_TEST_SERVER` environment variable to run tests against a libSQL server instead of the hardcoded `localhost:8080`.
+- `BeginTx` now returns a `Transaction` interface instead of a `bob.Tx`.
+- Generated tests that required a database connection no longer create a new connection for each test. Instead it depends on a `testDB` connection that the user has to provide.
 
 ### Fixed
 

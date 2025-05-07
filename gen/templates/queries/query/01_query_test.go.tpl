@@ -67,13 +67,8 @@ func Test{{$upperName}}Mod (t *testing.T) {
 
 
 {{if $query.Columns}}
-{{$.Importer.Import "os"}}
 {{$.Importer.Import "slices"}}
-{{$.Importer.Import "database/sql"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
-
-
 func Test{{$upperName}}Map (t *testing.T) {
   {{$queryRowName := $query.Config.RowName}}
   {{if not $query.Config.GenerateRow}}
@@ -94,52 +89,16 @@ func Test{{$upperName}}Map (t *testing.T) {
   {{end}}
 }
 
-{{ $sqlDriverName := "" }}
-{{ $dsnEnvVarName := "" }}
-{{ if eq $.DriverName "github.com/go-sql-driver/mysql" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "mysql"}}
-	{{$dsnEnvVarName = "MYSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/lib/pq" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "postgres"}}
-	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/jackc/pgx" }}
-	{{$.Importer.Import "_" (printf "%s/stdlib" $.DriverName) }}
-	{{$sqlDriverName = "pgx"}}
-	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/jackc/pgx/v4" }}
-	{{$.Importer.Import "_" (printf "%s/stdlib" $.DriverName) }}
-	{{$sqlDriverName = "pgx"}}
-	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/jackc/pgx/v5" }}
-	{{$.Importer.Import "_" (printf "%s/stdlib" $.DriverName) }}
-	{{$sqlDriverName = "pgx"}}
-	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "modernc.org/sqlite" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "sqlite"}}
-	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ else if eq $.DriverName  "github.com/mattn/go-sqlite3" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "sqlite3"}}
-	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ end }}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
 func Test{{$upperName}}Scan (t *testing.T) {
-  dsn := os.Getenv("{{$dsnEnvVarName}}")
-  if dsn == "" {
+  if testDB == nil {
     t.Skip("skipping test, no DSN provided")
   }
-
-	db, err := sql.Open("{{$sqlDriverName}}", dsn)
-	if err != nil {
-		t.Fatal("Error connecting to database")
-	}
 
   ctxTx, cancel := context.WithCancel(context.Background())
   defer cancel()
 
-  tx, err := db.BeginTx(ctxTx, nil)
+  tx, err := testDB.BeginTx(ctxTx, nil)
   if err != nil {
     t.Fatalf("Error starting transaction: %v", err)
   }
@@ -149,7 +108,7 @@ func Test{{$upperName}}Scan (t *testing.T) {
     t.Fatal(err)
   }
 
-  rows, err := tx.Query(query, args...)
+  rows, err := tx.QueryContext(ctxTx, query, args...)
   if err != nil {
     t.Fatal(err)
   }

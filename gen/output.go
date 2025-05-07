@@ -60,9 +60,10 @@ type Output struct {
 	//    - The OutFolder is set to the same folder
 	Key string
 
-	PkgName   string
-	OutFolder string
-	Templates []fs.FS
+	PkgName                 string
+	OutFolder               string
+	Templates               []fs.FS
+	SeparatePackageForTests bool
 
 	singletonTemplates *template.Template
 	tableTemplates     *template.Template
@@ -338,20 +339,21 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], goVersion str
 				fmt.Sprintf("%7d bytes", out.Len()-prevLen),
 				e.output.OutFolder, fName)
 
-			imps := e.data.Importer.ToList()
 			version := ""
 			if isGo {
 				pkgName := e.output.PkgName
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
-				if tests && e.output.Key != "queries" {
+				if tests && e.output.SeparatePackageForTests {
 					pkgName = fmt.Sprintf("%s_test", pkgName)
 				}
+
+				imports := e.data.Importer.ToList()
 				version = goVersion
 				writeFileDisclaimer(headerOut)
 				writePackageName(headerOut, pkgName)
-				writeImports(headerOut, imps)
+				writeImports(headerOut, imports)
 			}
 
 			if err := writeFile(e.output.OutFolder, fName, io.MultiReader(headerOut, out), version); err != nil {
@@ -399,12 +401,17 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], goVe
 
 		version := ""
 		if isGo {
-			imps := e.data.Importer.ToList()
+			pkgName := e.output.PkgName
+			if tests && e.output.SeparatePackageForTests {
+				pkgName = fmt.Sprintf("%s_test", pkgName)
+			}
+
+			imports := e.data.Importer.ToList()
 			version = goVersion
 
 			writeFileDisclaimer(headerOut)
-			writePackageName(headerOut, e.output.PkgName)
-			writeImports(headerOut, imps)
+			writePackageName(headerOut, pkgName)
+			writeImports(headerOut, imports)
 		}
 
 		if err := writeFile(e.output.OutFolder, normalized, io.MultiReader(headerOut, out), version); err != nil {

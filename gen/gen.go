@@ -209,35 +209,35 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 				return fmt.Errorf("singleton template output: %w", err)
 			}
 
-			dirExtMap := groupTemplates(o.tableTemplates)
+			switch o.Key {
+			case "queries":
+				dirExtMap := groupTemplates(o.queryTemplates)
+				for _, file := range data.QueryFolder.Files {
+					data.QueryFile = file
 
-			for _, table := range data.Tables {
-				data.Table = table
+					// We do this so that the name of the file is correct
+					base := filepath.Base(file.Path)
+					data.Table = drivers.Table[C, I]{
+						Name: base[:len(base)-4],
+					}
 
-				// Generate the regular templates
-				if err := generateOutput(o, dirExtMap, o.tableTemplates, data, goVersion, s.Config.NoTests); err != nil {
-					return fmt.Errorf("unable to generate output: %w", err)
+					if err := generateOutput(o, dirExtMap, o.queryTemplates, data, goVersion, s.Config.NoTests); err != nil {
+						return fmt.Errorf("unable to generate output: %w", err)
+					}
+				}
+
+			default:
+				dirExtMap := groupTemplates(o.tableTemplates)
+				for _, table := range data.Tables {
+					data.Table = table
+
+					// Generate the regular templates
+					if err := generateOutput(o, dirExtMap, o.tableTemplates, data, goVersion, s.Config.NoTests); err != nil {
+						return fmt.Errorf("unable to generate output: %w", err)
+					}
 				}
 			}
 
-			if len(data.QueryFolder.Files) == 0 {
-				continue
-			}
-
-			dirExtMap = groupTemplates(o.queryTemplates)
-			for _, file := range data.QueryFolder.Files {
-				data.QueryFile = file
-
-				// We do this so that the name of the file is correct
-				base := filepath.Base(file.Path)
-				data.Table = drivers.Table[C, I]{
-					Name: base[:len(base)-4],
-				}
-
-				if err := generateOutput(o, dirExtMap, o.queryTemplates, data, goVersion, s.Config.NoTests); err != nil {
-					return fmt.Errorf("unable to generate output: %w", err)
-				}
-			}
 		}
 	}
 

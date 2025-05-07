@@ -53,10 +53,11 @@ func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Temp
 
 	outputs := []*gen.Output{
 		{
-			Key:       "models",
-			OutFolder: destination,
-			PkgName:   pkgname,
-			Templates: append(templates.Models, gen.ModelTemplates),
+			Key:                     "models",
+			OutFolder:               destination,
+			PkgName:                 pkgname,
+			SeparatePackageForTests: true,
+			Templates:               append(templates.Models, gen.ModelTemplates),
 		},
 		{
 			Key:       "queries",

@@ -47,24 +47,46 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
 
 // Generates a random value for the column using the given faker
 // if faker is nil, a default faker is used
-func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
-		o.{{$colAlias}} = func() {{$colTyp}} {
-			{{if $column.Nullable -}}
-      	if f == nil {
-          f = &defaultFaker
-        }
+{{if not $column.Nullable -}}
+  func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
+    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+      o.{{$colAlias}} = func() {{$colTyp}} {
+        return random_{{normalizeType $column.Type}}(f)
+      }
+    })
+  }
+{{- else -}}
+  // The generated value is sometimes null
+  func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
+    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+      o.{{$colAlias}} = func() {{$colTyp}} {
+          if f == nil {
+            f = &defaultFaker
+          }
 
-        if f.Bool() {
-          return null.FromPtr[{{getType $column.Type $typDef}}](nil)
-        }
+          if f.Bool() {
+            return null.FromPtr[{{getType $column.Type $typDef}}](nil)
+          }
 
-        return null.From(random_{{normalizeType $column.Type}}(f))
-			{{- else -}}
-				return random_{{normalizeType $column.Type}}(f)
-			{{- end}}
-		}
-	})
-}
+          return null.From(random_{{normalizeType $column.Type}}(f))
+      }
+    })
+  }
+
+  // Generates a random value for the column using the given faker
+  // if faker is nil, a default faker is used
+  // The generated value is never null
+  func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}NotNull(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
+    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+      o.{{$colAlias}} = func() {{$colTyp}} {
+          if f == nil {
+            f = &defaultFaker
+          }
+
+          return null.From(random_{{normalizeType $column.Type}}(f))
+      }
+    })
+  }
+{{end}}
 
 {{end}}

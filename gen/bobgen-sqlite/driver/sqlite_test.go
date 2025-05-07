@@ -95,12 +95,22 @@ var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the go
 func TestAssembleSQLite(t *testing.T) {
 	ctx := context.Background()
 
+	dbTempFile, err := os.CreateTemp("", "bobgen_sqlite_*.main.db")
+	if err != nil {
+		t.Fatalf("unable to create db file: %s", err)
+	}
+	defer dbTempFile.Close()
+
 	config := Config{
 		DSN:    "./test.db",
 		Attach: map[string]string{"one": "./test1.db"},
 	}
+	os.Setenv("SQLITE_TEST_DSN", config.DSN)
+	os.Setenv("BOB_DB_SETUP_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
-	cleanupSQLite(t, config)
+	fmt.Printf("SQLITE_TEST_DSN: %s\n", config.DSN)
+	fmt.Printf("BOB_DB_SETUP_QUERIES: %s\n", os.Getenv("BOB_DB_SETUP_QUERIES"))
+
 	t.Cleanup(func() { cleanupSQLite(t, config) })
 
 	db := connect(t, "sqlite", config.DSN)
@@ -127,6 +137,12 @@ func TestAssembleLibSQL(t *testing.T) {
 		Attach: map[string]string{"one": "one"},
 	}
 
+	os.Setenv("LIBSQL_TEST_DSN", config.DSN)
+	os.Setenv("BOB_DB_SETUP_QUERIES", strings.Join(config.AttachQueries(), ";"))
+
+	fmt.Printf("LIBSQL_TEST_DSN: %s\n", config.DSN)
+	fmt.Printf("BOB_DB_SETUP_QUERIES: %s\n", os.Getenv("BOB_DB_SETUP_QUERIES"))
+
 	db := connect(t, "libsql", config.DSN)
 
 	attach(t, ctx, db, config)
@@ -136,18 +152,17 @@ func TestAssembleLibSQL(t *testing.T) {
 
 	cleanupLibSQL(t, dbHttpDefault)
 	cleanupLibSQL(t, dbHttpOne)
-
-	fmt.Printf("migrating...")
-	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
-	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
-	fmt.Printf(" DONE\n")
-
 	t.Cleanup(func() {
 		cleanupLibSQL(t, dbHttpDefault)
 		cleanupLibSQL(t, dbHttpOne)
 		dbHttpDefault.Close()
 		dbHttpOne.Close()
 	})
+
+	fmt.Printf("migrating...")
+	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
+	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
+	fmt.Printf(" DONE\n")
 
 	assemble(t, config, func(b []byte) []byte {
 		return []byte(strings.ReplaceAll(
@@ -189,6 +204,7 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 
 func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 	t.Helper()
+
 	tests := []struct {
 		name       string
 		config     Config
@@ -308,14 +324,13 @@ func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 				t.Fatalf("unable to create tempdir: %s", err)
 			}
 
-			// Defer cleanup of the tmp folder
-			defer func() {
+			t.Cleanup(func() {
 				if t.Failed() {
 					t.Log("template test output:", out)
 					return
 				}
 				os.RemoveAll(out)
-			}()
+			})
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root: out,

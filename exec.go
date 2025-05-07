@@ -28,6 +28,17 @@ type Executor interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 }
 
+type Transactor interface {
+	Executor
+	BeginTx(context.Context, *sql.TxOptions) (Transaction, error)
+}
+
+type Transaction interface {
+	Executor
+	Commit() error
+	Rollback() error
+}
+
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 	var err error
 
