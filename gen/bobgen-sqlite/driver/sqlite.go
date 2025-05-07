@@ -63,6 +63,15 @@ type Config struct {
 	NoFactory bool `yaml:"no_factory"`
 }
 
+func (c Config) AttachQueries() []string {
+	queries := make([]string, 0, len(c.Attach))
+	for schema, dsn := range c.Attach {
+		queries = append(queries, fmt.Sprintf("attach database %s as %s", dsn, schema))
+	}
+
+	return queries
+}
+
 // driver holds the database connection string and a handle
 // to the database connection.
 type driver struct {

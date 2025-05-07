@@ -116,7 +116,7 @@ func (r Relationship) ForeignPosition() int {
 
 func (r Relationship) IsToMany() bool {
 	// If the modifiable part of a side is not unique, it is to-many
-	for i := 0; i < len(r.Sides); i++ {
+	for i := range r.Sides {
 		if r.Sides[i].Modify == "to" && !r.Sides[i].ToUnique {
 			return true
 		}

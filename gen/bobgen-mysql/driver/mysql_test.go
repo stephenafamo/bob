@@ -43,6 +43,7 @@ func TestDriver(t *testing.T) {
 		t.Fatalf("multi statements MUST be turned on")
 	}
 
+	os.Setenv("MYSQL_TEST_DSN", dsn)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		t.Fatalf("could not connect to db: %v", err)
@@ -178,13 +179,13 @@ func TestDriver(t *testing.T) {
 			}
 
 			// Defer cleanup of the tmp folder
-			defer func() {
+			t.Cleanup(func() {
 				if t.Failed() {
 					t.Log("template test output:", out)
 					return
 				}
 				os.RemoveAll(out)
-			}()
+			})
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
 				Root: out,

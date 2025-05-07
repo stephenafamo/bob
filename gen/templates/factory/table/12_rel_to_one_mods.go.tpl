@@ -1,6 +1,26 @@
 {{$table := .Table}}
 {{ $tAlias := .Aliases.Table $table.Key -}}
 
+
+func (m {{$tAlias.DownSingular}}Mods) WithOneRelations() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+    {{range $.Relationships.Get $table.Key -}}
+    {{- if .IsToMany -}}{{continue}}{{end -}}
+    {{- $ftable := $.Aliases.Table .Foreign -}}
+    {{- $relAlias := $tAlias.Relationship .Name -}}
+    {
+      {{range $.Tables.NeededBridgeRels . -}}
+        {{$alias := $.Aliases.Table .Table -}}
+        {{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}()
+      {{end}}
+      related := o.f.New{{$ftable.UpSingular}}()
+
+      m.With{{$relAlias}}({{$.Tables.RelArgs $.Aliases .}} related).Apply(o)
+    }
+    {{end -}}
+	})
+}
+
 {{range $.Relationships.Get $table.Key -}}
 {{- if .IsToMany -}}{{continue}}{{end -}}
 {{- $ftable := $.Aliases.Table .Foreign -}}

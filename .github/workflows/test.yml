@@ -10,29 +10,9 @@ jobs:
     strategy:
       matrix:
         go: [ 'oldstable', 'stable' ]
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: pass
-        ports:
-        - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -ppass"
-          --health-interval 10s
-          --health-start-period 10s
-          --health-timeout 5s
-          --health-retries 10
 
     steps:
-      - name: MySQL Setup
-        run: >
-          echo -e "[client]\nuser = root\npassword = pass\nhost = localhost\nprotocol = tcp" > $HOME/.my.cnf
-          && chmod 600 $HOME/.my.cnf
-          && mysql --execute 'CREATE DATABASE dialect_droppable;'
-          && mysql --execute 'CREATE DATABASE driver_droppable;'
-
-      - name: LibSQL Setup
+      - name: Setup LibSQL
         run: |
           mkdir -p ./regexp \
           && wget https://github.com/nalgeon/sqlean/releases/download/0.27.1/sqlean-linux-x86.zip \
@@ -56,6 +36,21 @@ jobs:
 
       - name: Checkout Repo
         uses: actions/checkout@v4
+
+      - name: Setup MySQL
+        uses: shogo82148/actions-setup-mysql@v1
+        with:
+          mysql-version: "8.0"
+          root-password: pass
+          my-cnf: |
+            [client]
+            protocol=tcp
+
+      - name: Create MySQL Databases
+        run: >
+          mysql -uroot -ppass --execute 'CREATE DATABASE dialect_droppable;'
+          && mysql -uroot -ppass --execute 'CREATE DATABASE driver_droppable;'
+
 
       - name: Setup Go
         uses: actions/setup-go@v5

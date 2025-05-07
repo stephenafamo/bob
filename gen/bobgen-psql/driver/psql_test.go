@@ -7,12 +7,14 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
@@ -44,6 +46,7 @@ func TestDriver(t *testing.T) {
 		}
 	}()
 
+	os.Setenv("PSQL_TEST_DSN", dsn)
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		t.Fatalf("could not connect to db: %v", err)
@@ -145,6 +148,7 @@ func TestDriver(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if i > 0 {
 				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
+					Templates: &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
 					GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 						return New(tt.config)
 					},
@@ -159,17 +163,17 @@ func TestDriver(t *testing.T) {
 				t.Fatalf("unable to create tempdir: %s", err)
 			}
 
-			// Defer cleanup of the tmp folder
-			defer func() {
+			t.Cleanup(func() {
 				if t.Failed() {
 					t.Log("template test output:", out)
 					return
 				}
 				os.RemoveAll(out)
-			}()
+			})
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
-				Root: out,
+				Root:      out,
+				Templates: &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(tt.config)
 				},

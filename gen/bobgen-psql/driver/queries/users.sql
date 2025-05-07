@@ -1,0 +1,2 @@
+-- Users
+SELECT * FROM users

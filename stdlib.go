@@ -87,7 +87,7 @@ func (d DB) Close() error {
 
 // BeginTx is similar to [*sql.DB.BeginTx], but return a transaction that
 // implements [Queryer]
-func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
+func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error) {
 	tx, err := d.wrapped.BeginTx(ctx, opts)
 	if err != nil {
 		return Tx{}, err
@@ -102,11 +102,6 @@ func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
 func NewTx(tx *sql.Tx) Tx {
 	return Tx{New(tx)}
 }
-
-var (
-	_ txForStmt[StdPrepared] = &Tx{}
-	_ Preparer[StdPrepared]  = &Tx{}
-)
 
 // Tx is similar to *sql.Tx but implements [Queryer]
 type Tx struct {
@@ -123,7 +118,7 @@ func (t Tx) Rollback() error {
 	return t.wrapped.Rollback()
 }
 
-func (tx *Tx) StmtContext(ctx context.Context, stmt StdPrepared) StdPrepared {
+func (tx Tx) StmtContext(ctx context.Context, stmt StdPrepared) StdPrepared {
 	return StdPrepared{tx.wrapped.StmtContext(ctx, stmt.Stmt)}
 }
 
@@ -150,7 +145,7 @@ func (c Conn) Close() error {
 
 // BeginTx is similar to [*sql.Conn.BeginTx], but return a transaction that
 // implements [Queryer]
-func (c Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
+func (c Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error) {
 	tx, err := c.wrapped.BeginTx(ctx, opts)
 	if err != nil {
 		return Tx{}, err
