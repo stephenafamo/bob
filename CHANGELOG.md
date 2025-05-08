@@ -23,6 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use `LIBSQL_TEST_SERVER` environment variable to run tests against a libSQL server instead of the hardcoded `localhost:8080`.
 - `BeginTx` now returns a `Transaction` interface instead of a `bob.Tx`.
 - Generated tests that required a database connection no longer create a new connection for each test. Instead it depends on a `testDB` connection that the user has to provide.
+- In the generated models, relationships for `ModelSlice` are now loaded using arrays to reduce the number of parameter in the query.
+
+  ```sql
+  -- Before
+  SELECT * FROM pilots WHERE jet_id IN ($1, $2, $3, ...); -- Parameters increase with the number of pilots
+
+  -- After
+  SELECT * FROM pilots WHERE jet_id IN (SELECT unnest(CAST($1 AS integer[])); -- Parameters are always 1
+  ```
 
 ### Fixed
 
