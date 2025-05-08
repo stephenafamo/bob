@@ -134,14 +134,45 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 
 func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if gt (len $firstSide.FromColumns) 0 -}}
-	PKArgs := make([]bob.Expression, len(os))
-	for i, o := range os {
-		PKArgs[i] = {{$.Dialect}}.ArgGroup(
+  {{if (ne $.Dialect "psql")}}
+    PKArgSlice := make([]bob.Expression, len(os))
+    for i, o := range os {
+      PKArgSlice[i] = {{$.Dialect}}.ArgGroup(
+      {{- range $index, $local := $firstSide.FromColumns -}}
+        {{- $fromCol := index $firstFrom.Columns $local -}}
+        o.{{$fromCol}},
+      {{- end -}})
+    }
+    PKArgExpr := {{$.Dialect}}.Group(PKArgSlice...)
+  {{else}}
+    {{$.Importer.Import "github.com/stephenafamo/bob/types/pgtypes"}}
+    {{$.Importer.Import "github.com/stephenafamo/bob/dialect/psql/sm"}}
 		{{- range $index, $local := $firstSide.FromColumns -}}
-			{{- $fromCol := index $firstFrom.Columns $local -}}
-			o.{{$fromCol}},
-		{{- end -}})
-	}
+      {{ $column := $.Table.GetColumn $local }}
+      {{ $typDef :=  index $.Types $column.Type }}
+      {{ $colTyp := or $typDef.AliasOf $column.Type }}
+      {{- $.Importer.ImportList $typDef.Imports -}}
+      {{- if $column.Nullable -}}
+        {{ $colTyp = printf "null.Val[%s]" $colTyp }}
+        {{ $.Importer.Import "github.com/aarondl/opt/null"}}
+      {{- end -}}
+			{{$fromCol := index $firstFrom.Columns $local -}}
+      pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], len(os))
+		{{- end}}
+    for i, o := range os {
+      {{- range $index, $local := $firstSide.FromColumns -}}
+        {{$fromCol := index $firstFrom.Columns $local}}
+        pk{{$fromCol}}[i] = o.{{$fromCol}}
+      {{- end}}
+    }
+    PKArgExpr := psql.Select(sm.Columns(
+      {{- range $index, $local := $firstSide.FromColumns -}}
+        {{$column := $.Table.GetColumn $local}}
+        {{$fromCol := index $firstFrom.Columns $local -}}
+        psql.F("unnest", psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
+      {{- end}}
+    ))
+  {{end}}
 	{{- end}}
 
 
@@ -177,7 +208,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 					{{- $fromCol := index $from.Columns $local -}}
 					{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
 					{{$to.UpSingular}}Columns.{{$toCol}},
-				{{- end}}).In(PKArgs...)),
+				{{- end}}).In(PKArgExpr)),
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
