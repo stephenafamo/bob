@@ -29,7 +29,7 @@ type querySource struct {
 }
 
 type stmtInfo struct {
-	stmt      sqliteparser.ISql_stmtContext
+	stmt      node
 	queryType bob.QueryType
 	comment   string
 	columns   returns
@@ -63,7 +63,7 @@ type exprInfo struct {
 	expr                 node
 	ExprDescription      string
 	Type                 exprTypes
-	ExprRef              sqliteparser.IExprContext
+	ExprRef              node
 	IgnoreRefNullability bool
 
 	// Go Info

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
@@ -408,7 +408,7 @@ func (v *visitor) sourceFromColumns(columns []sqliteparser.IResult_columnContext
 			returnSource.columns = append(returnSource.columns, returnColumn{
 				name:    alias,
 				options: v.getCommentToRight(expr),
-				config:  drivers.ParseQueryColumnConfig(v.getCommentToRight(expr)),
+				config:  parser.ParseQueryColumnConfig(v.getCommentToRight(expr)),
 				typ:     v.exprs[key(resultColumn.Expr())].Type,
 			})
 		}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/aarondl/opt/omit"
 	"github.com/gofrs/uuid"
+	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
@@ -109,7 +110,7 @@ func (p *Parser) getArgsAndCols(ctx context.Context, q string) ([]string, []stri
 }
 
 func (w *walker) getArgs(typs []string) []drivers.QueryArg {
-	args := make([]drivers.QueryArg, len(w.args))
+	bindArgs := make([]drivers.QueryArg, len(w.args))
 	for i, arg := range w.args {
 		name := fmt.Sprintf("arg%d", i+1)
 		positions := make([][2]int, 0, len(arg))
@@ -127,12 +128,12 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 
 			_, isMultiple := w.multiple[pos.edited]
 			multiple = multiple || isMultiple
-			configs = append(configs, drivers.ParseQueryColumnConfig(
+			configs = append(configs, parser.ParseQueryColumnConfig(
 				w.getConfigComment(pos.original),
 			))
 		}
 
-		args[i] = drivers.QueryArg{
+		bindArgs[i] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:     name,
 				Nullable: omit.From(nullable),
@@ -144,52 +145,8 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 	}
 
 	groups := slices.Collect(maps.Keys(w.groups))
-	slices.SortStableFunc(groups, func(a, b argPos) int {
-		return (a.edited[1] - a.edited[0]) - (b.edited[1] - b.edited[0])
-	})
-
-	argIsInGroup := make([]bool, len(args))
-	groupIsInGroup := make([]bool, len(groups))
-
 	groupArgs := make([]drivers.QueryArg, len(groups))
 	for groupIndex, group := range groups {
-		var groupChildren []drivers.QueryArg
-		for argIndex, arg := range args {
-			// If the arg is in the group, we add it to the group's children
-			if group.edited[0] <= w.args[argIndex][0].edited[0] && w.args[argIndex][0].edited[1] <= group.edited[1] {
-				groupChildren = append(groupChildren, arg)
-				argIsInGroup[argIndex] = true
-				continue
-			}
-		}
-
-		// If there is a smaller group that is a subset of this group, we add the arg to that group
-		for smallGroupIndex, smallerGroup := range groups[:groupIndex] {
-			if len(groupArgs[smallGroupIndex].Positions) == 0 {
-				continue
-			}
-			if group.edited[0] <= smallerGroup.edited[0] && smallerGroup.edited[1] <= group.edited[1] {
-				groupChildren = append(groupChildren, groupArgs[smallGroupIndex])
-				groupIsInGroup[smallGroupIndex] = true
-				continue
-			}
-		}
-
-		if len(groupChildren) == 0 {
-			// If there are no children, we can skip this group
-			continue
-		}
-
-		// sort the children by their original position
-		slices.SortFunc(groupChildren, func(a, b drivers.QueryArg) int {
-			beginningDiff := int(a.Positions[0][0] - b.Positions[0][0])
-			if beginningDiff == 0 {
-				return int(a.Positions[0][1] - b.Positions[0][1])
-			}
-			return beginningDiff
-		})
-		fixDuplicateArgNames(groupChildren)
-
 		name := fmt.Sprintf("group%d", group.edited[0])
 		if computedName, ok := w.names[group.original]; ok && computedName != "" {
 			name = computedName
@@ -200,61 +157,13 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 			Col: drivers.QueryCol{
 				Name:     name,
 				Nullable: omit.From(false),
-			}.Merge(drivers.ParseQueryColumnConfig(
+			}.Merge(parser.ParseQueryColumnConfig(
 				w.getConfigComment(group.original),
 			)),
-			Children:      groupChildren,
 			Positions:     [][2]int{{int(group.edited[0]), int(group.edited[1])}},
 			CanBeMultiple: multiple,
 		}
 	}
 
-	allArgs := make([]drivers.QueryArg, 0, len(args)+len(groupArgs))
-	for i, arg := range args {
-		if !argIsInGroup[i] {
-			allArgs = append(allArgs, arg)
-		}
-	}
-
-	for i, group := range groupArgs {
-		if groupIsInGroup[i] {
-			continue
-		}
-
-		switch len(group.Children) {
-		case 0:
-			// Do nothing
-			continue
-		case 1:
-			if !group.CanBeMultiple {
-				allArgs = append(allArgs, group.Children[0])
-				continue
-			}
-			fallthrough
-		default:
-			allArgs = append(allArgs, group)
-		}
-	}
-
-	slices.SortStableFunc(allArgs, func(a, b drivers.QueryArg) int {
-		return int(a.Positions[0][0] - b.Positions[0][0])
-	})
-	fixDuplicateArgNames(allArgs)
-
-	return allArgs
-}
-
-func fixDuplicateArgNames(args []drivers.QueryArg) {
-	names := make(map[string]int, len(args))
-	for i := range args {
-		if args[i].Col.Name == "" {
-			continue
-		}
-		name := args[i].Col.Name
-		index := names[name]
-		names[name] = index + 1
-		if index > 0 {
-			args[i].Col.Name = fmt.Sprintf("%s_%d", name, index+1)
-		}
-	}
+	return parser.GetArgs(bindArgs, groupArgs)
 }

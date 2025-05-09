@@ -129,7 +129,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("getting tables: %w", err)
 	}
 
-	queries, err := drivers.ParseFolders(ctx, parser.New(tables), d.config.Queries...)
+	queries, err := parser.New(tables).ParseFolders(ctx, d.config.Queries...)
 	if err != nil {
 		return nil, fmt.Errorf("parse query folders: %w", err)
 	}

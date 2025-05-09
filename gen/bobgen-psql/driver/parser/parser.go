@@ -11,6 +11,7 @@ import (
 	"github.com/aarondl/opt/omit"
 	pg "github.com/pganalyze/pg_query_go/v6"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
 	pgparse "github.com/wasilibs/go-pgquery"
@@ -30,6 +31,10 @@ type Parser struct {
 	db           tables
 	sharedSchema string
 	translator   *Translator
+}
+
+func (p *Parser) ParseFolders(ctx context.Context, paths ...string) ([]drivers.QueryFolder, error) {
+	return parser.ParseFolders(ctx, p, paths...)
 }
 
 func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, error) {
@@ -166,7 +171,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 			RowName:      name + "Row",
 			RowSliceName: "",
 			GenerateRow:  true,
-		}.Merge(drivers.ParseQueryConfig(configStr)),
+		}.Merge(parser.ParseQueryConfig(configStr)),
 
 		Columns: make([]drivers.QueryCol, len(source.columns)),
 		Args:    w.getArgs(argTypes),
@@ -179,7 +184,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 			DBName:   col.name,
 			Nullable: omit.From(col.nullable),
 			TypeName: resTypes[i],
-		}.Merge(drivers.ParseQueryColumnConfig(
+		}.Merge(parser.ParseQueryColumnConfig(
 			w.getConfigComment(col.pos),
 		))
 	}

@@ -1,11 +1,8 @@
 package drivers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -109,74 +106,6 @@ func (q Query) HasMultipleArgs() bool {
 	}
 
 	return false
-}
-
-// ParseQueryConfig parses a user configuration string into a QueryCoonfig.
-// The configuration string should be in the format:
-// "row_name:row_slice_name:generate_row"
-func ParseQueryConfig(options string) QueryConfig {
-	var i int
-	var part string
-	var found bool
-
-	col := QueryConfig{
-		GenerateRow: true,
-	}
-	for {
-		part, options, found = strings.Cut(options, ":")
-		switch i {
-		case 0:
-			col.RowName = part
-		case 1:
-			col.RowSliceName = part
-		case 2:
-			switch part {
-			case "true", "yes":
-				col.GenerateRow = true
-			case "false", "no", "skip":
-				col.GenerateRow = false
-			}
-		}
-		if !found {
-			break
-		}
-		i++
-	}
-
-	return col
-}
-
-// ParseQueryColumnConfig parses a user configuration string into a QueryCol.
-// The configuration string should be in the format:
-// "name:type:notnull"
-func ParseQueryColumnConfig(options string) QueryCol {
-	var i int
-	var part string
-	var found bool
-
-	col := QueryCol{}
-	for {
-		part, options, found = strings.Cut(options, ":")
-		switch i {
-		case 0:
-			col.Name = part
-		case 1:
-			col.TypeName = part
-		case 2:
-			switch part {
-			case "null", "true", "yes":
-				col.Nullable.Set(true)
-			case "notnull", "nnull", "false", "no":
-				col.Nullable.Set(false)
-			}
-		}
-		if !found {
-			break
-		}
-		i++
-	}
-
-	return col
 }
 
 type QueryConfig struct {
@@ -333,69 +262,4 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
     `, queryName, start, a.Positions[0][1]))
 
 	return sb.String()
-}
-
-type QueryParser interface {
-	ParseQueries(ctx context.Context, s string) ([]Query, error)
-}
-
-func ParseFolders(ctx context.Context, parser QueryParser, paths ...string) ([]QueryFolder, error) {
-	allQueries := make([]QueryFolder, 0, len(paths))
-	for _, path := range paths {
-		queries, err := parseFolder(ctx, parser, path)
-		if err != nil {
-			return nil, fmt.Errorf("parse folder: %w", err)
-		}
-
-		allQueries = append(allQueries, queries)
-	}
-
-	return allQueries, nil
-}
-
-func parseFolder(ctx context.Context, parser QueryParser, path string) (QueryFolder, error) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return QueryFolder{}, fmt.Errorf("read dir: %w", err)
-	}
-
-	files := make([]QueryFile, 0, len(entries))
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		if filepath.Ext(entry.Name()) != ".sql" {
-			continue
-		}
-
-		file, err := parseFile(ctx, parser, filepath.Join(path, entry.Name()))
-		if err != nil {
-			return QueryFolder{}, fmt.Errorf("parse file: %w", err)
-		}
-
-		files = append(files, file)
-	}
-
-	return QueryFolder{
-		Path:  path,
-		Files: files,
-	}, nil
-}
-
-func parseFile(ctx context.Context, parser QueryParser, path string) (QueryFile, error) {
-	file, err := os.ReadFile(path)
-	if err != nil {
-		return QueryFile{}, fmt.Errorf("read file: %w", err)
-	}
-
-	queries, err := parser.ParseQueries(ctx, string(file))
-	if err != nil {
-		return QueryFile{}, fmt.Errorf("parse multi queries: %w", err)
-	}
-
-	return QueryFile{
-		Path:    path,
-		Queries: queries,
-	}, nil
 }

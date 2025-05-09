@@ -8,6 +8,7 @@ import (
 
 	"github.com/aarondl/opt/omit"
 	"github.com/antlr4-go/antlr/v4"
+	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
@@ -19,6 +20,10 @@ func New(t tables) Parser {
 
 type Parser struct {
 	db tables
+}
+
+func (p Parser) ParseFolders(ctx context.Context, paths ...string) ([]drivers.QueryFolder, error) {
+	return parser.ParseFolders(ctx, p, paths...)
 }
 
 func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, error) {
@@ -57,7 +62,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 				RowName:      name + "Row",
 				RowSliceName: "",
 				GenerateRow:  true,
-			}.Merge(drivers.ParseQueryConfig(configStr)),
+			}.Merge(parser.ParseQueryConfig(configStr)),
 
 			Columns: cols,
 			Args:    v.getArgs(stmtStart, stmtStop),
