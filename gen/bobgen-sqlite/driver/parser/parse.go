@@ -35,28 +35,28 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 
 	queries := make([]drivers.Query, len(infos))
 	for i, info := range infos {
-		stmtStart := info.stmt.GetStart().GetStart()
-		stmtStop := info.stmt.GetStop().GetStop()
-		formatted, err := internal.EditStringSegment(s, stmtStart, stmtStop, info.editRules...)
+		stmtStart := info.Node.GetStart().GetStart()
+		stmtStop := info.Node.GetStop().GetStop()
+		formatted, err := internal.EditStringSegment(s, stmtStart, stmtStop, info.EditRules...)
 		if err != nil {
 			return nil, fmt.Errorf("format: %w", err)
 		}
 
-		cols := make([]drivers.QueryCol, len(info.columns))
-		for i, col := range info.columns {
+		cols := make([]drivers.QueryCol, len(info.Columns))
+		for i, col := range info.Columns {
 			cols[i] = drivers.QueryCol{
-				Name:     col.name,
-				DBName:   col.name,
-				Nullable: omit.From(col.typ.Nullable()),
-				TypeName: col.typ.Type(p.db),
-			}.Merge(col.config)
+				Name:     col.Name,
+				DBName:   col.Name,
+				Nullable: omit.From(col.Type.Nullable()),
+				TypeName: TranslateColumnType(col.Type.ConfirmedDBType()),
+			}.Merge(col.Config)
 		}
 
-		name, configStr, _ := strings.Cut(info.comment, " ")
+		name, configStr, _ := strings.Cut(info.Comment, " ")
 		queries[i] = drivers.Query{
 			Name: name,
 			SQL:  formatted,
-			Type: info.queryType,
+			Type: info.QueryType,
 
 			Config: drivers.QueryConfig{
 				RowName:      name + "Row",
@@ -73,11 +73,11 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 	return queries, nil
 }
 
-func (Parser) parse(v *visitor, input string) ([]stmtInfo, error) {
+func (Parser) parse(v *visitor, input string) ([]StmtInfo, error) {
 	el := &errorListener{}
 
 	// Get all hidden tokens (usually comments) and add edit rules to remove them
-	v.baseRules = []internal.EditRule{}
+	v.BaseRules = []internal.EditRule{}
 	hiddenLexer := sqliteparser.NewSQLiteLexer(antlr.NewInputStream(input))
 	hiddenStream := antlr.NewCommonTokenStream(hiddenLexer, 1)
 	hiddenStream.Fill()
@@ -85,8 +85,8 @@ func (Parser) parse(v *visitor, input string) ([]stmtInfo, error) {
 		switch token.GetTokenType() {
 		case sqliteparser.SQLiteParserSINGLE_LINE_COMMENT,
 			sqliteparser.SQLiteParserMULTILINE_COMMENT:
-			v.baseRules = append(
-				v.baseRules,
+			v.BaseRules = append(
+				v.BaseRules,
 				internal.Delete(token.GetStart(), token.GetStop()),
 			)
 		}
@@ -103,9 +103,9 @@ func (Parser) parse(v *visitor, input string) ([]stmtInfo, error) {
 		return nil, errors.New(el.err)
 	}
 
-	infos, ok := tree.Accept(v).([]stmtInfo)
-	if v.err != nil {
-		return nil, fmt.Errorf("visitor: %w", v.err)
+	infos, ok := tree.Accept(v).([]StmtInfo)
+	if v.Err != nil {
+		return nil, fmt.Errorf("visitor: %w", v.Err)
 	}
 
 	if !ok {
@@ -116,14 +116,14 @@ func (Parser) parse(v *visitor, input string) ([]stmtInfo, error) {
 }
 
 type stmtToMod struct {
-	info stmtInfo
+	info StmtInfo
 }
 
 func (s stmtToMod) IncludeInTemplate(i drivers.Importer) string {
-	for _, im := range s.info.imports {
+	for _, im := range s.info.Imports {
 		i.Import(im...)
 	}
-	return s.info.mods.String()
+	return s.info.Mods.String()
 }
 
 type errorListener struct {
@@ -137,11 +137,11 @@ func (el *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbo
 }
 
 //nolint:gochecknoglobals
-var defaultFunctions = functions{
+var defaultFunctions = Functions{
 	"abs": {
-		requiredArgs: 1,
-		args:         []string{""},
-		calcReturnType: func(args ...string) string {
+		RequiredArgs: 1,
+		Args:         []string{""},
+		CalcReturnType: func(args ...string) string {
 			if args[0] == "INTEGER" {
 				return "INTEGER"
 			}
@@ -149,20 +149,20 @@ var defaultFunctions = functions{
 		},
 	},
 	"changes": {
-		returnType: "INTEGER",
+		ReturnType: "INTEGER",
 	},
 	"char": {
-		requiredArgs: 1,
-		variadic:     true,
-		args:         []string{"INTEGER"},
-		returnType:   "TEXT",
+		RequiredArgs: 1,
+		Variadic:     true,
+		Args:         []string{"INTEGER"},
+		ReturnType:   "TEXT",
 	},
 	"coalesce": {
-		requiredArgs:         1,
-		variadic:             true,
-		args:                 []string{""},
-		shouldArgsBeNullable: true,
-		calcReturnType: func(args ...string) string {
+		RequiredArgs:         1,
+		Variadic:             true,
+		Args:                 []string{""},
+		ShouldArgsBeNullable: true,
+		CalcReturnType: func(args ...string) string {
 			for _, arg := range args {
 				if arg != "" {
 					return arg
@@ -170,47 +170,47 @@ var defaultFunctions = functions{
 			}
 			return ""
 		},
-		calcNullable: allNullable,
+		CalcNullable: allNullable,
 	},
 	"concat": {
-		requiredArgs: 1,
-		variadic:     true,
-		args:         []string{"TEXT"},
-		returnType:   "TEXT",
-		calcNullable: neverNullable,
+		RequiredArgs: 1,
+		Variadic:     true,
+		Args:         []string{"TEXT"},
+		ReturnType:   "TEXT",
+		CalcNullable: neverNullable,
 	},
 	"concat_ws": {
-		requiredArgs: 2,
-		variadic:     true,
-		args:         []string{"TEXT", "TEXT"},
-		returnType:   "TEXT",
-		calcNullable: func(args ...func() bool) func() bool {
+		RequiredArgs: 2,
+		Variadic:     true,
+		Args:         []string{"TEXT", "TEXT"},
+		ReturnType:   "TEXT",
+		CalcNullable: func(args ...func() bool) func() bool {
 			return args[0]
 		},
 	},
 	"format": {
-		requiredArgs: 2,
-		variadic:     true,
-		args:         []string{"TEXT", ""},
-		returnType:   "TEXT",
-		calcNullable: func(args ...func() bool) func() bool {
+		RequiredArgs: 2,
+		Variadic:     true,
+		Args:         []string{"TEXT", ""},
+		ReturnType:   "TEXT",
+		CalcNullable: func(args ...func() bool) func() bool {
 			return args[0]
 		},
 	},
 	"glob": {
-		requiredArgs: 2,
-		args:         []string{"TEXT", "TEXT"},
-		returnType:   "BOOLEAN",
+		RequiredArgs: 2,
+		Args:         []string{"TEXT", "TEXT"},
+		ReturnType:   "BOOLEAN",
 	},
 	"hex": {
-		requiredArgs: 1,
-		args:         []string{""},
-		returnType:   "TEXT",
+		RequiredArgs: 1,
+		Args:         []string{""},
+		ReturnType:   "TEXT",
 	},
 	"ifnull": {
-		requiredArgs: 2,
-		args:         []string{""},
-		calcReturnType: func(args ...string) string {
+		RequiredArgs: 2,
+		Args:         []string{""},
+		CalcReturnType: func(args ...string) string {
 			for _, arg := range args {
 				if arg != "" {
 					return arg
@@ -218,15 +218,15 @@ var defaultFunctions = functions{
 			}
 			return ""
 		},
-		calcNullable: allNullable,
+		CalcNullable: allNullable,
 	},
 	"iif": {
-		requiredArgs: 3,
-		args:         []string{"BOOLEAN", "", ""},
-		calcReturnType: func(args ...string) string {
+		RequiredArgs: 3,
+		Args:         []string{"BOOLEAN", "", ""},
+		CalcReturnType: func(args ...string) string {
 			return args[1]
 		},
-		calcNullable: func(args ...func() bool) func() bool {
+		CalcNullable: func(args ...func() bool) func() bool {
 			return anyNullable(args[1], args[2])
 		},
 	},

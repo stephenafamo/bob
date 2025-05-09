@@ -10,6 +10,7 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
+	antlrhelpers "github.com/stephenafamo/bob/gen/bobgen-helpers/parser/antlrhelpers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
@@ -18,44 +19,38 @@ var _ sqliteparser.SQLiteParserVisitor = &visitor{}
 
 func NewVisitor(db tables) *visitor {
 	return &visitor{
-		db:        db,
-		functions: defaultFunctions,
-		exprs:     make(map[nodeKey]exprInfo),
-		names:     make(map[nodeKey]exprName),
-		atom:      &atomic.Int64{},
+		Visitor: antlrhelpers.Visitor[any, IndexExtra]{
+			DB:        db,
+			Names:     make(map[NodeKey]string),
+			Infos:     make(map[NodeKey]NodeInfo),
+			Functions: defaultFunctions,
+			Atom:      &atomic.Int64{},
+		},
 	}
 }
 
 type visitor struct {
-	err       error
-	db        tables
-	sources   querySources
-	functions functions
-	names     map[nodeKey]exprName
-	exprs     map[nodeKey]exprInfo
-	baseRules []internal.EditRule
-
-	// Refresh these for each statement
-	stmtRules []internal.EditRule
-	atom      *atomic.Int64
+	antlrhelpers.Visitor[any, IndexExtra]
 }
 
 func (v *visitor) childVisitor() *visitor {
 	return &visitor{
-		db:        v.db,
-		exprs:     v.exprs,
-		names:     v.names,
-		functions: v.functions,
-		atom:      v.atom,
-		sources:   slices.Clone(v.sources),
+		Visitor: antlrhelpers.Visitor[any, IndexExtra]{
+			DB:        v.DB,
+			Names:     v.Visitor.Names,
+			Infos:     v.Visitor.Infos,
+			Functions: v.Functions,
+			Atom:      v.Atom,
+			Sources:   slices.Clone(v.Sources),
+		},
 	}
 }
 
 func (v *visitor) Visit(tree antlr.ParseTree) any { return tree.Accept(v) }
 
 func (v *visitor) VisitChildren(ctx antlr.RuleNode) any {
-	if v.err != nil {
-		v.err = fmt.Errorf("visiting children: %w", v.err)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("visiting children: %w", v.Err)
 		return nil
 	}
 
@@ -64,8 +59,8 @@ func (v *visitor) VisitChildren(ctx antlr.RuleNode) any {
 			tree.Accept(v)
 		}
 
-		if v.err != nil {
-			v.err = fmt.Errorf("visiting child %d: %w", i, v.err)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("visiting child %d: %w", i, v.Err)
 			return nil
 		}
 	}
@@ -84,7 +79,7 @@ func (v *visitor) VisitTerminal(ctx antlr.TerminalNode) any {
 	if len(literal) < 4 {
 		return nil
 	}
-	v.stmtRules = append(v.stmtRules, internal.Replace(
+	v.StmtRules = append(v.StmtRules, internal.Replace(
 		token.GetStart(),
 		token.GetStop(),
 		literal[1:len(literal)-1],
@@ -101,7 +96,7 @@ func (v *visitor) VisitParse(ctx *sqliteparser.ParseContext) any {
 
 func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any {
 	stmts := ctx.AllSql_stmt()
-	allresp := make([]stmtInfo, len(stmts))
+	allresp := make([]StmtInfo, len(stmts))
 
 	for i, stmt := range stmts {
 		for _, child := range stmt.GetChildren() {
@@ -109,19 +104,19 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				continue
 			}
 
-			v.sources = nil
-			v.stmtRules = slices.Clone(v.baseRules)
-			v.atom = &atomic.Int64{}
+			v.Sources = nil
+			v.StmtRules = slices.Clone(v.BaseRules)
+			v.Atom = &atomic.Int64{}
 
 			resp := child.(antlr.ParseTree).Accept(v)
-			if v.err != nil {
-				v.err = fmt.Errorf("stmt %d: %w", i, v.err)
+			if v.Err != nil {
+				v.Err = fmt.Errorf("stmt %d: %w", i, v.Err)
 				return nil
 			}
 
-			info, ok := resp.(returns)
+			info, ok := resp.([]ReturnColumn)
 			if !ok {
-				v.err = fmt.Errorf("stmt %d: could not columns, got %T", i, resp)
+				v.Err = fmt.Errorf("stmt %d: could not columns, got %T", i, resp)
 				return nil
 			}
 
@@ -144,14 +139,14 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 				v.modDelete_stmt(child, mods)
 			}
 
-			allresp[i] = stmtInfo{
-				queryType: queryType,
-				stmt:      stmt,
-				columns:   info,
-				editRules: slices.Clone(v.stmtRules),
-				comment:   v.getCommentToLeft(stmt),
-				mods:      mods,
-				imports:   imports,
+			allresp[i] = StmtInfo{
+				QueryType: queryType,
+				Node:      stmt,
+				Columns:   info,
+				EditRules: slices.Clone(v.StmtRules),
+				Comment:   v.getCommentToLeft(stmt),
+				Mods:      mods,
+				Imports:   imports,
 			}
 
 		}
@@ -249,26 +244,26 @@ func (v *visitor) VisitCreate_virtual_table_stmt(ctx *sqliteparser.Create_virtua
 }
 
 func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
-	v.sources = append(
-		v.sources,
+	v.Sources = append(
+		v.Sources,
 		v.getSourceFromTable(ctx.Qualified_table_name()),
 	)
 
 	v2 := v.childVisitor()
 	v2.VisitChildren(ctx)
-	if v2.err != nil {
-		v.err = fmt.Errorf("insert stmt: %w", v2.err)
+	if v2.Err != nil {
+		v.Err = fmt.Errorf("insert stmt: %w", v2.Err)
 		return nil
 	}
-	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	returning := ctx.Returning_clause()
 	if returning == nil {
-		return returns{}
+		return []ReturnColumn{}
 	}
 
 	source := v.sourceFromColumns(returning.AllResult_column())
-	return source.columns
+	return source.Columns
 }
 
 func (v *visitor) VisitDetach_stmt(ctx *sqliteparser.Detach_stmtContext) any {
@@ -284,59 +279,55 @@ func (v *visitor) VisitExpr_case(ctx *sqliteparser.Expr_caseContext) any {
 }
 
 func (v *visitor) VisitExpr_arithmetic(ctx *sqliteparser.Expr_arithmeticContext) any {
-	opName := ctx.GetParser().GetSymbolicNames()[ctx.GetOperator().GetTokenType()]
-	opName = strings.ToLower(opName)
-	v.addLRName(ctx, opName)
-
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	lhsType := v.exprs[key(ctx.GetLhs())].Type
-	rhsType := v.exprs[key(ctx.GetRhs())].Type
+	lhsType := v.Infos[antlrhelpers.Key(ctx.GetLhs())].Type
+	rhsType := v.Infos[antlrhelpers.Key(ctx.GetRhs())].Type
 
-	typ := []exprType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)}
+	typ := []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)}
 
 	switch {
 	case len(lhsType) == 1 && len(rhsType) == 1:
-		typ = []exprType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownType("REAL", notNullable)}
 		lhs := lhsType[0]
 		rhs := rhsType[0]
-		if lhs.affinity == "INTEGER" &&
-			rhs.affinity == "INTEGER" {
-			typ = []exprType{knownType("INTEGER", anyNullable(lhs.nullable, rhs.nullable))}
+		if lhs.DBType == "INTEGER" &&
+			rhs.DBType == "INTEGER" {
+			typ = []NodeType{knownType("INTEGER", anyNullable(lhs.Nullable, rhs.Nullable))}
 		}
 
 	case len(lhsType) == 1 && len(rhsType) == 0:
-		typ = []exprType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownType("REAL", notNullable)}
 		lhs := lhsType[0]
-		if lhs.affinity == "INTEGER" {
-			typ = []exprType{knownType("INTEGER", lhs.nullable)}
+		if lhs.DBType == "INTEGER" {
+			typ = []NodeType{knownType("INTEGER", lhs.Nullable)}
 		}
 
 	case len(lhsType) == 0 && len(rhsType) == 1:
-		typ = []exprType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownType("REAL", notNullable)}
 		rhs := rhsType[0]
-		if rhs.affinity == "INTEGER" {
-			typ = []exprType{knownType("INTEGER", rhs.nullable)}
+		if rhs.DBType == "INTEGER" {
+			typ = []NodeType{knownType("INTEGER", rhs.Nullable)}
 		}
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Arithmetic",
 		Type:            typ,
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "Arithmetic LHS",
 		Type:            typ,
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Arithmetic RHS",
 		Type:            typ,
 	})
@@ -346,26 +337,26 @@ func (v *visitor) VisitExpr_arithmetic(ctx *sqliteparser.Expr_arithmeticContext)
 
 func (v *visitor) VisitExpr_json_extract_string(ctx *sqliteparser.Expr_json_extract_stringContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "JSON->>",
-		Type:            []exprType{knownType("", nullable)},
+		Type:            []NodeType{knownType("", nullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "JSON->> LHS",
-		Type:            []exprType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownType("JSON", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "JSON->> RHS",
-		Type: []exprType{
+		Type: []NodeType{
 			knownType("TEXT", notNullable),
 			knownType("INTEGER", notNullable),
 		},
@@ -380,57 +371,55 @@ func (v *visitor) VisitExpr_raise(ctx *sqliteparser.Expr_raiseContext) any {
 
 func (v *visitor) VisitExpr_bool(ctx *sqliteparser.Expr_boolContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "AND/OR",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "AND/OR LHS",
-		Type:            []exprType{knownType("BOOLEAN", nullable)},
+		Type:            []NodeType{knownType("BOOLEAN", nullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "AND/OR RHS",
-		Type:            []exprType{knownType("BOOLEAN", nullable)},
+		Type:            []NodeType{knownType("BOOLEAN", nullable)},
 	})
 
 	return nil
 }
 
 func (v *visitor) VisitExpr_is(ctx *sqliteparser.Expr_isContext) any {
-	v.addLRName(ctx, "Is")
-
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "IS",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "IS LHS",
 		ExprRef:         ctx.GetRhs(),
-		Type:            []exprType{knownType("", nullable)},
+		Type:            []NodeType{knownType("", nullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "IS RHS",
 		ExprRef:         ctx.GetLhs(),
-		Type:            []exprType{knownType("", nullable)},
+		Type:            []NodeType{knownType("", nullable)},
 	})
 
 	return nil
@@ -438,26 +427,26 @@ func (v *visitor) VisitExpr_is(ctx *sqliteparser.Expr_isContext) any {
 
 func (v *visitor) VisitExpr_concat(ctx *sqliteparser.Expr_concatContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Concat",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "Concat LHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Concat RHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
 	return nil
@@ -466,22 +455,18 @@ func (v *visitor) VisitExpr_concat(ctx *sqliteparser.Expr_concatContext) any {
 func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
 	exprs := ctx.AllExpr()
 	if len(exprs) == 1 {
-		v.addName(ctx, exprName{
-			names: func() []string {
-				return v.getExprName(exprs[0])
-			},
-		})
+		v.MaybeSetName(ctx, v.GetName(exprs[0]))
 	}
 
-	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		ctx.GetStart().GetStart(),
 		ctx.GetStop().GetStop(),
 		func(start, end int) error {
-			v.updateExprInfo(exprInfo{
-				expr:            ctx,
+			v.UpdateInfo(NodeInfo{
+				Node:            ctx,
 				ExprDescription: "LIST",
 				EditedPosition:  [2]int{start, end},
-				isGroup:         true,
+				IsGroup:         true,
 			})
 			return nil
 		},
@@ -492,15 +477,11 @@ func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
 
 func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
 	rhsExpr := ctx.GetRhsExpr()
-	if rhsExpr == nil {
-		return nil
-	}
-
 	rhsList, rhsIsList := rhsExpr.(*sqliteparser.Expr_listContext)
 	if !rhsIsList {
 		return nil
@@ -512,24 +493,26 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 
 	lhs := ctx.GetLhs()
 	lhsList, lhsIsList := lhs.(*sqliteparser.Expr_listContext)
-
 	var lhsChildren []sqliteparser.IExprContext
 	if lhsIsList {
 		lhsChildren = lhsList.AllExpr()
 	}
+	lhsChildNames := make([]string, len(lhsChildren))
+	for i, child := range lhsChildren {
+		lhsChildNames[i] = v.GetName(child)
+	}
 
-	childRefs := make(map[nodeKey]exprChildNameRef, len(rhsChildren))
+	lhsName := v.GetName(lhs)
+
 	for _, child := range rhsChildren {
-		v.updateExprInfo(exprInfo{
-			expr:                 child,
+		v.UpdateInfo(NodeInfo{
+			Node:                 child,
 			ExprDescription:      "IN RHS",
 			ExprRef:              lhs,
 			IgnoreRefNullability: true,
 			CanBeMultiple:        singleIn,
 		})
-		childRefs[key(child)] = func() ([]string, []string) {
-			return nil, v.getExprName(lhs)
-		}
+		v.MaybeSetName(child, lhsName)
 
 		childList, childIsList := child.(*sqliteparser.Expr_listContext)
 		if !childIsList {
@@ -538,43 +521,32 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 		grandChildren := childList.AllExpr()
 
 		if len(grandChildren) != len(lhsChildren) {
-			v.err = fmt.Errorf("IN: list length mismatch %d != %d", len(grandChildren), len(lhsChildren))
+			v.Err = fmt.Errorf("IN: list length mismatch %d != %d", len(grandChildren), len(lhsChildren))
 			return nil
 		}
 
-		grandChildRefs := make(map[nodeKey]exprChildNameRef, len(grandChildren))
 		for i, grandChild := range grandChildren {
-			v.updateExprInfo(exprInfo{
-				expr:                 grandChild,
+			v.UpdateInfo(NodeInfo{
+				Node:                 grandChild,
 				ExprDescription:      "IN RHS List",
 				ExprRef:              lhsChildren[i],
 				IgnoreRefNullability: true,
 			})
-			grandChildRefs[key(grandChild)] = func() ([]string, []string) {
-				return nil, v.getExprName(lhsChildren[i])
-			}
+			v.MaybeSetName(grandChild, lhsChildNames[i])
 		}
 
-		v.addName(childList, exprName{
-			childRefs: grandChildRefs,
-		})
-
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			childList.GetStart().GetStart(),
 			childList.GetStop().GetStop(),
 			func(start, end int) error {
-				v.updateExprInfo(exprInfo{
-					expr:           childList,
+				v.UpdateInfo(NodeInfo{
+					Node:           childList,
 					EditedPosition: [2]int{start, end},
 				})
 				return nil
 			},
 		)...)
 	}
-
-	v.addName(rhsList, exprName{
-		childRefs: childRefs,
-	})
 
 	return nil
 }
@@ -586,48 +558,46 @@ func (v *visitor) VisitExpr_collate(ctx *sqliteparser.Expr_collateContext) any {
 // Visit a parse tree produced by SQLiteParser#expr_modulo.
 func (v *visitor) VisitExpr_modulo(ctx *sqliteparser.Expr_moduloContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Modulo",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "Modulo LHS",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Modulo RHS",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
 	return nil
 }
 
 func (v *visitor) VisitExpr_qualified_column_name(ctx *sqliteparser.Expr_qualified_column_nameContext) any {
-	v.addRawName(
+	v.MaybeSetName(
 		ctx,
-		getName(ctx.Schema_name()),
-		getName(ctx.Table_name()),
 		getName(ctx.Column_name()),
 	)
 
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Qualified",
-		Type:            makeRef(v.sources, ctx),
+		Type:            makeRef(v.Sources, ctx),
 	})
 
 	return nil
@@ -635,20 +605,20 @@ func (v *visitor) VisitExpr_qualified_column_name(ctx *sqliteparser.Expr_qualifi
 
 func (v *visitor) VisitExpr_match(ctx *sqliteparser.Expr_matchContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Match",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Modulo RHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
 	return nil
@@ -656,26 +626,26 @@ func (v *visitor) VisitExpr_match(ctx *sqliteparser.Expr_matchContext) any {
 
 func (v *visitor) VisitExpr_like(ctx *sqliteparser.Expr_likeContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "LIKE",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "Like LHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Like RHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
 	return nil
@@ -683,20 +653,20 @@ func (v *visitor) VisitExpr_like(ctx *sqliteparser.Expr_likeContext) any {
 
 func (v *visitor) VisitExpr_null_comp(ctx *sqliteparser.Expr_null_compContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "NULL Comparison",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.Expr(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.Expr(),
 		ExprDescription: "NULL Comparison Expr",
-		Type:            []exprType{knownType("", notNullable)},
+		Type:            []NodeType{knownType("", notNullable)},
 	})
 
 	return nil
@@ -704,26 +674,26 @@ func (v *visitor) VisitExpr_null_comp(ctx *sqliteparser.Expr_null_compContext) a
 
 func (v *visitor) VisitExpr_json_extract_json(ctx *sqliteparser.Expr_json_extract_jsonContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "JSON->",
-		Type:            []exprType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownType("JSON", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "JSON-> LHS",
-		Type:            []exprType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownType("JSON", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "JSON-> RHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
 	return nil
@@ -734,54 +704,48 @@ func (v *visitor) VisitExpr_exists_select(ctx *sqliteparser.Expr_exists_selectCo
 }
 
 func (v *visitor) VisitExpr_comparison(ctx *sqliteparser.Expr_comparisonContext) any {
-	opName := ctx.GetParser().GetSymbolicNames()[ctx.GetOperator().GetTokenType()]
-	opName = strings.ToLower(opName)
-	if opName == "eq" {
-		opName = ""
-	}
-	v.addLRName(ctx, opName)
-
 	v.VisitChildren(ctx)
-
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Comparison",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:                 ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:                 ctx.GetLhs(),
 		ExprDescription:      "Comparison LHS",
 		ExprRef:              ctx.GetRhs(),
 		IgnoreRefNullability: true,
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:                 ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:                 ctx.GetRhs(),
 		ExprDescription:      "Comparison RHS",
 		ExprRef:              ctx.GetLhs(),
 		IgnoreRefNullability: true,
 	})
+
+	v.MatchNames(ctx.GetLhs(), ctx.GetRhs())
 
 	return nil
 }
 
 func (v *visitor) VisitExpr_literal(ctx *sqliteparser.Expr_literalContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	var DBType exprType
+	var DBType NodeType
 
 	typ := ctx.Literal_value().GetLiteralType().GetTokenType()
 	switch typ {
 	case sqliteparser.SQLiteParserNUMERIC_LITERAL:
-		v.addRawName(ctx, ctx.GetText())
+		v.MaybeSetName(ctx, ctx.GetText())
 
 		if strings.ContainsAny(ctx.GetText(), ".eE") {
 			DBType = knownType("REAL", notNullable)
@@ -812,62 +776,62 @@ func (v *visitor) VisitExpr_literal(ctx *sqliteparser.Expr_literalContext) any {
 			break
 		}
 
-		v.err = fmt.Errorf("cannot parse numeric integer: %s", ctx.GetText())
+		v.Err = fmt.Errorf("cannot parse numeric integer: %s", ctx.GetText())
 		return nil
 
 	case sqliteparser.SQLiteParserSTRING_LITERAL:
 		DBType = knownType("TEXT", notNullable)
 		txt := strings.ReplaceAll(ctx.GetText(), "'", "")
-		v.addRawName(ctx, txt)
+		v.MaybeSetName(ctx, txt)
 
 	case sqliteparser.SQLiteParserBLOB_LITERAL:
 		DBType = knownType("BLOB", notNullable)
-		v.addRawName(ctx, "BLOB")
+		v.MaybeSetName(ctx, "BLOB")
 
 	case sqliteparser.SQLiteParserNULL_:
 		DBType = knownType("", nullable)
-		v.addRawName(ctx, "NULL")
+		v.MaybeSetName(ctx, "NULL")
 
 	case sqliteparser.SQLiteParserTRUE_,
 		sqliteparser.SQLiteParserFALSE_:
 		DBType = knownType("BOOLEAN", notNullable)
-		v.addRawName(ctx, ctx.GetText())
+		v.MaybeSetName(ctx, ctx.GetText())
 
 	case sqliteparser.SQLiteParserCURRENT_TIME_,
 		sqliteparser.SQLiteParserCURRENT_DATE_,
 		sqliteparser.SQLiteParserCURRENT_TIMESTAMP_:
 		DBType = knownType("DATETIME", notNullable)
-		v.addRawName(ctx, ctx.GetText()[:len(ctx.GetText())-1])
+		v.MaybeSetName(ctx, ctx.GetText()[:len(ctx.GetText())-1])
 
 	default:
-		v.err = fmt.Errorf("unknown literal type: %d", typ)
+		v.Err = fmt.Errorf("unknown literal type: %d", typ)
 		return nil
 	}
 
-	info := exprInfo{
-		expr:            ctx,
+	info := NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Literal",
 	}
 
-	if len(DBType.typeName) > 0 {
-		info.Type = []exprType{DBType}
+	if len(DBType.DBType) > 0 {
+		info.Type = []NodeType{DBType}
 	}
 
-	v.updateExprInfo(info)
+	v.UpdateInfo(info)
 
 	return nil
 }
 
 func (v *visitor) VisitExpr_cast(ctx *sqliteparser.Expr_castContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "CAST",
-		Type:            []exprType{knownType(ctx.Type_name().GetText(), notNullable)},
+		Type:            []NodeType{knownType(ctx.Type_name().GetText(), notNullable)},
 	})
 
 	return nil
@@ -875,26 +839,26 @@ func (v *visitor) VisitExpr_cast(ctx *sqliteparser.Expr_castContext) any {
 
 func (v *visitor) VisitExpr_string_op(ctx *sqliteparser.Expr_string_opContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "String OP",
-		Type:            []exprType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "String OP LHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "String OP RHS",
-		Type:            []exprType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownType("TEXT", notNullable)},
 	})
 
 	return nil
@@ -906,26 +870,26 @@ func (v *visitor) VisitExpr_between(ctx *sqliteparser.Expr_betweenContext) any {
 
 func (v *visitor) VisitExpr_bitwise(ctx *sqliteparser.Expr_bitwiseContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx,
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Bitwise",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetLhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetLhs(),
 		ExprDescription: "Bitwise LHS",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
-	v.updateExprInfo(exprInfo{
-		expr:            ctx.GetRhs(),
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.GetRhs(),
 		ExprDescription: "Bitwise RHS",
-		Type:            []exprType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownType("INTEGER", notNullable)},
 	})
 
 	return nil
@@ -933,7 +897,7 @@ func (v *visitor) VisitExpr_bitwise(ctx *sqliteparser.Expr_bitwiseContext) any {
 
 func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
@@ -941,59 +905,59 @@ func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 	switch tokenTyp {
 	case sqliteparser.SQLiteParserPLUS:
 		// Returns the same type as the operand
-		v.updateExprInfo(exprInfo{
-			expr:            ctx,
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
 			ExprDescription: "Unary Plus",
 			ExprRef:         ctx.Expr(),
 		})
 
-		v.updateExprInfo(exprInfo{
-			expr:            ctx.Expr(),
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.Expr(),
 			ExprDescription: "Unary Plus Expr",
 			ExprRef:         ctx,
 		})
 
 	case sqliteparser.SQLiteParserMINUS:
 		// Always INTEGER, should be used with a numeric literal
-		v.updateExprInfo(exprInfo{
-			expr:            ctx,
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
 			ExprDescription: "Unary Minus",
-			Type:            []exprType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
+			Type:            []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
 		})
 
-		v.updateExprInfo(exprInfo{
-			expr:            ctx.Expr(),
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.Expr(),
 			ExprDescription: "Unary Minus Expr",
-			Type:            []exprType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
+			Type:            []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
 		})
 
 	case sqliteparser.SQLiteParserTILDE:
 		// Bitwise NOT
 		// Always INTEGER, should be used with a numeric literal
-		v.updateExprInfo(exprInfo{
-			expr:            ctx,
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
 			ExprDescription: "Unary Tilde",
-			Type:            []exprType{knownType("INTEGER", notNullable)},
+			Type:            []NodeType{knownType("INTEGER", notNullable)},
 		})
 
-		v.updateExprInfo(exprInfo{
-			expr:            ctx.Expr(),
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.Expr(),
 			ExprDescription: "Unary Tilde Expr",
-			Type:            []exprType{knownType("INTEGER", notNullable)},
+			Type:            []NodeType{knownType("INTEGER", notNullable)},
 		})
 
 	case sqliteparser.SQLiteParserNOT_:
 		// Returns a BOOLEAN (should technically only be used with a boolean expression)
-		v.updateExprInfo(exprInfo{
-			expr:            ctx,
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
 			ExprDescription: "Unary NOT",
-			Type:            []exprType{knownType("BOOLEAN", notNullable)},
+			Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 		})
 
-		v.updateExprInfo(exprInfo{
-			expr:            ctx.Expr(),
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.Expr(),
 			ExprDescription: "Unary NOT Expr",
-			Type:            []exprType{knownType("BOOLEAN", notNullable)},
+			Type:            []NodeType{knownType("BOOLEAN", notNullable)},
 		})
 	}
 
@@ -1002,18 +966,18 @@ func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 
 func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
+	if v.Err != nil {
 		return nil
 	}
 
-	info := exprInfo{
-		expr:            ctx,
+	info := NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Bind",
-		queryArgKey:     ctx.GetText()[1:],
+		ArgKey:          ctx.GetText()[1:],
 	}
 
 	if ctx.NAMED_BIND_PARAMETER() != nil {
-		info.config.Name = info.queryArgKey
+		info.Config.Name = info.ArgKey
 	}
 
 	parent, ok := ctx.GetParent().(*sqliteparser.Expr_castContext)
@@ -1021,11 +985,11 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 		info.ExprRef = parent
 	}
 
-	v.updateExprInfo(info)
+	v.UpdateInfo(info)
 
 	// So it does not refer the same atomic
-	a := v.atom
-	v.stmtRules = append(v.stmtRules, internal.EditCallback(
+	a := v.Atom
+	v.StmtRules = append(v.StmtRules, internal.EditCallback(
 		internal.ReplaceFromFunc(
 			ctx.GetStart().GetStart(), ctx.GetStop().GetStop(),
 			func() string {
@@ -1033,8 +997,8 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 			},
 		),
 		func(start, end int, _, _ string) error {
-			v.updateExprInfo(exprInfo{
-				expr:           ctx,
+			v.UpdateInfo(NodeInfo{
+				Node:           ctx,
 				EditedPosition: [2]int{start, end},
 			})
 			return nil
@@ -1046,8 +1010,8 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 
 func (v *visitor) VisitExpr_simple_func(ctx *sqliteparser.Expr_simple_funcContext) any {
 	v.VisitChildren(ctx)
-	if v.err != nil {
-		v.err = fmt.Errorf("simple function invocation: %w", v.err)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("simple function invocation: %w", v.Err)
 		return nil
 	}
 
@@ -1056,48 +1020,48 @@ func (v *visitor) VisitExpr_simple_func(ctx *sqliteparser.Expr_simple_funcContex
 	missingTypes := make([]bool, len(args))
 	nullable := make([]func() bool, len(args))
 	for i, arg := range args {
-		argTypes[i] = v.exprs[key(arg)].Type.ConfirmedAffinity()
-		nullable[i] = v.exprs[key(arg)].Type.Nullable
+		argTypes[i] = v.Infos[antlrhelpers.Key(arg)].Type.ConfirmedDBType()
+		nullable[i] = v.Infos[antlrhelpers.Key(arg)].Type.Nullable
 		if argTypes[i] == "" {
 			missingTypes[i] = true
 		}
 	}
 
 	funcName := getName(ctx.Simple_func())
-	funcDef, err := v.getFunctionType(funcName, argTypes)
+	funcDef, err := antlrhelpers.GetFunctionType(v.Functions, funcName, argTypes)
 	if err != nil {
-		v.err = fmt.Errorf("simple function invocation: %w", err)
+		v.Err = fmt.Errorf("simple function invocation: %w", err)
 		return nil
 	}
 
 	for i, arg := range args {
 		if missingTypes[i] {
-			v.updateExprInfo(exprInfo{
-				expr:            arg,
+			v.UpdateInfo(NodeInfo{
+				Node:            arg,
 				ExprDescription: "Function Arg",
-				Type: []exprType{knownType(
-					funcDef.argType(i),
-					func() bool { return funcDef.shouldArgsBeNullable },
+				Type: []NodeType{knownType(
+					funcDef.ArgType(i),
+					func() bool { return funcDef.ShouldArgsBeNullable },
 				)},
 			})
 		}
 	}
 
-	info := exprInfo{
-		expr:            ctx,
+	info := NodeInfo{
+		Node:            ctx,
 		ExprDescription: "Function Arg",
-		Type: []exprType{knownType(
-			funcDef.returnType,
+		Type: []NodeType{knownType(
+			funcDef.ReturnType,
 			anyNullable(nullable...),
 		)},
 	}
 
-	if funcDef.calcNullable != nil {
-		info.Type[0].nullableF = funcDef.calcNullable(nullable...)
+	if funcDef.CalcNullable != nil {
+		info.Type[0].NullableF = funcDef.CalcNullable(nullable...)
 	}
 
-	v.updateExprInfo(info)
-	v.addRawName(ctx, funcName)
+	v.UpdateInfo(info)
+	v.MaybeSetName(ctx, funcName)
 
 	return nil
 }
@@ -1129,12 +1093,12 @@ func (v *visitor) VisitValues_clause(ctx *sqliteparser.Values_clauseContext) any
 func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 	tableName := getName(ctx.Table_name())
 	tableSource := v.getSourceFromTable(ctx)
-	v.sources = append(v.sources, tableSource)
+	v.Sources = append(v.Sources, tableSource)
 
 	// v2 := v.childVisitor()
 	v.VisitChildren(ctx)
-	if v.err != nil {
-		v.err = fmt.Errorf("insert stmt: %w", v.err)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("insert stmt: %w", v.Err)
 		return nil
 	}
 	// v.stmtRules = append(v.stmtRules, v2.stmtRules...)
@@ -1145,27 +1109,25 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 		colNames[i] = getName(columns[i])
 	}
 	if len(colNames) == 0 {
-		colNames = make([]string, len(tableSource.columns))
-		for i := range tableSource.columns {
-			colNames[i] = tableSource.columns[i].name
+		colNames = make([]string, len(tableSource.Columns))
+		for i := range tableSource.Columns {
+			colNames[i] = tableSource.Columns[i].Name
 		}
 	}
 
 	if values := ctx.Values_clause(); values != nil {
 		rows := values.AllValue_row()
 		for _, row := range rows {
-			v.addName(row, exprName{
-				names: func() []string { return []string{tableName} },
-			})
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.MaybeSetName(row, tableName)
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				row.GetStart().GetStart(),
 				row.GetStop().GetStop(),
 				func(start, end int) error {
-					v.updateExprInfo(exprInfo{
-						expr:            row,
+					v.UpdateInfo(NodeInfo{
+						Node:            row,
 						ExprDescription: "ROW",
 						EditedPosition:  [2]int{start, end},
-						isGroup:         true,
+						IsGroup:         true,
 						CanBeMultiple:   len(rows) == 1,
 					})
 					return nil
@@ -1173,11 +1135,11 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 			)...)
 
 			for valIndex, value := range row.AllExpr() {
-				v.updateExprInfo(exprInfo{
-					expr:            value,
+				v.UpdateInfo(NodeInfo{
+					Node:            value,
 					ExprDescription: "ROW Value",
-					Type: []exprType{typeFromRef(
-						v.db,
+					Type: []NodeType{getColumnType(
+						v.DB,
 						getName(ctx.Schema_name()),
 						tableName,
 						colNames[valIndex],
@@ -1185,9 +1147,7 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 				})
 
 				if valIndex < len(colNames) {
-					v.addName(value, exprName{
-						names: func() []string { return []string{colNames[valIndex]} },
-					})
+					v.MaybeSetName(value, colNames[valIndex])
 				}
 			}
 		}
@@ -1195,11 +1155,11 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 
 	returning := ctx.Returning_clause()
 	if returning == nil {
-		return returns{}
+		return []ReturnColumn{}
 	}
 
 	source := v.sourceFromColumns(returning.AllResult_column())
-	return source.columns
+	return source.Columns
 }
 
 func (v *visitor) VisitReturning_clause(ctx *sqliteparser.Returning_clauseContext) any {
@@ -1230,8 +1190,8 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 
 	if ctx.With_clause() != nil {
 		ctx.With_clause().Accept(v2)
-		if v.err != nil {
-			v.err = fmt.Errorf("with clause: %w", v.err)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("with clause: %w", v.Err)
 			return nil
 		}
 	}
@@ -1239,60 +1199,58 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 	// Should return a source
 	// Use the first select core to get the columns
 	source := v2.visitSelect_core(ctx.Select_core())
-	if v2.err != nil {
-		v.err = fmt.Errorf("select core 0: %w", v2.err)
+	if v2.Err != nil {
+		v.Err = fmt.Errorf("select core 0: %w", v2.Err)
 		return nil
 	}
-	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	for i, compound := range ctx.AllCompound_select() {
 		v3 := v.childVisitor()
 
 		coreSource := v3.visitSelect_core(compound.Select_core())
-		if v3.err != nil {
-			v.err = fmt.Errorf("select core %d: %w", i, v3.err)
+		if v3.Err != nil {
+			v.Err = fmt.Errorf("select core %d: %w", i, v3.Err)
 			return nil
 		}
 
-		if len(source.columns) != len(coreSource.columns) {
-			v.err = fmt.Errorf("select core %d: column count mismatch %d != %d", i, len(source.columns), len(coreSource.columns))
+		if len(source.Columns) != len(coreSource.Columns) {
+			v.Err = fmt.Errorf("select core %d: column count mismatch %d != %d", i, len(source.Columns), len(coreSource.Columns))
 		}
 
-		v.stmtRules = append(v.stmtRules, v3.stmtRules...)
+		v.StmtRules = append(v.StmtRules, v3.StmtRules...)
 
-		for i, col := range source.columns {
-			matchingTypes := matchTypes(
-				col.typ, coreSource.columns[i].typ,
-			)
+		for i, col := range source.Columns {
+			matchingTypes := col.Type.Match(coreSource.Columns[i].Type)
 
-			if len(source.columns[i].typ) == 0 {
-				v.err = fmt.Errorf(
+			if len(source.Columns[i].Type) == 0 {
+				v.Err = fmt.Errorf(
 					"select core %d: column %d type mismatch:\n%v\n%v",
-					i, i, col.typ, coreSource.columns[i].typ,
+					i, i, col.Type, coreSource.Columns[i].Type,
 				)
 			}
 
-			source.columns[i].typ = matchingTypes
+			source.Columns[i].Type = matchingTypes
 		}
 	}
 
 	if order := ctx.Order_by_stmt(); order != nil {
 		order.Accept(v)
-		if v.err != nil {
-			v.err = fmt.Errorf("order by: %w", v.err)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("order by: %w", v.Err)
 			return nil
 		}
 	}
 
 	if limit := ctx.Limit_stmt(); limit != nil {
 		limit.Accept(v)
-		if v.err != nil {
-			v.err = fmt.Errorf("limit: %w", v.err)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("limit: %w", v.Err)
 			return nil
 		}
 	}
 
-	return source.columns
+	return source.Columns
 }
 
 // Should return a query source
@@ -1301,18 +1259,18 @@ func (v *visitor) VisitSelect_core(ctx *sqliteparser.Select_coreContext) any {
 }
 
 // Should return a query source
-func (v *visitor) visitSelect_core(ctx sqliteparser.ISelect_coreContext) querySource {
+func (v *visitor) visitSelect_core(ctx sqliteparser.ISelect_coreContext) QuerySource {
 	v.visitFrom_item(ctx.From_item())
-	if v.err != nil {
-		v.err = fmt.Errorf("from item: %w", v.err)
-		return querySource{}
+	if v.Err != nil {
+		v.Err = fmt.Errorf("from item: %w", v.Err)
+		return QuerySource{}
 	}
 
 	// Evaluate all the expressions
 	v.VisitChildren(ctx)
-	if v.err != nil {
-		v.err = fmt.Errorf("select core children: %w", v.err)
-		return querySource{}
+	if v.Err != nil {
+		v.Err = fmt.Errorf("select core children: %w", v.Err)
+		return QuerySource{}
 	}
 
 	return v.sourceFromColumns(ctx.AllResult_column())
@@ -1325,11 +1283,11 @@ func (v *visitor) VisitResult_column(ctx *sqliteparser.Result_columnContext) any
 func (v *visitor) visitFrom_item(ctx sqliteparser.IFrom_itemContext) {
 	tables := ctx.AllTable_or_subquery()
 
-	sources := make(querySources, len(tables))
+	sources := make([]QuerySource, len(tables))
 	for i, table := range tables {
 		sources[i] = v.visitTable_or_subquery(table)
-		if v.err != nil {
-			v.err = fmt.Errorf("table or subquery %d: %w", i, v.err)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("table or subquery %d: %w", i, v.Err)
 			return
 		}
 	}
@@ -1341,24 +1299,24 @@ func (v *visitor) visitFrom_item(ctx sqliteparser.IFrom_itemContext) {
 
 		if leftJoin {
 			right := sources[i+1]
-			for i := range right.columns {
-				for j := range right.columns[i].typ {
-					right.columns[i].typ[j].nullableF = nullable
+			for i := range right.Columns {
+				for j := range right.Columns[i].Type {
+					right.Columns[i].Type[j].NullableF = nullable
 				}
 			}
 		}
 
 		if rightJoin {
 			left := sources[i+1]
-			for i := range left.columns {
-				for j := range left.columns[i].typ {
-					left.columns[i].typ[j].nullableF = nullable
+			for i := range left.Columns {
+				for j := range left.Columns[i].Type {
+					left.Columns[i].Type[j].NullableF = nullable
 				}
 			}
 		}
 	}
 
-	v.sources = append(v.sources, sources...)
+	v.Sources = append(v.Sources, sources...)
 }
 
 func (v *visitor) VisitFrom_item(ctx *sqliteparser.From_itemContext) any {
@@ -1378,33 +1336,33 @@ func (v *visitor) VisitTable_or_subquery(ctx *sqliteparser.Table_or_subqueryCont
 	panic("should not be called")
 }
 
-func (v *visitor) visitTable_or_subquery(ctx sqliteparser.ITable_or_subqueryContext) querySource {
+func (v *visitor) visitTable_or_subquery(ctx sqliteparser.ITable_or_subqueryContext) QuerySource {
 	switch {
 	case ctx.Table_name() != nil:
 		return v.getSourceFromTable(ctx)
 
 	case ctx.Select_stmt() != nil:
-		columns, ok := ctx.Select_stmt().Accept(v).(returns)
-		if v.err != nil {
-			v.err = fmt.Errorf("table select stmt: %w", v.err)
-			return querySource{}
+		columns, ok := ctx.Select_stmt().Accept(v).([]ReturnColumn)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("table select stmt: %w", v.Err)
+			return QuerySource{}
 		}
 		if !ok {
-			v.err = fmt.Errorf("could not get stmt info")
-			return querySource{}
+			v.Err = fmt.Errorf("could not get stmt info")
+			return QuerySource{}
 		}
 
-		return querySource{
-			name:    getName(ctx.Table_alias()),
-			columns: columns,
+		return QuerySource{
+			Name:    getName(ctx.Table_alias()),
+			Columns: columns,
 		}
 
 	case ctx.Table_or_subquery() != nil:
 		return v.visitTable_or_subquery(ctx.Table_or_subquery())
 
 	default:
-		v.err = fmt.Errorf("unknown table or subquery: %#v", key(ctx))
-		return querySource{}
+		v.Err = fmt.Errorf("unknown table or subquery: %#v", antlrhelpers.Key(ctx))
+		return QuerySource{}
 	}
 }
 
@@ -1420,15 +1378,15 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 	table := ctx.Qualified_table_name()
 	tableName := getName(table.Table_name())
 	tableSource := v.getSourceFromTable(table)
-	v.sources = append(v.sources, tableSource)
+	v.Sources = append(v.Sources, tableSource)
 
 	v2 := v.childVisitor()
 	v2.VisitChildren(ctx)
-	if v2.err != nil {
-		v.err = fmt.Errorf("insert stmt: %w", v2.err)
+	if v2.Err != nil {
+		v.Err = fmt.Errorf("insert stmt: %w", v2.Err)
 		return nil
 	}
-	v.stmtRules = append(v.stmtRules, v2.stmtRules...)
+	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	exprs := ctx.AllExpr()
 	for i, nameOrList := range ctx.AllColumn_name_or_list() {
@@ -1438,35 +1396,33 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 		}
 		colName := getName(nameExpr)
 		expr := exprs[i]
-		v.updateExprInfo(exprInfo{
-			expr:            expr,
+		v.UpdateInfo(NodeInfo{
+			Node:            expr,
 			ExprDescription: "SET Expr",
-			Type: []exprType{typeFromRef(
-				v.db,
+			Type: []NodeType{getColumnType(
+				v.DB,
 				getName(table.Schema_name()),
 				tableName,
 				colName,
 			)},
 		})
 
-		v.addName(expr, exprName{
-			names: func() []string { return []string{colName} },
-		})
+		v.MaybeSetName(expr, colName)
 	}
 
 	v.visitFrom_item(ctx.From_item())
-	if v.err != nil {
-		v.err = fmt.Errorf("from item: %w", v.err)
-		return querySource{}
+	if v.Err != nil {
+		v.Err = fmt.Errorf("from item: %w", v.Err)
+		return QuerySource{}
 	}
 
 	returning := ctx.Returning_clause()
 	if returning == nil {
-		return returns{}
+		return []ReturnColumn{}
 	}
 
 	source := v.sourceFromColumns(returning.AllResult_column())
-	return source.columns
+	return source.Columns
 }
 
 func (v *visitor) VisitColumn_name_or_list(ctx *sqliteparser.Column_name_or_listContext) any {
@@ -1510,53 +1466,45 @@ func (v *visitor) VisitWith_clause(ctx *sqliteparser.With_clauseContext) any {
 }
 
 func (v *visitor) VisitCommon_table_expression(ctx *sqliteparser.Common_table_expressionContext) any {
-	columns, ok := ctx.Select_stmt().Accept(v).(returns)
-	if v.err != nil {
-		v.err = fmt.Errorf("CTE select stmt: %w", v.err)
+	columns, ok := ctx.Select_stmt().Accept(v).([]ReturnColumn)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("CTE select stmt: %w", v.Err)
 		return nil
 	}
 	if !ok {
-		v.err = fmt.Errorf("could not get stmt info")
+		v.Err = fmt.Errorf("could not get stmt info")
 		return nil
 	}
 
-	source := querySource{
-		name:    getName(ctx.Table_name()),
-		columns: columns,
-		cte:     true,
+	source := QuerySource{
+		Name:    getName(ctx.Table_name()),
+		Columns: columns,
+		CTE:     true,
 	}
 
 	columnNames := ctx.AllColumn_name()
 	if len(columnNames) == 0 {
-		v.sources = append(v.sources, source)
+		v.Sources = append(v.Sources, source)
 		return nil
 	}
 
-	if len(columnNames) != len(source.columns) {
-		v.err = fmt.Errorf("column names do not match %d != %d", len(columnNames), len(source.columns))
+	if len(columnNames) != len(source.Columns) {
+		v.Err = fmt.Errorf("column names do not match %d != %d", len(columnNames), len(source.Columns))
 		return nil
 	}
 
 	for i, column := range columnNames {
-		source.columns[i].name = getName(column)
+		source.Columns[i].Name = getName(column)
 	}
 
-	v.sources = append(v.sources, source)
+	v.Sources = append(v.Sources, source)
 	return nil
 }
 
 func (v *visitor) VisitWhere_stmt(ctx *sqliteparser.Where_stmtContext) any {
-	v.addName(ctx, exprName{
-		childRefs: map[nodeKey]exprChildNameRef{
-			key(ctx.Expr()): func() ([]string, []string) {
-				return []string{"where"}, nil
-			},
-		},
-	})
-
 	v.VisitChildren(ctx)
-	if v.err != nil {
-		v.err = fmt.Errorf("where stmt: %w", v.err)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("where stmt: %w", v.Err)
 		return nil
 	}
 

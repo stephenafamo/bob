@@ -21,7 +21,7 @@ func (v *visitor) modWith_clause(ctx interface {
 		sb.WriteString("q.SetRecursive(true)\n")
 	}
 	for _, cte := range with.AllCommon_table_expression() {
-		v.stmtRules = append(v.stmtRules,
+		v.StmtRules = append(v.StmtRules,
 			internal.RecordPoints(
 				cte.GetStart().GetStart(),
 				cte.GetStop().GetStop(),
@@ -48,7 +48,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 
 		allResults := core.AllResult_column()
 		if len(allResults) > 0 {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				allResults[0].GetStart().GetStart(),
 				allResults[len(allResults)-1].GetStop().GetStop(),
 				func(start, end int) error {
@@ -59,7 +59,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		}
 
 		if from := core.From_item(); from != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				from.GetStart().GetStart(),
 				from.GetStop().GetStop(),
 				func(start, end int) error {
@@ -70,7 +70,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		}
 
 		if where := core.Where_stmt(); where != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				where.WHERE_().GetSymbol().GetStop()+1,
 				where.GetStop().GetStop(),
 				func(start, end int) error {
@@ -81,7 +81,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		}
 
 		if groupBy := core.Group_by_stmt(); groupBy != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				groupBy.GetStart().GetStart(),
 				groupBy.GetStop().GetStop(),
 				func(start, end int) error {
@@ -92,7 +92,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		}
 
 		if having := core.GetHavingExpr(); having != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				having.GetStart().GetStart(),
 				having.GetStop().GetStop(),
 				func(start, end int) error {
@@ -103,7 +103,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		}
 
 		for _, window := range core.AllWindow_stmt() {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				window.GetStart().GetStart(),
 				window.GetStop().GetStop(),
 				func(start, end int) error {
@@ -126,7 +126,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		if all {
 			strategy = strategy[:len(strategy)-3]
 		}
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			compound.Select_core().GetStart().GetStart(),
 			compound.Select_core().GetStop().GetStop(),
 			func(start, end int) error {
@@ -147,7 +147,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 	}
 
 	if order := ctx.Order_by_stmt(); order != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
@@ -159,10 +159,10 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 
 	if limit := ctx.Limit_stmt(); limit != nil {
 		if limit.COMMA() != nil {
-			v.err = fmt.Errorf("LIMIT with comma is not supported")
+			v.Err = fmt.Errorf("LIMIT with comma is not supported")
 		}
 
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
@@ -172,7 +172,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		)...)
 
 		if offset := limit.GetLastExpr(); offset != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
@@ -190,12 +190,12 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	v.modWith_clause(ctx, sb)
 
 	if ctx.INSERT_() == nil {
-		v.err = fmt.Errorf("REPLACE INTO is not supported. Use INSERT OR REPLACE INTO instead")
+		v.Err = fmt.Errorf("REPLACE INTO is not supported. Use INSERT OR REPLACE INTO instead")
 		return
 	}
 
 	if or := ctx.GetUpsert_action(); or != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			or.GetStart(), or.GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
@@ -215,7 +215,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 		tableStart = schema.GetStart().GetStart()
 	}
 
-	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
 			fmt.Fprintf(sb, "q.Table.Expression = o.raw(%d, %d)\n", start, end)
@@ -225,7 +225,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 
 	if alias := ctx.Table_alias(); alias != nil {
 		v.quoteIdentifiable(alias)
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
@@ -246,7 +246,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 
 	if values := ctx.Values_clause(); values != nil {
 		for _, value := range values.AllValue_row() {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				value.OPEN_PAR().GetSymbol().GetStart()+1,
 				value.CLOSE_PAR().GetSymbol().GetStop()-1,
 				func(start, end int) error {
@@ -258,7 +258,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	}
 
 	if selectStmt := ctx.Select_stmt(); selectStmt != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			selectStmt.GetStart().GetStart(),
 			selectStmt.GetStop().GetStop(),
 			func(start, end int) error {
@@ -274,7 +274,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	}
 
 	if upsert := ctx.Upsert_clause(); upsert != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			upsert.GetStart().GetStart(),
 			upsert.GetStop().GetStop(),
 			func(start, end int) error {
@@ -285,7 +285,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	}
 
 	if returning := ctx.Returning_clause(); returning != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
@@ -300,7 +300,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	v.modWith_clause(ctx, sb)
 
 	if or := ctx.GetUpsert_action(); or != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			or.GetStart(), or.GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
@@ -321,7 +321,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 		tableStart = schema.GetStart().GetStart()
 	}
 
-	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
 			fmt.Fprintf(sb, "q.Table.Table = o.raw(%d, %d)\n", start, end)
@@ -331,7 +331,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 
 	if alias := qualifiedTable.Table_alias(); alias != nil {
 		v.quoteIdentifiable(alias)
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
@@ -356,7 +356,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	cols := ctx.AllColumn_name_or_list()
 	exprs := ctx.AllExpr()
 
-	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		cols[0].GetStart().GetStart(),
 		exprs[len(exprs)-1].GetStop().GetStop(),
 		func(start, end int) error {
@@ -366,7 +366,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	)...)
 
 	if from := ctx.From_item(); from != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			from.GetStart().GetStart(),
 			from.GetStop().GetStop(),
 			func(start, end int) error {
@@ -377,7 +377,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	}
 
 	if where := ctx.Where_stmt(); where != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			where.WHERE_().GetSymbol().GetStop()+1,
 			where.GetStop().GetStop(),
 			func(start, end int) error {
@@ -388,7 +388,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	}
 
 	if returning := ctx.Returning_clause(); returning != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
@@ -399,7 +399,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	}
 
 	if order := ctx.Order_by_stmt(); order != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
@@ -411,10 +411,10 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 
 	if limit := ctx.Limit_stmt(); limit != nil {
 		if limit.COMMA() != nil {
-			v.err = fmt.Errorf("LIMIT with comma is not supported")
+			v.Err = fmt.Errorf("LIMIT with comma is not supported")
 		}
 
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
@@ -424,7 +424,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 		)...)
 
 		if offset := limit.GetLastExpr(); offset != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
@@ -451,7 +451,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 		tableStart = schema.GetStart().GetStart()
 	}
 
-	v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
 			fmt.Fprintf(sb, "q.From.Table = o.raw(%d, %d)\n", start, end)
@@ -461,7 +461,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 
 	if alias := qualifiedTable.Table_alias(); alias != nil {
 		v.quoteIdentifiable(alias)
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
@@ -484,7 +484,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	}
 
 	if where := ctx.Where_stmt(); where != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			where.WHERE_().GetSymbol().GetStop()+1,
 			where.GetStop().GetStop(),
 			func(start, end int) error {
@@ -495,7 +495,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	}
 
 	if returning := ctx.Returning_clause(); returning != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
@@ -506,7 +506,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	}
 
 	if order := ctx.Order_by_stmt(); order != nil {
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
@@ -518,10 +518,10 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 
 	if limit := ctx.Limit_stmt(); limit != nil {
 		if limit.COMMA() != nil {
-			v.err = fmt.Errorf("LIMIT with comma is not supported")
+			v.Err = fmt.Errorf("LIMIT with comma is not supported")
 		}
 
-		v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
@@ -531,7 +531,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 		)...)
 
 		if offset := limit.GetLastExpr(); offset != nil {
-			v.stmtRules = append(v.stmtRules, internal.RecordPoints(
+			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {

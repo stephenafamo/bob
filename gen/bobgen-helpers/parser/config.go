@@ -45,6 +45,10 @@ func ParseQueryConfig(options string) drivers.QueryConfig {
 // The configuration string should be in the format:
 // "name:type:notnull"
 func ParseQueryColumnConfig(options string) drivers.QueryCol {
+	if options == "" {
+		return drivers.QueryCol{}
+	}
+
 	var i int
 	var part string
 	var found bool
