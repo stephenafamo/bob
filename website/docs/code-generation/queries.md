@@ -17,7 +17,7 @@ sqlite:
     - ./another/folder
 ```
 
-Alongside a few common file, for each `.sql` file found, it will generate two files:
+Alongside a few common files, for each `.sql` file found, it will generate two files:
 
 - `file_name.bob.go` - This file contains the generated code for the queries in the SQL file.
 - `file_name.bob_test.go` - This file contains the generated test code for the queries in the SQL file.

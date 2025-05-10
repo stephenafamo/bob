@@ -987,7 +987,7 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 
 	v.UpdateInfo(info)
 
-	// So it does not refer the same atomic
+	// So it does not refer to the same atomic
 	a := v.Atom
 	v.StmtRules = append(v.StmtRules, internal.EditCallback(
 		internal.ReplaceFromFunc(
@@ -1095,13 +1095,11 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 	tableSource := v.getSourceFromTable(ctx)
 	v.Sources = append(v.Sources, tableSource)
 
-	// v2 := v.childVisitor()
 	v.VisitChildren(ctx)
 	if v.Err != nil {
 		v.Err = fmt.Errorf("insert stmt: %w", v.Err)
 		return nil
 	}
-	// v.stmtRules = append(v.stmtRules, v2.stmtRules...)
 
 	columns := ctx.AllColumn_name()
 	colNames := make([]string, len(columns))
