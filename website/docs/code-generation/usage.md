@@ -283,8 +283,8 @@ To make joining tables easier, join helpers are generated for each table. The ge
 // INNER JOIN "pilots" ON "pilots"."id" = "jets"."pilot_id"
 // INNER JOIN "airports" ON "airports"."id" = "jets"."airport_id"
 models.Jets.Query(
-    models.SelectJoins.Jets.InnerJoin.Pilots(ctx),
-    models.SelectJoins.Jets.InnerJoin.Airports(ctx),
+    models.SelectJoins.Jets.InnerJoin.Pilots,
+    models.SelectJoins.Jets.InnerJoin.Airports,
 ).All(ctx, db)
 ```
 
@@ -295,7 +295,7 @@ Since each query type has its own mods, `SelectJoins`, `InsertJoins`, `UpdateJoi
 To use these join mods with an aliased table name, use the `AliasedAs` method.
 
 ```go
-models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Airports(ctx).AliasedAs("a")
+models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Airports.AliasedAs("a")
 ```
 
 :::
