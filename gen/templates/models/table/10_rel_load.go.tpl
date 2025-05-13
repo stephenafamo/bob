@@ -162,7 +162,7 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
     {{range $rel := $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship $rel.Name -}}
     {{$fAlias := $.Aliases.Table $rel.Foreign -}}
-    {{$relAlias}}: thenLoadBuilder[Q, {{$relAlias}}LoadInterface](
+    {{$relAlias}}: thenLoadBuilder[Q](
       "{{$relAlias}}",
       func(ctx context.Context, exec bob.Executor, retrieved {{$relAlias}}LoadInterface, mods ...bob.Mod[*dialect.SelectQuery]) error {
         return retrieved.Load{{$relAlias}}(ctx, exec, mods...)
