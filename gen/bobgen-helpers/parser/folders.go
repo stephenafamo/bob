@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 )
@@ -40,6 +41,10 @@ func parseFolder(ctx context.Context, parser QueryParser, path string) (drivers.
 		}
 
 		if filepath.Ext(entry.Name()) != ".sql" {
+			continue
+		}
+
+		if strings.HasSuffix(entry.Name(), ".bob.sql") {
 			continue
 		}
 

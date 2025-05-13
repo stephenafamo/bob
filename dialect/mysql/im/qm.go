@@ -11,7 +11,7 @@ import (
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
 	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Table = name
+		i.Expression = name
 		i.Columns = columns
 	})
 }

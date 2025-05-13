@@ -85,19 +85,17 @@ type fromable interface {
 }
 
 func From[Q fromable](table any) FromChain[Q] {
-	return FromChain[Q](func() clause.From {
-		return clause.From{
-			Table: table,
-		}
+	return FromChain[Q](func() clause.TableRef {
+		return clause.TableRef{Expression: table}
 	})
 }
 
-type FromChain[Q fromable] func() clause.From
+type FromChain[Q fromable] func() clause.TableRef
 
 func (f FromChain[Q]) Apply(q Q) {
 	from := f()
 
-	q.SetTable(from.Table)
+	q.SetTable(from.Expression)
 	if from.Alias != "" {
 		q.SetTableAlias(from.Alias, from.Columns...)
 	}
@@ -109,7 +107,7 @@ func (f FromChain[Q]) As(alias string) FromChain[Q] {
 	fr := f()
 	fr.Alias = alias
 
-	return FromChain[Q](func() clause.From {
+	return FromChain[Q](func() clause.TableRef {
 		return fr
 	})
 }
@@ -119,7 +117,7 @@ func (f FromChain[Q]) NotIndexed() bob.Mod[Q] {
 	fr := f()
 	fr.SetIndexedBy(&i)
 
-	return FromChain[Q](func() clause.From {
+	return FromChain[Q](func() clause.TableRef {
 		return fr
 	})
 }
@@ -128,7 +126,7 @@ func (f FromChain[Q]) IndexedBy(indexName string) bob.Mod[Q] {
 	fr := f()
 	fr.SetIndexedBy(&indexName)
 
-	return FromChain[Q](func() clause.From {
+	return FromChain[Q](func() clause.TableRef {
 		return fr
 	})
 }
@@ -217,7 +215,7 @@ func Join[Q Joinable](typ string, e any) JoinChain[Q] {
 	return JoinChain[Q](func() clause.Join {
 		return clause.Join{
 			Type: typ,
-			To:   clause.From{Table: e},
+			To:   clause.TableRef{Expression: e},
 		}
 	})
 }
@@ -242,7 +240,7 @@ func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
 	return CrossJoinChain[Q](func() clause.Join {
 		return clause.Join{
 			Type: clause.CrossJoin,
-			To:   clause.From{Table: e},
+			To:   clause.TableRef{Expression: e},
 		}
 	})
 }

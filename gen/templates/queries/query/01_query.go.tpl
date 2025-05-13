@@ -2,13 +2,16 @@
 
 {{$.Importer.Import "io"}}
 {{$.Importer.Import "iter"}}
+{{$.Importer.Import "_" "embed"}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
+//go:embed {{.QueryFile.BaseName}}.bob.sql
+var formattedQueries_{{.QueryFile.BaseName}} string
 
-{{range $query := $.QueryFile.Queries}}
+{{range $queryIndex, $query := $.QueryFile.Queries}}
 {{if $query.Args}}
   {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{end}}
@@ -32,7 +35,7 @@
   {{$colParams =  printf "%s, %s" $colType (or $query.Config.RowSliceName (printf "[]%s" $colType)) }}
 {{end}}
 
-const {{$lowerName}}SQL = `{{replace "`" "`+\"`\"+`" $query.SQL}}`
+var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.QueryPosition $queryIndex}}]
 
 {{$args := list }}
 {{range $arg := $query.Args -}}

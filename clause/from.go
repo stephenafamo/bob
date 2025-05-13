@@ -31,8 +31,8 @@ SQLite: https://www.sqlite.org/syntax/table-or-subquery.html
 MySQL: https://dev.mysql.com/doc/refman/8.0/en/join.html
 */
 
-type From struct {
-	Table any
+type TableRef struct {
+	Expression any
 
 	// Aliases
 	Alias   string
@@ -50,48 +50,44 @@ type From struct {
 	Joins []Join
 }
 
-func (f *From) SetTable(table any) {
-	f.Table = table
+func (f *TableRef) SetTable(table any) {
+	f.Expression = table
 }
 
-func (f *From) SetTableAlias(alias string, columns ...string) {
+func (f *TableRef) SetTableAlias(alias string, columns ...string) {
 	f.Alias = alias
 	f.Columns = columns
 }
 
-func (f *From) SetOnly(only bool) {
+func (f *TableRef) SetOnly(only bool) {
 	f.Only = only
 }
 
-func (f *From) SetLateral(lateral bool) {
+func (f *TableRef) SetLateral(lateral bool) {
 	f.Lateral = lateral
 }
 
-func (f *From) SetWithOrdinality(to bool) {
+func (f *TableRef) SetWithOrdinality(to bool) {
 	f.WithOrdinality = to
 }
 
-func (f *From) SetIndexedBy(i *string) {
+func (f *TableRef) SetIndexedBy(i *string) {
 	f.IndexedBy = i
 }
 
-func (f *From) AppendJoin(j Join) {
+func (f *TableRef) AppendJoin(j Join) {
 	f.Joins = append(f.Joins, j)
 }
 
-func (f *From) AppendPartition(partitions ...string) {
+func (f *TableRef) AppendPartition(partitions ...string) {
 	f.Partitions = append(f.Partitions, partitions...)
 }
 
-func (f *From) AppendIndexHint(i IndexHint) {
+func (f *TableRef) AppendIndexHint(i IndexHint) {
 	f.IndexHints = append(f.IndexHints, i)
 }
 
-func (f From) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	if f.Table == nil {
-		return nil, nil
-	}
-
+func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Only {
 		w.Write([]byte("ONLY "))
 	}
@@ -100,7 +96,7 @@ func (f From) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 		w.Write([]byte("LATERAL "))
 	}
 
-	args, err := bob.Express(ctx, w, d, start, f.Table)
+	args, err := bob.Express(ctx, w, d, start, f.Expression)
 	if err != nil {
 		return nil, err
 	}

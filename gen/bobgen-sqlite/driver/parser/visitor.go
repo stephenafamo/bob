@@ -10,6 +10,7 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	antlrhelpers "github.com/stephenafamo/bob/gen/bobgen-helpers/parser/antlrhelpers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
@@ -255,6 +256,8 @@ func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
 		v.Err = fmt.Errorf("insert stmt: %w", v2.Err)
 		return nil
 	}
+	v.Args = append(v.Args, v2.Args...)
+	v.Groups = append(v.Groups, v2.Groups...)
 	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	returning := ctx.Returning_clause()
@@ -287,27 +290,27 @@ func (v *visitor) VisitExpr_arithmetic(ctx *sqliteparser.Expr_arithmeticContext)
 	lhsType := v.Infos[antlrhelpers.Key(ctx.GetLhs())].Type
 	rhsType := v.Infos[antlrhelpers.Key(ctx.GetRhs())].Type
 
-	typ := []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)}
+	typ := []NodeType{knownTypeNotNull("INTEGER"), knownTypeNotNull("REAL")}
 
 	switch {
 	case len(lhsType) == 1 && len(rhsType) == 1:
-		typ = []NodeType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownTypeNotNull("REAL")}
 		lhs := lhsType[0]
 		rhs := rhsType[0]
 		if lhs.DBType == "INTEGER" &&
 			rhs.DBType == "INTEGER" {
-			typ = []NodeType{knownType("INTEGER", anyNullable(lhs.Nullable, rhs.Nullable))}
+			typ = []NodeType{knownType("INTEGER", antlrhelpers.AnyNullable(lhs.Nullable, rhs.Nullable))}
 		}
 
 	case len(lhsType) == 1 && len(rhsType) == 0:
-		typ = []NodeType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownTypeNotNull("REAL")}
 		lhs := lhsType[0]
 		if lhs.DBType == "INTEGER" {
 			typ = []NodeType{knownType("INTEGER", lhs.Nullable)}
 		}
 
 	case len(lhsType) == 0 && len(rhsType) == 1:
-		typ = []NodeType{knownType("REAL", notNullable)}
+		typ = []NodeType{knownTypeNotNull("REAL")}
 		rhs := rhsType[0]
 		if rhs.DBType == "INTEGER" {
 			typ = []NodeType{knownType("INTEGER", rhs.Nullable)}
@@ -344,21 +347,21 @@ func (v *visitor) VisitExpr_json_extract_string(ctx *sqliteparser.Expr_json_extr
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "JSON->>",
-		Type:            []NodeType{knownType("", nullable)},
+		Type:            []NodeType{knownTypeNull("")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "JSON->> LHS",
-		Type:            []NodeType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("JSON")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "JSON->> RHS",
 		Type: []NodeType{
-			knownType("TEXT", notNullable),
-			knownType("INTEGER", notNullable),
+			knownTypeNotNull("TEXT"),
+			knownTypeNotNull("INTEGER"),
 		},
 	})
 
@@ -378,19 +381,19 @@ func (v *visitor) VisitExpr_bool(ctx *sqliteparser.Expr_boolContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "AND/OR",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "AND/OR LHS",
-		Type:            []NodeType{knownType("BOOLEAN", nullable)},
+		Type:            []NodeType{knownTypeNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "AND/OR RHS",
-		Type:            []NodeType{knownType("BOOLEAN", nullable)},
+		Type:            []NodeType{knownTypeNull("BOOLEAN")},
 	})
 
 	return nil
@@ -405,21 +408,21 @@ func (v *visitor) VisitExpr_is(ctx *sqliteparser.Expr_isContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "IS",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "IS LHS",
 		ExprRef:         ctx.GetRhs(),
-		Type:            []NodeType{knownType("", nullable)},
+		Type:            []NodeType{knownTypeNull("")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "IS RHS",
 		ExprRef:         ctx.GetLhs(),
-		Type:            []NodeType{knownType("", nullable)},
+		Type:            []NodeType{knownTypeNull("")},
 	})
 
 	return nil
@@ -434,19 +437,19 @@ func (v *visitor) VisitExpr_concat(ctx *sqliteparser.Expr_concatContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Concat",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "Concat LHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "Concat RHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	return nil
@@ -455,18 +458,21 @@ func (v *visitor) VisitExpr_concat(ctx *sqliteparser.Expr_concatContext) any {
 func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
 	exprs := ctx.AllExpr()
 	if len(exprs) == 1 {
-		v.MaybeSetName(ctx, v.GetName(exprs[0]))
+		v.MaybeSetNodeName(ctx, v.GetName(exprs[0]))
 	}
 
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		ctx.GetStart().GetStart(),
 		ctx.GetStop().GetStop(),
 		func(start, end int) error {
+			v.SetGroup(ctx)
 			v.UpdateInfo(NodeInfo{
 				Node:            ctx,
 				ExprDescription: "LIST",
 				EditedPosition:  [2]int{start, end},
-				IsGroup:         true,
+				Config: parser.ParseQueryColumnConfig(
+					v.getCommentToRight(ctx),
+				),
 			})
 			return nil
 		},
@@ -512,7 +518,7 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 			IgnoreRefNullability: true,
 			CanBeMultiple:        singleIn,
 		})
-		v.MaybeSetName(child, lhsName)
+		v.MaybeSetNodeName(child, lhsName)
 
 		childList, childIsList := child.(*sqliteparser.Expr_listContext)
 		if !childIsList {
@@ -532,7 +538,7 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 				ExprRef:              lhsChildren[i],
 				IgnoreRefNullability: true,
 			})
-			v.MaybeSetName(grandChild, lhsChildNames[i])
+			v.MaybeSetNodeName(grandChild, lhsChildNames[i])
 		}
 
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
@@ -565,26 +571,26 @@ func (v *visitor) VisitExpr_modulo(ctx *sqliteparser.Expr_moduloContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Modulo",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "Modulo LHS",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "Modulo RHS",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	return nil
 }
 
 func (v *visitor) VisitExpr_qualified_column_name(ctx *sqliteparser.Expr_qualified_column_nameContext) any {
-	v.MaybeSetName(
+	v.MaybeSetNodeName(
 		ctx,
 		getName(ctx.Column_name()),
 	)
@@ -612,13 +618,13 @@ func (v *visitor) VisitExpr_match(ctx *sqliteparser.Expr_matchContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Match",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "Modulo RHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	return nil
@@ -633,19 +639,19 @@ func (v *visitor) VisitExpr_like(ctx *sqliteparser.Expr_likeContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "LIKE",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "Like LHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "Like RHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	return nil
@@ -660,13 +666,13 @@ func (v *visitor) VisitExpr_null_comp(ctx *sqliteparser.Expr_null_compContext) a
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "NULL Comparison",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.Expr(),
 		ExprDescription: "NULL Comparison Expr",
-		Type:            []NodeType{knownType("", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("")},
 	})
 
 	return nil
@@ -681,19 +687,19 @@ func (v *visitor) VisitExpr_json_extract_json(ctx *sqliteparser.Expr_json_extrac
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "JSON->",
-		Type:            []NodeType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("JSON")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "JSON-> LHS",
-		Type:            []NodeType{knownType("JSON", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("JSON")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "JSON-> RHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	return nil
@@ -712,7 +718,7 @@ func (v *visitor) VisitExpr_comparison(ctx *sqliteparser.Expr_comparisonContext)
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Comparison",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
@@ -729,7 +735,7 @@ func (v *visitor) VisitExpr_comparison(ctx *sqliteparser.Expr_comparisonContext)
 		IgnoreRefNullability: true,
 	})
 
-	v.MatchNames(ctx.GetLhs(), ctx.GetRhs())
+	v.MatchNodeNames(ctx.GetLhs(), ctx.GetRhs())
 
 	return nil
 }
@@ -745,16 +751,16 @@ func (v *visitor) VisitExpr_literal(ctx *sqliteparser.Expr_literalContext) any {
 	typ := ctx.Literal_value().GetLiteralType().GetTokenType()
 	switch typ {
 	case sqliteparser.SQLiteParserNUMERIC_LITERAL:
-		v.MaybeSetName(ctx, ctx.GetText())
+		v.MaybeSetNodeName(ctx, ctx.GetText())
 
 		if strings.ContainsAny(ctx.GetText(), ".eE") {
-			DBType = knownType("REAL", notNullable)
+			DBType = knownTypeNotNull("REAL")
 			break
 		}
 
 		text := strings.ReplaceAll(ctx.GetText(), "_", "")
 		if len(text) < 2 {
-			DBType = knownType("INTEGER", notNullable)
+			DBType = knownTypeNotNull("INTEGER")
 			break
 		}
 
@@ -767,12 +773,12 @@ func (v *visitor) VisitExpr_literal(ctx *sqliteparser.Expr_literalContext) any {
 
 		_, err := strconv.ParseInt(text, base, 64)
 		if err == nil {
-			DBType = knownType("INTEGER", notNullable)
+			DBType = knownTypeNotNull("INTEGER")
 			break
 		}
 
 		if errors.Is(err, strconv.ErrRange) {
-			DBType = knownType("REAL", notNullable)
+			DBType = knownTypeNotNull("REAL")
 			break
 		}
 
@@ -780,28 +786,28 @@ func (v *visitor) VisitExpr_literal(ctx *sqliteparser.Expr_literalContext) any {
 		return nil
 
 	case sqliteparser.SQLiteParserSTRING_LITERAL:
-		DBType = knownType("TEXT", notNullable)
+		DBType = knownTypeNotNull("TEXT")
 		txt := strings.ReplaceAll(ctx.GetText(), "'", "")
-		v.MaybeSetName(ctx, txt)
+		v.MaybeSetNodeName(ctx, txt)
 
 	case sqliteparser.SQLiteParserBLOB_LITERAL:
-		DBType = knownType("BLOB", notNullable)
-		v.MaybeSetName(ctx, "BLOB")
+		DBType = knownTypeNotNull("BLOB")
+		v.MaybeSetNodeName(ctx, "BLOB")
 
 	case sqliteparser.SQLiteParserNULL_:
-		DBType = knownType("", nullable)
-		v.MaybeSetName(ctx, "NULL")
+		DBType = knownTypeNull("")
+		v.MaybeSetNodeName(ctx, "NULL")
 
 	case sqliteparser.SQLiteParserTRUE_,
 		sqliteparser.SQLiteParserFALSE_:
-		DBType = knownType("BOOLEAN", notNullable)
-		v.MaybeSetName(ctx, ctx.GetText())
+		DBType = knownTypeNotNull("BOOLEAN")
+		v.MaybeSetNodeName(ctx, ctx.GetText())
 
 	case sqliteparser.SQLiteParserCURRENT_TIME_,
 		sqliteparser.SQLiteParserCURRENT_DATE_,
 		sqliteparser.SQLiteParserCURRENT_TIMESTAMP_:
-		DBType = knownType("DATETIME", notNullable)
-		v.MaybeSetName(ctx, ctx.GetText()[:len(ctx.GetText())-1])
+		DBType = knownTypeNotNull("DATETIME")
+		v.MaybeSetNodeName(ctx, ctx.GetText()[:len(ctx.GetText())-1])
 
 	default:
 		v.Err = fmt.Errorf("unknown literal type: %d", typ)
@@ -831,7 +837,7 @@ func (v *visitor) VisitExpr_cast(ctx *sqliteparser.Expr_castContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "CAST",
-		Type:            []NodeType{knownType(ctx.Type_name().GetText(), notNullable)},
+		Type:            []NodeType{knownType(ctx.Type_name().GetText(), antlrhelpers.NotNullable)},
 	})
 
 	return nil
@@ -846,19 +852,19 @@ func (v *visitor) VisitExpr_string_op(ctx *sqliteparser.Expr_string_opContext) a
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "String OP",
-		Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "String OP LHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "String OP RHS",
-		Type:            []NodeType{knownType("TEXT", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("TEXT")},
 	})
 
 	return nil
@@ -877,19 +883,19 @@ func (v *visitor) VisitExpr_bitwise(ctx *sqliteparser.Expr_bitwiseContext) any {
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Bitwise",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetLhs(),
 		ExprDescription: "Bitwise LHS",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx.GetRhs(),
 		ExprDescription: "Bitwise RHS",
-		Type:            []NodeType{knownType("INTEGER", notNullable)},
+		Type:            []NodeType{knownTypeNotNull("INTEGER")},
 	})
 
 	return nil
@@ -922,13 +928,13 @@ func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx,
 			ExprDescription: "Unary Minus",
-			Type:            []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("INTEGER"), knownTypeNotNull("REAL")},
 		})
 
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx.Expr(),
 			ExprDescription: "Unary Minus Expr",
-			Type:            []NodeType{knownType("INTEGER", notNullable), knownType("REAL", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("INTEGER"), knownTypeNotNull("REAL")},
 		})
 
 	case sqliteparser.SQLiteParserTILDE:
@@ -937,13 +943,13 @@ func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx,
 			ExprDescription: "Unary Tilde",
-			Type:            []NodeType{knownType("INTEGER", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("INTEGER")},
 		})
 
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx.Expr(),
 			ExprDescription: "Unary Tilde Expr",
-			Type:            []NodeType{knownType("INTEGER", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("INTEGER")},
 		})
 
 	case sqliteparser.SQLiteParserNOT_:
@@ -951,13 +957,13 @@ func (v *visitor) VisitExpr_unary(ctx *sqliteparser.Expr_unaryContext) any {
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx,
 			ExprDescription: "Unary NOT",
-			Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 		})
 
 		v.UpdateInfo(NodeInfo{
 			Node:            ctx.Expr(),
 			ExprDescription: "Unary NOT Expr",
-			Type:            []NodeType{knownType("BOOLEAN", notNullable)},
+			Type:            []NodeType{knownTypeNotNull("BOOLEAN")},
 		})
 	}
 
@@ -970,6 +976,7 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 		return nil
 	}
 
+	v.SetArg(ctx)
 	info := NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Bind",
@@ -985,6 +992,7 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 		info.ExprRef = parent
 	}
 
+	v.SetArg(ctx)
 	v.UpdateInfo(info)
 
 	// So it does not refer to the same atomic
@@ -1052,7 +1060,7 @@ func (v *visitor) VisitExpr_simple_func(ctx *sqliteparser.Expr_simple_funcContex
 		ExprDescription: "Function Arg",
 		Type: []NodeType{knownType(
 			funcDef.ReturnType,
-			anyNullable(nullable...),
+			antlrhelpers.AnyNullable(nullable...),
 		)},
 	}
 
@@ -1061,7 +1069,7 @@ func (v *visitor) VisitExpr_simple_func(ctx *sqliteparser.Expr_simple_funcContex
 	}
 
 	v.UpdateInfo(info)
-	v.MaybeSetName(ctx, funcName)
+	v.MaybeSetNodeName(ctx, funcName)
 
 	return nil
 }
@@ -1116,17 +1124,20 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 	if values := ctx.Values_clause(); values != nil {
 		rows := values.AllValue_row()
 		for _, row := range rows {
-			v.MaybeSetName(row, tableName)
+			v.MaybeSetNodeName(row, tableName)
 			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 				row.GetStart().GetStart(),
 				row.GetStop().GetStop(),
 				func(start, end int) error {
+					v.SetGroup(row)
 					v.UpdateInfo(NodeInfo{
 						Node:            row,
 						ExprDescription: "ROW",
 						EditedPosition:  [2]int{start, end},
-						IsGroup:         true,
 						CanBeMultiple:   len(rows) == 1,
+						Config: parser.ParseQueryColumnConfig(
+							v.getCommentToRight(row),
+						),
 					})
 					return nil
 				},
@@ -1145,7 +1156,7 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 				})
 
 				if valIndex < len(colNames) {
-					v.MaybeSetName(value, colNames[valIndex])
+					v.MaybeSetNodeName(value, colNames[valIndex])
 				}
 			}
 		}
@@ -1201,6 +1212,8 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 		v.Err = fmt.Errorf("select core 0: %w", v2.Err)
 		return nil
 	}
+	v.Args = append(v.Args, v2.Args...)
+	v.Groups = append(v.Groups, v2.Groups...)
 	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	for i, compound := range ctx.AllCompound_select() {
@@ -1216,6 +1229,8 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 			v.Err = fmt.Errorf("select core %d: column count mismatch %d != %d", i, len(source.Columns), len(coreSource.Columns))
 		}
 
+		v.Args = append(v.Args, v3.Args...)
+		v.Groups = append(v.Groups, v3.Groups...)
 		v.StmtRules = append(v.StmtRules, v3.StmtRules...)
 
 		for i, col := range source.Columns {
@@ -1299,7 +1314,7 @@ func (v *visitor) visitFrom_item(ctx sqliteparser.IFrom_itemContext) {
 			right := sources[i+1]
 			for i := range right.Columns {
 				for j := range right.Columns[i].Type {
-					right.Columns[i].Type[j].NullableF = nullable
+					right.Columns[i].Type[j].NullableF = antlrhelpers.Nullable
 				}
 			}
 		}
@@ -1308,7 +1323,7 @@ func (v *visitor) visitFrom_item(ctx sqliteparser.IFrom_itemContext) {
 			left := sources[i+1]
 			for i := range left.Columns {
 				for j := range left.Columns[i].Type {
-					left.Columns[i].Type[j].NullableF = nullable
+					left.Columns[i].Type[j].NullableF = antlrhelpers.Nullable
 				}
 			}
 		}
@@ -1384,6 +1399,8 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 		v.Err = fmt.Errorf("insert stmt: %w", v2.Err)
 		return nil
 	}
+	v.Args = append(v.Args, v2.Args...)
+	v.Groups = append(v.Groups, v2.Groups...)
 	v.StmtRules = append(v.StmtRules, v2.StmtRules...)
 
 	exprs := ctx.AllExpr()
@@ -1405,7 +1422,7 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 			)},
 		})
 
-		v.MaybeSetName(expr, colName)
+		v.MaybeSetNodeName(expr, colName)
 	}
 
 	v.visitFrom_item(ctx.From_item())

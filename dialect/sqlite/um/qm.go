@@ -37,13 +37,13 @@ func OrRollback() bob.Mod[*dialect.UpdateQuery] {
 
 func Table(name any) bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-		q.Table.Table = name
+		q.Table.Expression = name
 	})
 }
 
 func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-		q.Table.Table = name
+		q.Table.Expression = name
 		q.Table.Alias = alias
 	})
 }

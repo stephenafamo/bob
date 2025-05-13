@@ -216,9 +216,8 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 					data.QueryFile = file
 
 					// We do this so that the name of the file is correct
-					base := filepath.Base(file.Path)
 					data.Table = drivers.Table[C, I]{
-						Name: base[:len(base)-4],
+						Name: file.BaseName(),
 					}
 
 					if err := generateOutput(o, dirExtMap, o.queryTemplates, data, goVersion, s.Config.NoTests); err != nil {

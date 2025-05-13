@@ -10,20 +10,19 @@ import (
 type Node interface {
 	GetStart() antlr.Token
 	GetStop() antlr.Token
-	GetParent() antlr.Tree
 	GetText() string
 	GetParser() antlr.Parser
 }
 
 type NodeKey struct {
-	start int
-	stop  int
+	Start int
+	Stop  int
 }
 
 func Key(ctx Node) NodeKey {
 	return NodeKey{
-		start: ctx.GetStart().GetStart(),
-		stop:  ctx.GetStop().GetStop(),
+		Start: ctx.GetStart().GetStart(),
+		Stop:  ctx.GetStop().GetStop(),
 	}
 }
 
@@ -36,7 +35,6 @@ type NodeInfo struct {
 
 	// Go Info
 	ArgKey         string // Positional or named arg in the query
-	IsGroup        bool
 	EditedPosition [2]int
 	CanBeMultiple  bool
 	Config         drivers.QueryCol

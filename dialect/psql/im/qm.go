@@ -19,7 +19,7 @@ func Recursive(r bool) bob.Mod[*dialect.InsertQuery] {
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
 	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Table = clause.Table{
+		i.TableRef = clause.TableRef{
 			Expression: name,
 			Columns:    columns,
 		}
@@ -28,7 +28,7 @@ func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
 
 func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQuery] {
 	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Table = clause.Table{
+		i.TableRef = clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 			Columns:    columns,

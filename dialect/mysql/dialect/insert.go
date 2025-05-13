@@ -14,13 +14,12 @@ import (
 type InsertQuery struct {
 	hints
 	modifiers[string]
-	partitions
+	clause.TableRef
 	clause.Values
 
-	Table              any
-	Columns            []string
-	RowAlias           string
-	ColumnAlias        []string
+	RowAlias    string
+	ColumnAlias []string
+
 	Sets               []Set
 	DuplicateKeyUpdate clause.Set
 
@@ -54,29 +53,9 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 
 	// no expected table args
-	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.Table, true, "INTO ", " ")
+	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.TableRef, true, "INTO ", " ")
 	if err != nil {
 		return nil, err
-	}
-
-	// no partition args
-	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.partitions,
-		len(i.partitions.partitions) > 0, "", " ")
-	if err != nil {
-		return nil, err
-	}
-
-	// No columns args
-	if len(i.Columns) > 0 {
-		w.Write([]byte(" ("))
-		for k, cAlias := range i.Columns {
-			if k != 0 {
-				w.Write([]byte(", "))
-			}
-
-			d.WriteQuoted(w, cAlias)
-		}
-		w.Write([]byte(")"))
 	}
 
 	// Either this or the values will get expressed

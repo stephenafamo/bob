@@ -13,7 +13,7 @@ import (
 type InsertQuery struct {
 	clause.With
 	or
-	clause.Table
+	clause.TableRef
 	clause.Values
 	clause.Conflict
 	clause.Returning
@@ -43,7 +43,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 		return nil, err
 	}
 
-	tableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.Table, true, " INTO ", "")
+	tableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.TableRef, true, " INTO ", "")
 	if err != nil {
 		return nil, err
 	}
