@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed `clause.Table` and `clause.From`, and merge into `clause.TableRef` since they had overlapping functionality.
+- Remove unnecessary context closure in generated join helpers.
 
 ### Fixed
 
