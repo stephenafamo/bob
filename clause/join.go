@@ -19,7 +19,7 @@ const (
 
 type Join struct {
 	Type string
-	To   From // the expression for the table
+	To   TableRef // the expression for the table
 
 	// Join methods
 	Natural bool

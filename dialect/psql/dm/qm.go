@@ -23,7 +23,7 @@ func Only() bob.Mod[*dialect.DeleteQuery] {
 
 func From(name any) bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.Table{
+		u.Table = clause.TableRef{
 			Expression: name,
 		}
 	})
@@ -31,7 +31,7 @@ func From(name any) bob.Mod[*dialect.DeleteQuery] {
 
 func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.Table{
+		u.Table = clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 		}

@@ -283,7 +283,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 				int(intoInfo.start),
 				int(intoInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.Table.Expression = o.expr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.TableRef.Expression = o.expr(%d, %d)\n", start, end)
 					return nil
 				},
 			)...,
@@ -296,7 +296,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 		colNames[i] = w.names[colNameInfo.position()]
 	}
 	if len(colNames) > 0 {
-		fmt.Fprintf(w.mods, "q.Table.Columns = %#v\n", colNames)
+		fmt.Fprintf(w.mods, "q.TableRef.Columns = %#v\n", colNames)
 	}
 
 	selectStmt := stmt.InsertStmt.GetSelectStmt().GetSelectStmt()

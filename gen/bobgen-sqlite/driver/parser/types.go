@@ -27,25 +27,16 @@ type (
 	Functions    = antlrhelpers.Functions
 )
 
-type identifiable interface {
-	Identifier() sqliteparser.IIdentifierContext
+func knownType(t string, nullable func() bool) NodeType {
+	return antlrhelpers.KnownType(getTypeFromTypeName(t), nullable)
 }
 
-func getName(i identifiable) string {
-	if i == nil {
-		return ""
-	}
-	ctx := i.Identifier()
-	for ctx.OPEN_PAR() != nil {
-		ctx = ctx.Identifier()
-	}
+func knownTypeNull(t string) NodeType {
+	return antlrhelpers.KnownTypeNull(getTypeFromTypeName(t))
+}
 
-	txt := ctx.GetText()
-	if strings.ContainsAny(string(txt[0]), "\"`[") {
-		return txt[1 : len(txt)-1]
-	}
-
-	return txt
+func knownTypeNotNull(t string) NodeType {
+	return antlrhelpers.KnownTypeNotNull(getTypeFromTypeName(t))
 }
 
 func makeRef(sources []QuerySource, ctx *sqliteparser.Expr_qualified_column_nameContext) NodeTypes {
@@ -84,13 +75,6 @@ func getColumnType(db tables, schema, table, column string) NodeType {
 	return colType
 }
 
-func knownType(t string, nullable func() bool) NodeType {
-	return NodeType{
-		DBType:    getTypeFromTypeName(t),
-		NullableF: nullable,
-	}
-}
-
 // https://www.sqlite.org/datatype3.html
 //
 //nolint:misspell
@@ -118,38 +102,23 @@ func getTypeFromTypeName(t string) string {
 	return "NUMERIC"
 }
 
-func nullable() bool {
-	return true
+type identifiable interface {
+	Identifier() sqliteparser.IIdentifierContext
 }
 
-func notNullable() bool {
-	return false
-}
-
-func anyNullable(fs ...func() bool) func() bool {
-	return func() bool {
-		for _, f := range fs {
-			if f() {
-				return true
-			}
-		}
-
-		return false
+func getName(i identifiable) string {
+	if i == nil {
+		return ""
 	}
-}
-
-func allNullable(fs ...func() bool) func() bool {
-	return func() bool {
-		for _, f := range fs {
-			if !f() {
-				return false
-			}
-		}
-
-		return true
+	ctx := i.Identifier()
+	for ctx.OPEN_PAR() != nil {
+		ctx = ctx.Identifier()
 	}
-}
 
-func neverNullable(...func() bool) func() bool {
-	return notNullable
+	txt := ctx.GetText()
+	if strings.ContainsAny(string(txt[0]), "\"`[") {
+		return txt[1 : len(txt)-1]
+	}
+
+	return txt
 }

@@ -92,6 +92,9 @@ func (v *visitor) quoteIdentifier(ctx sqliteparser.IIdentifierContext) {
 	v.StmtRules = append(v.StmtRules, internal.Replace(ctx.GetStart().GetStart(), ctx.GetStop().GetStop(), fmt.Sprintf("%q", txt)))
 }
 
+// ---------------------------------------------------------------------------
+// Source helpers
+// ---------------------------------------------------------------------------
 func (v *visitor) getSourceFromTable(ctx interface {
 	Schema_name() sqliteparser.ISchema_nameContext
 	Table_name() sqliteparser.ITable_nameContext

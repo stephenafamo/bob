@@ -24,7 +24,7 @@ func Only() bob.Mod[*dialect.UpdateQuery] {
 
 func Table(name any) bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.Table = clause.Table{
+		u.Table = clause.TableRef{
 			Expression: name,
 		}
 	})
@@ -32,7 +32,7 @@ func Table(name any) bob.Mod[*dialect.UpdateQuery] {
 
 func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.Table = clause.Table{
+		u.Table = clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 		}

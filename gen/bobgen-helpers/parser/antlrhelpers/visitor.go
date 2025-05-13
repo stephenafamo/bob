@@ -14,6 +14,8 @@ import (
 type Visitor[C, I any] struct {
 	Err       error
 	DB        drivers.Tables[C, I]
+	Args      []NodeKey
+	Groups    []NodeKey
 	Names     map[NodeKey]string
 	Infos     map[NodeKey]NodeInfo
 	Sources   []QuerySource
@@ -35,7 +37,6 @@ func (v *Visitor[C, I]) UpdateInfo(info NodeInfo) {
 	}
 
 	currentExpr.Node = info.Node
-	currentExpr.IsGroup = currentExpr.IsGroup || info.IsGroup
 	currentExpr.CanBeMultiple = currentExpr.CanBeMultiple || info.CanBeMultiple
 
 	if info.EditedPosition != [2]int{} {
@@ -46,6 +47,8 @@ func (v *Visitor[C, I]) UpdateInfo(info NodeInfo) {
 		currentExpr.ExprDescription += ","
 		currentExpr.ExprDescription += info.ExprDescription
 	}
+
+	currentExpr.Config = currentExpr.Config.Merge(info.Config)
 
 	if info.ExprRef != nil {
 		currentExpr.ExprRef = info.ExprRef
@@ -78,16 +81,34 @@ func (v *Visitor[C, I]) UpdateInfo(info NodeInfo) {
 }
 
 func (v Visitor[C, I]) GetName(expr Node) string {
+	if expr == nil {
+		return ""
+	}
 	exprKey := Key(expr)
 	return v.Names[exprKey]
 }
 
-func (v *Visitor[C, I]) MaybeSetName(ctx Node, name string) {
+func (v *Visitor[C, I]) SetArg(expr Node) {
+	exprKey := Key(expr)
+	if slices.Contains(v.Args, exprKey) {
+		return
+	}
+	v.Args = append(v.Args, exprKey)
+}
+
+func (v *Visitor[C, I]) SetGroup(expr Node) {
+	exprKey := Key(expr)
+	if slices.Contains(v.Groups, exprKey) {
+		return
+	}
+	v.Groups = append(v.Groups, exprKey)
+}
+
+func (v *Visitor[C, I]) MaybeSetName(key NodeKey, name string) {
 	if name == "" {
 		return
 	}
 
-	key := Key(ctx)
 	_, ok := v.Names[key]
 	if ok {
 		return
@@ -96,15 +117,34 @@ func (v *Visitor[C, I]) MaybeSetName(ctx Node, name string) {
 	v.Names[key] = name
 }
 
-func (w *Visitor[C, I]) MatchNames(p1 Node, p2 Node) {
-	w.MaybeSetName(p1, w.Names[Key(p2)])
-	w.MaybeSetName(p2, w.Names[Key(p1)])
+func (v *Visitor[C, I]) MaybeSetNodeName(ctx Node, name string) {
+	v.MaybeSetName(Key(ctx), name)
 }
 
-func (v Visitor[C, I]) GetArgs(args, groups []NodeInfo, translate func(string) string) []drivers.QueryArg {
-	bindArgs := make([]drivers.QueryArg, len(args))
+func (w *Visitor[C, I]) MatchNames(p1, p2 NodeKey) {
+	w.MaybeSetName(p1, w.Names[p2])
+	w.MaybeSetName(p2, w.Names[p1])
+}
+
+func (v *Visitor[C, I]) MatchNodeNames(p1 Node, p2 Node) {
+	v.MatchNames(Key(p1), Key(p2))
+}
+
+func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string) []drivers.QueryArg {
+	groupArgs := make([]drivers.QueryArg, len(v.Groups))
+	bindArgs := make([]drivers.QueryArg, len(v.Args))
 	keys := make(map[string]int, len(bindArgs))
-	for i, arg := range args {
+
+	for i, argNodeKey := range v.Args {
+		arg, ok := v.Infos[argNodeKey]
+		if !ok {
+			continue
+		}
+
+		if arg.Node.GetStart().GetStart() < start || arg.Node.GetStop().GetStop() > stop {
+			continue
+		}
+
 		key := arg.ArgKey
 		if oldIndex, ok := keys[key]; ok && key != "" {
 			bindArgs[oldIndex].Positions = append(
@@ -137,9 +177,17 @@ func (v Visitor[C, I]) GetArgs(args, groups []NodeInfo, translate func(string) s
 		return len(q.Positions) == 0
 	})
 
-	groupArgs := make([]drivers.QueryArg, len(groups))
-	for groupIndex, group := range groups {
-		name := v.Names[Key(group.Node)]
+	for groupIndex, groupNodeKey := range v.Groups {
+		group, ok := v.Infos[groupNodeKey]
+		if !ok {
+			continue
+		}
+
+		if group.Node.GetStart().GetStart() < start || group.Node.GetStop().GetStop() > stop {
+			continue
+		}
+
+		name := v.Names[groupNodeKey]
 		if name == "" {
 			name = "group"
 		}
@@ -154,6 +202,10 @@ func (v Visitor[C, I]) GetArgs(args, groups []NodeInfo, translate func(string) s
 			CanBeMultiple: group.CanBeMultiple,
 		}
 	}
+
+	groupArgs = slices.DeleteFunc(groupArgs, func(q drivers.QueryArg) bool {
+		return len(q.Positions) == 0
+	})
 
 	return parser.GetArgs(bindArgs, groupArgs)
 }

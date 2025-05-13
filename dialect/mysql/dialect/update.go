@@ -16,7 +16,7 @@ type UpdateQuery struct {
 
 	clause.With
 	clause.Set
-	clause.From
+	clause.TableRef
 	clause.Where
 	clause.OrderBy
 	clause.Limit
@@ -56,8 +56,8 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 		return nil, err
 	}
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.From,
-		u.From.Table != nil, " ", "")
+	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.TableRef,
+		u.TableRef.Expression != nil, " ", "")
 	if err != nil {
 		return nil, err
 	}

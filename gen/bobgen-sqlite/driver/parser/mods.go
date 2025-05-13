@@ -218,7 +218,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.Table.Expression = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -229,7 +229,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.Table.Alias = %q\n", getName(alias))
+				fmt.Fprintf(sb, "q.TableRef.Alias = %q\n", getName(alias))
 				return nil
 			},
 		)...)
@@ -241,7 +241,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 		for i, col := range allColumns {
 			colNames[i] = getName(col)
 		}
-		fmt.Fprintf(sb, "q.Table.Columns = %#v\n", colNames)
+		fmt.Fprintf(sb, "q.TableRef.Columns = %#v\n", colNames)
 	}
 
 	if values := ctx.Values_clause(); values != nil {
@@ -324,7 +324,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.Table.Table = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.Table.Expression = o.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -454,7 +454,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.From.Table = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -465,7 +465,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.From.Alias = %q\n", getName(alias))
+				fmt.Fprintf(sb, "q.TableRef.Alias = %q\n", getName(alias))
 				return nil
 			},
 		)...)
@@ -476,11 +476,11 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	case indexName != nil: // INDEXED BY
 		fmt.Fprintf(
 			sb,
-			"index := %q; q.From.IndexedBy = &index\n",
+			"index := %q; q.TableRef.IndexedBy = &index\n",
 			getName(indexName),
 		)
 	case ctx.Qualified_table_name().NOT_() != nil: // NOT INDEXED
-		sb.WriteString("index := \"\"; q.From.IndexedBy = &index\n")
+		sb.WriteString("index := \"\"; q.TableRef.IndexedBy = &index\n")
 	}
 
 	if where := ctx.Where_stmt(); where != nil {

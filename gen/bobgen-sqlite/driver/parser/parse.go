@@ -9,6 +9,7 @@ import (
 	"github.com/aarondl/opt/omit"
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
+	antlrhelpers "github.com/stephenafamo/bob/gen/bobgen-helpers/parser/antlrhelpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
@@ -65,7 +66,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			}.Merge(parser.ParseQueryConfig(configStr)),
 
 			Columns: cols,
-			Args:    v.getArgs(stmtStart, stmtStop),
+			Args:    v.GetArgs(stmtStart, stmtStop, TranslateColumnType),
 			Mods:    stmtToMod{info},
 		}
 	}
@@ -170,14 +171,14 @@ var defaultFunctions = Functions{
 			}
 			return ""
 		},
-		CalcNullable: allNullable,
+		CalcNullable: antlrhelpers.AllNullable,
 	},
 	"concat": {
 		RequiredArgs: 1,
 		Variadic:     true,
 		Args:         []string{"TEXT"},
 		ReturnType:   "TEXT",
-		CalcNullable: neverNullable,
+		CalcNullable: antlrhelpers.NeverNullable,
 	},
 	"concat_ws": {
 		RequiredArgs: 2,
@@ -218,7 +219,7 @@ var defaultFunctions = Functions{
 			}
 			return ""
 		},
-		CalcNullable: allNullable,
+		CalcNullable: antlrhelpers.AllNullable,
 	},
 	"iif": {
 		RequiredArgs: 3,
@@ -227,7 +228,7 @@ var defaultFunctions = Functions{
 			return args[1]
 		},
 		CalcNullable: func(args ...func() bool) func() bool {
-			return anyNullable(args[1], args[2])
+			return antlrhelpers.AnyNullable(args[1], args[2])
 		},
 	},
 }

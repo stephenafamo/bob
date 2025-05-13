@@ -3,6 +3,7 @@ package drivers
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -24,6 +25,54 @@ type QueryFolder struct {
 type QueryFile struct {
 	Path    string
 	Queries []Query
+}
+
+func (q QueryFile) BaseName() string {
+	if q.Path == "" {
+		return ""
+	}
+
+	base := filepath.Base(q.Path)
+	if base == "" {
+		return ""
+	}
+
+	return base[:len(base)-4]
+}
+
+func (q QueryFile) Formatted() string {
+	var sb strings.Builder
+	for i, query := range q.Queries {
+		if i > 0 {
+			sb.WriteString("\n\n") // 2 extra new line between queries
+		}
+		fmt.Fprintf(&sb, "-- %s\n%s;", query.Name, query.SQL)
+	}
+
+	return sb.String()
+}
+
+func (q QueryFile) QueryPosition(i int) string {
+	if i >= len(q.Queries) {
+		return "-1:-1"
+	}
+
+	position := 0
+	for index, query := range q.Queries {
+		if index > 0 {
+			position += 3 // semi-colon and 2 new lines between queries
+		}
+
+		position += len(query.Name) + 4 // 2 dashes and a space before, and a newline after
+
+		if index == i {
+			return fmt.Sprintf("%d:%d", position, position+len(query.SQL))
+		}
+
+		position += len(query.SQL)
+	}
+
+	return fmt.Sprintf("%d:%d", position, position+len(q.Queries[i].SQL))
 }
 
 type Query struct {

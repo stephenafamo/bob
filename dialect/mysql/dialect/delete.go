@@ -15,8 +15,8 @@ type DeleteQuery struct {
 
 	clause.With
 	modifiers[string]
-	Tables []clause.Table
-	clause.From
+	Tables []clause.TableRef
+	clause.TableRef
 	clause.Where
 	clause.OrderBy
 	clause.Limit
@@ -62,8 +62,8 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, 
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.From,
-		d.From.Table != nil, "\nUSING ", "")
+	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef,
+		d.TableRef.Expression != nil, "\nUSING ", "")
 	if err != nil {
 		return nil, err
 	}

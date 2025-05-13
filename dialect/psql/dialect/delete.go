@@ -12,9 +12,9 @@ import (
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
 	clause.With
-	Only bool
-	clause.Table
-	clause.From
+	Only  bool
+	Table clause.TableRef
+	clause.TableRef
 	clause.Where
 	clause.Returning
 	bob.Load
@@ -49,8 +49,8 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, 
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.From,
-		d.From.Table != nil, "\nUSING ", "")
+	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef,
+		d.TableRef.Expression != nil, "\nUSING ", "")
 	if err != nil {
 		return nil, err
 	}

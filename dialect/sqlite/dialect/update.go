@@ -13,9 +13,9 @@ import (
 type UpdateQuery struct {
 	clause.With
 	or
-	Table clause.From
+	Table clause.TableRef
 	clause.Set
-	clause.From
+	clause.TableRef
 	clause.Where
 	clause.Returning
 	clause.Limit
@@ -59,8 +59,8 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, setArgs...)
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.From,
-		u.From.Table != nil, "\nFROM ", "")
+	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.TableRef,
+		u.TableRef.Expression != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}

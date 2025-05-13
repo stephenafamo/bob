@@ -17,7 +17,7 @@ type SelectQuery struct {
 
 	clause.With
 	clause.SelectList
-	clause.From
+	clause.TableRef
 	clause.Where
 	clause.GroupBy
 	clause.Having
@@ -74,7 +74,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, selArgs...)
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.From, s.From.Table != nil, "\nFROM ", "")
+	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.TableRef, s.TableRef.Expression != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,7 @@ const (
 	InsertRuleType
 	DeleteRuleType
 	ReplaceRuleType
+	RecordRuleType
 )
 
 func (r RuleType) String() string {
@@ -25,6 +26,8 @@ func (r RuleType) String() string {
 		return "replace"
 	case DeleteRuleType:
 		return "delete"
+	case RecordRuleType:
+		return "record"
 	default:
 		return "unknown"
 	}
@@ -42,6 +45,10 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 
 		if iStart != jStart {
 			return iStart - jStart
+		}
+
+		if i.priority() != j.priority() {
+			return i.priority() - j.priority()
 		}
 
 		return int(i.ruleType() - j.ruleType())
@@ -74,7 +81,7 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 			continue
 		}
 
-		// fmt.Printf("Applying rule %d: %s[%d-%d] cursor(%d), %q, %#v\n", i, r.ruleType(), start, end, cursor, s[start:end], r)
+		// fmt.Printf("Applying rule %d: %s[%d-%d] cursor(%d/%d), %q, %#v\n", i, r.ruleType(), start, end, cursor, buf.Len(), s[start:end], r)
 
 		buf.WriteString(s[cursor:start])
 		cursor = start
@@ -104,6 +111,7 @@ type EditRule interface {
 	position() (int, int)
 	ruleType() RuleType
 	edit(source string, buf *strings.Builder) error
+	priority() int
 }
 
 type deleteRule struct{ from, to int }
@@ -120,6 +128,10 @@ func (d deleteRule) edit(source string, buf *strings.Builder) error {
 	return nil
 }
 
+func (d deleteRule) priority() int {
+	return 0
+}
+
 func Delete(from, to int) deleteRule {
 	return deleteRule{from, to}
 }
@@ -127,6 +139,7 @@ func Delete(from, to int) deleteRule {
 type insertRule struct {
 	pos     int
 	content func() string
+	prior   int
 }
 
 func (i insertRule) position() (int, int) {
@@ -138,18 +151,25 @@ func (i insertRule) ruleType() RuleType {
 }
 
 func (i insertRule) edit(source string, buf *strings.Builder) error {
+	if i.content == nil {
+		return nil
+	}
 	if _, err := buf.WriteString(i.content()); err != nil {
 		return fmt.Errorf("insert: %w", err)
 	}
 	return nil
 }
 
+func (i insertRule) priority() int {
+	return i.prior
+}
+
 func Insert(pos int, content string) insertRule {
-	return insertRule{pos, func() string { return content }}
+	return insertRule{pos, func() string { return content }, 0}
 }
 
 func InsertFromFunc(pos int, content func() string) insertRule {
-	return insertRule{pos, content}
+	return insertRule{pos, content, 0}
 }
 
 type replaceRule struct {
@@ -176,6 +196,10 @@ func (r replaceRule) edit(source string, buf *strings.Builder) error {
 	}
 
 	return nil
+}
+
+func (i replaceRule) priority() int {
+	return 0
 }
 
 func Replace(from, to int, content string) replaceRule {
@@ -219,11 +243,11 @@ func RecordPoints(oldStart, oldEnd int, callbacks ...func(start, end int) error)
 	firstPoint := 0
 	return []EditRule{
 		EditCallback(
-			Insert(oldStart, ""),
+			insertRule{oldStart, nil, -1},
 			func(start int, _ int, _, _ string) error { firstPoint = start; return nil },
 		),
 		EditCallback(
-			Insert(oldEnd+1, ""),
+			insertRule{oldEnd + 1, nil, 1},
 			func(_, end int, _, content string) error {
 				for _, cb := range callbacks {
 					if err := cb(firstPoint, end); err != nil {

@@ -10,8 +10,8 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     })
   {{end}}
 
-  if len(q.Table.Columns) == 0 {
-    q.Table.Columns = s.SetColumns()
+  if len(q.TableRef.Columns) == 0 {
+    q.TableRef.Columns = s.SetColumns()
   }
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){

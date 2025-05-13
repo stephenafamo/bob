@@ -35,7 +35,7 @@ func Ignore() bob.Mod[*dialect.DeleteQuery] {
 
 func From(name any, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Tables = append(u.Tables, clause.Table{
+		u.Tables = append(u.Tables, clause.TableRef{
 			Expression: name,
 			Partitions: partitions,
 		})
@@ -44,7 +44,7 @@ func From(name any, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
 
 func FromAs(name any, alias string, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Tables = append(u.Tables, clause.Table{
+		u.Tables = append(u.Tables, clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 			Partitions: partitions,

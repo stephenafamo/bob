@@ -12,7 +12,7 @@ import (
 // https://www.sqlite.org/lang_delete.html
 type DeleteQuery struct {
 	clause.With
-	clause.From
+	clause.TableRef
 	clause.Where
 	clause.Returning
 	clause.Limit
@@ -39,7 +39,7 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, 
 
 	w.Write([]byte("DELETE FROM"))
 
-	tableArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.From, true, " ", "")
+	tableArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef, true, " ", "")
 	if err != nil {
 		return nil, err
 	}

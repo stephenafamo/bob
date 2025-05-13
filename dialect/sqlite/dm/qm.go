@@ -20,14 +20,14 @@ func From(name any) dialect.FromChain[*dialect.DeleteQuery] {
 
 func IndexedBy(i string) bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
-		q.From.IndexedBy = &i
+		q.TableRef.IndexedBy = &i
 	})
 }
 
 func NotIndexed() bob.Mod[*dialect.DeleteQuery] {
 	return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
 		var s string
-		q.From.IndexedBy = &s
+		q.TableRef.IndexedBy = &s
 	})
 }
 
