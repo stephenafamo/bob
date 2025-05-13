@@ -125,6 +125,6 @@ The other parts will be inferred from the context.
 :::
 
 ```sql
--- AllUsers models.User:models.UserSlice:false
+-- AllUsers *models.User:models.UserSlice:false
 SELECT id /* :big.Int:nnull */, name /* username */ FROM users WHERE id = ? /* ::notnull */;
 ```
