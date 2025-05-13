@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"errors"
+	"fmt"
 
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
@@ -94,6 +96,32 @@ func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, erro
 	}
 
 	return NewTx(tx), nil
+}
+
+// RunInTx runs the provided function in a transaction.
+// If the function returns an error, the transaction is rolled back.
+// Otherwise, the transaction is committed.
+func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(context.Context, Executor) error) error {
+	tx, err := d.BeginTx(ctx, txOptions)
+	if err != nil {
+		return fmt.Errorf("begin: %w", err)
+	}
+
+	if err := fn(ctx, tx); err != nil {
+		err = fmt.Errorf("call: %w", err)
+
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			return errors.Join(err, rollbackErr)
+		}
+
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit: %w", err)
+	}
+
+	return nil
 }
 
 // NewTx wraps an [*sql.Tx] and returns a type that implements [Queryer] but still

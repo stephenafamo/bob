@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `RandomColumnNotNull` mod to factories to generate random values for non-nullable columns without the chance of being null.
 - Added the `WithOneRelations` mod to factories to include every relation for a factory template.
 - Added `clause.TableRef` which merges `clause.Table` and `clause.From` since they had overlapping functionality.
+- Added `RunInTx` method to `bob.DB`. This starts a transaction and calls the given function with this transaction.
 
 ### Changed
 
