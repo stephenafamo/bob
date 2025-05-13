@@ -7,6 +7,13 @@ var (
 )
 {{- end -}}
 
+{{- define "helpers/then_load_variables"}}
+var (
+	SelectThenLoad = getThenLoaders[*dialect.SelectQuery]()
+)
+{{end -}}
+
+
 {{define "unique_constraint_error_detection_method" -}}
 {{$.Importer.Import "strings"}}
 {{$.Importer.Import "mysqlDriver" "github.com/go-sql-driver/mysql"}}

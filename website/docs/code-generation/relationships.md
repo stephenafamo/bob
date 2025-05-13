@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 5
 description: Working with relationships
-
 ---
 
 # Relationships
@@ -27,13 +25,13 @@ jetPilotQuery, err := jet.Pilots(ctx, db)
 
 In the above code example, `jetPilotQuery` is a [TableQuery](../models/table#queries) and has access to all the expected finishers:
 
-* One
-* All
-* Cursor
-* Count
-* Exists
-* UpdateAll
-* DeleteAll
+- One
+- All
+- Cursor
+- Count
+- Exists
+- UpdateAll
+- DeleteAll
 
 Naturally, we can add mods to the query:
 
@@ -46,25 +44,25 @@ jetPilotQuery, err := jet.Pilots(ctx, db, sm.Limit(20))
 
 ## Modifying Relationships
 
-* InsertXXX: This inserts a new row and sets it as the related model
+- InsertXXX: This inserts a new row and sets it as the related model
 
-    ```go
-    // to-one
-    jet.InsertPilot(ctx, db, &PilotSetter{...})
+  ```go
+  // to-one
+  jet.InsertPilot(ctx, db, &PilotSetter{...})
 
-    // to-many
-    pilot.InsertJets(ctx, db, &JetSetter{...}, &JetSetter{...})
-    ```
+  // to-many
+  pilot.InsertJets(ctx, db, &JetSetter{...}, &JetSetter{...})
+  ```
 
-* AttachXXX: This attaches an existing model as a relation
+- AttachXXX: This attaches an existing model as a relation
 
-    ```go
-    // to-one
-    jet.AttachPilot(ctx, db, &Pilot{...})
+  ```go
+  // to-one
+  jet.AttachPilot(ctx, db, &Pilot{...})
 
-    // to-many
-    pilot.AttachJets(ctx, db, &Jet{...}, &Jet{...})
-    ```
+  // to-many
+  pilot.AttachJets(ctx, db, &Jet{...}, &Jet{...})
+  ```
 
 ## Loading related models
 
@@ -93,38 +91,39 @@ The mod function accepts options:
 1. `Loaders`: Other loaders mods can be given as an option to the preloader to load nested relationships. This works for both other preloaders and then-loaders.
 
 ```go
-jet, err := models.Jets(ctx, db, 
-    models.PreloadJetPilot(
+jet, err := models.Jets(ctx, db,
+    models.Preload.Jets.Pilot(
         psql.OnlyColumns("id"), // only selects "pilot"."id"
-        psql.ThenLoadPilotLicences(), // will load the pilot's licences
+        psql.SelectThenLoad.Pilot.Licences(), // will load the pilot's licences
     ),
 ).One()
 ```
 
 ```go
 jets, err := models.Jets(ctx, db,
-	models.PreloadJetPilot(psql.PreloadAs("pilot")), // "LEFT JOIN "pilots" AS "pilot" ON ("jet"."pilot_id" = "pilot"."id") 
-	models.PreloadJetCoPilot(psql.PreloadAs("copilot")), // "LEFT JOIN "pilots" AS "copilot" ON ("jet"."copilot_id" = "copilot"."id") 
-	sm.OrderBy(psql.Quote("pilot", models.ColumnNames.Pilot.LastName)) // ORDER BY "pilot"."last_name" DESC 
+	models.Preload.Jet.Pilot(psql.PreloadAs("pilot")), // "LEFT JOIN "pilots" AS "pilot" ON ("jet"."pilot_id" = "pilot"."id")
+	models.Preload.Jet.CoPilot(psql.PreloadAs("copilot")), // "LEFT JOIN "pilots" AS "copilot" ON ("jet"."copilot_id" = "copilot"."id")
+	sm.OrderBy(psql.Quote("pilot", models.ColumnNames.Pilot.LastName)) // ORDER BY "pilot"."last_name" DESC
 ).All()
 ```
 
 ### ThenLoad
 
 ```go
-models.ThenLoadPilotJets(...mods)
+models.SelectThenLoad.Pilots.Jets(...mods)
+models.InsertThenLoad.Pilots.Jets(...mods)
+models.UpdateThenLoad.Pilots.Jets(...mods)
 ```
 
-These will accept **ANY** `SelectQuery` mods.
+These will accept **ANY** `Select/Insert/UpdateQuery` mods.
 
 ```go
 // get the first 2 pilots
 // then load all related jets with airport_id = 100
-pilots, err := models.Pilots(ctx, db, 
-    models.ThenLoadPilotJets(
+pilots, err := models.Pilots(ctx, db,
+    models.ThenLoad.Pilots.Jets(
         models.SelectWhere.Jet.AirportID.EQ(100),
     ),
     sm.Limit(2),
 ).All()
 ```
-

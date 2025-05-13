@@ -23,6 +23,7 @@ type SelectQuery struct {
 	clause.OrderBy
 	clause.Limit
 	clause.Offset
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]

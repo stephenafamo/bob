@@ -1,4 +1,4 @@
-package internal
+package orm
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
@@ -14,14 +13,15 @@ type Preloadable interface {
 	Preload(name string, rel any) error
 }
 
-type loadable interface {
+// Loadable is a constraint for types that can be loaded
+type Loadable interface {
 	AppendLoader(f ...bob.Loader)
 	AppendMapperMod(f scan.MapperMod)
 }
 
 // Loader builds a query mod that makes an extra query after the object is retrieved
 // it can be used to prevent N+1 queries by loading relationships in batches
-type Loader[Q loadable] func(ctx context.Context, exec bob.Executor, retrieved any) error
+type Loader[Q Loadable] func(ctx context.Context, exec bob.Executor, retrieved any) error
 
 // Load is called after the original object is retrieved
 func (l Loader[Q]) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
@@ -38,7 +38,7 @@ func (l Loader[Q]) ModifyPreloadSettings(s *PreloadSettings[Q]) {
 	s.ExtraLoader.AppendLoader(l)
 }
 
-func NewPreloadSettings[T any, Ts ~[]T, Q loadable](cols []string) PreloadSettings[Q] {
+func NewPreloadSettings[T any, Ts ~[]T, Q Loadable](cols []string) PreloadSettings[Q] {
 	return PreloadSettings[Q]{
 		Columns:     cols,
 		ExtraLoader: NewAfterPreloader[T, Ts](),
@@ -47,7 +47,7 @@ func NewPreloadSettings[T any, Ts ~[]T, Q loadable](cols []string) PreloadSettin
 
 type preloadfilter = func(from, to string) []bob.Expression
 
-type PreloadSettings[Q loadable] struct {
+type PreloadSettings[Q Loadable] struct {
 	Columns     []string
 	SubLoaders  []Preloader[Q]
 	ExtraLoader *AfterPreloader
@@ -55,33 +55,33 @@ type PreloadSettings[Q loadable] struct {
 	Alias       string
 }
 
-type PreloadOption[Q loadable] interface {
+type PreloadOption[Q Loadable] interface {
 	ModifyPreloadSettings(*PreloadSettings[Q])
 }
 
-type PreloadAs[Q loadable] string
+type PreloadAs[Q Loadable] string
 
 func (o PreloadAs[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	el.Alias = string(o)
 }
 
-type PreloadOnly[Q loadable] []string
+type PreloadOnly[Q Loadable] []string
 
 func (o PreloadOnly[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(o) > 0 {
-		el.Columns = orm.Only(el.Columns, o...)
+		el.Columns = Only(el.Columns, o...)
 	}
 }
 
-type PreloadExcept[Q loadable] []string
+type PreloadExcept[Q Loadable] []string
 
 func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
-		el.Columns = orm.Except(el.Columns, e...)
+		el.Columns = Except(el.Columns, e...)
 	}
 }
 
-type PreloadWhere[Q loadable] []preloadfilter
+type PreloadWhere[Q Loadable] []preloadfilter
 
 func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	diff := len(filters) - len(el.Mods)
@@ -99,7 +99,7 @@ func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 // while it can be used as a queryMod, it does not have any direct effect.
 // if using manually, the ApplyPreload method should be called
 // with the query's context AFTER other mods have been applied
-type Preloader[Q loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
+type Preloader[Q Loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
 
 // Apply satisfies bob.Mod[*dialect.SelectQuery].
 // 1. It modifies the query to join the preloading table and the extra columns to retrieve
