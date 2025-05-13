@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   SELECT * FROM pilots WHERE jet_id IN (SELECT unnest(CAST($1 AS integer[])); -- Parameters are always 1
   ```
 
+- In the generated model code, `Preload` is now a struct instead of multiple standaalone functions.  
+   It is now used like `Preload.User.Pilots()`, instead of `PreloadUserPilots()`.
+- In the generated model code, `ThenLoad` is now a struct and has been split for each query type.  
+   It is now used like `SelectThenLoad.User.Pilots()`, instead of `ThenLoadUserPilots()`.
+- In the generated model code, the **Load** interfaces no longer include the name of the source model since it is a method on the model.  
+   It now looks like `*models.User.LoadPilots` instead of `*models.User.LoadUserPilots`.
+
 ### Removed
 
 - Removed `clause.Table` and `clause.From`, and merge into `clause.TableRef` since they had overlapping functionality.

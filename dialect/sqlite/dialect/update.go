@@ -20,6 +20,7 @@ type UpdateQuery struct {
 	clause.Returning
 	clause.Limit
 	clause.Offset
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*UpdateQuery]

@@ -17,6 +17,7 @@ type DeleteQuery struct {
 	clause.Returning
 	clause.Limit
 	clause.Offset
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]

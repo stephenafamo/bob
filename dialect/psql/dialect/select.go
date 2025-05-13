@@ -25,6 +25,7 @@ type SelectQuery struct {
 	clause.Offset
 	clause.Fetch
 	clause.Locks
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]

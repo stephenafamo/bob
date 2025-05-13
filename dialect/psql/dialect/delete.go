@@ -17,6 +17,7 @@ type DeleteQuery struct {
 	clause.TableRef
 	clause.Where
 	clause.Returning
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]

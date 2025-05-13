@@ -17,6 +17,7 @@ type InsertQuery struct {
 	clause.Values
 	clause.Conflict
 	clause.Returning
+
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*InsertQuery]
