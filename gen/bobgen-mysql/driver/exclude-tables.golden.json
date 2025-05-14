@@ -2339,7 +2339,7 @@
 			"comment": ""
 		}
 	],
-	"query_folders": null,
+	"query_folders": [],
 	"enums": [
 		{
 			"Type": "TypeMonstersEnumNullable",

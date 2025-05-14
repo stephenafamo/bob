@@ -17,6 +17,37 @@ func zero[T any]() (z T) {
 
     return pg_query.Deparse(aTree)
   }
+{{else if eq $.Dialect "mysql"}}
+  {{$.Importer.Import "errors"}}
+	{{$.Importer.Import "github.com/antlr4-go/antlr/v4"}}
+  {{$.Importer.Import "mysqlparser" "github.com/stephenafamo/sqlparser/mysql"}}
+
+  func formatQuery(s string) (string, error) {
+    input := antlr.NewInputStream(s)
+    lexer := mysqlparser.NewMySqlLexer(input)
+    stream := antlr.NewCommonTokenStream(lexer, 0)
+    p := mysqlparser.NewMySqlParser(stream)
+
+    el := &errorListener{}
+    p.AddErrorListener(el)
+
+    tree := p.Root()
+    if el.err != "" {
+      return "", errors.New(el.err)
+    }
+
+    return tree.GetText(), nil
+  }
+
+  type errorListener struct {
+    *antlr.DefaultErrorListener
+
+    err string
+  }
+
+  func (el *errorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol any, line, column int, msg string, e antlr.RecognitionException) {
+    el.err = msg
+  }
 {{else if eq $.Dialect "sqlite"}}
   {{$.Importer.Import "errors"}}
 	{{$.Importer.Import "github.com/antlr4-go/antlr/v4"}}

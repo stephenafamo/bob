@@ -22,7 +22,7 @@ require (
 	github.com/pganalyze/pg_query_go/v6 v6.1.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/stephenafamo/scan v0.6.2
-	github.com/stephenafamo/sqlparser v0.0.0-20250505135607-597088c9b512
+	github.com/stephenafamo/sqlparser v0.0.0-20250514184418-d5be322aae87
 	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.37.0
 	github.com/tursodatabase/libsql-client-go v0.0.0-20240902231107-85af5b9d094d
