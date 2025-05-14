@@ -157,6 +157,7 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	d := wrapDriver(ctx, mysqlDriver.New(mysqlDriver.Config{
 		Dsn: dsn,
 
+		Queries:     config.Queries,
 		Only:        config.Only,
 		Except:      config.Except,
 		Concurrency: config.Concurrency,

@@ -59,7 +59,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 
 	// Either this or the values will get expressed
-	setArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), i.Sets, "\nSET ", "\n", " ")
+	setArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), i.Sets, "\nSET ", ",\n", "\n")
 	if err != nil {
 		return nil, err
 	}
