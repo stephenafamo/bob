@@ -14,6 +14,9 @@ func NewColumns(names ...string) Columns {
 	}
 }
 
+// Columns is a set of columns that can be used in a query
+// It is used to properly quote and format the columns in the query
+// such as "users"."id" AS "id", "users"."name" AS "name"
 type Columns struct {
 	parent      []string
 	names       []string
