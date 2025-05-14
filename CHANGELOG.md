@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `WithOneRelations` mod to factories to include every relation for a factory template.
 - Added `clause.TableRef` which merges `clause.Table` and `clause.From` since they had overlapping functionality.
 - Added `RunInTx` method to `bob.DB`. This starts a transaction and calls the given function with this transaction.
+- Add support for MySQL to `bobgen-sql`.
 
 ### Changed
 

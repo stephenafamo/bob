@@ -12,9 +12,12 @@ import (
 	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
+	mysqlDriver "github.com/stephenafamo/bob/gen/bobgen-mysql/driver"
 	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/testcontainers/testcontainers-go"
+	mysqltest "github.com/testcontainers/testcontainers-go/modules/mysql"
 )
 
 type Config struct {
@@ -105,6 +108,61 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 		Output:       config.Output,
 		Pkgname:      config.Pkgname,
 		NoFactory:    config.NoFactory,
+	}))
+
+	return d, nil
+}
+
+func RunMySQL(ctx context.Context, state *gen.State[any], config Config) error {
+	d, err := getMySQLDriver(ctx, config)
+	if err != nil {
+		return fmt.Errorf("getting mysql driver: %w", err)
+	}
+
+	return gen.Run(ctx, state, d)
+}
+
+func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, error) {
+	mysqlContainer, err := mysqltest.Run(ctx,
+		"mysql:8.0.35",
+		mysqltest.WithDatabase("bobgen"),
+		mysqltest.WithUsername("root"),
+		mysqltest.WithPassword("password"),
+	)
+	defer func() {
+		if err := testcontainers.TerminateContainer(mysqlContainer); err != nil {
+			fmt.Printf("failed to terminate MySQL container: %v\n", err)
+		}
+	}()
+	if err != nil {
+		return nil, fmt.Errorf("failed to start container: %w", err)
+	}
+
+	dsn, err := mysqlContainer.ConnectionString(ctx, "tls=skip-verify", "multiStatements=true")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get connection string: %w", err)
+	}
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer db.Close()
+
+	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
+		return nil, fmt.Errorf("migrating: %w", err)
+	}
+	db.Close() // close early
+
+	d := wrapDriver(ctx, mysqlDriver.New(mysqlDriver.Config{
+		Dsn: dsn,
+
+		Only:        config.Only,
+		Except:      config.Except,
+		Concurrency: config.Concurrency,
+		Output:      config.Output,
+		Pkgname:     config.Pkgname,
+		NoFactory:   config.NoFactory,
 	}))
 
 	return d, nil

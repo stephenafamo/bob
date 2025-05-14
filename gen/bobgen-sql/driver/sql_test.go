@@ -4,10 +4,12 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"testing"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/stephenafamo/bob/gen"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -35,6 +37,32 @@ func TestPostgres(t *testing.T) {
 			return d
 		},
 		GoldenFile:      "../../bobgen-psql/driver/psql.golden.json",
+		Templates:       &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+		OverwriteGolden: false,
+	})
+}
+
+func TestMySQL(t *testing.T) {
+	t.Parallel()
+	out, cleanup := prep(t, "mysql")
+	defer cleanup()
+
+	config := Config{
+		Pattern: "mysql/*.sql",
+		fs:      testfiles.MySQLSchema,
+	}
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
+		Root: out,
+		GetDriver: func() drivers.Interface[any, any, any] {
+			d, err := getMySQLDriver(context.Background(), config)
+			if err != nil {
+				t.Fatalf("getting mysql driver: %s", err)
+			}
+			return d
+		},
+		GoldenFile:      "../../bobgen-mysql/driver/mysql.golden.json",
+		Templates:       &helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
 		OverwriteGolden: false,
 	})
 }
@@ -60,6 +88,7 @@ func TestSQLite(t *testing.T) {
 			return d
 		},
 		GoldenFile:      "../../bobgen-sqlite/driver/sqlite.golden.json",
+		Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 		OverwriteGolden: false,
 	})
 }
