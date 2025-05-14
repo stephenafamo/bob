@@ -40,17 +40,17 @@ SQL_DIALECT=psql
 
 The values that exist for the drivers:
 
-| Name          | Description                                 | Default                                      |
-| ------------- | ------------------------------------------- | -------------------------------------------- |
-| dialect       | Database dialect to use (REQUIRED)          |                                              |
-| pattern       | Glob pattern of SQL migration files         | \*.sql                                       |
-| schemas       | The database schemas to generate models for | public (psql dialect), main (sqlite dialect) |
-| shared_schema | Schema to not include prefix in model       | first schema found                           |
-| output        | Folder for generated files                  | "models"                                     |
-| pkgname       | Package name for generated code             | "models"                                     |
-| uuid_pkg      | UUID package to use (gofrs or google)       | "gofrs"                                      |
-| only          | Only generate these                         |                                              |
-| except        | Skip generation for these                   |                                              |
+| Name          | Description                                                     | Default                                      |
+| ------------- | --------------------------------------------------------------- | -------------------------------------------- |
+| dialect       | Database dialect to use. `psql`, `mysql` or `sqlite` (REQUIRED) |                                              |
+| pattern       | Glob pattern of SQL migration files                             | \*.sql                                       |
+| schemas       | The database schemas to generate models for                     | public (psql dialect), main (sqlite dialect) |
+| shared_schema | Schema to not include prefix in model                           | first schema found                           |
+| output        | Folder for generated files                                      | "models"                                     |
+| pkgname       | Package name for generated code                                 | "models"                                     |
+| uuid_pkg      | UUID package to use (gofrs or google)                           | "gofrs"                                      |
+| only          | Only generate these                                             |                                              |
+| except        | Skip generation for these                                       |                                              |
 
 Example of Only/Except:
 
