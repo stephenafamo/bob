@@ -16,6 +16,7 @@ import (
 	"text/template"
 
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 	"golang.org/x/mod/modfile"
@@ -50,10 +51,6 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 				return fmt.Errorf("StatePlugin Error [%s]: %w", statePlug.Name(), err)
 			}
 		}
-	}
-
-	if len(s.Config.Generator) > 0 {
-		noEditDisclaimer = fmt.Appendf(nil, noEditDisclaimerFmt, " by "+s.Config.Generator)
 	}
 
 	dbInfo, err := driver.Assemble(ctx)
@@ -205,13 +202,19 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 			o.templateByteBuffer = templateByteBuffer
 			o.templateHeaderByteBuffer = templateHeaderByteBuffer
 
-			if err := generateSingletonOutput(o, data, goVersion, s.Config.NoTests); err != nil {
+			langs := language.Languages{
+				GeneratorName:           s.Config.Generator,
+				GoVersion:               goVersion,
+				SeparatePackageForTests: o.SeparatePackageForTests,
+			}
+
+			if err := generateSingletonOutput(o, data, langs, s.Config.NoTests); err != nil {
 				return fmt.Errorf("singleton template output: %w", err)
 			}
 
 			switch o.Key {
 			case "queries":
-				dirExtMap := groupTemplates(o.queryTemplates)
+				dirExtMap := groupTemplatesByExtension(o.queryTemplates)
 				for _, file := range data.QueryFolder.Files {
 					data.QueryFile = file
 
@@ -220,18 +223,18 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 						Name: file.BaseName(),
 					}
 
-					if err := generateOutput(o, dirExtMap, o.queryTemplates, data, goVersion, s.Config.NoTests); err != nil {
+					if err := generateOutput(o, dirExtMap, o.queryTemplates, data, langs, s.Config.NoTests); err != nil {
 						return fmt.Errorf("unable to generate output: %w", err)
 					}
 				}
 
 			default:
-				dirExtMap := groupTemplates(o.tableTemplates)
+				dirExtMap := groupTemplatesByExtension(o.tableTemplates)
 				for _, table := range data.Tables {
 					data.Table = table
 
 					// Generate the regular templates
-					if err := generateOutput(o, dirExtMap, o.tableTemplates, data, goVersion, s.Config.NoTests); err != nil {
+					if err := generateOutput(o, dirExtMap, o.tableTemplates, data, langs, s.Config.NoTests); err != nil {
 						return fmt.Errorf("unable to generate output: %w", err)
 					}
 				}

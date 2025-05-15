@@ -19,7 +19,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/stephenafamo/bob/gen"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/stephenafamo/bob/gen/language"
 )
 
 const DefaultConfigPath = "./bobgen.yaml"
@@ -196,17 +196,17 @@ func Types() drivers.Types {
 		},
 		"string": {
 			RandomExpr:        `return strings.Join(f.Lorem().Words(f.IntBetween(1, 5)), " ")`,
-			RandomExprImports: importers.List{`"strings"`},
+			RandomExprImports: language.ImportList{`"strings"`},
 		},
 		"[]byte": {
 			DependsOn:           []string{"string"},
 			RandomExpr:          `return []byte(random_string(f))`,
 			CompareExpr:         `bytes.Equal(AAA, BBB)`,
-			CompareExprImports:  importers.List{`"bytes"`},
+			CompareExprImports:  language.ImportList{`"bytes"`},
 			NoScannerValuerTest: true,
 		},
 		"time.Time": {
-			Imports: importers.List{`"time"`},
+			Imports: language.ImportList{`"time"`},
 			RandomExpr: `year := time.Hour * 24 * 365
                 min := time.Now().Add(-year)
                 max := time.Now().Add(year)
@@ -215,7 +215,7 @@ func Types() drivers.Types {
 			NoScannerValuerTest: true,
 		},
 		"types.Text[netip.Addr, *netip.Addr]": {
-			Imports: importers.List{
+			Imports: language.ImportList{
 				`"net/netip"`,
 				`"github.com/stephenafamo/bob/types"`,
 			},
@@ -223,10 +223,10 @@ func Types() drivers.Types {
                 rand.Read(addr[:])
                 ipAddr := netip.AddrFrom4(addr)
                 return types.Text[netip.Addr, *netip.Addr]{Val: ipAddr}`,
-			RandomExprImports: importers.List{`"crypto/rand"`},
+			RandomExprImports: language.ImportList{`"crypto/rand"`},
 		},
 		"pgtypes.Inet": {
-			Imports: importers.List{
+			Imports: language.ImportList{
 				`"github.com/stephenafamo/bob/types/pgtypes"`,
 			},
 			RandomExpr: `var addr [4]byte
@@ -234,18 +234,18 @@ func Types() drivers.Types {
                 ipAddr := netip.AddrFrom4(addr)
                 ipPrefix := netip.PrefixFrom(ipAddr, f.IntBetween(0, ipAddr.BitLen()))
                 return pgtypes.Inet{Prefix: ipPrefix}`,
-			RandomExprImports: importers.List{`"crypto/rand"`, `"net/netip"`},
+			RandomExprImports: language.ImportList{`"crypto/rand"`, `"net/netip"`},
 		},
 		"pgtypes.Macaddr": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports: language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `addr, _ := net.ParseMAC(f.Internet().MacAddress())
                 return pgtypes.Macaddr{Addr: addr}`,
-			RandomExprImports:  importers.List{`"net"`},
+			RandomExprImports:  language.ImportList{`"net"`},
 			CompareExpr:        `slices.Equal(AAA.Addr, BBB.Addr)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pq.BoolArray": {
-			Imports: importers.List{`"github.com/lib/pq"`},
+			Imports: language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.BoolArray, f.IntBetween(1, 5))
                 for i := range arr {
                     arr[i] = f.Bool()
@@ -254,18 +254,18 @@ func Types() drivers.Types {
 			NoRandomizationTest: true,
 		},
 		"pq.Int64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
+			Imports: language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.Int64Array, f.IntBetween(1, 5))
                 for i := range arr {
                     arr[i] = f.Int64()
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pq.ByteaArray": {
 			DependsOn: []string{"[]byte"},
-			Imports:   importers.List{`"github.com/lib/pq"`},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.ByteaArray, f.IntBetween(1, 5))
                 for i := range arr {
                     arr[i] = random___byte(f)
@@ -274,71 +274,71 @@ func Types() drivers.Types {
 			CompareExpr: `slices.EqualFunc(AAA, BBB, func(a, b []byte) bool {
                 return bytes.Equal(a, b)
             })`,
-			CompareExprImports: importers.List{`"slices"`, `"bytes"`},
+			CompareExprImports: language.ImportList{`"slices"`, `"bytes"`},
 		},
 		"pq.StringArray": {
 			DependsOn: []string{"string"},
-			Imports:   importers.List{`"github.com/lib/pq"`},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.StringArray, f.IntBetween(1, 5))
                 for i := range arr {
                     arr[i] = random_string(f)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pq.Float64Array": {
-			Imports: importers.List{`"github.com/lib/pq"`},
+			Imports: language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.Float64Array, f.IntBetween(1, 5))
                 for i := range arr {
                     arr[i] = f.Float64(10, -1_000_000, 1_000_000)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pgeo.Box": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:    language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return pgeo.NewRandBox()`,
 		},
 		"pgeo.Circle": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:    language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return pgeo.NewRandCircle()`,
 		},
 		"pgeo.Line": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:    language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return pgeo.NewRandLine()`,
 		},
 		"pgeo.Lseg": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:    language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return pgeo.NewRandLseg()`,
 		},
 		"pgeo.Path": {
-			Imports:     importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:     language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr:  `return pgeo.NewRandPath()`,
 			CompareExpr: `AAA.Closed == BBB.Closed && slices.Equal(AAA.Points, BBB.Points)`,
 		},
 		"pgeo.Point": {
-			Imports:    importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:    language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr: `return pgeo.NewRandPoint()`,
 		},
 		"pgeo.Polygon": {
-			Imports:            importers.List{`"github.com/saulortega/pgeo"`},
+			Imports:            language.ImportList{`"github.com/saulortega/pgeo"`},
 			RandomExpr:         `return pgeo.NewRandPolygon()`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"decimal.Decimal": {
-			Imports:     importers.List{`"github.com/shopspring/decimal"`},
+			Imports:     language.ImportList{`"github.com/shopspring/decimal"`},
 			RandomExpr:  `return decimal.New(f.Int64Between(0, 1000), 0)`,
 			CompareExpr: `AAA.Equal(BBB)`,
 		},
 		"pgtypes.LSN": {
-			Imports:    importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports:    language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `return pgtypes.LSN(f.UInt64())`,
 		},
 		"pgtypes.TxIDSnapshot": {
-			Imports: importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports: language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `active := make([]string, f.IntBetween(1, 5))
                 for i := range active {
                     active[i] = strconv.FormatUint(f.UInt64(), 10)
@@ -348,13 +348,13 @@ func Types() drivers.Types {
                     Max: strconv.FormatUint(f.UInt64(), 10),
                     Active: active,
                 }`,
-			RandomExprImports:  importers.List{`"strconv"`},
+			RandomExprImports:  language.ImportList{`"strconv"`},
 			CompareExpr:        `AAA.Min == BBB.Min && AAA.Max == BBB.Max && slices.Equal(AAA.Active, BBB.Active)`,
-			CompareExprImports: importers.List{`"slices"`},
+			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pgtypes.HStore": {
 			DependsOn: []string{"string"},
-			Imports:   importers.List{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			Imports:   language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `hs := make(pgtypes.HStore)
                 for i := 0; i < f.IntBetween(1, 5); i++ {
                     hs[random_string(f)] = null.FromCond(random_string(f), f.Bool())
@@ -362,7 +362,7 @@ func Types() drivers.Types {
                 return hs`,
 		},
 		"types.JSON[json.RawMessage]": {
-			Imports: importers.List{
+			Imports: language.ImportList{
 				`"encoding/json"`,
 				`"github.com/stephenafamo/bob/types"`,
 			},
@@ -376,16 +376,16 @@ func Types() drivers.Types {
                 }
                 s.WriteRune('}')
                 return types.NewJSON[json.RawMessage](s.Bytes())`,
-			RandomExprImports:  importers.List{`"fmt"`, `"bytes"`},
+			RandomExprImports:  language.ImportList{`"fmt"`, `"bytes"`},
 			CompareExpr:        `bytes.Equal(AAA.Val, BBB.Val)`,
-			CompareExprImports: importers.List{`"bytes"`},
+			CompareExprImports: language.ImportList{`"bytes"`},
 		},
 		"xml": {
 			AliasOf:   "string",
 			DependsOn: []string{"string"},
 			RandomExpr: `tag := f.Lorem().Word()
       return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)`,
-			RandomExprImports: importers.List{`"fmt"`},
+			RandomExprImports: language.ImportList{`"fmt"`},
 		},
 	}
 }

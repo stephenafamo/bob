@@ -10,6 +10,7 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/internal"
 	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
 )
@@ -133,7 +134,7 @@ type stmtToMod struct {
 	info StmtInfo
 }
 
-func (s stmtToMod) IncludeInTemplate(i drivers.Importer) string {
+func (s stmtToMod) IncludeInTemplate(i language.Importer) string {
 	for _, im := range s.info.Imports {
 		i.Import(im...)
 	}

@@ -1,5 +1,4 @@
-// Package importers helps with dynamic imports for templating
-package importers
+package language
 
 import (
 	"bytes"
@@ -34,27 +33,27 @@ func getStandardPackages() map[string]struct{} {
 	return standardPackages
 }
 
-// List of imports
-type List []string
+// ImportList of imports
+type ImportList []string
 
 // Len implements sort.Interface.Len
-func (l List) Len() int {
+func (l ImportList) Len() int {
 	return len(l)
 }
 
 // Swap implements sort.Interface.Swap
-func (l List) Swap(i, j int) {
+func (l ImportList) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
 // Less implements sort.Interface.Less
-func (l List) Less(i, j int) bool {
+func (l ImportList) Less(i, j int) bool {
 	res := strings.Compare(strings.TrimLeft(l[i], "_ "), strings.TrimLeft(l[j], "_ "))
 	return res <= 0
 }
 
-func (l List) GetSorted() (List, List) {
-	var std, third List //nolint:prealloc
+func (l ImportList) GetSorted() (ImportList, ImportList) {
+	var std, third ImportList //nolint:prealloc
 	for _, pkg := range l {
 		if pkg == "" {
 			continue
@@ -82,7 +81,7 @@ func (l List) GetSorted() (List, List) {
 }
 
 // Format the set into Go syntax (compatible with go imports)
-func (l List) Format() []byte {
+func (l ImportList) Format() []byte {
 	if len(l) < 1 {
 		return []byte{}
 	}
@@ -119,4 +118,70 @@ func combineStringSlices(a, b []string) []string {
 	}
 
 	return c
+}
+
+type Importer interface {
+	Import(...string) string
+	ImportList(list ImportList) string
+	ToList() ImportList
+}
+
+type defaultImporter map[string]struct{}
+
+// To be used inside templates to record an import.
+// Always returns an empty string
+func (i defaultImporter) Import(pkgs ...string) string {
+	pkg := strings.Join(pkgs, " ")
+
+	i[pkg] = struct{}{}
+	return ""
+}
+
+func (i defaultImporter) ImportList(list ImportList) string {
+	for _, p := range list {
+		i[p] = struct{}{}
+	}
+	return ""
+}
+
+func (i defaultImporter) ToList() ImportList {
+	list := make(ImportList, 0, len(i))
+	for pkg := range i {
+		list = append(list, pkg)
+	}
+
+	return list
+}
+
+type goImporter map[string]struct{}
+
+// To be used inside templates to record an import.
+// Always returns an empty string
+func (i goImporter) Import(pkgs ...string) string {
+	if len(pkgs) < 1 {
+		return ""
+	}
+	pkg := fmt.Sprintf("%q", pkgs[0])
+	if len(pkgs) > 1 {
+		pkg = fmt.Sprintf("%s %q", pkgs[0], pkgs[1])
+	}
+
+	i[pkg] = struct{}{}
+	return ""
+}
+
+func (i goImporter) ImportList(list ImportList) string {
+	for _, p := range list {
+		i[p] = struct{}{}
+	}
+	return ""
+}
+
+func (i goImporter) ToList() ImportList {
+	list := make(ImportList, 0, len(i))
+	for pkg := range i {
+		list = append(list, pkg)
+	}
+
+	return list
 }

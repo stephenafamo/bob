@@ -35,7 +35,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
   {{$colParams =  printf "%s, %s" $colType (or $query.Config.RowSliceName (printf "[]%s" $colType)) }}
 {{end}}
 
-var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.QueryPosition $queryIndex}}]
+var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.QueryPosition $queryIndex (len $.Language.Disclaimer)}}]
 
 {{$args := list }}
 {{range $arg := $query.Args -}}
