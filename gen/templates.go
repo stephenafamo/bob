@@ -10,7 +10,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/stephenafamo/bob/gen/language"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -44,42 +44,9 @@ var (
 	)
 )
 
-type Importer map[string]struct{}
-
-// To be used inside templates to record an import.
-// Always returns an empty string
-func (i Importer) Import(pkgs ...string) string {
-	if len(pkgs) < 1 {
-		return ""
-	}
-	pkg := fmt.Sprintf("%q", pkgs[0])
-	if len(pkgs) > 1 {
-		pkg = fmt.Sprintf("%s %q", pkgs[0], pkgs[1])
-	}
-
-	i[pkg] = struct{}{}
-	return ""
-}
-
-func (i Importer) ImportList(list importers.List) string {
-	for _, p := range list {
-		i[p] = struct{}{}
-	}
-	return ""
-}
-
-func (i Importer) ToList() importers.List {
-	var list importers.List
-	for pkg := range i {
-		list = append(list, pkg)
-	}
-
-	return list
-}
-
 type TemplateData[T, C, I any] struct {
 	Dialect  string
-	Importer Importer
+	Importer language.Importer
 
 	Table         drivers.Table[C, I]
 	Tables        drivers.Tables[C, I]
@@ -117,10 +84,7 @@ type TemplateData[T, C, I any] struct {
 
 	// DriverName is the module name of the underlying `database/sql` driver
 	DriverName string
-}
-
-func (t *TemplateData[T, C, I]) ResetImports() {
-	t.Importer = make(Importer)
+	Language   language.Language
 }
 
 func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {

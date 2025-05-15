@@ -13,6 +13,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/internal"
 	pgparse "github.com/wasilibs/go-pgquery"
 )
@@ -207,7 +208,7 @@ func getQueryType(stmt *pg.Node) bob.QueryType {
 	}
 }
 
-func (w walker) IncludeInTemplate(i drivers.Importer) string {
+func (w walker) IncludeInTemplate(i language.Importer) string {
 	for _, im := range w.imports {
 		i.Import(im...)
 	}

@@ -1,4 +1,4 @@
-package importers
+package language
 
 import (
 	"reflect"
@@ -10,19 +10,19 @@ import (
 func TestImportsSort(t *testing.T) {
 	t.Parallel()
 
-	a1 := List{
+	a1 := ImportList{
 		`"fmt"`,
 		`"errors"`,
 	}
-	a2 := List{
+	a2 := ImportList{
 		`_ "github.com/lib/pq"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/mux"`,
 		`"github.com/gorilla/websocket"`,
 	}
 
-	a1Expected := List{`"errors"`, `"fmt"`}
-	a2Expected := List{
+	a1Expected := ImportList{`"errors"`, `"fmt"`}
+	a2Expected := ImportList{
 		`"github.com/gorilla/mux"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/websocket"`,
@@ -97,7 +97,7 @@ var testImportStringExpect = `import (
 func TestListFormat(t *testing.T) {
 	t.Parallel()
 
-	s := List{
+	s := ImportList{
 		`"github.com/friendsofgo/errors"`,
 		`"fmt"`,
 	}

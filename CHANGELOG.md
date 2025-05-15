@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    It is now used like `SelectThenLoad.User.Pilots()`, instead of `ThenLoadUserPilots()`.
 - In the generated model code, the **Load** interfaces no longer include the name of the source model since it is a method on the model.  
    It now looks like `*models.User.LoadPilots` instead of `*models.User.LoadUserPilots`.
+- Made changes to better support generating code in multiple languages.
 
 ### Removed
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -52,17 +52,13 @@ func (tables Tables[C, I]) ColumnGetter(alias TableAlias, table, column string) 
 	panic("unknown table " + table)
 }
 
-type Importer interface {
-	Import(...string) string
-	ImportList(list importers.List) string
-}
-
 type dummyImporter struct{}
 
-func (dummyImporter) Import(...string) string          { return "" }
-func (dummyImporter) ImportList(importers.List) string { return "" }
+func (dummyImporter) Import(...string) string               { return "" }
+func (dummyImporter) ImportList(language.ImportList) string { return "" }
+func (dummyImporter) ToList() language.ImportList           { return nil }
 
-func (tables Tables[C, I]) columnSetter(i Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
+func (tables Tables[C, I]) columnSetter(i language.Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
 	fromTable := tables.Get(fromTName)
 	fromCol := fromTable.GetColumn(fromColName)
 
@@ -255,7 +251,7 @@ func (tables Tables[C, I]) RelDependenciesTypSet(aliases Aliases, r orm.Relation
 	return strings.Join(ma, "\n")
 }
 
-func (tables Tables[C, I]) SetFactoryDeps(i Importer, aliases Aliases, r orm.Relationship, inLoop bool) string {
+func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, aliases Aliases, r orm.Relationship, inLoop bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()

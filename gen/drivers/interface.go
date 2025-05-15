@@ -9,7 +9,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/stephenafamo/bob/gen/importers"
+	"github.com/stephenafamo/bob/gen/language"
 )
 
 // Interface abstracts either a side-effect imported driver or a binary
@@ -28,14 +28,14 @@ type Type struct {
 	// this is useful to have custom randomization for a type e.g. xml
 	AliasOf string `yaml:"alias_of"`
 	// Imports needed for the type
-	Imports importers.List `yaml:"imports"`
+	Imports language.ImportList `yaml:"imports"`
 	// Any other types that this type depends on
 	DependsOn []string `yaml:"depends_on"`
 	// To be used in factory.random_type
 	// a variable `f` of type `faker.Faker` is available
 	RandomExpr string `yaml:"random_expr"`
 	// Additional imports for the randomize expression
-	RandomExprImports importers.List `yaml:"random_expr_imports"`
+	RandomExprImports language.ImportList `yaml:"random_expr_imports"`
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
 	NoRandomizationTest bool `yaml:"no_randomization_test"`
@@ -48,7 +48,7 @@ type Type struct {
 	// Used AAA and BBB as placeholders for the two values
 	CompareExpr string `yaml:"compare_expr"`
 	// Imports needed for the compare expression
-	CompareExprImports importers.List `yaml:"compare_expr_imports"`
+	CompareExprImports language.ImportList `yaml:"compare_expr_imports"`
 	// If factory generation should have "models." prefix
 	InGeneratedPackage bool `yaml:"in_generated_package"`
 }
