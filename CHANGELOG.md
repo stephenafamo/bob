@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    It now looks like `*models.User.LoadPilots` instead of `*models.User.LoadUserPilots`.
 - Made changes to better support generating code in multiple languages.
 - Mark queries with `ON DUPLICATE KEY UPDATE` as unretrievable in MySQL.
+- Unretrievable `INSERT` queries using `One, All, Cursor` now immediately return `orm.ErrCannotRetrieveRow` instead of executing the query first.
 
 ### Removed
 
