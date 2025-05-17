@@ -67,11 +67,11 @@ func TestNewTable(t *testing.T) {
 		t.Fatalf("diff: %s", diff)
 	}
 
-	if table1.unretrievable {
+	if table1.Insert().unretrievable() {
 		t.Fatalf("table1 marked as unretrievable")
 	}
 
-	if table2.unretrievable {
+	if table2.Insert().unretrievable() {
 		t.Fatalf("table2 marked as unretrievable")
 	}
 }

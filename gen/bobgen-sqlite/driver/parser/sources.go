@@ -153,6 +153,10 @@ func (v *visitor) getSourceFromTable(ctx interface {
 		}
 	}
 
+	if schema == "main" {
+		schema = ""
+	}
+
 	for _, table := range v.DB {
 		if table.Name != tableName {
 			continue
@@ -160,7 +164,7 @@ func (v *visitor) getSourceFromTable(ctx interface {
 
 		switch {
 		case table.Schema == schema: // schema matches
-		case table.Schema == "" && schema == "main": // schema is shared
+		case table.Schema == "main" && schema == "": // schema is shared
 		default:
 			continue
 		}

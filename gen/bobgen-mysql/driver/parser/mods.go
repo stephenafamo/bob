@@ -63,34 +63,19 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 	}
 
 	if stmtOrVals := ctx.InsertStatementValue(); stmtOrVals != nil {
-		if selectStmt := stmtOrVals.SelectStatement(); selectStmt != nil {
-			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-				selectStmt.GetStart().GetStart(),
-				selectStmt.GetStop().GetStop(),
-				func(start, end int) error {
-					fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+			stmtOrVals.GetStart().GetStart(),
+			stmtOrVals.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
 						Expression: o.expr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
 					`, start, end)
-					return nil
-				},
-			)...)
-		}
-
-		if values := stmtOrVals.AllExpressionsWithDefaults(); len(values) > 0 {
-			for _, value := range values {
-				v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-					value.LR_BRACKET().GetSymbol().GetStart()+1,
-					value.RR_BRACKET().GetSymbol().GetStop()-1,
-					func(start, end int) error {
-						fmt.Fprintf(sb, "q.AppendValues(o.expr(%d, %d))\n", start, end)
-						return nil
-					},
-				)...)
-			}
-		}
+				return nil
+			},
+		)...)
 	}
 
 	if sets := ctx.GetSetElement(); sets != nil {

@@ -3,6 +3,7 @@
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "strings"}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/google/go-cmp/cmp"}}
 
 {{range $query := $.QueryFile.Queries}}
@@ -65,6 +66,27 @@ func Test{{$upperName}}Mod (t *testing.T) {
 	}
 }
 
+{{if not $query.Columns}}
+func Test{{$upperName}}Exec (t *testing.T) {
+  if testDB == nil {
+    t.Skip("skipping test, no DSN provided")
+  }
+
+  ctxTx, cancel := context.WithCancel(context.Background())
+  defer cancel()
+
+  tx, err := testDB.BeginTx(ctxTx, nil)
+  if err != nil {
+    t.Fatalf("Error starting transaction: %v", err)
+  }
+
+	query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}}))
+  if _, err := bob.Exec(ctxTx, tx, query); err != nil {
+    t.Fatal(err)
+  }
+}
+{{end}}
+
 
 {{if $query.Columns}}
 {{$.Importer.Import "slices"}}
@@ -89,7 +111,6 @@ func Test{{$upperName}}Map (t *testing.T) {
   {{end}}
 }
 
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
 func Test{{$upperName}}Scan (t *testing.T) {
   if testDB == nil {
     t.Skip("skipping test, no DSN provided")
@@ -103,10 +124,11 @@ func Test{{$upperName}}Scan (t *testing.T) {
     t.Fatalf("Error starting transaction: %v", err)
   }
 
-	query, args, err := bob.Build(ctxTx, {{$upperName}}({{join ", " $args}}))
+	query, args, err := bob.Build(ctxTx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}})))
   if err != nil {
     t.Fatal(err)
   }
+
 
   rows, err := tx.QueryContext(ctxTx, query, args...)
   if err != nil {

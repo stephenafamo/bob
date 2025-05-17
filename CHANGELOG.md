@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `clause.TableRef` which merges `clause.Table` and `clause.From` since they had overlapping functionality.
 - Added `RunInTx` method to `bob.DB`. This starts a transaction and calls the given function with this transaction.
 - Add support for MySQL to `bobgen-sql`.
+- Added `Exec` test for generated queries that do not return rows.
 
 ### Changed
 
@@ -44,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In the generated model code, the **Load** interfaces no longer include the name of the source model since it is a method on the model.  
    It now looks like `*models.User.LoadPilots` instead of `*models.User.LoadUserPilots`.
 - Made changes to better support generating code in multiple languages.
+- Mark queries with `ON DUPLICATE KEY UPDATE` as unretrievable in MySQL.
 
 ### Removed
 
@@ -54,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use correct row name for generated queries in `bobgen-sqlite`.
 - Properly select query comment in `bobgen-sqlite`.
+- Fixed issue with using generated queries with `VALUES` as mods.
 
 ## [v0.34.2] - 2025-05-01
 

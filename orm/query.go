@@ -104,22 +104,27 @@ func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPos
 				return args, nil
 			}
 
-			if from <= queryArg.Start {
+			if from > queryArg.Start {
 				if to < queryArg.Stop {
-					return nil, fmt.Errorf("arg %q end(%d) is greater than to(%d)", queryArg.Name, queryArg.Stop, to)
+					return nil, fmt.Errorf("arg %q end(%d) is after expression end(%d)", queryArg.Name, queryArg.Stop, to)
 				}
-
-				w.Write([]byte(querySQL[from:queryArg.Start]))
-
-				arg, err := bob.Express(ctx, w, d, start, queryArg.Expression)
-				if err != nil {
-					return nil, err
-				}
-				args = append(args, arg...)
-
-				start += len(arg)
-				from = queryArg.Stop
+				continue
 			}
+
+			if to < queryArg.Stop {
+				return nil, fmt.Errorf("arg %q end(%d) is greater than to(%d)", queryArg.Name, queryArg.Stop, to)
+			}
+
+			w.Write([]byte(querySQL[from:queryArg.Start]))
+
+			arg, err := bob.Express(ctx, w, d, start, queryArg.Expression)
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, arg...)
+
+			start += len(arg)
+			from = queryArg.Stop
 		}
 
 		w.Write([]byte(querySQL[from:to]))
