@@ -338,19 +338,23 @@ func (w *walker) walkSelectStmt(a *pg.SelectStmt) nodeInfo {
 		w.errors = append(w.errors, err)
 	}
 
-	if len(a.ValuesLists) != 1 {
-		return info
-	}
-	valInfo := info.children["ValuesLists"]
-	w.editRules = append(w.editRules,
-		internal.RecordPoints(
+	valsInfo := info.children["ValuesLists"]
+	for i := range a.ValuesLists {
+		valInfo := valsInfo.children[strconv.Itoa(i)]
+		w.editRules = append(w.editRules, internal.RecordPoints(
 			int(valInfo.start), int(valInfo.end-1),
 			func(start, end int) error {
-				w.setMultiple([2]int{start, end})
+				w.setGroup(argPos{
+					original: valInfo.position(),
+					edited:   [2]int{start, end},
+				})
+				if len(a.ValuesLists) == 1 {
+					w.setMultiple([2]int{start, end})
+				}
 				return nil
 			},
-		)...,
-	)
+		)...)
+	}
 
 	return info
 }
@@ -681,8 +685,7 @@ func (w *walker) walkList(a *pg.List) nodeInfo {
 func (w *walker) walkRowExpr(a *pg.RowExpr) nodeInfo {
 	info := w.reflectWalk(reflect.ValueOf(a))
 	w.editRules = append(w.editRules,
-		internal.RecordPoints(
-			int(info.start), int(info.end-1),
+		internal.RecordPoints(int(info.start), int(info.end-1),
 			func(start, end int) error {
 				w.setGroup(argPos{
 					original: info.position(),
@@ -690,8 +693,7 @@ func (w *walker) walkRowExpr(a *pg.RowExpr) nodeInfo {
 				})
 				return nil
 			},
-		)...,
-	)
+		)...)
 
 	return info
 }
@@ -702,32 +704,28 @@ func (w *walker) walkAArrayExpr(a *pg.A_ArrayExpr) nodeInfo {
 
 	elementsInfo := info.children["Elements"]
 	if len(a.Elements) == 1 {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(elementsInfo.start), int(elementsInfo.end-1),
-				func(start, end int) error {
-					w.setMultiple([2]int{start, end})
-					w.setGroup(argPos{
-						original: elementsInfo.position(),
-						edited:   [2]int{start, end},
-					})
-					return nil
-				},
-			)...,
-		)
+		w.editRules = append(w.editRules, internal.RecordPoints(
+			int(elementsInfo.start), int(elementsInfo.end-1),
+			func(start, end int) error {
+				w.setMultiple([2]int{start, end})
+				w.setGroup(argPos{
+					original: elementsInfo.position(),
+					edited:   [2]int{start, end},
+				})
+				return nil
+			},
+		)...)
 	} else {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(info.start), int(info.end-1),
-				func(start, end int) error {
-					w.setGroup(argPos{
-						original: info.position(),
-						edited:   [2]int{start, end},
-					})
-					return nil
-				},
-			)...,
-		)
+		w.editRules = append(w.editRules, internal.RecordPoints(
+			int(info.start), int(info.end-1),
+			func(start, end int) error {
+				w.setGroup(argPos{
+					original: info.position(),
+					edited:   [2]int{start, end},
+				})
+				return nil
+			},
+		)...)
 	}
 
 	return info

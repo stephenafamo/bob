@@ -299,45 +299,19 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 		fmt.Fprintf(w.mods, "q.TableRef.Columns = %#v\n", colNames)
 	}
 
-	selectStmt := stmt.InsertStmt.GetSelectStmt().GetSelectStmt()
-	selectInfo := info.children["SelectStmt"].children["SelectStmt"]
-
-	vals := selectStmt.GetValuesLists()
-	valsInfo := selectInfo.children["ValuesLists"]
-
-	if selectStmt != nil && len(vals) == 0 {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(selectInfo.start),
-				int(selectInfo.end)-1,
-				func(start, end int) error {
-					fmt.Fprintf(w.mods, `q.Query = bob.BaseQuery[bob.Expression]{
+	if selectInfo, ok := info.children["SelectStmt"].children["SelectStmt"]; ok {
+		w.editRules = append(w.editRules, internal.RecordPoints(
+			int(selectInfo.start), int(selectInfo.end)-1,
+			func(start, end int) error {
+				fmt.Fprintf(w.mods, `q.Query = bob.BaseQuery[bob.Expression]{
 						Expression: o.expr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
 					`, start, end)
-					return nil
-				},
-			)...,
-		)
-	}
-
-	for i := range vals {
-		itemsInfo := valsInfo.
-			children[strconv.Itoa(i)].
-			children["List"].
-			children["Items"]
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(itemsInfo.start),
-				int(itemsInfo.end)-1,
-				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendValues(o.expr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...,
-		)
+				return nil
+			},
+		)...)
 	}
 
 	switch stmt.InsertStmt.Override {

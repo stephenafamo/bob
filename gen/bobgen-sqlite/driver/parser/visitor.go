@@ -233,6 +233,7 @@ func (v *visitor) VisitCreate_virtual_table_stmt(ctx *sqliteparser.Create_virtua
 
 func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
 	// Defer reset the source list
+	initialLen := len(v.Sources)
 	defer func(l int) {
 		v.Sources = v.Sources[:l]
 	}(len(v.Sources))
@@ -243,10 +244,10 @@ func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
 		return nil
 	}
 
-	v.Sources = append(
-		v.Sources,
-		v.getSourceFromTable(ctx.Qualified_table_name()),
-	)
+	table := ctx.Qualified_table_name()
+	tableName := getName(table.Table_name())
+	tableSource := v.getSourceFromTable(table)
+	v.Sources = append(v.Sources, tableSource)
 
 	v.VisitChildren(ctx)
 	if v.Err != nil {
@@ -258,6 +259,12 @@ func (v *visitor) VisitDelete_stmt(ctx *sqliteparser.Delete_stmtContext) any {
 	if returning == nil {
 		return []ReturnColumn{}
 	}
+
+	// Reset the sources to the original length
+	v.Sources = v.Sources[:initialLen]
+	// Only add the table source for the returning clause
+	tableSource.Name = tableName
+	v.Sources = append(v.Sources, tableSource)
 
 	return v.getSourceFromColumns(returning.AllResult_column()).Columns
 }
@@ -1093,6 +1100,7 @@ func (v *visitor) VisitValues_clause(ctx *sqliteparser.Values_clauseContext) any
 
 func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 	// Defer reset the source list
+	initialLen := len(v.Sources)
 	defer func(l int) {
 		v.Sources = v.Sources[:l]
 	}(len(v.Sources))
@@ -1170,6 +1178,12 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 	if returning == nil {
 		return []ReturnColumn{}
 	}
+
+	// Reset the sources to the original length
+	v.Sources = v.Sources[:initialLen]
+	// Only add the table source for the returning clause
+	tableSource.Name = tableName
+	v.Sources = append(v.Sources, tableSource)
 
 	return v.getSourceFromColumns(returning.AllResult_column()).Columns
 }
@@ -1314,6 +1328,7 @@ func (v *visitor) VisitCompound_operator(ctx *sqliteparser.Compound_operatorCont
 
 func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 	// Defer reset the source list
+	initialLen := len(v.Sources)
 	defer func(l int) {
 		v.Sources = v.Sources[:l]
 	}(len(v.Sources))
@@ -1367,6 +1382,12 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 	if returning == nil {
 		return []ReturnColumn{}
 	}
+
+	// Reset the sources to the original length
+	v.Sources = v.Sources[:initialLen]
+	// Only add the table source for the returning clause
+	tableSource.Name = tableName
+	v.Sources = append(v.Sources, tableSource)
 
 	return v.getSourceFromColumns(returning.AllResult_column()).Columns
 }

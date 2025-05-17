@@ -245,16 +245,19 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	}
 
 	if values := ctx.Values_clause(); values != nil {
-		for _, value := range values.AllValue_row() {
-			v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-				value.OPEN_PAR().GetSymbol().GetStart()+1,
-				value.CLOSE_PAR().GetSymbol().GetStop()-1,
-				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendValues(o.expr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...)
-		}
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+			values.GetStart().GetStart(),
+			values.GetStop().GetStop(),
+			func(start, end int) error {
+				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
+						Expression: o.expr(%d, %d),
+						Dialect: dialect.Dialect,
+						QueryType: bob.QueryTypeSelect,
+						}
+					`, start, end)
+				return nil
+			},
+		)...)
 	}
 
 	if selectStmt := ctx.Select_stmt(); selectStmt != nil {

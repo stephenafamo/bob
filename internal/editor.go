@@ -47,11 +47,11 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 			return iStart - jStart
 		}
 
-		if i.priority() != j.priority() {
-			return i.priority() - j.priority()
+		if i.ruleType() != j.ruleType() {
+			return int(i.ruleType()) - int(j.ruleType())
 		}
 
-		return int(i.ruleType() - j.ruleType())
+		return int(i.priority() - j.priority())
 	})
 
 	cursor := from // current position in the original string
@@ -77,7 +77,7 @@ func EditStringSegment(s string, from, to int, rules ...EditRule) (string, error
 
 		if start > len(s) {
 			// rule is after the string, skip it
-			// fmt.Printf("Skipping rule %d: %s[%d-%d] out of bounds(%d), %q, %#v\n", i, r.ruleType(), start, end, len(s), s[start:end], r)
+			// fmt.Printf("Skipping rule %d: %s[%d-%d] out of bounds(%d), %#v\n", i, r.ruleType(), start, end, len(s), r)
 			continue
 		}
 
