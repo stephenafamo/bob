@@ -98,9 +98,7 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 			BaseQuery: Insert(im.Into(t.Name(), t.nonGeneratedCols...)),
 			Hooks:     &t.InsertQueryHooks,
 		},
-		scanner: t.scanner,
-		hooks:   &t.AfterInsertHooks,
-		table:   t,
+		table: t,
 	}
 
 	q.Apply(queryMods...)
@@ -133,9 +131,7 @@ func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuer
 
 type insertQuery[T orm.Model, Ts ~[]T, Tset setter[T]] struct {
 	orm.ExecQuery[*dialect.InsertQuery]
-	scanner scan.Mapper[T]
-	hooks   *bob.Hooks[Ts, bob.SkipModelHooksKey]
-	table   *Table[T, Ts, Tset]
+	table *Table[T, Ts, Tset]
 }
 
 // Insert One Row
@@ -149,7 +145,7 @@ func (t *insertQuery[T, Ts, Tset]) One(ctx context.Context, exec bob.Executor) (
 		return *new(T), err
 	}
 
-	return bob.One(ctx, exec, q, t.scanner)
+	return bob.One(ctx, exec, q, t.table.scanner)
 }
 
 // Insert Many
@@ -163,7 +159,7 @@ func (t *insertQuery[T, Ts, Tset]) All(ctx context.Context, exec bob.Executor) (
 		return nil, err
 	}
 
-	return bob.Allx[T, Ts](ctx, exec, q, t.scanner)
+	return bob.Allx[T, Ts](ctx, exec, q, t.table.scanner)
 }
 
 // Insert Many and return a cursor
@@ -177,7 +173,7 @@ func (t *insertQuery[T, Ts, Tset]) Cursor(ctx context.Context, exec bob.Executor
 		return nil, err
 	}
 
-	return bob.Cursor(ctx, exec, q, t.scanner)
+	return bob.Cursor(ctx, exec, q, t.table.scanner)
 }
 
 // inserts all and returns the select query
@@ -258,7 +254,6 @@ func (t *insertQuery[T, Tslice, Tset]) getInserted(vals []clause.Value, results 
 			if err != nil {
 				return nil, err
 			}
-			fmt.Printf("%d. lastID: %d\n", i, lastID)
 
 			autoIncrArgs = append(autoIncrArgs, Arg(lastID))
 		} else {
