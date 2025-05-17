@@ -67,12 +67,12 @@ func TestNewTable(t *testing.T) {
 		t.Fatalf("diff: %s", diff)
 	}
 
-	if table1.Insert().unretrievable() {
-		t.Fatalf("table1 marked as unretrievable")
+	if err := table1.Insert().retrievable(); err != nil {
+		t.Fatalf("table1 marked as unretrievable: %v", err)
 	}
 
-	if table2.Insert().unretrievable() {
-		t.Fatalf("table2 marked as unretrievable")
+	if err := table2.Insert().retrievable(); err != nil {
+		t.Fatalf("table2 marked as unretrievable: %v", err)
 	}
 }
 
@@ -130,7 +130,7 @@ func TestUniqueSetRow(t *testing.T) {
 				}
 			}
 
-			cols, args := table2.uniqueSet(bytes.NewBuffer(nil), rowExpr)
+			cols, args := table2.Insert().uniqueSet(bytes.NewBuffer(nil), rowExpr)
 
 			if diff := cmp.Diff(toQuote(tc.cols), table2.uniqueColNames(cols)); diff != "" {
 				t.Errorf("cols: %s", diff)
