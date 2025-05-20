@@ -27,11 +27,13 @@ func NewVisitor(db tables) *visitor {
 			Functions: defaultFunctions,
 			Atom:      &atomic.Int64{},
 		},
+		setQuerySources: make(map[antlrhelpers.NodeKey]QuerySource),
 	}
 }
 
 type visitor struct {
 	antlrhelpers.Visitor[any, any]
+	setQuerySources map[antlrhelpers.NodeKey]QuerySource
 }
 
 // Visit implements parser.MySqlParserVisitor.
@@ -145,20 +147,12 @@ func (v *visitor) VisitSqlStatements(ctx *mysqlparser.SqlStatementsContext) any 
 			return nil
 		}
 
-		info, ok := resp.([]ReturnColumn)
-		if !ok {
-			v.Err = fmt.Errorf("stmt %d: could not columns, got %T", i, resp)
-			return nil
-		}
-
+		var columns []ReturnColumn
 		var imports [][]string
 		queryType := bob.QueryTypeUnknown
 		mods := &strings.Builder{}
 
 		switch child := onlyChild.(type) {
-		case *mysqlparser.SelectStatementContext:
-			queryType = bob.QueryTypeSelect
-			imports = v.modSelectStatement(child, mods)
 		case *mysqlparser.InsertStatementContext:
 			queryType = bob.QueryTypeInsert
 			v.modInsertStatement(child, mods)
@@ -168,12 +162,21 @@ func (v *visitor) VisitSqlStatements(ctx *mysqlparser.SqlStatementsContext) any 
 		case *mysqlparser.DeleteStatementContext:
 			queryType = bob.QueryTypeDelete
 			v.modDeleteStatement(child, mods)
+		case mysqlparser.ISelectStatementContext:
+			queryType = bob.QueryTypeSelect
+			imports = v.modSelectStatement(child, mods)
+			var ok bool
+			columns, ok = resp.([]ReturnColumn)
+			if !ok {
+				v.Err = fmt.Errorf("stmt %d: could not get columns in select statement, got %T", i, resp)
+				return nil
+			}
 		}
 
 		allresp = append(allresp, StmtInfo{
 			QueryType: queryType,
 			Node:      stmt,
-			Columns:   info,
+			Columns:   columns,
 			EditRules: slices.Clone(v.StmtRules),
 			Comment:   v.getCommentToLeft(stmt),
 			Mods:      mods,
@@ -309,8 +312,8 @@ func (v *visitor) VisitWithClause(ctx *mysqlparser.WithClauseContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#commonTableExpressions.
-func (v *visitor) VisitCommonTableExpressions(ctx *mysqlparser.CommonTableExpressionsContext) any {
+// Visit a parse tree produced by MySqlParser#commonTableExpression.
+func (v *visitor) VisitCommonTableExpression(ctx *mysqlparser.CommonTableExpressionContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1251,6 +1254,14 @@ func (v *visitor) VisitCallStatement(ctx *mysqlparser.CallStatementContext) any 
 
 // Visit a parse tree produced by MySqlParser#deleteStatement.
 func (v *visitor) VisitDeleteStatement(ctx *mysqlparser.DeleteStatementContext) any {
+	if single := ctx.SingleDeleteStatement(); single != nil {
+		return single.Accept(v)
+	}
+
+	if multi := ctx.MultipleDeleteStatement(); multi != nil {
+		return multi.Accept(v)
+	}
+
 	return v.VisitChildren(ctx)
 }
 
@@ -1266,23 +1277,27 @@ func (v *visitor) VisitHandlerStatement(ctx *mysqlparser.HandlerStatementContext
 
 // Visit a parse tree produced by MySqlParser#insertStatement.
 func (v *visitor) VisitInsertStatement(ctx *mysqlparser.InsertStatementContext) any {
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	tableName := getFullIDName(ctx.TableName().FullId())
+	tableSource := v.getSourceFromTable(ctx)
+	v.Sources = append(v.Sources, tableSource)
+
 	v.VisitChildren(ctx)
 	if v.Err != nil {
 		v.Err = fmt.Errorf("insert stmt: %w", v.Err)
 		return nil
 	}
 
-	tableName := v.GetName(ctx.TableName())
-	tableAlias := v.GetName(ctx.GetTableAlias())
-	tableSource := v.getSourceFromTable(tableName, tableAlias)
-	v.Sources = append(v.Sources, tableSource)
-
 	var colNames []string
 	if full := ctx.FullColumnNameList(); full != nil {
 		columns := full.AllFullColumnName()
 		colNames = make([]string, len(columns))
 		for i := range columns {
-			colNames[i] = v.GetName(columns[i])
+			colNames[i] = getFullColumnName(columns[i])
 		}
 	}
 
@@ -1332,7 +1347,7 @@ func (v *visitor) VisitInsertStatement(ctx *mysqlparser.InsertStatementContext) 
 		}
 	}
 
-	return []ReturnColumn{}
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#loadDataStatement.
@@ -1351,32 +1366,65 @@ func (v *visitor) VisitReplaceStatement(ctx *mysqlparser.ReplaceStatementContext
 }
 
 // Visit a parse tree produced by MySqlParser#simpleSelect.
-func (v *visitor) VisitSimpleSelect(ctx *mysqlparser.SimpleSelectContext) any {
-	return v.VisitChildren(ctx)
-}
+func (v *visitor) VisitSelectStatement(ctx *mysqlparser.SelectStatementContext) any {
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
 
-// Visit a parse tree produced by MySqlParser#parenthesisSelect.
-func (v *visitor) VisitParenthesisSelect(ctx *mysqlparser.ParenthesisSelectContext) any {
-	return v.VisitChildren(ctx)
-}
+	v.addSourcesFromWithClause(ctx.WithClause())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
 
-// Visit a parse tree produced by MySqlParser#unionSelect.
-func (v *visitor) VisitUnionSelect(ctx *mysqlparser.UnionSelectContext) any {
-	return v.VisitChildren(ctx)
-}
+	var columns []ReturnColumn
 
-// Visit a parse tree produced by MySqlParser#unionParenthesisSelect.
-func (v *visitor) VisitUnionParenthesisSelect(ctx *mysqlparser.UnionParenthesisSelectContext) any {
-	return v.VisitChildren(ctx)
-}
+	if base := ctx.SelectStatementBase(); base != nil {
+		if from := base.FromClause(); from != nil {
+			v.addSourcesFromTableSources(from.TableSources())
+			if v.Err != nil {
+				v.Err = fmt.Errorf("add base sources: %w", v.Err)
+				return nil
+			}
+		}
+	}
 
-// Visit a parse tree produced by MySqlParser#withLateralStatement.
-func (v *visitor) VisitWithLateralStatement(ctx *mysqlparser.WithLateralStatementContext) any {
-	return v.VisitChildren(ctx)
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("select stmt: %w", v.Err)
+		return nil
+	}
+
+	if setQuery := ctx.SetQuery(); setQuery != nil {
+		firstSource := v.setQuerySources[antlrhelpers.Key(setQuery)]
+		columns = append(columns, firstSource.Columns...)
+	}
+
+	// Getting the source should come after visiting children
+	// so that the types are correctly set
+	if base := ctx.SelectStatementBase(); base != nil {
+		source := v.getSourceFromSelectElements(base.SelectElements())
+		columns = append(columns, source.Columns...)
+		if v.Err != nil {
+			v.Err = fmt.Errorf("get base source: %w", v.Err)
+			return nil
+		}
+	}
+
+	return columns
 }
 
 // Visit a parse tree produced by MySqlParser#updateStatement.
 func (v *visitor) VisitUpdateStatement(ctx *mysqlparser.UpdateStatementContext) any {
+	if single := ctx.SingleUpdateStatement(); single != nil {
+		return single.Accept(v)
+	}
+
+	if multi := ctx.MultipleUpdateStatement(); multi != nil {
+		return multi.Accept(v)
+	}
+
 	return v.VisitChildren(ctx)
 }
 
@@ -1428,11 +1476,72 @@ func (v *visitor) VisitLockClause(ctx *mysqlparser.LockClauseContext) any {
 
 // Visit a parse tree produced by MySqlParser#singleDeleteStatement.
 func (v *visitor) VisitSingleDeleteStatement(ctx *mysqlparser.SingleDeleteStatementContext) any {
-	return v.VisitChildren(ctx)
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	v.addSourcesFromWithClause(ctx.WithClause())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	tableSource := v.getSourceFromTable(ctx)
+	v.Sources = append(v.Sources, tableSource)
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("update stmt: %w", v.Err)
+		return nil
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#multipleDeleteStatement.
 func (v *visitor) VisitMultipleDeleteStatement(ctx *mysqlparser.MultipleDeleteStatementContext) any {
+	if using := ctx.USING(); using == nil {
+		v.Err = fmt.Errorf("only the USING form is supported in DELETE statements")
+		return nil
+	}
+
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	v.addSourcesFromWithClause(ctx.WithClause())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	for _, table := range ctx.AllMultipleDeleteTable() {
+		v.Sources = append(v.Sources, v.getSourceFromTableName(table.TableName()))
+		if v.Err != nil {
+			v.Err = fmt.Errorf("table name: %w", v.Err)
+			return nil
+		}
+	}
+
+	v.addSourcesFromTableSources(ctx.TableSources())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("update stmt: %w", v.Err)
+		return nil
+	}
+
+	return nil
+}
+
+// VisitMultipleDeleteTable implements parser.MySqlParserVisitor.
+func (v *visitor) VisitMultipleDeleteTable(ctx *mysqlparser.MultipleDeleteTableContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1458,12 +1567,55 @@ func (v *visitor) VisitHandlerCloseStatement(ctx *mysqlparser.HandlerCloseStatem
 
 // Visit a parse tree produced by MySqlParser#singleUpdateStatement.
 func (v *visitor) VisitSingleUpdateStatement(ctx *mysqlparser.SingleUpdateStatementContext) any {
-	return v.VisitChildren(ctx)
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	v.addSourcesFromWithClause(ctx.WithClause())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	tableSource := v.getSourceFromTable(ctx)
+	v.Sources = append(v.Sources, tableSource)
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("update stmt: %w", v.Err)
+		return nil
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#multipleUpdateStatement.
 func (v *visitor) VisitMultipleUpdateStatement(ctx *mysqlparser.MultipleUpdateStatementContext) any {
-	return v.VisitChildren(ctx)
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	v.addSourcesFromWithClause(ctx.WithClause())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	v.addSourcesFromTableSources(ctx.TableSources())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("with clause: %w", v.Err)
+		return nil
+	}
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("update stmt: %w", v.Err)
+		return nil
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#orderByClause.
@@ -1481,18 +1633,8 @@ func (v *visitor) VisitTableSources(ctx *mysqlparser.TableSourcesContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#tableSourceBase.
-func (v *visitor) VisitTableSourceBase(ctx *mysqlparser.TableSourceBaseContext) any {
-	return v.VisitChildren(ctx)
-}
-
-// Visit a parse tree produced by MySqlParser#tableSourceNested.
-func (v *visitor) VisitTableSourceNested(ctx *mysqlparser.TableSourceNestedContext) any {
-	return v.VisitChildren(ctx)
-}
-
-// Visit a parse tree produced by MySqlParser#tableJson.
-func (v *visitor) VisitTableJson(ctx *mysqlparser.TableJsonContext) any {
+// VisitTableSource implements parser.MySqlParserVisitor.
+func (v *visitor) VisitTableSource(ctx *mysqlparser.TableSourceContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1503,6 +1645,11 @@ func (v *visitor) VisitAtomTableItem(ctx *mysqlparser.AtomTableItemContext) any 
 
 // Visit a parse tree produced by MySqlParser#subqueryTableItem.
 func (v *visitor) VisitSubqueryTableItem(ctx *mysqlparser.SubqueryTableItemContext) any {
+	return v.VisitChildren(ctx)
+}
+
+// VisitJsonTableItem implements parser.MySqlParserVisitor.
+func (v *visitor) VisitJsonTableItem(ctx *mysqlparser.JsonTableItemContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1541,38 +1688,89 @@ func (v *visitor) VisitNaturalJoin(ctx *mysqlparser.NaturalJoinContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#queryExpression.
-func (v *visitor) VisitQueryExpression(ctx *mysqlparser.QueryExpressionContext) any {
+// VisitJoinSpecification implements parser.MySqlParserVisitor.
+func (v *visitor) VisitJoinSpecification(ctx *mysqlparser.JoinSpecificationContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#queryExpressionNointo.
-func (v *visitor) VisitQueryExpressionNointo(ctx *mysqlparser.QueryExpressionNointoContext) any {
+// VisitSelectStatementBase implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSelectStatementBase(ctx *mysqlparser.SelectStatementBaseContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#querySpecification.
-func (v *visitor) VisitQuerySpecification(ctx *mysqlparser.QuerySpecificationContext) any {
+// VisitSelectStatementFinish implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSelectStatementFinish(ctx *mysqlparser.SelectStatementFinishContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#querySpecificationNointo.
-func (v *visitor) VisitQuerySpecificationNointo(ctx *mysqlparser.QuerySpecificationNointoContext) any {
+// VisitSetQuery implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSetQuery(ctx *mysqlparser.SetQueryContext) any {
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#unionParenthesis.
-func (v *visitor) VisitUnionParenthesis(ctx *mysqlparser.UnionParenthesisContext) any {
-	return v.VisitChildren(ctx)
+// VisitSetQueryBase implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSetQueryBase(ctx *mysqlparser.SetQueryBaseContext) any {
+	// Defer reset the source list
+	defer func(l int) {
+		v.Sources = v.Sources[:l]
+	}(len(v.Sources))
+
+	base := ctx.SelectStatementBase()
+	if base == nil {
+		return v.VisitChildren(ctx)
+	}
+
+	if from := base.FromClause(); from != nil {
+		v.addSourcesFromTableSources(from.TableSources())
+	}
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("children: %w", v.Err)
+		return nil
+	}
+
+	source := v.getSourceFromSelectElements(base.SelectElements())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("get set base source: %w", v.Err)
+		return nil
+	}
+
+	v.setQuerySources[antlrhelpers.Key(ctx)] = source
+
+	return nil
 }
 
-// Visit a parse tree produced by MySqlParser#unionStatement.
-func (v *visitor) VisitUnionStatement(ctx *mysqlparser.UnionStatementContext) any {
-	return v.VisitChildren(ctx)
+// VisitSetQueryInParenthesis implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSetQueryInParenthesis(ctx *mysqlparser.SetQueryInParenthesisContext) any {
+	base := ctx.SelectStatementBase()
+	if base == nil {
+		return v.VisitChildren(ctx)
+	}
+
+	if from := base.FromClause(); from != nil {
+		v.addSourcesFromTableSources(from.TableSources())
+	}
+
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		v.Err = fmt.Errorf("children: %w", v.Err)
+		return nil
+	}
+
+	source := v.getSourceFromSelectElements(base.SelectElements())
+	if v.Err != nil {
+		v.Err = fmt.Errorf("get set base source: %w", v.Err)
+		return nil
+	}
+
+	v.setQuerySources[antlrhelpers.Key(ctx)] = source
+
+	return nil
 }
 
-// Visit a parse tree produced by MySqlParser#lateralStatement.
-func (v *visitor) VisitLateralStatement(ctx *mysqlparser.LateralStatementContext) any {
+// VisitSetQueryPart implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSetQueryPart(ctx *mysqlparser.SetQueryPartContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1613,6 +1811,11 @@ func (v *visitor) VisitSelectElements(ctx *mysqlparser.SelectElementsContext) an
 
 // Visit a parse tree produced by MySqlParser#selectStarElement.
 func (v *visitor) VisitSelectStarElement(ctx *mysqlparser.SelectStarElementContext) any {
+	return v.VisitChildren(ctx)
+}
+
+// VisitSelectTableElement implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSelectTableElement(ctx *mysqlparser.SelectTableElementContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -1658,6 +1861,11 @@ func (v *visitor) VisitSelectLinesInto(ctx *mysqlparser.SelectLinesIntoContext) 
 
 // Visit a parse tree produced by MySqlParser#fromClause.
 func (v *visitor) VisitFromClause(ctx *mysqlparser.FromClauseContext) any {
+	return v.VisitChildren(ctx)
+}
+
+// VisitWhereClause implements parser.MySqlParserVisitor.
+func (v *visitor) VisitWhereClause(ctx *mysqlparser.WhereClauseContext) any {
 	return v.VisitChildren(ctx)
 }
 
@@ -2596,11 +2804,6 @@ func (v *visitor) VisitSignalConditionInformation(ctx *mysqlparser.SignalConditi
 	return v.VisitChildren(ctx)
 }
 
-// Visit a parse tree produced by MySqlParser#withStatement.
-func (v *visitor) VisitWithStatement(ctx *mysqlparser.WithStatementContext) any {
-	return v.VisitChildren(ctx)
-}
-
 // Visit a parse tree produced by MySqlParser#diagnosticsStatement.
 func (v *visitor) VisitDiagnosticsStatement(ctx *mysqlparser.DiagnosticsStatementContext) any {
 	return v.VisitChildren(ctx)
@@ -2630,9 +2833,9 @@ func (v *visitor) VisitFullId(ctx *mysqlparser.FullIdContext) any {
 
 	var name string
 	if dotted := ctx.DottedId(); dotted != nil {
-		name = v.GetName(dotted)
+		name = getDottedIDName(dotted)
 	} else {
-		name = v.GetName(ctx.Uid())
+		name = getUIDName(ctx.Uid())
 	}
 
 	v.MaybeSetNodeName(ctx, name)
@@ -2661,13 +2864,13 @@ func (v *visitor) VisitFullColumnName(ctx *mysqlparser.FullColumnNameContext) an
 	allDotted := ctx.AllDottedId()
 	switch len(allDotted) {
 	case 0:
-		column = v.GetName(ctx.Uid())
+		column = getUIDName(ctx.Uid())
 	case 1:
-		column = v.GetName(allDotted[0])
-		table = v.GetName(ctx.Uid())
+		column = getDottedIDName(allDotted[0])
+		table = getUIDName(ctx.Uid())
 	case 2:
-		column = v.GetName(allDotted[1])
-		table = v.GetName(allDotted[0])
+		column = getDottedIDName(allDotted[1])
+		table = getDottedIDName(allDotted[0])
 	}
 
 	v.MaybeSetNodeName(ctx, column)
@@ -2747,9 +2950,7 @@ func (v *visitor) VisitDottedId(ctx *mysqlparser.DottedIdContext) any {
 		return nil
 	}
 
-	if ctx.Uid() != nil {
-		v.MaybeSetNodeName(ctx, v.GetName(ctx.Uid()))
-	}
+	v.MaybeSetNodeName(ctx, getDottedIDName(ctx)) // remove leading dot
 
 	return nil
 }

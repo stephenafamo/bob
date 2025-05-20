@@ -257,6 +257,12 @@ func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
+type OrderCombined OrderBy[*SelectQuery]
+
+func (o OrderCombined) Apply(q *SelectQuery) {
+	q.CombinedOrder.AppendOrder(o())
+}
+
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
