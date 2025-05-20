@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -46,48 +45,4 @@ func (v *visitor) getCommentToRight(ctx Node) string {
 	}
 
 	return ""
-}
-
-// ---------------------------------------------------------------------------
-// Source helpers
-// ---------------------------------------------------------------------------
-func (v *visitor) getSourceFromTable(tableName string, tableAlias string, colaliases ...string) QuerySource {
-	if tableAlias == "" {
-		tableAlias = tableName
-	}
-
-	// First check the sources to see if the table exists
-	// do this ONLY if no schema is provided
-	for _, source := range v.Sources {
-		if source.Name == tableName {
-			return QuerySource{
-				Name:    tableAlias,
-				Columns: source.Columns,
-			}
-		}
-	}
-
-	for _, table := range v.DB {
-		if table.Name != tableName {
-			continue
-		}
-
-		source := QuerySource{
-			Name:    tableAlias,
-			Columns: make([]ReturnColumn, len(table.Columns)),
-		}
-		for i, col := range table.Columns {
-			source.Columns[i] = ReturnColumn{
-				Name: col.Name,
-				Type: NodeTypes{getColumnType(v.DB, table.Name, col.Name)},
-			}
-			if len(colaliases) > i {
-				source.Columns[i].Name = colaliases[i]
-			}
-		}
-		return source
-	}
-
-	v.Err = fmt.Errorf("table not found: %s", tableName)
-	return QuerySource{}
 }

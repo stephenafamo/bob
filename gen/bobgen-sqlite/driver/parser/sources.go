@@ -235,7 +235,7 @@ func (v *visitor) getSourceFromColumns(columns []sqliteparser.IResult_columnCont
 			returnSource.Columns = append(returnSource.Columns, ReturnColumn{
 				Name:   alias,
 				Config: parser.ParseQueryColumnConfig(v.getCommentToRight(expr)),
-				Type:   v.Infos[antlrhelpers.Key(resultColumn.Expr())].Type,
+				Type:   v.Infos[antlrhelpers.Key(expr)].Type,
 			})
 		}
 	}

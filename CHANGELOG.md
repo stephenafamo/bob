@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added support to generate code for `INSERT` queries in `bobgen-mysql`.
+- Added support to generate code for `SELECT`, `INSERT`, `UPDATE` and `DELETE` queries in `bobgen-mysql`.
 - Added support to generate code for `INSERT`, `UPDATE` and `DELETE` queries in `bobgen-sqlite`.
 - Added `LIMIT` and `OFFSET` to the SQLite Update and Delete queries.
 - Added `IndexedBy` and `NotIndexed` mods to the SQLite Delete queries.
@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RunInTx` method to `bob.DB`. This starts a transaction and calls the given function with this transaction.
 - Add support for MySQL to `bobgen-sql`.
 - Added `Exec` test for generated queries that do not return rows.
+- Added `OrderCombined`, `LimitCombined`, `OffsetCombined` mods to MySQL `SELECT` queries. These are applied to the result of a `UNION`, `INTERSECT` or `EXCEPT` query.
 
 ### Changed
 
@@ -58,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use correct row name for generated queries in `bobgen-sqlite`.
 - Properly select query comment in `bobgen-sqlite`.
 - Fixed issue with using generated queries with `VALUES` as mods.
+- Moveed `Partitions` in MySQL delete queries to after the table alias.
 
 ## [v0.34.2] - 2025-05-01
 

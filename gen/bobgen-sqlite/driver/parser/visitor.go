@@ -104,7 +104,7 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 
 			info, ok := resp.([]ReturnColumn)
 			if !ok {
-				v.Err = fmt.Errorf("stmt %d: could not columns, got %T", i, resp)
+				v.Err = fmt.Errorf("stmt %d: could not get columns, got %T", i, resp)
 				return nil
 			}
 
@@ -1352,7 +1352,7 @@ func (v *visitor) VisitUpdate_stmt(ctx *sqliteparser.Update_stmtContext) any {
 
 	v.VisitChildren(ctx)
 	if v.Err != nil {
-		v.Err = fmt.Errorf("insert stmt: %w", v.Err)
+		v.Err = fmt.Errorf("update stmt: %w", v.Err)
 		return nil
 	}
 

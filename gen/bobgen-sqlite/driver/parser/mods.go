@@ -120,7 +120,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		imports = append(imports, []string{"github.com/stephenafamo/bob/clause"})
 	}
 
-	for _, compound := range ctx.AllCompound_select() {
+	for _, compound := range compounds {
 		strategy := strings.ToUpper(compound.Compound_operator().GetText())
 		all := compound.Compound_operator().ALL_() != nil
 		if all {
@@ -160,6 +160,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 	if limit := ctx.Limit_stmt(); limit != nil {
 		if limit.COMMA() != nil {
 			v.Err = fmt.Errorf("LIMIT with comma is not supported")
+			return nil
 		}
 
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(

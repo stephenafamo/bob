@@ -197,6 +197,29 @@ func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 	})
 }
 
+// To apply order to the result of a UNION, INTERSECT, or EXCEPT query
+func OrderCombined(e any) dialect.OrderCombined {
+	return dialect.OrderCombined(func() clause.OrderDef {
+		return clause.OrderDef{
+			Expression: e,
+		}
+	})
+}
+
+// To apply limit to the result of a UNION, INTERSECT, or EXCEPT query
+func LimitCombined(count int64) bob.Mod[*dialect.SelectQuery] {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+		q.CombinedLimit.SetLimit(count)
+	})
+}
+
+// To apply offset to the result of a UNION, INTERSECT, or EXCEPT query
+func OffsetCombined(count int64) bob.Mod[*dialect.SelectQuery] {
+	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+		q.CombinedOffset.SetOffset(count)
+	})
+}
+
 // No need for the leading @
 func Into(var1 string, vars ...string) bob.Mod[*dialect.SelectQuery] {
 	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {

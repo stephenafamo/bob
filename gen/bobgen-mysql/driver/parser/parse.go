@@ -109,19 +109,19 @@ func (Parser) parse(v *visitor, input string) ([]StmtInfo, error) {
 		return nil, fmt.Errorf("visitor: %w", v.Err)
 	}
 
-	symNames := mysqlparser.MySqlLexerLexerStaticData.SymbolicNames
-	for _, tok := range stream.GetAllTokens() {
-		tType := tok.GetTokenType()
-		tTypeName := ""
-		if tType > 0 && tType < len(symNames) {
-			tTypeName = symNames[tType]
-		}
-
-		fmt.Printf("%-20s %s\n",
-			tTypeName,
-			tok.GetText(),
-		)
-	}
+	// symNames := mysqlparser.MySqlLexerLexerStaticData.SymbolicNames
+	// for _, tok := range stream.GetAllTokens() {
+	// 	tType := tok.GetTokenType()
+	// 	tTypeName := ""
+	// 	if tType > 0 && tType < len(symNames) {
+	// 		tTypeName = symNames[tType]
+	// 	}
+	//
+	// 	fmt.Printf("%-20s %s\n",
+	// 		tTypeName,
+	// 		tok.GetText(),
+	// 	)
+	// }
 
 	if !ok {
 		return nil, fmt.Errorf("visitor: expected stmtInfo, got %T", infos)
