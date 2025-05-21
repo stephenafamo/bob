@@ -293,6 +293,7 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
 	start := a.Positions[0][0]
 	for _, child := range a.Children {
 		childName := strmangle.TitleCase(child.Col.Name)
+		childExpression := child.ToExpression(dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
 		sb.WriteString(fmt.Sprintf(`
             w.Write([]byte(%sSQL[%d:%d]))
             %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)
@@ -303,7 +304,7 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
             `,
 			queryName, start, child.Positions[0][0],
 			childName,
-			child.ToExpression(dialect, queryName, fmt.Sprintf("%s.%s", varName, childName)),
+			strings.TrimSpace(childExpression),
 			childName,
 		))
 		start = child.Positions[0][1]

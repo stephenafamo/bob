@@ -24,7 +24,7 @@ func getParts(fullType string) (name string, l1 string, l2 string, unsigned bool
 // as a Column object.
 func TranslateColumnType(fullType string) string {
 	dbType, limit1, _, unsigned := getParts(fullType)
-	switch dbType {
+	switch strings.ToLower(dbType) {
 	case "tinyint":
 		if unsigned {
 			return "uint8"

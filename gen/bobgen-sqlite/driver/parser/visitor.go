@@ -10,7 +10,6 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	antlrhelpers "github.com/stephenafamo/bob/gen/bobgen-helpers/parser/antlrhelpers"
 	"github.com/stephenafamo/bob/internal"
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
@@ -456,6 +455,11 @@ func (v *visitor) VisitExpr_concat(ctx *sqliteparser.Expr_concatContext) any {
 }
 
 func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
 	exprs := ctx.AllExpr()
 	if len(exprs) == 1 {
 		v.MaybeSetNodeName(ctx, v.GetName(exprs[0]))
@@ -470,15 +474,12 @@ func (v *visitor) VisitExpr_list(ctx *sqliteparser.Expr_listContext) any {
 				Node:            ctx,
 				ExprDescription: "LIST",
 				EditedPosition:  [2]int{start, end},
-				Config: parser.ParseQueryColumnConfig(
-					v.getCommentToRight(ctx),
-				),
 			})
 			return nil
 		},
 	)...)
 
-	return v.VisitChildren(ctx)
+	return nil
 }
 
 func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
@@ -495,7 +496,7 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 	rhsChildren := rhsList.AllExpr()
 
 	// If there is only one child, it can be multiple
-	singleIn := len(rhsChildren) == 1
+	canBeMultiple := len(rhsChildren) == 1
 
 	lhs := ctx.GetLhs()
 	lhsList, lhsIsList := lhs.(*sqliteparser.Expr_listContext)
@@ -516,7 +517,7 @@ func (v *visitor) VisitExpr_in(ctx *sqliteparser.Expr_inContext) any {
 			ExprDescription:      "IN RHS",
 			ExprRef:              lhs,
 			IgnoreRefNullability: true,
-			CanBeMultiple:        singleIn,
+			CanBeMultiple:        canBeMultiple,
 		})
 		v.MaybeSetNodeName(child, lhsName)
 
@@ -983,10 +984,6 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 		ArgKey:          ctx.GetText()[1:],
 	}
 
-	if ctx.NAMED_BIND_PARAMETER() != nil {
-		info.Config.Name = info.ArgKey
-	}
-
 	parent, ok := ctx.GetParent().(*sqliteparser.Expr_castContext)
 	if ok {
 		info.ExprRef = parent
@@ -1147,9 +1144,6 @@ func (v *visitor) VisitInsert_stmt(ctx *sqliteparser.Insert_stmtContext) any {
 						ExprDescription: "ROW",
 						EditedPosition:  [2]int{start, end},
 						CanBeMultiple:   len(rows) == 1,
-						Config: parser.ParseQueryColumnConfig(
-							v.getCommentToRight(row),
-						),
 					})
 					return nil
 				},

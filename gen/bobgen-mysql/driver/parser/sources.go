@@ -16,13 +16,14 @@ func (v *visitor) addSourcesFromWithClause(ctx mysqlparser.IWithClauseContext) {
 	}
 
 	for _, cte := range ctx.AllCommonTableExpression() {
-		columns, ok := cte.SelectStatement().Accept(v).([]ReturnColumn)
+		stmt := cte.SubSelect().SelectStatement()
+		columns, ok := stmt.Accept(v).([]ReturnColumn)
 		if v.Err != nil {
 			v.Err = fmt.Errorf("CTE select stmt: %w", v.Err)
 			return
 		}
 		if !ok {
-			v.Err = fmt.Errorf("could not get stmt info from %T", cte.SelectStatement())
+			v.Err = fmt.Errorf("could not get stmt info from %T", stmt)
 			return
 		}
 

@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/stephenafamo/bob/gen/drivers"
 )
 
 type Node interface {
@@ -37,7 +36,6 @@ type NodeInfo struct {
 	ArgKey         string // Positional or named arg in the query
 	EditedPosition [2]int
 	CanBeMultiple  bool
-	Config         drivers.QueryCol
 }
 
 func GetDBType(exprs map[NodeKey]NodeInfo, e NodeInfo) NodeTypes {
