@@ -3,6 +3,7 @@ package antlrhelpers
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"sync/atomic"
 
 	"github.com/aarondl/opt/omit"
@@ -47,8 +48,6 @@ func (v *Visitor[C, I]) UpdateInfo(info NodeInfo) {
 		currentExpr.ExprDescription += ","
 		currentExpr.ExprDescription += info.ExprDescription
 	}
-
-	currentExpr.Config = currentExpr.Config.Merge(info.Config)
 
 	if info.ExprRef != nil {
 		currentExpr.ExprRef = info.ExprRef
@@ -130,7 +129,7 @@ func (v *Visitor[C, I]) MatchNodeNames(p1 Node, p2 Node) {
 	v.MatchNames(Key(p1), Key(p2))
 }
 
-func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string) []drivers.QueryArg {
+func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string, comment func(Node) string) []drivers.QueryArg {
 	groupArgs := make([]drivers.QueryArg, len(v.Groups))
 	bindArgs := make([]drivers.QueryArg, len(v.Args))
 	keys := make(map[string]int, len(bindArgs))
@@ -153,12 +152,17 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string) [
 			// if an arg is used multiple times, it can't be multiple
 			bindArgs[oldIndex].CanBeMultiple = false
 			// Merge the config
-			bindArgs[oldIndex].Col = bindArgs[oldIndex].Col.Merge(arg.Config)
+			bindArgs[oldIndex].Col = bindArgs[oldIndex].Col.Merge(
+				parser.ParseQueryColumnConfig(comment(arg.Node)),
+			)
 			continue
 		}
 		keys[arg.ArgKey] = i
 
 		name := v.Names[Key(arg.Node)]
+		if _, notNumber := strconv.Atoi(arg.ArgKey); notNumber != nil && arg.ArgKey != "" {
+			name = arg.ArgKey
+		}
 		if name == "" {
 			name = "arg"
 		}
@@ -168,7 +172,7 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string) [
 				Name:     name,
 				Nullable: omit.From(arg.Type.Nullable()),
 				TypeName: translate(GetDBType(v.Infos, arg).ConfirmedDBType()),
-			}.Merge(arg.Config),
+			}.Merge(parser.ParseQueryColumnConfig(comment(arg.Node))),
 			Positions:     [][2]int{arg.EditedPosition},
 			CanBeMultiple: arg.CanBeMultiple,
 		}
@@ -197,7 +201,7 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string) [
 				Name:     name,
 				Nullable: omit.From(group.Type.Nullable()),
 				TypeName: translate(GetDBType(v.Infos, group).ConfirmedDBType()),
-			}.Merge(group.Config),
+			}.Merge(parser.ParseQueryColumnConfig(comment(group.Node))),
 			Positions:     [][2]int{group.EditedPosition},
 			CanBeMultiple: group.CanBeMultiple,
 		}

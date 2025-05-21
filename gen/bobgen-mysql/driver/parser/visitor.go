@@ -10,7 +10,6 @@ import (
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser/antlrhelpers"
 	"github.com/stephenafamo/bob/internal"
 	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
@@ -27,13 +26,13 @@ func NewVisitor(db tables) *visitor {
 			Functions: defaultFunctions,
 			Atom:      &atomic.Int64{},
 		},
-		setQuerySources: make(map[antlrhelpers.NodeKey]QuerySource),
+		querySources: make(map[antlrhelpers.NodeKey]QuerySource),
 	}
 }
 
 type visitor struct {
 	antlrhelpers.Visitor[any, any]
-	setQuerySources map[antlrhelpers.NodeKey]QuerySource
+	querySources map[antlrhelpers.NodeKey]QuerySource
 }
 
 // Visit implements parser.MySqlParserVisitor.
@@ -1322,9 +1321,6 @@ func (v *visitor) VisitInsertStatement(ctx *mysqlparser.InsertStatementContext) 
 						ExprDescription: "ROW",
 						EditedPosition:  [2]int{start, end},
 						CanBeMultiple:   len(rows) == 1,
-						Config: parser.ParseQueryColumnConfig(
-							v.getCommentToRight(row),
-						),
 					})
 					return nil
 				},
@@ -1378,7 +1374,7 @@ func (v *visitor) VisitSelectStatement(ctx *mysqlparser.SelectStatementContext) 
 		return nil
 	}
 
-	var columns []ReturnColumn
+	var source QuerySource
 
 	if base := ctx.SelectStatementBase(); base != nil {
 		if from := base.FromClause(); from != nil {
@@ -1397,22 +1393,20 @@ func (v *visitor) VisitSelectStatement(ctx *mysqlparser.SelectStatementContext) 
 	}
 
 	if setQuery := ctx.SetQuery(); setQuery != nil {
-		firstSource := v.setQuerySources[antlrhelpers.Key(setQuery)]
-		columns = append(columns, firstSource.Columns...)
+		source = v.querySources[antlrhelpers.Key(setQuery)]
 	}
 
 	// Getting the source should come after visiting children
 	// so that the types are correctly set
 	if base := ctx.SelectStatementBase(); base != nil {
-		source := v.getSourceFromSelectElements(base.SelectElements())
-		columns = append(columns, source.Columns...)
+		source = v.getSourceFromSelectElements(base.SelectElements())
 		if v.Err != nil {
 			v.Err = fmt.Errorf("get base source: %w", v.Err)
 			return nil
 		}
 	}
 
-	return columns
+	return source.Columns
 }
 
 // Visit a parse tree produced by MySqlParser#updateStatement.
@@ -1736,7 +1730,7 @@ func (v *visitor) VisitSetQueryBase(ctx *mysqlparser.SetQueryBaseContext) any {
 		return nil
 	}
 
-	v.setQuerySources[antlrhelpers.Key(ctx)] = source
+	v.querySources[antlrhelpers.Key(ctx)] = source
 
 	return nil
 }
@@ -1764,7 +1758,7 @@ func (v *visitor) VisitSetQueryInParenthesis(ctx *mysqlparser.SetQueryInParenthe
 		return nil
 	}
 
-	v.setQuerySources[antlrhelpers.Key(ctx)] = source
+	v.querySources[antlrhelpers.Key(ctx)] = source
 
 	return nil
 }
@@ -2996,7 +2990,7 @@ func (v *visitor) VisitConstant(ctx *mysqlparser.ConstantContext) any {
 
 	switch {
 	case ctx.StringLiteral() != nil:
-		DBType = knownTypeNotNull("TEXT")
+		DBType = knownTypeNotNull("varchar")
 		txt := ctx.GetText()
 		txt = txt[1 : len(txt)-1] // remove quotes
 		v.MaybeSetNodeName(ctx, txt)
@@ -3006,31 +3000,31 @@ func (v *visitor) VisitConstant(ctx *mysqlparser.ConstantContext) any {
 		txt := ctx.DecimalLiteral().GetText()
 		switch {
 		case strings.ContainsAny(ctx.GetText(), "eE"): // scientific notation
-			typ = "FLOAT"
+			typ = "float"
 		case strings.Contains(txt, "."): // decimal number
-			typ = "DOUBLE"
+			typ = "double"
 		default: // integer number
-			typ = "INT"
+			typ = "int"
 			_, err := strconv.ParseInt(txt, 10, 32)
 			if errors.Is(err, strconv.ErrRange) { // too large number
-				typ = "BIGINT"
+				typ = "bigint"
 			}
 		}
 
 		if ctx.MINUS() == nil { // signed number
-			typ += " UNSIGNED"
+			typ += " unsigned"
 		}
 
 		DBType = knownTypeNotNull(typ)
 
 	case ctx.BIT_STRING() != nil: // bit string
-		DBType = knownTypeNotNull("VARBINARY") // Seen as a bit string
+		DBType = knownTypeNotNull("varbinary") // Seen as a bit string
 
 	case ctx.HexadecimalLiteral() != nil: // hexadecimal number
-		DBType = knownTypeNotNull("VARBINARY") // Seen as a bit string
+		DBType = knownTypeNotNull("varbinary") // Seen as a bit string
 
 	case ctx.BooleanLiteral() != nil: // boolean number
-		DBType = knownTypeNotNull("BOOLEAN")
+		DBType = knownTypeNotNull("boolean")
 		v.MaybeSetNodeName(ctx, ctx.GetText())
 
 	case ctx.GetNullLiteral() != nil: // null
@@ -3143,7 +3137,12 @@ func (v *visitor) VisitIndexColumnNames(ctx *mysqlparser.IndexColumnNamesContext
 
 // Visit a parse tree produced by MySqlParser#expressions.
 func (v *visitor) VisitExpressions(ctx *mysqlparser.ExpressionsContext) any {
-	return v.VisitChildren(ctx)
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#expressionsWithDefaults.
@@ -3441,31 +3440,60 @@ func (v *visitor) VisitBinaryComparisonPredicate(ctx *mysqlparser.BinaryComparis
 	v.UpdateInfo(NodeInfo{
 		Node:            ctx,
 		ExprDescription: "Comparison",
-		Type:            []NodeType{knownTypeNull("BOOLEAN")},
+		Type:            []NodeType{knownTypeNull("boolean")},
 	})
 
-	v.UpdateInfo(NodeInfo{
-		Node:                 ctx.GetLeft(),
-		ExprDescription:      "Comparison Left",
-		ExprRef:              ctx.GetRight(),
-		IgnoreRefNullability: true,
-	})
-
-	v.UpdateInfo(NodeInfo{
-		Node:                 ctx.GetRight(),
-		ExprDescription:      "Comparison Right",
-		ExprRef:              ctx.GetLeft(),
-		IgnoreRefNullability: true,
-	})
-
-	v.MatchNodeNames(ctx.GetLeft(), ctx.GetRight())
+	v.equateTypesAndNames(ctx.GetLeft(), ctx.GetRight())
 
 	return nil
 }
 
-// Visit a parse tree produced by MySqlParser#inPredicate.
-func (v *visitor) VisitInPredicate(ctx *mysqlparser.InPredicateContext) any {
-	return v.VisitChildren(ctx)
+// Visit a parse tree produced by MySqlParser#inExpressions
+func (v *visitor) VisitInExpressions(ctx *mysqlparser.InExpressionsContext) any {
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
+		ExprDescription: "IN",
+		Type:            []NodeType{knownTypeNull("boolean")},
+	})
+
+	expressions := ctx.ExpressionList().Expressions()
+
+	for _, expression := range expressions.AllExpression() {
+		v.equateTypesAndNames(ctx.Predicate(), expression)
+	}
+
+	if len(expressions.AllExpression()) == 1 {
+		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+			ctx.GetStart().GetStart(),
+			ctx.GetStop().GetStop(),
+			func(start, end int) error {
+				v.UpdateInfo(NodeInfo{
+					Node:            expressions,
+					ExprDescription: "Expressions",
+					EditedPosition:  [2]int{start, end},
+					CanBeMultiple:   true,
+				})
+				return nil
+			},
+		)...)
+	}
+
+	return nil
+}
+
+// Visit a parse tree produced by MySqlParser#inSubselect
+func (v *visitor) VisitInSubSelect(ctx *mysqlparser.InSubSelectContext) any {
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#betweenPredicate.
@@ -3490,11 +3518,95 @@ func (v *visitor) VisitRegexpPredicate(ctx *mysqlparser.RegexpPredicateContext) 
 
 // Visit a parse tree produced by MySqlParser#unaryExpressionAtom.
 func (v *visitor) VisitUnaryExpressionAtom(ctx *mysqlparser.UnaryExpressionAtomContext) any {
-	return v.VisitChildren(ctx)
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	tokenTyp := ctx.UnaryOperator().GetOperator().GetTokenType()
+	switch tokenTyp {
+	case mysqlparser.MySqlParserPLUS:
+		// Returns the same type as the operand
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
+			ExprDescription: "Unary Plus",
+			ExprRef:         ctx.ExpressionAtom(),
+		})
+
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.ExpressionAtom(),
+			ExprDescription: "Unary Plus Expr",
+			ExprRef:         ctx,
+		})
+
+	case mysqlparser.MySqlParserMINUS:
+		// Always INTEGER, should be used with a numeric literal
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
+			ExprDescription: "Unary Minus",
+			ExprRef:         ctx.ExpressionAtom(),
+		})
+
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.ExpressionAtom(),
+			ExprDescription: "Unary Minus Expr",
+			Type: []NodeType{
+				knownTypeNotNull("bigint"),
+				knownTypeNotNull("decimal"),
+				knownTypeNotNull("double"),
+			},
+		})
+
+	case mysqlparser.MySqlParserNOT, mysqlparser.MySqlParserEXCLAMATION_SYMBOL:
+		// Returns a BOOLEAN (should technically only be used with a boolean expression)
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
+			ExprDescription: "Unary NOT",
+			Type:            []NodeType{knownTypeNotNull("boolean")},
+		})
+
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.ExpressionAtom(),
+			ExprDescription: "Unary NOT Expr",
+			Type:            []NodeType{knownTypeNotNull("boolean")},
+		})
+
+	case mysqlparser.MySqlParserBIT_NOT_OP:
+		// Bitwise NOT
+		// Always INTEGER, should be used with a numeric literal
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx,
+			ExprDescription: "Unary Tilde",
+			Type:            []NodeType{knownTypeNotNull("bigint")},
+		})
+
+		v.UpdateInfo(NodeInfo{
+			Node:            ctx.ExpressionAtom(),
+			ExprDescription: "Unary Tilde Expr",
+			Type: []NodeType{
+				knownTypeNotNull("varbinary"),
+				knownTypeNotNull("bigint"),
+			},
+		})
+	}
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#collateExpressionAtom.
 func (v *visitor) VisitCollateExpressionAtom(ctx *mysqlparser.CollateExpressionAtomContext) any {
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
+		ExprDescription: "COLLATE",
+		Type:            []NodeType{knownTypeNotNull("varchar")},
+	})
+
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.ExpressionAtom(),
+		ExprDescription: "COLLATE Expr",
+		Type:            []NodeType{knownTypeNotNull("varchar")},
+	})
+
 	return v.VisitChildren(ctx)
 }
 
@@ -3538,7 +3650,26 @@ func (v *visitor) VisitNestedExpressionAtom(ctx *mysqlparser.NestedExpressionAto
 
 // Visit a parse tree produced by MySqlParser#nestedRowExpressionAtom.
 func (v *visitor) VisitNestedRowExpressionAtom(ctx *mysqlparser.NestedRowExpressionAtomContext) any {
-	return v.VisitChildren(ctx)
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+		ctx.GetStart().GetStart(),
+		ctx.GetStop().GetStop(),
+		func(start, end int) error {
+			v.SetGroup(ctx)
+			v.UpdateInfo(NodeInfo{
+				Node:            ctx,
+				ExprDescription: "Row",
+				EditedPosition:  [2]int{start, end},
+			})
+			return nil
+		},
+	)...)
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#mathExpressionAtom.
@@ -3548,6 +3679,11 @@ func (v *visitor) VisitMathExpressionAtom(ctx *mysqlparser.MathExpressionAtomCon
 
 // Visit a parse tree produced by MySqlParser#existsExpressionAtom.
 func (v *visitor) VisitExistsExpressionAtom(ctx *mysqlparser.ExistsExpressionAtomContext) any {
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
+		ExprDescription: "Exists",
+		Type:            []NodeType{knownTypeNull("boolean")},
+	})
 	return v.VisitChildren(ctx)
 }
 
@@ -3578,7 +3714,24 @@ func (v *visitor) VisitFunctionCallExpressionAtom(ctx *mysqlparser.FunctionCallE
 
 // Visit a parse tree produced by MySqlParser#binaryExpressionAtom.
 func (v *visitor) VisitBinaryExpressionAtom(ctx *mysqlparser.BinaryExpressionAtomContext) any {
-	return v.VisitChildren(ctx)
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx,
+		ExprDescription: "BINARY",
+		Type:            []NodeType{knownTypeNotNull("varbinary")},
+	})
+
+	v.UpdateInfo(NodeInfo{
+		Node:            ctx.ExpressionAtom(),
+		ExprDescription: "BINARY Expr",
+		Type:            []NodeType{knownTypeNotNull("varchar")},
+	})
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#fullColumnNameExpressionAtom.
@@ -3589,6 +3742,56 @@ func (v *visitor) VisitFullColumnNameExpressionAtom(ctx *mysqlparser.FullColumnN
 // Visit a parse tree produced by MySqlParser#bitExpressionAtom.
 func (v *visitor) VisitBitExpressionAtom(ctx *mysqlparser.BitExpressionAtomContext) any {
 	return v.VisitChildren(ctx)
+}
+
+// VisitExpressionList implements parser.MySqlParserVisitor.
+func (v *visitor) VisitExpressionList(ctx *mysqlparser.ExpressionListContext) any {
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+		ctx.GetStart().GetStart(),
+		ctx.GetStop().GetStop(),
+		func(start, end int) error {
+			v.SetGroup(ctx)
+			v.UpdateInfo(NodeInfo{
+				Node:            ctx,
+				ExprDescription: "List",
+				EditedPosition:  [2]int{start, end},
+			})
+			return nil
+		},
+	)...)
+
+	return nil
+}
+
+// VisitSubSelect implements parser.MySqlParserVisitor.
+func (v *visitor) VisitSubSelect(ctx *mysqlparser.SubSelectContext) any {
+	v.VisitChildren(ctx)
+	if v.Err != nil {
+		return nil
+	}
+
+	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
+		ctx.GetStart().GetStart(),
+		ctx.GetStop().GetStop(),
+		func(start, end int) error {
+			v.SetGroup(ctx)
+			v.UpdateInfo(NodeInfo{
+				Node:            ctx,
+				ExprDescription: "SubSelect",
+				EditedPosition:  [2]int{start, end},
+			})
+			return nil
+		},
+	)...)
+
+	v.querySources[antlrhelpers.Key(ctx)] = v.querySources[antlrhelpers.Key(ctx.SelectStatement())]
+
+	return nil
 }
 
 // Visit a parse tree produced by MySqlParser#unaryOperator.
