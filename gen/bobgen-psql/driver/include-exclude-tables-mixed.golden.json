@@ -14,7 +14,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -25,7 +26,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -80,7 +82,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -91,7 +94,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [

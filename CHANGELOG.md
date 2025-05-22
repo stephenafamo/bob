@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for MySQL to `bobgen-sql`.
 - Added `Exec` test for generated queries that do not return rows.
 - Added `OrderCombined`, `LimitCombined`, `OffsetCombined` mods to MySQL `SELECT` queries. These are applied to the result of a `UNION`, `INTERSECT` or `EXCEPT` query.
+- Added `type_limits` property to column definitions.
+- Added `limits` option to `random_expr` function for types. This is to pass any column limits to the randomization function (e.g. `max_length` for strings).
+- Added tests to check that the generated factory can create models and save into the database.
 
 ### Changed
 
@@ -48,11 +51,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made changes to better support generating code in multiple languages.
 - Mark queries with `ON DUPLICATE KEY UPDATE` as unretrievable in MySQL.
 - Unretrievable `INSERT` queries using `One, All, Cursor` now immediately return `orm.ErrCannotRetrieveRow` instead of executing the query first.
+- Generated tests are now run when testing drivers.
+- `MEDIUMINT` and `MEDIUMINT UNSIGNED` are now generated as `int16` and `uint16` respectively. This is because Go doe not support 24 bit integers.
+- The randomization function for floats, strings, and decimals now respect the limits set in the column definition.
 
 ### Removed
 
 - Removed `clause.Table` and `clause.From`, and merge into `clause.TableRef` since they had overlapping functionality.
 - Remove unnecessary context closure in generated join helpers.
+- Remove the deprecated `wipe` generation option.
 
 ### Fixed
 

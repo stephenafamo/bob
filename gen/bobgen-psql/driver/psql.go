@@ -244,6 +244,11 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		c.ordinal_position,
 		c.column_name,
 		ct.column_type,
+		array_to_string(array_remove(ARRAY[
+			c.character_maximum_length,
+			c.numeric_precision,
+			c.numeric_scale
+		], null), ',', '') AS type_limits,
 		c.udt_schema,
 		c.udt_name,
 		(
@@ -310,6 +315,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	query := fmt.Sprintf(`SELECT 
 		column_name,
 		column_type,
+		type_limits,
 		udt_schema,
 		udt_name,
 		array_type,
@@ -352,19 +358,20 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, udtSchema, udtName, comment string
+		var colName, colType, typeLimits, udtSchema, udtName, comment string
 		var defaultValue, arrayType, domainName *string
 		var nullable, generated, identity bool
-		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
+		if err := rows.Scan(&colName, &colType, &typeLimits, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", info.Key, err)
 		}
 
 		column := drivers.Column{
-			Name:      colName,
-			DBType:    colType,
-			Comment:   comment,
-			Nullable:  nullable,
-			Generated: generated,
+			Name:       colName,
+			DBType:     colType,
+			TypeLimits: strings.Split(typeLimits, ","),
+			Comment:    comment,
+			Nullable:   nullable,
+			Generated:  generated,
 		}
 		info := parser.ColInfo{
 			UDTSchema: udtSchema,

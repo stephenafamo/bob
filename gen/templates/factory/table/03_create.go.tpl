@@ -15,7 +15,7 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
   {{- $typDef :=  index $.Types $column.Type -}}
   {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		if m.{{$colAlias}}.IsUnset() {
-        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil))
+        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}}))
     }
 	{{end -}}
 }

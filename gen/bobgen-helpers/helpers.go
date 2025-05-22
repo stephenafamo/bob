@@ -189,18 +189,66 @@ func Types() drivers.Types {
 			RandomExpr: `return f.UInt64()`,
 		},
 		"float32": {
-			RandomExpr: `return f.Float32(10, -1_000_000, 1_000_000)`,
+			RandomExpr: `
+				var precision int64 = 5 
+				var scale int64 = 2 
+
+				if len(limits) > 0 {
+					precision, _ = strconv.ParseInt(limits[0], 10, 32)
+				}
+
+				if len(limits) > 1 {
+					scale, _ = strconv.ParseInt(limits[1], 10, 32)
+				}
+
+				scaleFloat := math.Pow10(int(scale))
+
+				val := f.Float64(10, -1, 1)*math.Pow10(int(precision))
+				val = math.Round(val)/scaleFloat
+
+				return float32(val)
+			`,
+			RandomExprImports: language.ImportList{`"strconv"`, `"math"`},
 		},
 		"float64": {
-			RandomExpr: `return f.Float64(10, -1_000_000, 1_000_000)`,
+			RandomExpr: `
+				var precision int64 = 5 
+				var scale int64 = 2 
+
+				if len(limits) > 0 {
+					precision, _ = strconv.ParseInt(limits[0], 10, 32)
+				}
+
+				if len(limits) > 1 {
+					scale, _ = strconv.ParseInt(limits[1], 10, 32)
+				}
+
+				scaleFloat := math.Pow10(int(scale))
+
+				val := f.Float64(10, -1, 1)*math.Pow10(int(precision))
+				val = math.Round(val)/scaleFloat
+
+				return val
+			`,
+			RandomExprImports: language.ImportList{`"strconv"`, `"math"`},
 		},
 		"string": {
-			RandomExpr:        `return strings.Join(f.Lorem().Words(f.IntBetween(1, 5)), " ")`,
-			RandomExprImports: language.ImportList{`"strings"`},
+			RandomExpr: `
+			val := strings.Join(f.Lorem().Words(f.IntBetween(1, 5)), " ")
+			if len(limits) == 0 {
+				return val
+			}
+			limitInt, _ := strconv.Atoi(limits[0])
+			if limitInt > 0 && limitInt < len(val) {
+				val = val[:limitInt]
+			}
+			return val
+			`,
+			RandomExprImports: language.ImportList{`"strconv"`, `"strings"`},
 		},
 		"[]byte": {
 			DependsOn:           []string{"string"},
-			RandomExpr:          `return []byte(random_string(f))`,
+			RandomExpr:          `return []byte(random_string(f, limits...))`,
 			CompareExpr:         `bytes.Equal(AAA, BBB)`,
 			CompareExprImports:  language.ImportList{`"bytes"`},
 			NoScannerValuerTest: true,
@@ -329,9 +377,28 @@ func Types() drivers.Types {
 			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"decimal.Decimal": {
-			Imports:     language.ImportList{`"github.com/shopspring/decimal"`},
-			RandomExpr:  `return decimal.New(f.Int64Between(0, 1000), 0)`,
-			CompareExpr: `AAA.Equal(BBB)`,
+			Imports: language.ImportList{`"github.com/shopspring/decimal"`},
+			RandomExpr: `
+			var precision int64 = 5 
+			var scale int64 = 2 
+
+			if len(limits) > 0 {
+				precision, _ = strconv.ParseInt(limits[0], 10, 32)
+			}
+
+			if len(limits) > 1 {
+				scale, _ = strconv.ParseInt(limits[1], 10, 32)
+			}
+
+			precisionDecimal, _ := decimal.NewFromInt(10).PowInt32(int32(precision))
+			return decimal.
+				NewFromFloat32(f.Float32(10, -1, 1)).
+				Mul(precisionDecimal).
+				Shift(int32(-1 * scale)).
+				Round(int32(scale))
+			`,
+			RandomExprImports: language.ImportList{`"strconv"`},
+			CompareExpr:       `AAA.Equal(BBB)`,
 		},
 		"pgtypes.LSN": {
 			Imports:    language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},

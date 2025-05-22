@@ -126,7 +126,7 @@ func TestAssembleSQLite(t *testing.T) {
 	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config, nil)
+	assemble(t, config, *flagOverwriteGolden, nil)
 }
 
 func TestAssembleLibSQL(t *testing.T) {
@@ -164,7 +164,7 @@ func TestAssembleLibSQL(t *testing.T) {
 	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config, func(b []byte) []byte {
+	assemble(t, config, false, func(b []byte) []byte {
 		return []byte(strings.ReplaceAll(
 			string(b),
 			"modernc.org/sqlite",
@@ -202,7 +202,7 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	}
 }
 
-func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
+func assemble(t *testing.T, config Config, overwrite bool, mod func([]byte) []byte) {
 	t.Helper()
 
 	tests := []struct {
@@ -313,7 +313,7 @@ func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 					},
 					GoldenFile:      tt.goldenJson,
 					GoldenFileMod:   mod,
-					OverwriteGolden: *flagOverwriteGolden,
+					OverwriteGolden: overwrite,
 					Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 				})
 				return

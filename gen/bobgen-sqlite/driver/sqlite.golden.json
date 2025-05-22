@@ -14,7 +14,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "user_id",
@@ -25,7 +26,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "sponsor_id",
@@ -36,7 +38,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "something",
@@ -47,7 +50,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "another",
@@ -58,7 +62,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -178,7 +183,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -241,7 +247,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -252,7 +259,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -302,7 +310,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -313,7 +322,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -363,7 +373,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -374,7 +385,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -424,7 +436,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -435,7 +448,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -485,7 +499,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -496,7 +511,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -546,7 +562,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "b",
@@ -557,7 +574,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "c",
@@ -568,7 +586,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "d",
@@ -579,7 +598,8 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "e",
@@ -590,7 +610,8 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -640,7 +661,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "b",
@@ -651,7 +673,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "c",
@@ -662,7 +685,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "d",
@@ -673,7 +697,8 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "e",
@@ -684,7 +709,8 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -734,7 +760,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "b",
@@ -745,7 +772,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -795,7 +823,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -845,7 +874,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -856,7 +886,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -906,7 +937,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -917,7 +949,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -967,7 +1000,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -978,7 +1012,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1028,7 +1063,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -1039,7 +1075,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1089,7 +1126,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "secret_col",
@@ -1100,7 +1138,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1150,7 +1189,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1200,7 +1240,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1250,7 +1291,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "video_id",
@@ -1261,7 +1303,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "sponsor_id",
@@ -1272,7 +1315,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [],
@@ -1298,7 +1342,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1348,7 +1393,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "tag_id",
@@ -1359,7 +1405,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1440,7 +1487,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "user_id",
@@ -1451,7 +1499,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "sponsor_id",
@@ -1462,7 +1511,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1562,7 +1612,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1612,7 +1663,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1662,7 +1714,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "col2",
@@ -1673,7 +1726,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "col3",
@@ -1684,7 +1738,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -1822,7 +1877,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "id_two",
@@ -1833,7 +1889,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "id_three",
@@ -1844,7 +1901,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "bool_zero",
@@ -1855,7 +1913,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_one",
@@ -1866,7 +1925,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_two",
@@ -1877,7 +1937,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_three",
@@ -1888,7 +1949,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_four",
@@ -1899,7 +1961,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_five",
@@ -1910,7 +1973,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bool_six",
@@ -1921,7 +1985,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_zero",
@@ -1932,7 +1997,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_one",
@@ -1943,7 +2009,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_two",
@@ -1954,7 +2021,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_three",
@@ -1965,7 +2033,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_four",
@@ -1976,7 +2045,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_five",
@@ -1987,7 +2057,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_six",
@@ -1998,7 +2069,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_seven",
@@ -2009,7 +2081,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_eight",
@@ -2020,7 +2093,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_nine",
@@ -2031,7 +2105,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_ten",
@@ -2042,7 +2117,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "string_eleven",
@@ -2053,7 +2129,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_zero",
@@ -2064,7 +2141,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_one",
@@ -2075,7 +2153,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_two",
@@ -2086,7 +2165,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_three",
@@ -2097,7 +2177,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_four",
@@ -2108,7 +2189,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_five",
@@ -2119,7 +2201,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "big_int_six",
@@ -2130,7 +2213,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "int_zero",
@@ -2141,7 +2225,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_one",
@@ -2152,7 +2237,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_two",
@@ -2163,7 +2249,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_three",
@@ -2174,7 +2261,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_four",
@@ -2185,7 +2273,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_five",
@@ -2196,7 +2285,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "int_six",
@@ -2207,7 +2297,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "float_zero",
@@ -2218,7 +2309,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "float_one",
@@ -2229,7 +2321,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "float_two",
@@ -2240,7 +2333,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_three",
@@ -2251,7 +2345,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_four",
@@ -2262,7 +2357,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_five",
@@ -2273,7 +2369,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_six",
@@ -2284,7 +2381,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_seven",
@@ -2295,7 +2393,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_eight",
@@ -2306,7 +2405,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "float_nine",
@@ -2317,7 +2417,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_zero",
@@ -2328,7 +2429,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_one",
@@ -2339,7 +2441,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_two",
@@ -2350,7 +2453,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_three",
@@ -2361,7 +2465,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_four",
@@ -2372,7 +2477,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_five",
@@ -2383,7 +2489,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_six",
@@ -2394,7 +2501,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_seven",
@@ -2405,7 +2513,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "bytea_eight",
@@ -2416,7 +2525,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_zero",
@@ -2427,7 +2537,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_one",
@@ -2438,7 +2549,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "time_two",
@@ -2449,7 +2561,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_three",
@@ -2460,7 +2573,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_five",
@@ -2471,7 +2585,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_nine",
@@ -2482,7 +2597,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "time_eleven",
@@ -2493,7 +2609,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "time_twelve",
@@ -2504,7 +2621,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "time_fifteen",
@@ -2515,7 +2633,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "time_sixteen",
@@ -2526,7 +2645,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "json_null",
@@ -2537,7 +2657,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]"
+					"type": "types.JSON[json.RawMessage]",
+					"type_limits": null
 				},
 				{
 					"name": "json_nnull",
@@ -2548,7 +2669,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.JSON[json.RawMessage]"
+					"type": "types.JSON[json.RawMessage]",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint_null",
@@ -2559,7 +2681,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8"
+					"type": "int8",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint_nnull",
@@ -2570,7 +2693,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8"
+					"type": "int8",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint1_null",
@@ -2581,7 +2705,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint1_nnull",
@@ -2592,7 +2717,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint2_null",
@@ -2603,7 +2729,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "tinyint2_nnull",
@@ -2614,7 +2741,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "smallint_null",
@@ -2625,7 +2753,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16"
+					"type": "int16",
+					"type_limits": null
 				},
 				{
 					"name": "smallint_nnull",
@@ -2636,7 +2765,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16"
+					"type": "int16",
+					"type_limits": null
 				},
 				{
 					"name": "mediumint_null",
@@ -2647,7 +2777,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "mediumint_nnull",
@@ -2658,7 +2789,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "bigint_null",
@@ -2669,7 +2801,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "bigint_nnull",
@@ -2680,7 +2813,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int64"
+					"type": "int64",
+					"type_limits": null
 				},
 				{
 					"name": "float_null",
@@ -2691,7 +2825,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "float_nnull",
@@ -2702,7 +2837,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "double_null",
@@ -2713,7 +2849,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64"
+					"type": "float64",
+					"type_limits": null
 				},
 				{
 					"name": "double_nnull",
@@ -2724,7 +2861,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64"
+					"type": "float64",
+					"type_limits": null
 				},
 				{
 					"name": "doubleprec_null",
@@ -2735,7 +2873,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64"
+					"type": "float64",
+					"type_limits": null
 				},
 				{
 					"name": "doubleprec_nnull",
@@ -2746,7 +2885,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float64"
+					"type": "float64",
+					"type_limits": null
 				},
 				{
 					"name": "real_null",
@@ -2757,7 +2897,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "real_nnull",
@@ -2768,7 +2909,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32"
+					"type": "float32",
+					"type_limits": null
 				},
 				{
 					"name": "boolean_null",
@@ -2779,7 +2921,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool"
+					"type": "bool",
+					"type_limits": null
 				},
 				{
 					"name": "boolean_nnull",
@@ -2790,7 +2933,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "bool"
+					"type": "bool",
+					"type_limits": null
 				},
 				{
 					"name": "date_null",
@@ -2801,7 +2945,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "date_nnull",
@@ -2812,7 +2957,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "datetime_null",
@@ -2823,7 +2969,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "datetime_nnull",
@@ -2834,7 +2981,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time"
+					"type": "time.Time",
+					"type_limits": null
 				},
 				{
 					"name": "timestamp_null",
@@ -2845,7 +2993,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "timestamp_nnull",
@@ -2856,7 +3005,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "binary_null",
@@ -2867,7 +3017,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "binary_nnull",
@@ -2878,7 +3029,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "varbinary_null",
@@ -2889,7 +3041,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "varbinary_nnull",
@@ -2900,7 +3053,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "tinyblob_null",
@@ -2911,7 +3065,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "tinyblob_nnull",
@@ -2922,7 +3077,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "blob_null",
@@ -2933,7 +3089,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte"
+					"type": "[]byte",
+					"type_limits": null
 				},
 				{
 					"name": "blob_nnull",
@@ -2944,7 +3101,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "[]byte"
+					"type": "[]byte",
+					"type_limits": null
 				},
 				{
 					"name": "mediumblob_null",
@@ -2955,7 +3113,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "mediumblob_nnull",
@@ -2966,7 +3125,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "longblob_null",
@@ -2977,7 +3137,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "longblob_nnull",
@@ -2988,7 +3149,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "varchar_null",
@@ -2999,7 +3161,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "varchar_nnull",
@@ -3010,7 +3173,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "char_null",
@@ -3021,7 +3185,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "char_nnull",
@@ -3032,7 +3197,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "text_null",
@@ -3043,7 +3209,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				},
 				{
 					"name": "text_nnull",
@@ -3054,7 +3221,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string"
+					"type": "string",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -3104,7 +3272,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "video_id",
@@ -3115,7 +3284,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "sponsor_id",
@@ -3126,7 +3296,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [],
@@ -3152,7 +3323,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -3202,7 +3374,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "tag_id",
@@ -3213,7 +3386,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [
@@ -3294,7 +3468,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "user_id",
@@ -3305,7 +3480,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				},
 				{
 					"name": "sponsor_id",
@@ -3316,7 +3492,8 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32"
+					"type": "int32",
+					"type_limits": null
 				}
 			],
 			"indexes": [

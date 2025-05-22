@@ -51,7 +51,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
   func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
     return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
       o.{{$colAlias}} = func() {{$colTyp}} {
-        return random_{{normalizeType $column.Type}}(f)
+        return random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}})
       }
     })
   }
@@ -68,7 +68,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
             return null.FromPtr[{{getType $column.Type $typDef}}](nil)
           }
 
-          return null.From(random_{{normalizeType $column.Type}}(f))
+          return null.From(random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}))
       }
     })
   }
@@ -83,7 +83,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
             f = &defaultFaker
           }
 
-          return null.From(random_{{normalizeType $column.Type}}(f))
+          return null.From(random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}))
       }
     })
   }
