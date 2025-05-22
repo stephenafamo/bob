@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `type_limits` property to column definitions.
 - Added `limits` option to `random_expr` function for types. This is to pass any column limits to the randomization function (e.g. `max_length` for strings).
 - Added tests to check that the generated factory can create models and save into the database.
+- Added the `pgtypes.Snapshot` type for the `pg_snapshot` and `txid_snapshot` type in PostgreSQL.
 
 ### Changed
 
@@ -54,12 +55,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated tests are now run when testing drivers.
 - `MEDIUMINT` and `MEDIUMINT UNSIGNED` are now generated as `int16` and `uint16` respectively. This is because Go doe not support 24 bit integers.
 - The randomization function for floats, strings, and decimals now respect the limits set in the column definition.
+- `txid_snapshot` is now generated as `pgtypes.Snapshot` instead of `pgtypes.TxIDSnapshot`.
+- `cidr` postgres type is now generated as `types.Text[netip.Prefix]` instead of `types.Text[netip.Addr]`.
+- `money` postgres type is now generated as a string with a custom randomization expression instead of a decimal.
 
 ### Removed
 
 - Removed `clause.Table` and `clause.From`, and merge into `clause.TableRef` since they had overlapping functionality.
 - Remove unnecessary context closure in generated join helpers.
 - Remove the deprecated `wipe` generation option.
+- Remove `pgtypes.TxIDSnapshot` type. This is now replaced with `pgtypes.Snapshot`.
 
 ### Fixed
 

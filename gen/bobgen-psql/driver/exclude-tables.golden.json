@@ -611,7 +611,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_one",
@@ -623,7 +625,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_two",
@@ -635,7 +639,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_three",
@@ -647,7 +653,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_four",
@@ -659,7 +667,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_five",
@@ -671,7 +681,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_six",
@@ -683,7 +695,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_seven",
@@ -695,7 +709,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_eight",
@@ -707,7 +723,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_nine",
@@ -719,7 +737,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_ten",
@@ -731,7 +751,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_eleven",
@@ -743,7 +765,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_zero",
@@ -755,7 +779,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_one",
@@ -767,7 +793,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_two",
@@ -779,7 +807,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_three",
@@ -791,7 +821,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_four",
@@ -803,7 +835,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_five",
@@ -815,7 +849,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_six",
@@ -827,7 +863,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_seven",
@@ -839,7 +877,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_eight",
@@ -851,7 +891,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_nine",
@@ -863,7 +905,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "byte_zero",
@@ -1367,7 +1411,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_three",
@@ -1379,7 +1426,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_four",
@@ -1391,7 +1441,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_five",
@@ -1403,7 +1456,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_six",
@@ -1415,7 +1471,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_seven",
@@ -1427,7 +1486,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_eight",
@@ -1439,7 +1501,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_nine",
@@ -1451,7 +1516,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "bytea_zero",
@@ -1883,7 +1951,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "timestamp_notz",
@@ -2014,7 +2084,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Addr, *netip.Addr]",
+					"type": "types.Text[netip.Prefix, *netip.Prefix]",
 					"type_limits": null
 				},
 				{
@@ -2026,7 +2096,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Addr, *netip.Addr]",
+					"type": "types.Text[netip.Prefix, *netip.Prefix]",
 					"type_limits": null
 				},
 				{
@@ -2158,7 +2228,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
+					"type": "money",
 					"type_limits": null
 				},
 				{
@@ -2170,7 +2240,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
+					"type": "money",
 					"type_limits": null
 				},
 				{
@@ -2270,30 +2340,6 @@
 					"type_limits": null
 				},
 				{
-					"name": "tsquery_null",
-					"db_type": "tsquery",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				},
-				{
-					"name": "tsquery_nnull",
-					"db_type": "tsquery",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				},
-				{
 					"name": "tsvector_null",
 					"db_type": "tsvector",
 					"default": "NULL",
@@ -2326,7 +2372,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.TxIDSnapshot",
+					"type": "pgtypes.Snapshot",
 					"type_limits": null
 				},
 				{
@@ -2338,7 +2384,31 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.TxIDSnapshot",
+					"type": "pgtypes.Snapshot",
+					"type_limits": null
+				},
+				{
+					"name": "pg_snapshot_null",
+					"db_type": "pg_snapshot",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.Snapshot",
+					"type_limits": null
+				},
+				{
+					"name": "pg_snapshot_nnull",
+					"db_type": "pg_snapshot",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.Snapshot",
 					"type_limits": null
 				},
 				{
@@ -2374,7 +2444,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -2386,7 +2456,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -2447,7 +2517,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pq.StringArray",
-					"type_limits": null
+					"type_limits": [
+						"10"
+					]
 				},
 				{
 					"name": "varchararr_limited_nnull",
@@ -2459,7 +2531,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pq.StringArray",
-					"type_limits": null
+					"type_limits": [
+						"10"
+					]
 				},
 				{
 					"name": "realarr_null",
@@ -2470,7 +2544,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2482,7 +2556,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2494,7 +2568,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2506,7 +2580,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2591,7 +2665,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pgtypes.Array[decimal.Decimal]",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimalarr_limited_nnull",
@@ -2603,7 +2680,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pgtypes.Array[decimal.Decimal]",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "byteaarr_null",
@@ -2638,7 +2718,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -2650,7 +2730,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -2662,7 +2742,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -2674,7 +2754,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -2703,26 +2783,26 @@
 				},
 				{
 					"name": "customarr_null",
-					"db_type": "_int4[]",
+					"db_type": "int4[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
 					"name": "customarr_nnull",
-					"db_type": "_int4[]",
+					"db_type": "int4[]",
 					"default": "",
 					"comment": "",
 					"nullable": false,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -2971,7 +3051,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_one",
@@ -2983,7 +3065,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_two",
@@ -2995,7 +3079,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_three",
@@ -3007,7 +3093,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_four",
@@ -3019,7 +3107,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "string_five",
@@ -3031,7 +3121,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_six",
@@ -3043,7 +3135,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_seven",
@@ -3055,7 +3149,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_eight",
@@ -3067,7 +3163,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_nine",
@@ -3079,7 +3177,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_ten",
@@ -3091,7 +3191,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "string_eleven",
@@ -3103,7 +3205,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_zero",
@@ -3115,7 +3219,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_one",
@@ -3127,7 +3233,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_two",
@@ -3139,7 +3247,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_three",
@@ -3151,7 +3261,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_four",
@@ -3163,7 +3275,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1"
+					]
 				},
 				{
 					"name": "nonbyte_five",
@@ -3175,7 +3289,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_six",
@@ -3187,7 +3303,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_seven",
@@ -3199,7 +3317,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_eight",
@@ -3211,7 +3331,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "nonbyte_nine",
@@ -3223,7 +3345,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "byte_zero",
@@ -3727,7 +3851,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_three",
@@ -3739,7 +3866,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_four",
@@ -3751,7 +3881,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_five",
@@ -3763,7 +3896,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_six",
@@ -3775,7 +3911,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_seven",
@@ -3787,7 +3926,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_eight",
@@ -3799,7 +3941,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimal_nine",
@@ -3811,7 +3956,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "decimal.Decimal",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "bytea_zero",
@@ -4243,7 +4391,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"1000"
+					]
 				},
 				{
 					"name": "timestamp_notz",
@@ -4374,7 +4524,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Addr, *netip.Addr]",
+					"type": "types.Text[netip.Prefix, *netip.Prefix]",
 					"type_limits": null
 				},
 				{
@@ -4386,7 +4536,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "types.Text[netip.Addr, *netip.Addr]",
+					"type": "types.Text[netip.Prefix, *netip.Prefix]",
 					"type_limits": null
 				},
 				{
@@ -4518,7 +4668,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
+					"type": "money",
 					"type_limits": null
 				},
 				{
@@ -4530,7 +4680,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "decimal.Decimal",
+					"type": "money",
 					"type_limits": null
 				},
 				{
@@ -4630,30 +4780,6 @@
 					"type_limits": null
 				},
 				{
-					"name": "tsquery_null",
-					"db_type": "tsquery",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				},
-				{
-					"name": "tsquery_nnull",
-					"db_type": "tsquery",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				},
-				{
 					"name": "tsvector_null",
 					"db_type": "tsvector",
 					"default": "NULL",
@@ -4686,7 +4812,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.TxIDSnapshot",
+					"type": "pgtypes.Snapshot",
 					"type_limits": null
 				},
 				{
@@ -4698,7 +4824,31 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.TxIDSnapshot",
+					"type": "pgtypes.Snapshot",
+					"type_limits": null
+				},
+				{
+					"name": "pg_snapshot_null",
+					"db_type": "pg_snapshot",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.Snapshot",
+					"type_limits": null
+				},
+				{
+					"name": "pg_snapshot_nnull",
+					"db_type": "pg_snapshot",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.Snapshot",
 					"type_limits": null
 				},
 				{
@@ -4734,7 +4884,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -4746,7 +4896,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -4807,7 +4957,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pq.StringArray",
-					"type_limits": null
+					"type_limits": [
+						"10"
+					]
 				},
 				{
 					"name": "varchararr_limited_nnull",
@@ -4819,7 +4971,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pq.StringArray",
-					"type_limits": null
+					"type_limits": [
+						"10"
+					]
 				},
 				{
 					"name": "realarr_null",
@@ -4830,7 +4984,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -4842,7 +4996,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -4854,7 +5008,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -4866,7 +5020,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.Float64Array",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -4951,7 +5105,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pgtypes.Array[decimal.Decimal]",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "decimalarr_limited_nnull",
@@ -4963,7 +5120,10 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pgtypes.Array[decimal.Decimal]",
-					"type_limits": null
+					"type_limits": [
+						"2",
+						"1"
+					]
 				},
 				{
 					"name": "byteaarr_null",
@@ -4998,7 +5158,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -5010,7 +5170,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -5022,7 +5182,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -5034,7 +5194,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pq.StringArray",
+					"type": "pgtypes.Array[types.JSON[json.RawMessage]]",
 					"type_limits": null
 				},
 				{
@@ -5063,26 +5223,26 @@
 				},
 				{
 					"name": "customarr_null",
-					"db_type": "_int4[]",
+					"db_type": "int4[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
 					"name": "customarr_nnull",
-					"db_type": "_int4[]",
+					"db_type": "int4[]",
 					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pq.Int64Array",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -5233,7 +5393,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"100"
+					]
 				},
 				{
 					"name": "parent_id",

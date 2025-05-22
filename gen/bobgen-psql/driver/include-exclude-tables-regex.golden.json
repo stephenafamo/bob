@@ -27,7 +27,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"255"
+					]
 				}
 			],
 			"indexes": [
@@ -95,7 +97,9 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "string",
-					"type_limits": null
+					"type_limits": [
+						"255"
+					]
 				}
 			],
 			"indexes": [

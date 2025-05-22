@@ -152,6 +152,7 @@ func EnumType(types drivers.Types, enum string) string {
 	return enum
 }
 
+//nolint:maintidx
 func Types() drivers.Types {
 	return drivers.Types{
 		"bool": {
@@ -204,7 +205,7 @@ func Types() drivers.Types {
 				scaleFloat := math.Pow10(int(scale))
 
 				val := f.Float64(10, -1, 1)*math.Pow10(int(precision))
-				val = math.Round(val)/scaleFloat
+				val = math.Trunc(val)/scaleFloat
 
 				return float32(val)
 			`,
@@ -226,7 +227,7 @@ func Types() drivers.Types {
 				scaleFloat := math.Pow10(int(scale))
 
 				val := f.Float64(10, -1, 1)*math.Pow10(int(precision))
-				val = math.Round(val)/scaleFloat
+				val = math.Trunc(val)/scaleFloat
 
 				return val
 			`,
@@ -273,6 +274,18 @@ func Types() drivers.Types {
                 return types.Text[netip.Addr, *netip.Addr]{Val: ipAddr}`,
 			RandomExprImports: language.ImportList{`"crypto/rand"`},
 		},
+		"types.Text[netip.Prefix, *netip.Prefix]": {
+			Imports: language.ImportList{
+				`"net/netip"`,
+				`"github.com/stephenafamo/bob/types"`,
+			},
+			RandomExpr: `var addr [4]byte
+                rand.Read(addr[:])
+                ipAddr := netip.AddrFrom4(addr)
+                ipPrefix := netip.PrefixFrom(ipAddr, ipAddr.BitLen())
+                return types.Text[netip.Prefix, *netip.Prefix]{Val: ipPrefix}`,
+			RandomExprImports: language.ImportList{`"crypto/rand"`},
+		},
 		"pgtypes.Inet": {
 			Imports: language.ImportList{
 				`"github.com/stephenafamo/bob/types/pgtypes"`,
@@ -293,19 +306,32 @@ func Types() drivers.Types {
 			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pq.BoolArray": {
-			Imports: language.ImportList{`"github.com/lib/pq"`},
+			DependsOn: []string{"bool"},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.BoolArray, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = f.Bool()
+                    arr[i] = random_bool(f, limits...)
                 }
                 return arr`,
 			NoRandomizationTest: true,
 		},
+		"pq.Int32Array": {
+			DependsOn: []string{"int32"},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
+			RandomExpr: `arr := make(pq.Int32Array, f.IntBetween(1, 5))
+                for i := range arr {
+                    arr[i] = random_int32(f, limits...)
+                }
+                return arr`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: language.ImportList{`"slices"`},
+		},
 		"pq.Int64Array": {
-			Imports: language.ImportList{`"github.com/lib/pq"`},
+			DependsOn: []string{"int64"},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.Int64Array, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = f.Int64()
+                    arr[i] = random_int64(f, limits...)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
@@ -316,7 +342,7 @@ func Types() drivers.Types {
 			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.ByteaArray, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = random___byte(f)
+                    arr[i] = random___byte(f, limits...)
                 }
                 return arr`,
 			CompareExpr: `slices.EqualFunc(AAA, BBB, func(a, b []byte) bool {
@@ -329,17 +355,29 @@ func Types() drivers.Types {
 			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.StringArray, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = random_string(f)
+                    arr[i] = random_string(f, limits...)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
 			CompareExprImports: language.ImportList{`"slices"`},
 		},
 		"pq.Float64Array": {
-			Imports: language.ImportList{`"github.com/lib/pq"`},
+			DependsOn: []string{"float64"},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
 			RandomExpr: `arr := make(pq.Float64Array, f.IntBetween(1, 5))
                 for i := range arr {
-                    arr[i] = f.Float64(10, -1_000_000, 1_000_000)
+                    arr[i] = random_float64(f, limits...)
+                }
+                return arr`,
+			CompareExpr:        `slices.Equal(AAA, BBB)`,
+			CompareExprImports: language.ImportList{`"slices"`},
+		},
+		"pq.Float32Array": {
+			DependsOn: []string{"float32"},
+			Imports:   language.ImportList{`"github.com/lib/pq"`},
+			RandomExpr: `arr := make(pq.Float32Array, f.IntBetween(1, 5))
+                for i := range arr {
+                    arr[i] = random_float32(f, limits...)
                 }
                 return arr`,
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
@@ -395,7 +433,7 @@ func Types() drivers.Types {
 				NewFromFloat32(f.Float32(10, -1, 1)).
 				Mul(precisionDecimal).
 				Shift(int32(-1 * scale)).
-				Round(int32(scale))
+				RoundDown(int32(scale))
 			`,
 			RandomExprImports: language.ImportList{`"strconv"`},
 			CompareExpr:       `AAA.Equal(BBB)`,
@@ -404,18 +442,27 @@ func Types() drivers.Types {
 			Imports:    language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `return pgtypes.LSN(f.UInt64())`,
 		},
-		"pgtypes.TxIDSnapshot": {
+		"pgtypes.Snapshot": {
 			Imports: language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
-			RandomExpr: `active := make([]string, f.IntBetween(1, 5))
-                for i := range active {
-                    active[i] = strconv.FormatUint(f.UInt64(), 10)
-                }
-                return pgtypes.TxIDSnapshot{
-                    Min: strconv.FormatUint(f.UInt64(), 10),
-                    Max: strconv.FormatUint(f.UInt64(), 10),
-                    Active: active,
-                }`,
-			RandomExprImports:  language.ImportList{`"strconv"`},
+			RandomExpr: `
+				min := f.UInt32()
+				max := f.UInt32Between(min, math.MaxUint32)
+
+				active := make([]uint64, f.IntBetween(0, 5))
+				for i := range active {
+					if i == 0 {
+						active[i] = uint64(f.UInt32Between(min, max))
+					} else {
+						active[i] = uint64(f.UInt32Between(uint32(active[i-1]), max))
+					}
+				}
+				return pgtypes.Snapshot{
+					Min:    uint64(min),
+					Max:    uint64(max),
+					Active: active,
+				}
+			`,
+			RandomExprImports:  language.ImportList{`"math"`, `"strconv"`},
 			CompareExpr:        `AAA.Min == BBB.Min && AAA.Max == BBB.Max && slices.Equal(AAA.Active, BBB.Active)`,
 			CompareExprImports: language.ImportList{`"slices"`},
 		},
@@ -452,6 +499,12 @@ func Types() drivers.Types {
 			DependsOn: []string{"string"},
 			RandomExpr: `tag := f.Lorem().Word()
       return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)`,
+			RandomExprImports: language.ImportList{`"fmt"`},
+		},
+		"money": {
+			AliasOf:           "string",
+			DependsOn:         []string{"string"},
+			RandomExpr:        `return fmt.Sprintf("%.2f", f.Float32(2, 0, 1000))`,
 			RandomExprImports: language.ImportList{`"fmt"`},
 		},
 	}
