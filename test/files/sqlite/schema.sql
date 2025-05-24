@@ -10,7 +10,7 @@ create table videos (
 	id int primary key not null,
 
 	user_id int not null,
-	sponsor_id int,
+	sponsor_id int unique,
 
     unique (user_id, sponsor_id),
 	foreign key (user_id) references users (id),
@@ -193,6 +193,38 @@ CREATE TABLE has_generated_columns (
    e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
 );
 
+CREATE TABLE test_index_expressions (
+    col1 int,
+    col2 int,
+    col3 int
+);
+CREATE INDEX idx1 ON test_index_expressions ((col1 + col2));
+CREATE INDEX idx2 ON test_index_expressions ((col1 + col2), col3);
+CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
+CREATE INDEX idx4 ON test_index_expressions (col3);
+CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
+CREATE INDEX idx6 ON test_index_expressions (POW(col3, 2));
+
+CREATE TABLE foo_bar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE foo_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE foo_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE bar_baz (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
+CREATE TABLE bar_qux (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret_col TEXT NOT NULL
+);
 
 
 -- For the attached database
@@ -250,39 +282,6 @@ create table one.as_generated_columns (
    c TEXT,
    d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,
    e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
-);
-
-CREATE TABLE test_index_expressions (
-    col1 int,
-    col2 int,
-    col3 int
-);
-CREATE INDEX idx1 ON test_index_expressions ((col1 + col2));
-CREATE INDEX idx2 ON test_index_expressions ((col1 + col2), col3);
-CREATE INDEX idx3 ON test_index_expressions (col1, (col2 + col3));
-CREATE INDEX idx4 ON test_index_expressions (col3);
-CREATE INDEX idx5 ON test_index_expressions (col1 DESC, col2 DESC);
-CREATE INDEX idx6 ON test_index_expressions (POW(col3, 2));
-
-CREATE TABLE foo_bar (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    secret_col TEXT NOT NULL
-);
-CREATE TABLE foo_baz (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    secret_col TEXT NOT NULL
-);
-CREATE TABLE foo_qux (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    secret_col TEXT NOT NULL
-);
-CREATE TABLE bar_baz (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    secret_col TEXT NOT NULL
-);
-CREATE TABLE bar_qux (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    secret_col TEXT NOT NULL
 );
 
 CREATE TABLE one.foo_bar (

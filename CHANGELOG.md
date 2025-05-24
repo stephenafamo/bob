@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `limits` option to `random_expr` function for types. This is to pass any column limits to the randomization function (e.g. `max_length` for strings).
 - Added tests to check that the generated factory can create models and save into the database.
 - Added the `pgtypes.Snapshot` type for the `pg_snapshot` and `txid_snapshot` type in PostgreSQL.
+- Added a custom `Time` type to the `types` package. This is motivated by the fact that the `libsql` driver does not support the `time.Time` type properly.
 
 ### Changed
 
@@ -58,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `txid_snapshot` is now generated as `pgtypes.Snapshot` instead of `pgtypes.TxIDSnapshot`.
 - `cidr` postgres type is now generated as `types.Text[netip.Prefix]` instead of `types.Text[netip.Addr]`.
 - `money` postgres type is now generated as a string with a custom randomization expression instead of a decimal.
+- Factory template mods now take a context argument. This allows for more control when using recursive mods.
+- Removed `WithOneRelations` mod from factories, now replaced with `WithParentsCascading` which also includes parents for any parent relationships.
 
 ### Removed
 
@@ -74,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `Partitions` in MySQL delete queries to after the table alias.
 - Fixed issue with inserting into a table with all rows having default values in SQLite.
 - Use table name and not table alias in SQLite returning clause since the alias is not available in the `RETURNING` clause.
+- Fixed generated unique constraint errors for SQLite.
+- Correctly resuse inserted rows in factories.
 
 ## [v0.34.2] - 2025-05-01
 

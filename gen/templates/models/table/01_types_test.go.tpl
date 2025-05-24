@@ -2,11 +2,11 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 {{$factoryPackage := printf "%s/factory" $.ModelsPackage }}
-{{$.Importer.Import "factory" $factoryPackage }}
-{{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "errors"}}
 {{$.Importer.Import "testing"}}
+{{$.Importer.Import "factory" $factoryPackage }}
+{{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 
 func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
@@ -41,7 +41,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
         {{end}}
 
         if shouldUpdate {
-          if err := obj.Update(ctx, exec, f.New{{$tAlias.UpSingular}}(updateMods...).BuildSetter()); err != nil {
+          if err := obj.Update(ctx, exec, f.New{{$tAlias.UpSingular}}(ctx, updateMods...).BuildSetter()); err != nil {
             t.Fatalf("Error updating object: %v", err)
           }
         }
@@ -60,36 +60,37 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-      ctxTx, cancel := context.WithCancel(context.Background())
-      defer cancel()
+      ctx, cancel := context.WithCancel(context.Background())
+      t.Cleanup(cancel)
 
-			tx, err := testDB.BeginTx(ctxTx, nil)
+			tx, err := testDB.BeginTx(ctx, nil)
 			if err != nil {
 				t.Fatalf("Couldn't start database transaction: %v", err)
 			}
+      var exec bob.Executor = tx
 
-			obj, err := f.New{{$tAlias.UpSingular}}(factory.{{$tAlias.UpSingular}}Mods.WithOneRelations()).Create(ctxTx, tx)
+			obj, err := f.New{{$tAlias.UpSingular}}(ctx, factory.{{$tAlias.UpSingular}}Mods.WithParentsCascading()).Create(ctx, exec)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			obj2, err := f.New{{$tAlias.UpSingular}}().Create(ctxTx, tx)
+			obj2, err := f.New{{$tAlias.UpSingular}}(ctx).Create(ctx, exec)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-      err = obj2.Update(ctxTx, tx, f.New{{$tAlias.UpSingular}}(tt.conflictMods(ctxTx, tx, obj)...).BuildSetter())
+      err = obj2.Update(ctx, exec, f.New{{$tAlias.UpSingular}}(ctx, tt.conflictMods(ctx, exec, obj)...).BuildSetter())
 			if !errors.Is(models.ErrUniqueConstraint, err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
 			if !errors.Is(tt.expectedErr, err) {
-				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
+				t.Fatalf("Expected: %s, Got: %v", tt.expectedErr.Error(), err)
 			}
 			if !models.ErrUniqueConstraint.Is(err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
 			if !tt.expectedErr.Is(err) {
-				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
+				t.Fatalf("Expected: %s, Got: %v", tt.expectedErr.Error(), err)
 			}
 			if err = tx.Rollback(); err != nil {
 				t.Fatal("Couldn't rollback database transaction")

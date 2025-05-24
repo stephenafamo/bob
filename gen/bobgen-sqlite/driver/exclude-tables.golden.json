@@ -2213,7 +2213,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2237,7 +2237,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2249,7 +2249,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2261,7 +2261,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2273,7 +2273,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2657,7 +2657,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -2669,7 +2669,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "time.Time",
 					"type_limits": null
 				},
 				{
@@ -3163,13 +3163,29 @@
 			"indexes": [
 				{
 					"type": "u",
-					"name": "sqlite_autoindex_videos_2",
+					"name": "sqlite_autoindex_videos_3",
 					"columns": [
 						{
 							"name": "user_id",
 							"desc": false,
 							"is_expression": false
 						},
+						{
+							"name": "sponsor_id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": {
+						"partial": false
+					}
+				},
+				{
+					"type": "u",
+					"name": "sqlite_autoindex_videos_2",
+					"columns": [
 						{
 							"name": "sponsor_id",
 							"desc": false,
@@ -3236,9 +3252,17 @@
 				],
 				"uniques": [
 					{
-						"name": "sqlite_autoindex_videos_2",
+						"name": "sqlite_autoindex_videos_3",
 						"columns": [
 							"user_id",
+							"sponsor_id"
+						],
+						"comment": "",
+						"extra": null
+					},
+					{
+						"name": "sqlite_autoindex_videos_2",
+						"columns": [
 							"sponsor_id"
 						],
 						"comment": "",

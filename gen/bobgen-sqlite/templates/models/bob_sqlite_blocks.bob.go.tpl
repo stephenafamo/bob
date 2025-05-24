@@ -10,9 +10,13 @@ var (
 {{$.Importer.Import "fmt"}}
 func (e *UniqueConstraintError) Is(target error) bool {
 	{{if eq $.DriverName "github.com/tursodatabase/libsql-client-go/libsql"}}
+    fullCols := make([]string, len(e.columns))
+    for i, col := range e.columns {
+      fullCols[i] = fmt.Sprintf("%s.%s", e.table, col)
+    }
     return strings.Contains(
       target.Error(),
-      fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", e.s),
+      fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", strings.Join(fullCols, ", ")),
     )
 	{{else if eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3"}}
 		{{$errType := ""}}

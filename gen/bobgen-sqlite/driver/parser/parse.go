@@ -16,12 +16,13 @@ import (
 	sqliteparser "github.com/stephenafamo/sqlparser/sqlite"
 )
 
-func New(t tables) Parser {
-	return Parser{db: t}
+func New(t tables, driver string) Parser {
+	return Parser{db: t, driver: driver}
 }
 
 type Parser struct {
-	db tables
+	db     tables
+	driver string
 }
 
 func (p Parser) ParseFolders(ctx context.Context, paths ...string) ([]drivers.QueryFolder, error) {
@@ -50,7 +51,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 				Name:     col.Name,
 				DBName:   col.Name,
 				Nullable: omit.From(col.Type.Nullable()),
-				TypeName: TranslateColumnType(col.Type.ConfirmedDBType()),
+				TypeName: TranslateColumnType(col.Type.ConfirmedDBType(), p.driver),
 			}.Merge(col.Config)
 		}
 
@@ -68,7 +69,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 
 			Columns: cols,
 			Args: v.GetArgs(stmtStart, stmtStop, func(s string) (string, []string) {
-				return TranslateColumnType(s), nil
+				return TranslateColumnType(s, p.driver), nil
 			}, v.getCommentToRight),
 			Mods: stmtToMod{info},
 		}

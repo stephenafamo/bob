@@ -152,7 +152,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("getting tables: %w", err)
 	}
 
-	queries, err := parser.New(tables).ParseFolders(ctx, d.config.Queries...)
+	queries, err := parser.New(tables, driverName).ParseFolders(ctx, d.config.Queries...)
 	if err != nil {
 		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
@@ -424,7 +424,7 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 			column.Default = "NULL"
 		}
 
-		column.Type = parser.TranslateColumnType(column.DBType)
+		column.Type = parser.TranslateColumnType(column.DBType, inferDriver(d.config))
 		columns = append(columns, column)
 	}
 

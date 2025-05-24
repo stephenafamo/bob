@@ -26,21 +26,21 @@ func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAl
 
 // Set the model columns to this value
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}(val {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+	return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
 		o.{{$colAlias}} = func() {{$colTyp}} { return val }
 	})
 }
 
 // Set the Column from the function
 func (m {{$tAlias.DownSingular}}Mods) {{$colAlias}}Func(f func() {{$colTyp}}) {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+	return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
 			o.{{$colAlias}} = f
 	})
 }
 
 // Clear any values for the column
 func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}}Mod {
-	return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+	return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
 		o.{{$colAlias}} = nil
 	})
 }
@@ -49,7 +49,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
 // if faker is nil, a default faker is used
 {{if not $column.Nullable -}}
   func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
-    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+    return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
       o.{{$colAlias}} = func() {{$colTyp}} {
         return random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}})
       }
@@ -58,7 +58,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
 {{- else -}}
   // The generated value is sometimes null
   func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
-    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+    return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
       o.{{$colAlias}} = func() {{$colTyp}} {
           if f == nil {
             f = &defaultFaker
@@ -77,7 +77,7 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
   // if faker is nil, a default faker is used
   // The generated value is never null
   func (m {{$tAlias.DownSingular}}Mods) Random{{$colAlias}}NotNull(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
-    return {{$tAlias.UpSingular}}ModFunc(func(o *{{$tAlias.UpSingular}}Template) {
+    return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
       o.{{$colAlias}} = func() {{$colTyp}} {
           if f == nil {
             f = &defaultFaker

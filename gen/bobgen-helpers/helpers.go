@@ -263,6 +263,14 @@ func Types() drivers.Types {
 			CompareExpr:         `AAA.Equal(BBB)`,
 			NoScannerValuerTest: true,
 		},
+		"types.Time": {
+			Imports:   language.ImportList{`"github.com/stephenafamo/bob/types"`},
+			DependsOn: []string{"time.Time"},
+			RandomExpr: `
+				return types.Time{Time: random_time_Time(f, limits...)}`,
+			CompareExpr:         `AAA.Time.Equal(BBB.Time)`,
+			NoScannerValuerTest: true,
+		},
 		"types.Text[netip.Addr, *netip.Addr]": {
 			Imports: language.ImportList{
 				`"net/netip"`,

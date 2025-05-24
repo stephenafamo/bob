@@ -152,8 +152,10 @@ var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
   {{end}}
 	{{range $index := $table.Constraints.Uniques}}
 	ErrUnique{{$index.Name | camelcase}}: &UniqueConstraintError{
-    s: "{{$index.Name}}",
+    schema: {{printf "%q" $table.Schema}},
+    table: {{printf "%q" $table.Name}},
     columns: {{printf "%#v" $index.Columns}},
+    s: "{{$index.Name}}",
   },
 	{{end}}
 }

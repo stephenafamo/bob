@@ -96,7 +96,7 @@ func TestAssembleSQLite(t *testing.T) {
 	}
 
 	config := Config{
-		DSN:    mainDB.Name() + "?_pragma=busy_timeout(10000)",
+		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
 		Attach: map[string]string{"one": oneDB.Name()},
 	}
 	os.Setenv("SQLITE_TEST_DSN", config.DSN)
@@ -120,41 +120,54 @@ func TestAssembleLibSQL(t *testing.T) {
 	ctx := context.Background()
 
 	config := Config{
-		DSN:    "ws://" + libSQLAddress,
-		Attach: map[string]string{"one": "one"},
+		DSN: "ws://" + libSQLAddress,
 	}
 
 	os.Setenv("LIBSQL_TEST_DSN", config.DSN)
 	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
-	db := connect(t, "libsql", config.DSN)
+	db := connect(t, "libsql", "http://"+libSQLAddress)
 	if err := attach(ctx, db, config); err != nil {
 		t.Fatalf("attaching: %v", err)
 	}
 
-	dbHttpDefault := connect(t, "libsql", "http://"+libSQLAddress)
-	dbHttpOne := connect(t, "libsql", "http://one."+libSQLAddress)
-
-	cleanupLibSQL(t, dbHttpDefault)
-	cleanupLibSQL(t, dbHttpOne)
+	cleanupLibSQL(t, db)
 	t.Cleanup(func() {
-		cleanupLibSQL(t, dbHttpDefault)
-		cleanupLibSQL(t, dbHttpOne)
-		dbHttpDefault.Close()
-		dbHttpOne.Close()
+		cleanupLibSQL(t, db)
 	})
 
 	fmt.Printf("migrating...")
-	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
-	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
+	migrate(t, db, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config, false, func(b []byte) []byte {
-		return []byte(strings.ReplaceAll(
-			string(b),
-			"modernc.org/sqlite",
-			"github.com/tursodatabase/libsql-client-go/libsql",
-		))
+	out, err := os.MkdirTemp("", "bobgen_libsql_")
+	if err != nil {
+		t.Fatalf("unable to create tempdir: %s", err)
+	}
+
+	t.Cleanup(func() {
+		if t.Failed() {
+			t.Log("template test output:", out)
+			return
+		}
+		os.RemoveAll(out)
+	})
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+		Root: out,
+		GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+			return New(config)
+		},
+		GoldenFile: "libsql.golden.json",
+		GoldenFileMod: func(b []byte) []byte {
+			return []byte(strings.ReplaceAll(
+				string(b),
+				"modernc.org/sqlite",
+				"github.com/tursodatabase/libsql-client-go/libsql",
+			))
+		},
+		OverwriteGolden: *flagOverwriteGolden,
+		Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 	})
 }
 

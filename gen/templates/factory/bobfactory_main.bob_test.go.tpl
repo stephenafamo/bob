@@ -8,15 +8,15 @@ func TestCreate{{$tAlias.UpSingular}}(t *testing.T) {
     t.Skip("skipping test, no DSN provided")
   }
 
-  ctxTx, cancel := context.WithCancel(context.Background())
-  defer cancel()
+  ctx, cancel := context.WithCancel(context.Background())
+  t.Cleanup(cancel)
 
-  tx, err := testDB.BeginTx(ctxTx, nil)
+  tx, err := testDB.BeginTx(ctx, nil)
   if err != nil {
     t.Fatalf("Error starting transaction: %v", err)
   }
 
-  New().New{{$tAlias.UpSingular}}().CreateOrFail(ctxTx, t, tx)
+  New().New{{$tAlias.UpSingular}}(ctx).CreateOrFail(ctx, t, tx)
 }
 
 {{end}}

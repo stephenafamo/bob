@@ -4,7 +4,7 @@ package parser
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html
-func TranslateColumnType(dbType string) string {
+func TranslateColumnType(dbType string, driver string) string {
 	switch dbType {
 	case "TINYINT", "INT8":
 		return "int8"
@@ -31,7 +31,10 @@ func TranslateColumnType(dbType string) string {
 		return "decimal.Decimal"
 	case "BOOLEAN":
 		return "bool"
-	case "DATE", "DATETIME":
+	case "DATE", "DATETIME", "TIMESTAMP":
+		if driver == "libsql" {
+			return "types.Time"
+		}
 		return "time.Time"
 	case "JSON":
 		return "types.JSON[json.RawMessage]"
