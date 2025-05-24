@@ -2303,18 +2303,6 @@
 				{
 					"name": "time_fifteen",
 					"db_type": "DATE",
-					"default": "'19990108'",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "time.Time",
-					"type_limits": null
-				},
-				{
-					"name": "time_sixteen",
-					"db_type": "DATE",
 					"default": "'1999-01-08'",
 					"comment": "",
 					"nullable": false,
@@ -3178,6 +3166,11 @@
 					"name": "sqlite_autoindex_videos_2",
 					"columns": [
 						{
+							"name": "user_id",
+							"desc": false,
+							"is_expression": false
+						},
+						{
 							"name": "sponsor_id",
 							"desc": false,
 							"is_expression": false
@@ -3245,6 +3238,7 @@
 					{
 						"name": "sqlite_autoindex_videos_2",
 						"columns": [
+							"user_id",
 							"sponsor_id"
 						],
 						"comment": "",
