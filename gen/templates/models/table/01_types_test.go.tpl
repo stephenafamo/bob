@@ -20,8 +20,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		expectedErr   *models.UniqueConstraintError
 		conflictMods  func(context.Context, bob.Executor, *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice
 	}{
-	{{range $index := $table.Indexes}}
-		{{ if $index.Unique }}
+	{{range $index := (prepend $table.Constraints.Uniques $table.Constraints.Primary)}}
 		{{- $errName := printf "ErrUnique%s" ($index.Name | camelcase) -}}
 		{
 			name: "{{$errName}}",
@@ -31,8 +30,8 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
         updateMods := make(factory.{{$tAlias.UpSingular}}ModSlice, 0, {{len $index.Columns}})
 
         {{range $indexColumn := $index.Columns}}
-          {{- $colAlias := $tAlias.Column $indexColumn.Name -}}
-          {{- $column := $table.GetColumn $indexColumn.Name -}}
+          {{- $colAlias := $tAlias.Column $indexColumn -}}
+          {{- $column := $table.GetColumn $indexColumn -}}
           {{if $column.Nullable -}}
           if obj.{{$colAlias}}.IsNull() {
             shouldUpdate = true
@@ -49,14 +48,13 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 
         return factory.{{$tAlias.UpSingular}}ModSlice{
           {{range $indexColumn := $index.Columns}}
-            {{- $colAlias := $tAlias.Column $indexColumn.Name -}}
-            {{- $column := $table.GetColumn $indexColumn.Name -}}
+            {{- $colAlias := $tAlias.Column $indexColumn -}}
+            {{- $column := $table.GetColumn $indexColumn -}}
             factory.{{$tAlias.UpSingular}}Mods.{{$colAlias}}(obj.{{$colAlias}}),
           {{end}}
         }
 			},
 		},
-		{{ end }}
 	{{end}}
 	}
 
@@ -75,7 +73,12 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			_, err = f.New{{$tAlias.UpSingular}}(tt.conflictMods(ctxTx, tx, obj)...).Create(ctxTx, tx)
+			obj2, err := f.New{{$tAlias.UpSingular}}().Create(ctxTx, tx)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+      err = obj2.Update(ctxTx, tx, f.New{{$tAlias.UpSingular}}(tt.conflictMods(ctxTx, tx, obj)...).BuildSetter())
 			if !errors.Is(models.ErrUniqueConstraint, err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}

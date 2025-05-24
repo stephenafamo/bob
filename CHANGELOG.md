@@ -71,7 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use correct row name for generated queries in `bobgen-sqlite`.
 - Properly select query comment in `bobgen-sqlite`.
 - Fixed issue with using generated queries with `VALUES` as mods.
-- Moveed `Partitions` in MySQL delete queries to after the table alias.
+- Moved `Partitions` in MySQL delete queries to after the table alias.
+- Fixed issue with inserting into a table with all rows having default values in SQLite.
+- Use table name and not table alias in SQLite returning clause since the alias is not available in the `RETURNING` clause.
 
 ## [v0.34.2] - 2025-05-01
 

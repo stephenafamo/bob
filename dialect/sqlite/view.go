@@ -41,11 +41,12 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], ma
 	allCols := internal.MappingCols(mappings, alias)
 
 	return &View[T, Tslice]{
-		schema:  schema,
-		name:    tableName,
-		alias:   alias,
-		allCols: allCols,
-		scanner: scan.StructMapper[T](),
+		schema:        schema,
+		name:          tableName,
+		alias:         alias,
+		allCols:       allCols,
+		returningCols: allCols.WithParent(tableName),
+		scanner:       scan.StructMapper[T](),
 	}, mappings
 }
 
@@ -54,8 +55,9 @@ type View[T any, Tslice ~[]T] struct {
 	name   string
 	alias  string
 
-	allCols orm.Columns
-	scanner scan.Mapper[T]
+	allCols       orm.Columns
+	returningCols orm.Columns
+	scanner       scan.Mapper[T]
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]

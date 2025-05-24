@@ -10,8 +10,9 @@ create table videos (
 	id int primary key not null,
 
 	user_id int not null,
-	sponsor_id int unique,
+	sponsor_id int,
 
+    unique (user_id, sponsor_id),
 	foreign key (user_id) references users (id),
 	foreign key (sponsor_id) references sponsors (id)
 );
@@ -98,8 +99,7 @@ create table type_monsters (
 	time_nine   timestamp not null default current_timestamp,
 	time_eleven date null,
 	time_twelve date not null,
-	time_fifteen date null default '19990108',
-	time_sixteen date not null default '1999-01-08',
+	time_fifteen date not null default '1999-01-08',
 
 	json_null  json null,
 	json_nnull json not null,

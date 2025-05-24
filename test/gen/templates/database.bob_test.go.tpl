@@ -21,12 +21,12 @@
 	{{$sqlDriverName = "pgx"}}
 	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
 {{ else if eq $.DriverName "modernc.org/sqlite" }}
-	{{$.Importer.Import "_" $.DriverName }}
+	{{$.Importer.Import $.DriverName }}
 	{{$sqlDriverName = "sqlite"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ else if eq $.DriverName  "github.com/mattn/go-sqlite3" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "sqlite3"}}
+{{ else if eq $.DriverName "github.com/mattn/go-sqlite3" }}
+	{{$.Importer.Import $.DriverName }}
+	{{$sqlDriverName = "sqlite3_extended"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ else if eq $.DriverName  "github.com/tursodatabase/libsql-client-go/libsql" }}
 	{{$.Importer.Import "_" $.DriverName }}
@@ -48,24 +48,42 @@ func TestMain(m *testing.M) {
     log.Fatal(`missing environment variable "{{$dsnEnvVarName}}" `)
   }
 
+  {{if eq $.DriverName "modernc.org/sqlite" }}
+    sqlite.RegisterConnectionHook(func(conn sqlite.ExecQuerierContext, dsn string) error {
+      queries := os.Getenv("BOB_SQLITE_ATTACH_QUERIES")
+      for _, query := range strings.Split(queries, ";") {
+        if query == "" {
+          continue
+        }
+        if _, err := conn.ExecContext(context.Background(), query, nil); err != nil {
+          return err
+        }
+      }
+      return nil
+    })
+  {{ else if eq $.DriverName  "github.com/mattn/go-sqlite3" }}
+  	sql.Register("sqlite3_extended", &sqlite3.SQLiteDriver{
+      ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+        queries := os.Getenv("BOB_SQLITE_ATTACH_QUERIES")
+        for _, query := range strings.Split(queries, ";") {
+          if query == "" {
+            continue
+          }
+          if _, err := conn.Exec(query, nil); err != nil {
+            return err
+          }
+        }
+        return nil
+      },
+    })
+  {{end}}
+
 	db, err := sql.Open("{{$sqlDriverName}}", dsn)
 	if err != nil {
     log.Fatalf("failed to open database connection: %v", err)
 	}
 
   testDB = bob.NewDB(db)
-
-  queries := os.Getenv("BOB_DB_SETUP_QUERIES")
-  for _, query := range strings.Split(queries, ";") {
-    if query == "" {
-      continue
-    }
-    _, err := testDB.ExecContext(context.Background(), query)
-    if err != nil {
-      log.Fatalf("failed to execute query %q: %v", query, err)
-    }
-  }
-
 	os.Exit(m.Run())
 }
 
