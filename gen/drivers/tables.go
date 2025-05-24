@@ -58,7 +58,7 @@ func (dummyImporter) Import(...string) string               { return "" }
 func (dummyImporter) ImportList(language.ImportList) string { return "" }
 func (dummyImporter) ToList() language.ImportList           { return nil }
 
-func (tables Tables[C, I]) columnSetter(i language.Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
+func (tables Tables[C, I]) ColumnSetter(i language.Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
 	fromTable := tables.Get(fromTName)
 	fromCol := fromTable.GetColumn(fromColName)
 
@@ -104,18 +104,6 @@ func (tables Tables[C, I]) columnSetter(i language.Importer, aliases Aliases, fr
 			return fmt.Sprintf("%s.FromCond(%s.GetOrZero(), %s.IsSet())", val, to, to)
 		}
 	}
-}
-
-func (tables Tables[C, I]) ColumnSetter(table, column string) bool {
-	for _, t := range tables {
-		if t.Key != table {
-			continue
-		}
-
-		return t.CanSoftDelete(column)
-	}
-
-	panic("unknown table " + table)
 }
 
 func (tables Tables[C, I]) NeededBridgeRels(r orm.Relationship) []struct {
@@ -302,7 +290,7 @@ func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, aliases Aliases, 
 
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
-			oSetter := tables.columnSetter(i, aliases,
+			oSetter := tables.ColumnSetter(i, aliases,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
 				extObjVarName, false, false)

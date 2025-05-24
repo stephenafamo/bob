@@ -96,7 +96,7 @@ func TestAssembleSQLite(t *testing.T) {
 	}
 
 	config := Config{
-		DSN:    mainDB.Name() + "?_pragma=busy_timeout(10000)",
+		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
 		Attach: map[string]string{"one": oneDB.Name()},
 	}
 	os.Setenv("SQLITE_TEST_DSN", config.DSN)

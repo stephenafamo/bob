@@ -58,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `txid_snapshot` is now generated as `pgtypes.Snapshot` instead of `pgtypes.TxIDSnapshot`.
 - `cidr` postgres type is now generated as `types.Text[netip.Prefix]` instead of `types.Text[netip.Addr]`.
 - `money` postgres type is now generated as a string with a custom randomization expression instead of a decimal.
+- Factory template mods now take a context argument. This allows for more control when using recursive mods.
+- Removed `WithOneRelations` mod from factories, now replaced with `WithParentsCascading` which also includes parents for any parent relationships.
 
 ### Removed
 

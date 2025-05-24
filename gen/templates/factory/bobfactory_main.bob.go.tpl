@@ -1,3 +1,5 @@
+{{$.Importer.Import "context"}}
+
 type Factory struct {
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Key -}}
@@ -11,14 +13,14 @@ func New() *Factory {
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
-func (f *Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
+func (f *Factory) New{{$tAlias.UpSingular}}(ctx context.Context, mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f}
 
   if f != nil {
-    f.base{{$tAlias.UpSingular}}Mods.Apply(o)
+    f.base{{$tAlias.UpSingular}}Mods.Apply(ctx, o)
   }
 
-  {{$tAlias.UpSingular}}ModSlice(mods).Apply(o)
+  {{$tAlias.UpSingular}}ModSlice(mods).Apply(ctx, o)
 
 	return o
 }
