@@ -40,11 +40,11 @@ func TestDriver(t *testing.T) {
 	if err := postgres.Start(); err != nil {
 		t.Fatalf("starting embedded postgres: %v", err)
 	}
-	defer func() {
+	t.Cleanup(func() {
 		if err := postgres.Stop(); err != nil {
 			t.Fatalf("could not stop postgres on port %d: %v", port, err)
 		}
-	}()
+	})
 
 	os.Setenv("PSQL_TEST_DSN", dsn)
 	db, err := sql.Open("pgx", dsn)

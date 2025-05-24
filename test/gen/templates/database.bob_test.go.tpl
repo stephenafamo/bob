@@ -22,10 +22,13 @@
 	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
 {{ else if eq $.DriverName "modernc.org/sqlite" }}
 	{{$.Importer.Import $.DriverName }}
+  {{$.Importer.Import "context"}}
+  {{$.Importer.Import "strings"}}
 	{{$sqlDriverName = "sqlite"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ else if eq $.DriverName "github.com/mattn/go-sqlite3" }}
 	{{$.Importer.Import $.DriverName }}
+  {{$.Importer.Import "strings"}}
 	{{$sqlDriverName = "sqlite3_extended"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ else if eq $.DriverName  "github.com/tursodatabase/libsql-client-go/libsql" }}
@@ -37,8 +40,6 @@
 
 {{$.Importer.Import "os"}}
 {{$.Importer.Import "log"}}
-{{$.Importer.Import "strings"}}
-{{$.Importer.Import "context"}}
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "database/sql"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
