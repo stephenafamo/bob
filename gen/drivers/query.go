@@ -183,10 +183,11 @@ func (q QueryConfig) Merge(other QueryConfig) QueryConfig {
 }
 
 type QueryCol struct {
-	Name     string         `json:"name"`
-	DBName   string         `json:"db_name"`
-	Nullable omit.Val[bool] `json:"nullable"`
-	TypeName string         `json:"type"`
+	Name       string         `json:"name"`
+	DBName     string         `json:"db_name"`
+	Nullable   omit.Val[bool] `json:"nullable"`
+	TypeName   string         `json:"type"`
+	TypeLimits []string       `json:"type_limits"`
 }
 
 func (q QueryCol) Merge(others ...QueryCol) QueryCol {

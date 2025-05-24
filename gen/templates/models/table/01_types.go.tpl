@@ -139,20 +139,32 @@ func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias
 {{ end }} 
 {{end -}}
 
-{{ if $hasUniqueIndex }}
+{{ if or $hasUniqueIndex $table.Constraints.Primary }}
 var {{$tAlias.UpSingular}}Errors = &{{$tAlias.DownSingular}}Errors{
-	{{range $index := $table.Indexes}}
-	{{ if $index.Unique }}
-	ErrUnique{{$index.Name | camelcase}}: &UniqueConstraintError{s: "{{$index.Name}}"},
-	{{ end }}
+  {{if $table.Constraints.Primary}}
+  {{$pk := $table.Constraints.Primary}}
+	ErrUnique{{$pk.Name | camelcase}}: &UniqueConstraintError{
+    schema: {{printf "%q" $table.Schema}},
+    table: {{printf "%q" $table.Name}},
+    columns: {{printf "%#v" $pk.Columns}},
+    s: {{printf "%q" $pk.Name}},
+  },
+  {{end}}
+	{{range $index := $table.Constraints.Uniques}}
+	ErrUnique{{$index.Name | camelcase}}: &UniqueConstraintError{
+    s: "{{$index.Name}}",
+    columns: {{printf "%#v" $index.Columns}},
+  },
 	{{end}}
 }
 
 type {{$tAlias.DownSingular}}Errors struct {
-	{{range $index := $table.Indexes}}
-	{{ if $index.Unique }} 
+  {{if $table.Constraints.Primary}}
+  {{$pk := $table.Constraints.Primary}}
+	ErrUnique{{$pk.Name | camelcase}} *UniqueConstraintError
+  {{end}}
+	{{range $index := $table.Constraints.Uniques}}
 	ErrUnique{{$index.Name | camelcase}} *UniqueConstraintError
-	{{ end }}
 	{{end}}
 }
 {{ end }}

@@ -242,7 +242,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		}
 
 		if !rgxEnum.MatchString(colFullType) {
-			column.Type = parser.TranslateColumnType(colFullType)
+			column.Type, column.TypeLimits = parser.TranslateColumnType(colFullType)
 		} else {
 			enumTyp := strmangle.TitleCase(tableName + "_" + colName)
 

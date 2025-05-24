@@ -6,11 +6,14 @@ var (
 {{end -}}
 
 {{define "unique_constraint_error_detection_method" -}}
+{{$.Importer.Import "strings"}}
+{{$.Importer.Import "fmt"}}
 func (e *UniqueConstraintError) Is(target error) bool {
 	{{if eq $.DriverName "github.com/tursodatabase/libsql-client-go/libsql"}}
-		{{$.Importer.Import "strings"}}
-		{{$.Importer.Import "fmt"}}
-	return strings.Contains(target.Error(), fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", e.s))
+    return strings.Contains(
+      target.Error(),
+      fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", e.s),
+    )
 	{{else if eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3"}}
 		{{$errType := ""}}
 		{{$codeGetter := ""}}
@@ -24,13 +27,26 @@ func (e *UniqueConstraintError) Is(target error) bool {
 			{{$errType = "sqlite3.Error"}}
 			{{$codeGetter = "ExtendedCode"}}
 		{{end}}
-	err, ok := target.({{$errType}})
-	if !ok {
-		return false
-	}
-	return err.{{$codeGetter}} == 2067 && strings.Contains(err.Error(), e.s)
-	{{else}}
-	return false
+    err, ok := target.({{$errType}})
+    if !ok {
+      return false
+    }
+
+    // 1555 is for Primary Key Constraint
+    // 2067 is for Unique Constraint
+    if err.{{$codeGetter}} != 1555 && err.{{$codeGetter}} != 2067  {
+      return false
+    }
+
+    for _, col := range e.columns {
+      if !strings.Contains(err.Error(), fmt.Sprintf("%s.%s", e.table, col)) {
+        return false
+      }
+    }
+
+    return true
+    {{else}}
+    return false
 	{{end}}
 }
 {{end -}}

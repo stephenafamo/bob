@@ -138,7 +138,7 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 		return nil, fmt.Errorf("failed to start container: %w", err)
 	}
 
-	dsn, err := mysqlContainer.ConnectionString(ctx, "tls=skip-verify", "multiStatements=true")
+	dsn, err := mysqlContainer.ConnectionString(ctx, "tls=skip-verify", "multiStatements=true", "parseTime=true")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get connection string: %w", err)
 	}

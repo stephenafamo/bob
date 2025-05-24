@@ -22,8 +22,6 @@ type Config struct {
 	NoTests bool `yaml:"no_tests"`
 	// Disable back referencing in the loaded relationship structs
 	NoBackReferencing bool `yaml:"no_back_referencing"`
-	// Delete the output folder (rm -rf) before generation to ensure sanity
-	Wipe bool `yaml:"wipe"`
 	// Decides the casing for go structure tag names. camel, title or snake (default snake)
 	StructTagCasing string `yaml:"struct_tag_casing"`
 	// Relationship struct tag name
@@ -47,7 +45,7 @@ type Config struct {
 ```
 
 | Name                | Description                                                                                                     | Default |
-|---------------------|-----------------------------------------------------------------------------------------------------------------|---------|
+| ------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
 | tags                | Struct tags to generate                                                                                         | []      |
 | no_factory          | Disable generating factories for models                                                                         | false   |
 | no_tests            | Disable generating go test files                                                                                | false   |
@@ -138,7 +136,11 @@ types:
     # If this depends on another type, you can specify the type here
     depends_on:
       - "string"
-    # The random expression for this type
+    # To be used in factory.random_type
+    # a variable `f` of type `faker.Faker` is available
+    # another variable `limits` which is a slice of strings with any limits
+    # for example, a VARCHAR(255) would have limits = ["255"]
+    # another example, a DECIMAL(10,2) would have limits = ["10", "2"]
     random_expr: |-
       tag := f.Lorem().Word()
       return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)
@@ -158,6 +160,9 @@ types:
       - '"github.com/stephenafamo/bob/types"'
     # To be used in factory.random_type
     # a variable `f` of type `faker.Faker` is available
+    # another variable `limits` which is a slice of strings with any limits
+    # for example, a VARCHAR(255) would have limits = ["255"]
+    # another example, a DECIMAL(10,2) would have limits = ["10", "2"]
     random_expr: |-
       s := &bytes.Buffer{}
       s.WriteRune('{')

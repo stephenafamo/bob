@@ -129,7 +129,7 @@ func (v *Visitor[C, I]) MatchNodeNames(p1 Node, p2 Node) {
 	v.MatchNames(Key(p1), Key(p2))
 }
 
-func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string, comment func(Node) string) []drivers.QueryArg {
+func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) (string, []string), comment func(Node) string) []drivers.QueryArg {
 	groupArgs := make([]drivers.QueryArg, len(v.Groups))
 	bindArgs := make([]drivers.QueryArg, len(v.Args))
 	keys := make(map[string]int, len(bindArgs))
@@ -167,11 +167,13 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string, c
 			name = "arg"
 		}
 
+		typeName, typeLimits := translate(GetDBType(v.Infos, arg).ConfirmedDBType())
 		bindArgs[i] = drivers.QueryArg{
 			Col: drivers.QueryCol{
-				Name:     name,
-				Nullable: omit.From(arg.Type.Nullable()),
-				TypeName: translate(GetDBType(v.Infos, arg).ConfirmedDBType()),
+				Name:       name,
+				Nullable:   omit.From(arg.Type.Nullable()),
+				TypeName:   typeName,
+				TypeLimits: typeLimits,
 			}.Merge(parser.ParseQueryColumnConfig(comment(arg.Node))),
 			Positions:     [][2]int{arg.EditedPosition},
 			CanBeMultiple: arg.CanBeMultiple,
@@ -196,11 +198,13 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) string, c
 			name = "group"
 		}
 
+		typeName, typeLimits := translate(GetDBType(v.Infos, group).ConfirmedDBType())
 		groupArgs[groupIndex] = drivers.QueryArg{
 			Col: drivers.QueryCol{
-				Name:     name,
-				Nullable: omit.From(group.Type.Nullable()),
-				TypeName: translate(GetDBType(v.Infos, group).ConfirmedDBType()),
+				Name:       name,
+				Nullable:   omit.From(group.Type.Nullable()),
+				TypeName:   typeName,
+				TypeLimits: typeLimits,
 			}.Merge(parser.ParseQueryColumnConfig(comment(group.Node))),
 			Positions:     [][2]int{group.EditedPosition},
 			CanBeMultiple: group.CanBeMultiple,

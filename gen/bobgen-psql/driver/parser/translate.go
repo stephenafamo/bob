@@ -54,7 +54,7 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		c.Type = "int16"
 	case "smallserial":
 		c.Type = "uint16"
-	case "decimal", "numeric", "money":
+	case "decimal", "numeric":
 		c.Type = "decimal.Decimal"
 	case "double precision":
 		c.Type = "float64"
@@ -64,6 +64,8 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		c.Type = "string"
 	case "xml":
 		c.Type = "xml"
+	case "money":
+		c.Type = "money"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
 	case "bytea":
@@ -91,13 +93,13 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 	case "inet":
 		c.Type = "pgtypes.Inet"
 	case "cidr":
-		c.Type = "types.Text[netip.Addr, *netip.Addr]"
+		c.Type = "types.Text[netip.Prefix, *netip.Prefix]"
 	case "macaddr", "macaddr8":
 		c.Type = "pgtypes.Macaddr"
 	case "pg_lsn":
 		c.Type = "pgtypes.LSN"
-	case "txid_snapshot":
-		c.Type = "pgtypes.TxIDSnapshot"
+	case "txid_snapshot", "pg_snapshot":
+		c.Type = "pgtypes.Snapshot"
 	case "ENUM":
 		c.Type = "string"
 		c.DBType = info.UDTSchema + "." + info.UDTName
@@ -139,55 +141,33 @@ func (t *Translator) getArrayType(info ColInfo) (string, string) {
 		return "pq.StringArray", name
 	}
 
-	// If a domain is created with a statement like this: "CREATE DOMAIN
-	// text_array AS TEXT[] CHECK ( ... )" then the array type will be null,
-	// but the udt name will be whatever the underlying type is with a leading
-	// underscore. Note that this code handles some types, but not nearly all
-	// the possibities. Notably, an array of a user-defined type ("CREATE
-	// DOMAIN my_array AS my_type[]") will be treated as an array of strings,
-	// which is not guaranteed to be correct.
-	if info.ArrType != "" {
-		switch info.ArrType {
-		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
-			return "pq.Int64Array", info.ArrType
-		case "bytea":
-			return "pq.ByteaArray", info.ArrType
-		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
-			return "pq.StringArray", info.ArrType
-		case "boolean":
-			return "pq.BoolArray", info.ArrType
-		case "uuid":
-			typ := t.addPgGenericArrayType(t.Types, "uuid.UUID")
-			return typ, info.ArrType
-		case "decimal", "numeric":
-			typ := t.addPgGenericArrayType(t.Types, "decimal.Decimal")
-			return typ, info.ArrType
-		case "double precision", "real":
-			return "pq.Float64Array", info.ArrType
-		default:
-			return "pq.StringArray", info.ArrType
-		}
-	} else {
-		switch info.UDTName {
-		case "_int4", "_int8":
-			return "pq.Int64Array", info.UDTName
-		case "_bytea":
-			return "pq.ByteaArray", info.UDTName
-		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_xml":
-			return "pq.StringArray", info.UDTName
-		case "_bool":
-			return "pq.BoolArray", info.UDTName
-		case "_uuid":
-			typ := t.addPgGenericArrayType(t.Types, "uuid.UUID")
-			return typ, info.UDTName
-		case "_numeric":
-			typ := t.addPgGenericArrayType(t.Types, "decimal.Decimal")
-			return typ, info.UDTName
-		case "_float4", "_float8":
-			return "pq.Float64Array", info.UDTName
-		default:
-			return "pq.StringArray", info.UDTName
-		}
+	typToTranslate := info.ArrType
+
+	if typToTranslate == "" {
+		typToTranslate = info.UDTName[1:] // postgres prefixes with an underscore
+	}
+
+	translated := t.TranslateColumnType(
+		drivers.Column{DBType: typToTranslate}, ColInfo{},
+	).Type
+
+	switch translated {
+	case "bool":
+		return "pq.BoolArray", typToTranslate
+	case "int32":
+		return "pq.Int32Array", typToTranslate
+	case "int64":
+		return "pq.Int64Array", typToTranslate
+	case "float32":
+		return "pq.Float32Array", typToTranslate
+	case "float64":
+		return "pq.Float64Array", typToTranslate
+	case "string":
+		return "pq.StringArray", typToTranslate
+	case "[]byte":
+		return "pq.ByteaArray", typToTranslate
+	default:
+		return t.addPgGenericArrayType(t.Types, translated), typToTranslate
 	}
 }
 
@@ -207,7 +187,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
-                arr[i] = random_%s(f)
+                arr[i] = random_%s(f, limits...)
             }
             return arr`, arrTyp, gen.NormalizeType(enumTyp)),
 	}
@@ -233,7 +213,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 		Imports:   append(language.ImportList{pgtypesImport}, singleTypDef.Imports...),
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
-                arr[i] = random_%s(f)
+                arr[i] = random_%s(f, limits...)
             }
             return arr`, typ, gen.NormalizeType(singleTyp)),
 		CompareExpr: fmt.Sprintf(`slices.EqualFunc(AAA, BBB, func(a, b %s) bool {

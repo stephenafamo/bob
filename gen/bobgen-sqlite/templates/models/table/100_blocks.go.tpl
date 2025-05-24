@@ -12,6 +12,11 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 
   if len(q.TableRef.Columns) == 0 {
     q.TableRef.Columns = s.SetColumns()
+    {{if $table.Constraints.Primary -}}
+    if len(q.TableRef.Columns) == 0 {
+      q.TableRef.Columns = {{printf "%#v" $table.Constraints.Primary.Columns}}
+    }
+    {{end}}
   }
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
@@ -23,6 +28,12 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
       }
 
     {{end -}}
+
+    {{if $table.Constraints.Primary -}}
+    if len(vals) == 0 {
+      vals = append(vals{{range $table.Constraints.Primary.Columns}}, {{$.Dialect}}.Arg(nil){{end}})
+    }
+    {{end}}
 
     return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
   }))

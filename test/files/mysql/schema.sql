@@ -97,6 +97,16 @@ create table type_monsters (
 	float_seven float(2,1) not null default 1.1,
 	float_eight float(2,1) null default 0.0,
 	float_nine  float(2,1) null default 0.0,
+	decimal_zero  decimal,
+	decimal_one   decimal,
+	decimal_two   decimal(2,1),
+	decimal_three decimal(2,1),
+	decimal_four  decimal(2,1) null,
+	decimal_five  decimal(2,1) not null,
+	decimal_six   decimal(2,1) null default 1.1,
+	decimal_seven decimal(2,1) not null default 1.1,
+	decimal_eight decimal(2,1) null default 0.0,
+	decimal_nine  decimal(2,1) null default 0.0,
 	bytea_zero  binary,
 	bytea_one   binary null,
 	bytea_two   binary not null,
@@ -135,10 +145,12 @@ create table type_monsters (
 
 	float_null       float null,
 	float_nnull      float not null,
+
 	double_null      double null,
 	double_nnull     double not null,
-	doubleprec_null  double precision null,
-	doubleprec_nnull double precision not null,
+
+	decimal_null  decimal null,
+	decimal_nnull decimal not null,
 
 	real_null  real null,
 	real_nnull real not null,

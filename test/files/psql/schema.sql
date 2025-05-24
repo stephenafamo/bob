@@ -1,19 +1,25 @@
 -- Don't forget to maintain order here, foreign keys!
 drop table if exists video_tags;
 drop table if exists tags;
+drop view if exists user_videos;
 drop table if exists videos;
 drop table if exists sponsors;
 drop table if exists users;
-drop table if exists type_monsters;
-drop view if exists user_videos;
-drop view if exists type_monsters_v;
 drop materialized view if exists type_monsters_mv;
+drop view if exists type_monsters_v;
+drop table if exists type_monsters;
+drop table if exists test_index_expressions;
+drop table if exists foo_bar;
+drop table if exists foo_baz;
+drop table if exists foo_qux;
+drop table if exists bar_baz;
+drop table if exists bar_qux;
 
 drop type if exists unicode_enum;
 create type unicode_enum as enum ('hello', 'привет', 'こんにちは', '안녕하세요', 'hello_with_underscore');
 
 drop domain if exists uint3;
-create domain uint3 as numeric check(value >= 0 and value < power(2::numeric, 3::numeric));
+create domain uint3 as numeric;
 
 create table users (
 	id serial primary key not null,
@@ -127,16 +133,38 @@ create table type_monsters (
 	int_five  int null default 0,
 	int_six   int not null default 0,
 
-	float_zero  decimal,
-	float_one   numeric,
-	float_two   numeric(2,1),
-	float_three numeric(2,1),
-	float_four  numeric(2,1) null,
-	float_five  numeric(2,1) not null,
-	float_six   numeric(2,1) null default 1.1,
-	float_seven numeric(2,1) not null default 1.1,
-	float_eight numeric(2,1) null default 0.0,
-	float_nine  numeric(2,1) null default 0.0,
+	real_zero  real,
+	real_one   real,
+	real_two   float(5),
+	real_three float(5),
+	real_four  float(5) null,
+	real_five  float(5) not null,
+	real_six   float(5) null default 1.1,
+	real_seven float(5) not null default 1.1,
+	real_eight float(5) null default 0.0,
+	real_nine  float(5) null default 0.0,
+
+	double_zero  double precision,
+	double_one   double precision,
+	double_two   float(35),
+	double_three float(35),
+	double_four  float(35) null,
+	double_five  float(35) not null,
+	double_six   float(35) null default 1.1,
+	double_seven float(35) not null default 1.1,
+	double_eight float(35) null default 0.0,
+	double_nine  float(35) null default 0.0,
+
+	decimal_zero  numeric,
+	decimal_one   numeric,
+	decimal_two   numeric(2,1),
+	decimal_three numeric(2,1),
+	decimal_four  numeric(2,1) null,
+	decimal_five  numeric(2,1) not null,
+	decimal_six   numeric(2,1) null default 1.1,
+	decimal_seven numeric(2,1) not null default 1.1,
+	decimal_eight numeric(2,1) null default 0.0,
+	decimal_nine  numeric(2,1) null default 0.0,
 
 	bytea_zero  bytea,
 	bytea_one   bytea null,
@@ -196,9 +224,6 @@ create table type_monsters (
 	circle_null  circle null,
 	circle_nnull circle not null,
 
-	double_prec_null  double precision null,
-	double_prec_nnull double precision not null,
-
 	inet_null  inet null,
 	inet_nnull inet not null,
 
@@ -226,13 +251,14 @@ create table type_monsters (
 	polygon_null  polygon NULL,
 	polygon_nnull polygon NOT NULL,
 
-	tsquery_null   tsquery NULL,
-	tsquery_nnull  tsquery NOT NULL,
 	tsvector_null  tsvector NULL,
 	tsvector_nnull tsvector NOT NULL,
 
 	txid_null  txid_snapshot NULL,
 	txid_nnull txid_snapshot NOT NULL,
+
+	pg_snapshot_null  pg_snapshot NULL,
+	pg_snapshot_nnull pg_snapshot NOT NULL,
 
 	xml_null  xml NULL,
 	xml_nnull xml NOT NULL,
@@ -241,10 +267,27 @@ create table type_monsters (
 	intarr_nnull     integer[] not null,
 	boolarr_null     boolean[] null,
 	boolarr_nnull    boolean[] not null,
-	varchararr_null  varchar[] null,
-	varchararr_nnull varchar[] not null,
-	decimalarr_null  decimal[] null,
-	decimalarr_nnull decimal[] not null,
+
+	varchararr_null          varchar[] null,
+	varchararr_nnull         varchar[] not null,
+	varchararr_limited_null  varchar(10)[] null,
+	varchararr_limited_nnull varchar(10)[] not null,
+
+	realarr_null          real[] null,
+	realarr_nnull         real[] not null,
+	realarr_limited_null  float(5)[] null,
+	realarr_limited_nnull float(5)[] not null,
+
+	doublearr_null          double precision[] null,
+	doublearr_nnull         double precision[] not null,
+	doublearr_limited_null  float(35)[] null,
+	doublearr_limited_nnull float(35)[] not null,
+
+	decimalarr_null          decimal[] null,
+	decimalarr_nnull         decimal[] not null,
+	decimalarr_limited_null  decimal(2,1)[] null,
+	decimalarr_limited_nnull decimal(2,1)[] not null,
+
 	byteaarr_null    bytea[] null,
 	byteaarr_nnull   bytea[] not null,
 	jsonbarr_null    jsonb[] null,
@@ -262,7 +305,7 @@ create table type_monsters (
 
     base text null,
 
-    generated_nnull text NOT NULL GENERATED ALWAYS AS (UPPER(base)) STORED,
+    generated_nnull text NOT NULL GENERATED ALWAYS AS (UPPER(string_two)) STORED,
     generated_null text NULL GENERATED ALWAYS AS (UPPER(base)) STORED
 );
 

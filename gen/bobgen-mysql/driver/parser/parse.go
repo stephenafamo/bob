@@ -45,11 +45,13 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 
 		cols := make([]drivers.QueryCol, len(info.Columns))
 		for i, col := range info.Columns {
+			typeName, typeLimits := TranslateColumnType(col.Type.ConfirmedDBType())
 			cols[i] = drivers.QueryCol{
-				Name:     col.Name,
-				DBName:   col.Name,
-				Nullable: omit.From(col.Type.Nullable()),
-				TypeName: TranslateColumnType(col.Type.ConfirmedDBType()),
+				Name:       col.Name,
+				DBName:     col.Name,
+				Nullable:   omit.From(col.Type.Nullable()),
+				TypeName:   typeName,
+				TypeLimits: typeLimits,
 			}.Merge(col.Config)
 		}
 

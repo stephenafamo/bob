@@ -6,8 +6,7 @@
 // All values are optional, and do not have to be set
 // Generated columns are not included
 type {{$tAlias.UpSingular}}Setter struct {
-	{{- range $column := $table.Columns -}}
-	{{- if $column.Generated}}{{continue}}{{end -}}
+	{{- range $column := $table.NonGeneratedColumns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $orig_col_name := $column.Name -}}
   {{- $typDef :=  index $.Types $column.Type -}}

@@ -1,6 +1,5 @@
 {{if .Table.Constraints.Primary}}
 {{$.Importer.Import "models" $.ModelsPackage}}
-{{$.Importer.Import "context"}}
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$table := .Table}}
@@ -15,7 +14,7 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
   {{- $typDef :=  index $.Types $column.Type -}}
   {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		if m.{{$colAlias}}.IsUnset() {
-        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil))
+        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}}))
     }
 	{{end -}}
 }
@@ -36,7 +35,9 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 			{{- $invAlias = $ftable.Relationship $invRel.Name -}}
 		{{- end -}}
 
-		if o.r.{{$relAlias}} != nil {
+    is{{$relAlias}}Done, _ := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.Value(ctx)
+		if !is{{$relAlias}}Done && o.r.{{$relAlias}} != nil {
+        ctx = {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.WithValue(ctx, true);
 		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
           {{- range $.Tables.NeededBridgeRels . -}}
@@ -88,7 +89,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 			if err != nil {
 				return ctx, err
 			}
-		{{end -}}
+		{{end}}
 		}
 
 	{{end}}{{end}}
@@ -147,7 +148,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			var ok bool
 			rel{{$index}}, ok = {{$ftable.DownSingular}}Ctx.Value(ctx)
 			if !ok {
-				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(o)
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
 			}
 		}
 		if o.r.{{$relAlias}} != nil {
@@ -160,10 +161,9 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
-				{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
-				{{- $toColA := index $ftable.Columns .ExternalColumn -}}
-				opt.{{$fromColA}} = omit.From(rel{{$index}}.{{$toColA}})
+				{{- $relIndex := printf "rel%d" $index -}}
+				opt.{{$fromColA}} = {{$.Tables.ColumnSetter $.Importer $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
 			{{end}}
 		{{- end}}
 	{{end}}

@@ -1,22 +1,23 @@
+{{$.Importer.Import "context"}}
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
 type {{$tAlias.UpSingular}}Mod interface {
-    Apply(*{{$tAlias.UpSingular}}Template)
+    Apply(context.Context, *{{$tAlias.UpSingular}}Template)
 }
 
-type {{$tAlias.UpSingular}}ModFunc func(*{{$tAlias.UpSingular}}Template)
+type {{$tAlias.UpSingular}}ModFunc func(context.Context, *{{$tAlias.UpSingular}}Template)
 
-func (f {{$tAlias.UpSingular}}ModFunc) Apply(n *{{$tAlias.UpSingular}}Template) {
-    f(n)
+func (f {{$tAlias.UpSingular}}ModFunc) Apply(ctx context.Context, n *{{$tAlias.UpSingular}}Template) {
+    f(ctx, n)
 }
 
 type {{$tAlias.UpSingular}}ModSlice []{{$tAlias.UpSingular}}Mod
 
-func (mods {{$tAlias.UpSingular}}ModSlice) Apply(n *{{$tAlias.UpSingular}}Template) {
+func (mods {{$tAlias.UpSingular}}ModSlice) Apply(ctx context.Context, n *{{$tAlias.UpSingular}}Template) {
     for _, f := range mods {
-         f.Apply(n)
+         f.Apply(ctx, n)
     }
 }
 
@@ -71,9 +72,9 @@ type {{$tAlias.DownSingular}}R{{$relAlias}}R struct{
 {{end}}
 
 // Apply mods to the {{$tAlias.UpSingular}}Template
-func (o *{{$tAlias.UpSingular}}Template) Apply(mods ...{{$tAlias.UpSingular}}Mod) {
+func (o *{{$tAlias.UpSingular}}Template) Apply(ctx context.Context, mods ...{{$tAlias.UpSingular}}Mod) {
   for _, mod := range mods {
-        mod.Apply(o)
+        mod.Apply(ctx, o)
     }
 }
 

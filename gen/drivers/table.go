@@ -99,7 +99,7 @@ func (t Table[C, I]) HasExactUnique(cols ...string) bool {
 	return false
 }
 
-func (tables Table[C, I]) RelIsRequired(rel orm.Relationship) bool {
+func (t Table[C, I]) RelIsRequired(rel orm.Relationship) bool {
 	// The relationship is not required, if its not using foreign keys
 	if rel.NeverRequired {
 		return false
@@ -111,12 +111,12 @@ func (tables Table[C, I]) RelIsRequired(rel orm.Relationship) bool {
 	}
 
 	for _, colName := range firstSide.FromColumns {
-		if tables.GetColumn(colName).Nullable {
-			return false
+		if !t.GetColumn(colName).Nullable {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 // Used in templates to know if the given table is a join table for this relationship

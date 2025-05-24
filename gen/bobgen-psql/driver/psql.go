@@ -241,23 +241,19 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	tableQuery := `
 	SELECT
-		c.ordinal_position,
-		c.column_name,
-		ct.column_type,
-		c.udt_schema,
-		c.udt_name,
-		(
-			SELECT
-				data_type
-			FROM
-				information_schema.element_types e
-			WHERE
-				c.table_catalog = e.object_catalog
-				AND c.table_schema = e.object_schema
-				AND c.table_name = e.object_name
-				AND 'TABLE' = e.object_type
-				AND c.dtd_identifier = e.collection_type_identifier
-		) AS array_type,
+	c.ordinal_position,
+	c.column_name,
+	(SELECT 
+		CASE WHEN udttype.typtype = 'e' THEN
+			'ENUM'
+		ELSE
+			c.data_type
+		END
+	) AS column_type,
+	substring(format_type(attr.atttypid, attr.atttypmod), '\((\d+(,\d+)?)\)') AS type_limits,
+	c.udt_schema,
+	c.udt_name,
+	e.data_type AS array_type,
 	c.domain_name,
 	c.column_default,
 	coalesce(col_description(('"' || c.table_schema || '"."' || c.table_name || '"')::regclass::oid, ordinal_position), '') AS column_comment,
@@ -268,7 +264,8 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			TRUE
 		ELSE
 			FALSE
-		END) AS is_generated,
+		END
+	) AS is_generated,
 	(
 		CASE WHEN (
 			SELECT
@@ -288,21 +285,24 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 			'NO'
 		ELSE
 			is_identity
-		END) = 'YES' AS is_identity
-	FROM
-		information_schema.columns AS c
-		INNER JOIN pg_namespace AS pgn ON pgn.nspname = c.udt_schema
-		LEFT JOIN pg_type pgt ON c.data_type = 'USER-DEFINED'
-			AND pgn.oid = pgt.typnamespace
-			AND c.udt_name = pgt.typname,
-			LATERAL (
-				SELECT
-					(
-						CASE WHEN pgt.typtype = 'e' THEN
-							'ENUM'
-						ELSE
-							c.data_type
-						END) AS column_type) ct
+		END
+	) = 'YES' AS is_identity
+	FROM information_schema.columns AS c
+	LEFT JOIN pg_namespace pgn ON pgn.nspname = c.table_schema
+	LEFT JOIN pg_class pgc ON pgc.relnamespace = pgn.oid AND pgc.relname = c.table_name
+	LEFT JOIN pg_attribute attr ON attr.attrelid = pgc.oid AND attr.attname = c.column_name
+	LEFT JOIN pg_type pgt ON pgt.oid = attr.atttypid
+	INNER JOIN pg_namespace AS udtnamespace ON udtnamespace.nspname = c.udt_schema
+	LEFT JOIN pg_type udttype
+		ON c.data_type = 'USER-DEFINED'
+		AND udtnamespace.oid = udttype.typnamespace
+		AND c.udt_name = udttype.typname
+	LEFT JOIN information_schema.element_types e
+		ON	c.table_catalog = e.object_catalog
+		AND c.table_schema = e.object_schema
+		AND c.table_name = e.object_name
+		AND 'TABLE' = e.object_type
+		AND c.dtd_identifier = e.collection_type_identifier
 	WHERE c.table_name = $2 and c.table_schema = $1
 	ORDER BY c.ordinal_position`
 
@@ -310,6 +310,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	query := fmt.Sprintf(`SELECT 
 		column_name,
 		column_type,
+		type_limits,
 		udt_schema,
 		udt_name,
 		array_type,
@@ -353,34 +354,28 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	for rows.Next() {
 		var colName, colType, udtSchema, udtName, comment string
-		var defaultValue, arrayType, domainName *string
+		var typeLimits, defaultValue, arrayType, domainName sql.NullString
 		var nullable, generated, identity bool
-		if err := rows.Scan(&colName, &colType, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
+		if err := rows.Scan(&colName, &colType, &typeLimits, &udtSchema, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", info.Key, err)
 		}
 
 		column := drivers.Column{
-			Name:      colName,
-			DBType:    colType,
-			Comment:   comment,
-			Nullable:  nullable,
-			Generated: generated,
+			Name:       colName,
+			DBType:     colType,
+			Comment:    comment,
+			Nullable:   nullable,
+			Generated:  generated,
+			DomainName: domainName.String,
+			Default:    defaultValue.String,
+		}
+		if typeLimits.Valid {
+			column.TypeLimits = strings.Split(typeLimits.String, ",")
 		}
 		info := parser.ColInfo{
 			UDTSchema: udtSchema,
 			UDTName:   udtName,
-		}
-
-		if arrayType != nil {
-			info.ArrType = *arrayType
-		}
-
-		if domainName != nil {
-			column.DomainName = *domainName
-		}
-
-		if defaultValue != nil {
-			column.Default = *defaultValue
+			ArrType:   arrayType.String,
 		}
 
 		if identity {

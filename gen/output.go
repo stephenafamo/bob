@@ -51,13 +51,7 @@ func (o *Output) numTemplates() int {
 }
 
 // initOutFolders creates the folders that will hold the generated output.
-func (o *Output) initOutFolders(wipe bool) error {
-	if wipe && !strings.Contains(o.OutFolder, "quer") {
-		if err := os.RemoveAll(o.OutFolder); err != nil {
-			return fmt.Errorf("unable to wipe output folder: %w", err)
-		}
-	}
-
+func (o *Output) initOutFolders() error {
 	files, err := os.ReadDir(o.OutFolder)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("unable to read output folder: %w", err)

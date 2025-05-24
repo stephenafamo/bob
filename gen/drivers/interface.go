@@ -33,6 +33,9 @@ type Type struct {
 	DependsOn []string `yaml:"depends_on"`
 	// To be used in factory.random_type
 	// a variable `f` of type `faker.Faker` is available
+	// another variable `limits` which is a slice of strings with any limits
+	// for example, a VARCHAR(255) would have limits = ["255"]
+	// another example, a DECIMAL(10,2) would have limits = ["10", "2"]
 	RandomExpr string `yaml:"random_expr"`
 	// Additional imports for the randomize expression
 	RandomExprImports language.ImportList `yaml:"random_expr_imports"`

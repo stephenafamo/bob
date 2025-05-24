@@ -3,9 +3,20 @@
 
 type contextKey string
 var (
+    // Table context
     {{range $table := .Tables}}
-    {{ $tAlias := $.Aliases.Table $table.Key -}}
-    {{$tAlias.DownSingular}}Ctx = newContextual[*models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
+      {{ $tAlias := $.Aliases.Table $table.Key -}}
+      {{$tAlias.DownSingular}}Ctx = newContextual[*models.{{$tAlias.UpSingular}}]("{{$tAlias.DownSingular}}")
+    {{- end}}
+
+    {{range $table := .Tables}}
+      {{ $tAlias := $.Aliases.Table $table.Key}}
+      // Relationship Contexts for {{$table.Key}}
+      {{$tAlias.DownSingular}}WithParentsCascadingCtx = newContextual[bool]("{{$tAlias.DownSingular}}WithParentsCascading")
+      {{range $rel := $.Relationships.Get $table.Key -}}
+        {{ $relAlias := $tAlias.Relationship .Name -}}
+        {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx = newContextual[bool]("{{$.Relationships.GlobalKey $rel}}");
+      {{- end}}
     {{- end}}
 )
 

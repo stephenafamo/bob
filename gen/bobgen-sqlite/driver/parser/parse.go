@@ -67,8 +67,10 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			}.Merge(parser.ParseQueryConfig(configStr)),
 
 			Columns: cols,
-			Args:    v.GetArgs(stmtStart, stmtStop, TranslateColumnType, v.getCommentToRight),
-			Mods:    stmtToMod{info},
+			Args: v.GetArgs(stmtStart, stmtStop, func(s string) (string, []string) {
+				return TranslateColumnType(s), nil
+			}, v.getCommentToRight),
+			Mods: stmtToMod{info},
 		}
 	}
 

@@ -160,7 +160,9 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		testDriver(
 			t, defaultFolder, config.Templates,
 			gen.Config[C]{}, d, goModFilePath,
-			&aliasPlugin[T, C, I]{}, queryPathPlugin[T, C, I]{defaultFolder},
+			&aliasPlugin[T, C, I]{},
+			queryPathPlugin[T, C, I]{defaultFolder},
+			templatePlugin[C]{},
 		)
 	})
 
@@ -174,7 +176,9 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		testDriver(
 			t, aliasesFolder, config.Templates,
 			gen.Config[C]{Aliases: aliases}, d, goModFilePath,
-			&aliasPlugin[T, C, I]{}, queryPathPlugin[T, C, I]{aliasesFolder},
+			&aliasPlugin[T, C, I]{},
+			queryPathPlugin[T, C, I]{aliasesFolder},
+			templatePlugin[C]{},
 		)
 	})
 }
@@ -228,7 +232,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 		t.Fatalf("go mod tidy cmd execution failed: %s", err)
 	}
 
-	cmd = exec.Command("go", "test", "-v", "-run", "xxxxxxx", "./...")
+	cmd = exec.Command("go", "test", "-v", "./...")
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf

@@ -1,6 +1,7 @@
 package drivers
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/volatiletech/strmangle"
@@ -21,7 +22,21 @@ type Column struct {
 	// https://www.postgresql.org/docs/16/extend-type-system.html
 	DomainName string `json:"domain_name" yaml:"domain_name"`
 
-	Type string `json:"type" yaml:"type"`
+	Type       string   `json:"type" yaml:"type"`
+	TypeLimits []string `json:"type_limits" yaml:"type_limits"`
+}
+
+func (c Column) LimitsString() string {
+	if len(c.TypeLimits) == 0 {
+		return ""
+	}
+
+	limits := make([]string, len(c.TypeLimits))
+	for i, l := range c.TypeLimits {
+		limits[i] = fmt.Sprintf("%q", l)
+	}
+
+	return strings.Join(limits, ", ")
 }
 
 // ColumnNames of the columns.
