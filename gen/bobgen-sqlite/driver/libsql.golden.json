@@ -648,957 +648,6 @@
 			"comment": ""
 		},
 		{
-			"key": "one.as_generated_columns",
-			"schema": "one",
-			"name": "as_generated_columns",
-			"columns": [
-				{
-					"name": "a",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "b",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "c",
-					"db_type": "TEXT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				},
-				{
-					"name": "d",
-					"db_type": "INT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "e",
-					"db_type": "TEXT",
-					"default": "auto_generated",
-					"comment": "",
-					"nullable": true,
-					"generated": true,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_as_generated_columns",
-					"columns": [
-						{
-							"name": "a",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_as_generated_columns",
-					"columns": [
-						"a"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.autoinckeywordtest",
-			"schema": "one",
-			"name": "autoinckeywordtest",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "b",
-					"db_type": "INTEGER",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_autoinckeywordtest",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_autoinckeywordtest",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.autoinctest",
-			"schema": "one",
-			"name": "autoinctest",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_autoinctest",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_autoinctest",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.bar_baz",
-			"schema": "one",
-			"name": "bar_baz",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_bar_baz",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_bar_baz",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.bar_qux",
-			"schema": "one",
-			"name": "bar_qux",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_bar_qux",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_bar_qux",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.foo_bar",
-			"schema": "one",
-			"name": "foo_bar",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_foo_bar",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_foo_bar",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.foo_baz",
-			"schema": "one",
-			"name": "foo_baz",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_foo_baz",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_foo_baz",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.foo_qux",
-			"schema": "one",
-			"name": "foo_qux",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INTEGER",
-					"default": "auto_increment",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "secret_col",
-					"db_type": "TEXT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "string",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "pk_one_foo_qux",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_foo_qux",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.sponsors",
-			"schema": "one",
-			"name": "sponsors",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "sqlite_autoindex_sponsors_1",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_sponsors",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.tags",
-			"schema": "one",
-			"name": "tags",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "sqlite_autoindex_tags_1",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_tags",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.user_videos",
-			"schema": "one",
-			"name": "user_videos",
-			"columns": [
-				{
-					"name": "user_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "video_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "sponsor_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [],
-			"constraints": {
-				"primary": null,
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.users",
-			"schema": "one",
-			"name": "users",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "sqlite_autoindex_users_1",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_users",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.video_tags",
-			"schema": "one",
-			"name": "video_tags",
-			"columns": [
-				{
-					"name": "video_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "tag_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "pk",
-					"name": "sqlite_autoindex_video_tags_1",
-					"columns": [
-						{
-							"name": "video_id",
-							"desc": false,
-							"is_expression": false
-						},
-						{
-							"name": "tag_id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_video_tags",
-					"columns": [
-						"video_id",
-						"tag_id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [
-					{
-						"name": "fk_video_tags_0",
-						"columns": [
-							"tag_id"
-						],
-						"foreign_table": "one.tags",
-						"foreign_columns": [
-							"id"
-						],
-						"comment": "",
-						"extra": null
-					},
-					{
-						"name": "fk_video_tags_1",
-						"columns": [
-							"video_id"
-						],
-						"foreign_table": "one.videos",
-						"foreign_columns": [
-							"id"
-						],
-						"comment": "",
-						"extra": null
-					}
-				],
-				"uniques": null,
-				"check": null
-			},
-			"comment": ""
-		},
-		{
-			"key": "one.videos",
-			"schema": "one",
-			"name": "videos",
-			"columns": [
-				{
-					"name": "id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "user_id",
-					"db_type": "INT",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				},
-				{
-					"name": "sponsor_id",
-					"db_type": "INT",
-					"default": "NULL",
-					"comment": "",
-					"nullable": true,
-					"generated": false,
-					"autoincr": false,
-					"domain_name": "",
-					"type": "int32",
-					"type_limits": null
-				}
-			],
-			"indexes": [
-				{
-					"type": "u",
-					"name": "sqlite_autoindex_videos_2",
-					"columns": [
-						{
-							"name": "sponsor_id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				},
-				{
-					"type": "pk",
-					"name": "sqlite_autoindex_videos_1",
-					"columns": [
-						{
-							"name": "id",
-							"desc": false,
-							"is_expression": false
-						}
-					],
-					"unique": true,
-					"comment": "",
-					"extra": {
-						"partial": false
-					}
-				}
-			],
-			"constraints": {
-				"primary": {
-					"name": "pk_one_videos",
-					"columns": [
-						"id"
-					],
-					"comment": "",
-					"extra": null
-				},
-				"foreign": [
-					{
-						"name": "fk_videos_0",
-						"columns": [
-							"sponsor_id"
-						],
-						"foreign_table": "one.sponsors",
-						"foreign_columns": [
-							"id"
-						],
-						"comment": "",
-						"extra": null
-					},
-					{
-						"name": "fk_videos_1",
-						"columns": [
-							"user_id"
-						],
-						"foreign_table": "one.users",
-						"foreign_columns": [
-							"id"
-						],
-						"comment": "",
-						"extra": null
-					}
-				],
-				"uniques": [
-					{
-						"name": "sqlite_autoindex_videos_2",
-						"columns": [
-							"sponsor_id"
-						],
-						"comment": "",
-						"extra": null
-					}
-				],
-				"check": null
-			},
-			"comment": ""
-		},
-		{
 			"key": "sponsors",
 			"schema": "",
 			"name": "sponsors",
@@ -2537,7 +1586,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2549,7 +1598,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2561,7 +1610,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2573,7 +1622,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2585,7 +1634,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2597,7 +1646,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2609,7 +1658,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2621,11 +1670,23 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
 					"name": "time_fifteen",
+					"db_type": "DATE",
+					"default": "'19990108'",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "types.Time",
+					"type_limits": null
+				},
+				{
+					"name": "time_sixteen",
 					"db_type": "DATE",
 					"default": "'1999-01-08'",
 					"comment": "",
@@ -2633,7 +1694,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2933,7 +1994,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2945,7 +2006,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2957,7 +2018,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2969,7 +2030,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2981,7 +2042,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -2993,7 +2054,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "time.Time",
+					"type": "types.Time",
 					"type_limits": null
 				},
 				{
@@ -3601,5 +2662,5 @@
 	"query_folders": [],
 	"enums": null,
 	"extra_info": null,
-	"driver_name": "modernc.org/sqlite"
+	"driver_name": "github.com/tursodatabase/libsql-client-go/libsql"
 }

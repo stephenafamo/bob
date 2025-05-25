@@ -13,6 +13,3 @@ var SQLiteSchema embed.FS
 
 //go:embed libsql/default
 var LibSQLDefaultSchema embed.FS
-
-//go:embed libsql/one
-var LibSQLOneSchema embed.FS

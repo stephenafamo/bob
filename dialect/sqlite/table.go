@@ -81,7 +81,7 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 	q.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.InsertQuery) (context.Context, error) {
 			if !q.HasReturning() {
-				q.AppendReturning(t.Columns())
+				q.AppendReturning(t.returningCols)
 			}
 			return ctx, nil
 		},
@@ -105,7 +105,7 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 	q.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.UpdateQuery) (context.Context, error) {
 			if !q.HasReturning() {
-				q.AppendReturning(t.Columns())
+				q.AppendReturning(t.returningCols)
 			}
 			return ctx, nil
 		},
@@ -129,7 +129,7 @@ func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuer
 	q.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.DeleteQuery) (context.Context, error) {
 			if !q.HasReturning() {
-				q.AppendReturning(t.Columns())
+				q.AppendReturning(t.returningCols)
 			}
 			return ctx, nil
 		},

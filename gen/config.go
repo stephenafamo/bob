@@ -14,8 +14,6 @@ type Config[ConstraintExtra any] struct {
 	NoTests bool `yaml:"no_tests"`
 	// Disable back referencing in the loaded relationship structs
 	NoBackReferencing bool `yaml:"no_back_referencing"`
-	// Delete the output folder (rm -rf) before generation to ensure sanity
-	Wipe bool `yaml:"wipe"`
 	// Decides the casing for go structure tag names. camel, title or snake (default snake)
 	StructTagCasing string `yaml:"struct_tag_casing"`
 	// Relationship struct tag name

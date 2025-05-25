@@ -29,7 +29,7 @@ var defaultFaker = faker.New()
     {{- if $typDef.InGeneratedPackage -}}
       {{$.Importer.Import "models" $.ModelsPackage}}
     {{- end -}}
-    func random_{{normalizeType $colTyp}}(f *faker.Faker) {{getType $colTyp $typDef}} {
+    func random_{{normalizeType $colTyp}}(f *faker.Faker, limits ...string) {{getType $colTyp $typDef}} {
       if f == nil {
         f = &defaultFaker
       }

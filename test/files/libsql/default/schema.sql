@@ -12,6 +12,7 @@ create table videos (
 	user_id int not null,
 	sponsor_id int unique,
 
+    unique (user_id, sponsor_id),
 	foreign key (user_id) references users (id),
 	foreign key (sponsor_id) references sponsors (id)
 );

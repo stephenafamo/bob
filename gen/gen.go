@@ -194,7 +194,7 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 			// set the package name for this output
 			data.PkgName = o.PkgName
 
-			if err := o.initOutFolders(s.Config.Wipe); err != nil {
+			if err := o.initOutFolders(); err != nil {
 				return fmt.Errorf("unable to initialize the output folders: %w", err)
 			}
 

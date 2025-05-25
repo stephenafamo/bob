@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -62,6 +63,12 @@ func initRelationships[C, I any](r Relationships, tables drivers.Tables[C, I]) (
 
 func (r Relationships) Get(table string) []orm.Relationship {
 	return r[table]
+}
+
+func (rs Relationships) GlobalKey(r orm.Relationship) string {
+	tables := []string{r.Local(), r.Foreign()}
+	slices.Sort(tables)
+	return fmt.Sprintf("%s.%s", strings.Join(tables, "."), strings.TrimSuffix(r.Name, selfJoinSuffix))
 }
 
 // GetInverse returns the Relationship of the other side

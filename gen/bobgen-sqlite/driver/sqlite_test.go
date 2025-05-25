@@ -3,46 +3,25 @@ package driver
 import (
 	"context"
 	"database/sql"
-	sqlDriver "database/sql/driver"
 	"embed"
-	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
-	"regexp"
-	"strconv"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
-	"modernc.org/sqlite"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
-
-var libSQLAddress = os.Getenv("LIBSQL_TEST_SERVER")
-
-func cleanupSQLite(t *testing.T, config Config) {
-	t.Helper()
-
-	fmt.Printf("cleaning...")
-	err := os.Remove(config.DSN) // delete the old DB
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("could not delete existing db: %v", err)
-	}
-
-	for _, conn := range config.Attach {
-		err := os.Remove(conn) // delete the old DB
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
-			t.Fatalf("could not delete existing db: %v", err)
-		}
-	}
-
-	fmt.Printf(" DONE\n")
-}
 
 func cleanupLibSQL(t *testing.T, db *sql.DB) {
 	t.Helper()
@@ -95,81 +74,116 @@ var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the go
 func TestAssembleSQLite(t *testing.T) {
 	ctx := context.Background()
 
-	dbTempFile, err := os.CreateTemp("", "bobgen_sqlite_*.main.db")
+	dir, err := os.MkdirTemp("", "bobgen_sqlite_*")
 	if err != nil {
-		t.Fatalf("unable to create db file: %s", err)
+		log.Fatal(err)
 	}
-	defer dbTempFile.Close()
+	t.Cleanup(func() {
+		if t.Failed() {
+			t.Log("db files directory:", dir)
+			return
+		}
+		os.RemoveAll(dir)
+	})
+
+	mainDB, err := os.Create(filepath.Join(dir, "main.db"))
+	if err != nil {
+		t.Fatalf("unable to create main.db: %s", err)
+	}
+
+	oneDB, err := os.Create(filepath.Join(dir, "one.db"))
+	if err != nil {
+		t.Fatalf("unable to create one.db: %s", err)
+	}
 
 	config := Config{
-		DSN:    "./test.db",
-		Attach: map[string]string{"one": "./test1.db"},
+		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
+		Attach: map[string]string{"one": oneDB.Name()},
 	}
 	os.Setenv("SQLITE_TEST_DSN", config.DSN)
-	os.Setenv("BOB_DB_SETUP_QUERIES", strings.Join(config.AttachQueries(), ";"))
-
-	fmt.Printf("SQLITE_TEST_DSN: %s\n", config.DSN)
-	fmt.Printf("BOB_DB_SETUP_QUERIES: %s\n", os.Getenv("BOB_DB_SETUP_QUERIES"))
-
-	t.Cleanup(func() { cleanupSQLite(t, config) })
+	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
 	db := connect(t, "sqlite", config.DSN)
 	defer db.Close()
 
-	if err := registerRegexpFunction(); err != nil {
-		t.Fatal(err)
+	if err := attach(ctx, db, config); err != nil {
+		t.Fatalf("attaching: %v", err)
 	}
-
-	attach(t, ctx, db, config)
 
 	fmt.Printf("migrating...")
 	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config, nil)
+	assemble(t, config, *flagOverwriteGolden, nil)
 }
 
 func TestAssembleLibSQL(t *testing.T) {
 	ctx := context.Background()
 
+	libsqlServer, err := testcontainers.Run(
+		ctx,
+		"ghcr.io/tursodatabase/libsql-server:c6e4e09",
+		testcontainers.WithExposedPorts("7070:8080", "9000:8000"),
+		testcontainers.WithWaitStrategy(wait.ForListeningPort("8080/tcp").WithStartupTimeout(time.Second*5)),
+	)
+	t.Cleanup(func() {
+		if err := testcontainers.TerminateContainer(libsqlServer); err != nil {
+			fmt.Printf("failed to terminate libsql container: %v\n", err)
+		}
+	})
+	if err != nil {
+		t.Fatalf("failed to start libsql container: %v", err)
+	}
+
 	config := Config{
-		DSN:    "ws://" + libSQLAddress,
-		Attach: map[string]string{"one": "one"},
+		DSN: "http://localhost:7070",
 	}
 
 	os.Setenv("LIBSQL_TEST_DSN", config.DSN)
-	os.Setenv("BOB_DB_SETUP_QUERIES", strings.Join(config.AttachQueries(), ";"))
-
-	fmt.Printf("LIBSQL_TEST_DSN: %s\n", config.DSN)
-	fmt.Printf("BOB_DB_SETUP_QUERIES: %s\n", os.Getenv("BOB_DB_SETUP_QUERIES"))
+	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
 	db := connect(t, "libsql", config.DSN)
+	if err := attach(ctx, db, config); err != nil {
+		t.Fatalf("attaching: %v", err)
+	}
 
-	attach(t, ctx, db, config)
-
-	dbHttpDefault := connect(t, "libsql", "http://"+libSQLAddress)
-	dbHttpOne := connect(t, "libsql", "http://one."+libSQLAddress)
-
-	cleanupLibSQL(t, dbHttpDefault)
-	cleanupLibSQL(t, dbHttpOne)
+	cleanupLibSQL(t, db)
 	t.Cleanup(func() {
-		cleanupLibSQL(t, dbHttpDefault)
-		cleanupLibSQL(t, dbHttpOne)
-		dbHttpDefault.Close()
-		dbHttpOne.Close()
+		cleanupLibSQL(t, db)
 	})
 
 	fmt.Printf("migrating...")
-	migrate(t, dbHttpDefault, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
-	migrate(t, dbHttpOne, testfiles.LibSQLOneSchema, "libsql/one/*.sql")
+	migrate(t, db, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
 	fmt.Printf(" DONE\n")
 
-	assemble(t, config, func(b []byte) []byte {
-		return []byte(strings.ReplaceAll(
-			string(b),
-			"modernc.org/sqlite",
-			"github.com/tursodatabase/libsql-client-go/libsql",
-		))
+	out, err := os.MkdirTemp("", "bobgen_libsql_")
+	if err != nil {
+		t.Fatalf("unable to create tempdir: %s", err)
+	}
+
+	t.Cleanup(func() {
+		if t.Failed() {
+			t.Log("template test output:", out)
+			return
+		}
+		os.RemoveAll(out)
+	})
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+		Root: out,
+		GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+			return New(config)
+		},
+		GoldenFile: "libsql.golden.json",
+		GoldenFileMod: func(b []byte) []byte {
+			return []byte(strings.ReplaceAll(
+				string(b),
+				"modernc.org/sqlite",
+				"github.com/tursodatabase/libsql-client-go/libsql",
+			))
+		},
+		OverwriteGolden: *flagOverwriteGolden,
+		Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 	})
 }
 
@@ -182,19 +196,6 @@ func connect(t *testing.T, driverName, dsn string) *sql.DB {
 	return db
 }
 
-func attach(t *testing.T, ctx context.Context, db *sql.DB, config Config) {
-	t.Helper()
-	for schema, conn := range config.Attach {
-		if strings.HasPrefix(conn, "./") {
-			conn = strconv.Quote(conn)
-		}
-		_, err := db.ExecContext(ctx, fmt.Sprintf("attach database %s as %s", conn, schema))
-		if err != nil {
-			t.Fatalf("could not attach %q: %v", conn, err)
-		}
-	}
-}
-
 func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	t.Helper()
 	if err := helpers.Migrate(context.Background(), db, schema, pattern); err != nil {
@@ -202,7 +203,7 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	}
 }
 
-func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
+func assemble(t *testing.T, config Config, overwrite bool, mod func([]byte) []byte) {
 	t.Helper()
 
 	tests := []struct {
@@ -313,7 +314,7 @@ func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 					},
 					GoldenFile:      tt.goldenJson,
 					GoldenFileMod:   mod,
-					OverwriteGolden: *flagOverwriteGolden,
+					OverwriteGolden: overwrite,
 					Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 				})
 				return
@@ -344,32 +345,4 @@ func assemble(t *testing.T, config Config, mod func([]byte) []byte) {
 			})
 		})
 	}
-}
-
-func registerRegexpFunction() error {
-	return sqlite.RegisterScalarFunction("regexp", 2, func(
-		ctx *sqlite.FunctionContext,
-		args []sqlDriver.Value,
-	) (sqlDriver.Value, error) {
-		if len(args) != 2 {
-			return nil, fmt.Errorf("expected 2 arguments, got %d", len(args))
-		}
-
-		re, ok := args[0].(string)
-		if !ok {
-			return nil, fmt.Errorf("expected string, got %T", args[0])
-		}
-
-		s, ok := args[1].(string)
-		if !ok {
-			return nil, fmt.Errorf("expected string, got %T", args[1])
-		}
-
-		match, err := regexp.MatchString(re, s)
-		if err != nil {
-			return nil, err
-		}
-
-		return match, nil
-	})
 }

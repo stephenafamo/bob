@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for MySQL to `bobgen-sql`.
 - Added `Exec` test for generated queries that do not return rows.
 - Added `OrderCombined`, `LimitCombined`, `OffsetCombined` mods to MySQL `SELECT` queries. These are applied to the result of a `UNION`, `INTERSECT` or `EXCEPT` query.
+- Added `type_limits` property to column definitions.
+- Added `limits` option to `random_expr` function for types. This is to pass any column limits to the randomization function (e.g. `max_length` for strings).
+- Added tests to check that the generated factory can create models and save into the database.
+- Added the `pgtypes.Snapshot` type for the `pg_snapshot` and `txid_snapshot` type in PostgreSQL.
+- Added a custom `Time` type to the `types` package. This is motivated by the fact that the `libsql` driver does not support the `time.Time` type properly.
 
 ### Changed
 
@@ -48,18 +53,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made changes to better support generating code in multiple languages.
 - Mark queries with `ON DUPLICATE KEY UPDATE` as unretrievable in MySQL.
 - Unretrievable `INSERT` queries using `One, All, Cursor` now immediately return `orm.ErrCannotRetrieveRow` instead of executing the query first.
+- Generated tests are now run when testing drivers.
+- `MEDIUMINT` and `MEDIUMINT UNSIGNED` are now generated as `int16` and `uint16` respectively. This is because Go doe not support 24 bit integers.
+- The randomization function for floats, strings, and decimals now respect the limits set in the column definition.
+- `txid_snapshot` is now generated as `pgtypes.Snapshot` instead of `pgtypes.TxIDSnapshot`.
+- `cidr` postgres type is now generated as `types.Text[netip.Prefix]` instead of `types.Text[netip.Addr]`.
+- `money` postgres type is now generated as a string with a custom randomization expression instead of a decimal.
+- Factory template mods now take a context argument. This allows for more control when using recursive mods.
+- Removed `WithOneRelations` mod from factories, now replaced with `WithParentsCascading` which also includes parents for any parent relationships.
 
 ### Removed
 
 - Removed `clause.Table` and `clause.From`, and merge into `clause.TableRef` since they had overlapping functionality.
 - Remove unnecessary context closure in generated join helpers.
+- Remove the deprecated `wipe` generation option.
+- Remove `pgtypes.TxIDSnapshot` type. This is now replaced with `pgtypes.Snapshot`.
 
 ### Fixed
 
 - Use correct row name for generated queries in `bobgen-sqlite`.
 - Properly select query comment in `bobgen-sqlite`.
 - Fixed issue with using generated queries with `VALUES` as mods.
-- Moveed `Partitions` in MySQL delete queries to after the table alias.
+- Moved `Partitions` in MySQL delete queries to after the table alias.
+- Fixed issue with inserting into a table with all rows having default values in SQLite.
+- Use table name and not table alias in SQLite returning clause since the alias is not available in the `RETURNING` clause.
+- Fixed generated unique constraint errors for SQLite.
+- Correctly resuse inserted rows in factories.
 
 ## [v0.34.2] - 2025-05-01
 

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/go-sql-driver/mysql"
@@ -17,26 +16,39 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
+	"github.com/testcontainers/testcontainers-go"
+	mysqltest "github.com/testcontainers/testcontainers-go/modules/mysql"
 )
 
-var (
-	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
-
-	dsn = os.Getenv("MYSQL_DRIVER_TEST_DSN")
-)
+var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
 func TestDriver(t *testing.T) {
-	if dsn == "" {
-		t.Fatalf("No environment variable MYSQL_DRIVER_TEST_DSN")
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	mysqlContainer, err := mysqltest.Run(context.Background(),
+		"mysql:8.0.35",
+		mysqltest.WithDatabase("bobgen"),
+		mysqltest.WithUsername("root"),
+		mysqltest.WithPassword("password"),
+	)
+	t.Cleanup(func() {
+		if err := testcontainers.TerminateContainer(mysqlContainer); err != nil {
+			fmt.Printf("failed to terminate MySQL container: %v\n", err)
+		}
+	})
+	if err != nil {
+		t.Fatalf("failed to start container: %v", err)
 	}
-	// somehow create the DB
+
+	dsn, err := mysqlContainer.ConnectionString(ctx, "tls=skip-verify", "multiStatements=true", "parseTime=true")
+	if err != nil {
+		t.Fatalf("failed to get connection string: %v", err)
+	}
+
 	config, err := mysql.ParseDSN(dsn)
 	if err != nil {
 		t.Fatalf("could not parse dsn: %v", err)
-	}
-
-	if !strings.Contains(config.DBName, "droppable") {
-		t.Fatalf("database name %q must contain %q to ensure that data is not lost", config.DBName, "droppable")
 	}
 
 	if !config.MultiStatements {
@@ -48,27 +60,6 @@ func TestDriver(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not connect to db: %v", err)
 	}
-
-	fmt.Printf("dropping database...")
-	_, err = db.Exec(fmt.Sprintf(`DROP DATABASE %s;`, config.DBName))
-	if err != nil {
-		t.Fatalf("could not drop database: %v", err)
-	}
-	fmt.Printf(" DONE\n")
-
-	fmt.Printf("creating database...")
-	_, err = db.Exec(fmt.Sprintf(`CREATE DATABASE %s;`, config.DBName))
-	if err != nil {
-		t.Fatalf("could not recreate database: %v", err)
-	}
-	fmt.Printf(" DONE\n")
-
-	fmt.Printf("selecting database...")
-	_, err = db.Exec(fmt.Sprintf(`USE %s;`, config.DBName))
-	if err != nil {
-		t.Fatalf("could not select database: %v", err)
-	}
-	fmt.Printf(" DONE\n")
 
 	fmt.Printf("migrating...")
 	if err := helpers.Migrate(context.Background(), db, testfiles.MySQLSchema, "mysql/*.sql"); err != nil {
