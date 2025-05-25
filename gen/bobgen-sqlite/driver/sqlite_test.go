@@ -12,15 +12,16 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
-
-var libSQLAddress = os.Getenv("LIBSQL_TEST_SERVER")
 
 func cleanupLibSQL(t *testing.T, db *sql.DB) {
 	t.Helper()
@@ -119,14 +120,29 @@ func TestAssembleSQLite(t *testing.T) {
 func TestAssembleLibSQL(t *testing.T) {
 	ctx := context.Background()
 
+	libsqlServer, err := testcontainers.Run(
+		ctx,
+		"ghcr.io/tursodatabase/libsql-server:c6e4e09",
+		testcontainers.WithExposedPorts("7070:8080", "9000:8000"),
+		testcontainers.WithWaitStrategy(wait.ForListeningPort("8080/tcp").WithStartupTimeout(time.Second*5)),
+	)
+	t.Cleanup(func() {
+		if err := testcontainers.TerminateContainer(libsqlServer); err != nil {
+			fmt.Printf("failed to terminate libsql container: %v\n", err)
+		}
+	})
+	if err != nil {
+		t.Fatalf("failed to start libsql container: %v", err)
+	}
+
 	config := Config{
-		DSN: "ws://" + libSQLAddress,
+		DSN: "http://localhost:7070",
 	}
 
 	os.Setenv("LIBSQL_TEST_DSN", config.DSN)
 	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
-	db := connect(t, "libsql", "http://"+libSQLAddress)
+	db := connect(t, "libsql", config.DSN)
 	if err := attach(ctx, db, config); err != nil {
 		t.Fatalf("attaching: %v", err)
 	}

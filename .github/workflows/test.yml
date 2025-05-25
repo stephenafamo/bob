@@ -12,28 +12,6 @@ jobs:
         go: [ 'oldstable', 'stable' ]
 
     steps:
-      - name: Setup LibSQL
-        run: |
-          mkdir -p ./regexp \
-          && wget https://github.com/nalgeon/sqlean/releases/download/0.27.1/sqlean-linux-x86.zip \
-          && unzip sqlean-linux-x86.zip regexp.so \
-          && rm sqlean-linux-x86.zip \
-          && sha256sum regexp.so > ./regexp/trusted.lst \
-          && mv regexp.so ./regexp \
-          && docker run -d -p 8080:8080 -p 8000:8000 --rm -v ${{ github.workspace }}/regexp:/var/lib/sqld/regexp \
-               ghcr.io/tursodatabase/libsql-server:c6e4e09 sqld \
-               --http-listen-addr=0.0.0.0:8080 \
-               --admin-listen-addr=0.0.0.0:8000 \
-               --enable-namespaces \
-               --extensions-path /var/lib/sqld/regexp \
-          && sleep 1 \
-          && curl -X POST http://localhost:8000/v1/namespaces/one/create \
-               -H "Content-Type: application/json" \
-               --data '{}' \
-          && curl -X POST http://localhost:8000/v1/namespaces/one/config \
-               -H "Content-Type: application/json" \
-               --data '{"block_reads": false, "block_writes": false, "block_reason": null, "max_db_size": "1000.0 PB", "heartbeat_url": null, "jwt_key": null, "allow_attach": true, "txn_timeout_s": null, "durability_mode": "relaxed"}'
-
       - name: Checkout Repo
         uses: actions/checkout@v4
 
@@ -46,8 +24,6 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        env:
-          LIBSQL_TEST_SERVER: localhost:8080
         run: go test -timeout 20m -race -covermode atomic -coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
 
       - name: Send coverage
