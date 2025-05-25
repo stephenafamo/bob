@@ -23,52 +23,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func cleanupLibSQL(t *testing.T, db *sql.DB) {
-	t.Helper()
-
-	fmt.Printf("cleaning...")
-
-	// Find all tables
-	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer rows.Close()
-
-	// Drop each table
-	for rows.Next() {
-		var tableName string
-		if err = rows.Scan(&tableName); err != nil {
-			t.Fatalf("could not delete existing db: %v", err)
-		}
-		_, err = db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %q;", tableName))
-		if err != nil {
-			t.Fatalf("could not delete %q table: %v", tableName, err)
-		}
-	}
-
-	// Find all tables
-	viewRows, err := db.Query("SELECT name FROM sqlite_master WHERE type='view' AND name NOT LIKE 'sqlite_%';")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer viewRows.Close()
-
-	// Drop each table
-	for viewRows.Next() {
-		var viewName string
-		if err = viewRows.Scan(&viewName); err != nil {
-			t.Fatalf("could not delete existing db: %v", err)
-		}
-		_, err = db.Exec(fmt.Sprintf("DROP VIEW IF EXISTS %q;", viewName))
-		if err != nil {
-			t.Fatalf("could not delete %q view: %v", viewName, err)
-		}
-	}
-
-	fmt.Printf(" DONE\n")
-}
-
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
 func TestAssembleSQLite(t *testing.T) {
@@ -146,11 +100,6 @@ func TestAssembleLibSQL(t *testing.T) {
 	if err := attach(ctx, db, config); err != nil {
 		t.Fatalf("attaching: %v", err)
 	}
-
-	cleanupLibSQL(t, db)
-	t.Cleanup(func() {
-		cleanupLibSQL(t, db)
-	})
 
 	fmt.Printf("migrating...")
 	migrate(t, db, testfiles.LibSQLDefaultSchema, "libsql/default/*.sql")
