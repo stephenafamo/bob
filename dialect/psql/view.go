@@ -8,7 +8,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
-	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -30,21 +29,17 @@ func NewViewx[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 }
 
 func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], mappings.Mapping) {
-	var zero T
-
-	mappings := mappings.GetMappings(reflect.TypeOf(zero))
+	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	allCols := internal.MappingCols(mappings, alias)
-
 	return &View[T, Tslice]{
 		schema:  schema,
 		name:    tableName,
 		alias:   alias,
-		allCols: allCols,
+		allCols: orm.NewColumns(mappings.All...).WithParent(schema, tableName),
 		scanner: scan.StructMapper[T](),
 	}, mappings
 }
@@ -80,7 +75,6 @@ func (v *View[T, Tslice]) Alias() string {
 
 // Returns a column list
 func (v *View[T, Tslice]) Columns() orm.Columns {
-	// get the schema
 	return v.allCols
 }
 

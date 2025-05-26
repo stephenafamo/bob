@@ -8,7 +8,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
-	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -30,15 +29,13 @@ func NewViewx[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
 }
 
 func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], mappings.Mapping) {
-	var zero T
-
-	mappings := mappings.GetMappings(reflect.TypeOf(zero))
+	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	allCols := internal.MappingCols(mappings, alias)
+	allCols := orm.NewColumns(mappings.All...).WithParent(schema, tableName)
 
 	return &View[T, Tslice]{
 		schema:        schema,

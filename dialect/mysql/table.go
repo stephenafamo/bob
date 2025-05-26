@@ -31,34 +31,19 @@ func NewTable[T orm.Model, Tset setter[T]](tableName string, uniques ...[]string
 }
 
 func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
-	var zeroSet Tset
-
-	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
-
+	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
 	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Tset]{
 		View:             view,
 		setterMapping:    setMapping,
 		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
-	}
-
-	pkCols := internal.FilterNonZero(mappings.PKs)
-	if len(pkCols) == 1 {
-		t.pkExpr = Quote(pkCols[0])
-	} else {
-		expr := make([]bob.Expression, len(pkCols))
-		for i, col := range pkCols {
-			expr[i] = Quote(col)
-		}
-		t.pkExpr = Group(expr...)
+		uniqueIdx:        uniqueIndexes(setMapping.All, uniques...),
 	}
 
 	allAutoIncr := internal.FilterNonZero(mappings.AutoIncrement)
 	if len(allAutoIncr) == 1 {
 		t.autoIncrementColumn = allAutoIncr[0]
 	}
-
-	t.uniqueIdx = uniqueIndexes(setMapping.All, uniques...)
 
 	return t
 }
@@ -67,7 +52,7 @@ func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](tableName string, uniqu
 // caches ???
 type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
-	pkExpr           dialect.Expression
+	pkCols           orm.Columns
 	setterMapping    mappings.Mapping
 	nonGeneratedCols []string
 
@@ -90,6 +75,11 @@ type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 
 	// field indexes of unique columns
 	uniqueIdx [][]int
+}
+
+// Returns the primary key columns for this table.
+func (t *Table[T, Tslice, Tset]) PrimaryKey() orm.Columns {
+	return t.pkCols
 }
 
 // Starts an insert query for this table
