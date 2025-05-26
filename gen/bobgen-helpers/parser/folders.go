@@ -19,7 +19,7 @@ func ParseFolders(ctx context.Context, parser QueryParser, paths ...string) ([]d
 	for _, path := range paths {
 		queries, err := parseFolder(ctx, parser, path)
 		if err != nil {
-			return nil, fmt.Errorf("parse folder: %w", err)
+			return nil, fmt.Errorf("parse folder %q: %w", path, err)
 		}
 
 		allQueries = append(allQueries, queries)
@@ -50,7 +50,7 @@ func parseFolder(ctx context.Context, parser QueryParser, path string) (drivers.
 
 		file, err := parseFile(ctx, parser, filepath.Join(path, entry.Name()))
 		if err != nil {
-			return drivers.QueryFolder{}, fmt.Errorf("parse file: %w", err)
+			return drivers.QueryFolder{}, fmt.Errorf("parse file %q: %w", entry.Name(), err)
 		}
 
 		files = append(files, file)
@@ -70,7 +70,7 @@ func parseFile(ctx context.Context, parser QueryParser, path string) (drivers.Qu
 
 	queries, err := parser.ParseQueries(ctx, string(file))
 	if err != nil {
-		return drivers.QueryFile{}, fmt.Errorf("parse multi queries: %w", err)
+		return drivers.QueryFile{}, fmt.Errorf("parse queries: %w", err)
 	}
 
 	return drivers.QueryFile{

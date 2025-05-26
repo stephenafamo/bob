@@ -12,21 +12,7 @@
 {{$queryType := (lower $query.Type.String | titleCase)}}
 {{$args := list }}
 {{range $arg := $query.Args -}}
-  {{ $argName := titleCase $arg.Col.Name }}
-  {{ $argType := "" }}
-  {{if gt (len $arg.Children) 0}}
-    {{ $argType = printf "%s_%s" $upperName $argName }}
-    {{if $arg.CanBeMultiple}}
-      {{ $argType = printf "[]%s" $argType }}
-    {{end}}
-  {{else}}
-    {{ $argType = ($arg.Type $.Importer $.Types) }}
-  {{end}}
-  {{- if $arg.CanBeMultiple -}}
-    {{$args = append $args (printf "%s{zero[%s]()}" $argType (substr 2 (len $argType) $argType)) }}
-  {{- else -}}
-    {{$args = append $args (printf "zero[%s]()" $argType) }}
-  {{- end -}}
+  {{$args = append $args ($arg.RandomExpr $.Importer $.Types) }}
 {{end}}
 
 

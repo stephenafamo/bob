@@ -150,8 +150,10 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		t.Fatalf("go env GOMOD cmd execution failed: %s", "not in a go module")
 	}
 
+	defaultFolder := filepath.Join(config.Root, "default")
+	aliasesFolder := filepath.Join(config.Root, "aliases")
+
 	t.Run("generate", func(t *testing.T) {
-		defaultFolder := filepath.Join(config.Root, "default")
 		err := os.Mkdir(defaultFolder, os.ModePerm)
 		if err != nil {
 			t.Fatalf("unable to create default folder: %s", err)
@@ -161,13 +163,15 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 			t, defaultFolder, config.Templates,
 			gen.Config[C]{}, d, goModFilePath,
 			&aliasPlugin[T, C, I]{},
-			queryPathPlugin[T, C, I]{defaultFolder},
+			queryPathPlugin[T, C, I]{
+				outputPath:   defaultFolder,
+				trimPrefixes: []string{defaultFolder, aliasesFolder},
+			},
 			templatePlugin[C]{},
 		)
 	})
 
 	t.Run("generate with aliases", func(t *testing.T) {
-		aliasesFolder := filepath.Join(config.Root, "aliases")
 		err = os.Mkdir(aliasesFolder, os.ModePerm)
 		if err != nil {
 			t.Fatalf("unable to create aliases folder: %s", err)
@@ -177,7 +181,10 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 			t, aliasesFolder, config.Templates,
 			gen.Config[C]{Aliases: aliases}, d, goModFilePath,
 			&aliasPlugin[T, C, I]{},
-			queryPathPlugin[T, C, I]{aliasesFolder},
+			queryPathPlugin[T, C, I]{
+				outputPath:   aliasesFolder,
+				trimPrefixes: []string{defaultFolder, aliasesFolder},
+			},
 			templatePlugin[C]{},
 		)
 	})

@@ -10,6 +10,7 @@ import (
 	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/gen/language"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 )
@@ -21,6 +22,23 @@ type TemplateInclude interface {
 type QueryFolder struct {
 	Path  string
 	Files []QueryFile
+}
+
+func (q QueryFolder) Types() []string {
+	types := []string{}
+	for _, file := range q.Files {
+		for _, query := range file.Queries {
+			for _, col := range query.Columns {
+				types = append(types, col.TypeName)
+			}
+			for _, arg := range query.Args {
+				types = append(types, arg.Types()...)
+			}
+		}
+	}
+
+	slices.Sort(types)
+	return slices.Compact(types)
 }
 
 type QueryFile struct {
@@ -216,6 +234,19 @@ type QueryArg struct {
 	CanBeMultiple bool `json:"can_be_multiple"`
 }
 
+func (q QueryArg) Types() []string {
+	if len(q.Children) == 0 {
+		return []string{q.Col.TypeName}
+	}
+
+	types := make([]string, 0, len(q.Children))
+	for _, child := range q.Children {
+		types = append(types, child.Types()...)
+	}
+
+	return types
+}
+
 func (c QueryCol) Type(i language.Importer, types Types) string {
 	typ := c.TypeName
 
@@ -231,6 +262,37 @@ func (c QueryCol) Type(i language.Importer, types Types) string {
 	}
 
 	return typ
+}
+
+func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
+	typ := c.TypeDef(i, types)
+	var sb strings.Builder
+
+	if c.CanBeMultiple {
+		fmt.Fprintf(&sb, "[]%s{", typ)
+	} else if len(c.Children) > 0 {
+		sb.WriteString(typ)
+	}
+
+	if len(c.Children) == 0 {
+		normalized := internal.TypesReplacer.Replace(typ)
+		fmt.Fprintf(&sb, "random_%s(nil)", normalized)
+	} else {
+		sb.WriteString("{")
+		for _, child := range c.Children {
+			sb.WriteString(strmangle.TitleCase(child.Col.Name))
+			sb.WriteString(": ")
+			sb.WriteString(child.RandomExpr(i, types))
+			sb.WriteString(",\n")
+		}
+		sb.WriteString("}")
+	}
+
+	if c.CanBeMultiple {
+		sb.WriteString("}")
+	}
+
+	return sb.String()
 }
 
 func (c QueryArg) Type(i language.Importer, types Types) string {
@@ -258,20 +320,21 @@ func (c QueryArg) TypeDef(i language.Importer, types Types) string {
 	return sb.String()
 }
 
-func (a QueryArg) ToExpression(dialect, queryName, varName string) string {
+func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName string) string {
 	if len(a.Children) == 0 {
 		if a.CanBeMultiple {
 			return fmt.Sprintf("expr.ToArgs(%s...)", varName)
 		}
 
+		i.Import("github.com/stephenafamo/bob/dialect/" + dialect)
 		return fmt.Sprintf("%s.Arg(%s)", dialect, varName)
 	}
 
 	if !a.CanBeMultiple {
-		return a.groupExpression(dialect, queryName, varName)
+		return a.groupExpression(i, dialect, queryName, varName)
 	}
 
-	groupExpression := a.groupExpression(dialect, queryName, "child")
+	groupExpression := a.groupExpression(i, dialect, queryName, "child")
 	sb := strings.Builder{}
 	sb.WriteString(fmt.Sprintf(`func() bob.Expression {
             expressions := make([]bob.Expression, len(%s))
@@ -285,7 +348,7 @@ func (a QueryArg) ToExpression(dialect, queryName, varName string) string {
 	return sb.String()
 }
 
-func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
+func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varName string) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf(`bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
@@ -294,7 +357,7 @@ func (a QueryArg) groupExpression(dialect, queryName, varName string) string {
 	start := a.Positions[0][0]
 	for _, child := range a.Children {
 		childName := strmangle.TitleCase(child.Col.Name)
-		childExpression := child.ToExpression(dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
+		childExpression := child.ToExpression(i, dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
 		sb.WriteString(fmt.Sprintf(`
             w.Write([]byte(%sSQL[%d:%d]))
             %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"hash/maphash"
+	"strings"
 )
 
 func ToAnySlice[T any, Ts ~[]T](slice Ts) []any {
@@ -102,12 +103,11 @@ func RemoveDuplicates[T comparable, Ts ~[]T](slice Ts) Ts {
 	return final
 }
 
-func InList[T comparable](s []T, val T) bool {
-	for _, v := range s {
-		if v == val {
-			return true
-		}
-	}
-
-	return false
-}
+var TypesReplacer = strings.NewReplacer(
+	" ", "_",
+	".", "_",
+	",", "_",
+	"*", "_",
+	"[", "_",
+	"]", "_",
+)

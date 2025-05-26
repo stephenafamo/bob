@@ -12,10 +12,6 @@
 var formattedQueries_{{.QueryFile.BaseName}} string
 
 {{range $queryIndex, $query := $.QueryFile.Queries}}
-{{if $query.Args}}
-  {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-{{end}}
-
 {{$upperName := titleCase $query.Name}}
 {{$lowerName := untitle $query.Name}}
 {{$flatArgs := $query.ArgsByPosition}}
@@ -66,7 +62,7 @@ func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
   var expressionTypArgs {{$lowerName}}
 
   {{range $arg := $query.Args -}}
-    expressionTypArgs.{{titleCase $arg.Col.Name}} = {{$arg.ToExpression $.Dialect $lowerName (titleCase $arg.Col.Name)}}
+    expressionTypArgs.{{titleCase $arg.Col.Name}} = {{$arg.ToExpression $.Importer $.Dialect $lowerName (titleCase $arg.Col.Name)}}
   {{end}}
 
 {{if $query.Columns -}}

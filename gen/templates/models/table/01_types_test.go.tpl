@@ -1,11 +1,10 @@
 {{- if and .Table.Constraints.Uniques (not $.NoFactory)}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
-{{$factoryPackage := printf "%s/factory" $.ModelsPackage }}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "errors"}}
 {{$.Importer.Import "testing"}}
-{{$.Importer.Import "factory" $factoryPackage }}
+{{$.Importer.Import "factory" (printf "%s/factory" $.ModelsPackage)}}
 {{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 

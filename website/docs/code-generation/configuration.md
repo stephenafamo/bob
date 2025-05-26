@@ -166,7 +166,7 @@ types:
     random_expr: |-
       s := &bytes.Buffer{}
       s.WriteRune('{')
-      for i := 0; i < f.IntBetween(1, 5); i++ {
+      for i := range f.IntBetween(1, 5) {
           if i > 0 {
               fmt.Fprint(s, ", ")
           }
