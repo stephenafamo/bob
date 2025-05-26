@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -34,14 +35,6 @@ var (
 	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
 	PSQLModelTemplates, _   = fs.Sub(psqlTemplates, "bobgen-psql/templates/models")
 	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
-	typesReplacer           = strings.NewReplacer(
-		" ", "_",
-		".", "_",
-		",", "_",
-		"*", "_",
-		"[", "_",
-		"]", "_",
-	)
 )
 
 type TemplateData[T, C, I any] struct {
@@ -169,7 +162,7 @@ func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
 }
 
 func NormalizeType(val string) string {
-	return typesReplacer.Replace(val)
+	return internal.TypesReplacer.Replace(val)
 }
 
 // Gets the type for a db column. Used if you have types defined inside the

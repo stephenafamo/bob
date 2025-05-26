@@ -2,10 +2,10 @@ package drivers
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/language"
-	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -140,7 +140,7 @@ func (tables Tables[C, I]) NeededBridgeRels(r orm.Relationship) []struct {
 			if col.Generated {
 				continue
 			}
-			if internal.InList(side.Columns(), col.Name) {
+			if slices.Contains(side.Columns(), col.Name) {
 				continue
 			}
 

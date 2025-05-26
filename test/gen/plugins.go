@@ -41,7 +41,8 @@ func (t templatePlugin[C]) PlugState(s *gen.State[C]) error {
 }
 
 type queryPathPlugin[T, C, I any] struct {
-	outputPath string
+	outputPath   string
+	trimPrefixes []string
 }
 
 func (q queryPathPlugin[T, C, I]) Name() string {
@@ -50,17 +51,20 @@ func (q queryPathPlugin[T, C, I]) Name() string {
 
 func (q queryPathPlugin[T, C, I]) PlugDBInfo(info *drivers.DBInfo[T, C, I]) error {
 	for i, folder := range info.QueryFolders {
-		if !strings.HasPrefix(folder.Path, q.outputPath) {
-			info.QueryFolders[i].Path = filepath.Join(q.outputPath, folder.Path)
-		}
+		info.QueryFolders[i].Path = q.addPath(folder.Path)
 		for j, file := range folder.Files {
-			if !strings.HasPrefix(file.Path, q.outputPath) {
-				info.QueryFolders[i].Files[j].Path = filepath.Join(q.outputPath, file.Path)
-			}
+			info.QueryFolders[i].Files[j].Path = q.addPath(file.Path)
 		}
 	}
 
 	return nil
+}
+
+func (q queryPathPlugin[T, C, I]) addPath(old string) string {
+	for _, prefix := range q.trimPrefixes {
+		old = strings.TrimPrefix(old, prefix)
+	}
+	return filepath.Join(q.outputPath, old)
 }
 
 type aliasPlugin[T, C, I any] struct {

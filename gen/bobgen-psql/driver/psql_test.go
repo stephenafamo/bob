@@ -68,6 +68,7 @@ func TestDriver(t *testing.T) {
 			name: "default",
 			config: Config{
 				Dsn:     dsn,
+				Queries: []string{"./queries"},
 				Schemas: []string{"public", "other", "shared"},
 			},
 			goldenJson: "psql.golden.json",

@@ -478,7 +478,7 @@ func Types() drivers.Types {
 			DependsOn: []string{"string"},
 			Imports:   language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `hs := make(pgtypes.HStore)
-                for i := 0; i < f.IntBetween(1, 5); i++ {
+                for i := range f.IntBetween(1, 5) {
                     hs[random_string(f)] = null.FromCond(random_string(f), f.Bool())
                 }
                 return hs`,
@@ -490,7 +490,7 @@ func Types() drivers.Types {
 			},
 			RandomExpr: `s := &bytes.Buffer{}
                 s.WriteRune('{')
-                for i := 0; i < f.IntBetween(1, 5); i++ {
+                for i := range f.IntBetween(1, 5) {
                     if i > 0 {
                         fmt.Fprint(s, ", ")
                     }
