@@ -103,6 +103,7 @@ func RemoveDuplicates[T comparable, Ts ~[]T](slice Ts) Ts {
 	return final
 }
 
+//nolint:gochecknoglobals
 var TypesReplacer = strings.NewReplacer(
 	" ", "_",
 	".", "_",
