@@ -7,7 +7,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
-	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -23,16 +22,12 @@ func NewViewx[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
 }
 
 func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], mappings.Mapping) {
-	var zero T
-
-	mappings := mappings.GetMappings(reflect.TypeOf(zero))
-	alias := tableName
-	allCols := internal.MappingCols(mappings, alias)
+	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 
 	return &View[T, Tslice]{
 		name:    tableName,
-		alias:   alias,
-		allCols: allCols,
+		alias:   tableName,
+		allCols: orm.NewColumns(mappings.All...).WithParent(tableName),
 		scanner: scan.StructMapper[T](),
 	}, mappings
 }

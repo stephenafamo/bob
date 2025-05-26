@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added tests to check that the generated factory can create models and save into the database.
 - Added the `pgtypes.Snapshot` type for the `pg_snapshot` and `txid_snapshot` type in PostgreSQL.
 - Added a custom `Time` type to the `types` package. This is motivated by the fact that the `libsql` driver does not support the `time.Time` type properly.
+- Added an option to disable aliasing when expressing `orm.Columns`. Also added `EnableAlias` and `DisableAlias` methods to `orm.Columns` to control this behavior.
+- Added a `PrimaryKey` method to `{dialect}.Table` to get the primary key columns of the table.
 
 ### Changed
 

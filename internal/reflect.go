@@ -8,27 +8,10 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
-	"github.com/stephenafamo/bob/orm"
 )
 
 //nolint:gochecknoglobals
 var unsettableTyp = reflect.TypeOf((*interface{ IsUnset() bool })(nil)).Elem()
-
-func MappingCols(m mappings.Mapping, table ...string) orm.Columns {
-	// to make sure we don't modify the passed slice
-	cols := make([]string, 0, len(m.All))
-	for _, col := range m.All {
-		if col == "" {
-			continue
-		}
-
-		cols = append(cols, col)
-	}
-
-	copy(cols, m.All)
-
-	return orm.NewColumns(cols...).WithParent(table...)
-}
 
 // Get the values for non generated columns
 func GetColumnValues[T any](mapping mappings.Mapping, filter []string, objs ...T) ([]string, [][]bob.Expression, error) {

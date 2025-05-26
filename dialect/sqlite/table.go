@@ -9,7 +9,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dm"
 	"github.com/stephenafamo/bob/dialect/sqlite/im"
 	"github.com/stephenafamo/bob/dialect/sqlite/um"
-	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -23,24 +22,12 @@ func NewTable[T orm.Model, Tset setter[T]](schema, tableName string) *Table[T, [
 }
 
 func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](schema, tableName string) *Table[T, Tslice, Tset] {
-	var zeroSet Tset
-
-	setMapping := mappings.GetMappings(reflect.TypeOf(zeroSet))
+	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
 	view, mappings := newView[T, Tslice](schema, tableName)
 	t := &Table[T, Tslice, Tset]{
 		View:          view,
-		pkCols:        internal.FilterNonZero(mappings.PKs),
+		pkCols:        orm.NewColumns(mappings.PKs...).WithParent(schema, tableName),
 		setterMapping: setMapping,
-	}
-
-	if len(t.pkCols) == 1 {
-		t.pkExpr = Quote(t.pkCols[0])
-	} else {
-		expr := make([]bob.Expression, len(t.pkCols))
-		for i, col := range t.pkCols {
-			expr[i] = Quote(col)
-		}
-		t.pkExpr = Group(expr...)
 	}
 
 	return t
@@ -50,8 +37,7 @@ func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](schema, tableName strin
 // caches ???
 type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
-	pkCols        []string
-	pkExpr        dialect.Expression
+	pkCols        orm.Columns
 	setterMapping mappings.Mapping
 
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
@@ -66,6 +52,11 @@ type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
 	InsertQueryHooks bob.Hooks[*dialect.InsertQuery, bob.SkipQueryHooksKey]
 	UpdateQueryHooks bob.Hooks[*dialect.UpdateQuery, bob.SkipQueryHooksKey]
 	DeleteQueryHooks bob.Hooks[*dialect.DeleteQuery, bob.SkipQueryHooksKey]
+}
+
+// Returns the primary key columns for this table.
+func (t *Table[T, Tslice, Tset]) PrimaryKey() orm.Columns {
+	return t.pkCols
 }
 
 // Starts an insert query for this table
