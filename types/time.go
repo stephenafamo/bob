@@ -32,12 +32,12 @@ func (ut *Time) Scan(src any) error {
 		return ut.parse(v)
 
 	default:
-		return fmt.Errorf("unsupported type for Time: %T, expected int64", src)
+		return fmt.Errorf("unsupported type for Time: %T", src)
 	}
 }
 
 func (ut Time) Value() (driver.Value, error) {
-	return ut.Unix(), nil
+	return ut.Time.Format(time.RFC3339), nil
 }
 
 func (ut *Time) parse(s string) error {
