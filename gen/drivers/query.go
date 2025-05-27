@@ -275,8 +275,16 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 	}
 
 	if len(c.Children) == 0 {
-		normalized := internal.TypesReplacer.Replace(typ)
-		fmt.Fprintf(&sb, "random_%s(nil)", normalized)
+		if val, isSet := c.Col.Nullable.Get(); isSet && val {
+			i.Import("github.com/aarondl/opt/null")
+			typ = strings.TrimPrefix(typ, "null.Val[")
+			typ = strings.TrimSuffix(typ, "]")
+			normalized := internal.TypesReplacer.Replace(typ)
+			fmt.Fprintf(&sb, "null.From(random_%s(nil))", normalized)
+		} else {
+			normalized := internal.TypesReplacer.Replace(typ)
+			fmt.Fprintf(&sb, "random_%s(nil)", normalized)
+		}
 	} else {
 		sb.WriteString("{")
 		for _, child := range c.Children {
