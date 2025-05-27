@@ -80,7 +80,7 @@ At this time, Preload only works for `to-one` relationships.
 :::
 
 ```go
-models.PreloadJetPilot(opts ...psql.PreloadOption)
+models.Preload.Jet.Pilot(opts ...psql.PreloadOption)
 ```
 
 The mod function accepts options:
@@ -92,7 +92,7 @@ The mod function accepts options:
 
 ```go
 jet, err := models.Jets(ctx, db,
-    models.Preload.Jets.Pilot(
+    models.Preload.Jet.Pilot(
         psql.OnlyColumns("id"), // only selects "pilot"."id"
         psql.SelectThenLoad.Pilot.Licences(), // will load the pilot's licences
     ),
