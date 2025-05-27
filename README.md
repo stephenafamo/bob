@@ -36,7 +36,7 @@ Check out [the documentation][docs] for more information.
 |               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
 | ------------- | ------- | ------ | ------- | ----------- | --------- |
 | Postgres      | ✅      | ✅     | ✅      | ✅          | ✅        |
-| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |           |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          | ✅        |
 | SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
 
 ## Comparisons

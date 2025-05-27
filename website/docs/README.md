@@ -11,7 +11,7 @@ import DocCardList from '@theme/DocCardList';
 |               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
 | ------------- | ------- | ------ | ------- | ----------- | --------- |
 | Postgres      | ✅      | ✅     | ✅      | ✅          | ✅        |
-| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          |           |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          | ✅        |
 | SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
 
 Bob is a set of Go packages and tools to work with SQL databases.
