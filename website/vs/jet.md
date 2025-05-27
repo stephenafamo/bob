@@ -39,10 +39,9 @@ Because Jet does not aim to be an ORM, it does not provides an easy way to work 
 ```go
 // User will contain the videos
 user, err := models.Users(
-    ctx, db,
     models.SelectWhere.Users.ID.EQ(1),
     models.SelectThenLoad.User.Videos(),
-).One()
+).One(ctx, db)
 ```
 
 ### Jet: Retrieve with relations

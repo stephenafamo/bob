@@ -91,20 +91,20 @@ The mod function accepts options:
 1. `Loaders`: Other loaders mods can be given as an option to the preloader to load nested relationships. This works for both other preloaders and then-loaders.
 
 ```go
-jet, err := models.Jets(ctx, db,
+jet, err := models.Jets(
     models.Preload.Jet.Pilot(
         psql.OnlyColumns("id"), // only selects "pilot"."id"
         psql.SelectThenLoad.Pilot.Licences(), // will load the pilot's licences
     ),
-).One()
+).One(ctx, db)
 ```
 
 ```go
-jets, err := models.Jets(ctx, db,
+jets, err := models.Jets(
 	models.Preload.Jet.Pilot(psql.PreloadAs("pilot")), // "LEFT JOIN "pilots" AS "pilot" ON ("jet"."pilot_id" = "pilot"."id")
 	models.Preload.Jet.CoPilot(psql.PreloadAs("copilot")), // "LEFT JOIN "pilots" AS "copilot" ON ("jet"."copilot_id" = "copilot"."id")
 	sm.OrderBy(psql.Quote("pilot", models.ColumnNames.Pilot.LastName)) // ORDER BY "pilot"."last_name" DESC
-).All()
+).All(ctx, db)
 ```
 
 ### ThenLoad
@@ -120,10 +120,10 @@ These will accept **ANY** `Select/Insert/UpdateQuery` mods.
 ```go
 // get the first 2 pilots
 // then load all related jets with airport_id = 100
-pilots, err := models.Pilots(ctx, db,
+pilots, err := models.Pilots(
     models.ThenLoad.Pilots.Jets(
         models.SelectWhere.Jet.AirportID.EQ(100),
     ),
     sm.Limit(2),
-).All()
+).All(ctx, db)
 ```
