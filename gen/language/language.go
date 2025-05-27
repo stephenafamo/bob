@@ -170,6 +170,11 @@ func (g goOutputLanguage) WriteHeader(
 	out *bytes.Buffer, imps ImportList,
 	pkgName string, isTest bool,
 ) error {
+	// Write disclaimer
+	if _, err := fmt.Fprint(out, g.Disclaimer()); err != nil {
+		return fmt.Errorf("writing disclaimer: %w", err)
+	}
+
 	// Write package name
 	if isTest && g.SeparatePackageForTests {
 		pkgName = fmt.Sprintf("%s_test", pkgName)
@@ -270,14 +275,7 @@ func (s sqlOutputLanguage) OutputFileName(schema string, tableName string, isTes
 // WriteHeader implements outputLanguage.
 func (g sqlOutputLanguage) WriteHeader(out *bytes.Buffer, imps ImportList, pkgName string, isTest bool) error {
 	// Write disclaimer
-	noEditDisclaimer := fmt.Sprintf(noEditDisclaimerFmt, " ")
-	if g.Generator != "" {
-		noEditDisclaimer = fmt.Sprintf(noEditDisclaimerFmt, " by "+g.Generator)
-	}
-
-	noEditDisclaimer = strings.ReplaceAll(noEditDisclaimer, "\n", "\n-- ")
-
-	if _, err := fmt.Fprintf(out, "-- %s\n\n", noEditDisclaimer); err != nil {
+	if _, err := fmt.Fprint(out, g.Disclaimer()); err != nil {
 		return fmt.Errorf("writing disclaimer: %w", err)
 	}
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed issue with generating correct test code for nullable args in SQL queries.
+- Fix issue where writing the "NO EDIT Disclaimer" at the top of Go generated files was skipped.
 
 ## [v0.36.0] - 2025-05-27
 
