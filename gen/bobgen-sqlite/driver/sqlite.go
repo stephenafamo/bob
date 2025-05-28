@@ -24,6 +24,8 @@ import (
 	"modernc.org/sqlite"
 )
 
+const defaultDriverName = "modernc.org/sqlite"
+
 type (
 	Interface  = drivers.Interface[any, any, IndexExtra]
 	DBInfo     = drivers.DBInfo[any, any, IndexExtra]
@@ -38,7 +40,7 @@ func init() {
 
 func New(config Config) Interface {
 	if config.DriverName == "" {
-		config.DriverName = "modernc.org/sqlite"
+		config.DriverName = defaultDriverName
 	}
 	return &driver{config: config}
 }

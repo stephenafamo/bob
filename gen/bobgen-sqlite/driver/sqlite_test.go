@@ -25,50 +25,20 @@ import (
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-func TestAssembleSQLite(t *testing.T) {
-	ctx := context.Background()
-
-	dir, err := os.MkdirTemp("", "bobgen_sqlite_*")
+func connect(t *testing.T, driverName, dsn string) *sql.DB {
+	t.Helper()
+	db, err := sql.Open(driverName, dsn)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("failed to connect to database: %v", err)
 	}
-	t.Cleanup(func() {
-		if t.Failed() {
-			t.Log("db files directory:", dir)
-			return
-		}
-		os.RemoveAll(dir)
-	})
+	return db
+}
 
-	mainDB, err := os.Create(filepath.Join(dir, "main.db"))
-	if err != nil {
-		t.Fatalf("unable to create main.db: %s", err)
+func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
+	t.Helper()
+	if err := helpers.Migrate(context.Background(), db, schema, pattern); err != nil {
+		t.Fatal(err)
 	}
-
-	oneDB, err := os.Create(filepath.Join(dir, "one.db"))
-	if err != nil {
-		t.Fatalf("unable to create one.db: %s", err)
-	}
-
-	config := Config{
-		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
-		Attach: map[string]string{"one": oneDB.Name()},
-	}
-	os.Setenv("SQLITE_TEST_DSN", config.DSN)
-	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
-
-	db := connect(t, "sqlite", config.DSN)
-	defer db.Close()
-
-	if err := attach(ctx, db, config); err != nil {
-		t.Fatalf("attaching: %v", err)
-	}
-
-	fmt.Printf("migrating...")
-	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
-	fmt.Printf(" DONE\n")
-
-	assemble(t, config, *flagOverwriteGolden, nil)
 }
 
 func TestAssembleLibSQL(t *testing.T) {
@@ -136,23 +106,115 @@ func TestAssembleLibSQL(t *testing.T) {
 	})
 }
 
-func connect(t *testing.T, driverName, dsn string) *sql.DB {
-	t.Helper()
-	db, err := sql.Open(driverName, dsn)
+func TestAssembleSQLite(t *testing.T) {
+	ctx := context.Background()
+
+	dir, err := os.MkdirTemp("", "bobgen_sqlite_*")
 	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
+		log.Fatal(err)
 	}
-	return db
+	t.Cleanup(func() {
+		if t.Failed() {
+			t.Log("db files directory:", dir)
+			return
+		}
+		os.RemoveAll(dir)
+	})
+
+	mainDB, err := os.Create(filepath.Join(dir, "main.db"))
+	if err != nil {
+		t.Fatalf("unable to create main.db: %s", err)
+	}
+
+	oneDB, err := os.Create(filepath.Join(dir, "one.db"))
+	if err != nil {
+		t.Fatalf("unable to create one.db: %s", err)
+	}
+
+	config := Config{
+		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
+		Attach: map[string]string{"one": oneDB.Name()},
+	}
+	os.Setenv("SQLITE_TEST_DSN", config.DSN)
+	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
+
+	db := connect(t, "sqlite", config.DSN)
+	defer db.Close()
+
+	if err := attach(ctx, db, config); err != nil {
+		t.Fatalf("attaching: %v", err)
+	}
+
+	fmt.Printf("migrating...")
+	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
+	fmt.Printf(" DONE\n")
+
+	testSQLiteDriver(t, config)
+	testSQLiteAssemble(t, config)
 }
 
-func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
+func testSQLiteDriver(t *testing.T, config Config) {
 	t.Helper()
-	if err := helpers.Migrate(context.Background(), db, schema, pattern); err != nil {
-		t.Fatal(err)
+
+	tests := []struct {
+		name       string
+		driverName string
+	}{
+		{
+			name:       "mattn",
+			driverName: "github.com/mattn/go-sqlite3",
+		},
+		{
+			name:       "modernc",
+			driverName: "modernc.org/sqlite",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			out, err := os.MkdirTemp("", "bobgen_sqlite_")
+			if err != nil {
+				t.Fatalf("unable to create tempdir: %s", err)
+			}
+
+			t.Cleanup(func() {
+				if t.Failed() {
+					t.Log("template test output:", out)
+					return
+				}
+				os.RemoveAll(out)
+			})
+
+			overwriteGolden := *flagOverwriteGolden
+			if tt.driverName != "" && tt.driverName != defaultDriverName {
+				// If not using the default driver, we do not overwrite the golden file
+				overwriteGolden = false
+			}
+
+			testConfig := config
+			testConfig.DriverName = tt.driverName
+
+			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+				Root: out,
+				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+					return New(testConfig)
+				},
+				GoldenFile: "sqlite.golden.json",
+				GoldenFileMod: func(b []byte) []byte {
+					return []byte(strings.ReplaceAll(
+						string(b),
+						"modernc.org/sqlite",
+						tt.driverName,
+					))
+				},
+				OverwriteGolden: overwriteGolden,
+				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+			})
+		})
 	}
 }
 
-func assemble(t *testing.T, config Config, overwrite bool, mod func([]byte) []byte) {
+func testSQLiteAssemble(t *testing.T, config Config) {
 	t.Helper()
 
 	tests := []struct {
@@ -160,11 +222,6 @@ func assemble(t *testing.T, config Config, overwrite bool, mod func([]byte) []by
 		config     Config
 		goldenJson string
 	}{
-		{
-			name:       "default",
-			config:     config,
-			goldenJson: "sqlite.golden.json",
-		},
 		{
 			name: "include tables",
 			config: Config{
@@ -254,42 +311,20 @@ func assemble(t *testing.T, config Config, overwrite bool, mod func([]byte) []by
 		},
 	}
 
-	for i, tt := range tests {
+	for _, tt := range tests {
+		overwriteGolden := *flagOverwriteGolden
+		if tt.config.DriverName != "" && tt.config.DriverName != defaultDriverName {
+			// If not using the default driver, we do not overwrite the golden file
+			overwriteGolden = false
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
-			if i > 0 {
-				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
-					GetDriver: func() drivers.Interface[any, any, IndexExtra] {
-						return New(tt.config)
-					},
-					GoldenFile:      tt.goldenJson,
-					GoldenFileMod:   mod,
-					OverwriteGolden: overwrite,
-					Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
-				})
-				return
-			}
-
-			out, err := os.MkdirTemp("", "bobgen_sqlite_")
-			if err != nil {
-				t.Fatalf("unable to create tempdir: %s", err)
-			}
-
-			t.Cleanup(func() {
-				if t.Failed() {
-					t.Log("template test output:", out)
-					return
-				}
-				os.RemoveAll(out)
-			})
-
-			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
-				Root: out,
+			testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(tt.config)
 				},
 				GoldenFile:      tt.goldenJson,
-				GoldenFileMod:   mod,
-				OverwriteGolden: *flagOverwriteGolden,
+				OverwriteGolden: overwriteGolden,
 				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
 			})
 		})
