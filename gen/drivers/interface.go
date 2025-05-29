@@ -64,8 +64,8 @@ type DBInfo[DBExtra, ConstraintExtra, IndexExtra any] struct {
 	QueryFolders []QueryFolder                       `json:"query_folders"`
 	Enums        []Enum                              `json:"enums"`
 	ExtraInfo    DBExtra                             `json:"extra_info"`
-	// DriverName is the module name of the underlying `database/sql` driver
-	DriverName string `json:"driver_name"`
+	// Driver is the module name of the underlying `database/sql` driver
+	Driver string `json:"driver"`
 }
 
 type Enum struct {

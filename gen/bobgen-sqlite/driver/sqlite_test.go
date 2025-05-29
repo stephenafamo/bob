@@ -26,9 +26,9 @@ import (
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-func connect(t *testing.T, driverName, dsn string) *sql.DB {
+func connect(t *testing.T, driver, dsn string) *sql.DB {
 	t.Helper()
-	db, err := sql.Open(driverName, dsn)
+	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
@@ -100,7 +100,7 @@ func TestAssembleLibSQL(t *testing.T) {
 		GoldenFileMod: func(b []byte) []byte {
 			return []byte(strings.ReplaceAll(
 				string(b),
-				defaultDriverName,
+				defaultDriver,
 				"github.com/tursodatabase/libsql-client-go/libsql",
 			))
 		},
@@ -154,28 +154,28 @@ func TestAssembleSQLite(t *testing.T) {
 	migrate(t, db, testfiles.SQLiteSchema, "sqlite/*.sql")
 	fmt.Printf(" DONE\n")
 
-	testSQLiteDriver(t, config)
-	testSQLiteAssemble(t, config)
+	t.Run("driver", func(t *testing.T) { testSQLiteDriver(t, config) })
+	t.Run("assemble", func(t *testing.T) { testSQLiteAssemble(t, config) })
 }
 
 func testSQLiteDriver(t *testing.T, config Config) {
 	t.Helper()
 
 	tests := []struct {
-		name       string
-		driverName string
+		name   string
+		driver string
 	}{
 		{
-			name:       "mattn",
-			driverName: "github.com/mattn/go-sqlite3",
+			name:   "mattn",
+			driver: "github.com/mattn/go-sqlite3",
 		},
 		{
-			name:       "modernc",
-			driverName: "modernc.org/sqlite",
+			name:   "modernc",
+			driver: "modernc.org/sqlite",
 		},
 		{
-			name:       "ncruces",
-			driverName: "github.com/ncruces/go-sqlite3",
+			name:   "ncruces",
+			driver: "github.com/ncruces/go-sqlite3",
 		},
 	}
 
@@ -195,13 +195,13 @@ func testSQLiteDriver(t *testing.T, config Config) {
 			})
 
 			overwriteGolden := *flagOverwriteGolden
-			if tt.driverName != "" && tt.driverName != defaultDriverName {
+			if tt.driver != "" && tt.driver != defaultDriver {
 				// If not using the default driver, we do not overwrite the golden file
 				overwriteGolden = false
 			}
 
 			testConfig := config
-			testConfig.DriverName = tt.driverName
+			testConfig.Driver = tt.driver
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root: out,
@@ -211,7 +211,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 				GoldenFile: "sqlite.golden.json",
 				GoldenFileMod: func(b []byte) []byte {
 					return []byte(strings.ReplaceAll(
-						string(b), defaultDriverName, tt.driverName,
+						string(b), defaultDriver, tt.driver,
 					))
 				},
 				OverwriteGolden: overwriteGolden,
@@ -305,7 +305,7 @@ func testSQLiteAssemble(t *testing.T, config Config) {
 		testConfig.Except = tt.except
 
 		overwriteGolden := *flagOverwriteGolden
-		if testConfig.DriverName != "" && testConfig.DriverName != defaultDriverName {
+		if testConfig.Driver != "" && testConfig.Driver != defaultDriver {
 			// If not using the default driver, we do not overwrite the golden file
 			overwriteGolden = false
 		}

@@ -128,7 +128,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,
 		ModelsPackage:     modPkg,
-		DriverName:        dbInfo.DriverName,
+		Driver:            dbInfo.Driver,
 	}
 
 	for _, v := range s.Config.TagIgnore {

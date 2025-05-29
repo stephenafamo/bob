@@ -42,7 +42,7 @@ The values that exist for the drivers:
 | Name          | Description                                       | Default              |
 | ------------- | ------------------------------------------------- | -------------------- |
 | dsn           | Path to database                                  |                      |
-| driver_name   | Driver to use for generating driver-specific code | `modernc.org/sqlite` |
+| driver        | Driver to use for generating driver-specific code | `modernc.org/sqlite` |
 | attach        | Schemas to attach and the path to the db          | map[string]string{}  |
 | shared_schema | Schema to not include prefix in model             | "main"               |
 | queries       | List of folders containing query files            | []string{}           |
@@ -53,7 +53,7 @@ The values that exist for the drivers:
 
 ## Driver-specific code
 
-The `driver_name` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
+The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
 
 For SQLite, the supported drivers are:
 

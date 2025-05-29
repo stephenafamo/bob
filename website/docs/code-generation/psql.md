@@ -41,14 +41,14 @@ Additionally if ssl mode is to be disabled (you will get connection failed error
 
 ```sh
 PSQL_DSN="postgres://user:pass@host:port/dbname?sslmode=disable"
-``` 
+```
 
 The values that exist for the drivers:
 
 | Name          | Description                                       | Default                  |
-|---------------|---------------------------------------------------|--------------------------|
+| ------------- | ------------------------------------------------- | ------------------------ |
 | dsn           | URL to connect to                                 |                          |
-| driver_name   | Driver to use for generating driver-specific code | `github.com/lib/pq`      |
+| driver        | Driver to use for generating driver-specific code | `github.com/lib/pq`      |
 | schemas       | Schemas find tables in                            | ["public"]               |
 | shared_schema | Schema to not include prefix in model             | first value in "schemas" |
 | output        | Folder for generated files                        | "models"                 |
@@ -60,7 +60,7 @@ The values that exist for the drivers:
 
 ## Driver-specific code
 
-The `driver_name` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
+The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
 
 For Postgres, the supported drivers are:
 

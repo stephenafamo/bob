@@ -22,7 +22,13 @@ import (
 	"modernc.org/sqlite"
 )
 
-const defaultDriverName = "modernc.org/sqlite"
+const (
+	mattnDriver    = "github.com/mattn/go-sqlite3"
+	morderncDriver = "modernc.org/sqlite"
+	ncrucesDriver  = "github.com/ncruces/go-sqlite3"
+	libsqlDriver   = "github.com/tursodatabase/libsql-client-go/libsql"
+	defaultDriver  = morderncDriver
+)
 
 type (
 	Interface  = drivers.Interface[any, any, IndexExtra]
@@ -37,23 +43,19 @@ func init() {
 }
 
 func New(config Config) Interface {
-	if config.DriverName == "" {
-		config.DriverName = defaultDriverName
+	if config.Driver == "" {
+		config.Driver = defaultDriver
 	}
 
-	switch config.DriverName {
+	switch config.Driver {
 	// These are the only supported drivers
-	case "modernc.org/sqlite":
-	case "github.com/mattn/go-sqlite3":
-	case "github.com/ncruces/go-sqlite3":
-	case "github.com/tursodatabase/libsql-client-go/libsql":
+	case mattnDriver, morderncDriver, ncrucesDriver, libsqlDriver:
 	default:
 		panic(fmt.Sprintf(
-			"unsupported driver %q, supported drivers are: %q, %q, %q",
-			config.DriverName,
-			"modernc.org/sqlite",
-			"github.com/mattn/go-sqlite3",
-			"github.com/tursodatabase/libsql-client-go/libsql",
+			"unsupported driver %q, supported drivers are: %q, %q, %q, %q",
+			config.Driver,
+			mattnDriver, morderncDriver,
+			ncrucesDriver, libsqlDriver,
 		))
 	}
 	return &driver{config: config}
@@ -157,10 +159,10 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 
 	if driverName == "libsql" {
-		d.config.DriverName = "github.com/tursodatabase/libsql-client-go/libsql"
+		d.config.Driver = "github.com/tursodatabase/libsql-client-go/libsql"
 	}
 	dbinfo := &DBInfo{
-		DriverName:   d.config.DriverName,
+		Driver:       d.config.Driver,
 		Tables:       tables,
 		QueryFolders: queries,
 	}

@@ -18,7 +18,12 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-const defaultDriverName = "github.com/lib/pq"
+const (
+	pqDriver = "github.com/lib/pq"
+	// pgxDriver = "github.com/jackc/pgx/v5"
+	pgxStdlibDriver = "github.com/jackc/pgx/v5/stdlib"
+	defaultDriver   = pqDriver
+)
 
 var rgxValidColumnName = regexp.MustCompile(`(?i)^[a-z_][a-z0-9_]*$`)
 
@@ -61,22 +66,19 @@ func New(config Config) Interface {
 		config.UUIDPkg = "gofrs"
 	}
 
-	if config.DriverName == "" {
-		config.DriverName = defaultDriverName
+	if config.Driver == "" {
+		config.Driver = defaultDriver
 	}
 
-	switch config.DriverName {
+	switch config.Driver {
 	// These are the only supported drivers
-	case "github.com/lib/pq":
-	// case "github.com/jackc/pgx/v5":
-	case "github.com/jackc/pgx/v5/stdlib":
+	case pqDriver, pgxStdlibDriver:
+	// case pgxDriver:
 	default:
 		panic(fmt.Sprintf(
 			"unsupported driver %s, supported drivers are: %q, %q",
-			config.DriverName,
-			// "github.com/jackc/pgx/v5",
-			"github.com/lib/pq",
-			"github.com/jackc/pgx/v5/stdlib",
+			config.Driver, pqDriver, pgxStdlibDriver,
+			// pgxDriver,
 		))
 	}
 
@@ -136,7 +138,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 	defer d.conn.Close()
 
-	dbinfo = &DBInfo{DriverName: d.config.DriverName}
+	dbinfo = &DBInfo{Driver: d.config.Driver}
 
 	// drivers.Tables call translateColumnType which uses Enums
 	if err := d.loadEnums(ctx); err != nil {

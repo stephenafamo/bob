@@ -2662,5 +2662,5 @@
 	"query_folders": [],
 	"enums": null,
 	"extra_info": null,
-	"driver_name": "github.com/tursodatabase/libsql-client-go/libsql"
+	"driver": "github.com/tursodatabase/libsql-client-go/libsql"
 }

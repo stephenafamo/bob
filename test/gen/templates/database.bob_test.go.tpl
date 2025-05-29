@@ -1,39 +1,39 @@
-{{ $sqlDriverName := "" }}
+{{ $sqlDriver := "" }}
 {{ $dsnEnvVarName := "" }}
-{{ if eq $.DriverName "github.com/go-sql-driver/mysql" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "mysql"}}
+{{ if eq $.Driver "github.com/go-sql-driver/mysql" }}
+	{{$.Importer.Import "_" $.Driver }}
+	{{$sqlDriver = "mysql"}}
 	{{$dsnEnvVarName = "MYSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/lib/pq" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "postgres"}}
+{{ else if eq $.Driver "github.com/lib/pq" }}
+	{{$.Importer.Import "_" $.Driver }}
+	{{$sqlDriver = "postgres"}}
 	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/jackc/pgx/v5" }}
+{{ else if eq $.Driver "github.com/jackc/pgx/v5" }}
 	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/jackc/pgx/v5/stdlib" }}
-  {{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "pgx"}}
+{{ else if eq $.Driver "github.com/jackc/pgx/v5/stdlib" }}
+  {{$.Importer.Import "_" $.Driver }}
+	{{$sqlDriver = "pgx"}}
 	{{$dsnEnvVarName = "PSQL_TEST_DSN"}}
-{{ else if eq $.DriverName "modernc.org/sqlite" }}
-	{{$.Importer.Import $.DriverName }}
+{{ else if eq $.Driver "modernc.org/sqlite" }}
+	{{$.Importer.Import $.Driver }}
   {{$.Importer.Import "context"}}
   {{$.Importer.Import "strings"}}
-	{{$sqlDriverName = "sqlite"}}
+	{{$sqlDriver = "sqlite"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/mattn/go-sqlite3" }}
-	{{$.Importer.Import $.DriverName }}
+{{ else if eq $.Driver "github.com/mattn/go-sqlite3" }}
+	{{$.Importer.Import $.Driver }}
   {{$.Importer.Import "strings"}}
-	{{$sqlDriverName = "sqlite3_extended"}}
+	{{$sqlDriver = "sqlite3_extended"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ else if eq $.DriverName "github.com/ncruces/go-sqlite3" }}
-	{{$.Importer.Import $.DriverName }}
+{{ else if eq $.Driver "github.com/ncruces/go-sqlite3" }}
+	{{$.Importer.Import $.Driver }}
   {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/driver" }}
   {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/embed" }}
-	{{$sqlDriverName = "sqlite3"}}
+	{{$sqlDriver = "sqlite3"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
-{{ else if eq $.DriverName  "github.com/tursodatabase/libsql-client-go/libsql" }}
-	{{$.Importer.Import "_" $.DriverName }}
-	{{$sqlDriverName = "libsql"}}
+{{ else if eq $.Driver  "github.com/tursodatabase/libsql-client-go/libsql" }}
+	{{$.Importer.Import "_" $.Driver }}
+	{{$sqlDriver = "libsql"}}
 	{{$dsnEnvVarName = "LIBSQL_TEST_DSN"}}
 {{ end }}
 
@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
     log.Fatal(`missing environment variable "{{$dsnEnvVarName}}" `)
   }
 
-  {{if eq $.DriverName "modernc.org/sqlite" }}
+  {{if eq $.Driver "modernc.org/sqlite" }}
     sqlite.RegisterConnectionHook(func(conn sqlite.ExecQuerierContext, dsn string) error {
       queries := os.Getenv("BOB_SQLITE_ATTACH_QUERIES")
       for _, query := range strings.Split(queries, ";") {
@@ -60,7 +60,7 @@ func TestMain(m *testing.M) {
       }
       return nil
     })
-  {{ else if eq $.DriverName  "github.com/mattn/go-sqlite3" }}
+  {{ else if eq $.Driver  "github.com/mattn/go-sqlite3" }}
     {{$.Importer.Import "database/sql"}}
   	sql.Register("sqlite3_extended", &sqlite3.SQLiteDriver{
       ConnectHook: func(conn *sqlite3.SQLiteConn) error {
@@ -76,14 +76,14 @@ func TestMain(m *testing.M) {
         return nil
       },
     })
-  {{ else if eq $.DriverName  "github.com/ncruces/go-sqlite3" }}
+  {{ else if eq $.Driver  "github.com/ncruces/go-sqlite3" }}
     sqlite3.AutoExtension(func(c *sqlite3.Conn) error {
       queries := os.Getenv("BOB_SQLITE_ATTACH_QUERIES")
       return c.Exec(queries)
     })
   {{end}}
 
-  {{if eq $.DriverName "github.com/jackc/pgx/v5"}}
+  {{if eq $.Driver "github.com/jackc/pgx/v5"}}
     {{$.Importer.Import "context"}}
     {{$.Importer.Import "bobpgx" "github.com/stephenafamo/bob/drivers/pgx"}}
     var err error
@@ -94,7 +94,7 @@ func TestMain(m *testing.M) {
   {{else}}
     {{$.Importer.Import "github.com/stephenafamo/bob"}}
     var err error
-    testDB, err = bob.Open("{{$sqlDriverName}}", dsn)
+    testDB, err = bob.Open("{{$sqlDriver}}", dsn)
     if err != nil {
       log.Fatalf("failed to open database connection: %v", err)
     }

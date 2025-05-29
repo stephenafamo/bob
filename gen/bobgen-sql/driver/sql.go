@@ -21,35 +21,24 @@ import (
 )
 
 type Config struct {
+	helpers.Config `yaml:",squash"`
+
 	// What dialect to generate with
 	// psql | mysql | sqlite
 	Dialect string
 	// Glob pattern to match migration files
 	Pattern string
-	// Folders containing query files
-	Queries []string `yaml:"queries"`
 	// The database schemas to generate models for
 	Schemas []string
 	// The name of this schema will not be included in the generated models
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
 	SharedSchema string `yaml:"shared_schema"`
-	// List of tables that will be included. Others are ignored
-	Only map[string][]string
-	// List of tables that will be should be ignored. Others are included
-	Except map[string][]string
 	// How many tables to fetch in parallel
 	Concurrency int
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
-	// Which `database/sql` driver to use (the full module name)
-	DriverName string `yaml:"driver_name"`
-
-	Output    string
-	Pkgname   string
-	NoFactory bool `yaml:"no_factory"`
-
-	fs fs.FS
+	fs      fs.FS
 }
 
 func RunPostgres(ctx context.Context, state *gen.State[any], config Config) error {
@@ -94,17 +83,9 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	}
 	db.Close() // close early
 
+	config.Dsn = dsn
 	d := wrapDriver(ctx, psqlDriver.New(psqlDriver.Config{
-		Config: helpers.Config{
-			Dsn:        dsn,
-			Queries:    config.Queries,
-			Only:       config.Only,
-			Except:     config.Except,
-			DriverName: config.DriverName,
-			Output:     config.Output,
-			Pkgname:    config.Pkgname,
-			NoFactory:  config.NoFactory,
-		},
+		Config:       config.Config,
 		Schemas:      pq.StringArray(config.Schemas),
 		SharedSchema: config.SharedSchema,
 		Concurrency:  config.Concurrency,
@@ -155,16 +136,9 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	}
 	db.Close() // close early
 
+	config.Dsn = dsn
 	d := wrapDriver(ctx, mysqlDriver.New(mysqlDriver.Config{
-		Config: helpers.Config{
-			Dsn:       dsn,
-			Queries:   config.Queries,
-			Only:      config.Only,
-			Except:    config.Except,
-			Output:    config.Output,
-			Pkgname:   config.Pkgname,
-			NoFactory: config.NoFactory,
-		},
+		Config:      config.Config,
 		Concurrency: config.Concurrency,
 	}))
 
@@ -215,17 +189,9 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 	}
 	db.Close() // close early
 
+	config.Dsn = "file:" + tmp.Name()
 	d := sqliteDriver.New(sqliteDriver.Config{
-		Config: helpers.Config{
-			Dsn:        tmp.Name(),
-			Queries:    config.Queries,
-			DriverName: config.DriverName,
-			Only:       config.Only,
-			Except:     config.Except,
-			Output:     config.Output,
-			Pkgname:    config.Pkgname,
-			NoFactory:  config.NoFactory,
-		},
+		Config:       config.Config,
 		Attach:       attach,
 		SharedSchema: config.SharedSchema,
 	})

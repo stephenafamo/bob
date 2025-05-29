@@ -76,20 +76,20 @@ func testPostgresDriver(t *testing.T, dsn string) {
 	}
 
 	tests := []struct {
-		name       string
-		driverName string
+		name   string
+		driver string
 	}{
 		{
-			name:       "pq",
-			driverName: "github.com/lib/pq",
+			name:   "pq",
+			driver: "github.com/lib/pq",
 		},
 		// {
 		// 	name:       "pgx-v5",
-		// 	driverName: "github.com/jackc/pgx/v5",
+		// 	driver: "github.com/jackc/pgx/v5",
 		// },
 		{
-			name:       "pgx-v5-std",
-			driverName: "github.com/jackc/pgx/v5/stdlib",
+			name:   "pgx-v5-std",
+			driver: "github.com/jackc/pgx/v5/stdlib",
 		},
 	}
 
@@ -109,13 +109,13 @@ func testPostgresDriver(t *testing.T, dsn string) {
 			})
 
 			overwriteGolden := *flagOverwriteGolden
-			if tt.driverName != "" && tt.driverName != defaultDriverName {
+			if tt.driver != "" && tt.driver != defaultDriver {
 				// If not using the default driver, we do not overwrite the golden file
 				overwriteGolden = false
 			}
 
 			testConfig := config
-			testConfig.DriverName = tt.driverName
+			testConfig.Driver = tt.driver
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root:      out,
@@ -126,7 +126,7 @@ func testPostgresDriver(t *testing.T, dsn string) {
 				GoldenFile: "psql.golden.json",
 				GoldenFileMod: func(b []byte) []byte {
 					return []byte(strings.ReplaceAll(
-						string(b), defaultDriverName, tt.driverName,
+						string(b), defaultDriver, tt.driver,
 					))
 				},
 				OverwriteGolden: overwriteGolden,

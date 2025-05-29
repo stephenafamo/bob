@@ -256,5 +256,5 @@
 	"query_folders": [],
 	"enums": null,
 	"extra_info": null,
-	"driver_name": "modernc.org/sqlite"
+	"driver": "modernc.org/sqlite"
 }

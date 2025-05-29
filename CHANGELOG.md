@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The method `BeginTx` on the `bob.Transaction` interface is now changed to `Begin` and it takes a single context argument.  
    This is to make it easier to implement for non `database/sql` drivers.
 - In the generated model, the `PrimaryKeyVals()` method is now private.
+- Renamed `driver_name` to `driver` in code generation configuration.
 
 ### Removed
 
