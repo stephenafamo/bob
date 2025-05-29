@@ -3,6 +3,7 @@ package mysql
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"reflect"
 	"testing"
 
@@ -178,4 +179,66 @@ func compareArg(a, b bob.Expression) bool {
 	}
 
 	return true
+}
+
+func TestIsDefaultOrNull(t *testing.T) {
+	cases := map[string]struct {
+		value  bob.Expression // value to check
+		expect bool
+	}{
+		"nil": {
+			value:  nil,
+			expect: true,
+		},
+		"nil Arg": {
+			value:  Arg(nil),
+			expect: true,
+		},
+		"sql.NullString": {
+			value:  Arg(sql.NullString{}),
+			expect: true,
+		},
+		"sql.Null[string]": {
+			value:  Arg(sql.Null[string]{}),
+			expect: true,
+		},
+		"null expression": {
+			value:  Raw("null"),
+			expect: true,
+		},
+		"null expression capital": {
+			value:  Raw("NULL"),
+			expect: true,
+		},
+		"default expression": {
+			value:  Raw("DEFAULT"),
+			expect: true,
+		},
+		"int zero": {
+			value:  Arg(0),
+			expect: false,
+		},
+		"int non-zero": {
+			value:  Arg(1),
+			expect: false,
+		},
+		"string empty": {
+			value:  Arg(""),
+			expect: false,
+		},
+		"string non-empty": {
+			value:  Arg("hello"),
+			expect: false,
+		},
+	}
+
+	b := &bytes.Buffer{}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			if got := isDefaultOrNull(b, tc.value); got != tc.expect {
+				t.Errorf("expected %v, got %v", tc.expect, got)
+			}
+		})
+	}
 }

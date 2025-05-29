@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"reflect"
 	"slices"
@@ -307,12 +308,24 @@ func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {
 func isDefaultOrNull(w *bytes.Buffer, e bob.Expression) bool {
 	w.Reset()
 
+	if e == nil {
+		return true
+	}
+
 	args, err := e.WriteSQL(context.Background(), w, dialect.Dialect, 1)
 	if err != nil {
 		return false
 	}
 
 	if len(args) > 0 {
+		if args[0] == nil {
+			return true
+		}
+		if driverValue, ok := args[0].(driver.Valuer); ok {
+			if val, _ := driverValue.Value(); val == nil {
+				return true
+			}
+		}
 		return false
 	}
 

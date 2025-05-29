@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Nullable values are now wrapped `database/sql.Null` with instead of `github.com/aarondl/opt/null.Val`.
   - Optional values are now represented as pointers instead of `github.com/aarondl/opt/omit.Val[T]`.
 
+### Fixed
+
+- Properly handle `nil` args when checking if default or null in `mysql` table insert query.
+
 ## [v0.36.1] - 2025-05-27
 
 ### Fixed
