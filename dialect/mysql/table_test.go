@@ -198,9 +198,17 @@ func TestIsDefaultOrNull(t *testing.T) {
 			value:  Arg(sql.NullString{}),
 			expect: true,
 		},
+		"sql.NullStringTrue": {
+			value:  Arg(sql.NullString{Valid: true}),
+			expect: false,
+		},
 		"sql.Null[string]": {
 			value:  Arg(sql.Null[string]{}),
 			expect: true,
+		},
+		"sql.Null[string]True": {
+			value:  Arg(sql.Null[string]{Valid: true}),
+			expect: false,
 		},
 		"null expression": {
 			value:  Raw("null"),
