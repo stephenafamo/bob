@@ -95,19 +95,20 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	db.Close() // close early
 
 	d := wrapDriver(ctx, psqlDriver.New(psqlDriver.Config{
-		Dsn: dsn,
-
+		Config: helpers.Config{
+			Dsn:        dsn,
+			Queries:    config.Queries,
+			Only:       config.Only,
+			Except:     config.Except,
+			DriverName: config.DriverName,
+			Output:     config.Output,
+			Pkgname:    config.Pkgname,
+			NoFactory:  config.NoFactory,
+		},
 		Schemas:      pq.StringArray(config.Schemas),
 		SharedSchema: config.SharedSchema,
-		Queries:      config.Queries,
-		Only:         config.Only,
-		Except:       config.Except,
 		Concurrency:  config.Concurrency,
 		UUIDPkg:      config.UUIDPkg,
-		DriverName:   config.DriverName,
-		Output:       config.Output,
-		Pkgname:      config.Pkgname,
-		NoFactory:    config.NoFactory,
 	}))
 
 	return d, nil
@@ -155,15 +156,16 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	db.Close() // close early
 
 	d := wrapDriver(ctx, mysqlDriver.New(mysqlDriver.Config{
-		Dsn: dsn,
-
-		Queries:     config.Queries,
-		Only:        config.Only,
-		Except:      config.Except,
+		Config: helpers.Config{
+			Dsn:       dsn,
+			Queries:   config.Queries,
+			Only:      config.Only,
+			Except:    config.Except,
+			Output:    config.Output,
+			Pkgname:   config.Pkgname,
+			NoFactory: config.NoFactory,
+		},
 		Concurrency: config.Concurrency,
-		Output:      config.Output,
-		Pkgname:     config.Pkgname,
-		NoFactory:   config.NoFactory,
 	}))
 
 	return d, nil
@@ -214,17 +216,18 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 	db.Close() // close early
 
 	d := sqliteDriver.New(sqliteDriver.Config{
-		DSN:        tmp.Name(),
-		Attach:     attach,
-		Queries:    config.Queries,
-		DriverName: config.DriverName,
-
+		Config: helpers.Config{
+			Dsn:        tmp.Name(),
+			Queries:    config.Queries,
+			DriverName: config.DriverName,
+			Only:       config.Only,
+			Except:     config.Except,
+			Output:     config.Output,
+			Pkgname:    config.Pkgname,
+			NoFactory:  config.NoFactory,
+		},
+		Attach:       attach,
 		SharedSchema: config.SharedSchema,
-		Only:         config.Only,
-		Except:       config.Except,
-		Output:       config.Output,
-		Pkgname:      config.Pkgname,
-		NoFactory:    config.NoFactory,
 	})
 
 	return d, nil

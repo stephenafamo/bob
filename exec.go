@@ -30,13 +30,13 @@ type Executor interface {
 
 type Transactor interface {
 	Executor
-	BeginTx(context.Context, *sql.TxOptions) (Transaction, error)
+	Begin(context.Context) (Transaction, error)
 }
 
 type Transaction interface {
 	Executor
-	Commit() error
-	Rollback() error
+	Commit(context.Context) error
+	Rollback(context.Context) error
 }
 
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {

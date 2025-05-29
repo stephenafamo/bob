@@ -61,10 +61,16 @@ func Test{{$upperName}}Exec (t *testing.T) {
   ctxTx, cancel := context.WithCancel(context.Background())
   defer cancel()
 
-  tx, err := testDB.BeginTx(ctxTx, nil)
+  tx, err := testDB.Begin(ctxTx)
   if err != nil {
     t.Fatalf("Error starting transaction: %v", err)
   }
+
+  defer func() {
+    if err := tx.Rollback(ctxTx); err != nil {
+      t.Fatalf("Error rolling back transaction: %v", err)
+    }
+  }()
 
 	query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}}))
   if _, err := bob.Exec(ctxTx, tx, query); err != nil {
@@ -105,16 +111,21 @@ func Test{{$upperName}}Scan (t *testing.T) {
   ctxTx, cancel := context.WithCancel(context.Background())
   defer cancel()
 
-  tx, err := testDB.BeginTx(ctxTx, nil)
+  tx, err := testDB.Begin(ctxTx)
   if err != nil {
     t.Fatalf("Error starting transaction: %v", err)
   }
+
+  defer func() {
+    if err := tx.Rollback(ctxTx); err != nil {
+      t.Fatalf("Error rolling back transaction: %v", err)
+    }
+  }()
 
 	query, args, err := bob.Build(ctxTx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}})))
   if err != nil {
     t.Fatal(err)
   }
-
 
   rows, err := tx.QueryContext(ctxTx, query, args...)
   if err != nil {

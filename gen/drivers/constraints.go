@@ -65,7 +65,7 @@ type Constraint[Extra any] struct {
 
 // ForeignKey represents a foreign key constraint in a database
 type ForeignKey[Extra any] struct {
-	Constraint[Extra] `yaml:",inline" json:"-"`
+	Constraint[Extra] `yaml:",squash" json:"-"`
 	ForeignTable      string   `yaml:"foreign_table" json:"foreign_table"`
 	ForeignColumns    []string `yaml:"foreign_columns" json:"foreign_columns"`
 }
@@ -116,7 +116,7 @@ func (f ForeignKey[E]) MarshalJSON() ([]byte, error) {
 
 // Check represents a check constraint in a database
 type Check[Extra any] struct {
-	Constraint[Extra] `yaml:",inline" json:"-"`
+	Constraint[Extra] `yaml:",squash" json:"-"`
 	Expression        string `yaml:"expression" json:"expression"`
 }
 

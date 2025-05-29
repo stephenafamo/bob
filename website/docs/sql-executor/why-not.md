@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 10
 description: Why Bob uses a custom executor interface
-
 ---
 
 # Why not `*sql.DB`?
@@ -28,9 +26,9 @@ It is easy to convert an `*sql.{DB,Tx,Conn}` to a `bob.Executor` with `bob.New()
 
 ```go
 db, err := sql.Open("postgres", "postgres://...")
-bobExec := bob.New(db)
+bobExec := bob.NewDB(db)
 
 // For Transactions
 tx, err := db.Begin()
-bobExec = bob.New(tx) // using the transaction
+bobExec = bob.NewTx(tx) // using the transaction
 ```

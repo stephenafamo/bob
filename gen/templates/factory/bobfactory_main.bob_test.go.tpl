@@ -11,12 +11,20 @@ func TestCreate{{$tAlias.UpSingular}}(t *testing.T) {
   ctx, cancel := context.WithCancel(context.Background())
   t.Cleanup(cancel)
 
-  tx, err := testDB.BeginTx(ctx, nil)
+  tx, err := testDB.Begin(ctx)
   if err != nil {
     t.Fatalf("Error starting transaction: %v", err)
   }
 
-  New().New{{$tAlias.UpSingular}}(ctx).CreateOrFail(ctx, t, tx)
+  defer func() {
+    if err := tx.Rollback(ctx); err != nil {
+      t.Fatalf("Error rolling back transaction: %v", err)
+    }
+  }()
+
+  if _, err := New().New{{$tAlias.UpSingular}}(ctx).Create(ctx, tx); err != nil {
+    t.Fatalf("Error creating {{$tAlias.UpSingular}}: %v", err)
+  }
 }
 
 {{end}}

@@ -19,7 +19,6 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"github.com/volatiletech/strmangle"
 	"modernc.org/sqlite"
 )
@@ -42,35 +41,33 @@ func New(config Config) Interface {
 	if config.DriverName == "" {
 		config.DriverName = defaultDriverName
 	}
+
+	switch config.DriverName {
+	// These are the only supported drivers
+	case "modernc.org/sqlite":
+	case "github.com/mattn/go-sqlite3":
+	case "github.com/tursodatabase/libsql-client-go/libsql":
+	default:
+		panic(fmt.Sprintf(
+			"unsupported driver %q, supported drivers are: %q, %q, %q",
+			config.DriverName,
+			"modernc.org/sqlite",
+			"github.com/mattn/go-sqlite3",
+			"github.com/tursodatabase/libsql-client-go/libsql",
+		))
+	}
 	return &driver{config: config}
 }
 
 type Config struct {
-	// The database connection string
-	DSN string
+	helpers.Config `yaml:",squash"`
 	// The database schemas to generate models for
 	// a map of the schema name to the DSN
 	Attach map[string]string
-	// Folders containing query files
-	Queries []string `yaml:"queries"`
 	// The name of this schema will not be included in the generated models
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
 	SharedSchema string `yaml:"shared_schema"`
-	// List of tables that will be included. Others are ignored
-	Only map[string][]string
-	// List of tables that will be should be ignored. Others are included
-	Except map[string][]string
-	// Which `database/sql` driver to use (the full module name)
-	DriverName string `yaml:"driver_name"`
-
-	// Used in main.go
-
-	// The name of the folder to output the models package to
-	Output string
-	// The name you wish to assign to your generated models package
-	Pkgname   string
-	NoFactory bool `yaml:"no_factory"`
 }
 
 func (c Config) AttachQueries() []string {
@@ -128,12 +125,12 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		d.config.SharedSchema = "main"
 	}
 
-	if d.config.DSN == "" {
+	if d.config.Dsn == "" {
 		return nil, fmt.Errorf("database dsn is not set")
 	}
 
 	driverName := inferDriver(d.config)
-	d.conn, err = sql.Open(driverName, d.config.DSN)
+	d.conn, err = sql.Open(driverName, d.config.Dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -173,10 +170,10 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 func inferDriver(config Config) string {
 	driverName := "sqlite"
-	if !strings.Contains(config.DSN, "://") {
+	if !strings.Contains(config.Dsn, "://") {
 		return driverName
 	}
-	dsn, _ := url.Parse(config.DSN)
+	dsn, _ := url.Parse(config.Dsn)
 	if dsn == nil {
 		return driverName
 	}

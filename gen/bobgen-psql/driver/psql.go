@@ -18,6 +18,8 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+const defaultDriverName = "github.com/lib/pq"
+
 var rgxValidColumnName = regexp.MustCompile(`(?i)^[a-z_][a-z0-9_]*$`)
 
 type (
@@ -32,34 +34,17 @@ type (
 )
 
 type Config struct {
-	// The database connection string
-	Dsn string
+	helpers.Config `yaml:",squash"`
 	// The database schemas to generate models for
 	Schemas pq.StringArray
 	// The name of this schema will not be included in the generated models
 	// a context value can then be used to set the schema at runtime
 	// useful for multi-tenant setups
 	SharedSchema string `yaml:"shared_schema"`
-	// Folders containing query files
-	Queries []string `yaml:"queries"`
-	// List of tables that will be included. Others are ignored
-	Only map[string][]string
-	// List of tables that will be should be ignored. Others are included
-	Except map[string][]string
-	// How many tables to fetch in parallel
-	Concurrency int
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
-	// Which `database/sql` driver to use (the full module name)
-	DriverName string `yaml:"driver_name"`
-
-	//-------
-
-	// The name of the folder to output the models package to
-	Output string
-	// The name you wish to assign to your generated models package
-	Pkgname   string
-	NoFactory bool `yaml:"no_factory"`
+	// How many tables to fetch in parallel
+	Concurrency int
 }
 
 func New(config Config) Interface {
@@ -77,7 +62,22 @@ func New(config Config) Interface {
 	}
 
 	if config.DriverName == "" {
-		config.DriverName = "github.com/lib/pq"
+		config.DriverName = defaultDriverName
+	}
+
+	switch config.DriverName {
+	// These are the only supported drivers
+	case "github.com/lib/pq":
+	// case "github.com/jackc/pgx/v5":
+	case "github.com/jackc/pgx/v5/stdlib":
+	default:
+		panic(fmt.Sprintf(
+			"unsupported driver %s, supported drivers are: %q, %q",
+			"github.com/lib/pq",
+			// "github.com/jackc/pgx/v5",
+			"github.com/jackc/pgx/v5/stdlib",
+			config.DriverName,
+		))
 	}
 
 	if config.Concurrency < 1 {

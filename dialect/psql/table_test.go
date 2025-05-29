@@ -8,10 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/DATA-DOG/go-txdb"
 	"github.com/aarondl/opt/omit"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/um"
@@ -20,6 +19,8 @@ import (
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
+
+var testDB bob.DB
 
 func TestMain(m *testing.M) {
 	port, err := helpers.GetFreePort()
@@ -35,13 +36,19 @@ func TestMain(m *testing.M) {
 		Logger(&bytes.Buffer{})
 	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"
 
+	testDB, err = bob.Open("postgres", dsn)
+	if err != nil {
+		fmt.Printf("could not connect to db: %v\n", err)
+		os.Exit(1)
+	}
+	defer testDB.Close()
+
 	postgres := embeddedpostgres.NewDatabase(dbConfig)
 	if err := postgres.Start(); err != nil {
 		fmt.Printf("starting embedded postgres: %v\n", err)
 		os.Exit(1)
 	}
 
-	txdb.Register("txdb", "pgx", dsn)
 	code := m.Run()
 	if err := postgres.Stop(); err != nil {
 		fmt.Printf("could not stop postgres on port %d: %v\n", port, err)
@@ -117,14 +124,16 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 var userTable = NewTable[*User, *UserSetter]("", "users")
 
 func TestUpdate(t *testing.T) {
-	ctx := context.Background()
-	db, err := bob.Open("txdb", "TestUpdate")
-	if err != nil {
-		t.Fatalf("could not open database connection: %v", err)
-	}
-	defer db.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	_, err = db.ExecContext(ctx, `CREATE TABLE users (
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatalf("could not begin transaction: %v", err)
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, `CREATE TABLE users (
 		id INTEGER,
 		name TEXT NOT NULL,
 		email TEXT UNIQUE NOT NULL
@@ -134,7 +143,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	q := "INSERT INTO users (id, name, email) values ($1, '', '') RETURNING *"
-	user, err := scan.One(ctx, db, scan.StructMapper[*User](), q, 1)
+	user, err := scan.One(ctx, tx, scan.StructMapper[*User](), q, 1)
 	if err != nil {
 		t.Fatalf("could not insert user: %v", err)
 	}
@@ -146,13 +155,13 @@ func TestUpdate(t *testing.T) {
 	_, err = userTable.Update(UserSetter{
 		Name:  omit.From("Stephen"),
 		Email: omit.From("stephen@example.com"),
-	}.UpdateMod(), um.Where(Quote("id").EQ(Arg(user.ID)))).Exec(ctx, db)
+	}.UpdateMod(), um.Where(Quote("id").EQ(Arg(user.ID)))).Exec(ctx, tx)
 	if err != nil {
 		t.Errorf("error updating: %v", err)
 	}
 
 	q = "SELECT * FROM users WHERE id = $1"
-	user, err = scan.One(ctx, db, scan.StructMapper[*User](), q, 1)
+	user, err = scan.One(ctx, tx, scan.StructMapper[*User](), q, 1)
 	if err != nil {
 		t.Fatalf("could not get user: %v", err)
 	}

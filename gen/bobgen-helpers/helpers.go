@@ -32,6 +32,27 @@ func Version() string {
 	return ""
 }
 
+type Config struct {
+	// Which `database` driver to use (the full module name)
+	DriverName string `yaml:"driver_name"`
+	// The database connection string
+	Dsn string
+	// List of tables that will be included. Others are ignored
+	Only map[string][]string
+	// Folders containing query files
+	Queries []string `yaml:"queries"`
+	// List of tables that will be should be ignored. Others are included
+	Except map[string][]string
+
+	//-------
+
+	// The name of the folder to output the models package to
+	Output string
+	// The name you wish to assign to your generated models package
+	Pkgname   string
+	NoFactory bool `yaml:"no_factory"`
+}
+
 type Templates struct {
 	Models  []fs.FS
 	Factory []fs.FS
@@ -106,7 +127,7 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
-	}, "."), nil)
+	}, ""), nil)
 	if err != nil {
 		return config, driverConfig, err
 	}
@@ -178,6 +199,9 @@ func Types() drivers.Types {
 			RandomExpr: `return f.UInt()`,
 		},
 		"uint8": {
+			RandomExpr: `return f.UInt8()`,
+		},
+		"byte": {
 			RandomExpr: `return f.UInt8()`,
 		},
 		"uint16": {

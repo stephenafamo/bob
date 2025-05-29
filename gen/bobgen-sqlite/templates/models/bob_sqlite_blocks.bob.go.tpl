@@ -26,10 +26,12 @@ func (e *UniqueConstraintError) Is(target error) bool {
 			{{$.Importer.Import "sqliteDriver" $.DriverName}}
 			{{$errType = "*sqliteDriver.Error"}}
 			{{$codeGetter = "Code()"}}
-		{{else}}
+		{{else if eq $.DriverName "github.com/mattn/go-sqlite3"}}
 			{{$.Importer.Import $.DriverName}}
 			{{$errType = "sqlite3.Error"}}
 			{{$codeGetter = "ExtendedCode"}}
+		{{else}}
+			panic("Unsupported driver {{$.DriverName}} for UniqueConstraintError detection")
 		{{end}}
     err, ok := target.({{$errType}})
     if !ok {

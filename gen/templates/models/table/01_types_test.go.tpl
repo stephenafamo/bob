@@ -62,10 +62,17 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
       ctx, cancel := context.WithCancel(context.Background())
       t.Cleanup(cancel)
 
-			tx, err := testDB.BeginTx(ctx, nil)
+			tx, err := testDB.Begin(ctx)
 			if err != nil {
 				t.Fatalf("Couldn't start database transaction: %v", err)
 			}
+
+      defer func() {
+        if err := tx.Rollback(ctx); err != nil {
+          t.Fatalf("Error rolling back transaction: %v", err)
+        }
+      }()
+
       var exec bob.Executor = tx
 
 			obj, err := f.New{{$tAlias.UpSingular}}(ctx, factory.{{$tAlias.UpSingular}}Mods.WithParentsCascading()).Create(ctx, exec)
@@ -90,9 +97,6 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 			}
 			if !tt.expectedErr.Is(err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.expectedErr.Error(), err)
-			}
-			if err = tx.Rollback(); err != nil {
-				t.Fatal("Couldn't rollback database transaction")
 			}
 		})
 	}

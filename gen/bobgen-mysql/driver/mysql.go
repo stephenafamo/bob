@@ -26,24 +26,9 @@ type (
 )
 
 type Config struct {
-	// The database connection string
-	Dsn string
-	// List of tables that will be included. Others are ignored
-	Only map[string][]string
-	// Folders containing query files
-	Queries []string `yaml:"queries"`
-	// List of tables that will be should be ignored. Others are included
-	Except map[string][]string
+	helpers.Config `yaml:",squash"`
 	// How many tables to fetch in parallel
 	Concurrency int
-
-	//-------
-
-	// The name of the folder to output the models package to
-	Output string
-	// The name you wish to assign to your generated models package
-	Pkgname   string
-	NoFactory bool `yaml:"no_factory"`
 }
 
 func New(config Config) Interface {

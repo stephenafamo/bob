@@ -69,83 +69,66 @@ func TestDriver(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		config     Config
+		only       map[string][]string
+		except     map[string][]string
 		goldenJson string
 	}{
 		{
-			name: "default",
-			config: Config{
-				Dsn: dsn,
-			},
+			name:       "default",
 			goldenJson: "mysql.golden.json",
 		},
 		{
 			name: "include tables",
-			config: Config{
-				Dsn: dsn,
-				Only: map[string][]string{
-					"foo_bar": nil,
-					"foo_baz": nil,
-				},
+			only: map[string][]string{
+				"foo_bar": nil,
+				"foo_baz": nil,
 			},
 			goldenJson: "include-tables.golden.json",
 		},
 		{
 			name: "exclude tables",
-			config: Config{
-				Dsn: dsn,
-				Except: map[string][]string{
-					"foo_bar": nil,
-					"foo_baz": nil,
-					"*":       {"secret_col"},
-				},
+			except: map[string][]string{
+				"foo_bar": nil,
+				"foo_baz": nil,
+				"*":       {"secret_col"},
 			},
 			goldenJson: "exclude-tables.golden.json",
 		},
 		{
 			name: "include + exclude tables",
-			config: Config{
-				Dsn: dsn,
-				Only: map[string][]string{
-					"foo_bar": nil,
-					"foo_baz": nil,
-				},
-				Except: map[string][]string{
-					"foo_bar": nil,
-					"bar_baz": nil,
-				},
+			only: map[string][]string{
+				"foo_bar": nil,
+				"foo_baz": nil,
+			},
+			except: map[string][]string{
+				"foo_bar": nil,
+				"bar_baz": nil,
 			},
 			goldenJson: "include-exclude-tables.golden.json",
 		},
 		{
 			name: "include + exclude tables regex",
-			config: Config{
-				Dsn: dsn,
-				Only: map[string][]string{
-					"/^foo/": nil,
-					"/^bar/": nil,
-				},
-				Except: map[string][]string{
-					"/bar$/": nil,
-					"/baz$/": nil,
-				},
+			only: map[string][]string{
+				"/^foo/": nil,
+				"/^bar/": nil,
+			},
+			except: map[string][]string{
+				"/bar$/": nil,
+				"/baz$/": nil,
 			},
 			goldenJson: "include-exclude-tables-regex.golden.json",
 		},
 		{
 			name: "include + exclude tables mixed",
-			config: Config{
-				Dsn: dsn,
-				Only: map[string][]string{
-					"/^foo/":  nil,
-					"bar_baz": nil,
-					"bar_qux": nil,
-				},
-				Except: map[string][]string{
-					"/bar$/":  nil,
-					"foo_baz": nil,
-					"foo_qux": nil,
-				},
+			only: map[string][]string{
+				"/^foo/":  nil,
+				"bar_baz": nil,
+				"bar_qux": nil,
+			},
+			except: map[string][]string{
+				"/bar$/":  nil,
+				"foo_baz": nil,
+				"foo_qux": nil,
 			},
 			goldenJson: "include-exclude-tables-mixed.golden.json",
 		},
@@ -153,10 +136,18 @@ func TestDriver(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			testConfig := Config{
+				Config: helpers.Config{
+					Dsn:    dsn,
+					Only:   tt.only,
+					Except: tt.except,
+				},
+			}
+
 			if i > 0 {
 				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, any]{
 					GetDriver: func() drivers.Interface[any, any, any] {
-						return New(tt.config)
+						return New(testConfig)
 					},
 					GoldenFile:      tt.goldenJson,
 					OverwriteGolden: *flagOverwriteGolden,
@@ -181,7 +172,7 @@ func TestDriver(t *testing.T) {
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, any]{
 				Root: out,
 				GetDriver: func() drivers.Interface[any, any, any] {
-					return New(tt.config)
+					return New(testConfig)
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,

@@ -8,51 +8,7 @@ import (
 	"fmt"
 
 	"github.com/stephenafamo/scan"
-	"github.com/stephenafamo/scan/stdscan"
 )
-
-// NewQueryer wraps an [stdscan.Queryer] and makes it a [scan.Queryer]
-func NewQueryer[T stdscan.Queryer](wrapped T) scan.Queryer {
-	return commonQueryer[T]{wrapped: wrapped}
-}
-
-type commonQueryer[T stdscan.Queryer] struct {
-	wrapped T
-}
-
-// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
-func (q commonQueryer[T]) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
-	return q.wrapped.QueryContext(ctx, query, args...)
-}
-
-// StdInterface is an interface that *sql.DB, *sql.Tx and *sql.Conn satisfy
-type StdInterface interface {
-	stdscan.Queryer
-	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-}
-
-// New wraps an stdInterface to make it comply with Queryer
-// It also includes a number of other methods that are often used with
-// *sql.DB, *sql.Tx and *sql.Conn
-func New[T StdInterface](wrapped T) common[T] {
-	return common[T]{commonQueryer[T]{wrapped: wrapped}}
-}
-
-type common[T StdInterface] struct {
-	commonQueryer[T]
-}
-
-// PrepareContext creates a prepared statement for later queries or executions
-func (c common[T]) PrepareContext(ctx context.Context, query string) (StdPrepared, error) {
-	s, err := c.wrapped.PrepareContext(ctx, query)
-	return StdPrepared{s}, err
-}
-
-// ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (q common[T]) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	return q.wrapped.ExecContext(ctx, query, args...)
-}
 
 // Open works just like [sql.Open], but converts the returned [*sql.DB] to [DB]
 func Open(driverName string, dataSource string) (DB, error) {
@@ -69,28 +25,35 @@ func OpenDB(c driver.Connector) DB {
 // retains the expected methods used by *sql.DB
 // This is useful when an existing *sql.DB is used in other places in the codebase
 func NewDB(db *sql.DB) DB {
-	return DB{common: New(db)}
+	return DB{db}
 }
 
 // DB is similar to *sql.DB but implement [Queryer]
 type DB struct {
-	common[*sql.DB]
+	*sql.DB
 }
 
-// PingContext verifies a connection to the database is still alive, establishing a connection if necessary.
-func (d DB) PingContext(ctx context.Context) error {
-	return d.wrapped.PingContext(ctx)
+// PrepareContext creates a prepared statement for later queries or executions
+func (d DB) PrepareContext(ctx context.Context, query string) (StdPrepared, error) {
+	s, err := d.DB.PrepareContext(ctx, query)
+	return StdPrepared{s}, err
 }
 
-// Close works the same as [*sql.DB.Close]
-func (d DB) Close() error {
-	return d.wrapped.Close()
+// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
+func (d DB) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	return d.DB.QueryContext(ctx, query, args...)
+}
+
+// Begin is similar to [*sql.DB.BeginTx], but return a transaction that
+// implements [Queryer]
+func (d DB) Begin(ctx context.Context) (Transaction, error) {
+	return d.BeginTx(ctx, nil)
 }
 
 // BeginTx is similar to [*sql.DB.BeginTx], but return a transaction that
 // implements [Queryer]
 func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error) {
-	tx, err := d.wrapped.BeginTx(ctx, opts)
+	tx, err := d.DB.BeginTx(ctx, opts)
 	if err != nil {
 		return Tx{}, err
 	}
@@ -110,14 +73,14 @@ func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(conte
 	if err := fn(ctx, tx); err != nil {
 		err = fmt.Errorf("call: %w", err)
 
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+		if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
 			return errors.Join(err, rollbackErr)
 		}
 
 		return err
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
 
@@ -128,53 +91,71 @@ func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(conte
 // retains the expected methods used by *sql.Tx
 // This is useful when an existing *sql.Tx is used in other places in the codebase
 func NewTx(tx *sql.Tx) Tx {
-	return Tx{New(tx)}
+	return Tx{tx}
 }
 
 // Tx is similar to *sql.Tx but implements [Queryer]
 type Tx struct {
-	common[*sql.Tx]
+	*sql.Tx
+}
+
+// PrepareContext creates a prepared statement for later queries or executions
+func (t Tx) PrepareContext(ctx context.Context, query string) (StdPrepared, error) {
+	s, err := t.Tx.PrepareContext(ctx, query)
+	return StdPrepared{s}, err
+}
+
+// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
+func (t Tx) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	return t.Tx.QueryContext(ctx, query, args...)
 }
 
 // Commit works the same as [*sql.Tx.Commit]
-func (t Tx) Commit() error {
-	return t.wrapped.Commit()
+func (t Tx) Commit(_ context.Context) error {
+	return t.Tx.Commit()
 }
 
 // Rollback works the same as [*sql.Tx.Rollback]
-func (t Tx) Rollback() error {
-	return t.wrapped.Rollback()
+func (t Tx) Rollback(_ context.Context) error {
+	return t.Tx.Rollback()
 }
 
 func (tx Tx) StmtContext(ctx context.Context, stmt StdPrepared) StdPrepared {
-	return StdPrepared{tx.wrapped.StmtContext(ctx, stmt.Stmt)}
+	return StdPrepared{tx.Tx.StmtContext(ctx, stmt.Stmt)}
 }
 
 // NewConn wraps an [*sql.Conn] and returns a type that implements [Queryer]
 // This is useful when an existing *sql.Conn is used in other places in the codebase
 func NewConn(conn *sql.Conn) Conn {
-	return Conn{New(conn)}
+	return Conn{conn}
 }
 
 // Conn is similar to *sql.Conn but implements [Queryer]
 type Conn struct {
-	common[*sql.Conn]
+	*sql.Conn
 }
 
-// PingContext verifies a connection to the database is still alive, establishing a connection if necessary.
-func (c Conn) PingContext(ctx context.Context) error {
-	return c.wrapped.PingContext(ctx)
+// PrepareContext creates a prepared statement for later queries or executions
+func (d Conn) PrepareContext(ctx context.Context, query string) (StdPrepared, error) {
+	s, err := d.Conn.PrepareContext(ctx, query)
+	return StdPrepared{s}, err
 }
 
-// Close works the same as [*sql.Conn.Close]
-func (c Conn) Close() error {
-	return c.wrapped.Close()
+// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
+func (d Conn) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	return d.Conn.QueryContext(ctx, query, args...)
 }
 
-// BeginTx is similar to [*sql.Conn.BeginTx], but return a transaction that
+// Begin is similar to [*sql.DB.BeginTx], but return a transaction that
 // implements [Queryer]
-func (c Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error) {
-	tx, err := c.wrapped.BeginTx(ctx, opts)
+func (d Conn) Begin(ctx context.Context) (Transaction, error) {
+	return d.BeginTx(ctx, nil)
+}
+
+// BeginTx is similar to [*sql.DB.BeginTx], but return a transaction that
+// implements [Queryer]
+func (d Conn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Transaction, error) {
+	tx, err := d.Conn.BeginTx(ctx, opts)
 	if err != nil {
 		return Tx{}, err
 	}

@@ -60,13 +60,15 @@ func TestAssembleLibSQL(t *testing.T) {
 	}
 
 	config := Config{
-		DSN: "http://localhost:7070",
+		Config: helpers.Config{
+			Dsn: "http://localhost:7070",
+		},
 	}
 
-	os.Setenv("LIBSQL_TEST_DSN", config.DSN)
+	os.Setenv("LIBSQL_TEST_DSN", config.Dsn)
 	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
-	db := connect(t, "libsql", config.DSN)
+	db := connect(t, "libsql", config.Dsn)
 	if err := attach(ctx, db, config); err != nil {
 		t.Fatalf("attaching: %v", err)
 	}
@@ -132,13 +134,15 @@ func TestAssembleSQLite(t *testing.T) {
 	}
 
 	config := Config{
-		DSN:    mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
+		Config: helpers.Config{
+			Dsn: mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
+		},
 		Attach: map[string]string{"one": oneDB.Name()},
 	}
-	os.Setenv("SQLITE_TEST_DSN", config.DSN)
+	os.Setenv("SQLITE_TEST_DSN", config.Dsn)
 	os.Setenv("BOB_SQLITE_ATTACH_QUERIES", strings.Join(config.AttachQueries(), ";"))
 
-	db := connect(t, "sqlite", config.DSN)
+	db := connect(t, "sqlite", config.Dsn)
 	defer db.Close()
 
 	if err := attach(ctx, db, config); err != nil {
@@ -219,101 +223,86 @@ func testSQLiteAssemble(t *testing.T, config Config) {
 
 	tests := []struct {
 		name       string
-		config     Config
+		only       map[string][]string
+		except     map[string][]string
 		goldenJson string
 	}{
 		{
 			name: "include tables",
-			config: Config{
-				DSN:    config.DSN,
-				Attach: config.Attach,
-				Only: map[string][]string{
-					"foo_bar":     nil,
-					"foo_baz":     nil,
-					"one.foo_bar": nil,
-					"one.foo_baz": nil,
-				},
+			only: map[string][]string{
+				"foo_bar":     nil,
+				"foo_baz":     nil,
+				"one.foo_bar": nil,
+				"one.foo_baz": nil,
 			},
 			goldenJson: "include-tables.golden.json",
 		},
 		{
 			name: "exclude tables",
-			config: Config{
-				DSN:    config.DSN,
-				Attach: config.Attach,
-				Except: map[string][]string{
-					"foo_bar":     nil,
-					"foo_baz":     nil,
-					"one.foo_bar": nil,
-					"one.foo_baz": nil,
-					"*":           {"secret_col"},
-				},
+			except: map[string][]string{
+				"foo_bar":     nil,
+				"foo_baz":     nil,
+				"one.foo_bar": nil,
+				"one.foo_baz": nil,
+				"*":           {"secret_col"},
 			},
 			goldenJson: "exclude-tables.golden.json",
 		},
 		{
 			name: "include + exclude tables",
-			config: Config{
-				DSN:    config.DSN,
-				Attach: config.Attach,
-				Only: map[string][]string{
-					"foo_bar":     nil,
-					"foo_baz":     nil,
-					"one.foo_bar": nil,
-					"one.foo_baz": nil,
-				},
-				Except: map[string][]string{
-					"foo_bar":     nil,
-					"bar_baz":     nil,
-					"one.foo_bar": nil,
-					"one.bar_baz": nil,
-				},
+			only: map[string][]string{
+				"foo_bar":     nil,
+				"foo_baz":     nil,
+				"one.foo_bar": nil,
+				"one.foo_baz": nil,
+			},
+			except: map[string][]string{
+				"foo_bar":     nil,
+				"bar_baz":     nil,
+				"one.foo_bar": nil,
+				"one.bar_baz": nil,
 			},
 			goldenJson: "include-exclude-tables.golden.json",
 		},
 		{
 			name: "include + exclude tables regex",
-			config: Config{
-				DSN:    config.DSN,
-				Attach: config.Attach,
-				Only: map[string][]string{
-					"/^foo/": nil,
-					"/^bar/": nil,
-				},
-				Except: map[string][]string{
-					"/bar$/": nil,
-					"/baz$/": nil,
-				},
+			only: map[string][]string{
+				"/^foo/": nil,
+				"/^bar/": nil,
+			},
+			except: map[string][]string{
+				"/bar$/": nil,
+				"/baz$/": nil,
 			},
 			goldenJson: "include-exclude-tables-regex.golden.json",
 		},
 		{
 			name: "include + exclude tables mixed",
-			config: Config{
-				DSN:    config.DSN,
-				Attach: config.Attach,
-				Only: map[string][]string{
-					"/^foo/":      nil,
-					"bar_baz":     nil,
-					"bar_qux":     nil,
-					"one.bar_baz": nil,
-					"one.bar_qux": nil,
-				},
-				Except: map[string][]string{
-					"/bar$/":      nil,
-					"foo_baz":     nil,
-					"foo_qux":     nil,
-					"one.foo_baz": nil,
-					"one.foo_qux": nil,
-				},
+			only: map[string][]string{
+				"/^foo/":      nil,
+				"bar_baz":     nil,
+				"bar_qux":     nil,
+				"one.bar_baz": nil,
+				"one.bar_qux": nil,
+			},
+			except: map[string][]string{
+				"/bar$/":      nil,
+				"foo_baz":     nil,
+				"foo_qux":     nil,
+				"one.foo_baz": nil,
+				"one.foo_qux": nil,
 			},
 			goldenJson: "include-exclude-tables-mixed.golden.json",
 		},
 	}
 
 	for _, tt := range tests {
+		testConfig := config
+		testConfig.Only = tt.only
+		testConfig.Except = tt.except
+
 		overwriteGolden := *flagOverwriteGolden
-		if tt.config.DriverName != "" && tt.config.DriverName != defaultDriverName {
+		if testConfig.DriverName != "" && testConfig.DriverName != defaultDriverName {
 			// If not using the default driver, we do not overwrite the golden file
 			overwriteGolden = false
 		}
@@ -321,7 +310,7 @@ func testSQLiteAssemble(t *testing.T, config Config) {
 		t.Run(tt.name, func(t *testing.T) {
 			testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
-					return New(tt.config)
+					return New(testConfig)
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: overwriteGolden,

@@ -68,6 +68,8 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		c.Type = "money"
 	case "json", "jsonb":
 		c.Type = "types.JSON[json.RawMessage]"
+	case "char", `"char"`:
+		c.Type = "byte"
 	case "bytea":
 		c.Type = "[]byte"
 	case "boolean":
