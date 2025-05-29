@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/aarondl/opt/omit"
 	pg "github.com/pganalyze/pg_query_go/v6"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
@@ -183,7 +182,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		query.Columns[i] = drivers.QueryCol{
 			Name:     col.name,
 			DBName:   col.name,
-			Nullable: omit.From(col.nullable),
+			Nullable: internal.Pointer(col.nullable),
 			TypeName: resTypes[i],
 		}.Merge(parser.ParseQueryColumnConfig(
 			w.getConfigComment(col.pos),

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 )
 
 // ParseQueryConfig parses a user configuration string into a QueryCoonfig.
@@ -64,9 +65,9 @@ func ParseQueryColumnConfig(options string) drivers.QueryCol {
 		case 2:
 			switch part {
 			case "null", "true", "yes":
-				col.Nullable.Set(true)
+				col.Nullable = internal.Pointer(true)
 			case "notnull", "nnull", "false", "no":
-				col.Nullable.Set(false)
+				col.Nullable = internal.Pointer(false)
 			}
 		}
 		if !found {

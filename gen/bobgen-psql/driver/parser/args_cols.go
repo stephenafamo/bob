@@ -6,10 +6,10 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/gofrs/uuid"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
 )
@@ -136,7 +136,7 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 		bindArgs[i] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:     name,
-				Nullable: omit.From(nullable),
+				Nullable: internal.Pointer(nullable),
 				TypeName: typs[i],
 			}.Merge(configs...),
 			Positions:     positions,
@@ -156,7 +156,7 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 		groupArgs[groupIndex] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:     name,
-				Nullable: omit.From(false),
+				Nullable: internal.Pointer(false),
 			}.Merge(parser.ParseQueryColumnConfig(
 				w.getConfigComment(group.original),
 			)),

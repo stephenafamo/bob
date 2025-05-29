@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -49,7 +48,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 			cols[i] = drivers.QueryCol{
 				Name:       col.Name,
 				DBName:     col.Name,
-				Nullable:   omit.From(col.Type.Nullable()),
+				Nullable:   internal.Pointer(col.Type.Nullable()),
 				TypeName:   typeName,
 				TypeLimits: typeLimits,
 			}.Merge(col.Config)

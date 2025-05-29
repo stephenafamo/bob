@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"sync/atomic"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"
@@ -171,7 +170,7 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) (string, 
 		bindArgs[i] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:       name,
-				Nullable:   omit.From(arg.Type.Nullable()),
+				Nullable:   internal.Pointer(arg.Type.Nullable()),
 				TypeName:   typeName,
 				TypeLimits: typeLimits,
 			}.Merge(parser.ParseQueryColumnConfig(comment(arg.Node))),
@@ -202,7 +201,7 @@ func (v Visitor[C, I]) GetArgs(start, stop int, translate func(string) (string, 
 		groupArgs[groupIndex] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:       name,
-				Nullable:   omit.From(group.Type.Nullable()),
+				Nullable:   internal.Pointer(group.Type.Nullable()),
 				TypeName:   typeName,
 				TypeLimits: typeLimits,
 			}.Merge(parser.ParseQueryColumnConfig(comment(group.Node))),

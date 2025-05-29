@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aarondl/opt/null"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-sqlite/driver/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -514,7 +513,7 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 	for rows.Next() {
 		var id, seq int
 		var ftable, col string
-		var fcolNullable null.Val[string]
+		var fcolNullable sql.Null[string]
 
 		// not used
 		var onupdate, ondelete, match string
@@ -529,7 +528,7 @@ func (d driver) foreignKeys(ctx context.Context, schema, tableName string) ([]dr
 			fullFtable = fmt.Sprintf("%s.%s", schema, ftable)
 		}
 
-		fcol, _ := fcolNullable.Get()
+		fcol := fcolNullable.V
 		if fcol == "" {
 			fcol, err = stdscan.One(
 				ctx, d.conn, scan.SingleColumnMapper[string],

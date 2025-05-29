@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
 
@@ -20,9 +20,9 @@ type WithAutoIncr struct {
 }
 
 type OptionalWithAutoIncr struct {
-	ID       omit.Val[int]    `db:"id,pk"`
-	Title    omit.Val[string] `db:"title"`
-	AuthorID omit.Val[int]    `db:"author_id,autoincr"`
+	ID       *int    `db:"id,pk"`
+	Title    *string `db:"title"`
+	AuthorID *int    `db:"author_id,autoincr"`
 
 	orm.Setter[*WithAutoIncr, *dialect.InsertQuery, *dialect.UpdateQuery]
 }
@@ -34,9 +34,9 @@ type WithUnique struct {
 }
 
 type OptionalWithUnique struct {
-	ID       omit.Val[int]    `db:"id,pk"`
-	Title    omit.Val[string] `db:"title"`
-	AuthorID omit.Val[int]    `db:"author_id"`
+	ID       *int    `db:"id,pk"`
+	Title    *string `db:"title"`
+	AuthorID *int    `db:"author_id"`
 
 	orm.Setter[*WithUnique, *dialect.InsertQuery, *dialect.UpdateQuery]
 }
@@ -78,29 +78,29 @@ func TestUniqueSetRow(t *testing.T) {
 			row: nil,
 		},
 		"none fully set": {
-			row: &OptionalWithUnique{Title: omit.From("a title")},
+			row: &OptionalWithUnique{Title: internal.Pointer("a title")},
 		},
 		"id set": {
-			row:  &OptionalWithUnique{ID: omit.From(10)},
+			row:  &OptionalWithUnique{ID: internal.Pointer(10)},
 			cols: []string{"id"},
-			args: []bob.Expression{Arg(omit.From(10))},
+			args: []bob.Expression{Arg(internal.Pointer(10))},
 		},
 		"title/author set": {
 			row: &OptionalWithUnique{
-				Title:    omit.From("a title"),
-				AuthorID: omit.From(1),
+				Title:    internal.Pointer("a title"),
+				AuthorID: internal.Pointer(1),
 			},
 			cols: []string{"title", "author_id"},
-			args: []bob.Expression{Arg(omit.From("a title")), Arg(omit.From(1))},
+			args: []bob.Expression{Arg(internal.Pointer("a title")), Arg(internal.Pointer(1))},
 		},
 		"all set": {
 			row: &OptionalWithUnique{
-				ID:       omit.From(10),
-				Title:    omit.From("a title"),
-				AuthorID: omit.From(1),
+				ID:       internal.Pointer(10),
+				Title:    internal.Pointer("a title"),
+				AuthorID: internal.Pointer(1),
 			},
 			cols: []string{"id"},
-			args: []bob.Expression{Arg(omit.From(10))},
+			args: []bob.Expression{Arg(internal.Pointer(10))},
 		},
 	}
 
@@ -109,15 +109,15 @@ func TestUniqueSetRow(t *testing.T) {
 			rowExpr := make([]bob.Expression, 3)
 
 			if tc.row != nil {
-				if tc.row.ID.IsSet() {
+				if tc.row.ID != nil {
 					rowExpr[0] = Arg(tc.row.ID)
 				}
 
-				if tc.row.Title.IsSet() {
+				if tc.row.Title != nil {
 					rowExpr[1] = Arg(tc.row.Title)
 				}
 
-				if tc.row.AuthorID.IsSet() {
+				if tc.row.AuthorID != nil {
 					rowExpr[2] = Arg(tc.row.AuthorID)
 				}
 			}

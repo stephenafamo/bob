@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/internal"
@@ -201,11 +200,11 @@ func (q QueryConfig) Merge(other QueryConfig) QueryConfig {
 }
 
 type QueryCol struct {
-	Name       string         `json:"name"`
-	DBName     string         `json:"db_name"`
-	Nullable   omit.Val[bool] `json:"nullable"`
-	TypeName   string         `json:"type"`
-	TypeLimits []string       `json:"type_limits"`
+	Name       string   `json:"name"`
+	DBName     string   `json:"db_name"`
+	Nullable   *bool    `json:"nullable"`
+	TypeName   string   `json:"type"`
+	TypeLimits []string `json:"type_limits"`
 }
 
 func (q QueryCol) Merge(others ...QueryCol) QueryCol {
@@ -218,7 +217,7 @@ func (q QueryCol) Merge(others ...QueryCol) QueryCol {
 			q.TypeName = other.TypeName
 		}
 
-		if other.Nullable.IsSet() {
+		if other.Nullable != nil {
 			q.Nullable = other.Nullable
 		}
 	}
@@ -256,9 +255,14 @@ func (c QueryCol) Type(i language.Importer, types Types) string {
 	}
 
 	i.ImportList(typDef.Imports)
-	if c.Nullable.MustGet() {
-		i.Import("github.com/aarondl/opt/null")
-		typ = fmt.Sprintf("null.Val[%s]", typ)
+
+	if c.Nullable == nil {
+		panic(fmt.Sprintf("Column %s has no nullable value defined", c.Name))
+	}
+
+	if *c.Nullable {
+		i.Import("database/sql")
+		typ = fmt.Sprintf("sql.Null[%s]", typ)
 	}
 
 	return typ
@@ -275,9 +279,9 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 	}
 
 	if len(c.Children) == 0 {
-		if val, isSet := c.Col.Nullable.Get(); isSet && val {
-			i.Import("github.com/aarondl/opt/null")
-			typ = strings.TrimPrefix(typ, "null.Val[")
+		if c.Col.Nullable != nil && *c.Col.Nullable {
+			i.Import("database/sql")
+			typ = strings.TrimPrefix(typ, "sql.Null[")
 			typ = strings.TrimSuffix(typ, "]")
 			normalized := internal.TypesReplacer.Replace(typ)
 			fmt.Fprintf(&sb, "null.From(random_%s(nil))", normalized)
