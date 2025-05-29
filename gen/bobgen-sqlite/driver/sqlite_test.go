@@ -21,6 +21,7 @@ import (
 	testgen "github.com/stephenafamo/bob/test/gen"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
