@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added the `drivers/pgx` package which contains types and functions to use a `pgx/v5` connection as a `bob.Executor`.
+- Added support for `github.com/ncruces/go-sqlite3`. (thanks @ncruces)
 
 ### Changed
 

@@ -46,6 +46,7 @@ func New(config Config) Interface {
 	// These are the only supported drivers
 	case "modernc.org/sqlite":
 	case "github.com/mattn/go-sqlite3":
+	case "github.com/ncruces/go-sqlite3":
 	case "github.com/tursodatabase/libsql-client-go/libsql":
 	default:
 		panic(fmt.Sprintf(
