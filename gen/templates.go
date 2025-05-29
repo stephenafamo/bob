@@ -75,9 +75,9 @@ type TemplateData[T, C, I any] struct {
 	ExtraInfo     T
 	ModelsPackage string
 
-	// DriverName is the module name of the underlying `database/sql` driver
-	DriverName string
-	Language   language.Language
+	// Driver is the module name of the underlying `database/sql` driver
+	Driver   string
+	Language language.Language
 }
 
 func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {

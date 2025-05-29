@@ -34,7 +34,7 @@ func Version() string {
 
 type Config struct {
 	// Which `database` driver to use (the full module name)
-	DriverName string `yaml:"driver_name"`
+	Driver string `yaml:"driver"`
 	// The database connection string
 	Dsn string
 	// List of tables that will be included. Others are ignored

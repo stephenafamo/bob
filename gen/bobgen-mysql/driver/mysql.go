@@ -81,7 +81,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 	defer d.conn.Close()
 
-	dbinfo = &DBInfo{DriverName: "github.com/go-sql-driver/mysql"}
+	dbinfo = &DBInfo{Driver: "github.com/go-sql-driver/mysql"}
 
 	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
 	if err != nil {

@@ -130,5 +130,5 @@
 	"query_folders": [],
 	"enums": null,
 	"extra_info": null,
-	"driver_name": "github.com/go-sql-driver/mysql"
+	"driver": "github.com/go-sql-driver/mysql"
 }
