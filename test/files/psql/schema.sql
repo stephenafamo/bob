@@ -1,3 +1,6 @@
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 -- Don't forget to maintain order here, foreign keys!
 drop table if exists video_tags;
 drop table if exists tags;

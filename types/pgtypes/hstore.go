@@ -22,6 +22,7 @@ package pgtypes
 import (
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"strings"
 )
 
@@ -46,7 +47,7 @@ func hQuote(s any) string {
 	case string:
 		str = v
 	default:
-		panic("not a string or sql.NullString")
+		panic("not a string, sql.NullString or sql.Null[string]")
 	}
 
 	str = strings.ReplaceAll(str, "\\", "\\\\")
@@ -70,7 +71,16 @@ func (h *HStore) Scan(value any) error {
 	didQuote := false
 	sawSlash := false
 	bindex := 0
-	for bindex, b = range value.([]byte) {
+	var val []byte
+	switch value := value.(type) {
+	case string:
+		val = []byte(value)
+	case []byte:
+		val = value
+	default:
+		return fmt.Errorf("cannot scan %T into HStore", value)
+	}
+	for bindex, b = range val {
 		if sawSlash {
 			pair[pi] = append(pair[pi], b)
 			sawSlash = false
@@ -125,16 +135,25 @@ func (h *HStore) Scan(value any) error {
 	return nil
 }
 
+func (h HStore) String() string {
+	if h == nil {
+		return ""
+	}
+
+	parts := []string{}
+	for key, val := range h {
+		thispart := hQuote(key) + "=>" + hQuote(val)
+		parts = append(parts, thispart)
+	}
+
+	return strings.Join(parts, ",")
+}
+
 // Value implements the driver Valuer interface. Note if h is nil, the
 // database column value will be set to NULL.
 func (h HStore) Value() (driver.Value, error) {
 	if h == nil {
 		return nil, nil //nolint:nilnil
 	}
-	parts := []string{}
-	for key, val := range h {
-		thispart := hQuote(key) + "=>" + hQuote(val)
-		parts = append(parts, thispart)
-	}
-	return []byte(strings.Join(parts, ",")), nil
+	return h.String(), nil
 }
