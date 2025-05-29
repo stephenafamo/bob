@@ -39,7 +39,7 @@ func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
     .In(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
       pkPairs := make([]bob.Expression, len(o))
       for i, row := range o {
-        pkPairs[i] = row.PrimaryKeyVals()
+        pkPairs[i] = row.primaryKeyVals()
       }
       return bob.ExpressSlice(ctx, w, d, start, pkPairs, "", ", ", "")
     }))
