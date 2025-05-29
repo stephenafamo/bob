@@ -192,6 +192,9 @@ func Types() drivers.Types {
 		"int32": {
 			RandomExpr: `return f.Int32()`,
 		},
+		"rune": {
+			RandomExpr: `return f.Int32()`,
+		},
 		"int64": {
 			RandomExpr: `return f.Int64()`,
 		},
