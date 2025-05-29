@@ -1,3 +1,6 @@
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 -- Don't forget to maintain order here, foreign keys!
 drop table if exists video_tags;
 drop table if exists tags;
@@ -259,6 +262,9 @@ create table type_monsters (
 
 	pg_snapshot_null  pg_snapshot NULL,
 	pg_snapshot_nnull pg_snapshot NOT NULL,
+
+    hstore_null  hstore NULL,
+    hstore_nnull hstore NOT NULL,
 
 	xml_null  xml NULL,
 	xml_nnull xml NOT NULL,

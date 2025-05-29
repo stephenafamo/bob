@@ -46,7 +46,7 @@ func (tables Tables[C, I]) ColumnGetter(alias TableAlias, table, column string) 
 			return colAlias
 		}
 
-		return fmt.Sprintf("%s.GetOrZero()", colAlias)
+		return fmt.Sprintf("%s.V", colAlias)
 	}
 
 	panic("unknown table " + table)
@@ -58,7 +58,8 @@ func (dummyImporter) Import(...string) string               { return "" }
 func (dummyImporter) ImportList(language.ImportList) string { return "" }
 func (dummyImporter) ToList() language.ImportList           { return nil }
 
-func (tables Tables[C, I]) ColumnSetter(i language.Importer, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
+//nolint:gocyclo
+func (tables Tables[C, I]) ColumnSetter(i language.Importer, types Types, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
 	fromTable := tables.Get(fromTName)
 	fromCol := fromTable.GetColumn(fromColName)
 
@@ -66,43 +67,81 @@ func (tables Tables[C, I]) ColumnSetter(i language.Importer, aliases Aliases, fr
 	toCol := toTable.GetColumn(toColName)
 	to := fmt.Sprintf("%s.%s", varName, aliases[toTName].Columns[toColName])
 
+	typDef := types[toCol.Type]
+	colType := typDef.AliasOf
+	if colType == "" {
+		colType = toCol.Type
+	}
+
 	switch {
+	//-------------------------------------------
+	// Same optionality, same nullability
+	//-------------------------------------------
 	case (fromOpt == toOpt) && (toCol.Nullable == fromCol.Nullable):
 		// If both type match, return it plainly
 		return to
+	//-------------------------------------------
 
-	case !fromOpt && !fromCol.Nullable:
-		// if from is concrete, then use MustGet()
-		return fmt.Sprintf("%s.MustGet()", to)
+	//-------------------------------------------
+	// Same nullability
+	//-------------------------------------------
+	case !fromOpt && toOpt && (fromCol.Nullable == toCol.Nullable):
+		return fmt.Sprintf("*%s", to)
 
+	case fromOpt && !toOpt && (fromCol.Nullable == toCol.Nullable):
+		return fmt.Sprintf("&%s", to)
+	//-------------------------------------------
+
+	//-------------------------------------------
+	// From is nullable
+	//-------------------------------------------
 	case fromOpt && fromCol.Nullable && !toOpt && !toCol.Nullable:
-		i.Import("github.com/aarondl/opt/omitnull")
-		return fmt.Sprintf("omitnull.From(%s)", to)
-
-	case fromOpt && fromCol.Nullable && !toOpt && toCol.Nullable:
-		i.Import("github.com/aarondl/opt/omitnull")
-		return fmt.Sprintf("omitnull.FromNull(%s)", to)
+		i.Import("database/sql")
+		return fmt.Sprintf("&sql.Null[%s]{V:%s, Valid: true}", colType, to)
 
 	case fromOpt && fromCol.Nullable && toOpt && !toCol.Nullable:
-		i.Import("github.com/aarondl/opt/omitnull")
-		return fmt.Sprintf("omitnull.FromOmit(%s)", to)
+		i.Import("database/sql")
+		return fmt.Sprintf(`func() &sql.Null[%s] {
+			if %s == nil { return nil }
+			return &sql.Null[%s]{V: %s, Valid: true}
+		}()`, colType, to, colType, to)
+
+	case !fromOpt && fromCol.Nullable && !toOpt && !toCol.Nullable:
+		i.Import("database/sql")
+		return fmt.Sprintf("sql.Null[%s]{V:%s, Valid: true}", colType, to)
+
+	case !fromOpt && fromCol.Nullable && toOpt && !toCol.Nullable:
+		i.Import("database/sql")
+		return fmt.Sprintf(`func() sql.Null[%s] {
+			if %s == nil { return nil }
+			return sql.Null[%s]{V: %s, Valid: true}
+		}()`, colType, to, colType, to)
+	//-------------------------------------------
+
+	//-------------------------------------------
+	// From is NOT nullable
+	//-------------------------------------------
+	case fromOpt && !fromCol.Nullable && !toOpt && toCol.Nullable:
+		return fmt.Sprintf("&%s.V", to)
+
+	case fromOpt && !fromCol.Nullable && toOpt && toCol.Nullable:
+		return fmt.Sprintf(`func() *%s {
+			if %s == nil { return nil }
+			return &%s.V
+		}()`, colType, to, to)
+
+	case !fromOpt && !fromCol.Nullable && !toOpt && toCol.Nullable:
+		return fmt.Sprintf("%s.V", to)
+
+	case !fromOpt && !fromCol.Nullable && toOpt && toCol.Nullable:
+		return fmt.Sprintf(`func() %s {
+			if %s == nil { return nil }
+			return %s.V
+		}()`, colType, to, to)
+	//-------------------------------------------
 
 	default:
-		// from is either omit or null
-		val := "omit"
-		if fromCol.Nullable {
-			val = "null"
-		}
-
-		i.Import(fmt.Sprintf("github.com/aarondl/opt/%s", val))
-
-		switch {
-		case !toOpt && !toCol.Nullable:
-			return fmt.Sprintf("%s.From(%s)", val, to)
-
-		default:
-			return fmt.Sprintf("%s.FromCond(%s.GetOrZero(), %s.IsSet())", val, to, to)
-		}
+		panic(fmt.Sprintf("unknown column setter case: %s.%s -> %s.%s", fromTName, fromColName, toTName, toColName))
 	}
 }
 
@@ -239,7 +278,7 @@ func (tables Tables[C, I]) RelDependenciesTypSet(aliases Aliases, r orm.Relation
 	return strings.Join(ma, "\n")
 }
 
-func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, aliases Aliases, r orm.Relationship, inLoop bool) string {
+func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, types Types, aliases Aliases, r orm.Relationship, inLoop bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()
@@ -290,7 +329,8 @@ func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, aliases Aliases, 
 
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
-			oSetter := tables.ColumnSetter(i, aliases,
+			oSetter := tables.ColumnSetter(
+				i, types, aliases,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
 				extObjVarName, false, false)

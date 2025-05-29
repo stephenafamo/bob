@@ -32,7 +32,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
           {{- $colAlias := $tAlias.Column $indexColumn -}}
           {{- $column := $table.GetColumn $indexColumn -}}
           {{if $column.Nullable -}}
-          if obj.{{$colAlias}}.IsNull() {
+          if !obj.{{$colAlias}}.Valid {
             shouldUpdate = true
             updateMods = append(updateMods, factory.{{$tAlias.UpSingular}}Mods.Random{{$colAlias}}NotNull(nil))
           }

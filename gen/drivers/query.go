@@ -281,10 +281,10 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 	if len(c.Children) == 0 {
 		if c.Col.Nullable != nil && *c.Col.Nullable {
 			i.Import("database/sql")
-			typ = strings.TrimPrefix(typ, "sql.Null[")
-			typ = strings.TrimSuffix(typ, "]")
-			normalized := internal.TypesReplacer.Replace(typ)
-			fmt.Fprintf(&sb, "null.From(random_%s(nil))", normalized)
+			normalized := strings.TrimPrefix(typ, "sql.Null[")
+			normalized = strings.TrimSuffix(normalized, "]")
+			normalized = internal.TypesReplacer.Replace(normalized)
+			fmt.Fprintf(&sb, "%s{V: random_%s(nil), Valid: true}", typ, normalized)
 		} else {
 			normalized := internal.TypesReplacer.Replace(typ)
 			fmt.Fprintf(&sb, "random_%s(nil)", normalized)

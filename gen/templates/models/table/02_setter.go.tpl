@@ -12,11 +12,9 @@ type {{$tAlias.UpSingular}}Setter struct {
   {{- $typDef :=  index $.Types $column.Type -}}
   {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		{{- if $column.Nullable -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-			{{- $colTyp = printf "omitnull.Val[%s]" $colTyp -}}
+			{{- $colTyp = printf "*sql.Null[%s]" $colTyp -}}
 		{{- else -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
-			{{- $colTyp = printf "omit.Val[%s]" $colTyp -}}
+			{{- $colTyp = printf "*%s" $colTyp -}}
 		{{- end -}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
 		{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
@@ -31,7 +29,7 @@ func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !s.{{$colAlias}}.IsUnset() {
+		if s.{{$colAlias}} != nil {
 			vals = append(vals, {{printf "%q" $column.Name}})
 		}
 
@@ -44,12 +42,8 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 	{{- range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !s.{{$colAlias}}.IsUnset() {
-			{{- if not $column.Nullable -}}
-				t.{{$colAlias}}, _ = s.{{$colAlias}}.Get()
-			{{- else -}}
-				t.{{$colAlias}}, _ = s.{{$colAlias}}.GetNull()
-			{{- end -}}
+		if s.{{$colAlias}} != nil {
+      t.{{$colAlias}} = *s.{{$colAlias}}
 		}
 	{{end -}}
 }
@@ -70,10 +64,10 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
       {{$colAlias := $tAlias.Column $column.Name -}}
-      if s.{{$colAlias}}.IsUnset() {
-        vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
+      if s.{{$colAlias}} != nil {
+        vals[{{$index}}] = {{$.Dialect}}.Arg(*s.{{$colAlias}})
       } else {
-        vals[{{$index}}] = {{$.Dialect}}.Arg(s.{{$colAlias}})
+        vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
       }
 
     {{end -}}
@@ -103,7 +97,7 @@ func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expres
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
-		if !s.{{$colAlias}}.IsUnset() {
+		if s.{{$colAlias}} != nil {
       exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
         {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), 
         {{$.Dialect}}.Arg(s.{{$colAlias}}),

@@ -10,8 +10,8 @@ type {{$tAlias.UpSingular}} struct {
 	{{- $.Importer.ImportList $typDef.Imports -}}
 	{{- $orig_col_name := $column.Name -}}
 	{{- if $column.Nullable -}}
-		{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
-		{{ $.Importer.Import "github.com/aarondl/opt/null"}}
+		{{ $.Importer.Import "database/sql"}}
+    {{- $colTyp = printf "sql.Null[%s]" $colTyp -}}
 	{{- end -}}
 	{{- if trim $column.Comment}}{{range $column.Comment | splitList "\n"}}
 		// {{ . }}

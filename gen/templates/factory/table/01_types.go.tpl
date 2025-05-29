@@ -30,8 +30,8 @@ type {{$tAlias.UpSingular}}Template struct {
         {{- $.Importer.ImportList $typDef.Imports -}}
         {{- $colAlias := $tAlias.Column $column.Name -}}
         {{- if $column.Nullable -}}
-            {{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-            {{- $colTyp = printf "null.Val[%s]" $colTyp -}}
+            {{- $.Importer.Import "database/sql" -}}
+            {{- $colTyp = printf "sql.Null[%s]" $colTyp -}}
         {{- end -}}
         {{$colAlias}} func() {{$colTyp}}
     {{end -}}

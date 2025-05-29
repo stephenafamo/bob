@@ -24,12 +24,12 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                         rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
                     {{- end}}
                 {{- end}}
-                {{$.Tables.SetFactoryDeps $.Importer $.Aliases . false}}
+                {{$.Tables.SetFactoryDeps $.Importer $.Types $.Aliases . false}}
             {{- else -}}
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.toModels(r.number)
-                  {{- $setter := $.Tables.SetFactoryDeps $.Importer $.Aliases . false}}
+                  {{- $setter := $.Tables.SetFactoryDeps $.Importer $.Types $.Aliases . false}}
                   {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
                   for _, rel := range related {
                     {{$setter}}
@@ -61,13 +61,8 @@ func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingul
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
 		if o.{{$colAlias}} != nil {
-			{{if $column.Nullable -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omitnull" -}}
-			m.{{$colAlias}} = omitnull.FromNull(o.{{$colAlias}}())
-			{{else -}}
-			{{- $.Importer.Import "github.com/aarondl/opt/omit" -}}
-			m.{{$colAlias}} = omit.From(o.{{$colAlias}}())
-			{{end -}}
+      val := o.{{$colAlias}}()
+      m.{{$colAlias}} = &val
 		}
 	{{end}}
 
