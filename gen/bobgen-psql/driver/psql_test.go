@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
@@ -122,7 +123,12 @@ func testPostgresDriver(t *testing.T, dsn string) {
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(testConfig)
 				},
-				GoldenFile:      "psql.golden.json",
+				GoldenFile: "psql.golden.json",
+				GoldenFileMod: func(b []byte) []byte {
+					return []byte(strings.ReplaceAll(
+						string(b), defaultDriverName, tt.driverName,
+					))
+				},
 				OverwriteGolden: overwriteGolden,
 			})
 		})

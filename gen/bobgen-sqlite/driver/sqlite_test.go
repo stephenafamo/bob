@@ -99,7 +99,7 @@ func TestAssembleLibSQL(t *testing.T) {
 		GoldenFileMod: func(b []byte) []byte {
 			return []byte(strings.ReplaceAll(
 				string(b),
-				"modernc.org/sqlite",
+				defaultDriverName,
 				"github.com/tursodatabase/libsql-client-go/libsql",
 			))
 		},
@@ -206,9 +206,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 				GoldenFile: "sqlite.golden.json",
 				GoldenFileMod: func(b []byte) []byte {
 					return []byte(strings.ReplaceAll(
-						string(b),
-						"modernc.org/sqlite",
-						tt.driverName,
+						string(b), defaultDriverName, tt.driverName,
 					))
 				},
 				OverwriteGolden: overwriteGolden,
