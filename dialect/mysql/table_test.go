@@ -19,10 +19,6 @@ type WithAutoIncr struct {
 	AuthorID int    `db:"author_id,autoincr"`
 }
 
-func (w *WithAutoIncr) PrimaryKeyVals() bob.Expression {
-	return Arg(w.ID)
-}
-
 type OptionalWithAutoIncr struct {
 	ID       omit.Val[int]    `db:"id,pk"`
 	Title    omit.Val[string] `db:"title"`
@@ -35,10 +31,6 @@ type WithUnique struct {
 	ID       int    `db:"id,pk"`
 	Title    string `db:"title"`
 	AuthorID int    `db:"author_id"`
-}
-
-func (w *WithUnique) PrimaryKeyVals() bob.Expression {
-	return Arg(w.ID)
 }
 
 type OptionalWithUnique struct {

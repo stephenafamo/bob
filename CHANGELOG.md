@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `bob.Transaction` interface now takes a `context.Context` argument in the `Commit` and `Rollback` methods.
 - The method `BeginTx` on the `bob.Transaction` interface is now changed to `Begin` and it takes a single context argument.  
    This is to make it easier to implement for non `database/sql` drivers.
+- In the generated model, the `PrimaryKeyVals()` method is now private.
 
 ### Removed
 
 - Removed the `New` and `NewQueryer` functions. Any of `bob.NewDB`, `bob.NewTx` or `bob.NewConn` can be used instead.
 - Removed the `StdInterface` interface as it is unnecessary.
+- Remove redundant `orm.Model` interface.
 
 ## [v0.36.1] - 2025-05-27
 

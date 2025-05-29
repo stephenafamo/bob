@@ -26,11 +26,11 @@ type setter[T any] interface {
 	orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 }
 
-func NewTable[T orm.Model, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
+func NewTable[T any, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](tableName, uniques...)
 }
 
-func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
+func NewTablex[T any, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
 	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
 	view, mappings := newView[T, Tslice](tableName)
 	t := &Table[T, Tslice, Tset]{
@@ -50,7 +50,7 @@ func NewTablex[T orm.Model, Tslice ~[]T, Tset setter[T]](tableName string, uniqu
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T orm.Model, Tslice ~[]T, Tset setter[T]] struct {
+type Table[T any, Tslice ~[]T, Tset setter[T]] struct {
 	*View[T, Tslice]
 	pkCols           orm.Columns
 	setterMapping    mappings.Mapping
@@ -120,7 +120,7 @@ func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuer
 	return q
 }
 
-type insertQuery[T orm.Model, Ts ~[]T, Tset setter[T]] struct {
+type insertQuery[T any, Ts ~[]T, Tset setter[T]] struct {
 	orm.ExecQuery[*dialect.InsertQuery]
 	table *Table[T, Ts, Tset]
 }

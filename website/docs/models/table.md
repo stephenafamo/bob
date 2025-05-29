@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 3
 description: Easily query and modify a database table
-
 ---
 
 # Table
@@ -26,12 +24,6 @@ type User struct {
     VehicleID int
     Name      string
     Email     string
-}
-
-// An interface to implement to make the model a table
-// this returns the values of the primary keys
-func (u User) PrimaryKeyVals() bob.Expression {
-    return psql.Arg(u.ID)
 }
 
 // UserSetter must implement orm.Setter
@@ -60,7 +52,7 @@ Typically, we can leave out fields that we never intend to manually set, such as
 ```go
 userTable.Insert(&UserSetter{
     Name: omit.From("Stephen"), // we know the name was set and not the email
-}).One(ctx, db) 
+}).One(ctx, db)
 ```
 
 :::tip

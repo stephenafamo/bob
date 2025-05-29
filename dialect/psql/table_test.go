@@ -64,10 +64,6 @@ type User struct {
 	Email string `db:"email"`
 }
 
-func (u *User) PrimaryKeyVals() bob.Expression {
-	return Arg(u.ID)
-}
-
 type UserSetter struct {
 	ID    omit.Val[int64]  `db:"id,pk"`
 	Name  omit.Val[string] `db:"name"`

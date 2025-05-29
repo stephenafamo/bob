@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 )
@@ -111,11 +112,5 @@ func shouldReplaceInTable[C, I any](t drivers.Table[C, I], r Replace) bool {
 		return true
 	}
 
-	for _, replaceInTable := range r.Tables {
-		if replaceInTable == t.Key {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(r.Tables, t.Key)
 }

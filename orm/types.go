@@ -8,13 +8,6 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-type Model interface {
-	// PrimaryKeyVals returns the values of the primary key columns
-	// If a single column, expr.Arg(col) is expected
-	// If multiple columns, expr.ArgGroup(col1, col2, ...) is expected
-	PrimaryKeyVals() bob.Expression
-}
-
 type Setter[T, InsertQ, UpdateQ any] interface {
 	// SetColumns should return the column names that are set
 	SetColumns() []string

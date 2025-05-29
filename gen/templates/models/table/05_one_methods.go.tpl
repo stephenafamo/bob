@@ -27,8 +27,8 @@ func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Ex
 {{if .Table.Constraints.Primary -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
-// PrimaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
-func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
+// primaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
+func (o *{{$tAlias.UpSingular}}) primaryKeyVals() bob.Expression {
 	{{if gt (len $table.Constraints.Primary.Columns) 1 -}}
 		return {{$.Dialect}}.ArgGroup(
 			{{range $column := $table.Constraints.Primary.Columns -}}
@@ -45,7 +45,7 @@ func (o *{{$tAlias.UpSingular}}) PrimaryKeyVals() bob.Expression {
 func (o *{{$tAlias.UpSingular}}) pkEQ() dialect.Expression {
    return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
     .EQ(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
-      return o.PrimaryKeyVals().WriteSQL(ctx, w, d, start)
+      return o.primaryKeyVals().WriteSQL(ctx, w, d, start)
     }))
 }
 

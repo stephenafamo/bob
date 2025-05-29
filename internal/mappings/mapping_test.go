@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -98,12 +97,4 @@ func testGetMappings[T any](t *testing.T, expected Mapping) {
 			t.Fatal(diff)
 		}
 	})
-}
-
-type SettableUser struct {
-	ID        int
-	FirstName string
-	LastName  string
-	FullName  string `db:",generated"`
-	Bio       omit.Val[string]
 }
