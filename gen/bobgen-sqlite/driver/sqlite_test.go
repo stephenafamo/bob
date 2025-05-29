@@ -136,7 +136,7 @@ func TestAssembleSQLite(t *testing.T) {
 
 	config := Config{
 		Config: helpers.Config{
-			Dsn: mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
+			Dsn: "file:" + mainDB.Name() + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(10000)",
 		},
 		Attach: map[string]string{"one": oneDB.Name()},
 	}
@@ -172,6 +172,10 @@ func testSQLiteDriver(t *testing.T, config Config) {
 		{
 			name:       "modernc",
 			driverName: "modernc.org/sqlite",
+		},
+		{
+			name:       "ncruces",
+			driverName: "github.com/ncruces/go-sqlite3",
 		},
 	}
 

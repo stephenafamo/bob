@@ -18,7 +18,7 @@ func (e *UniqueConstraintError) Is(target error) bool {
       target.Error(),
       fmt.Sprintf("SQLite error: UNIQUE constraint failed: %s", strings.Join(fullCols, ", ")),
     )
-	{{else if eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3"}}
+	{{else if eq $.DriverName "modernc.org/sqlite" "github.com/mattn/go-sqlite3" "github.com/ncruces/go-sqlite3"}}
 		{{$errType := ""}}
 		{{$codeGetter := ""}}
 		{{$.Importer.Import "strings"}}
@@ -30,11 +30,15 @@ func (e *UniqueConstraintError) Is(target error) bool {
 			{{$.Importer.Import $.DriverName}}
 			{{$errType = "sqlite3.Error"}}
 			{{$codeGetter = "ExtendedCode"}}
+		{{else if eq $.DriverName "github.com/ncruces/go-sqlite3"}}
+			{{$.Importer.Import $.DriverName}}
+			{{$errType = "*sqlite3.Error"}}
+			{{$codeGetter = "ExtendedCode()"}}
 		{{else}}
 			panic("Unsupported driver {{$.DriverName}} for UniqueConstraintError detection")
 		{{end}}
-    err, ok := target.({{$errType}})
-    if !ok {
+    var err {{$errType}}
+    if !errors.As(target, &err) {
       return false
     }
 

@@ -25,6 +25,12 @@
   {{$.Importer.Import "strings"}}
 	{{$sqlDriverName = "sqlite3_extended"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
+{{ else if eq $.DriverName "github.com/ncruces/go-sqlite3" }}
+	{{$.Importer.Import $.DriverName }}
+  {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/driver" }}
+  {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/embed" }}
+	{{$sqlDriverName = "sqlite3"}}
+	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ else if eq $.DriverName  "github.com/tursodatabase/libsql-client-go/libsql" }}
 	{{$.Importer.Import "_" $.DriverName }}
 	{{$sqlDriverName = "libsql"}}
@@ -69,6 +75,11 @@ func TestMain(m *testing.M) {
         }
         return nil
       },
+    })
+  {{ else if eq $.DriverName  "github.com/ncruces/go-sqlite3" }}
+    sqlite3.AutoExtension(func(c *sqlite3.Conn) error {
+      queries := os.Getenv("BOB_SQLITE_ATTACH_QUERIES")
+      return c.Exec(queries)
     })
   {{end}}
 
