@@ -31,7 +31,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
   {{range $index, $column := $table.NonGeneratedColumns -}}
     bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
         {{$colAlias := $tAlias.Column $column.Name -}}
-        if s.{{$colAlias}}.IsUnset() {
+        if s.{{$colAlias}} == nil {
           return {{$.Dialect}}.Raw("DEFAULT").WriteSQL(ctx, w, d, start)
         }
         return {{$.Dialect}}.Arg(s.{{$colAlias}}).WriteSQL(ctx, w, d, start)
