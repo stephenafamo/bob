@@ -23,7 +23,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     vals := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
       {{$colAlias := $tAlias.Column $column.Name -}}
-      if !s.{{$colAlias}}.IsUnset() {
+      if s.{{$colAlias}} != nil {
         vals = append(vals, {{$.Dialect}}.Arg(s.{{$colAlias}}))
       }
 

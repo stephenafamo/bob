@@ -13,8 +13,9 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
 	{{- $colAlias := $tAlias.Column $column.Name -}}
   {{- $typDef :=  index $.Types $column.Type -}}
   {{- $colTyp := or $typDef.AliasOf $column.Type -}}
-		if m.{{$colAlias}}.IsUnset() {
-        m.{{$colAlias}} = omit.From(random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}}))
+		if m.{{$colAlias}} == nil {
+        val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
+        m.{{$colAlias}} = &val
     }
 	{{end -}}
 }
@@ -167,7 +168,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
 				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnSetter $.Importer $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
+				opt.{{$fromColA}} = {{$.Tables.ColumnSetter $.Importer $.Types $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
 			{{end}}
 		{{- end}}
 	{{end}}

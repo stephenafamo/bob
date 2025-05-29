@@ -20,8 +20,7 @@ func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAl
 {{- $typDef :=  index $.Types $column.Type -}}
 {{- $colTyp := getType $column.Type $typDef -}}
 {{- if $column.Nullable -}}
-	{{- $.Importer.Import "github.com/aarondl/opt/null" -}}
-	{{- $colTyp = printf "null.Val[%s]" $colTyp -}}
+	{{- $colTyp = printf "sql.Null[%s]" $colTyp -}}
 {{- end -}}
 
 // Set the model columns to this value
@@ -64,11 +63,10 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
             f = &defaultFaker
           }
 
-          if f.Bool() {
-            return null.FromPtr[{{getType $column.Type $typDef}}](nil)
+          return sql.Null[{{getType $column.Type $typDef}}]{
+            V: random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}),
+            Valid: f.Bool(),
           }
-
-          return null.From(random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}))
       }
     })
   }
@@ -83,7 +81,10 @@ func (m {{$tAlias.DownSingular}}Mods) Unset{{$colAlias}}() {{$tAlias.UpSingular}
             f = &defaultFaker
           }
 
-          return null.From(random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}))
+          return sql.Null[{{getType $column.Type $typDef}}]{
+            V: random_{{normalizeType $column.Type}}(f, {{$column.LimitsString}}),
+            Valid: true,
+          }
       }
     })
   }

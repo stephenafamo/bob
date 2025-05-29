@@ -506,9 +506,10 @@ func Types() drivers.Types {
 			Imports:   language.ImportList{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `hs := make(pgtypes.HStore)
                 for i := range f.IntBetween(1, 5) {
-                    hs[random_string(f)] = null.FromCond(random_string(f), f.Bool())
+					hs[random_string(f)] = sql.Null{V: random_string(f, limits...), Valid: f.Bool()}
                 }
                 return hs`,
+			RandomExprImports: language.ImportList{`"database/sql"`},
 		},
 		"types.JSON[json.RawMessage]": {
 			Imports: language.ImportList{

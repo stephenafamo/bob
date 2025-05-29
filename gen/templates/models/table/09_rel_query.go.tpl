@@ -143,8 +143,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
       {{ $colTyp := or $typDef.AliasOf $column.Type }}
       {{- $.Importer.ImportList $typDef.Imports -}}
       {{- if $column.Nullable -}}
-        {{ $colTyp = printf "null.Val[%s]" $colTyp }}
-        {{ $.Importer.Import "github.com/aarondl/opt/null"}}
+        {{ $colTyp = printf "sql.Null[%s]" $colTyp }}
       {{- end -}}
 			{{$fromCol := index $firstFrom.Columns $local -}}
       pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], len(os))
