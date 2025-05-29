@@ -73,10 +73,10 @@ func New(config Config) Interface {
 	default:
 		panic(fmt.Sprintf(
 			"unsupported driver %s, supported drivers are: %q, %q",
-			"github.com/lib/pq",
-			// "github.com/jackc/pgx/v5",
-			"github.com/jackc/pgx/v5/stdlib",
 			config.DriverName,
+			// "github.com/jackc/pgx/v5",
+			"github.com/lib/pq",
+			"github.com/jackc/pgx/v5/stdlib",
 		))
 	}
 
