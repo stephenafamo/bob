@@ -2594,6 +2594,30 @@
 					"type_limits": null
 				},
 				{
+					"name": "hstore_null",
+					"db_type": "hstore",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.HStore",
+					"type_limits": null
+				},
+				{
+					"name": "hstore_nnull",
+					"db_type": "hstore",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.HStore",
+					"type_limits": null
+				},
+				{
 					"name": "xml_null",
 					"db_type": "xml",
 					"default": "NULL",
@@ -5031,6 +5055,30 @@
 					"autoincr": false,
 					"domain_name": "",
 					"type": "pgtypes.Snapshot",
+					"type_limits": null
+				},
+				{
+					"name": "hstore_null",
+					"db_type": "hstore",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.HStore",
+					"type_limits": null
+				},
+				{
+					"name": "hstore_nnull",
+					"db_type": "hstore",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgtypes.HStore",
 					"type_limits": null
 				},
 				{

@@ -54,6 +54,10 @@ func TestDriver(t *testing.T) {
 	}
 	defer db.Close()
 
+	if _, err := db.Exec("CREATE EXTENSION hstore"); err != nil {
+		t.Fatalf("could not create hstore extension: %v", err)
+	}
+
 	fmt.Printf("migrating...")
 	if err := helpers.Migrate(context.Background(), db, testfiles.PostgresSchema, "psql/*.sql"); err != nil {
 		t.Fatal(err)
