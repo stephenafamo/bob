@@ -23,9 +23,7 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type setter[T any] interface {
-	orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
-}
+type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 
 func NewTable[T any, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](tableName, uniques...)
