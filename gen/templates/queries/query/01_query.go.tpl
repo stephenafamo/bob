@@ -17,9 +17,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{$flatArgs := $query.ArgsByPosition}}
 {{$queryRowName := $query.Config.RowName}}
 {{if not $query.Config.GenerateRow}}
-  {{- $typDef :=  index $.Types $queryRowName -}}
-	{{- $queryRowName = or $typDef.AliasOf $queryRowName -}}
-	{{- $.Importer.ImportList $typDef.Imports -}}
+  {{- $queryRowName = $.Types.Get $.CurrentPackage $.Importer $queryRowName -}}
 {{end}}
 
 {{$queryType := (lower $query.Type.String | titleCase)}}

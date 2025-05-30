@@ -98,9 +98,6 @@ func matchColumn(c, m drivers.Column) bool {
 	if m.Generated != c.Generated {
 		return false
 	}
-	if m.Nullable != c.Nullable {
-		return false
-	}
 
 	return true
 }

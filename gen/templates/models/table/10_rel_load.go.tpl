@@ -315,7 +315,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   {{range $index, $local := $firstSide.FromColumns -}}
     {{- $fromColAlias := index $firstFrom.Columns $local -}}
     {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
-    {{$fromColAlias}}Slice := []{{$fromCol.Type}}{}
+    {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
+    {{$fromColAlias}}Slice := []{{$fromTyp}}{}
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
@@ -324,7 +325,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}
         {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
-        {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromCol.Type}}))
+        {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
+        {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromTyp}}))
         row.ScheduleScan("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
       {{end}}
 

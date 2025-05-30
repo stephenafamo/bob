@@ -1,5 +1,5 @@
 {{- if $.Enums}}
-{{$.Importer.Import "models" $.ModelsPackage}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 type (
 	{{range $enum := $.Enums -}}

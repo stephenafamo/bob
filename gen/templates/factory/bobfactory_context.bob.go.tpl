@@ -1,5 +1,5 @@
 {{$.Importer.Import "context"}}
-{{$.Importer.Import "models" $.ModelsPackage}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 type contextKey string
 var (

@@ -88,21 +88,18 @@ var defaultFaker = faker.New()
 
 {{range $colTyp := $.QueryFolder.Types -}}
     {{- $typDef := index $.Types $colTyp -}}
+    {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
       Ensures that compilation fails.
       Users of custom types can decide to use a non-random expression
       but this would be a conscious decision.
     */}}{{- end -}}
-    {{- $.Importer.ImportList $typDef.Imports -}}
     {{- $.Importer.ImportList $typDef.RandomExprImports -}}
-    {{- if $typDef.InGeneratedPackage -}}
-      {{$.Importer.Import "models" $.ModelsPackage}}
-    {{- end -}}
-    func random_{{normalizeType $colTyp}}(f *faker.Faker, limits ...string) {{getType $colTyp $typDef}} {
+    func random_{{normalizeType $colTyp}}(f *faker.Faker, limits ...string) {{$typ}} {
       if f == nil {
         f = &defaultFaker
       }
 
-      {{$typDef.RandomExpr}}
+      {{replace "TYPE" $typ $typDef.RandomExpr}}
     }
 {{end -}}

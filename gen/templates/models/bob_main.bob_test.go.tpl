@@ -1,5 +1,5 @@
-{{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 // Set the testDB to enable tests that use the database
 var testDB bob.Transactor
@@ -20,14 +20,20 @@ type (
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
-    {{- $typDef :=  index $.Types $column.Type -}}
-    {{- $colTyp := or $typDef.AliasOf $column.Type -}}
-    {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-    {{- $_ :=  set $doneTypes $colTyp nil -}}
-    {{- $typInfo :=  index $.Types $column.Type -}}
+    {{/*
+    * We are in a test
+    * We know that the test is in a separate package
+    * We also know that there is no way to define a type that is ONLY used in tests
+    * So we use backslashes as the package name which will never match a package
+      to prevent assuming that the type is in the current package
+    */}}
+    {{- $colTyp := $.Types.GetWithoutImporting `\\\\\\\\\\\\` $.Importer $column.Type -}}
+    {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
+    {{- $_ :=  set $doneTypes $column.Type nil -}}
+    {{- $typInfo :=  index $.Types $colTyp -}}
     {{- if $typInfo.NoScannerValuerTest}}{{continue}}{{end -}}
     {{- if isPrimitiveType $colTyp}}{{continue}}{{end -}}
-    {{- $.Importer.ImportList $typInfo.Imports -}}
+      {{$.Importer.ImportList $typInfo.Imports -}}
       {{$.Importer.Import "database/sql"}}
       {{$.Importer.Import "database/sql/driver"}}
       // Make sure the type {{$colTyp}} satisfies database/sql.Scanner

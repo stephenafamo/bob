@@ -54,12 +54,12 @@ func (tables Tables[C, I]) ColumnGetter(alias TableAlias, table, column string) 
 
 type dummyImporter struct{}
 
-func (dummyImporter) Import(...string) string               { return "" }
-func (dummyImporter) ImportList(language.ImportList) string { return "" }
-func (dummyImporter) ToList() language.ImportList           { return nil }
+func (dummyImporter) Import(...string) string    { return "" }
+func (dummyImporter) ImportList([]string) string { return "" }
+func (dummyImporter) ToList() []string           { return nil }
 
 //nolint:gocyclo
-func (tables Tables[C, I]) ColumnSetter(i language.Importer, types Types, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
+func (tables Tables[C, I]) ColumnSetter(currentPkg string, i language.Importer, types Types, aliases Aliases, fromTName, toTName, fromColName, toColName, varName string, fromOpt, toOpt bool) string {
 	fromTable := tables.Get(fromTName)
 	fromCol := fromTable.GetColumn(fromColName)
 
@@ -67,11 +67,7 @@ func (tables Tables[C, I]) ColumnSetter(i language.Importer, types Types, aliase
 	toCol := toTable.GetColumn(toColName)
 	to := fmt.Sprintf("%s.%s", varName, aliases[toTName].Columns[toColName])
 
-	typDef := types[toCol.Type]
-	colType := typDef.AliasOf
-	if colType == "" {
-		colType = toCol.Type
-	}
+	colType := types.Get(currentPkg, i, toCol.Type)
 
 	switch {
 	//-------------------------------------------
@@ -278,7 +274,7 @@ func (tables Tables[C, I]) RelDependenciesTypSet(aliases Aliases, r orm.Relation
 	return strings.Join(ma, "\n")
 }
 
-func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, types Types, aliases Aliases, r orm.Relationship, inLoop bool) string {
+func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, types Types, aliases Aliases, r orm.Relationship, inLoop bool) string {
 	local := r.Local()
 	foreign := r.Foreign()
 	ksides := r.ValuedSides()
@@ -330,7 +326,7 @@ func (tables Tables[C, I]) SetFactoryDeps(i language.Importer, types Types, alia
 			extObjVarName := getVarName(aliases, mapp.ExternalTable, mapp.ExternalStart, mapp.ExternalEnd, false)
 
 			oSetter := tables.ColumnSetter(
-				i, types, aliases,
+				currPkg, i, types, aliases,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
 				extObjVarName, false, false)

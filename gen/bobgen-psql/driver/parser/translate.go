@@ -9,7 +9,6 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/language"
 )
 
 const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
@@ -185,7 +184,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 
 	types[arrTyp] = drivers.Type{
 		DependsOn:           []string{enumTyp},
-		Imports:             language.ImportList{pgtypesImport},
+		Imports:             []string{pgtypesImport},
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
@@ -212,7 +211,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 
 	types[typ] = drivers.Type{
 		DependsOn: []string{singleTyp},
-		Imports:   append(language.ImportList{pgtypesImport}, singleTypDef.Imports...),
+		Imports:   append([]string{pgtypesImport}, singleTypDef.Imports...),
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
                 arr[i] = random_%s(f, limits...)
@@ -222,7 +221,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
                 return %s
             })`, singleTyp, singleComparer),
 		CompareExprImports: append(append(
-			language.ImportList{`"slices"`},
+			[]string{`"slices"`},
 			singleTypDef.CompareExprImports...),
 			singleTypDef.Imports...),
 	}

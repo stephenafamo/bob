@@ -2,34 +2,34 @@ package language
 
 import (
 	"reflect"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 )
 
-func TestImportsSort(t *testing.T) {
+func TestGoImportsSort(t *testing.T) {
 	t.Parallel()
 
-	a1 := ImportList{
+	a1 := []string{
 		`"fmt"`,
 		`"errors"`,
 	}
-	a2 := ImportList{
+	a2 := []string{
 		`_ "github.com/lib/pq"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/mux"`,
 		`"github.com/gorilla/websocket"`,
 	}
 
-	a1Expected := ImportList{`"errors"`, `"fmt"`}
-	a2Expected := ImportList{
+	a1Expected := []string{`"errors"`, `"fmt"`}
+	a2Expected := []string{
 		`"github.com/gorilla/mux"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/websocket"`,
 		`_ "github.com/lib/pq"`,
 	}
 
-	sort.Sort(a1)
+	slices.SortFunc(a1, goImportSorter)
 	if !reflect.DeepEqual(a1, a1Expected) {
 		t.Errorf("Expected a1 to match a1Expected, got: %v", a1)
 	}
@@ -40,7 +40,7 @@ func TestImportsSort(t *testing.T) {
 		}
 	}
 
-	sort.Sort(a2)
+	slices.SortFunc(a2, goImportSorter)
 	if !reflect.DeepEqual(a2, a2Expected) {
 		t.Errorf("Expected a2 to match a2expected, got: %v", a2)
 	}
@@ -94,15 +94,15 @@ var testImportStringExpect = `import (
 	"github.com/friendsofgo/errors"
 )`
 
-func TestListFormat(t *testing.T) {
+func TestGoImportsFormat(t *testing.T) {
 	t.Parallel()
 
-	s := ImportList{
+	s := []string{
 		`"github.com/friendsofgo/errors"`,
 		`"fmt"`,
 	}
 
-	got := strings.TrimSpace(string(s.Format()))
+	got := strings.TrimSpace(string(goOutputLanguage{}.formatGoImports(s, "", false)))
 	if got != testImportStringExpect {
 		t.Error("want:\n", testImportStringExpect, "\ngot:\n", got)
 	}

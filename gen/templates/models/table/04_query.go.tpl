@@ -6,7 +6,8 @@
 {{range $colName := $table.Constraints.Primary.Columns -}}
 {{- $column := $table.GetColumn $colName -}}
 {{- $colAlias := $tAlias.Column $colName -}}
-{{$pkArgs = printf "%s%sPK %s," $pkArgs $colAlias $column.Type}}
+{{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
+{{$pkArgs = printf "%s%sPK %s," $pkArgs $colAlias $colTyp}}
 {{end -}}
 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}

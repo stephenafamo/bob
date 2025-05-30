@@ -72,8 +72,11 @@ type TemplateData[T, C, I any] struct {
 	TagIgnore map[string]struct{}
 
 	// Supplied by the driver
-	ExtraInfo     T
-	ModelsPackage string
+	ExtraInfo T
+
+	// Package information
+	CurrentPackage string            // the current package being generated
+	OutputPackages map[string]string // map of output keys to package paths
 
 	// Driver is the module name of the underlying `database/sql` driver
 	Driver   string
@@ -147,7 +150,6 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
-	"getType":            getType,
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
@@ -163,19 +165,4 @@ func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
 
 func NormalizeType(val string) string {
 	return internal.TypesReplacer.Replace(val)
-}
-
-// Gets the type for a db column. Used if you have types defined inside the
-// models dir, which needs the models prefix in the factory files.
-func getType(columnType string, typedef drivers.Type) string {
-	prefix := ""
-	if typedef.InGeneratedPackage {
-		prefix = "models."
-	}
-
-	if typedef.AliasOf != "" {
-		return prefix + typedef.AliasOf
-	}
-
-	return prefix + columnType
 }
