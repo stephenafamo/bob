@@ -127,6 +127,24 @@ To prevent generating a test for the random expression, set `no_randomization_te
 In certain cases, it is necessary to compare values of the type to determine if they are equal.
 In such cases, you can provide a `compareExpr` which is an expression that compares two values of the type. Use the placeholders `AAA` and `BBB` as the types to be compared.
 
+### Imports
+
+The `imports` key is used to specify any imports that are needed for the type.  
+The first import is the package that contains the type, and the rest are any other imports that are needed.
+
+For example, for the type `types.JSON[json.RawMessage]`, the imports will look like this:
+
+```yaml
+types:
+  type.JSON[json.RawMessage]:
+    # ......
+    imports:
+      - '"encoding/json"'
+      - '"github.com/stephenafamo/bob/types"'
+```
+
+### Example Types Configuration
+
 ```yaml
 types:
   xml:
@@ -145,16 +163,17 @@ types:
       tag := f.Lorem().Word()
       return fmt.Sprintf("<%s>%s</%s>", tag, f.Lorem().Word(), tag)
   LocalType:
-    # Set this to true if your custom type is declared in the generated package (i.e. "models").
-    # If this is not the case, "models." will not be prefixed in the generated factory.
-    in_generated_package: true
     no_randomization_test: true
     random_expr: |
       localType := models.LocalType{}
       return localType
+    # IMPORTANT: If the type is in the models package, you should specify the import alias
+    imports:
+      - 'models "github.com/path/to/models"'
   type.JSON[json.RawMessage]:
     # If true, a test for the random expression will not be generated
     no_randomization_test: false
+    # Any imports that are needed for the type
     imports:
       - '"encoding/json"'
       - '"github.com/stephenafamo/bob/types"'

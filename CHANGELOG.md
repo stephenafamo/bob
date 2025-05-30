@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove dependence on `github.com/aarondl/opt` in generated code.
   - Nullable values are now wrapped `database/sql.Null` with instead of `github.com/aarondl/opt/null.Val`.
   - Optional values are now represented as pointers instead of `github.com/aarondl/opt/omit.Val[T]`.
+- Removed `in_generated_package` type configuration option. This was limited and could only indicate that the type is in the models package.
+  Instead the full import path can now be used in the `imports` configuration option, and if it is in the same package as the generated code, the prefix will be automatically removed.
 
 ### Fixed
 

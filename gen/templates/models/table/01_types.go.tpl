@@ -5,9 +5,7 @@
 type {{$tAlias.UpSingular}} struct {
 	{{- range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-  {{- $typDef :=  index $.Types $column.Type -}}
-	{{- $colTyp := or $typDef.AliasOf $column.Type -}}
-	{{- $.Importer.ImportList $typDef.Imports -}}
+  {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 	{{- $orig_col_name := $column.Name -}}
 	{{- if $column.Nullable -}}
 		{{ $.Importer.Import "database/sql"}}
@@ -104,7 +102,7 @@ func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Co
 type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
 	{{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{- $colTyp := or (index $.Types $column.Type).AliasOf $column.Type -}}
+    {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 		{{- if $column.Nullable -}}
 			{{$colAlias}} {{$.Dialect}}.WhereNullMod[Q, {{$colTyp}}]
 		{{- else -}}
@@ -120,8 +118,8 @@ func ({{$tAlias.DownSingular}}Where[Q]) AliasedAs(alias string) {{$tAlias.DownSi
 func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias.DownSingular}}Columns) {{$tAlias.DownSingular}}Where[Q] {
 	return {{$tAlias.DownSingular}}Where[Q]{
 			{{range $column := $table.Columns -}}
-      {{- $colTyp := or (index $.Types $column.Type).AliasOf $column.Type -}}
-			{{- $colAlias := $tAlias.Column $column.Name -}}
+      {{- $colAlias := $tAlias.Column $column.Name -}}
+      {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 				{{- if $column.Nullable -}}
 					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$colTyp}}](cols.{{$colAlias}}),
 				{{- else -}}

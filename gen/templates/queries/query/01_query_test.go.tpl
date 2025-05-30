@@ -86,9 +86,7 @@ func Test{{$upperName}}Exec (t *testing.T) {
 func Test{{$upperName}}Map (t *testing.T) {
   {{$queryRowName := $query.Config.RowName}}
   {{if not $query.Config.GenerateRow}}
-    {{- $typDef :=  index $.Types $queryRowName -}}
-    {{- $queryRowName = or $typDef.AliasOf $queryRowName -}}
-    {{- $.Importer.ImportList $typDef.Imports -}}
+    {{- $queryRowName = $.Types.Get $.CurrentPackage $.Importer $queryRowName -}}
   {{end}}
 
   mapCols, err := scan.StructMapperColumns[{{$queryRowName}}]()

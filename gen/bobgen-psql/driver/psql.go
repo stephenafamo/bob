@@ -12,7 +12,6 @@ import (
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/scan"
 	"github.com/stephenafamo/scan/stdscan"
 	"github.com/volatiletech/strmangle"
@@ -91,12 +90,12 @@ func New(config Config) Interface {
 	switch config.UUIDPkg {
 	case "google":
 		types["uuid.UUID"] = drivers.Type{
-			Imports:    language.ImportList{`"github.com/google/uuid"`},
+			Imports:    []string{`"github.com/google/uuid"`},
 			RandomExpr: `return uuid.New()`,
 		}
 	default:
 		types["uuid.UUID"] = drivers.Type{
-			Imports:    language.ImportList{`"github.com/gofrs/uuid/v5"`},
+			Imports:    []string{`"github.com/gofrs/uuid/v5"`},
 			RandomExpr: `return uuid.Must(uuid.NewV4())`,
 		}
 	}

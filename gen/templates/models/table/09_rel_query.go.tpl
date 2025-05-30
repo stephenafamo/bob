@@ -139,9 +139,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
     {{$.Importer.Import "github.com/stephenafamo/bob/dialect/psql/sm"}}
 		{{- range $index, $local := $firstSide.FromColumns -}}
       {{ $column := $.Table.GetColumn $local }}
-      {{ $typDef :=  index $.Types $column.Type }}
-      {{ $colTyp := or $typDef.AliasOf $column.Type }}
-      {{- $.Importer.ImportList $typDef.Imports -}}
+      {{ $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type }}
       {{- if $column.Nullable -}}
         {{ $colTyp = printf "sql.Null[%s]" $colTyp }}
       {{- end -}}

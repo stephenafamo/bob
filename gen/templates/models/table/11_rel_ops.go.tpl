@@ -44,8 +44,7 @@
         {{$sideC := $sideTable.GetColumn .Column -}}
         {{$colName := $sideAlias.Column $map.Column -}}
         {{if .HasValue -}}
-          {{$typDef :=  index $.Types $sideC.Type -}}
-          {{$colTyp := or $typDef.AliasOf $sideC.Type -}}
+          {{$colTyp := $.Types.Get $.CurrentPackage $.Importer $sideC.Type -}}
           {{if $sideC.Nullable }}
             {{$tblName}}.{{$colName}} = &sql.Null[{{$colTyp}}]{Val:{{index .Value 1}}, Valid: true}
           {{else}}
@@ -59,7 +58,7 @@
           {{if $rel.NeedsMany .ExtPosition -}}
             {{$colVal = printf "%s%d[i]" $a.DownPlural $map.ExtPosition -}}
           {{end -}}
-          {{$tblName}}.{{$colName}} = {{$.Tables.ColumnSetter $.Importer $.Types $.Aliases $rel.Foreign .ExternalTable $map.Column .ExternalColumn $colVal true false}}
+          {{$tblName}}.{{$colName}} = {{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $.Aliases $rel.Foreign .ExternalTable $map.Column .ExternalColumn $colVal true false}}
         {{- end}}
       {{- end}}
     {{- if $rel.IsToMany}}}{{end}}
@@ -108,8 +107,7 @@
           {{$column := $table.GetColumn .ExternalColumn -}}
           {{if .HasValue -}}
             {{$colName}}: &{{index .Value 1}},
-            {{$typDef :=  index $.Types $sideColumn.Type -}}
-            {{$colTyp := or $typDef.AliasOf $sideColumn.Type -}}
+            {{$colTyp := $.Types.Get $.CurrentPackage $.Importer $sideColumn.Type -}}
             {{if $sideColumn.Nullable }}
               {{$colName}}: &sql.Null[{{$colTyp}}]{Val:{{index .Value 1}}, Valid: true},
             {{else}}
@@ -120,7 +118,7 @@
             {{if $rel.NeedsMany .ExtPosition -}}
               {{$colVal = printf "%s%d[i]" $tableAlias.DownPlural $map.ExtPosition -}}
             {{end -}}
-            {{$colName}}: {{$.Tables.ColumnSetter $.Importer $.Types $.Aliases $side.TableName $table.Name $map.Column .ExternalColumn $colVal true false}},
+            {{$colName}}: {{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName $table.Name $map.Column .ExternalColumn $colVal true false}},
           {{- end}}
         {{- end}}
       }
@@ -152,8 +150,7 @@
           {{$sideC := $sideTable.GetColumn .Column -}}
           {{$colName := $sideAlias.Column $map.Column -}}
           {{if .HasValue -}}
-            {{$typDef :=  index $.Types $sideC.Type -}}
-            {{$colTyp := or $typDef.AliasOf $sideC.Type -}}
+            {{$colTyp := $.Types.Get $.CurrentPackage $.Importer $sideC.Type -}}
             {{if $sideC.Nullable }}
               {{$colName}}: &sql.Null[{{$colTyp}}]{Val:{{index .Value 1}}, Valid: true},
             {{else}}
@@ -167,7 +164,7 @@
             {{if $rel.NeedsMany .ExtPosition -}}
               {{$colVal = printf "%s%d[i]" $a.DownPlural $map.ExtPosition -}}
             {{end -}}
-            {{$colName}}: {{$.Tables.ColumnSetter $.Importer $.Types $.Aliases $side.TableName .ExternalTable $map.Column .ExternalColumn $colVal true false}},
+            {{$colName}}: {{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName .ExternalTable $map.Column .ExternalColumn $colVal true false}},
           {{- end}}
         {{- end}}
       {{- end}}

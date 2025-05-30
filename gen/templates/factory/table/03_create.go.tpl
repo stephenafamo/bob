@@ -1,7 +1,7 @@
 {{if .Table.Constraints.Primary}}
-{{$.Importer.Import "models" $.ModelsPackage}}
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 
@@ -168,7 +168,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
 				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnSetter $.Importer $.Types $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
+				opt.{{$fromColA}} = {{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
 			{{end}}
 		{{- end}}
 	{{end}}

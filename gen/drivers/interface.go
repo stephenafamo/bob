@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/stephenafamo/bob/gen/language"
@@ -28,7 +29,7 @@ type Type struct {
 	// this is useful to have custom randomization for a type e.g. xml
 	AliasOf string `yaml:"alias_of"`
 	// Imports needed for the type
-	Imports language.ImportList `yaml:"imports"`
+	Imports []string `yaml:"imports"`
 	// Any other types that this type depends on
 	DependsOn []string `yaml:"depends_on"`
 	// To be used in factory.random_type
@@ -38,7 +39,7 @@ type Type struct {
 	// another example, a DECIMAL(10,2) would have limits = ["10", "2"]
 	RandomExpr string `yaml:"random_expr"`
 	// Additional imports for the randomize expression
-	RandomExprImports language.ImportList `yaml:"random_expr_imports"`
+	RandomExprImports []string `yaml:"random_expr_imports"`
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
 	NoRandomizationTest bool `yaml:"no_randomization_test"`
@@ -51,12 +52,36 @@ type Type struct {
 	// Used AAA and BBB as placeholders for the two values
 	CompareExpr string `yaml:"compare_expr"`
 	// Imports needed for the compare expression
-	CompareExprImports language.ImportList `yaml:"compare_expr_imports"`
-	// If factory generation should have "models." prefix
-	InGeneratedPackage bool `yaml:"in_generated_package"`
+	CompareExprImports []string `yaml:"compare_expr_imports"`
 }
 
 type Types map[string]Type
+
+func (t Types) Get(curr string, i language.Importer, namedType string) string {
+	return t.get(curr, i, namedType, true)
+}
+
+func (t Types) GetWithoutImporting(curr string, i language.Importer, namedType string) string {
+	return t.get(curr, i, namedType, false)
+}
+
+func (t Types) get(curr string, i language.Importer, namedType string, doImport bool) string {
+	typedef := t[namedType]
+
+	for typedef.AliasOf != "" {
+		namedType = typedef.AliasOf
+		typedef = t[namedType]
+	}
+
+	if doImport {
+		i.ImportList(typedef.Imports)
+	}
+	if len(typedef.Imports) > 0 && strings.HasSuffix(typedef.Imports[0], `"`+curr+`"`) {
+		_, namedType, _ = strings.Cut(namedType, ".")
+	}
+
+	return namedType
+}
 
 // DBInfo is the database's table data and dialect.
 type DBInfo[DBExtra, ConstraintExtra, IndexExtra any] struct {

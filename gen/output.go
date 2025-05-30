@@ -21,7 +21,6 @@ type Output struct {
 	// it also makes it possible to target modifing a specific output
 	// There are special keys that are reserved for internal use
 	// * "models" - for model templates.
-	//    This is also used to set `ModelsPackage` in the template data
 	// * "factory" - for factory templates
 	// * "queries" - for query templates.
 	//    - This is run once for each query folder
@@ -272,6 +271,7 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], tests bool) e
 		lang := e.langs.GetOutputLanguage(ext)
 		e.data.Language = lang
 		e.data.Importer = lang.Importer()
+		e.data.CurrentPackage = e.data.OutputPackages[e.output.Key]
 
 		matchingTemplates := 0
 		for _, tplName := range tplNames {
@@ -306,19 +306,21 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], tests bool) e
 			fmt.Sprintf("%7d bytes", out.Len()-prevLen),
 			e.output.OutFolder, fName)
 
-		imports := e.data.Importer.ToList()
-		if err := lang.WriteHeader(headerOut, imports, e.output.PkgName, tests); err != nil {
-			return fmt.Errorf("writing header: %w", err)
-		}
+		path := filepath.Join(e.output.OutFolder, fName)
 
-		formatted, err := lang.Format(io.MultiReader(headerOut, out))
+		// MAKE SURE TO CLOSE THE FILE ON EVERY EXIT PATH!!!!!!
+		dest, err := os.Create(path) // Ensure the file exists
 		if err != nil {
-			return fmt.Errorf("formatting: %w", err)
+			return fmt.Errorf("creating output file %s: %w", path, err)
 		}
 
-		if err := writeFile(e.output.OutFolder, fName, formatted); err != nil {
-			return err
+		// MAKE SURE TO CLOSE THE FILE ON EVERY EXIT PATH!!!!!!
+		if err := lang.Write(e.data.Importer, e.output.PkgName, e.output.OutFolder, out, tests, dest); err != nil {
+			dest.Close()
+			return fmt.Errorf("writing file: %w", err)
 		}
+
+		dest.Close()
 	}
 
 	return nil
@@ -344,6 +346,7 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], test
 
 		e.data.Language = lang
 		e.data.Importer = lang.Importer()
+		e.data.CurrentPackage = e.data.OutputPackages[e.output.Key]
 		if err := executeTemplate(out, e.templates, tpl.Name(), e.data); err != nil {
 			return err
 		}
@@ -359,30 +362,21 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], test
 			fmt.Sprintf("%7d bytes", out.Len()-prevLen),
 			e.output.OutFolder, fileName)
 
-		imports := e.data.Importer.ToList()
-		if err := lang.WriteHeader(headerOut, imports, e.output.PkgName, tests); err != nil {
-			return fmt.Errorf("writing header: %w", err)
-		}
+		path := filepath.Join(e.output.OutFolder, fileName)
 
-		formatted, err := lang.Format(io.MultiReader(headerOut, out))
+		// MAKE SURE TO CLOSE THE FILE ON EVERY EXIT PATH!!!!!!
+		dest, err := os.Create(path) // Ensure the file exists
 		if err != nil {
-			return fmt.Errorf("formatting: %w", err)
+			return fmt.Errorf("creating output file %s: %w", path, err)
 		}
 
-		if err := writeFile(e.output.OutFolder, fileName, formatted); err != nil {
-			return err
+		// MAKE SURE TO CLOSE THE FILE ON EVERY EXIT PATH!!!!!!
+		if err := lang.Write(e.data.Importer, e.output.PkgName, e.output.OutFolder, out, tests, dest); err != nil {
+			dest.Close()
+			return fmt.Errorf("writing file: %w", err)
 		}
-	}
 
-	return nil
-}
-
-// writeFile writes to the given folder and filename, formatting the buffer
-// given.
-func writeFile(outFolder string, fileName string, byt []byte) error {
-	path := filepath.Join(outFolder, fileName)
-	if err := os.WriteFile(path, byt, 0o600); err != nil {
-		return fmt.Errorf("failed to write output file %s: %w", path, err)
+		dest.Close()
 	}
 
 	return nil

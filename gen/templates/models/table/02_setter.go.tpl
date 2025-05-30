@@ -9,8 +9,7 @@ type {{$tAlias.UpSingular}}Setter struct {
 	{{- range $column := $table.NonGeneratedColumns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
 	{{- $orig_col_name := $column.Name -}}
-  {{- $typDef :=  index $.Types $column.Type -}}
-  {{- $colTyp := or $typDef.AliasOf $column.Type -}}
+  {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 		{{- if $column.Nullable -}}
 			{{- $colTyp = printf "*sql.Null[%s]" $colTyp -}}
 		{{- else -}}

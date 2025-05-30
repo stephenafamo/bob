@@ -1,4 +1,4 @@
-{{$.Importer.Import "models" $.ModelsPackage}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 {{ $table := .Table}}
 {{ $tAlias := .Aliases.Table $table.Key -}}
 
@@ -24,12 +24,12 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                         rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
                     {{- end}}
                 {{- end}}
-                {{$.Tables.SetFactoryDeps $.Importer $.Types $.Aliases . false}}
+                {{$.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
             {{- else -}}
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.toModels(r.number)
-                  {{- $setter := $.Tables.SetFactoryDeps $.Importer $.Types $.Aliases . false}}
+                  {{- $setter := $.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
                   {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
                   for _, rel := range related {
                     {{$setter}}

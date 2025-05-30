@@ -4,26 +4,36 @@
 // Set the testDB to enable tests that use the database
 var testDB bob.Transactor
 
-
 {{$doneTypes := dict }}
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
-    {{- $typDef :=  index $.Types $column.Type -}}
-    {{- $colTyp := getType $column.Type $typDef -}}
-    {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
-    {{- $_ :=  set $doneTypes $colTyp nil -}}
-    {{- $typInfo :=  index $.Types $column.Type -}}
-    {{- if eq $colTyp "bool"}}{{continue}}{{end -}}
-    {{- if $typInfo.NoRandomizationTest}}{{continue}}{{end -}}
+      {{- $colTyp := $column.Type -}}
+      {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
+      {{- $_ := set $doneTypes $column.Type nil -}}
+      {{range $depTyp := (index $.Types $column.Type).DependsOn}}
+        {{- $_ := set $doneTypes $depTyp nil -}}
+      {{end}}
+  {{end -}}
+{{- end}}
+
+
+{{range $colTyp := keys $doneTypes | sortAlpha -}}
+    {{- $typDef := index $.Types $colTyp -}}
+    {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
+      Ensures that compilation fails.
+      Users of custom types can decide to use a non-random expression
+      but this would be a conscious decision.
+    */}}{{- end -}}
+    {{- if $typDef.NoRandomizationTest}}{{continue}}{{end -}}
       func TestRandom_{{normalizeType $colTyp}}(t *testing.T) {
         t.Parallel()
 
         val1 := random_{{normalizeType $colTyp}}(nil)
         val2 := random_{{normalizeType $colTyp}}(nil)
 
-        {{with $typInfo.CompareExpr -}}
-          {{- $.Importer.ImportList $typInfo.CompareExprImports -}}
+        {{with $typDef.CompareExpr -}}
+          {{- $.Importer.ImportList $typDef.CompareExprImports -}}
           if {{replace "AAA" "val1" . | replace "BBB" "val2"}}
         {{- else -}}
           if val1 == val2
@@ -33,5 +43,4 @@ var testDB bob.Transactor
         }
       }
 
-  {{end -}}
-{{- end}}
+{{end -}}

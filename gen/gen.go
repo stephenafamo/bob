@@ -6,9 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"os"
-	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -19,7 +16,6 @@ import (
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
-	"golang.org/x/mod/modfile"
 )
 
 var (
@@ -72,7 +68,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		return errors.New("no tables found in database")
 	}
 
-	modPkg, version, err := modelsPackage(s.Outputs)
+	pkgMap, err := buildPkgMap(s.Outputs)
 	if err != nil {
 		return fmt.Errorf("getting models pkg details: %w", err)
 	}
@@ -127,7 +123,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,
-		ModelsPackage:     modPkg,
+		OutputPackages:    pkgMap,
 		Driver:            dbInfo.Driver,
 	}
 
@@ -148,10 +144,10 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		}
 	}
 
-	return generate(s, data, version)
+	return generate(s, data)
 }
 
-func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion string) error {
+func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I]) error {
 	knownKeys := make(map[string]struct{})
 	templateByteBuffer := &bytes.Buffer{}
 	templateHeaderByteBuffer := &bytes.Buffer{}
@@ -204,7 +200,6 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I], goVersion s
 
 			langs := language.Languages{
 				GeneratorName:           s.Config.Generator,
-				GoVersion:               goVersion,
 				SeparatePackageForTests: o.SeparatePackageForTests,
 			}
 
@@ -282,99 +277,20 @@ func (s *State[C]) initTags() error {
 	return nil
 }
 
-// Returns the pkg name, and the go version
-func modelsPackage(outputs []*Output) (string, string, error) {
-	var modelsFolder string
+func buildPkgMap(outputs []*Output) (map[string]string, error) {
+	pkgMap := make(map[string]string)
+
 	for _, o := range outputs {
-		if o.Key == "models" {
-			modelsFolder = o.OutFolder
+		if o.Key == "queries" {
+			continue // queries have no fixed output folder
 		}
-	}
 
-	if modelsFolder == "" {
-		return "", "", nil
-	}
-
-	modRoot, modFile, err := goModInfo(modelsFolder)
-	if err != nil {
-		return "", "", fmt.Errorf("getting mod details: %w", err)
-	}
-
-	fullPath := modelsFolder
-	if !filepath.IsAbs(modelsFolder) {
-		wd, err := os.Getwd()
+		pkg, _, err := language.PackageForFolder(o.OutFolder)
 		if err != nil {
-			return "", "", fmt.Errorf("could not get working directory: %w", err)
+			return nil, fmt.Errorf("getting package for folder %q: %w", o.OutFolder, err)
 		}
-
-		fullPath = filepath.Join(wd, modelsFolder)
+		pkgMap[o.Key] = pkg
 	}
 
-	relPath := strings.TrimPrefix(fullPath, modRoot)
-
-	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), getGoVersion(modFile), nil
-}
-
-// goModInfo returns the main module's root directory
-// and the parsed contents of the go.mod file.
-func goModInfo(path string) (string, *modfile.File, error) {
-	goModPath, err := findGoMod(path)
-	if err != nil {
-		return "", nil, fmt.Errorf("cannot find main module: %w", err)
-	}
-
-	if goModPath == os.DevNull {
-		return "", nil, fmt.Errorf("destination is not in a go module")
-	}
-
-	data, err := os.ReadFile(goModPath)
-	if err != nil {
-		return "", nil, fmt.Errorf("cannot read main go.mod file: %w", err)
-	}
-
-	modf, err := modfile.Parse(goModPath, data, nil)
-	if err != nil {
-		return "", nil, fmt.Errorf("could not parse go.mod: %w", err)
-	}
-
-	return filepath.Dir(goModPath), modf, nil
-}
-
-func findGoMod(path string) (string, error) {
-	var outData, errData bytes.Buffer
-
-	err := os.MkdirAll(path, 0o755)
-	if err != nil {
-		return "", fmt.Errorf("could not create destination folder %q: %w", path, err)
-	}
-
-	c := exec.Command("go", "env", "GOMOD")
-	c.Stdout = &outData
-	c.Stderr = &errData
-	c.Dir = path
-	err = c.Run()
-	if err != nil {
-		var exitError *exec.ExitError
-		if errors.As(err, &exitError) && errData.Len() > 0 {
-			return "", errors.New(strings.TrimSpace(errData.String()))
-		}
-
-		return "", fmt.Errorf("cannot run go env GOMOD: %w", err)
-	}
-
-	out := strings.TrimSpace(outData.String())
-	if out == "" {
-		return "", errors.New("no go.mod file found in any parent directory")
-	}
-
-	return out, nil
-}
-
-// getGoVersion returns the required go version from the package
-func getGoVersion(modFile *modfile.File) string {
-	if modFile.Toolchain != nil {
-		return modFile.Toolchain.Name
-	}
-
-	return strings.Join(modFile.Go.Syntax.Token, "")
+	return pkgMap, nil
 }
