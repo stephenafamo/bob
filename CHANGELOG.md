@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    This is to make it easier to implement for non `database/sql` drivers.
 - In the generated model, the `PrimaryKeyVals()` method is now private.
 - Renamed `driver_name` to `driver` in code generation configuration.
+- In type replacements, nullability is ONLY matched if explicitly set. Otherwise, the replacement applies based on other matches.  
+   Previously, nullability of matches was set to false by default, and would require an additional replacement to also match nullable columns.
 
 ### Removed
 

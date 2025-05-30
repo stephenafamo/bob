@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func TestProcessTypeReplacements(t *testing.T) {
@@ -92,41 +93,46 @@ func TestProcessTypeReplacements(t *testing.T) {
 
 	replacements := []Replace{
 		{
-			Match: drivers.Column{
-				DBType: "serial",
+			Match: replaceMatch{
+				Column: drivers.Column{
+					DBType: "serial",
+				},
+				Nullable: internal.Pointer(false),
 			},
 			Replace: "excellent.Type",
 		},
 		{
 			Tables: []string{"named_table"},
-			Match: drivers.Column{
+			Match: replaceMatch{Column: drivers.Column{
 				DBType: "serial",
-			},
+			}},
 			Replace: "excellent.NamedType",
 		},
 		{
-			Match: drivers.Column{
-				Type:     "null.String",
-				Nullable: true,
+			Match: replaceMatch{
+				Column: drivers.Column{
+					Type: "null.String",
+				},
+				Nullable: internal.Pointer(true),
 			},
 			Replace: "int",
 		},
 		{
-			Match: drivers.Column{
+			Match: replaceMatch{Column: drivers.Column{
 				DomainName: "domain name",
-			},
+			}},
 			Replace: "contextInt",
 		},
 		{
-			Match: drivers.Column{
+			Match: replaceMatch{Column: drivers.Column{
 				Name: "by_named",
-			},
+			}},
 			Replace: "big.Int",
 		},
 		{
-			Match: drivers.Column{
+			Match: replaceMatch{Column: drivers.Column{
 				Comment: "xid",
-			},
+			}},
 			Replace: "xid.ID",
 		},
 	}
