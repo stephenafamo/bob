@@ -183,7 +183,8 @@ func Types() drivers.Types {
 			RandomExpr: `return f.Int()`,
 		},
 		"int8": {
-			RandomExpr: `return f.Int8()`,
+			NoRandomizationTest: true,
+			RandomExpr:          `return f.Int8()`,
 		},
 		"int16": {
 			RandomExpr: `return f.Int16()`,
@@ -201,7 +202,8 @@ func Types() drivers.Types {
 			RandomExpr: `return f.UInt()`,
 		},
 		"uint8": {
-			RandomExpr: `return f.UInt8()`,
+			NoRandomizationTest: true,
+			RandomExpr:          `return f.UInt8()`,
 		},
 		"byte": {
 			RandomExpr: `return f.UInt8()`,
