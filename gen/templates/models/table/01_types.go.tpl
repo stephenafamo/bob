@@ -5,12 +5,8 @@
 type {{$tAlias.UpSingular}} struct {
 	{{- range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-  {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 	{{- $orig_col_name := $column.Name -}}
-	{{- if $column.Nullable -}}
-		{{ $.Importer.Import "database/sql"}}
-    {{- $colTyp = printf "sql.Null[%s]" $colTyp -}}
-	{{- end -}}
+  {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
 	{{- if trim $column.Comment}}{{range $column.Comment | splitList "\n"}}
 		// {{ . }}
 	{{- end}}{{end -}}

@@ -12,7 +12,7 @@
 {{$queryType := (lower $query.Type.String | titleCase)}}
 {{$args := list }}
 {{range $arg := $query.Args -}}
-  {{$args = append $args ($arg.RandomExpr $.Importer $.Types) }}
+  {{$args = append $args ($arg.RandomExpr $.CurrentPackage $.Importer $.Types) }}
 {{end}}
 
 

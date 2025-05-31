@@ -25,7 +25,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{$colParams :=  printf "%s, %s" $queryRowName (or $query.Config.RowSliceName (printf "[]%s" $queryRowName)) }}
 {{if eq (len $query.Columns) 1}}
   {{$col := index $query.Columns 0}}
-  {{$colType := $col.Type $.Importer $.Types}}
+  {{$colType := $col.Type $.CurrentPackage $.Importer $.Types}}
   {{$colParams =  printf "%s, %s" $colType (or $query.Config.RowSliceName (printf "[]%s" $colType)) }}
 {{end}}
 
@@ -38,11 +38,11 @@ var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.
   {{end}}
 
   {{ $argName := titleCase $arg.Col.Name }}
-  {{ $argType := ($arg.Type $.Importer $.Types) }}
+  {{ $argType := ($arg.Type $.CurrentPackage $.Importer $.Types) }}
 
   {{if gt (len $arg.Children) 0}}
     {{ $argType = printf "%s_%s" $upperName $argName }}
-    type {{$argType}} = {{$arg.TypeDef $.Importer $.Types}}
+    type {{$argType}} = {{$arg.TypeDef $.CurrentPackage $.Importer $.Types}}
     {{if $arg.CanBeMultiple}}
       {{ $argType = printf "[]%s" $argType }}
     {{end}}
@@ -78,7 +78,7 @@ func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
         Scanner: scan.StructMapper[{{$queryRowName}}](),
       {{- else -}}
         {{- $col := index $query.Columns 0 -}}
-        Scanner: scan.ColumnMapper[{{$col.Type $.Importer $.Types}}]("{{$col.DBName}}"),
+        Scanner: scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]("{{$col.DBName}}"),
       {{- end}}
     },
   }
@@ -99,7 +99,7 @@ func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
 {{if and $query.Columns $query.Config.GenerateRow}}
 type {{$queryRowName}} struct {
   {{range $col := $query.Columns -}}
-    {{titleCase $col.Name}} {{$col.Type $.Importer $.Types}} `db:"{{$col.DBName}}"`
+    {{titleCase $col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
   {{end}}
 }
 {{end}}

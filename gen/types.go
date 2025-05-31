@@ -3,7 +3,6 @@ package gen
 import (
 	"fmt"
 	"slices"
-	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 )
@@ -49,11 +48,7 @@ func processTypeReplacements[C, I any](types map[string]drivers.Type, replacemen
 		// Print a warning if we didn't match anything
 		if !didMatch {
 			c := r.Match
-			nullable := "ANY"
-			if c.Nullable != nil {
-				nullable = strings.ToUpper(fmt.Sprintf("%t", *c.Nullable))
-			}
-			fmt.Printf("WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %s\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n", c.Name, c.DBType, c.Default, c.Comment, nullable, c.Generated, c.AutoIncr, c.DomainName)
+			fmt.Printf("WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n", c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
 		}
 	}
 }
@@ -65,7 +60,7 @@ func processTypeReplacements[C, I any](types map[string]drivers.Type, replacemen
 // and if a string field matched they are always checked (must be defined).
 //
 // Doesn't care about Unique columns since those can vary independent of type.
-func matchColumn(c drivers.Column, m replaceMatch) bool {
+func matchColumn(c, m drivers.Column) bool {
 	matchedSomething := false
 
 	// return true if we matched, or we don't have to match
@@ -101,9 +96,6 @@ func matchColumn(c drivers.Column, m replaceMatch) bool {
 	}
 
 	if m.Generated != c.Generated {
-		return false
-	}
-	if m.Nullable != nil && *m.Nullable != c.Nullable {
 		return false
 	}
 

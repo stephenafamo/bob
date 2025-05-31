@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stephenafamo/bob/gen/drivers"
-	"github.com/stephenafamo/bob/internal"
 )
 
 func TestProcessTypeReplacements(t *testing.T) {
@@ -21,7 +20,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 				{
 					Name:     "name",
 					Type:     "null.String",
-					DBType:   "serial",
+					DBType:   "text",
 					Default:  "some db nonsense",
 					Nullable: true,
 				},
@@ -93,46 +92,41 @@ func TestProcessTypeReplacements(t *testing.T) {
 
 	replacements := []Replace{
 		{
-			Match: replaceMatch{
-				Column: drivers.Column{
-					DBType: "serial",
-				},
-				Nullable: internal.Pointer(false),
+			Match: drivers.Column{
+				DBType: "serial",
 			},
 			Replace: "excellent.Type",
 		},
 		{
 			Tables: []string{"named_table"},
-			Match: replaceMatch{Column: drivers.Column{
-				DBType: "serial",
-			}},
+			Match: drivers.Column{
+				Name: "id",
+			},
 			Replace: "excellent.NamedType",
 		},
 		{
-			Match: replaceMatch{
-				Column: drivers.Column{
-					Type: "null.String",
-				},
-				Nullable: internal.Pointer(true),
+			Match: drivers.Column{
+				Type:     "null.String",
+				Nullable: true,
 			},
 			Replace: "int",
 		},
 		{
-			Match: replaceMatch{Column: drivers.Column{
+			Match: drivers.Column{
 				DomainName: "domain name",
-			}},
+			},
 			Replace: "contextInt",
 		},
 		{
-			Match: replaceMatch{Column: drivers.Column{
+			Match: drivers.Column{
 				Name: "by_named",
-			}},
+			},
 			Replace: "big.Int",
 		},
 		{
-			Match: replaceMatch{Column: drivers.Column{
+			Match: drivers.Column{
 				Comment: "xid",
-			}},
+			},
 			Replace: "xid.ID",
 		},
 	}

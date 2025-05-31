@@ -37,14 +37,9 @@ type Config[ConstraintExtra any] struct {
 
 // Replace replaces a column type with something else
 type Replace struct {
-	Tables  []string     `yaml:"tables"`
-	Match   replaceMatch `yaml:"match"`
-	Replace string       `yaml:"replace"`
-}
-
-type replaceMatch struct {
-	drivers.Column `yaml:",squash"`
-	Nullable       *bool `yaml:"nullable,omitempty"` // if set, only matches columns with this nullable value
+	Tables  []string       `yaml:"tables"`
+	Match   drivers.Column `yaml:"match"`
+	Replace string         `yaml:"replace"`
 }
 
 type Inflections struct {

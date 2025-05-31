@@ -27,19 +27,44 @@ type Interface[DBExtra, ConstraintExtra, IndexExtra any] interface {
 type Type struct {
 	// If this type is an alias of another type
 	// this is useful to have custom randomization for a type e.g. xml
+	// NOTE: If an alias is set,
+	// the only other relevant fields are RandomExpr and RandomExprImports
 	AliasOf string `yaml:"alias_of"`
 	// Imports needed for the type
 	Imports []string `yaml:"imports"`
 	// Any other types that this type depends on
 	DependsOn []string `yaml:"depends_on"`
 	// To be used in factory.random_type
-	// a variable `f` of type `faker.Faker` is available
-	// another variable `limits` which is a slice of strings with any limits
-	// for example, a VARCHAR(255) would have limits = ["255"]
-	// another example, a DECIMAL(10,2) would have limits = ["10", "2"]
+	// Use TYPE to reference the name of the type
+	// * A variable `f` of type `faker.Faker` is available
+	// * Another variable `limits` which is a slice of strings with any limits
+	//   for example, a VARCHAR(255) would have limits = ["255"]
+	//   another example, a DECIMAL(10,2) would have limits = ["10", "2"]
 	RandomExpr string `yaml:"random_expr"`
 	// Additional imports for the randomize expression
 	RandomExprImports []string `yaml:"random_expr_imports"`
+
+	// CompareExpr is used to compare two values of this type
+	// if not provided, == is used
+	// Use AAA and BBB as placeholders for the two values
+	CompareExpr string `yaml:"compare_expr"`
+	// Imports needed for the compare expression
+	CompareExprImports []string `yaml:"compare_expr_imports"`
+
+	// NullType is the type to use for null values of this type
+	// if not provided, the type is wrapped in `sql.Null[T]`
+	NullType string `yaml:"null_type"`
+	// FromNullExpr is used to convert a null value of this type
+	// to a non-null value, if not provided it is assigned directly
+	FromNullExpr string `yaml:"from_null_expr"`
+	// Imports needed for the from null expression
+	FromNullExprImports []string `yaml:"from_null_expr_imports"`
+	// ToNullExpr is used to convert a non-null value of this type
+	// to a null value, if not provided it is assigned directly
+	ToNullExpr string `yaml:"to_null_expr"`
+	// Imports needed for the to null expression
+	ToNullExprImports []string `yaml:"to_null_expr_imports"`
+
 	// Set this to true if the randomization should not be tested
 	// this is useful for low-cardinality types like bool
 	NoRandomizationTest bool `yaml:"no_randomization_test"`
@@ -47,25 +72,47 @@ type Type struct {
 	// the scanner and valuer interfaces should be skipped
 	// this is useful for types that are based on a primitive type
 	NoScannerValuerTest bool `yaml:"no_scanner_valuer_test"`
-	// CompareExpr is used to compare two values of this type
-	// if not provided, == is used
-	// Used AAA and BBB as placeholders for the two values
-	CompareExpr string `yaml:"compare_expr"`
-	// Imports needed for the compare expression
-	CompareExprImports []string `yaml:"compare_expr_imports"`
+}
+
+type TypeExpr struct {
+	// Expr is the expression to use for the type
+	Expr string `yaml:"expr"`
+	// Imports are the imports needed for the expression
+	Imports []string `yaml:"imports"`
 }
 
 type Types map[string]Type
 
 func (t Types) Get(curr string, i language.Importer, namedType string) string {
-	return t.get(curr, i, namedType, true)
+	name, def := t.GetNameAndDef(curr, namedType)
+	i.ImportList(def.Imports)
+	return name
+}
+
+func (t Types) GetNullable(curr string, i language.Importer, namedType string, null bool) string {
+	name, def := t.GetNameAndDef(curr, namedType)
+	if !null {
+		i.ImportList(def.Imports)
+		return name
+	}
+
+	if def.NullType != "" {
+		name, def = t.GetNameAndDef(curr, def.NullType)
+		i.ImportList(def.Imports)
+		return name
+	}
+
+	i.ImportList(def.Imports)
+	i.Import("database/sql")
+	return fmt.Sprintf("sql.Null[%s]", name)
 }
 
 func (t Types) GetWithoutImporting(curr string, i language.Importer, namedType string) string {
-	return t.get(curr, i, namedType, false)
+	name, _ := t.GetNameAndDef(curr, namedType)
+	return name
 }
 
-func (t Types) get(curr string, i language.Importer, namedType string, doImport bool) string {
+func (t Types) GetNameAndDef(curr string, namedType string) (string, Type) {
 	typedef := t[namedType]
 
 	for typedef.AliasOf != "" {
@@ -73,14 +120,11 @@ func (t Types) get(curr string, i language.Importer, namedType string, doImport 
 		typedef = t[namedType]
 	}
 
-	if doImport {
-		i.ImportList(typedef.Imports)
-	}
 	if len(typedef.Imports) > 0 && strings.HasSuffix(typedef.Imports[0], `"`+curr+`"`) {
 		_, namedType, _ = strings.Cut(namedType, ".")
 	}
 
-	return namedType
+	return namedType, typedef
 }
 
 // DBInfo is the database's table data and dialect.

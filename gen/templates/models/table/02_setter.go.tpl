@@ -7,17 +7,14 @@
 // Generated columns are not included
 type {{$tAlias.UpSingular}}Setter struct {
 	{{- range $column := $table.NonGeneratedColumns -}}
-	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{- $orig_col_name := $column.Name -}}
-  {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
-		{{- if $column.Nullable -}}
-			{{- $colTyp = printf "*sql.Null[%s]" $colTyp -}}
-		{{- else -}}
-			{{- $colTyp = printf "*%s" $colTyp -}}
-		{{- end -}}
+    {{- $colAlias := $tAlias.Column $column.Name -}}
+    {{- $orig_col_name := $column.Name -}}
+    {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+    {{- $colTyp = printf "*%s" $colTyp -}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-		{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
-		{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
+      {{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
+		{{- else -}}
+      {{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
 			{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
 		{{- end -}}		
 	{{end -}}

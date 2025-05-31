@@ -246,30 +246,16 @@ func (q QueryArg) Types() []string {
 	return types
 }
 
-func (c QueryCol) Type(i language.Importer, types Types) string {
-	typ := c.TypeName
-
-	typDef, ok := types[typ]
-	if ok && typDef.AliasOf != "" {
-		typ = typDef.AliasOf
-	}
-
-	i.ImportList(typDef.Imports)
-
+func (c QueryCol) Type(currPkg string, i language.Importer, types Types) string {
 	if c.Nullable == nil {
 		panic(fmt.Sprintf("Column %s has no nullable value defined", c.Name))
 	}
 
-	if *c.Nullable {
-		i.Import("database/sql")
-		typ = fmt.Sprintf("sql.Null[%s]", typ)
-	}
-
-	return typ
+	return types.GetNullable(currPkg, i, c.TypeName, *c.Nullable)
 }
 
-func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
-	typ := c.TypeDef(i, types)
+func (c QueryArg) RandomExpr(currPkg string, i language.Importer, types Types) string {
+	typ := c.TypeDef(currPkg, i, types)
 	var sb strings.Builder
 
 	if c.CanBeMultiple {
@@ -278,13 +264,19 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 		sb.WriteString(typ)
 	}
 
+	//nolint:nestif
 	if len(c.Children) == 0 {
 		if c.Col.Nullable != nil && *c.Col.Nullable {
-			i.Import("database/sql")
-			normalized := strings.TrimPrefix(typ, "sql.Null[")
-			normalized = strings.TrimSuffix(normalized, "]")
-			normalized = internal.TypesReplacer.Replace(normalized)
-			fmt.Fprintf(&sb, "%s{V: random_%s(nil), Valid: true}", typ, normalized)
+			colTyp, def := types.GetNameAndDef(currPkg, c.Col.TypeName)
+			if def.NullType != "" {
+				nullTyp, _ := types.GetNameAndDef(currPkg, def.NullType)
+				normalized := internal.TypesReplacer.Replace(nullTyp)
+				fmt.Fprintf(&sb, "random_%s(nil)", normalized)
+			} else {
+				i.Import("database/sql")
+				normalized := internal.TypesReplacer.Replace(colTyp)
+				fmt.Fprintf(&sb, "%s{V: random_%s(nil), Valid: true}", typ, normalized)
+			}
 		} else {
 			normalized := internal.TypesReplacer.Replace(typ)
 			fmt.Fprintf(&sb, "random_%s(nil)", normalized)
@@ -294,7 +286,7 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 		for _, child := range c.Children {
 			sb.WriteString(strmangle.TitleCase(child.Col.Name))
 			sb.WriteString(": ")
-			sb.WriteString(child.RandomExpr(i, types))
+			sb.WriteString(child.RandomExpr(currPkg, i, types))
 			sb.WriteString(",\n")
 		}
 		sb.WriteString("}")
@@ -307,16 +299,16 @@ func (c QueryArg) RandomExpr(i language.Importer, types Types) string {
 	return sb.String()
 }
 
-func (c QueryArg) Type(i language.Importer, types Types) string {
+func (c QueryArg) Type(currPkg string, i language.Importer, types Types) string {
 	if c.CanBeMultiple {
-		return "[]" + c.TypeDef(i, types)
+		return "[]" + c.TypeDef(currPkg, i, types)
 	}
-	return c.TypeDef(i, types)
+	return c.TypeDef(currPkg, i, types)
 }
 
-func (c QueryArg) TypeDef(i language.Importer, types Types) string {
+func (c QueryArg) TypeDef(currPkg string, i language.Importer, types Types) string {
 	if len(c.Children) == 0 {
-		return c.Col.Type(i, types)
+		return c.Col.Type(currPkg, i, types)
 	}
 
 	var sb strings.Builder
@@ -324,7 +316,7 @@ func (c QueryArg) TypeDef(i language.Importer, types Types) string {
 	for _, child := range c.Children {
 		sb.WriteString(strmangle.TitleCase(child.Col.Name))
 		sb.WriteString(" ")
-		sb.WriteString(child.Type(i, types))
+		sb.WriteString(child.Type(currPkg, i, types))
 		sb.WriteString("\n")
 	}
 	sb.WriteString("}")

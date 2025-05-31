@@ -247,17 +247,17 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $side.FromColumns -}}
 			{{- $foreign := index $side.ToColumns $index -}}
-			{{- $fromColGet := $.Tables.ColumnGetter $fromAlias $side.From $local -}}
-			{{- $toColGet := $.Tables.ColumnGetter $toAlias $side.To $foreign -}}
+			{{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.From $local (cat "o." ($fromAlias.Column $local)) -}}
+			{{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.To $foreign (cat "rel." ($toAlias.Column $foreign)) -}}
 			{{- $fromCol := $.Tables.GetColumn $side.From $local -}}
 			{{- $typInfo := index $.Types $fromCol.Type -}}
 			{{- with $typInfo.CompareExpr -}}
 				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
-				if {{replace "AAA" (cat "o." $fromColGet) . | replace "BBB" (cat "rel." $toColGet)}} {
+				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
 					continue
 				}
 			{{- else -}}
-				if o.{{$fromColGet}} != rel.{{$toColGet}} {
+				if {{$fromColGet}} != {{$toColGet}} {
 					continue
 				}
 			{{- end}}

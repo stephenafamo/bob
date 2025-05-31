@@ -7,12 +7,12 @@ var defaultFaker = faker.New()
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
-      {{- $colTyp := $column.Type -}}
-      {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
-      {{- $_ := set $doneTypes $column.Type nil -}}
-      {{range $depTyp := (index $.Types $column.Type).DependsOn}}
-        {{- $_ := set $doneTypes $depTyp nil -}}
-      {{end}}
+    {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
+    {{- $_ := set $doneTypes $column.Type nil -}}
+    {{- $typDef := index $.Types $column.Type -}}
+    {{range $depTyp := $typDef.DependsOn}}
+      {{- $_ := set $doneTypes $depTyp nil -}}
+    {{end}}
   {{end -}}
 {{- end}}
 

@@ -86,7 +86,19 @@ var testDB bob.Transactor
 {{$.Importer.Import "github.com/jaswdr/faker/v2"}}
 var defaultFaker = faker.New()
 
+{{$doneTypes := dict }}
 {{range $colTyp := $.QueryFolder.Types -}}
+  {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
+  {{- $_ := set $doneTypes $colTyp nil -}}
+  {{- $typDef := index $.Types $colTyp -}}
+  {{range $depTyp := $typDef.DependsOn}}
+    {{- $_ := set $doneTypes $depTyp nil -}}
+  {{end}}
+{{end -}}
+
+
+
+{{range $colTyp := keys $doneTypes | sortAlpha -}}
     {{- $typDef := index $.Types $colTyp -}}
     {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*

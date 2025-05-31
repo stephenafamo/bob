@@ -25,12 +25,8 @@ func (mods {{$tAlias.UpSingular}}ModSlice) Apply(ctx context.Context, n *{{$tAli
 // all columns are optional and should be set by mods
 type {{$tAlias.UpSingular}}Template struct {
     {{- range $column := $table.Columns -}}
-        {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
         {{- $colAlias := $tAlias.Column $column.Name -}}
-        {{- if $column.Nullable -}}
-            {{- $.Importer.Import "database/sql" -}}
-            {{- $colTyp = printf "sql.Null[%s]" $colTyp -}}
-        {{- end -}}
+        {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
         {{$colAlias}} func() {{$colTyp}}
     {{end -}}
 
