@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Properly handle `nil` args when checking if default or null in `mysql` table insert query.
+- Fix bug in querying slice relationships in MySQL and SQLite.
 
 ## [v0.36.1] - 2025-05-27
 
