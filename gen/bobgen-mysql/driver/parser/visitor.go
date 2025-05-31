@@ -3467,10 +3467,10 @@ func (v *visitor) VisitInExpressions(ctx *mysqlparser.InExpressionsContext) any 
 		v.equateTypesAndNames(ctx.Predicate(), expression)
 	}
 
-	if len(expressions.AllExpression()) == 1 {
+	if all := expressions.AllExpression(); len(all) == 1 {
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-			ctx.GetStart().GetStart(),
-			ctx.GetStop().GetStop(),
+			all[0].GetStart().GetStart(),
+			all[0].GetStop().GetStop(),
 			func(start, end int) error {
 				v.UpdateInfo(NodeInfo{
 					Node:            expressions,
