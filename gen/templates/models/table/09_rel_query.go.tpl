@@ -192,7 +192,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 					{{- $fromCol := index $from.Columns $local -}}
 					{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
 					{{$to.UpSingular}}Columns.{{$toCol}},
-				{{- end}}).In(PKArgExpr)),
+				{{- end}}).OP("IN", PKArgExpr)),
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
