@@ -87,11 +87,8 @@ func (t Table[C, I]) HasExactUnique(cols ...string) bool {
 	}
 
 	// Check other unique constrints
-	for _, u := range t.Indexes {
-		if !u.Unique || u.HasExpressionColumn() {
-			continue
-		}
-		if internal.SliceMatch(u.NonExpressionColumns(), cols) {
+	for _, u := range t.Constraints.Uniques {
+		if internal.SliceMatch(u.Columns, cols) {
 			return true
 		}
 	}
@@ -193,11 +190,9 @@ func (t Table[C, I]) IsJoinTableForRel(r orm.Relationship, position int) bool {
 func (t Table[C, I]) UniqueColPairs() string {
 	ret := make([]string, 0, len(t.Constraints.Uniques)+1)
 
-	for _, unique := range t.Indexes {
-		if !unique.Unique || unique.HasExpressionColumn() {
-			continue
-		}
-		ret = append(ret, fmt.Sprintf("%#v", unique.NonExpressionColumns()))
+	ret = append(ret, fmt.Sprintf("%#v", t.Constraints.Primary.Columns))
+	for _, unique := range t.Constraints.Uniques {
+		ret = append(ret, fmt.Sprintf("%#v", unique.Columns))
 	}
 
 	return strings.Join(ret, ", ")
