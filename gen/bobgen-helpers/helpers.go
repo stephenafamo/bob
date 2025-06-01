@@ -163,18 +163,18 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 }
 
 func EnumType(types drivers.Types, enum string) string {
-	types[enum] = drivers.Type{
+	types.Register(enum, drivers.Type{
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`all := all%s()
             return all[f.IntBetween(0, len(all)-1)]`, enum),
-	}
+	})
 
 	return enum
 }
 
 //nolint:maintidx
 func Types() drivers.Types {
-	return drivers.Types{
+	m := map[string]drivers.Type{
 		"bool": {
 			NoRandomizationTest: true,
 			RandomExpr:          `return f.Bool()`,
@@ -546,6 +546,10 @@ func Types() drivers.Types {
 			RandomExprImports: []string{`"fmt"`},
 		},
 	}
+
+	var types drivers.Types
+	types.RegisterAll(m)
+	return types
 }
 
 func GetFreePort() (int, error) {

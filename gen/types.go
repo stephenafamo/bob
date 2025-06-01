@@ -21,7 +21,7 @@ func isPrimitiveType(name string) bool {
 
 // processTypeReplacements checks the config for type replacements
 // and performs them.
-func processTypeReplacements[C, I any](types map[string]drivers.Type, replacements []Replace, tables []drivers.Table[C, I]) {
+func processTypeReplacements[C, I any](types drivers.Types, replacements []Replace, tables []drivers.Table[C, I]) {
 	for _, r := range replacements {
 		didMatch := false
 		for i := range tables {
@@ -36,7 +36,7 @@ func processTypeReplacements[C, I any](types map[string]drivers.Type, replacemen
 				if matchColumn(c, r.Match) {
 					didMatch = true
 
-					if _, ok := types[r.Replace]; !ok && !isPrimitiveType(r.Replace) {
+					if ok := types.Contains(r.Replace); !ok && !isPrimitiveType(r.Replace) {
 						fmt.Printf("WARNING: No definition found for replacement: %q\n", r.Replace)
 					}
 

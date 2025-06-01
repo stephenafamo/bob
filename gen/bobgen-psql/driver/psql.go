@@ -89,15 +89,15 @@ func New(config Config) Interface {
 
 	switch config.UUIDPkg {
 	case "google":
-		types["uuid.UUID"] = drivers.Type{
+		types.Register("uuid.UUID", drivers.Type{
 			Imports:    []string{`"github.com/google/uuid"`},
 			RandomExpr: `return uuid.New()`,
-		}
+		})
 	default:
-		types["uuid.UUID"] = drivers.Type{
+		types.Register("uuid.UUID", drivers.Type{
 			Imports:    []string{`"github.com/gofrs/uuid/v5"`},
 			RandomExpr: `return uuid.Must(uuid.NewV4())`,
-		}
+		})
 	}
 
 	return &driver{

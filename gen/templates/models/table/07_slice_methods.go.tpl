@@ -53,7 +53,7 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
     for _, new := range from {
 			{{range $column := $table.Constraints.Primary.Columns -}}
 				{{- $colAlias := $tAlias.Column $column -}}
-				{{- $typInfo :=  index $.Types ($table.GetColumn $column).Type -}}
+				{{- $typInfo :=  $.Types.Index ($table.GetColumn $column).Type -}}
         {{- with $typInfo.CompareExpr -}}
           {{$.Importer.ImportList $typInfo.CompareExprImports -}}
           if {{replace "AAA" (cat "new." $colAlias) . | replace "BBB" (cat "old." $colAlias)}}

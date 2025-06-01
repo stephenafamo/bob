@@ -5,6 +5,7 @@ package drivers
 import (
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 	"sort"
 	"strings"
@@ -81,7 +82,32 @@ type TypeExpr struct {
 	Imports []string `yaml:"imports"`
 }
 
-type Types map[string]Type
+type Types struct {
+	registered map[string]Type
+}
+
+func (t Types) Contains(name string) bool {
+	_, ok := t.registered[name]
+	return ok
+}
+
+func (t Types) Index(name string) Type {
+	return t.registered[name]
+}
+
+func (t *Types) Register(name string, typedef Type) {
+	if t.registered == nil {
+		t.registered = make(map[string]Type)
+	}
+	t.registered[name] = typedef
+}
+
+func (t *Types) RegisterAll(m map[string]Type) {
+	if t.registered == nil {
+		t.registered = make(map[string]Type)
+	}
+	maps.Copy(t.registered, m)
+}
 
 func (t Types) Get(curr string, i language.Importer, namedType string) string {
 	name, def := t.GetNameAndDef(curr, namedType)
@@ -113,11 +139,11 @@ func (t Types) GetWithoutImporting(curr string, i language.Importer, namedType s
 }
 
 func (t Types) GetNameAndDef(curr string, namedType string) (string, Type) {
-	typedef := t[namedType]
+	typedef := t.Index(namedType)
 
 	for typedef.AliasOf != "" {
 		namedType = typedef.AliasOf
-		typedef = t[namedType]
+		typedef = t.Index(namedType)
 	}
 
 	if len(typedef.Imports) > 0 && strings.HasSuffix(typedef.Imports[0], `"`+curr+`"`) {

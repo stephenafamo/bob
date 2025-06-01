@@ -21,7 +21,7 @@ type Config[ConstraintExtra any] struct {
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 
-	Types         drivers.Types                `yaml:"types"`         // register custom types
+	Types         map[string]drivers.Type      `yaml:"types"`         // register custom types
 	Aliases       drivers.Aliases              `yaml:"aliases"`       // customize aliases
 	Constraints   Constraints[ConstraintExtra] `yaml:"constraints"`   // define additional constraints
 	Relationships Relationships                `yaml:"relationships"` // define additional relationships

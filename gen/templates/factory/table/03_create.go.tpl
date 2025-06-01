@@ -11,7 +11,7 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
   {{- if $column.Nullable}}{{continue}}{{end -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-  {{- $typDef :=  index $.Types $column.Type -}}
+  {{- $typDef :=  $.Types.Index $column.Type -}}
   {{- $colTyp := or $typDef.AliasOf $column.Type -}}
 		if m.{{$colAlias}} == nil {
         val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})

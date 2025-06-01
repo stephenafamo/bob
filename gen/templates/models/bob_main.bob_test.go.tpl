@@ -30,7 +30,7 @@ type (
     {{- $colTyp := $.Types.GetWithoutImporting `\\\\\\\\\\\\` $.Importer $column.Type -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ :=  set $doneTypes $column.Type nil -}}
-    {{- $typInfo :=  index $.Types $colTyp -}}
+    {{- $typInfo :=  $.Types.Index $colTyp -}}
     {{- if $typInfo.NoScannerValuerTest}}{{continue}}{{end -}}
     {{- if isPrimitiveType $colTyp}}{{continue}}{{end -}}
       {{$.Importer.ImportList $typInfo.Imports -}}

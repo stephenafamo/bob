@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -75,10 +74,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 
 	// Merge in the user-configured types
 	types := driver.Types()
-	if types == nil {
-		types = make(drivers.Types)
-	}
-	maps.Copy(types, s.Config.Types)
+	types.RegisterAll(s.Config.Types)
 
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
