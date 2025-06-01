@@ -323,16 +323,19 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 	// Also check if the primary key is in the indexes
 	hasPk := false
 	for _, index := range table.Indexes {
-		constraint := drivers.Constraint[any]{
-			Name:    index.Name,
-			Columns: index.NonExpressionColumns(),
-		}
-
 		switch index.Type {
 		case "pk":
 			hasPk = true
 		case "u":
-			table.Constraints.Uniques = append(table.Constraints.Uniques, constraint)
+			if !index.HasExpressionColumn() {
+				table.Constraints.Uniques = append(
+					table.Constraints.Uniques,
+					drivers.Constraint[any]{
+						Name:    index.Name,
+						Columns: index.NonExpressionColumns(),
+					},
+				)
+			}
 		}
 	}
 
