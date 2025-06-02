@@ -10,7 +10,7 @@ var testDB bob.Transactor
   {{range $column := $table.Columns -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ := set $doneTypes $column.Type nil -}}
-    {{- $typDef := index $.Types $column.Type -}}
+    {{- $typDef := $.Types.Index $column.Type -}}
     {{range $depTyp := $typDef.DependsOn}}
       {{- $_ := set $doneTypes $depTyp nil -}}
     {{end}}
@@ -19,7 +19,7 @@ var testDB bob.Transactor
 
 
 {{range $colTyp := keys $doneTypes | sortAlpha -}}
-    {{- $typDef := index $.Types $colTyp -}}
+    {{- $typDef := $.Types.Index $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
       Ensures that compilation fails.
       Users of custom types can decide to use a non-random expression

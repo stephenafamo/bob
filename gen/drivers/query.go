@@ -264,19 +264,18 @@ func (c QueryArg) RandomExpr(currPkg string, i language.Importer, types Types) s
 		sb.WriteString(typ)
 	}
 
-	//nolint:nestif
 	if len(c.Children) == 0 {
 		if c.Col.Nullable != nil && *c.Col.Nullable {
-			colTyp, def := types.GetNameAndDef(currPkg, c.Col.TypeName)
-			if def.NullType != "" {
-				nullTyp, _ := types.GetNameAndDef(currPkg, def.NullType)
-				normalized := internal.TypesReplacer.Replace(nullTyp)
-				fmt.Fprintf(&sb, "random_%s(nil)", normalized)
-			} else {
-				i.Import("database/sql")
-				normalized := internal.TypesReplacer.Replace(colTyp)
-				fmt.Fprintf(&sb, "%s{V: random_%s(nil), Valid: true}", typ, normalized)
-			}
+			colTyp, _ := types.GetNameAndDef(currPkg, c.Col.TypeName)
+			nullTyp := types.GetNullType(currPkg, c.Col.TypeName)
+			i.ImportList(nullTyp.ToNullExprImports)
+			normalized := internal.TypesReplacer.Replace(colTyp)
+			return strings.NewReplacer(
+				"SRC", fmt.Sprintf("random_%s(nil)", normalized),
+				"TYPE", colTyp,
+				"NULLTYPE", nullTyp.Name,
+				"NULLVAL", "true",
+			).Replace(nullTyp.ToNullExpr)
 		} else {
 			normalized := internal.TypesReplacer.Replace(typ)
 			fmt.Fprintf(&sb, "random_%s(nil)", normalized)

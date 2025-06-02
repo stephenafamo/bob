@@ -90,7 +90,7 @@ var defaultFaker = faker.New()
 {{range $colTyp := $.QueryFolder.Types -}}
   {{- if hasKey $doneTypes $colTyp}}{{continue}}{{end -}}
   {{- $_ := set $doneTypes $colTyp nil -}}
-  {{- $typDef := index $.Types $colTyp -}}
+  {{- $typDef := $.Types.Index $colTyp -}}
   {{range $depTyp := $typDef.DependsOn}}
     {{- $_ := set $doneTypes $depTyp nil -}}
   {{end}}
@@ -99,7 +99,7 @@ var defaultFaker = faker.New()
 
 
 {{range $colTyp := keys $doneTypes | sortAlpha -}}
-    {{- $typDef := index $.Types $colTyp -}}
+    {{- $typDef := $.Types.Index $colTyp -}}
     {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
       Ensures that compilation fails.

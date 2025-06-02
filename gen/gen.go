@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -75,10 +74,16 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 
 	// Merge in the user-configured types
 	types := driver.Types()
-	if types == nil {
-		types = make(drivers.Types)
+	types.RegisterAll(s.Config.Types)
+
+	switch s.Config.FallbackNull {
+	case "", "database/sql":
+		types.SetNullTypeCreator(drivers.DatabaseSqlNull{})
+	case "github.com/aarondl/opt/null":
+		types.SetNullTypeCreator(drivers.AarondlNull{})
+	default:
+		panic(fmt.Sprintf("unknown fallback null system %q", s.Config.FallbackNull))
 	}
-	maps.Copy(types, s.Config.Types)
 
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)

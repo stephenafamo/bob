@@ -55,9 +55,6 @@ type TemplateData[T, C, I any] struct {
 	PkgName string
 
 	// Control various generation features
-	AddSoftDeletes    bool
-	AddEnumTypes      bool
-	EnumNullPrefix    string
 	NoFactory         bool
 	NoTests           bool
 	NoBackReferencing bool

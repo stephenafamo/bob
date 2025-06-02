@@ -182,7 +182,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 	// this is to prevent issues if the enum is only used in an array
 	helpers.EnumType(types, enumTyp)
 
-	types[arrTyp] = drivers.Type{
+	types.Register(arrTyp, drivers.Type{
 		DependsOn:           []string{enumTyp},
 		Imports:             []string{pgtypesImport},
 		NoRandomizationTest: true, // enums are often not random enough
@@ -191,7 +191,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
                 arr[i] = random_%s(f, limits...)
             }
             return arr`, arrTyp, gen.NormalizeType(enumTyp)),
-	}
+	})
 
 	return arrTyp
 }
@@ -200,7 +200,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	singleTypDef := types[singleTyp]
+	singleTypDef := types.Index(singleTyp)
 	singleComparer := strings.ReplaceAll(singleTypDef.CompareExpr, "AAA", "a")
 	singleComparer = strings.ReplaceAll(singleComparer, "BBB", "b")
 	if singleComparer == "" {
@@ -209,7 +209,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 
 	typ := fmt.Sprintf("pgtypes.Array[%s]", singleTyp)
 
-	types[typ] = drivers.Type{
+	types.Register(typ, drivers.Type{
 		DependsOn: []string{singleTyp},
 		Imports:   append([]string{pgtypesImport}, singleTypDef.Imports...),
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
@@ -224,7 +224,7 @@ func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 			[]string{`"slices"`},
 			singleTypDef.CompareExprImports...),
 			singleTypDef.Imports...),
-	}
+	})
 
 	return typ
 }

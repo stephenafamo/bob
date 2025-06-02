@@ -9,7 +9,7 @@ var defaultFaker = faker.New()
   {{range $column := $table.Columns -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ := set $doneTypes $column.Type nil -}}
-    {{- $typDef := index $.Types $column.Type -}}
+    {{- $typDef := $.Types.Index $column.Type -}}
     {{range $depTyp := $typDef.DependsOn}}
       {{- $_ := set $doneTypes $depTyp nil -}}
     {{end}}
@@ -18,7 +18,7 @@ var defaultFaker = faker.New()
 
 
 {{range $colTyp := keys $doneTypes | sortAlpha -}}
-    {{- $typDef := index $.Types $colTyp -}}
+    {{- $typDef := $.Types.Index $colTyp -}}
     {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
       Ensures that compilation fails.

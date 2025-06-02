@@ -14,6 +14,11 @@ The configuration is marshalled in to the [Config struct](https://pkg.go.dev/git
 ```go
 // Config for the running of the commands
 type Config struct {
+	// Fallback system to use to create null types
+	// available options are:
+	// - "database/sql" (default) - uses sql.Null[T] (default)
+	// - "github.com/aarondl/opt/null" - uses null.Val[T]
+	FallbackNull string `yaml:"fallback_null"`
 	// Struct tags to generate
 	Tags []string `yaml:"tags"`
 	// Disable generating factories for models
@@ -44,23 +49,24 @@ type Config struct {
 }
 ```
 
-| Name                | Description                                                                                                     | Default |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
-| tags                | Struct tags to generate                                                                                         | []      |
-| no_factory          | Disable generating factories for models                                                                         | false   |
-| no_tests            | Disable generating go test files                                                                                | false   |
-| no_back_referencing | If this is set to true, when relationships are loaded, the parent is not added to the loaded object's relations | false   |
-| wipe                | If to delete the output folder before generation                                                                | false   |
-| struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake" |
-| relation_tag        | Struct tag for the relationship object                                                                          | "-"     |
-| tag_ignore          | List of column names that should have tags values set to '-'                                                    | []      |
-| types               | Register custom types. [See more](#types)                                                                       | "{}     |
-| aliases             | Customize aliases. [See more](#aliases)                                                                         | {}      |
-| constraints         | Define additional constraints. [See more](#constraints)                                                         | {}      |
-| relationships       | Define additional relationships. [See more](#relationships)                                                     | {}      |
-| replacements        | Define replacements for types. [See more](#replacements)                                                        | []      |
-| inflections         | Define inflections for pluralization. [See more](#inflections)                                                  | {}      |
-| generator           | Customize the generator name in the top level comment of generated files                                        | ""      |
+| Name                | Description                                                                                                                                                                   | Default        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| fallback_null       | The default way to create null types. Available options are: <br/> - `database/sql` (default) - uses `sql.Null[T]` <br/> - `github.com/aarondl/opt/null` - uses `null.Val[T]` | "database/sql" |
+| tags                | Struct tags to generate                                                                                                                                                       | []             |
+| no_factory          | Disable generating factories for models                                                                                                                                       | false          |
+| no_tests            | Disable generating go test files                                                                                                                                              | false          |
+| no_back_referencing | If this is set to true, when relationships are loaded, the parent is not added to the loaded object's relations                                                               | false          |
+| wipe                | If to delete the output folder before generation                                                                                                                              | false          |
+| struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                                                                                          | "snake"        |
+| relation_tag        | Struct tag for the relationship object                                                                                                                                        | "-"            |
+| tag_ignore          | List of column names that should have tags values set to '-'                                                                                                                  | []             |
+| types               | Register custom types. [See more](#types)                                                                                                                                     | "{}            |
+| aliases             | Customize aliases. [See more](#aliases)                                                                                                                                       | {}             |
+| constraints         | Define additional constraints. [See more](#constraints)                                                                                                                       | {}             |
+| relationships       | Define additional relationships. [See more](#relationships)                                                                                                                   | {}             |
+| replacements        | Define replacements for types. [See more](#replacements)                                                                                                                      | []             |
+| inflections         | Define inflections for pluralization. [See more](#inflections)                                                                                                                | {}             |
+| generator           | Customize the generator name in the top level comment of generated files                                                                                                      | ""             |
 
 ## Aliases
 

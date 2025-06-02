@@ -250,7 +250,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			{{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.From $local (cat "o." ($fromAlias.Column $local)) -}}
 			{{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.To $foreign (cat "rel." ($toAlias.Column $foreign)) -}}
 			{{- $fromCol := $.Tables.GetColumn $side.From $local -}}
-			{{- $typInfo := index $.Types $fromCol.Type -}}
+			{{- $typInfo := $.Types.Index $fromCol.Type -}}
 			{{- with $typInfo.CompareExpr -}}
 				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
 				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
@@ -352,7 +352,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		for i, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
-			{{- $typInfo := index $.Types ($.Tables.GetColumn $firstSide.From $local).Type -}}
+			{{- $typInfo := $.Types.Index ($.Tables.GetColumn $firstSide.From $local).Type -}}
 			{{- with $typInfo.CompareExpr -}}
 				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
 				if {{replace "AAA" (cat "o." $fromCol) . | replace "BBB" (cat $fromCol "Slice[i]")}} {
