@@ -27,7 +27,7 @@ type (
     * So we use backslashes as the package name which will never match a package
       to prevent assuming that the type is in the current package
     */}}
-    {{- $colTyp := $.Types.GetWithoutImporting `\\\\\\\\\\\\` $.Importer $column.Type -}}
+    {{- $colTyp := $.Types.GetWithoutImporting `\\\\\\\\\\\\` $column.Type -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ :=  set $doneTypes $column.Type nil -}}
     {{- $typInfo :=  $.Types.Index $colTyp -}}

@@ -76,6 +76,15 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	types := driver.Types()
 	types.RegisterAll(s.Config.Types)
 
+	switch s.Config.FallbackNull {
+	case "", "database/sql":
+		types.SetNullTypeCreator(drivers.DatabaseSqlNull{})
+	case "github.com/aarondl/opt/null":
+		types.SetNullTypeCreator(drivers.AarondlNull{})
+	default:
+		panic(fmt.Sprintf("unknown fallback null system %q", s.Config.FallbackNull))
+	}
+
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
 	processTypeReplacements(types, s.Config.Replacements, dbInfo.Tables)

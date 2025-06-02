@@ -6,6 +6,11 @@ import (
 
 // Config for the running of the commands
 type Config[ConstraintExtra any] struct {
+	// Fallback system to use to create null types
+	// available options are:
+	// - "database/sql" (default) - uses sql.Null[T] (default)
+	// - "github.com/aarondl/opt/null" - uses null.Val[T]
+	FallbackNull string `yaml:"fallback_null"`
 	// Struct tags to generate
 	Tags []string `yaml:"tags"`
 	// Disable generating factories for models
