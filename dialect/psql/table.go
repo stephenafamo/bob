@@ -25,7 +25,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T]](schema, table string) *Table[
 	view, mappings := newView[T, Tslice](schema, table)
 	t := &Table[T, Tslice, Tset]{
 		View:             view,
-		pkCols:           orm.NewColumns(mappings.PKs...).WithParent(schema, table),
+		pkCols:           orm.NewColumns(mappings.PKs...).WithParent(view.alias),
 		setterMapping:    setMapping,
 		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
 	}
