@@ -109,7 +109,7 @@
             {{if $rel.NeedsMany .ExtPosition -}}
               {{$colVal = printf "%s%d[i]" $tableAlias.DownPlural $map.ExtPosition -}}
             {{end -}}
-            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName $table.Name $map.Column .ExternalColumn $colVal true false}},
+            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName $table.Key $map.Column .ExternalColumn $colVal true false}},
           {{- end}}
         {{- end}}
       }

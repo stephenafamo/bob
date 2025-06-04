@@ -39,7 +39,7 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], ma
 		schema:  schema,
 		name:    tableName,
 		alias:   alias,
-		allCols: orm.NewColumns(mappings.All...).WithParent(schema, tableName),
+		allCols: orm.NewColumns(mappings.All...).WithParent(alias),
 		scanner: scan.StructMapper[T](),
 	}, mappings
 }

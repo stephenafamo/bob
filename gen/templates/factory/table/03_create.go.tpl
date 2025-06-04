@@ -168,7 +168,7 @@ func (o *{{$tAlias.UpSingular}}Template) create(ctx context.Context, exec bob.Ex
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
 				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Name $rel.Foreign .Column .ExternalColumn $relIndex true false}}
+				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true false}}
 			{{end}}
 		{{- end}}
 	{{end}}

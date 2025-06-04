@@ -207,7 +207,7 @@ func (tables Tables[C, I]) ColumnAssigner(
 	//-------------------------------------------
 
 	default:
-		panic(fmt.Sprintf("unknown column setter case: %s.%s -> %s.%s", destTName, destColName, srcTName, srcColName))
+		panic(fmt.Sprintf("unknown column assign case: %s.%s -> %s.%s", destTName, destColName, srcTName, srcColName))
 	}
 }
 

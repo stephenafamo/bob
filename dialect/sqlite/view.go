@@ -35,7 +35,7 @@ func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], ma
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	allCols := orm.NewColumns(mappings.All...).WithParent(schema, tableName)
+	allCols := orm.NewColumns(mappings.All...).WithParent(alias)
 
 	return &View[T, Tslice]{
 		schema:        schema,
