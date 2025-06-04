@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed some issues with creating relationships in the factory by avoiding trying to reuse models.
+
 ## [v0.38.0] - 2025-06-04
 
 ### Added
@@ -16,8 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Correctly build models with nested relationships in the factory.
-- Fix a performance issue with codegeneration in `bobgen-psql`.
-- Use correct alias when generating table columns.
+- Fix a performance issue with code generation in `bobgen-psql`.
+- Use the correct alias when generating table columns.
 - Fix issue with generating factory code for tables with schema names.
 
 ## [v0.37.0] - 2025-05-31
