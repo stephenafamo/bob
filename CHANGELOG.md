@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adds the `fallback_null` top level configuraiton option. Which can be either `database/sql` or `github.com/aarondl/opt/null`.  
+- Added the `fallback_null` top level configuraiton option. Which can be either `database/sql` or `github.com/aarondl/opt/null`.  
    This is used to determine how to create null values in the generated code. If set to `database/sql`, it will use `sql.Null[T]` for nullable types, and if set to `github.com/aarondl/opt/null`, it will use `opt.null.Val[T]`.  
    The default value is `database/sql`.
+
+### Fixed
+
+- Correctly build models with nested relationships in the factory.
 
 ## [v0.37.0] - 2025-05-31
 

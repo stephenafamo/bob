@@ -71,31 +71,3 @@ func (o *{{$tAlias.UpSingular}}Template) Apply(ctx context.Context, mods ...{{$t
         mod.Apply(ctx, o)
     }
 }
-
-// toModel returns an *models.{{$tAlias.UpSingular}}
-// this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}Template) toModel() (*models.{{$tAlias.UpSingular}}) {
-    m := &models.{{$tAlias.UpSingular}}{}
-
-    {{range $column := $table.Columns -}}
-    {{$colAlias := $tAlias.Column $column.Name -}}
-        if o.{{$colAlias}} != nil {
-            m.{{$colAlias}} = o.{{$colAlias}}()
-        }
-    {{end}}
-
-    return m
-}
-
-// toModels returns an models.{{$tAlias.UpSingular}}Slice
-// this does nothing with the relationship templates
-func (o {{$tAlias.UpSingular}}Template) toModels(number int) (models.{{$tAlias.UpSingular}}Slice) {
-    m := make(models.{{$tAlias.UpSingular}}Slice, number)
-
-    for i := range m {
-      m[i] = o.toModel()
-    }
-
-    return m
-}
-
