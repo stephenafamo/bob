@@ -254,7 +254,18 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	substring(format_type(attr.atttypid, attr.atttypmod), '\((\d+(,\d+)?)\)') AS type_limits,
 	c.udt_schema,
 	c.udt_name,
-	e.data_type AS array_type,
+	(
+		SELECT
+			data_type
+		FROM
+			information_schema.element_types e
+		WHERE
+			c.table_catalog = e.object_catalog
+			AND c.table_schema = e.object_schema
+			AND c.table_name = e.object_name
+			AND 'TABLE' = e.object_type
+			AND c.dtd_identifier = e.collection_type_identifier
+	) AS array_type,
 	c.domain_name,
 	c.column_default,
 	coalesce(col_description(('"' || c.table_schema || '"."' || c.table_name || '"')::regclass::oid, ordinal_position), '') AS column_comment,
@@ -298,12 +309,6 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		ON c.data_type = 'USER-DEFINED'
 		AND udtnamespace.oid = udttype.typnamespace
 		AND c.udt_name = udttype.typname
-	LEFT JOIN information_schema.element_types e
-		ON	c.table_catalog = e.object_catalog
-		AND c.table_schema = e.object_schema
-		AND c.table_name = e.object_name
-		AND 'TABLE' = e.object_type
-		AND c.dtd_identifier = e.collection_type_identifier
 	WHERE c.table_name = $2 and c.table_schema = $1
 	ORDER BY c.ordinal_position`
 
