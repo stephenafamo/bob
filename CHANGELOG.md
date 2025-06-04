@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correctly build models with nested relationships in the factory.
 - Fix a performance issue with codegeneration in `bobgen-psql`.
 - Use correct alias when generating table columns.
+- Fix issue with generating factory code for tables with schema names.
 
 ## [v0.37.0] - 2025-05-31
 
