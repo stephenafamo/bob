@@ -232,7 +232,12 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 
 	query += ` order by table_name;`
 
-	return stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
+	infos, err := stdscan.All(ctx, d.conn, scan.StructMapper[drivers.TableInfo](), query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load table infos: %w", err)
+	}
+
+	return infos, nil
 }
 
 // Load details about a single table
@@ -536,7 +541,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], er
 func (d *driver) Comments(ctx context.Context) (map[string]string, error) {
 	query := fmt.Sprintf(`SELECT
 	  %s AS "key",
-      obj_description((table_schema||'.'||table_name)::regclass::oid, 'pg_class') AS comment
+      obj_description(('"'||table_schema||'"."'||table_name||'"')::regclass::oid, 'pg_class') AS comment
 	FROM (
 	  SELECT
 		table_name,
@@ -560,7 +565,7 @@ func (d *driver) Comments(ctx context.Context) (map[string]string, error) {
 		Comment sql.NullString
 	}](), query, args...) {
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to load comments: %w", err)
 		}
 		comments[row.Key] = row.Comment.String
 	}
