@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `Mod` is now a separate field in `orm.ModQuery` and `orm.ModExecQuery`.
+
 ### Fixed
 
 - Fixed some issues with creating relationships in the factory by avoiding trying to reuse models.
+- Fix issues with generating code for queries with duplicate return column names.
 
 ## [v0.38.0] - 2025-06-04
 
