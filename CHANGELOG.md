@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added the `As` method to `clause.TableRef`, which sets the alias and return a copy of the struct.
+
 ### Changed
 
 - `Mod` is now a separate field in `orm.ModQuery` and `orm.ModExecQuery`.
