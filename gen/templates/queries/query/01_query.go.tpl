@@ -77,7 +77,21 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
           },
         },
         {{if gt (len $query.Columns) 1 -}}
+          {{if not $query.Config.GenerateRow -}}
           Scanner: scan.StructMapper[{{$queryRowName}}](),
+          {{- else -}}
+          Scanner: func(context.Context, []string) (func(*scan.Row) (any, error), func(any) ({{$queryRowName}}, error)) {
+            return func(row *scan.Row) (any, error) {
+                var t {{$queryRowName}}
+                {{range $colIndex, $col := $query.Columns -}}
+                  row.ScheduleScanByIndex({{$colIndex}}, &t.{{titleCase $col.Name}})
+                {{end -}}
+                return &t, nil
+              }, func(v any) ({{$queryRowName}}, error) {
+                return *(v.(*{{$queryRowName}})), nil
+              }
+          },
+          {{- end}}
         {{- else -}}
           {{- $col := index $query.Columns 0 -}}
           Scanner: scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]("{{$col.DBName}}"),
