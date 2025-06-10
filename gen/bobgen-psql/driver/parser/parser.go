@@ -188,6 +188,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 			w.getConfigComment(col.pos),
 		))
 	}
+	parser.FixDuplicateColNames(query.Columns)
 
 	return query, nil
 }

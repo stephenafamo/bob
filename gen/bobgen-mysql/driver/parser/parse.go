@@ -53,6 +53,7 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 				TypeLimits: typeLimits,
 			}.Merge(col.Config)
 		}
+		parser.FixDuplicateColNames(cols)
 
 		name, configStr, _ := strings.Cut(info.Comment, " ")
 		queries[i] = drivers.Query{
