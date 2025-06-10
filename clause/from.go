@@ -87,6 +87,13 @@ func (f *TableRef) AppendIndexHint(i IndexHint) {
 	f.IndexHints = append(f.IndexHints, i)
 }
 
+func (f TableRef) As(alias string, columns ...string) TableRef {
+	f.Alias = alias
+	f.Columns = append(f.Columns, columns...)
+
+	return f
+}
+
 func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
 	if f.Only {
 		w.Write([]byte("ONLY "))
