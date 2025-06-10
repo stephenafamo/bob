@@ -53,51 +53,58 @@ var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.
 
 
 {{if $query.Columns -}}
-func {{$upperName}} ({{join ", " $args}}) orm.ModQuery[{{$dialectType}}, {{$colParams}}] {
+type {{$upperName}}Query = orm.ModQuery[{{$dialectType}}, {{$lowerName}}, {{$colParams}}]
 {{- else -}}
-func {{$upperName}} ({{join ", " $args}}) orm.ModExecQuery[{{$dialectType}}] {
+type {{$upperName}}Query = orm.ModExecQuery[{{$dialectType}}, {{$lowerName}}]
 {{end}}
+
+func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
   var expressionTypArgs {{$lowerName}}
 
   {{range $arg := $query.Args -}}
     expressionTypArgs.{{titleCase $arg.Col.Name}} = {{$arg.ToExpression $.Importer $.Dialect $lowerName (titleCase $arg.Col.Name)}}
   {{end}}
 
-{{if $query.Columns -}}
-  return orm.ModQuery[{{$dialectType}}, {{$colParams}}]{
-    Query: orm.Query[orm.ModExpression[{{$dialectType}}], {{$colParams}}]{
-      ExecQuery: orm.ExecQuery[orm.ModExpression[{{$dialectType}}]]{
-        BaseQuery: bob.BaseQuery[orm.ModExpression[{{$dialectType}}]]{
+  {{if $query.Columns -}}
+    {{$.Importer.Import "github.com/stephenafamo/scan"}}
+    return &{{$upperName}}Query{
+      Query: orm.Query[{{$lowerName}}, {{$colParams}}]{
+        ExecQuery: orm.ExecQuery[{{$lowerName}}]{
+          BaseQuery: bob.BaseQuery[{{$lowerName}}]{
+            Expression: expressionTypArgs,
+            Dialect:    dialect.Dialect,
+            QueryType:  bob.QueryType{{$queryType}},
+          },
+        },
+        {{if gt (len $query.Columns) 1 -}}
+          Scanner: scan.StructMapper[{{$queryRowName}}](),
+        {{- else -}}
+          {{- $col := index $query.Columns 0 -}}
+          Scanner: scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]("{{$col.DBName}}"),
+        {{- end}}
+      },
+      Mod: bob.ModFunc[{{$dialectType}}](func(q {{$dialectType}}) {
+          {{replace "EXPR" "expressionTypArgs" ($query.Mods.IncludeInTemplate $.Importer)}}
+      }),
+    }
+  {{- else -}}
+    return &{{$upperName}}Query{
+      ExecQuery: orm.ExecQuery[{{$lowerName}}]{
+        BaseQuery: bob.BaseQuery[{{$lowerName}}]{
           Expression: expressionTypArgs,
           Dialect:    dialect.Dialect,
           QueryType:  bob.QueryType{{$queryType}},
         },
       },
-      {{- $.Importer.Import "github.com/stephenafamo/scan" -}}
-      {{if gt (len $query.Columns) 1 -}}
-        Scanner: scan.StructMapper[{{$queryRowName}}](),
-      {{- else -}}
-        {{- $col := index $query.Columns 0 -}}
-        Scanner: scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]("{{$col.DBName}}"),
-      {{- end}}
-    },
-  }
+      Mod: bob.ModFunc[{{$dialectType}}](func(q {{$dialectType}}) {
+          {{replace "EXPR" "expressionTypArgs" ($query.Mods.IncludeInTemplate $.Importer)}}
+      }),
+    }
+  {{- end}} 
 }
-{{- else -}}
-	return orm.ModExecQuery[{{$dialectType}}]{
-		ExecQuery: orm.ExecQuery[orm.ModExpression[{{$dialectType}}]]{
-			BaseQuery: bob.BaseQuery[orm.ModExpression[{{$dialectType}}]]{
-        Expression: expressionTypArgs,
-				Dialect:    dialect.Dialect,
-        QueryType:  bob.QueryType{{$queryType}},
-			},
-		},
-	}
-}
-{{- end}} 
 
 {{if and $query.Columns $query.Config.GenerateRow}}
-type {{$queryRowName}} struct {
+type {{trimPrefix "*" $queryRowName}} struct {
   {{range $col := $query.Columns -}}
     {{titleCase $col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
   {{end}}
@@ -129,16 +136,12 @@ func (o {{$lowerName}}) raw(from, to int) string {
   return {{$lowerName}}SQL[from:to]
 }
 
-func (o {{$lowerName}}) expr(from, to int) bob.Expression {
+func (o {{$lowerName}}) subExpr(from, to int) bob.Expression {
   return orm.ArgsToExpression({{$lowerName}}SQL, from, to, o.args())
 }
 
-func (o {{$lowerName}}) Apply(q {{$dialectType}}) {
-  {{$query.Mods.IncludeInTemplate $.Importer}}
-}
-
 func (o {{$lowerName}}) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	return o.expr(0, len({{$lowerName}}SQL)).WriteSQL(ctx, w, d, start)
+	return o.subExpr(0, len({{$lowerName}}SQL)).WriteSQL(ctx, w, d, start)
 }
 
 {{end}}

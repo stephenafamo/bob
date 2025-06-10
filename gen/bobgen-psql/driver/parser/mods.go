@@ -27,7 +27,7 @@ func (w *walker) modWithClause(with *pg.WithClause, info nodeInfo) {
 				int(cteInfos.start),
 				int(cteInfos.end-1),
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendCTE(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -69,7 +69,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					func(start, end int) error {
 						fmt.Fprintf(
 							w.mods,
-							"q.Distinct.On = append(q.Distinct.On,o.expr(%d, %d))\n",
+							"q.Distinct.On = append(q.Distinct.On,EXPR.subExpr(%d, %d))\n",
 							start, end,
 						)
 						return nil
@@ -85,7 +85,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(targetInfo.start),
 				int(targetInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendSelect(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendSelect(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -98,7 +98,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(fromInfo.start),
 				int(fromInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetTable(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -111,7 +111,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -127,7 +127,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					if main.GroupDistinct {
 						fmt.Fprint(w.mods, "q.SetGroupByDistinct(true)\n")
 					}
-					fmt.Fprintf(w.mods, "q.AppendGroup(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendGroup(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -140,7 +140,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(havingInfo.start),
 				int(havingInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendHaving(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendHaving(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -155,7 +155,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					int(nameStart),
 					int(windowInfo.end)-1,
 					func(start, end int) error {
-						fmt.Fprintf(w.mods, "q.AppendWindow(o.expr(%d, %d))\n", start, end)
+						fmt.Fprintf(w.mods, "q.AppendWindow(EXPR.subExpr(%d, %d))\n", start, end)
 						return nil
 					},
 				)...,
@@ -189,7 +189,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
                             Strategy: "%s",
                             All: %t,
                             Query: bob.BaseQuery[bob.Expression]{
-                                Expression: o.expr(%d, %d),
+                                Expression: EXPR.subExpr(%d, %d),
                                 QueryType: bob.QueryTypeSelect,
                                 Dialect: dialect.Dialect,
                             },
@@ -229,7 +229,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(orderInfo.start),
 				int(orderInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -283,7 +283,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 				int(intoInfo.start),
 				int(intoInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.TableRef.Expression = o.expr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.TableRef.Expression = EXPR.subExpr(%d, %d)\n", start, end)
 					return nil
 				},
 			)...,
@@ -304,7 +304,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 			int(selectInfo.start), int(selectInfo.end)-1,
 			func(start, end int) error {
 				fmt.Fprintf(w.mods, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: o.expr(%d, %d),
+						Expression: EXPR.subExpr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
@@ -327,7 +327,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 				int(conflictInfo.start),
 				int(conflictInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetConflict(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetConflict(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -340,7 +340,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 				int(returnInfo.start),
 				int(returnInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -362,7 +362,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 					if !stmt.UpdateStmt.GetRelation().GetInh() {
 						fmt.Fprintln(w.mods, "q.Only = true")
 					}
-					fmt.Fprintf(w.mods, "q.Table.Expression = o.expr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.Table.Expression = EXPR.subExpr(%d, %d)\n", start, end)
 					return nil
 				},
 			)...,
@@ -375,7 +375,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 				int(targetInfo.start),
 				int(targetInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendSet(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -388,7 +388,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 				int(fromInfo.start),
 				int(fromInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetTable(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -401,7 +401,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -414,7 +414,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 				int(returnInfo.start),
 				int(returnInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -436,7 +436,7 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 					if !stmt.DeleteStmt.GetRelation().GetInh() {
 						fmt.Fprintln(w.mods, "q.Only = true")
 					}
-					fmt.Fprintf(w.mods, "q.Table.Expression = o.expr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.Table.Expression = EXPR.subExpr(%d, %d)\n", start, end)
 					return nil
 				},
 			)...,
@@ -449,7 +449,7 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 				int(usingInfo.start),
 				int(usingInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetTable(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -462,7 +462,7 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -475,7 +475,7 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 				int(returnInfo.start),
 				int(returnInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,

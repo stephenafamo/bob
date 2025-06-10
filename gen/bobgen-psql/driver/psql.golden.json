@@ -6113,7 +6113,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(o.expr(7, 132))\nq.SetTable(o.expr(138, 143))\nq.AppendWhere(o.expr(150, 160))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 132))\nq.SetTable(EXPR.subExpr(138, 143))\nq.AppendWhere(EXPR.subExpr(150, 160))\n"
 						},
 						{
 							"type": 2,
@@ -6179,7 +6179,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = o.expr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: o.expr(38, 53),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 53),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
@@ -6297,7 +6297,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = o.expr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: o.expr(38, 63),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 63),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
@@ -6328,7 +6328,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = o.expr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: o.expr(38, 90),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 90),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 3,
@@ -6419,7 +6419,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Only = true\nq.Table.Expression = o.expr(12, 17)\nq.AppendSet(o.expr(22, 40))\nq.AppendWhere(o.expr(47, 54))\nq.AppendReturning(o.expr(65, 190))\n"
+							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 190))\n"
 						},
 						{
 							"type": 4,
@@ -6450,7 +6450,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Table.Expression = o.expr(12, 17)\nq.AppendWhere(o.expr(24, 31))\n"
+							"mods": "q.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendWhere(EXPR.subExpr(24, 31))\n"
 						}
 					]
 				},
@@ -6508,7 +6508,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(o.expr(7, 63))\nq.SetTable(o.expr(69, 75))\nq.AppendWhere(o.expr(82, 92))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 63))\nq.SetTable(EXPR.subExpr(69, 75))\nq.AppendWhere(EXPR.subExpr(82, 92))\n"
 						}
 					]
 				}

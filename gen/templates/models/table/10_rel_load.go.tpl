@@ -327,7 +327,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
         {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
         {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
         {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromTyp}}))
-        row.ScheduleScan("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+        row.ScheduleScanByName("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
       {{end}}
 
       return nil, nil

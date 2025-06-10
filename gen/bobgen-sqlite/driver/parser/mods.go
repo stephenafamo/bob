@@ -26,7 +26,7 @@ func (v *visitor) modWith_clause(ctx interface {
 				cte.GetStart().GetStart(),
 				cte.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendCTE(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -52,7 +52,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				allResults[0].GetStart().GetStart(),
 				allResults[len(allResults)-1].GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendSelect(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendSelect(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -63,7 +63,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				from.GetStart().GetStart(),
 				from.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -74,7 +74,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				where.WHERE_().GetSymbol().GetStop()+1,
 				where.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -85,7 +85,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				groupBy.GetStart().GetStart(),
 				groupBy.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendGroup(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendGroup(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -96,7 +96,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				having.GetStart().GetStart(),
 				having.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendHaving(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendHaving(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -107,7 +107,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				window.GetStart().GetStart(),
 				window.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendWindow(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendWindow(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -135,7 +135,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
                             Strategy: "%s",
                             All: %t,
                             Query: bob.BaseQuery[bob.Expression]{
-                                Expression: o.expr(%d, %d),
+                                Expression: EXPR.subExpr(%d, %d),
                                 QueryType: bob.QueryTypeSelect,
                                 Dialect: dialect.Dialect,
                             },
@@ -151,7 +151,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -167,7 +167,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -177,7 +177,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -199,7 +199,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			or.GetStart(), or.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetOr(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -219,7 +219,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -251,7 +251,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			values.GetStop().GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: o.expr(%d, %d),
+						Expression: EXPR.subExpr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
@@ -267,7 +267,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			selectStmt.GetStop().GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: o.expr(%d, %d),
+						Expression: EXPR.subExpr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
@@ -282,7 +282,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			upsert.GetStart().GetStart(),
 			upsert.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetConflict(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetConflict(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -293,7 +293,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -307,7 +307,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			or.GetStart(), or.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetOr(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetOr(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -328,7 +328,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.Table.Expression = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.Table.Expression = EXPR.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -364,7 +364,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 		cols[0].GetStart().GetStart(),
 		exprs[len(exprs)-1].GetStop().GetStop(),
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.AppendSet(o.expr(%d, %d))\n", start, end)
+			fmt.Fprintf(sb, "q.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
 			return nil
 		},
 	)...)
@@ -374,7 +374,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			from.GetStart().GetStart(),
 			from.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -385,7 +385,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			where.WHERE_().GetSymbol().GetStop()+1,
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -396,7 +396,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -407,7 +407,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -422,7 +422,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -432,7 +432,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -458,7 +458,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
 			return nil
 		},
 	)...)
@@ -492,7 +492,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			where.WHERE_().GetSymbol().GetStop()+1,
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -503,7 +503,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			returning.RETURNING_().GetSymbol().GetStop()+1,
 			returning.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendReturning(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendReturning(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -514,7 +514,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			order.BY_().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -529,7 +529,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			limit.GetFirstExpr().GetStart().GetStart(),
 			limit.GetFirstExpr().GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -539,7 +539,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
