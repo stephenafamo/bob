@@ -73,25 +73,22 @@ func (q Query[Q, T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.IC
 	return bob.Cursor(ctx, exec, q, q.Scanner)
 }
 
-type ModExpression[Q bob.Expression] interface {
-	bob.Mod[Q]
-	bob.Expression
+type ModExecQuery[Q any, E bob.Expression] struct {
+	ExecQuery[E]
+	Mod bob.Mod[Q]
 }
 
-type ModExecQuery[Q bob.Expression] struct {
-	ExecQuery[ModExpression[Q]]
+func (q ModExecQuery[Q, E]) Apply(e Q) {
+	q.Mod.Apply(e)
 }
 
-func (q ModExecQuery[Q]) Apply(e Q) {
-	q.Expression.Apply(e)
+type ModQuery[Q any, E bob.Expression, T any, Ts ~[]T] struct {
+	Query[E, T, Ts]
+	Mod bob.Mod[Q]
 }
 
-type ModQuery[Q bob.Expression, T any, Ts ~[]T] struct {
-	Query[ModExpression[Q], T, Ts]
-}
-
-func (q ModQuery[Q, T, Ts]) Apply(e Q) {
-	q.Expression.Apply(e)
+func (q ModQuery[Q, E, T, Ts]) Apply(e Q) {
+	q.Mod.Apply(e)
 }
 
 func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {

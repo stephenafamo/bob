@@ -108,7 +108,7 @@ func getThenLoaders[Q orm.Loadable]() thenLoaders[Q] {
 
 func thenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[*dialect.SelectQuery]) error) func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
 	return func(queryMods ...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
-    return orm.Loader[Q](func(ctx context.Context, exec bob.Executor, retrieved any) error {
+    return func(ctx context.Context, exec bob.Executor, retrieved any) error {
       loader, isLoader := retrieved.(T)
       if !isLoader {
         return fmt.Errorf("object %T cannot load %q", retrieved, name)
@@ -122,7 +122,7 @@ func thenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context,
       }
 
       return err
-    })
+    }
   }
 }
 

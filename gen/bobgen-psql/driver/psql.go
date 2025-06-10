@@ -432,9 +432,9 @@ func (d *driver) loadEnums(ctx context.Context) error {
 		func(_ context.Context, _ []string) (scan.BeforeFunc, func(any) (parser.Enum, error)) {
 			return func(r *scan.Row) (any, error) {
 					var e parser.Enum
-					r.ScheduleScan("schema", &e.Schema)
-					r.ScheduleScan("name", &e.Name)
-					r.ScheduleScan("values", &e.Values)
+					r.ScheduleScanByName("schema", &e.Schema)
+					r.ScheduleScanByName("name", &e.Name)
+					r.ScheduleScanByName("values", &e.Values)
 					return &e, nil
 				}, func(a any) (parser.Enum, error) {
 					e := a.(*parser.Enum)

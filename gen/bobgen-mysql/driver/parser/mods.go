@@ -26,7 +26,7 @@ func (v *visitor) modWithClause(ctx interface {
 				cte.GetStart().GetStart(),
 				cte.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.AppendCTE(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.AppendCTE(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -70,7 +70,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
                             Strategy: "%s",
                             All: %t,
                             Query: bob.BaseQuery[bob.Expression]{
-                                Expression: o.expr(%d, %d),
+                                Expression: EXPR.subExpr(%d, %d),
                                 QueryType: bob.QueryTypeSelect,
                                 Dialect: dialect.Dialect,
                             },
@@ -91,7 +91,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 			order.BY().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.CombinedOrder.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -107,7 +107,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 				limit.GetStart().GetStart(),
 				limit.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.CombinedLimit.SetLimit(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -117,7 +117,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.CombinedOffset.SetOffset(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -129,7 +129,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 			lock.GetStart().GetStart(),
 			lock.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendLock(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendLock(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -154,7 +154,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			spec.GetStart().GetStart(), spec.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -164,7 +164,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			elements.GetStart().GetStart(), elements.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendSelect(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendSelect(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -176,7 +176,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 			sources.GetStart().GetStart(),
 			sources.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -188,7 +188,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 			whereExpr.GetStart().GetStart(),
 			whereExpr.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -199,7 +199,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 			groupBy.BY().GetSymbol().GetStop()+1,
 			groupBy.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendGroup(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendGroup(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -211,7 +211,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 			havingExpr.GetStart().GetStart(),
 			havingExpr.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendHaving(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendHaving(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -222,7 +222,7 @@ func (v *visitor) modSelectStatementBase(ctx mysqlparser.ISelectStatementBaseCon
 			window.WINDOW().GetSymbol().GetStop()+1,
 			window.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWindow(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWindow(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -246,7 +246,7 @@ func (v *visitor) modSetQueryInParenthesis(ctx mysqlparser.ISetQueryInParenthesi
 			order.BY().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -262,7 +262,7 @@ func (v *visitor) modSetQueryInParenthesis(ctx mysqlparser.ISetQueryInParenthesi
 				limit.GetStart().GetStart(),
 				limit.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -272,7 +272,7 @@ func (v *visitor) modSetQueryInParenthesis(ctx mysqlparser.ISetQueryInParenthesi
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.SetOffset(o.expr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -284,7 +284,7 @@ func (v *visitor) modSetQueryInParenthesis(ctx mysqlparser.ISetQueryInParenthesi
 			lock.GetStart().GetStart(),
 			lock.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendLock(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendLock(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -296,7 +296,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			priority.GetStart(), priority.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -306,7 +306,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			ignore.GetSymbol().GetStart(), ignore.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -316,7 +316,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			partitions.GetStart().GetStart(), partitions.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendPartition(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendPartition(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -326,7 +326,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
 				return nil
 			},
 		)...)
@@ -347,7 +347,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 			stmtOrVals.GetStop().GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: o.expr(%d, %d),
+						Expression: EXPR.subExpr(%d, %d),
 						Dialect: dialect.Dialect,
 						QueryType: bob.QueryTypeSelect,
 						}
@@ -364,7 +364,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 				set.ExpressionOrDefault().GetStop().GetStop(),
 				func(start, end int) error {
 					fmt.Fprintf(sb,
-						"q.Sets = append(q.Sets, dialect.Set{Col: %q, Val: o.expr(%d, %d)})\n",
+						"q.Sets = append(q.Sets, dialect.Set{Col: %q, Val: EXPR.subExpr(%d, %d)})\n",
 						v.GetName(set.FullColumnName()), start, end)
 					return nil
 				},
@@ -376,7 +376,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			tableAlias.GetStart().GetStart(), tableAlias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.RowAlias = o.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.RowAlias = EXPR.raw(%d, %d)\n", start, end)
 				return nil
 			},
 		)...)
@@ -396,7 +396,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			first.GetStart().GetStart(), last.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.DuplicateKeyUpdate.AppendSet(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.DuplicateKeyUpdate.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -422,7 +422,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			priority.GetStart(), priority.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -432,7 +432,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			ignore.GetSymbol().GetStart(), ignore.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -442,7 +442,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Expression = o.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
 				return nil
 			},
 		)...)
@@ -452,7 +452,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			partitions.GetStart().GetStart(), partitions.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendPartition(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendPartition(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -462,7 +462,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			tableAlias.GetStart().GetStart(), tableAlias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Alias = o.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.TableRef.Alias = EXPR.raw(%d, %d)\n", start, end)
 				return nil
 			},
 		)...)
@@ -473,7 +473,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 			sets[0].GetStart().GetStart(),
 			sets[len(sets)-1].GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendSet(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -484,7 +484,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 			where.GetStart().GetStart(),
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -495,7 +495,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 			order.BY().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -506,7 +506,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 			limit.GetStart().GetStart(),
 			limit.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -520,7 +520,7 @@ func (v *visitor) modMultipleUpdateStatement(ctx mysqlparser.IMultipleUpdateStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			priority.GetStart(), priority.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -530,7 +530,7 @@ func (v *visitor) modMultipleUpdateStatement(ctx mysqlparser.IMultipleUpdateStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			ignore.GetSymbol().GetStart(), ignore.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -541,7 +541,7 @@ func (v *visitor) modMultipleUpdateStatement(ctx mysqlparser.IMultipleUpdateStat
 			tables.GetStart().GetStart(),
 			tables.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetTable(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -552,7 +552,7 @@ func (v *visitor) modMultipleUpdateStatement(ctx mysqlparser.IMultipleUpdateStat
 			sets[0].GetStart().GetStart(),
 			sets[len(sets)-1].GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendSet(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -563,7 +563,7 @@ func (v *visitor) modMultipleUpdateStatement(ctx mysqlparser.IMultipleUpdateStat
 			where.GetStart().GetStart(),
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -589,7 +589,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			priority.GetStart(), priority.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -599,7 +599,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			quick.GetSymbol().GetStart(), quick.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -609,7 +609,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			ignore.GetSymbol().GetStart(), ignore.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -619,7 +619,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendTable(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendTable(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -629,7 +629,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			partitions.GetStart().GetStart(), partitions.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendPartition(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendPartition(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -640,7 +640,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 			where.GetStart().GetStart(),
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -651,7 +651,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 			order.BY().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendOrder(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -662,7 +662,7 @@ func (v *visitor) modSingleDeleteStatement(ctx mysqlparser.ISingleDeleteStatemen
 			limit.GetStart().GetStart(),
 			limit.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.SetLimit(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -681,7 +681,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			priority.GetStart(), priority.GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -691,7 +691,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			quick.GetSymbol().GetStart(), quick.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -701,7 +701,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			ignore.GetSymbol().GetStart(), ignore.GetSymbol().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendModifier(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendModifier(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -711,7 +711,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendTable(o.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendTable(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -722,7 +722,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 			where.GetStart().GetStart(),
 			where.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendWhere(o.expr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendWhere(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
