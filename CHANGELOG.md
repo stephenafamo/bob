@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added the `As` method to `clause.TableRef`, which sets the alias and return a copy of the struct.
+- Added the `As` method to `clause.TableRef`, which sets the alias and return a copy of the struct. (thanks @Nitjsefni7)
+- Added the `type_system` configuration option to determine how to generate null and optional values in the generated code.
+  It can be either `github.com/aarondl/opt` or `database/sql`. The default value is `github.com/aarondl/opt`.
 
 ### Changed
 
 - `Mod` is now a separate field in `orm.ModQuery` and `orm.ModExecQuery`.
+
+### Removed
+
+- Removed the `fallback_null` configuration option. It is now replaced with the `type_system` configuration option.
 
 ### Fixed
 

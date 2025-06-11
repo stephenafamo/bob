@@ -268,14 +268,14 @@ func (c QueryArg) RandomExpr(currPkg string, i language.Importer, types Types) s
 		if c.Col.Nullable != nil && *c.Col.Nullable {
 			colTyp, _ := types.GetNameAndDef(currPkg, c.Col.TypeName)
 			nullTyp := types.GetNullType(currPkg, c.Col.TypeName)
-			i.ImportList(nullTyp.ToNullExprImports)
+			i.ImportList(nullTyp.CreateExprImports)
 			normalized := internal.TypesReplacer.Replace(colTyp)
 			return strings.NewReplacer(
 				"SRC", fmt.Sprintf("random_%s(nil)", normalized),
-				"TYPE", colTyp,
+				"BASETYPE", colTyp,
 				"NULLTYPE", nullTyp.Name,
 				"NULLVAL", "true",
-			).Replace(nullTyp.ToNullExpr)
+			).Replace(nullTyp.CreateExpr)
 		} else {
 			normalized := internal.TypesReplacer.Replace(typ)
 			fmt.Fprintf(&sb, "random_%s(nil)", normalized)
