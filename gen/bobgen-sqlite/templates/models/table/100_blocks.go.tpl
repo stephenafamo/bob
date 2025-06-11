@@ -23,8 +23,9 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     vals := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
       {{$colAlias := $tAlias.Column $column.Name -}}
-      if s.{{$colAlias}} != nil {
-        vals = append(vals, {{$.Dialect}}.Arg(s.{{$colAlias}}))
+      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
+      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
+        vals = append(vals, {{$.Dialect}}.Arg({{$colGetter}}))
       }
 
     {{end -}}

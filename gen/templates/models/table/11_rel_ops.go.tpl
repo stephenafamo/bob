@@ -54,7 +54,7 @@
           {{if $rel.NeedsMany .ExtPosition -}}
             {{$colVal = printf "%s%d[i]" $a.DownPlural $map.ExtPosition -}}
           {{end -}}
-          {{$tblName}}.{{$colName}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $rel.Foreign .ExternalTable $map.Column .ExternalColumn $colVal true false}}
+          {{$tblName}}.{{$colName}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $rel.Foreign .ExternalTable $map.Column .ExternalColumn $colVal true}}
         {{- end}}
       {{- end}}
     {{- if $rel.IsToMany}}}{{end}}
@@ -109,7 +109,7 @@
             {{if $rel.NeedsMany .ExtPosition -}}
               {{$colVal = printf "%s%d[i]" $tableAlias.DownPlural $map.ExtPosition -}}
             {{end -}}
-            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName $table.Key $map.Column .ExternalColumn $colVal true false}},
+            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName $table.Key $map.Column .ExternalColumn $colVal true}},
           {{- end}}
         {{- end}}
       }
@@ -151,7 +151,7 @@
             {{if $rel.NeedsMany .ExtPosition -}}
               {{$colVal = printf "%s%d[i]" $a.DownPlural $map.ExtPosition -}}
             {{end -}}
-            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName .ExternalTable $map.Column .ExternalColumn $colVal true false}},
+            {{$colName}}: {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $side.TableName .ExternalTable $map.Column .ExternalColumn $colVal true}},
           {{- end}}
         {{- end}}
       {{- end}}

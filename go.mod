@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/aarondl/opt v0.0.0-20230114172057-b91f370c41f0
+	github.com/aarondl/opt v0.0.0-20250607033636-982744e1bd65
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/fergusstrange/embedded-postgres v1.26.0
 	github.com/go-sql-driver/mysql v1.7.2-0.20231213112541-0004702b931d
@@ -42,7 +42,6 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/containerd/log v0.1.0 // indirect

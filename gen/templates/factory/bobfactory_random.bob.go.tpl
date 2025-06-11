@@ -31,6 +31,6 @@ var defaultFaker = faker.New()
         f = &defaultFaker
       }
 
-      {{replace "TYPE" $typ $typDef.RandomExpr}}
+      {{replace "BASETYPE" $typ $typDef.RandomExpr}}
     }
 {{end -}}

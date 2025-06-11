@@ -9,13 +9,12 @@ type {{$tAlias.UpSingular}}Setter struct {
 	{{- range $column := $table.NonGeneratedColumns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
     {{- $orig_col_name := $column.Name -}}
-    {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
-    {{- $colTyp = printf "*%s" $colTyp -}}
+    {{- $colTyp := $.Types.GetOptional $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-      {{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
+      {{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
 		{{- else -}}
       {{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
-			{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
+			{{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
 		{{- end -}}		
 	{{end -}}
 }
@@ -23,12 +22,11 @@ type {{$tAlias.UpSingular}}Setter struct {
 func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
   vals := make([]string, 0, {{len $table.NonGeneratedColumns}})
 	{{range $column := $table.Columns -}}
-	{{if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if s.{{$colAlias}} != nil {
+    {{if $column.Generated}}{{continue}}{{end -}}
+    {{$colAlias := $tAlias.Column $column.Name -}}
+		if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
 			vals = append(vals, {{printf "%q" $column.Name}})
 		}
-
 	{{end -}}
 
 	return vals
@@ -36,10 +34,11 @@ func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
 
 func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 	{{- range $column := $table.Columns -}}
-	{{if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-		if s.{{$colAlias}} != nil {
-      t.{{$colAlias}} = *s.{{$colAlias}}
+    {{if $column.Generated}}{{continue}}{{end -}}
+    {{$colAlias := $tAlias.Column $column.Name -}}
+    {{$colTyp := $.Types.GetOptional $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+		if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
+      t.{{$colAlias}} = {{$.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable}}
 		}
 	{{end -}}
 }
@@ -60,8 +59,9 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
       {{$colAlias := $tAlias.Column $column.Name -}}
-      if s.{{$colAlias}} != nil {
-        vals[{{$index}}] = {{$.Dialect}}.Arg(*s.{{$colAlias}})
+      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
+      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
+        vals[{{$index}}] = {{$.Dialect}}.Arg({{$colGetter}})
       } else {
         vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
       }
@@ -93,7 +93,7 @@ func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expres
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
-		if s.{{$colAlias}} != nil {
+    if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
       exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
         {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), 
         {{$.Dialect}}.Arg(s.{{$colAlias}}),

@@ -60,9 +60,10 @@ func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingul
 	{{range $column := $table.Columns -}}
 	{{- if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
+  {{$colGetter := $.Types.ToOptional $.CurrentPackage $.Importer $column.Type "val" $column.Nullable $column.Nullable -}}
 		if o.{{$colAlias}} != nil {
       val := o.{{$colAlias}}()
-      m.{{$colAlias}} = &val
+      m.{{$colAlias}} = {{$colGetter}}
 		}
 	{{end}}
 

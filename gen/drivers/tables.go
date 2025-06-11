@@ -48,13 +48,13 @@ func (tables Tables[C, I]) ColumnSetter(currPkg string, i language.Importer, typ
 		colTyp, _ := types.GetNameAndDef(currPkg, col.Type)
 		nullType := types.GetNullType(currPkg, col.Type)
 
-		i.ImportList(nullType.ToNullExprImports)
+		i.ImportList(nullType.CreateExprImports)
 		return strings.NewReplacer(
 			"SRC", val,
-			"TYPE", colTyp,
+			"BASETYPE", colTyp,
 			"NULLTYPE", nullType.Name,
 			"NULLVAL", nullVal,
-		).Replace(nullType.ToNullExpr)
+		).Replace(nullType.CreateExpr)
 	}
 
 	panic("unknown table " + table)
@@ -74,24 +74,24 @@ func (tables Tables[C, I]) ColumnGetter(currPkg string, i language.Importer, typ
 		colTyp, _ := types.GetNameAndDef(currPkg, col.Type)
 		nullType := types.GetNullType(currPkg, col.Type)
 
-		i.ImportList(nullType.FromNullExprImports)
+		i.ImportList(nullType.UseExprImports)
 		return strings.NewReplacer(
 			"SRC", varName,
-			"TYPE", colTyp,
+			"BASETYPE", colTyp,
 			"NULLTYPE", nullType.Name,
 			"NULLVAL", "true",
-		).Replace(nullType.FromNullExpr)
+		).Replace(nullType.UseExpr)
 	}
 
 	panic("unknown table " + table)
 }
 
-//nolint:gocyclo
+// The source is never optional, but the destination can be
 func (tables Tables[C, I]) ColumnAssigner(
 	currentPkg string, i language.Importer, types Types, aliases Aliases,
 	destTName, srcTName string,
 	destColName, srcColName string,
-	varName string, destOpt, srcOpt bool,
+	varName string, destOpt bool,
 ) string {
 	src := fmt.Sprintf("%s.%s", varName, aliases[srcTName].Columns[srcColName])
 	srcTable := tables.Get(srcTName)
@@ -100,115 +100,38 @@ func (tables Tables[C, I]) ColumnAssigner(
 	destTable := tables.Get(destTName)
 	destCol := destTable.GetColumn(destColName)
 
-	// This switch handles the cases when we don't need the nullable type information
-	switch {
-	//-------------------------------------------
-	// Same optionality, same nullability
-	case (destOpt == srcOpt) && (srcCol.Nullable == destCol.Nullable):
-		// If both type match, return it plainly
-		return src
-
-	//-------------------------------------------
-	// Same nullability
-	case !destOpt && srcOpt && (destCol.Nullable == srcCol.Nullable):
-		return fmt.Sprintf("*%s", src)
-
-	case destOpt && !srcOpt && (destCol.Nullable == srcCol.Nullable):
-		return fmt.Sprintf("&%s", src)
-	}
-	//-------------------------------------------
-
-	destColType, destColDef := types.GetNameAndDef(currentPkg, destCol.Type)
-	nullType, nullImports := types.GetNullTypeWithImports(currentPkg, destCol.Type)
-
-	fromNullExpr := nullType.FromNullExpr
-	fromNullExprImports := nullType.FromNullExprImports
-	toNullExpr := nullType.ToNullExpr
-	toNullExprImports := nullType.ToNullExprImports
-
-	if destCol.Nullable {
-		i.ImportList(toNullExprImports)
-	}
-
-	if srcCol.Nullable {
-		i.ImportList(fromNullExprImports)
-	}
-
+	nullType := types.GetNullType(currentPkg, destCol.Type)
 	typeReplacer := strings.NewReplacer(
-		"TYPE", destCol.Type,
+		"BASETYPE", destCol.Type,
 		"NULLTYPE", nullType.Name,
 		"NULLVAL", "true",
+		"SRC", src,
 	)
 
-	fromNullExpr = typeReplacer.Replace(fromNullExpr)
-	toNullExpr = typeReplacer.Replace(toNullExpr)
-
+	//-----------------------------------------------------------------------
+	// This switch handles the cases when we
+	// don't need the nullable type information
+	//-----------------------------------------------------------------------
 	switch {
-	//-------------------------------------------
-	// Dest is nullable, Src is NOT nullable
-	//-------------------------------------------
-	case destOpt && destCol.Nullable && !srcOpt && !srcCol.Nullable:
-		i.ImportList(nullImports)
-		return fmt.Sprintf(`func() *%s {
-			v := %s
-			return &v
-		}()`, nullType.Name, strings.ReplaceAll(toNullExpr, "SRC", src))
+	case destOpt:
+		return types.ToOptional(currentPkg, i, srcCol.Type, src, destCol.Nullable, srcCol.Nullable)
 
-	case !destOpt && destCol.Nullable && !srcOpt && !srcCol.Nullable:
-		return strings.ReplaceAll(toNullExpr, "SRC", src)
+	// Same nullability, dest IS NOT optional
+	case !destOpt && (srcCol.Nullable == destCol.Nullable):
+		return src
 
-	case destOpt && destCol.Nullable && srcOpt && !srcCol.Nullable:
-		i.ImportList(nullImports)
-		return fmt.Sprintf(`func() *%s {
-			if %s == nil { return nil }
-			old := *%s
-			v := %s
-			return &v
-		}()`, nullType.Name, src, src, strings.ReplaceAll(toNullExpr, "SRC", "old"))
+	case !destOpt && destCol.Nullable && !srcCol.Nullable:
+		i.ImportList(nullType.CreateExprImports)
+		return typeReplacer.Replace(nullType.CreateExpr)
 
-	case !destOpt && destCol.Nullable && srcOpt && !srcCol.Nullable:
-		i.ImportList(nullImports)
-		return fmt.Sprintf(`func() %s {
-			if %s == nil { return *new(%s) }
-			old := *%s
-			return %s
-		}()`, nullType.Name, src, nullType.Name, src, strings.ReplaceAll(toNullExpr, "SRC", "old"))
-	//-------------------------------------------
-
-	//-------------------------------------------
-	// Dest is NOT nullable, Src is nullable
-	//-------------------------------------------
-	case destOpt && !destCol.Nullable && !srcOpt && srcCol.Nullable:
-		i.ImportList(destColDef.Imports)
-		return fmt.Sprintf(`func() *%s {
-			v := %s
-			return &v
-		}()`, destColType, strings.ReplaceAll(fromNullExpr, "SRC", src))
-
-	case destOpt && !destCol.Nullable && srcOpt && srcCol.Nullable:
-		i.ImportList(destColDef.Imports)
-		return fmt.Sprintf(`func() *%s {
-			if %s == nil { return nil }
-			old := *%s
-			v := %s
-			return &v
-		}()`, destColType, src, src, strings.ReplaceAll(fromNullExpr, "SRC", "old"))
-
-	case !destOpt && !destCol.Nullable && !srcOpt && srcCol.Nullable:
-		return strings.ReplaceAll(fromNullExpr, "SRC", src)
-
-	case !destOpt && !destCol.Nullable && srcOpt && srcCol.Nullable:
-		i.ImportList(destColDef.Imports)
-		return fmt.Sprintf(`func() %s {
-			if %s == nil { return *new(%s) }
-			old := *%s
-			return %s
-		}()`, destColType, src, destColType, src, strings.ReplaceAll(fromNullExpr, "SRC", "old"))
-	//-------------------------------------------
+	case !destOpt && !destCol.Nullable && srcCol.Nullable:
+		i.ImportList(nullType.UseExprImports)
+		return typeReplacer.Replace(nullType.UseExpr)
 
 	default:
 		panic(fmt.Sprintf("unknown column assign case: %s.%s -> %s.%s", destTName, destColName, srcTName, srcColName))
 	}
+	//=======================================================================
 }
 
 func (tables Tables[C, I]) NeededBridgeRels(r orm.Relationship) []struct {
@@ -399,7 +322,7 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 				currPkg, i, types, aliases,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
-				extObjVarName, false, false)
+				extObjVarName, false)
 
 			mret = append(mret, fmt.Sprintf(`%s.%s = %s //h2`,
 				objVarName,

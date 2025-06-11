@@ -48,7 +48,9 @@ func processTypeReplacements[C, I any](types drivers.Types, replacements []Repla
 		// Print a warning if we didn't match anything
 		if !didMatch {
 			c := r.Match
-			fmt.Printf("WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n", c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
+			fmt.Printf(
+				"WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n",
+				c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
 		}
 	}
 }

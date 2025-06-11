@@ -6,18 +6,19 @@
 {{$tAlias := .Aliases.Table $table.Key}}
 
 func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
-	{{range $column := $table.Columns -}}
-  {{- if $column.Default}}{{continue}}{{end -}}
-  {{- if $column.Nullable}}{{continue}}{{end -}}
-	{{- if $column.Generated}}{{continue}}{{end -}}
-	{{- $colAlias := $tAlias.Column $column.Name -}}
-  {{- $typDef :=  $.Types.Index $column.Type -}}
-  {{- $colTyp := or $typDef.AliasOf $column.Type -}}
-		if m.{{$colAlias}} == nil {
-        val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
-        m.{{$colAlias}} = &val
+  {{range $column := $table.Columns -}}
+    {{- if $column.Default}}{{continue}}{{end -}}
+    {{- if $column.Nullable}}{{continue}}{{end -}}
+    {{- if $column.Generated}}{{continue}}{{end -}}
+    {{- $colAlias := $tAlias.Column $column.Name -}}
+    {{- $colGetter := $.Types.ToOptional $.CurrentPackage $.Importer $column.Type "val" $column.Nullable $column.Nullable -}}
+    {{- $typDef :=  $.Types.Index $column.Type -}}
+    {{- $colTyp := or $typDef.AliasOf $column.Type -}}
+    if !{{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "m." $colAlias)}} {
+  val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
+         m.{{$colAlias}} = {{$colGetter}}
     }
-	{{end -}}
+  {{end -}}
 }
 
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
@@ -120,7 +121,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
 				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true false}}
+				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
 			{{end}}
 		{{- end}}
 	{{end}}
