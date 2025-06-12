@@ -478,6 +478,9 @@ func optionalTypePointers(tm TypeModifier, name string, def Type, isNull, fromOr
 		ot.CreateExprImports = append(
 			ot.CreateExprImports, def.NullType.UseExprImports...,
 		)
+	default:
+		ot.UseExpr = "*SRC"
+		ot.CreateExpr = "&SRC"
 	}
 
 	return ot, def.Imports
