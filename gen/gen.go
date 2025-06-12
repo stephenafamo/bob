@@ -79,6 +79,8 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	switch s.Config.TypeSystem {
 	case "", "github.com/aarondl/opt":
 		types.SetTypeModifier(drivers.AarondlNull{})
+	case "github.com/aarondl/opt/null":
+		types.SetTypeModifier(drivers.AarondlNullPointers{})
 	case "database/sql":
 		types.SetTypeModifier(drivers.DatabaseSqlNull{})
 	default:
