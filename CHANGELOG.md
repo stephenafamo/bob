@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added the `As` method to `clause.TableRef`, which sets the alias and return a copy of the struct. (thanks @Nitjsefni7)
 - Added the `type_system` configuration option to determine how to generate null and optional values in the generated code.
-  It can be either `github.com/aarondl/opt` or `database/sql`. The default value is `github.com/aarondl/opt`.
+  Possible options: `github.com/aarondl/opt`, `github.com/aarondl/opt/null` or `database/sql`. The default value is `github.com/aarondl/opt`.
 
 ### Changed
 
