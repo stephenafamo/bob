@@ -163,16 +163,10 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	// pp.Printf("Res types: %v\n", resTypes)
 
 	query := drivers.Query{
-		Name: name,
-		SQL:  formatted,
-		Type: getQueryType(stmt.Stmt),
-
-		Config: drivers.QueryConfig{
-			RowName:      name + "Row",
-			RowSliceName: "",
-			GenerateRow:  true,
-		}.Merge(parser.ParseQueryConfig(configStr)),
-
+		Name:    name,
+		SQL:     formatted,
+		Type:    getQueryType(stmt.Stmt),
+		Config:  parser.ParseQueryConfig(configStr),
 		Columns: make([]drivers.QueryCol, len(source.columns)),
 		Args:    w.getArgs(argTypes),
 		Mods:    w,

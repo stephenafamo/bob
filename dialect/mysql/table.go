@@ -150,7 +150,7 @@ func (t *insertQuery[T, Ts, Tset]) All(ctx context.Context, exec bob.Executor) (
 		return nil, err
 	}
 
-	return bob.Allx[T, Ts](ctx, exec, q, t.table.scanner)
+	return bob.Allx[bob.SliceTransformer[T, Ts]](ctx, exec, q, t.table.scanner)
 }
 
 // Insert Many and return a cursor

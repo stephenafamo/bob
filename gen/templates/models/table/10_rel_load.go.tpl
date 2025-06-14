@@ -337,7 +337,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
     }
   })
 
-	{{$fAlias.DownPlural}}, err := bob.Allx[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](ctx, exec, q, mapper)
+	{{$fAlias.DownPlural}}, err := bob.Allx[bob.SliceTransformer[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice]](ctx, exec, q, mapper)
 	if err != nil {
 		return err
 	}

@@ -9,29 +9,22 @@ import (
 
 // ParseQueryConfig parses a user configuration string into a QueryCoonfig.
 // The configuration string should be in the format:
-// "row_name:row_slice_name:generate_row"
+// "result_type_one:result_type_all:result_type_transformer"
 func ParseQueryConfig(options string) drivers.QueryConfig {
 	var i int
 	var part string
 	var found bool
 
-	col := drivers.QueryConfig{
-		GenerateRow: true,
-	}
+	col := drivers.QueryConfig{}
 	for {
 		part, options, found = strings.Cut(options, ":")
 		switch i {
 		case 0:
-			col.RowName = part
+			col.ResultTypeOne = part
 		case 1:
-			col.RowSliceName = part
+			col.ResultTypeAll = part
 		case 2:
-			switch part {
-			case "true", "yes":
-				col.GenerateRow = true
-			case "false", "no", "skip":
-				col.GenerateRow = false
-			}
+			col.ResultTransformer = part
 		}
 		if !found {
 			break

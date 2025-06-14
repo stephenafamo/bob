@@ -14,9 +14,9 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
     {{- $colGetter := $.Types.ToOptional $.CurrentPackage $.Importer $column.Type "val" $column.Nullable $column.Nullable -}}
     {{- $typDef :=  $.Types.Index $column.Type -}}
     {{- $colTyp := or $typDef.AliasOf $column.Type -}}
-    if !{{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "m." $colAlias)}} {
-  val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
-         m.{{$colAlias}} = {{$colGetter}}
+    if !({{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "m." $colAlias)}}) {
+      val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
+      m.{{$colAlias}} = {{$colGetter}}
     }
   {{end -}}
 }
