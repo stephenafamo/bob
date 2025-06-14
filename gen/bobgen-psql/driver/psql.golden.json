@@ -6036,19 +6036,19 @@
 	],
 	"query_folders": [
 		{
-			"Path": "./queries",
-			"Files": [
+			"path": "./queries",
+			"files": [
 				{
-					"Path": "queries/users.sql",
-					"Queries": [
+					"path": "queries/users.sql",
+					"queries": [
 						{
 							"type": 1,
 							"name": "SelectUsers",
 							"raw": "SELECT \"users\".\"id\", \"users\".\"email_validated\", \"users\".\"primary_email\", \"users\".\"parent_id\", \"users\".\"party_id\", \"users\".\"referrer\" FROM users WHERE id IN ($1)",
 							"config": {
-								"row_name": "SelectUsersRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{
@@ -6120,9 +6120,9 @@
 							"name": "InsertUser",
 							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2)",
 							"config": {
-								"row_name": "InsertUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6186,9 +6186,9 @@
 							"name": "BulkInsertUsers",
 							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2), ($3, $4)",
 							"config": {
-								"row_name": "BulkInsertUsersRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6304,9 +6304,9 @@
 							"name": "InsertFromSelect",
 							"raw": "INSERT INTO users (id, primary_email)\nSELECT id, primary_email FROM users WHERE id IN ($1)",
 							"config": {
-								"row_name": "InsertFromSelectRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6335,9 +6335,9 @@
 							"name": "UpdateUser",
 							"raw": "UPDATE ONLY users SET primary_email = $1 WHERE id = $2\nRETURNING \"users\".\"id\", \"users\".\"email_validated\", \"users\".\"primary_email\", \"users\".\"parent_id\", \"users\".\"party_id\", \"users\".\"referrer\"",
 							"config": {
-								"row_name": "UpdateUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{
@@ -6426,9 +6426,9 @@
 							"name": "DeleteUser",
 							"raw": "DELETE FROM users WHERE id = $1",
 							"config": {
-								"row_name": "DeleteUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6455,16 +6455,16 @@
 					]
 				},
 				{
-					"Path": "queries/videos.sql",
-					"Queries": [
+					"path": "queries/videos.sql",
+					"queries": [
 						{
 							"type": 1,
 							"name": "SelectVideos",
 							"raw": "SELECT \"videos\".\"id\", \"videos\".\"user_id\", \"videos\".\"sponsor_id\" FROM videos\nWHERE id IN ($1)",
 							"config": {
-								"row_name": "SelectVideosRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{

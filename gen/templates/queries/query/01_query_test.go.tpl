@@ -81,23 +81,20 @@ func Test{{$upperName}} (t *testing.T) {
   })
   {{end}}
 
-  {{if and $query.Columns (not $query.Config.GenerateRow)}}
+  {{if and $query.Columns $query.Config.ResultTransformer}}
   {{$.Importer.Import "slices"}}
   {{$.Importer.Import "github.com/stephenafamo/scan"}}
   t.Run("ScanMapping", func(t *testing.T) {
-    {{$queryRowName := $query.Config.RowName}}
-    {{if not $query.Config.GenerateRow}}
-      {{- $queryRowName = $.Types.Get $.CurrentPackage $.Importer $queryRowName -}}
-    {{end}}
+    {{- $queryResultTypeOne := $.Types.Get $.CurrentPackage $.Importer $query.Config.ResultTypeOne -}}
 
-    mapCols, err := scan.StructMapperColumns[{{$queryRowName}}]()
+    mapCols, err := scan.StructMapperColumns[{{$queryResultTypeOne}}]()
     if err != nil {
       t.Fatal(err)
     }
 
     {{range $index, $col := $query.Columns}}
     if !slices.Contains(mapCols, "{{$col.DBName}}") {
-      t.Errorf("Return type %q does not contain column %q", "{{$queryRowName}}", "{{$col.DBName}}")
+      t.Errorf("Return type %q does not contain column %q", "{{$queryResultTypeOne}}", "{{$col.DBName}}")
     }
     {{end}}
   })
