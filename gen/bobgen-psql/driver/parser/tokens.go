@@ -14,7 +14,7 @@ func (w walker) getEnd(start int32) int32 {
 		return -1
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].Start >= start
 	})
 	if index < len(w.tokens) {
@@ -30,20 +30,29 @@ func (w walker) findIdentOrUnreserved(pos int32) nodeInfo {
 	})
 }
 
+//nolint:unused
 func (w walker) findTokenBefore(position int32, tokens ...pg.Token) nodeInfo {
 	return w.findTokenBeforeFunc(position, func(t *pg.ScanToken) bool {
 		return slices.Contains(tokens, t.Token)
 	})
 }
 
+//nolint:unused
 func (w walker) findTokenBeforeFunc(position int32, f func(*pg.ScanToken) bool) nodeInfo {
 	if len(w.tokens) == 0 || position == -1 {
 		return newNodeInfo()
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].Start >= position
 	})
+
+	// Index will be the token AT THE position, so we need to go back one
+	if index < 1 {
+		return newNodeInfo()
+	}
+
+	index--
 
 	for i := index; i >= 0; i-- {
 		if f(w.tokens[i]) {
@@ -68,7 +77,7 @@ func (w walker) findTokenAfterFunc(position int32, f func(int, *pg.ScanToken) bo
 		return newNodeInfo()
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].End > position
 	})
 
@@ -89,7 +98,7 @@ func (w walker) getStartOfTokenBefore(start int32, tokens ...pg.Token) int32 {
 		return start
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].Start >= start
 	})
 
@@ -107,7 +116,7 @@ func (w walker) getEndOfTokenAfter(end int32, tokens ...pg.Token) int32 {
 		return end
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].End >= end
 	})
 
@@ -125,7 +134,7 @@ func (w walker) balanceParenthesis(info nodeInfo) nodeInfo {
 		return info
 	}
 
-	startIndex := sort.Search(len(w.tokens), func(i int) bool {
+	startIndex := sort.Search(len(w.tokens)-1, func(i int) bool {
 		return w.tokens[i].Start >= info.start
 	})
 
@@ -190,23 +199,35 @@ func (w walker) balanceParenthesis(info nodeInfo) nodeInfo {
 	return info
 }
 
-func (w walker) getQueryComment(pos int32) (string, error) {
-	token := w.findTokenBefore(pos, pg.Token_SQL_COMMENT)
-	if token.start == -1 {
-		return "", fmt.Errorf("no comment before keyword: %s", token.String())
-	}
-
-	comment := w.input[token.start+2 : token.end]
-	return strings.TrimSpace(comment), nil
-}
-
-func (w walker) getConfigComment(pos position) string {
-	if pos == (position{}) {
+func (w walker) getLineCommentBefore(pos int32) string {
+	if pos < 1 {
 		return ""
 	}
 
-	index := sort.Search(len(w.tokens), func(i int) bool {
-		return w.tokens[i].End > pos[1]
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
+		return w.tokens[i].Start >= pos
+	})
+
+	if index == 0 {
+		return ""
+	}
+
+	prevToken := w.tokens[index-1]
+	if prevToken.GetToken() != pg.Token_SQL_COMMENT {
+		return ""
+	}
+
+	comment := w.input[prevToken.GetStart()+2 : prevToken.GetEnd()]
+	return strings.TrimSpace(comment)
+}
+
+func (w walker) getConfigComment(pos int32) string {
+	if pos < 1 {
+		return ""
+	}
+
+	index := sort.Search(len(w.tokens)-1, func(i int) bool {
+		return w.tokens[i].End > pos
 	})
 
 	if index >= len(w.tokens) {
@@ -220,4 +241,16 @@ func (w walker) getConfigComment(pos position) string {
 
 	comment := w.input[nextToken.GetStart()+2 : nextToken.GetEnd()-2]
 	return strings.TrimSpace(comment)
+}
+
+func (w walker) getQueryComment(pos int32) (string, error) {
+	if comment := w.getLineCommentBefore(pos); comment != "" {
+		return comment, nil
+	}
+
+	return "", fmt.Errorf("no comment before query")
+}
+
+func (w walker) getPrefixAnnotation(pos int32) (string, bool) {
+	return strings.CutPrefix(w.getLineCommentBefore(pos), "prefix:")
 }

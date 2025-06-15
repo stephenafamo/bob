@@ -129,7 +129,7 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 			_, isMultiple := w.multiple[pos.edited]
 			multiple = multiple || isMultiple
 			configs = append(configs, parser.ParseQueryColumnConfig(
-				w.getConfigComment(pos.original),
+				w.getConfigComment(pos.original[1]),
 			))
 		}
 
@@ -158,7 +158,7 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 				Name:     name,
 				Nullable: internal.Pointer(false),
 			}.Merge(parser.ParseQueryColumnConfig(
-				w.getConfigComment(group.original),
+				w.getConfigComment(group.original[1]),
 			)),
 			Positions:     [][2]int{{int(group.edited[0]), int(group.edited[1])}},
 			CanBeMultiple: multiple,
