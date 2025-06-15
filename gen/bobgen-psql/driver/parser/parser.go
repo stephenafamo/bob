@@ -179,10 +179,9 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 			Nullable: internal.Pointer(col.nullable),
 			TypeName: resTypes[i],
 		}.Merge(parser.ParseQueryColumnConfig(
-			w.getConfigComment(col.pos),
+			w.getConfigComment(col.pos[1]),
 		))
 	}
-	parser.FixDuplicateColNames(query.Columns)
 
 	return query, nil
 }

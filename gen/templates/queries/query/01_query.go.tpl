@@ -97,7 +97,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
           Scanner: func(context.Context, []string) (func(*scan.Row) (any, error), func(any) ({{$queryResultTypeOne}}, error)) {
             return func(row *scan.Row) (any, error) {
                 var t {{$queryResultTypeOne}}
-                {{range $colIndex, $col := $query.Columns -}}
+                {{range $colIndex, $col := $query.Columns.WithNames -}}
                   row.ScheduleScanByIndex({{$colIndex}}, &t.{{titleCase $col.Name}})
                 {{end -}}
                 return &t, nil
@@ -134,8 +134,8 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
 {{if $query.Columns}}
   {{if not $query.Config.ResultTransformer}}
     type {{trimPrefix "*" $queryResultTypeOne}} = struct {
-      {{range $col := $query.Columns -}}
-        {{titleCase $col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
+      {{range $col := $query.Columns.WithNames -}}
+        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
       {{end}}
     }
 
@@ -156,7 +156,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       final := make({{$queryResultTypeAll}}, 0, len(scanned))
 
       for _, row := range scanned {
-          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns $typeName "final" "index"}}
+          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns.WithNames $typeName "final" "index"}}
       }
 
       return final, nil

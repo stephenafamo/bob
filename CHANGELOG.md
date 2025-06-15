@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `type_system` configuration option to determine how to generate null and optional values in the generated code.
   It can be either `github.com/aarondl/opt` or `database/sql`. The default value is `github.com/aarondl/opt`.
 - When generating code for queries, columns with dots (`.`) in their names are now assumed to be nested fields. The `All` method of the generated query will return a struct with nested fields instead of a flat struct.
+- Implement `--prefix` annotation in queries for `bobgen-psql`.
 
 ### Changed
 
