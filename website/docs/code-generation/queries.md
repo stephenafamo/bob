@@ -128,3 +128,25 @@ The other parts will be inferred from the context.
 -- AllUsers *models.User:models.UserSlice:bob.SliceTransformer[ONETYPE, ALLTYPE]
 SELECT id /* :big.Int:nnull */, name /* username */ FROM users WHERE id = ? /* ::notnull */;
 ```
+
+### Prefixing columns
+
+If you want to prefix the columns with the table name, you can use the `prefix` annotation:
+
+```sql
+--
+SELECT
+    users.*,
+
+    -- Set a prefix for the next columns
+    --prefix:posts.
+    posts.id, -- "posts.id"
+
+    -- Change the prefix for the next columns
+    --prefix:posts.comments.
+    comments.*,
+
+    -- Remove the prefix
+    --prefix:
+    users.name -- "name"
+```

@@ -249,7 +249,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	SELECT
 	c.ordinal_position,
 	c.column_name,
-	(SELECT 
+	(
 		CASE WHEN udttype.typtype = 'e' THEN
 			'ENUM'
 		ELSE
