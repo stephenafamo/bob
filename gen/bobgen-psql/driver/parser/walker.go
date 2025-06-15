@@ -511,7 +511,7 @@ func (w *walker) walkResTarget(a *pg.ResTarget) nodeInfo {
 
 	if a.Name != "" {
 		nameInfo := newNodeInfo()
-		index := sort.Search(len(w.tokens), func(i int) bool {
+		index := sort.Search(len(w.tokens)-1, func(i int) bool {
 			return w.tokens[i].End > info.end
 		})
 

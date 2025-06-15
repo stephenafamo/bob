@@ -131,18 +131,3 @@ func fixDuplicateArgNames(args []drivers.QueryArg) {
 		}
 	}
 }
-
-func FixDuplicateColNames(args []drivers.QueryCol) {
-	names := make(map[string]int, len(args))
-	for i := range args {
-		if args[i].Name == "" {
-			continue
-		}
-		name := args[i].Name
-		index := names[name]
-		names[name] = index + 1
-		if index > 0 {
-			args[i].Name = fmt.Sprintf("%s_%d", name, index+1)
-		}
-	}
-}

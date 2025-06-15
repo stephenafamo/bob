@@ -103,7 +103,7 @@ type Query struct {
 	Type   bob.QueryType `json:"type"`
 	Config QueryConfig   `json:"config"`
 
-	Columns []QueryCol      `json:"columns"`
+	Columns QueryCols       `json:"columns"`
 	Args    []QueryArg      `json:"args"`
 	Mods    TemplateInclude `json:"mods"`
 }
@@ -115,232 +115,6 @@ func (q Query) HasNestedReturns() bool {
 		}
 	}
 	return false
-}
-
-type nested struct {
-	Index    int
-	Col      QueryCol
-	Children nestedSlice
-}
-
-func (n nested) Type(currPkg string, i language.Importer, types Types, typeName string) string {
-	if len(n.Children) == 0 {
-		return n.Col.Type(currPkg, i, types)
-	}
-
-	return fmt.Sprintf("%s_%s", typeName, strmangle.TitleCase(n.Col.Name))
-}
-
-func (n nested) Assign(selfName, rowName string, cols []QueryCol) string {
-	if len(n.Children) == 0 {
-		return fmt.Sprintf("%s.%s = %s.%s",
-			selfName, strmangle.TitleCase(n.Col.Name),
-			rowName, strmangle.TitleCase(cols[n.Index].Name))
-	}
-	return ""
-}
-
-func (n nested) Compare(currPkg string, types Types, selfName, rowName string, cols []QueryCol) string {
-	if len(n.Children) > 0 {
-		return ""
-	}
-
-	lhs := fmt.Sprintf("%s.%s", selfName, strmangle.TitleCase(n.Col.Name))
-	rhs := fmt.Sprintf("%s.%s", rowName, strmangle.TitleCase(cols[n.Index].Name))
-	_, typDef := types.GetNameAndDef(currPkg, n.Col.TypeName)
-	cmpExpr := typDef.CompareExpr
-	if cmpExpr == "" {
-		cmpExpr = "AAA == BBB"
-	}
-
-	cmpExpr = strings.ReplaceAll(cmpExpr, "AAA", lhs)
-	cmpExpr = strings.ReplaceAll(cmpExpr, "BBB", rhs)
-
-	return cmpExpr
-}
-
-func (n nested) NotNull(currPkg string, types Types, rowName string, cols []QueryCol) string {
-	if len(n.Children) > 0 {
-		return ""
-	}
-	varName := fmt.Sprintf("%s.%s", rowName, strmangle.TitleCase(cols[n.Index].Name))
-	return types.GetNullTypeValid(currPkg, n.Col.TypeName, varName)
-}
-
-type nestedSlice []nested
-
-func (n nestedSlice) Nullable() bool {
-	for _, child := range n {
-		if len(child.Children) > 0 {
-			continue
-		}
-		if child.Col.Nullable != nil && !*child.Col.Nullable {
-			return false
-		}
-	}
-	return true
-}
-
-func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typeName string) []string {
-	allTypes := []string{""}
-
-	var self strings.Builder
-	fmt.Fprintf(&self, "type %s = struct{\n", typeName)
-	for _, child := range n {
-		childType := child.Type(currPkg, i, types, typeName)
-
-		if len(child.Children) > 0 {
-			allTypes = append(allTypes, child.Children.Types(
-				currPkg, i, types, childType,
-			)...)
-			childType = "[]" + childType
-		}
-
-		fmt.Fprintf(&self, "%s %s\n",
-			strmangle.TitleCase(child.Col.Name),
-			childType,
-		)
-
-	}
-
-	self.WriteString("}")
-
-	allTypes[0] = self.String()
-	return allTypes
-}
-
-func (n nestedSlice) Assign(currPkg string, i language.Importer, types Types, selfName, rowName string, cols []QueryCol) string {
-	assigns := make([]string, 0, len(n))
-	for _, child := range n {
-		assigns = append(assigns, child.Assign(selfName, rowName, cols))
-	}
-
-	return strings.Join(assigns, "\n")
-}
-
-func (n nestedSlice) Compare(currPkg string, types Types, selfName, rowName string, cols []QueryCol) string {
-	assigns := make([]string, 0, len(n))
-	for _, child := range n {
-		assign := child.Compare(currPkg, types, selfName, rowName, cols)
-		if assign == "" {
-			continue
-		}
-
-		assigns = append(assigns, assign)
-	}
-
-	return strings.Join(assigns, " &&\n")
-}
-
-func (n nestedSlice) NotNull(currPkg string, types Types, rowName string, cols []QueryCol) string {
-	assigns := make([]string, 0, len(n))
-	for _, child := range n {
-		assign := child.NotNull(currPkg, types, rowName, cols)
-		if assign == "" {
-			continue
-		}
-
-		assigns = append(assigns, assign)
-	}
-
-	return strings.Join(assigns, " &&\n")
-}
-
-func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types, cols []QueryCol, typeName string, collectedRowsVar, indexName string) string {
-	nullable := n.Nullable()
-	transformation := &strings.Builder{}
-
-	if nullable {
-		fmt.Fprintf(transformation, "\nif %s {", n.NotNull(currPkg, types, "row", cols))
-	}
-
-	fmt.Fprintf(transformation, `
-        %s := -1
-        for i, existing := range %s {
-          if %s {
-            %s = i
-            break
-          }
-        }
-
-        if %s == -1 {
-          fresh := %s{}
-          %s
-          %s = append(%s, fresh)
-          %s = len(%s) - 1
-        }
-
-		`,
-		indexName, collectedRowsVar,
-		n.Compare(currPkg, types, "existing", "row", cols),
-		indexName, indexName, typeName,
-		n.Assign(currPkg, i, types, "fresh", "row", cols),
-		collectedRowsVar, collectedRowsVar, indexName, collectedRowsVar)
-
-	for _, child := range n {
-		if len(child.Children) == 0 {
-			continue
-		}
-		typeName = fmt.Sprintf("%s_%s", typeName, strmangle.TitleCase(child.Col.Name))
-		transformation.WriteString(child.Children.Transform(
-			currPkg, i, types, cols, typeName,
-			fmt.Sprintf("%s[%s].%s", collectedRowsVar, indexName, strmangle.TitleCase(child.Col.Name)),
-			child.Col.Name+indexName,
-		))
-	}
-
-	if nullable {
-		transformation.WriteString("\n}\n")
-	}
-
-	return transformation.String()
-}
-
-// NestedColumns returns a list of nested columns in the query.
-// Nesting is determined by the presence of a dot in the column's DBName.
-// For example, if a column's DBName is "user.address.street", it will be nested under "user" and "address".
-func (q Query) NestedColumns() nestedSlice {
-	final := make(nestedSlice, 0, len(q.Columns))
-
-	for colIndex, col := range q.Columns {
-		names := strings.Split(col.Name, ".")
-		col.Name = names[len(names)-1] // Use the last part of the name as the column name
-
-		parts := strings.Split(col.DBName, ".")
-		if len(parts) == 1 {
-			final = append(final, nested{Index: colIndex, Col: col})
-			continue
-		}
-
-		current := &final
-		for partIndex, part := range parts {
-			// Find the node for the current part in the *current slice
-			var foundNode *nested
-			for i := range *current {
-				if (*current)[i].Col.Name == part {
-					foundNode = &(*current)[i]
-					break
-				}
-			}
-
-			if foundNode != nil {
-				// Node was found, so we just move deeper into its children for the next iteration
-				current = &foundNode.Children
-			} else {
-				// Node was not found, create a new one
-				newNested := nested{Col: QueryCol{Name: part}}
-				if partIndex == len(parts)-1 {
-					newNested.Index = colIndex // This is the leaf node, the actual column
-					newNested.Col = col
-				}
-				*current = append(*current, newNested)
-				// Move deeper into the children of the newly created node
-				current = &(*current)[len(*current)-1].Children
-			}
-		}
-	}
-
-	return final
 }
 
 func (q Query) ArgsByPosition() []orm.ArgWithPosition {
@@ -460,6 +234,42 @@ func (q QueryCol) Merge(others ...QueryCol) QueryCol {
 	}
 
 	return q
+}
+
+type QueryCols []QueryCol
+
+func (q QueryCols) WithNames() QueryCols {
+	newCols := slices.Clone(q)
+	names := make(map[string]int, len(newCols))
+	for i := range newCols {
+		if newCols[i].Name == "" {
+			continue
+		}
+		name := strmangle.TitleCase(newCols[i].Name)
+		index := names[name]
+		names[name] = index + 1
+		if index > 0 {
+			name = fmt.Sprintf("%s%d", name, index+1)
+		}
+		newCols[i].Name = name
+	}
+
+	return newCols
+}
+
+func (q QueryCols) NameAt(i int) string {
+	earlyDuplicates := 0
+	for _, col := range q[:i] {
+		if col.Name == q[i].Name {
+			earlyDuplicates++
+		}
+	}
+
+	if earlyDuplicates > 0 {
+		return fmt.Sprintf("%s_%d", q[i].Name, earlyDuplicates+1)
+	}
+
+	return q[i].Name
 }
 
 type QueryArg struct {
