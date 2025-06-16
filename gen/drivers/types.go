@@ -371,6 +371,29 @@ func (a AarondlNull) NullTypeImports(forType Type) []string {
 	return append(slices.Clone(forType.Imports), `"github.com/aarondl/opt/null"`)
 }
 
+var _ TypeModifier = AarondlNullPointers{}
+
+type AarondlNullPointers struct{}
+
+func (a AarondlNullPointers) NullType(name string) NullType {
+	return NullType{
+		Name:              fmt.Sprintf("null.Val[%s]", name),
+		ValidExpr:         "SRC.IsValue()",
+		UseExpr:           "SRC.MustGet()",
+		UseExprImports:    []string{},
+		CreateExpr:        "null.From(SRC)",
+		CreateExprImports: []string{`"github.com/aarondl/opt/null"`},
+	}
+}
+
+func (a AarondlNullPointers) OptionalType(name string, def Type, isNull, fromOrToNull bool) (NullType, []string) {
+	return optionalTypePointers(a, name, def, isNull, fromOrToNull)
+}
+
+func (a AarondlNullPointers) NullTypeImports(forType Type) []string {
+	return append(slices.Clone(forType.Imports), `"github.com/aarondl/opt/null"`)
+}
+
 type DatabaseSqlNull struct{}
 
 func (d DatabaseSqlNull) NullType(name string) NullType {
@@ -385,6 +408,14 @@ func (d DatabaseSqlNull) NullType(name string) NullType {
 }
 
 func (d DatabaseSqlNull) OptionalType(name string, def Type, isNull, fromOrToNull bool) (NullType, []string) {
+	return optionalTypePointers(d, name, def, isNull, fromOrToNull)
+}
+
+func (d DatabaseSqlNull) NullTypeImports(forType Type) []string {
+	return append(slices.Clone(forType.Imports), `"database/sql"`)
+}
+
+func optionalTypePointers(tm TypeModifier, name string, def Type, isNull, fromOrToNull bool) (NullType, []string) {
 	ot := NullType{
 		Name:              fmt.Sprintf("*%s", name),
 		ValidExpr:         "SRC != nil",
@@ -396,7 +427,7 @@ func (d DatabaseSqlNull) OptionalType(name string, def Type, isNull, fromOrToNul
 
 	nullType := def.NullType
 	if nullType.Name == "" {
-		nullType = d.NullType(name)
+		nullType = tm.NullType(name)
 	}
 
 	if isNull {
@@ -414,20 +445,21 @@ func (d DatabaseSqlNull) OptionalType(name string, def Type, isNull, fromOrToNul
 	case isNull && !fromOrToNull:
 		ot.Name = fmt.Sprintf("omit.Val[%s]", def.NullType.Name)
 		ot.UseExpr = strings.ReplaceAll(
-			def.NullType.UseExpr,
+			nullType.UseExpr,
 			"SRC", ot.UseExpr,
 		)
 		ot.UseExprImports = append(
-			ot.UseExprImports, def.NullType.UseExprImports...,
+			ot.UseExprImports, nullType.UseExprImports...,
 		)
 
 		ot.CreateExpr = strings.ReplaceAll(
 			ot.CreateExpr,
-			"SRC", def.NullType.CreateExpr,
+			"SRC", nullType.CreateExpr,
 		)
+
 		ot.CreateExpr = strings.ReplaceAll(ot.CreateExpr, "NULLVAL", "true")
 		ot.CreateExprImports = append(
-			ot.CreateExprImports, def.NullType.CreateExprImports...,
+			ot.CreateExprImports, nullType.CreateExprImports...,
 		)
 
 	case !isNull && fromOrToNull:
@@ -450,8 +482,4 @@ func (d DatabaseSqlNull) OptionalType(name string, def Type, isNull, fromOrToNul
 	}
 
 	return ot, def.Imports
-}
-
-func (d DatabaseSqlNull) NullTypeImports(forType Type) []string {
-	return append(slices.Clone(forType.Imports), `"database/sql"`)
 }
