@@ -6036,19 +6036,19 @@
 	],
 	"query_folders": [
 		{
-			"Path": "./queries",
-			"Files": [
+			"path": "./queries",
+			"files": [
 				{
-					"Path": "queries/users.sql",
-					"Queries": [
+					"path": "queries/users.sql",
+					"queries": [
 						{
 							"type": 1,
 							"name": "SelectUsers",
-							"raw": "SELECT \"users\".\"id\", \"users\".\"email_validated\", \"users\".\"primary_email\", \"users\".\"parent_id\", \"users\".\"party_id\", \"users\".\"referrer\" FROM users WHERE id IN ($1)",
+							"raw": "SELECT \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\" FROM users WHERE id IN ($1)",
 							"config": {
-								"row_name": "SelectUsersRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{
@@ -6106,23 +6106,23 @@
 									"children": null,
 									"positions": [
 										[
-											157,
-											159
+											248,
+											250
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(7, 132))\nq.SetTable(EXPR.subExpr(138, 143))\nq.AppendWhere(EXPR.subExpr(150, 160))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 223))\nq.SetTable(EXPR.subExpr(229, 234))\nq.AppendWhere(EXPR.subExpr(241, 251))\n"
 						},
 						{
 							"type": 2,
 							"name": "InsertUser",
 							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2)",
 							"config": {
-								"row_name": "InsertUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6186,9 +6186,9 @@
 							"name": "BulkInsertUsers",
 							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2), ($3, $4)",
 							"config": {
-								"row_name": "BulkInsertUsersRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6304,9 +6304,9 @@
 							"name": "InsertFromSelect",
 							"raw": "INSERT INTO users (id, primary_email)\nSELECT id, primary_email FROM users WHERE id IN ($1)",
 							"config": {
-								"row_name": "InsertFromSelectRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6333,11 +6333,11 @@
 						{
 							"type": 3,
 							"name": "UpdateUser",
-							"raw": "UPDATE ONLY users SET primary_email = $1 WHERE id = $2\nRETURNING \"users\".\"id\", \"users\".\"email_validated\", \"users\".\"primary_email\", \"users\".\"parent_id\", \"users\".\"party_id\", \"users\".\"referrer\"",
+							"raw": "UPDATE ONLY users SET primary_email = $1 WHERE id = $2\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\"",
 							"config": {
-								"row_name": "UpdateUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{
@@ -6419,16 +6419,16 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 190))\n"
+							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 281))\n"
 						},
 						{
 							"type": 4,
 							"name": "DeleteUser",
 							"raw": "DELETE FROM users WHERE id = $1",
 							"config": {
-								"row_name": "DeleteUserRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [],
 							"args": [
@@ -6455,16 +6455,16 @@
 					]
 				},
 				{
-					"Path": "queries/videos.sql",
-					"Queries": [
+					"path": "queries/videos.sql",
+					"queries": [
 						{
 							"type": 1,
 							"name": "SelectVideos",
-							"raw": "SELECT \"videos\".\"id\", \"videos\".\"user_id\", \"videos\".\"sponsor_id\" FROM videos\nWHERE id IN ($1)",
+							"raw": "SELECT \"videos\".\"id\" AS \"id\", \"videos\".\"user_id\" AS \"user_id\", \"videos\".\"sponsor_id\" AS \"sponsor_id\" FROM videos\nWHERE id IN ($1)",
 							"config": {
-								"row_name": "SelectVideosRow",
-								"row_slice_name": "",
-								"generate_row": true
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
 							},
 							"columns": [
 								{
@@ -6501,14 +6501,14 @@
 									"children": null,
 									"positions": [
 										[
-											89,
-											91
+											126,
+											128
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(7, 63))\nq.SetTable(EXPR.subExpr(69, 75))\nq.AppendWhere(EXPR.subExpr(82, 92))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 100))\nq.SetTable(EXPR.subExpr(106, 112))\nq.AppendWhere(EXPR.subExpr(119, 129))\n"
 						}
 					]
 				}

@@ -47,29 +47,29 @@ func (q ExecQuery[Q]) Exec(ctx context.Context, exec bob.Executor) (int64, error
 	return result.RowsAffected()
 }
 
-type Query[Q bob.Expression, T any, Ts ~[]T] struct {
+type Query[Q bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
 	ExecQuery[Q]
 	Scanner scan.Mapper[T]
 }
 
-func (q Query[Q, T, Ts]) Clone() Query[Q, T, Ts] {
-	return Query[Q, T, Ts]{
+func (q Query[Q, T, Ts, Tr]) Clone() Query[Q, T, Ts, Tr] {
+	return Query[Q, T, Ts, Tr]{
 		ExecQuery: q.ExecQuery.Clone(),
 	}
 }
 
 // First matching row
-func (q Query[Q, T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
+func (q Query[Q, T, Ts, Tr]) One(ctx context.Context, exec bob.Executor) (T, error) {
 	return bob.One(ctx, exec, q, q.Scanner)
 }
 
 // All matching rows
-func (q Query[Q, T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
-	return bob.Allx[T, Ts](ctx, exec, q, q.Scanner)
+func (q Query[Q, T, Ts, Tr]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
+	return bob.Allx[Tr](ctx, exec, q, q.Scanner)
 }
 
 // Cursor to scan through the results
-func (q Query[Q, T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
+func (q Query[Q, T, Ts, Tr]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	return bob.Cursor(ctx, exec, q, q.Scanner)
 }
 
@@ -82,12 +82,12 @@ func (q ModExecQuery[Q, E]) Apply(e Q) {
 	q.Mod.Apply(e)
 }
 
-type ModQuery[Q any, E bob.Expression, T any, Ts ~[]T] struct {
-	Query[E, T, Ts]
+type ModQuery[Q any, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
+	Query[E, T, Ts, Tr]
 	Mod bob.Mod[Q]
 }
 
-func (q ModQuery[Q, E, T, Ts]) Apply(e Q) {
+func (q ModQuery[Q, E, T, Ts, Tr]) Apply(e Q) {
 	q.Mod.Apply(e)
 }
 

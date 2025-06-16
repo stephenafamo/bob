@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 4
 description: Execute a query and return a slice of objects.
-
 ---
 
 # All
@@ -33,10 +31,9 @@ if err != nil {
 }
 ```
 
-There is also the `Allx` function. The main difference is that it takes 2 type parameters instead of one.
+There is also the `Allx` function. This version of the `All` function takes a type parameter for a Transformer that will be used to transform the result into a different type.
 
-The 2nd type parameter indicates the type of the slice to be returned. This is useful if you have methods defined on the slice type and do not want to always do the type cast yourself.
-
+For common use cases, you can use the `bob.SliceTransformer` to cast the returned slice to a concrete slice type.
 
 ```go
 type userSlice []userObj
@@ -44,7 +41,7 @@ type userSlice []userObj
 func (u userSlice) MethodOnSliceType() {}
 
 // users is of type userSlice
-users, err := bob.Allx[userObj, userSlice](ctx, db, q, scan.StructMapper[userObj]())
+users, err := bob.Allx[bob.SliceTransformer[userObj, userSlice]](ctx, db, q, scan.StructMapper[userObj]())
 if err != nil {
     // ...
 }

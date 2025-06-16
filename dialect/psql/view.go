@@ -81,7 +81,7 @@ func (v *View[T, Tslice]) Columns() orm.Columns {
 // Starts a select query
 func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query: orm.Query[*dialect.SelectQuery, T, Tslice]{
+		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
 				BaseQuery: Select(sm.From(v.NameAs())),
 				Hooks:     &v.SelectQueryHooks,
@@ -105,7 +105,7 @@ func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *Vie
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	orm.Query[*dialect.SelectQuery, T, Ts]
+	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
 }
 
 // Count the number of matching rows

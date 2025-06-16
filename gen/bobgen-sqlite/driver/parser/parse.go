@@ -53,20 +53,13 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 				TypeName: TranslateColumnType(col.Type.ConfirmedDBType(), p.driver),
 			}.Merge(col.Config)
 		}
-		parser.FixDuplicateColNames(cols)
 
 		name, configStr, _ := strings.Cut(info.Comment, " ")
 		queries[i] = drivers.Query{
-			Name: name,
-			SQL:  formatted,
-			Type: info.QueryType,
-
-			Config: drivers.QueryConfig{
-				RowName:      name + "Row",
-				RowSliceName: "",
-				GenerateRow:  true,
-			}.Merge(parser.ParseQueryConfig(configStr)),
-
+			Name:    name,
+			SQL:     formatted,
+			Type:    info.QueryType,
+			Config:  parser.ParseQueryConfig(configStr),
 			Columns: cols,
 			Args: v.GetArgs(stmtStart, stmtStop, func(s string) (string, []string) {
 				return TranslateColumnType(s, p.driver), nil

@@ -19,8 +19,8 @@ type TemplateInclude interface {
 }
 
 type QueryFolder struct {
-	Path  string
-	Files []QueryFile
+	Path  string      `json:"path"`
+	Files []QueryFile `json:"files"`
 }
 
 func (q QueryFolder) Types() []string {
@@ -41,8 +41,8 @@ func (q QueryFolder) Types() []string {
 }
 
 type QueryFile struct {
-	Path    string
-	Queries []Query
+	Path    string  `json:"path"`
+	Queries []Query `json:"queries"`
 }
 
 func (q QueryFile) BaseName() string {
@@ -103,9 +103,18 @@ type Query struct {
 	Type   bob.QueryType `json:"type"`
 	Config QueryConfig   `json:"config"`
 
-	Columns []QueryCol      `json:"columns"`
+	Columns QueryCols       `json:"columns"`
 	Args    []QueryArg      `json:"args"`
 	Mods    TemplateInclude `json:"mods"`
+}
+
+func (q Query) HasNestedReturns() bool {
+	for _, col := range q.Columns {
+		if strings.Contains(col.DBName, ".") {
+			return true
+		}
+	}
+	return false
 }
 
 func (q Query) ArgsByPosition() []orm.ArgWithPosition {
@@ -180,21 +189,23 @@ func (q Query) HasMultipleArgs() bool {
 }
 
 type QueryConfig struct {
-	RowName      string `json:"row_name"`
-	RowSliceName string `json:"row_slice_name"`
-	GenerateRow  bool   `json:"generate_row"`
+	ResultTypeOne     string `json:"result_type_one"`
+	ResultTypeAll     string `json:"result_type_all"`
+	ResultTransformer string `json:"result_type_transformer"`
 }
 
 func (q QueryConfig) Merge(other QueryConfig) QueryConfig {
-	if other.RowName != "" {
-		q.RowName = other.RowName
+	if other.ResultTypeOne != "" {
+		q.ResultTypeOne = other.ResultTypeOne
 	}
 
-	if other.RowSliceName != "" {
-		q.RowSliceName = other.RowSliceName
+	if other.ResultTypeAll != "" {
+		q.ResultTypeAll = other.ResultTypeAll
 	}
 
-	q.GenerateRow = q.GenerateRow && other.GenerateRow
+	if other.ResultTransformer != "" {
+		q.ResultTransformer = other.ResultTransformer
+	}
 
 	return q
 }
@@ -223,6 +234,42 @@ func (q QueryCol) Merge(others ...QueryCol) QueryCol {
 	}
 
 	return q
+}
+
+type QueryCols []QueryCol
+
+func (q QueryCols) WithNames() QueryCols {
+	newCols := slices.Clone(q)
+	names := make(map[string]int, len(newCols))
+	for i := range newCols {
+		if newCols[i].Name == "" {
+			continue
+		}
+		name := strmangle.TitleCase(newCols[i].Name)
+		index := names[name]
+		names[name] = index + 1
+		if index > 0 {
+			name = fmt.Sprintf("%s%d", name, index+1)
+		}
+		newCols[i].Name = name
+	}
+
+	return newCols
+}
+
+func (q QueryCols) NameAt(i int) string {
+	earlyDuplicates := 0
+	for _, col := range q[:i] {
+		if col.Name == q[i].Name {
+			earlyDuplicates++
+		}
+	}
+
+	if earlyDuplicates > 0 {
+		return fmt.Sprintf("%s_%d", q[i].Name, earlyDuplicates+1)
+	}
+
+	return q[i].Name
 }
 
 type QueryArg struct {

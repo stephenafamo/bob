@@ -53,20 +53,13 @@ func (p Parser) ParseQueries(_ context.Context, s string) ([]drivers.Query, erro
 				TypeLimits: typeLimits,
 			}.Merge(col.Config)
 		}
-		parser.FixDuplicateColNames(cols)
 
 		name, configStr, _ := strings.Cut(info.Comment, " ")
 		queries[i] = drivers.Query{
-			Name: name,
-			SQL:  formatted,
-			Type: info.QueryType,
-
-			Config: drivers.QueryConfig{
-				RowName:      name + "Row",
-				RowSliceName: "",
-				GenerateRow:  true,
-			}.Merge(parser.ParseQueryConfig(configStr)),
-
+			Name:    name,
+			SQL:     formatted,
+			Type:    info.QueryType,
+			Config:  parser.ParseQueryConfig(configStr),
 			Columns: cols,
 			Args:    v.GetArgs(stmtStart, stmtStop, TranslateColumnType, v.getCommentToRight),
 			Mods:    stmtToMod{info},

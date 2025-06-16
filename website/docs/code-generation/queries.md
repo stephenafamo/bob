@@ -100,11 +100,11 @@ query := sqlite.Select(
 Each query has the following attributes that can be modified with annotations:
 
 - `query_name`: The name of the query. This is used to generate the function name. **Required**.
-- `result_type`: The type of the result. This is used to generate the result type. e.g. `AllUsersRow`.
-- `result_type_array`: The type of the result when using `All()`. This is used to generate the result type. e.g. `[]AllUsersRow`.
-- `generate_result_type`. If set to `false`, the result type will not be generated. This is useful if you want to replace the result type with a custom type.
+- `result_type_one`: The type of the result when using `One()`. This is used to generate the result type. e.g. `AllUsersRow`.
+- `result_type_all`: The type of the result when using `All()`. This is used to generate the result type. e.g. `[]AllUsersRow`.
+- `transformer`. The name of the slice transformer to use when using `Allx()`. If manually set the `result_type` will not be generated. Use placeholders `ONETYPE` and `ALLTYPE` to indicate where the types should be placed. e.g. `bob.SliceTransformer[ONETYPE, ALLTYPE]()`.
 
-Each reuturn column and parameter can also be annotated with the following attributes:
+Each return column and parameter can also be annotated with the following attributes:
 
 - `name`: The name of the column. This is used to generate the field name.
 - `type`: The type of the column. This is used to generate the field type.
@@ -125,6 +125,28 @@ The other parts will be inferred from the context.
 :::
 
 ```sql
--- AllUsers *models.User:models.UserSlice:false
+-- AllUsers *models.User:models.UserSlice:bob.SliceTransformer[ONETYPE, ALLTYPE]
 SELECT id /* :big.Int:nnull */, name /* username */ FROM users WHERE id = ? /* ::notnull */;
+```
+
+### Prefixing columns
+
+If you want to prefix the columns with the table name, you can use the `prefix` annotation:
+
+```sql
+--
+SELECT
+    users.*,
+
+    -- Set a prefix for the next columns
+    --prefix:posts.
+    posts.id, -- "posts.id"
+
+    -- Change the prefix for the next columns
+    --prefix:posts.comments.
+    comments.*,
+
+    -- Remove the prefix
+    --prefix:
+    users.name -- "name"
 ```

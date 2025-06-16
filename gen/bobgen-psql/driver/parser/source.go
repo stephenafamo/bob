@@ -319,25 +319,32 @@ func (w *walker) getSourceFromTargets(targets []*pg.Node, infos map[string]nodeI
 		columns: make([]col, 0, len(targets)),
 	}
 
+	var prefix string
+
 	for i, target := range targets {
 		targetInfo := infos[strconv.Itoa(i)]
 		pos := targetInfo.position()
 
-		column := col{
-			pos:  pos,
-			name: w.names[pos],
+		if newPrefix, found := w.getPrefixAnnotation(pos[0]); found {
+			prefix = newPrefix
 		}
 
-		if column.name == "*" {
-			if w.getConfigComment(pos) != "" {
+		if w.names[pos] == "*" {
+			if w.getConfigComment(pos[1]) != "" {
 				w.errors = append(w.errors, fmt.Errorf("no comments after STAR column"))
 			}
 
 			source.columns = append(
 				source.columns,
-				w.getStarColumns(target, targetInfo, sources...)...,
+				w.getStarColumns(target, targetInfo, prefix, sources...)...,
 			)
+
 			continue
+		}
+
+		column := col{
+			pos:  pos,
+			name: w.names[pos],
 		}
 
 		if nullable := w.nullability[pos]; nullable != nil {
@@ -349,7 +356,19 @@ func (w *walker) getSourceFromTargets(targets []*pg.Node, infos map[string]nodeI
 			column.name = resTarget.GetName()
 		}
 
+		column.name = prefix + column.name
 		source.columns = append(source.columns, column)
+
+		if prefix != "" {
+			valInfo := targetInfo.children["ResTarget"].children["Val"]
+			w.editRules = append(
+				w.editRules,
+				internal.Replace(
+					int(valInfo.end), int(targetInfo.end)-1,
+					fmt.Sprintf(" AS %q", column.name),
+				),
+			)
+		}
 	}
 
 	return source
@@ -376,7 +395,7 @@ func (w *walker) getSourceFromList(target *pg.List, info nodeInfo, sources ...qu
 	return result
 }
 
-func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, sources ...queryResult) []col {
+func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, prefix string, sources ...queryResult) []col {
 	if target == nil {
 		return nil
 	}
@@ -437,7 +456,7 @@ func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, sources ...query
 		if i > 0 {
 			buf.WriteString(", ")
 		}
-		expandQuotedSource(buf, source)
+		expandQuotedSource(buf, source, prefix)
 		i++
 	}
 	w.editRules = append(
@@ -445,18 +464,22 @@ func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, sources ...query
 		internal.Insert(int(fieldsInfo.start), buf.String()),
 	)
 
+	for i := range columns {
+		columns[i].name = prefix + columns[i].name
+	}
+
 	return columns
 }
 
-func expandQuotedSource(buf *strings.Builder, source queryResult) {
+func expandQuotedSource(buf *strings.Builder, source queryResult, prefix string) {
 	for i, col := range source.columns {
 		if i > 0 {
 			buf.WriteString(", ")
 		}
 		if source.schema != "" {
-			fmt.Fprintf(buf, "%q.%q.%q", source.schema, source.name, col.name)
+			fmt.Fprintf(buf, "%q.%q.%q AS %q", source.schema, source.name, col.name, prefix+col.name)
 		} else {
-			fmt.Fprintf(buf, "%q.%q", source.name, col.name)
+			fmt.Fprintf(buf, "%q.%q AS %q", source.name, col.name, prefix+col.name)
 		}
 	}
 }

@@ -15,18 +15,32 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{$upperName := titleCase $query.Name}}
 {{$lowerName := untitle $query.Name}}
 {{$flatArgs := $query.ArgsByPosition}}
-{{$queryRowName := $query.Config.RowName}}
-{{if not $query.Config.GenerateRow}}
-  {{- $queryRowName = $.Types.Get $.CurrentPackage $.Importer $queryRowName -}}
+{{$hasNested := $query.HasNestedReturns}}
+
+{{$queryResultTypeOne := printf "%sRow" $upperName}}
+{{if $query.Config.ResultTypeOne}}
+  {{$queryResultTypeOne = $.Types.Get $.CurrentPackage $.Importer $query.Config.ResultTypeOne}}
+{{end}}
+
+{{$queryResultTypeAll := printf "[]%s" $queryResultTypeOne}}
+{{if $query.Config.ResultTypeAll}}
+  {{$queryResultTypeAll = $.Types.Get $.CurrentPackage $.Importer $query.Config.ResultTypeAll}}
+{{else if and $query.HasNestedReturns (not $query.Config.ResultTransformer)}}
+  {{$queryResultTypeAll = printf "All%s" $queryResultTypeOne}}
+{{end}}
+
+{{$queryResultTransformer := printf "%sTransformer" $lowerName}}
+{{if not (list "" "slice"| has $query.Config.ResultTransformer)}}
+  {{$queryResultTransformer = $.Types.Get $.CurrentPackage $.Importer $query.Config.ResultTransformer}}
 {{end}}
 
 {{$queryType := (lower $query.Type.String | titleCase)}}
 {{$dialectType := printf "*dialect.%sQuery" $queryType}}
-{{$colParams :=  printf "%s, %s" $queryRowName (or $query.Config.RowSliceName (printf "[]%s" $queryRowName)) }}
+{{$colParams :=  printf "%s, %s, %s" $queryResultTypeOne $queryResultTypeAll $queryResultTransformer }}
 {{if eq (len $query.Columns) 1}}
   {{$col := index $query.Columns 0}}
   {{$colType := $col.Type $.CurrentPackage $.Importer $.Types}}
-  {{$colParams =  printf "%s, %s" $colType (or $query.Config.RowSliceName (printf "[]%s" $colType)) }}
+  {{$colParams =  printf "%s, %s" $colType (or $query.Config.ResultTypeAll (printf "[]%s" $colType)) }}
 {{end}}
 
 var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.QueryPosition $queryIndex (len $.Language.Disclaimer)}}]
@@ -77,18 +91,18 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
           },
         },
         {{if gt (len $query.Columns) 1 -}}
-          {{if not $query.Config.GenerateRow -}}
-          Scanner: scan.StructMapper[{{$queryRowName}}](),
+          {{if $query.Config.ResultTransformer -}}
+          Scanner: scan.StructMapper[{{$queryResultTypeOne}}](),
           {{- else -}}
-          Scanner: func(context.Context, []string) (func(*scan.Row) (any, error), func(any) ({{$queryRowName}}, error)) {
+          Scanner: func(context.Context, []string) (func(*scan.Row) (any, error), func(any) ({{$queryResultTypeOne}}, error)) {
             return func(row *scan.Row) (any, error) {
-                var t {{$queryRowName}}
-                {{range $colIndex, $col := $query.Columns -}}
+                var t {{$queryResultTypeOne}}
+                {{range $colIndex, $col := $query.Columns.WithNames -}}
                   row.ScheduleScanByIndex({{$colIndex}}, &t.{{titleCase $col.Name}})
                 {{end -}}
                 return &t, nil
-              }, func(v any) ({{$queryRowName}}, error) {
-                return *(v.(*{{$queryRowName}})), nil
+              }, func(v any) ({{$queryResultTypeOne}}, error) {
+                return *(v.(*{{$queryResultTypeOne}})), nil
               }
           },
           {{- end}}
@@ -117,12 +131,46 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
   {{- end}} 
 }
 
-{{if and $query.Columns $query.Config.GenerateRow}}
-type {{trimPrefix "*" $queryRowName}} struct {
-  {{range $col := $query.Columns -}}
-    {{titleCase $col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
+{{if $query.Columns}}
+  {{if not $query.Config.ResultTransformer}}
+    type {{trimPrefix "*" $queryResultTypeOne}} = struct {
+      {{range $col := $query.Columns.WithNames -}}
+        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
+      {{end}}
+    }
+
+    {{if and (not $query.HasNestedReturns) ($query.Config.ResultTypeAll)}}
+      type {{$queryResultTypeAll}} = []{{$queryResultTypeOne}}
+    {{end}}
   {{end}}
-}
+
+
+
+  {{if and $query.HasNestedReturns (not $query.Config.ResultTransformer)}}
+    {{$nested := $query.NestedColumns}}
+    {{$typeName := printf "%sTransformed" $queryResultTypeOne}}
+
+    type {{$lowerName}}Transformer struct{}
+
+    func ({{$lowerName}}Transformer) TransformScanned(scanned []{{$queryResultTypeOne}}) ({{$queryResultTypeAll}}, error) {
+      final := make({{$queryResultTypeAll}}, 0, len(scanned))
+
+      for _, row := range scanned {
+          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns.WithNames $typeName "final" "index"}}
+      }
+
+      return final, nil
+    }
+
+    type {{$queryResultTypeAll}} = []{{$queryResultTypeOne}}Transformed
+
+    {{range $nested.Types $.CurrentPackage $.Importer $.Types $typeName}} 
+    {{.}}
+    {{end}}
+
+  {{else if (list "" "slice"| has $query.Config.ResultTransformer)}}
+    type {{$lowerName}}Transformer = {{printf "bob.SliceTransformer[%s, %s]" $queryResultTypeOne $queryResultTypeAll}}
+  {{end}}
 {{end}}
 
 type {{$lowerName}} struct {

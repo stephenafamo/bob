@@ -14,7 +14,12 @@ import (
 	"github.com/stephenafamo/bob/orm"
 )
 
-type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+type (
+	setter[T any]                      = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+	ormInsertQuery[T any, Tslice ~[]T] = orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
+	ormUpdateQuery[T any, Tslice ~[]T] = orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
+	ormDeleteQuery[T any, Tslice ~[]T] = orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
+)
 
 func NewTable[T any, Tset setter[T]](schema, tableName string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](schema, tableName)
@@ -61,8 +66,8 @@ func (t *Table[T, Tslice, Tset]) PrimaryKey() orm.Columns {
 }
 
 // Starts an insert query for this table
-func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *orm.Query[*dialect.InsertQuery, T, Tslice] {
-	q := &orm.Query[*dialect.InsertQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *ormInsertQuery[T, Tslice] {
+	q := &ormInsertQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
 			BaseQuery: Insert(im.Into(t.NameAs(), t.nonGeneratedCols...)),
 			Hooks:     &t.InsertQueryHooks,
@@ -85,8 +90,8 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 }
 
 // Starts an Update query for this table
-func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.Query[*dialect.UpdateQuery, T, Tslice] {
-	q := &orm.Query[*dialect.UpdateQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *ormUpdateQuery[T, Tslice] {
+	q := &ormUpdateQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.UpdateQuery]{
 			BaseQuery: Update(um.Table(t.NameAs())),
 			Hooks:     &t.UpdateQueryHooks,
@@ -109,8 +114,8 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 }
 
 // Starts a Delete query for this table
-func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.Query[*dialect.DeleteQuery, T, Tslice] {
-	q := &orm.Query[*dialect.DeleteQuery, T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *ormDeleteQuery[T, Tslice] {
+	q := &ormDeleteQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.DeleteQuery]{
 			BaseQuery: Delete(dm.From(t.NameAs())),
 			Hooks:     &t.DeleteQueryHooks,
