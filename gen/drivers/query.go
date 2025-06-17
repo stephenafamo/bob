@@ -108,15 +108,6 @@ type Query struct {
 	Mods    TemplateInclude `json:"mods"`
 }
 
-func (q Query) HasNestedReturns() bool {
-	for _, col := range q.Columns {
-		if strings.Contains(col.DBName, ".") {
-			return true
-		}
-	}
-	return false
-}
-
 func (q Query) ArgsByPosition() []orm.ArgWithPosition {
 	var args []orm.ArgWithPosition
 
