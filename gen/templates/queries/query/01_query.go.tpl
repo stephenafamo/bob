@@ -156,7 +156,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       final := make({{$queryResultTypeAll}}, 0, len(scanned))
 
       for _, row := range scanned {
-          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns.WithNames $typeName "final" "index"}}
+          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns.WithNames false $typeName "final" "index"}}
       }
 
       return final, nil
