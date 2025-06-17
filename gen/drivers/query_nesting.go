@@ -157,7 +157,10 @@ func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typ
 	allTypes := []string{""}
 
 	var self strings.Builder
+
 	fmt.Fprintf(&self, "type %s = struct{\n", typeName)
+	typeName = strings.TrimSuffix(typeName, "_")
+
 	for _, child := range n {
 		childType := child.Type(currPkg, i, types, typeName)
 
@@ -322,6 +325,7 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 			collectedRowsVar, collectedRowsVar, indexName, collectedRowsVar)
 	}
 
+	typeName = strings.TrimSuffix(typeName, "_")
 	for _, child := range n {
 		if len(child.Children) == 0 {
 			continue

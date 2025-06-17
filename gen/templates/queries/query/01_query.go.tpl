@@ -148,7 +148,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
 
   {{if and $query.HasNestedReturns (not $query.Config.ResultTransformer)}}
     {{$nested := $query.NestedColumns}}
-    {{$typeName := printf "%sTransformed" $queryResultTypeOne}}
+    {{$typeName := printf "%s_" $queryResultTypeOne}}
 
     type {{$lowerName}}Transformer struct{}
 
@@ -162,7 +162,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       return final, nil
     }
 
-    type {{$queryResultTypeAll}} = []{{$queryResultTypeOne}}Transformed
+    type {{$queryResultTypeAll}} = []{{$queryResultTypeOne}}_
 
     {{range $nested.Types $.CurrentPackage $.Importer $.Types $typeName}} 
     {{.}}

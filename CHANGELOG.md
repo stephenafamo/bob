@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `As` method to `clause.TableRef`, which sets the alias and return a copy of the struct. (thanks @Nitjsefni7)
 - Added the `type_system` configuration option to determine how to generate null and optional values in the generated code.
   Possible options: `github.com/aarondl/opt`, `github.com/aarondl/opt/null` or `database/sql`. The default value is `github.com/aarondl/opt`.
-- When generating code for queries, columns with dots (`.`) in their names are now assumed to be nested fields. The `All` method of the generated query will return a struct with nested fields instead of a flat struct.
+- When generating code for queries, The `All` method of the generated query will return a struct with nested fields instead of a flat struct.
+  - columns with dots (`.`) are assumed to be a `to-many` nested field.
+  - columns with double underscores (`__`) are assumed to be a `to-one` nested field.
 - Implement `--prefix` annotation in queries for `bobgen-psql`.
 
 ### Changed

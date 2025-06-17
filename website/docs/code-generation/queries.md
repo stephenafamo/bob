@@ -51,7 +51,7 @@ The following code with be generated:
 ```go
 const allUsersSQL = `SELECT "users"."id", "users"."name" FROM "users" WHERE "id" = ?1`
 
-func AllUsers(id int32) orm.ModQuery[*dialect.SelectQuery, AllUsersRow, []AllUsersRow] {
+func AllUsers(id int32) orm.ModQuery[...] {
     // ...
 }
 
@@ -64,6 +64,64 @@ type AllUsersRow struct {
 :::note
 
 See how `SELECT *` is transformed into `SELECT "users"."id", "users"."name"`. This is done to ensure that the generated code continues to work as expected even if the schema changes.
+
+:::
+
+## Retrieving related data
+
+Bob supports retrieving related data by naming the returned columns in a specific way.
+
+- `related_table__column_name` - This indicates a `to-one` relationship.
+- `related_table.column_name` - This indicates a `to-many` relationship.
+
+When the `All()` method is used on the query, the returned rows will be transformed and nested according to these relationships.
+
+For example, given the following query:
+
+```sql
+-- Nested
+SELECT
+    users.*,
+    --prefix:videos.
+    videos.*,
+    --prefix:videos.sponsor__
+    sponsors.*
+FROM users
+LEFT JOIN videos ON videos.user_id = users.id
+INNER JOIN sponsors ON videos.sponsor_id = sponsors.id
+WHERE users.id IN ($1);
+```
+
+Will generate the following code:
+
+```go
+type AllNestedRow = []NestedRow_
+
+type NestedRow_ = struct {
+	ID             int32
+	EmailValidated null.Val[string]
+	PrimaryEmail   null.Val[string]
+	ParentID       null.Val[int32]
+	PartyID        null.Val[int32]
+	Referrer       null.Val[int32]
+	Videos         []NestedRow_Videos
+}
+
+type NestedRow_Videos = struct {
+	ID        null.Val[int32]
+	UserID    null.Val[int32]
+	SponsorID null.Val[int32]
+	Sponsor   *NestedRow_Videos_Sponsor
+}
+
+type NestedRow_Videos_Sponsor = struct {
+	ID null.Val[int32]
+}
+```
+
+:::note
+
+See how the `--prefix` annotation is used to conveniently prefix the columns with the table name.
 
 :::
 
