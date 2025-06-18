@@ -169,14 +169,12 @@ func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typ
 				currPkg, i, types, childType,
 			)...)
 
-			childPrefix := ""
-			if child.Children.AllNullable() {
-				childPrefix = "*"
+			switch {
+			case child.Single && child.Children.AllNullable():
+				childType = "*" + childType
+			case !child.Single:
+				childType = "[]" + childType
 			}
-			if !child.Single {
-				childPrefix = "[]"
-			}
-			childType = childPrefix + childType
 		}
 
 		fmt.Fprintf(&self, "%s %s\n",
@@ -266,12 +264,13 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 	switch {
 	case isSingle && n.AllNullable():
 		fmt.Fprintf(transformation, `if %s == nil {
-			  fresh := &%s{}
+			  var fresh %s
 			  %s
-			  %s = fresh
+			  %s = &fresh
 			}
 			`,
-			collectedRowsVar, typeName,
+			collectedRowsVar,
+			typeName,
 			n.Assign(currPkg, i, types, "fresh", "row", cols),
 			collectedRowsVar,
 		)
@@ -326,12 +325,17 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 	}
 
 	typeName = strings.TrimSuffix(typeName, "_")
+	switch {
+	case !isSingle:
+		collectedRowsVar = fmt.Sprintf("%s[%s]", collectedRowsVar, indexName)
+	}
+
 	for _, child := range n {
 		if len(child.Children) == 0 {
 			continue
 		}
 		childType := fmt.Sprintf("%s_%s", typeName, child.Col.Name)
-		childVar := fmt.Sprintf("%s[%s].%s", collectedRowsVar, indexName, child.Col.Name)
+		childVar := fmt.Sprintf("%s.%s", collectedRowsVar, child.Col.Name)
 		transformation.WriteString(child.Children.Transform(
 			currPkg, i, types, cols,
 			child.Single, childType, childVar,
