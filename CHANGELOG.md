@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Mod` is now a separate field in `orm.ModQuery` and `orm.ModExecQuery`.
 - `Allx` now takes a `Transformer` type parameter to transform the result of the query.
+- Updated documentation for readability, added code gen examples. (thanks @singhsays)
 
 ### Removed
 
@@ -30,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed some issues with creating relationships in the factory by avoiding trying to reuse models.
 - Fix issues with generating code for queries with duplicate return column names.
+- Updated gen table detail queries to use context. (thanks @singhsays)
 
 ## [v0.38.0] - 2025-06-04
 
