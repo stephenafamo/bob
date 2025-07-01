@@ -357,7 +357,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 
 	query += ` order by c.ordinal_position;`
 
-	rows, err := d.conn.Query(query, args...)
+	rows, err := d.conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return "", "", nil, err
 	}

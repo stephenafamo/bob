@@ -1,7 +1,7 @@
 ---
 
 sidebar_position: 4
-description: Manipulate column listes
+description: Manipulate column lists
 
 ---
 
@@ -22,7 +22,7 @@ orm.NewColumns("id", "name", "email").WithParent("public.users")
 "public.users"."email" AS "email"
 ```
 
-It has many convenient methods to manipulate the columns list.
+The [View](./view) and [Table](./table) models for a table also implement the `Columns()` method that returns a column list with all of the table's columns. In addition, there are several convenience methods to manipulate the columns list.
 
 ## `Only`
 

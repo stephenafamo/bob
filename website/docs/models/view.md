@@ -7,9 +7,9 @@ description: Easily query a database table
 
 # View
 
-A view model makes it easy to map an entity to a database table and query it.
+A View model makes it easy to map an entity to a database table and query it.
 
-To create a view, use the `NewView()` function.
+To create a View model, use the `NewView()` function.
 
 ```go
 type User struct {
@@ -23,11 +23,11 @@ var userView = psql.NewView[User]("public", "users")
 
 :::tip
 
-The `NewViewx()` function takes an extra type parameter to determine how slices are returned.
+The `NewViewx()` function takes an extra type parameter to determine how slices of the corresponding table struct are returned.
 
 :::
 
-A view model provides the following methods:
+A View model provides the following methods:
 
 ## Name()
 
@@ -53,7 +53,7 @@ Learn about how to manipulate a columns list in the [columns documentation](./co
 
 ## Query()
 
-The `Query()` method starts a SELECT query on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
+The `Query()` method on a View model starts a SELECT query on the model's database view/table. It accepts [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
 q := userView.Query(
