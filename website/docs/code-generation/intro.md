@@ -1,6 +1,6 @@
 ---
 sidebar_position: 0
-description: Generating an ORM and Fatory tailored to your schema
+description: Generating an ORM and Factories tailored to your schema
 ---
 
 import DocCardList from '@theme/DocCardList';
@@ -47,5 +47,52 @@ Bob is a "database-first" ORM. That means you must first create your database sc
   - Supports user-configured relationships
   - Can configure relationships based on static column values. For example, (`WHERE object_type = 'car' AND object_id = cars.id`)
   - Support for `has-one-through` and `has-many-through`.
+
+## Generating code
+
+The code generator is run through the dialect specific command in the [gen](https://pkg.go.dev/github.com/stephenafamo/bob/gen#section-directories) package.
+All code generator commands require connection information for your database (to parse the database structure).
+This can be provided either through an (dialect specific) environment variable or through a configuration file.
+See [configuration](./configuration) for details and other customizable options.
+
+### Example Usage
+
+**Postgres**
+
+```sh
+# With env variable
+PSQL_DSN=postgres://user:pass@host:port/dbname go run github.com/stephenafamo/bob/gen/bobgen-psql@latest
+
+# With configuration file
+go run github.com/stephenafamo/bob/gen/bobgen-psql@latest -c ./config/bobgen.yaml
+```
+**MySQL**
+
+```sh
+# With env variable
+MYSQL_DSN=user:pass@tcp(host:port)/dbname go run github.com/stephenafamo/bob/gen/bobgen-mysql@latest
+
+# With configuration file
+go run github.com/stephenafamo/bob/gen/bobgen-mysql@latest -c ./config/bobgen.yaml
+```
+
+**SQLite**
+```sh
+# With env variable
+SQLITE_DSN=test.db go run github.com/stephenafamo/bob/gen/bobgen-sqlite@latest
+
+# With configuration file
+go run github.com/stephenafamo/bob/gen/bobgen-sqlite@latest -c ./config/bobgen.yaml
+```
+
+**SQL Files**
+```sh
+# With env variable
+SQL_DIALECT=psql go run github.com/stephenafamo/bob/gen/bobgen-sql@latest
+
+# With configuration file
+go run github.com/stephenafamo/bob/gen/bobgen-sql@latest -c ./config/bobgen.yaml
+```
+Refer to [driver / dialect specific documentation](#available-drivers) for more details
 
 <DocCardList items={useCurrentSidebarCategory().items.filter(i => i.label != 'Introduction')} />

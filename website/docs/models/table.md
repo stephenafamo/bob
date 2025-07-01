@@ -7,16 +7,16 @@ description: Easily query and modify a database table
 
 :::info
 
-Table models have all the capabilities of [view models](./view). This page will only focus on the additional capabilities.
+Table models have all the capabilities of [View models](./view). This page will only focus on the additional capabilities.
 
 :::
 
-In addition to **EVERYTHING** a [view model](./view) is capable of, a table model makes it easy to make changes to a database table.
+In addition to **EVERYTHING** a [View model](./view) is capable of, a Table model makes it easy to make changes to a database table.
 
-To create a view, use the `NewTable()` function. This takes 2 type parameters:
+To create a Table model, use the `NewTable()` function. This takes 2 type parameters:
 
-1. The first should match the general structure of the table.
-2. The second is used as the "setter". The setter is expected to have "Optional" fields used to know which values are being inserted/updated.
+1. The first type parameter should match the general structure of the table.
+2. The second type parameter is used as the "setter". The setter is expected to have "Optional" fields to specify which values are being inserted/updated.
 
 ```go
 type User struct {
@@ -45,28 +45,28 @@ The `NewTablex()` function takes an extra type parameter to determine how slices
 
 ## Why do we need a setter?
 
-A setter is necessary because if we run `userTable.Insert(User{})`, due to Go's zero values it will be difficult to know which fields we purposefully set.
+A setter is necessary due to Golang's handling of zero values. As example, when running `userTable.Insert(User{})`, it isn't possible to distinguish which fields were purposefully set by the user vs. fields initialized to their zero values.
 
-Typically, we can leave out fields that we never intend to manually set, such as auto increment or generated columns.
+Typically, we want to exclude fields that we don't intend to manually set, such as auto increment or generated columns.
 
 ```go
 userTable.Insert(&UserSetter{
-    Name: omit.From("Stephen"), // we know the name was set and not the email
+    Name: omit.From("Stephen"), // we want to set name and not the email
 }).One(ctx, db)
 ```
 
 :::tip
 
-If the Setter methods feel tedious to implement, they can be fully generated from your database.  
+The Setter type and methods can also be fully generated from your database structure.
 See [Code Generation](../code-generation/intro) for more information.
 
 :::
 
 ## Queries
 
-Like a [View](./view) the `Query()` method starts a SELECT query on the model's database view/table. It can accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
+Similar to a [View](./view), the Table model also has a `Query()` method that starts a SELECT query on the table model. It accepts [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
-In addition, a Table also has `Insert`, `Update` and `Delete` which begin insert, update and delete queries on the table. As you may expect, they can also accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
+In addition, a Table also has `Insert`, `Update` and `Delete` methods which begin insert, update and delete queries on the table. These methods also accept [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
 // UPDATE "users" SET "kind" = $1 RETURNING *;
@@ -143,7 +143,7 @@ err := users.UpdateAll(ctx, db, UserSetter{VehicleID: omit.From(200)})
 
 :::info
 
-The method signature for this varies by dialect.
+The method signature for this method varies by dialect.
 
 :::
 

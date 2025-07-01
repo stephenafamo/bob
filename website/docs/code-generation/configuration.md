@@ -7,14 +7,15 @@ description: How to configure Bob's code generation
 
 > Driver specific configuration option and instructions can be found on their individual pages.
 
-Configuration is done in a `bobgen.yaml` file in the same directory. A different configuration file can be passed with the `-c` or `--config` flag.
+code generation is configured through a yaml configuration file (defaults to `./bobgen.yaml` in the current directory). A different configuration file can be passed with the `-c` or `--config` flag.
 
-The configuration is marshalled in to the [Config struct](https://pkg.go.dev/github.com/stephenafamo/bob/gen#Config).
+The configuration is unmarshalled into the following [Config](https://pkg.go.dev/github.com/stephenafamo/bob/gen#Config) struct.
+
 
 ```go
 // Config for the running of the commands
 type Config struct {
-	// System to use to create null and optional types
+	// Convention and library used for handling null and optional types
 	// available options are:
 	// - "github.com/aarondl/opt" (default)
 	//    * Uses null.Val[T] for optional values
@@ -55,7 +56,7 @@ type Config struct {
 
 | Name                | Description                                                                                                     | Default                  |
 | ------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| type_system         | How to create optional and nullable types. Available options are `github.com/aarondl/opt` and `database/sql`    | "github.com/aarondl/opt" |
+| type_system         | How to handle optional and nullable types. Available options are `github.com/aarondl/opt` and `database/sql`    | "github.com/aarondl/opt" |
 | tags                | Struct tags to generate                                                                                         | []                       |
 | no_factory          | Disable generating factories for models                                                                         | false                    |
 | no_tests            | Disable generating go test files                                                                                | false                    |

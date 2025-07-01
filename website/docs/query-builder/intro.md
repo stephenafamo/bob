@@ -8,8 +8,8 @@ import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
 
 # Introduction
 
-Bob helps build SQL queries. It does not try to abstract away SQL, or to hide implementation, instead **Bob** adds typed handrails to the query building
-for a better development experience.
+Bob helps build SQL queries. It does not try to abstract away SQL or hide the underlying implementation. Instead **Bob** adds typed handrails to the query building
+for better developer experience.
 
 ## Principles
 
