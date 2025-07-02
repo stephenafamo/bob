@@ -36,6 +36,8 @@ type {{$tAlias.UpSingular}}Template struct {
         r {{$tAlias.DownSingular}}R
     {{- end}}
     f *Factory
+
+    alreadyPersisted bool
 }
 
 {{if $.Relationships.Get $table.Key -}}
