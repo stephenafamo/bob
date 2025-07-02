@@ -1,6 +1,10 @@
 package drivers
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/aarondl/opt/null"
+)
 
 // DBIndexes lists all indexes in the database schema keyed by table name
 type DBIndexes[Extra any] map[string][]Index[Extra]
@@ -16,9 +20,9 @@ type Index[Extra any] struct {
 }
 
 type IndexColumn struct {
-	Name         string `yaml:"name" json:"name"`
-	Desc         bool   `yaml:"desc" json:"desc"`
-	IsExpression bool   `yaml:"is_expression" json:"is_expression"`
+	Name         string         `yaml:"name" json:"name"`
+	Desc         null.Val[bool] `yaml:"desc" json:"desc"`
+	IsExpression bool           `yaml:"is_expression" json:"is_expression"`
 }
 
 func (i Index[E]) HasExpressionColumn() bool {

@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aarondl/opt/null"
 	"github.com/lib/pq"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver/parser"
@@ -528,7 +529,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], er
 			isExpression := !rgxValidColumnName.MatchString(colName)
 			index.Columns = append(index.Columns, drivers.IndexColumn{
 				Name:         colName,
-				Desc:         r.Descending[i],
+				Desc:         null.From(r.Descending[i]),
 				IsExpression: isExpression,
 			})
 		}
