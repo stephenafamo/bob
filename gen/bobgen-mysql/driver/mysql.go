@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aarondl/opt/null"
 	"github.com/go-sql-driver/mysql"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-mysql/driver/parser"
@@ -361,7 +362,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 		ColumnName sql.NullString
 		Expression sql.NullString
 		IsUnique   bool
-		Descending bool
+		Descending null.Val[bool]
 		Type       string
 		Comment    string
 	}
