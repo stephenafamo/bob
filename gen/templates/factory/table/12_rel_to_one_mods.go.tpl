@@ -28,6 +28,15 @@ func (m {{$tAlias.DownSingular}}Mods) WithParentsCascading() {{$tAlias.UpSingula
 {{- $ftable := $.Aliases.Table .Foreign -}}
 {{- $relAlias := $tAlias.Relationship .Name -}}
 
+func (m {{$tAlias.DownSingular}}Mods) WithExisting{{$relAlias}}(locator func() models.{{$ftable.UpSingular}}) {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
+		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}R{{$relAlias}}R{
+			o: o.f.FromExisting{{$ftable.UpSingular}}(locator),
+			{{$.Tables.RelDependenciesTypSet $.Aliases .}}
+		}
+	})
+}
+
 func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}({{$.Tables.RelDependencies $.Aliases . "" "Template"}} rel *{{$ftable.UpSingular}}Template) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
 		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}R{{$relAlias}}R{

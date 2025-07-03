@@ -110,10 +110,17 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
       {{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
 		}
 
-    rel{{$index}}, err := o.r.{{$relAlias}}.o.Create(ctx, exec)
-    if err != nil {
-      return nil, err
-    }
+		var rel{{$index}} *models.{{$ftable.UpSingular}}
+
+		if o.r.{{$relAlias}}.o.alreadyPersisted {
+			rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+		} else {
+			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+			if err != nil {
+				return nil, err
+			}
+		}
+	
 
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}

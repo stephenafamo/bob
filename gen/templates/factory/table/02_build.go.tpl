@@ -101,6 +101,17 @@ func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 	return m
 }
 
+func (o *{{$tAlias.UpSingular}}Template) From(locator func() models.{{$tAlias.UpSingular}}) {
+  m := locator()
+  _ = m
+  {{range $column := $table.Columns -}}
+  {{$colAlias := $tAlias.Column $column.Name -}}
+  {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+        o.{{$colAlias}} = func() {{$colTyp}} { return m.{{$colAlias}} }
+  {{end}}
+  o.alreadyPersisted = true
+}
+
 // BuildMany returns an models.{{$tAlias.UpSingular}}Slice
 // Related objects are also created and placed in the .R field
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.CreateMany

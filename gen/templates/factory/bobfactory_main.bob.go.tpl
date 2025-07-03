@@ -1,4 +1,5 @@
 {{$.Importer.Import "context"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 type Factory struct {
     {{range $table := .Tables}}
@@ -23,6 +24,13 @@ func (f *Factory) New{{$tAlias.UpSingular}}(ctx context.Context, mods ...{{$tAli
   {{$tAlias.UpSingular}}ModSlice(mods).Apply(ctx, o)
 
 	return o
+}
+
+func (f *Factory) FromExisting{{$tAlias.UpSingular}}(locator func() models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+	o := &{{$tAlias.UpSingular}}Template{}
+  o.From(locator)
+
+  return o
 }
 
 {{end}}
