@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issues with generating code for queries with duplicate return column names.
 - Updated gen table detail queries to use context. (thanks @singhsays)
 - Properly detect `bool`, `timestamp` and `timestamptz` types in `bobgen-psql`.
+- Fix transformer for single result queries.
+- Properly handle indexes where the sorting order can be null.
 
 ## [v0.38.0] - 2025-06-04
 
