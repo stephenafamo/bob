@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Properly detect `bool`, `timestamp` and `timestamptz` types in `bobgen-psql`.
 - Fix transformer for single result queries.
 - Properly handle indexes where the sorting order can be null.
+- Check for nullability when loading relationships.
 
 ## [v0.38.0] - 2025-06-04
 

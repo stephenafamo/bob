@@ -246,21 +246,41 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	for _, o := range os {
 		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $side.FromColumns -}}
-			{{- $foreign := index $side.ToColumns $index -}}
-			{{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.From $local (cat "o." ($fromAlias.Column $local)) -}}
-			{{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.To $foreign (cat "rel." ($toAlias.Column $foreign)) -}}
-			{{- $fromCol := $.Tables.GetColumn $side.From $local -}}
-			{{- $typInfo := $.Types.Index $fromCol.Type -}}
-			{{- with $typInfo.CompareExpr -}}
-				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
-				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
-					continue
-				}
-			{{- else -}}
-				if {{$fromColGet}} != {{$toColGet}} {
-					continue
-				}
-			{{- end}}
+        {{- $foreign := index $side.ToColumns $index -}}
+        {{- $fromCol := $.Tables.GetColumn $side.From $local -}}
+        {{- $toCol := $.Tables.GetColumn $side.To $foreign -}}
+
+        {{- $fromColAlias := index $fromAlias.Columns $local -}}
+        {{- $toColAlias := index $toAlias.Columns $foreign -}}
+
+
+        {{if $fromCol.Nullable -}}
+          if !{{$.Types.GetNullTypeValid $.CurrentPackage $fromCol.Type (cat "o." $fromColAlias)}} {
+            continue
+          }
+        {{end}}
+
+        {{if $toCol.Nullable -}}
+          if !{{$.Types.GetNullTypeValid $.CurrentPackage $toCol.Type (cat "rel." $toColAlias)}} {
+            continue
+          }
+        {{end}}
+
+
+
+        {{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.From $local (cat "o." ($fromAlias.Column $local)) -}}
+        {{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.To $foreign (cat "rel." ($toAlias.Column $foreign)) -}}
+        {{- $typInfo := $.Types.Index $fromCol.Type -}}
+        {{- with $typInfo.CompareExpr -}}
+          {{$.Importer.ImportList $typInfo.CompareExprImports -}}
+          if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
+            continue
+          }
+        {{- else -}}
+          if {{$fromColGet}} != {{$toColGet}} {
+            continue
+          }
+        {{- end}}
 			{{end}}
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
