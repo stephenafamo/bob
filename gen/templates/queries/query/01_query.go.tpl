@@ -30,7 +30,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{end}}
 
 {{$queryResultTransformer := printf "%sTransformer" $lowerName}}
-{{if not (list "" "slice"| has $query.Config.ResultTransformer)}}
+{{if not (list "" "slice" | has $query.Config.ResultTransformer)}}
   {{$queryResultTransformer = $.Types.Get $.CurrentPackage $.Importer $query.Config.ResultTransformer}}
 {{end}}
 
@@ -40,7 +40,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{if eq (len $query.Columns) 1}}
   {{$col := index $query.Columns 0}}
   {{$colType := $col.Type $.CurrentPackage $.Importer $.Types}}
-  {{$colParams =  printf "%s, %s" $colType (or $query.Config.ResultTypeAll (printf "[]%s" $colType)) }}
+  {{$colParams =  printf "%s, %s, %s" $colType (or $query.Config.ResultTypeAll (printf "[]%s" $colType)) $queryResultTransformer }}
 {{end}}
 
 var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.QueryPosition $queryIndex (len $.Language.Disclaimer)}}]
@@ -169,7 +169,13 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
     {{end}}
 
   {{else if (list "" "slice"| has $query.Config.ResultTransformer)}}
-    type {{$lowerName}}Transformer = {{printf "bob.SliceTransformer[%s, %s]" $queryResultTypeOne $queryResultTypeAll}}
+    {{if eq (len $query.Columns) 1}}
+      {{$col := index $query.Columns 0}}
+      {{$colType := $col.Type $.CurrentPackage $.Importer $.Types}}
+      type {{$lowerName}}Transformer = {{printf "bob.SliceTransformer[%s, %s]" $colType (or $query.Config.ResultTypeAll (printf "[]%s" $colType))}}
+    {{else}}
+      type {{$lowerName}}Transformer = {{printf "bob.SliceTransformer[%s, %s]" $queryResultTypeOne $queryResultTypeAll}}
+    {{end}}
   {{end}}
 {{end}}
 
