@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aarondl/opt/null"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-sqlite/driver/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -306,8 +307,6 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 		return table, err
 	}
 
-	// We cannot rely on the indexes to get the primary key
-	// because it is not always included in the indexes
 	table.Constraints.Primary = d.primaryKey(schema, name, tinfo)
 	table.Constraints.Foreign, err = d.foreignKeys(ctx, schema, name)
 	if err != nil {
@@ -321,6 +320,9 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 
 	// Get Unique constraints from indexes
 	// Also check if the primary key is in the indexes
+	// We cannot rely on the indexes to get the primary key
+	// because it is not always included in the indexes
+	// It is excluded if the primary key is an alias for the ROWID
 	hasPk := false
 	for _, index := range table.Indexes {
 		switch index.Type {
@@ -350,7 +352,9 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 
 		for i, col := range table.Constraints.Primary.Columns {
 			pkIndex.Columns[i] = drivers.IndexColumn{
-				Name: col,
+				Name:         col,
+				Desc:         null.From(false),
+				IsExpression: false,
 			}
 		}
 
@@ -635,7 +639,6 @@ func (d *driver) indexes(ctx context.Context, schema, tableName string) ([]drive
 				Partial: index.Partial,
 			},
 		}
-
 	}
 
 	return indexes, nil
@@ -666,7 +669,7 @@ func (d *driver) getIndexInformation(ctx context.Context, schema, tableName, ind
 
 		col := drivers.IndexColumn{
 			Name: column.Name.String,
-			Desc: column.Desc,
+			Desc: null.From(column.Desc),
 		}
 
 		if !column.Name.Valid {

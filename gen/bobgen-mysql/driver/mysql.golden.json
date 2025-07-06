@@ -403,9 +403,35 @@
 					"domain_name": "",
 					"type": "int32",
 					"type_limits": []
+				},
+				{
+					"name": "full_text_col",
+					"db_type": "longtext",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"type_limits": []
 				}
 			],
 			"indexes": [
+				{
+					"type": "FULLTEXT",
+					"name": "idx_full_text",
+					"columns": [
+						{
+							"name": "full_text_col",
+							"desc": null,
+							"is_expression": false
+						}
+					],
+					"unique": false,
+					"comment": "",
+					"extra": null
+				},
 				{
 					"type": "BTREE",
 					"name": "one",

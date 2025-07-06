@@ -214,7 +214,10 @@ CREATE TABLE multi_keys (
   	one   int NULL,
 	two   int NOT NULL,
 
+    full_text_col LONGTEXT NOT NULL,
+
     UNIQUE(something, another),
+    FULLTEXT INDEX idx_full_text (full_text_col),
     FOREIGN KEY (one, two) REFERENCES type_monsters(int_one, int_two)
 );
 
