@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed some issues with creating relationships in the factory by avoiding trying to reuse models.
 - Fix issues with generating code for queries with duplicate return column names.
 - Updated gen table detail queries to use context. (thanks @singhsays)
+- Properly detect `bool`, `timestamp` and `timestamptz` types in `bobgen-psql`.
 
 ## [v0.38.0] - 2025-06-04
 

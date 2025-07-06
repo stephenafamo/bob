@@ -21,7 +21,7 @@ type argInfo struct {
 }
 
 const queryInfo = `
-	WITH prepared_details AS (
+WITH prepared_details AS (
   SELECT
     'parameter' "type",
     u.*

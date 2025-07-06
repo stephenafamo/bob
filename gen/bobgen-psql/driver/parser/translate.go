@@ -71,9 +71,12 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		c.Type = "string" // should be a single character, but we treat it as a string
 	case "bytea":
 		c.Type = "[]byte"
-	case "boolean":
+	case "bool", "boolean":
 		c.Type = "bool"
-	case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
+	case "date", "time",
+		"timestamp", "timestamp without time zone",
+		"timestamptz", "timestamp with time zone",
+		"time with time zone", "time without time zone":
 		c.Type = "time.Time"
 	case "box":
 		c.Type = "pgeo.Box"
