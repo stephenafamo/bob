@@ -42,49 +42,57 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
         ctx = {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.WithValue(ctx, true);
 		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
-          {{- range $.Tables.NeededBridgeRels . -}}
-						{{$alias := $.Aliases.Table .Table -}}
-            {{if not .Many}}
-              {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
-            {{else}}
-              {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.CreateMany(ctx, exec, r.number)
-            {{end}}
-						if err != nil {
-							return err
-						}
-					{{end -}}
+          if r.o.alreadyPersisted {
+            m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, r.o.Build())
+          } else {
+            {{- range $.Tables.NeededBridgeRels . -}}
+              {{$alias := $.Aliases.Table .Table -}}
+              {{if not .Many}}
+                {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
+              {{else}}
+                {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.CreateMany(ctx, exec, r.number)
+              {{end}}
+              if err != nil {
+                return err
+              }
+            {{end -}}
 
-					rel{{$index}}, err := r.o.CreateMany(ctx, exec, r.number)
-					if err != nil {
-						return err
-					}
+            rel{{$index}}, err := r.o.CreateMany(ctx, exec, r.number)
+            if err != nil {
+              return err
+            }
 
-					err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}}...)
-					if err != nil {
-						return err
+            err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}}...)
+            if err != nil {
+              return err
+            }
 					}
 				}
 		{{- else -}}
-      {{- range $.Tables.NeededBridgeRels . -}}
-				{{$alias := $.Aliases.Table .Table -}}
-        {{if not .Many}}
-          {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
-        {{else}}
-          {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.CreateMany(ctx, exec, r.number)
-        {{end}}
-				if err != nil {
-					return err
-				}
-			{{end -}}
+      if o.r.{{$relAlias}}.o.alreadyPersisted {
+        m.R.{{$relAlias}} = o.r.{{$relAlias}}.o.Build()
+      } else {
+        {{- range $.Tables.NeededBridgeRels . -}}
+          {{$alias := $.Aliases.Table .Table -}}
+          {{if not .Many}}
+            {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
+          {{else}}
+            {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.CreateMany(ctx, exec, r.number)
+          {{end}}
+          if err != nil {
+            return err
+          }
+        {{end -}}
 
-			var rel{{$index}} *models.{{$ftable.UpSingular}}
-			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
-			if err != nil {
-				return err
-			}
-			err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}})
-			if err != nil {
-				return err
+        var rel{{$index}} *models.{{$ftable.UpSingular}}
+        rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+        if err != nil {
+          return err
+        }
+        err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}})
+        if err != nil {
+          return err
+        }
 			}
 		{{end}}
 		}
@@ -110,10 +118,17 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
       {{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
 		}
 
-    rel{{$index}}, err := o.r.{{$relAlias}}.o.Create(ctx, exec)
-    if err != nil {
-      return nil, err
-    }
+		var rel{{$index}} *models.{{$ftable.UpSingular}}
+
+		if o.r.{{$relAlias}}.o.alreadyPersisted {
+			rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+		} else {
+			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+			if err != nil {
+				return nil, err
+			}
+		}
+	
 
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}

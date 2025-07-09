@@ -131,7 +131,7 @@
     {{if $needsBulkUpdate -}}
     {{if and ($rel.NeedsMany $side.Position) ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
       setters := make([]*{{$sideAlias.UpSingular}}Setter, count)
-      for i := 0; i < count; i++ {
+      for i := range count {
         setters[i] = &{{$sideAlias.UpSingular}}Setter{
     {{- else -}}
         setter := &{{$sideAlias.UpSingular}}Setter{

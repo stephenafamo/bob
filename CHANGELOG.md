@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - columns with dots (`.`) are assumed to be a `to-many` nested field.
   - columns with double underscores (`__`) are assumed to be a `to-one` nested field.
 - Implement `--prefix` annotation in queries for `bobgen-psql`.
+- Add FromExisting<Rel> method to factories to create a template from an existing model. (thanks @dutow)
+- Add WithExisting<Rel> to factory mods to attach an existing model as a relationship. (thanks @dutow)
 - Added support in psql for combined args (order by, limit etc.) in combined queries and use parens if they are present. (@iwyrkore)
 - Added parens for combined queries. (@iwyrkore)
 
