@@ -50,6 +50,7 @@ linters:
           - gocyclo
           - gosec
           - nilnil
+          - maintidx
         path: _test\.go
       - path: (.+)\.go$
         text: G115
