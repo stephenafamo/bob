@@ -7,6 +7,7 @@
 {{- $relAlias := $tAlias.Relationship .Name -}}
 {{- $type := printf "*%sTemplate" $ftable.UpSingular -}}
 
+
 func (m {{$tAlias.DownSingular}}Mods) With{{$relAlias}}(number int, {{$.Tables.RelDependencies $.Aliases . "" "Template"}} related {{$type}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
 		o.r.{{$relAlias}} = []*{{$tAlias.DownSingular}}R{{$relAlias}}R{ {
@@ -48,6 +49,16 @@ func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(number int, mods ...{{
 
 		related := o.f.New{{$ftable.UpSingular}}(ctx, mods...)
 		m.Add{{$relAlias}}(number, {{$.Tables.RelArgs $.Aliases .}} related).Apply(ctx, o)
+	})
+}
+
+func (m {{$tAlias.DownSingular}}Mods) AddExisting{{$relAlias}}(existingModels ...*models.{{$ftable.UpSingular}}) {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
+    for _, em := range existingModels {
+      o.r.{{$relAlias}} = append(o.r.{{$relAlias}}, &{{$tAlias.DownSingular}}R{{$relAlias}}R{
+        o: o.f.FromExisting{{$ftable.UpSingular}}(em),
+      })
+    }
 	})
 }
 

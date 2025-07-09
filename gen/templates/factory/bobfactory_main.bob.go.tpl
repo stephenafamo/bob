@@ -26,15 +26,30 @@ func (f *Factory) New{{$tAlias.UpSingular}}(ctx context.Context, mods ...{{$tAli
 	return o
 }
 
-func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
-	o := &{{$tAlias.UpSingular}}Template{}
+func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+	o := &{{$tAlias.UpSingular}}Template{f: f, alreadyPersisted: true}
 
   {{range $column := $table.Columns -}}
   {{$colAlias := $tAlias.Column $column.Name -}}
   {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
         o.{{$colAlias}} = func() {{$colTyp}} { return m.{{$colAlias}} }
   {{end}}
-  o.alreadyPersisted = true
+
+  {{if $.Relationships.Get $table.Key -}}
+  ctx := context.Background()
+  {{- end}}
+  {{range $.Relationships.Get $table.Key -}}
+    {{$relAlias := $tAlias.Relationship .Name -}}
+    {{if .IsToMany -}}
+      if len(m.R.{{$relAlias}}) > 0 {
+      {{$tAlias.UpSingular}}Mods.AddExisting{{$relAlias}}(m.R.{{$relAlias}}...).Apply(ctx, o)
+      }
+    {{- else -}}
+      if m.R.{{$relAlias}} != nil {
+      {{$tAlias.UpSingular}}Mods.WithExisting{{$relAlias}}(m.R.{{$relAlias}}).Apply(ctx, o)
+      }
+    {{- end}}
+  {{end}}
 
   return o
 }
