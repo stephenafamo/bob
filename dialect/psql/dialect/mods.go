@@ -217,6 +217,12 @@ func (j CrossJoinChain[Q]) As(alias string, columns ...string) bob.Mod[Q] {
 	})
 }
 
+type OrderCombined OrderBy[*SelectQuery]
+
+func (o OrderCombined) Apply(q *SelectQuery) {
+	q.CombinedOrder.AppendOrder(o())
+}
+
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {

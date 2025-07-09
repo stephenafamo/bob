@@ -47,10 +47,14 @@ func (s Combine) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 		w.Write([]byte(" "))
 	}
 
+	w.Write([]byte("("))
+
 	args, err := s.Query.WriteQuery(ctx, w, start)
 	if err != nil {
 		return nil, err
 	}
+
+	w.Write([]byte(")"))
 
 	return args, nil
 }
