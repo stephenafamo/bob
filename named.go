@@ -31,7 +31,7 @@ func Named(names ...string) Expression {
 
 // NamedGroup is like Named, but wraps in parentheses
 func NamedGroup(names ...string) Expression {
-	return named{names: names}
+	return named{names: names, grouped: true}
 }
 
 type named struct {
