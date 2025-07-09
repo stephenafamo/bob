@@ -206,10 +206,10 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 		rawLimit := w.input[limitInfo.start:limitInfo.end]
 		switch stmt.SelectStmt.LimitOption {
 		case pg.LimitOption_LIMIT_OPTION_COUNT:
-			fmt.Fprintf(w.mods, "q.SetLimit(psql.Raw(%q))\n", rawLimit)
+			fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(psql.Raw(%q))\n", rawLimit)
 		case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
 			w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
-			fmt.Fprintf(w.mods, `q.SetFetch(clause.Fetch{
+			fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
 					Count: psql.Raw(%q),
 					WithTies: true,
 				})
@@ -220,7 +220,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	if offsetInfo, ok := info.children["LimitOffset"]; ok {
 		w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/dialect/psql"})
 		rawOffset := w.input[offsetInfo.start:offsetInfo.end]
-		fmt.Fprintf(w.mods, "q.SetOffset(psql.Raw(%q))\n", rawOffset)
+		fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(psql.Raw(%q))\n", rawOffset)
 	}
 
 	if orderInfo, ok := info.children["SortClause"]; ok {
@@ -229,7 +229,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(orderInfo.start),
 				int(orderInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,

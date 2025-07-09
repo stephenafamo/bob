@@ -115,6 +115,24 @@ func TestSelect(t *testing.T) {
 			),
 			ExpectedSQL: "SELECT id, name FROM users ORDER BY name COLLATE `utf8mb4_bg_0900_as_cs` ASC",
 		},
+		"union with combined args": {
+			Query: mysql.Select(
+				sm.Columns("id", "name"),
+				sm.From("users"),
+				sm.Limit(100),
+				sm.OrderBy("id"),
+				sm.Union(mysql.Select(
+					sm.Columns("id", "name"),
+					sm.From("admins"),
+					sm.Limit(10),
+					sm.OrderBy("id"),
+				)),
+				sm.OrderCombined("id"),
+				sm.LimitCombined(1000),
+			),
+			ExpectedSQL: `(SELECT id, name FROM users ORDER BY id LIMIT 100) UNION (SELECT id, name FROM admins ORDER BY id LIMIT 10)
+ORDER BY id LIMIT 1000`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
