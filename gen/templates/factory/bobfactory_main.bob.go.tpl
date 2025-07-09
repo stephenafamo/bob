@@ -1,4 +1,5 @@
 {{$.Importer.Import "context"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 type Factory struct {
     {{range $table := .Tables}}
@@ -23,6 +24,19 @@ func (f *Factory) New{{$tAlias.UpSingular}}(ctx context.Context, mods ...{{$tAli
   {{$tAlias.UpSingular}}ModSlice(mods).Apply(ctx, o)
 
 	return o
+}
+
+func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+	o := &{{$tAlias.UpSingular}}Template{}
+
+  {{range $column := $table.Columns -}}
+  {{$colAlias := $tAlias.Column $column.Name -}}
+  {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+        o.{{$colAlias}} = func() {{$colTyp}} { return m.{{$colAlias}} }
+  {{end}}
+  o.alreadyPersisted = true
+
+  return o
 }
 
 {{end}}
