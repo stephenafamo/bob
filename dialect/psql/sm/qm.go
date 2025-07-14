@@ -218,22 +218,23 @@ func OrderCombined(e any) dialect.OrderCombined {
 }
 
 // To apply limit to the result of a UNION, INTERSECT, or EXCEPT query
-func LimitCombined(count int64) bob.Mod[*dialect.SelectQuery] {
+func LimitCombined(count any) bob.Mod[*dialect.SelectQuery] {
 	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.CombinedLimit.SetLimit(count)
 	})
 }
 
 // To apply offset to the result of a UNION, INTERSECT, or EXCEPT query
-func OffsetCombined(count int64) bob.Mod[*dialect.SelectQuery] {
+func OffsetCombined(count any) bob.Mod[*dialect.SelectQuery] {
 	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
 		q.CombinedOffset.SetOffset(count)
 	})
 }
 
 // To apply fetch to the result of a UNION, INTERSECT, or EXCEPT query
-func FetchCombined(fetch clause.Fetch) bob.Mod[*dialect.SelectQuery] {
+func FetchCombined(count any, withTies bool) bob.Mod[*dialect.SelectQuery] {
 	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedFetch.SetFetch(fetch)
+		q.CombinedFetch.Count = count
+		q.CombinedFetch.WithTies = withTies
 	})
 }
