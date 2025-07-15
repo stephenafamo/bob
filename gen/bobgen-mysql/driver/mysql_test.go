@@ -138,9 +138,10 @@ func TestDriver(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			testConfig := Config{
 				Config: helpers.Config{
-					Dsn:    dsn,
-					Only:   tt.only,
-					Except: tt.except,
+					Dsn:     dsn,
+					Only:    tt.only,
+					Except:  tt.except,
+					Queries: []string{"./queries"},
 				},
 			}
 
