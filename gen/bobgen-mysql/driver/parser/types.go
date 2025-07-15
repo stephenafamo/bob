@@ -111,5 +111,10 @@ func getSimpleIDName(ctx mysqlparser.ISimpleIdContext) string {
 		return ""
 	}
 
+	// certain types of simpleId can include REVERSE_QUOTE_IDs so trimming may still be necessary
+	if ctx.GetStart().GetTokenType() == mysqlparser.MySqlParserREVERSE_QUOTE_ID {
+		return ctx.GetText()[1 : len(ctx.GetText())-1]
+	}
+
 	return ctx.GetText()
 }

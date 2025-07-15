@@ -2940,7 +2940,57 @@
 			"comment": ""
 		}
 	],
-	"query_folders": [],
+	"query_folders": [
+		{
+			"path": "./queries",
+			"files": [
+				{
+					"path": "queries/users.sql",
+					"queries": [
+						{
+							"type": 1,
+							"name": "SelectUsers",
+							"raw": "SELECT `users`.`id` FROM `users` WHERE `id` IN (?)",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": []
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": []
+									},
+									"children": null,
+									"positions": [
+										[
+											48,
+											49
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 19))\nq.SetTable(EXPR.subExpr(25, 32))\nq.AppendWhere(EXPR.subExpr(39, 50))\n"
+						}
+					]
+				}
+			]
+		}
+	],
 	"enums": [
 		{
 			"Type": "TypeMonstersEnumNullable",
