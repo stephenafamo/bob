@@ -71,10 +71,12 @@ func TestDriver(t *testing.T) {
 		name       string
 		only       map[string][]string
 		except     map[string][]string
+		queries    []string
 		goldenJson string
 	}{
 		{
 			name:       "default",
+			queries:    []string{"./queries"},
 			goldenJson: "mysql.golden.json",
 		},
 		{
@@ -141,7 +143,7 @@ func TestDriver(t *testing.T) {
 					Dsn:     dsn,
 					Only:    tt.only,
 					Except:  tt.except,
-					Queries: []string{"./queries"},
+					Queries: tt.queries,
 				},
 			}
 

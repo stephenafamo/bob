@@ -2985,6 +2985,45 @@
 								}
 							],
 							"mods": "q.AppendSelect(EXPR.subExpr(7, 19))\nq.SetTable(EXPR.subExpr(25, 32))\nq.AppendWhere(EXPR.subExpr(39, 50))\n"
+						},
+						{
+							"type": 1,
+							"name": "SelectUsersCount",
+							"raw": "SELECT COUNT(`id`)  AS `users_count`\nFROM `users`\nWHERE `id` IN (?)",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "users_count",
+									"db_name": "users_count",
+									"nullable": false,
+									"type": "int",
+									"type_limits": null
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": []
+									},
+									"children": null,
+									"positions": [
+										[
+											65,
+											66
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 36))\nq.SetTable(EXPR.subExpr(42, 49))\nq.AppendWhere(EXPR.subExpr(56, 67))\n"
 						}
 					]
 				}
