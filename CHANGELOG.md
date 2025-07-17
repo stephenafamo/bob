@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix transformer for single result queries.
 - Properly handle indexes where the sorting order can be null.
 - Check for nullability when loading relationships.
-- Handle table names quoted with backticks in mysql query parser.
+- Handle table names quoted with backticks in mysql query parser. (thanks @luiscleto)
 
 ## [v0.38.0] - 2025-06-04
 
