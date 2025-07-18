@@ -20,12 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add WithExisting<Rel> to factory mods to attach an existing model as a relationship. (thanks @dutow)
 - Added support in psql for combined args (order by, limit etc.) in combined queries and use parens if they are present. (@iwyrkore)
 - Added parens for combined queries. (@iwyrkore)
+- Match columns using regular expressions in type replacements. This is useful for e.g. matching columns that have a common prefix or suffix. (thanks @abdusco)
 
 ### Changed
 
 - `Mod` is now a separate field in `orm.ModQuery` and `orm.ModExecQuery`.
 - `Allx` now takes a `Transformer` type parameter to transform the result of the query.
 - Updated documentation for readability, added code gen examples. (thanks @singhsays)
+- Columns are now matched in a case-insensitive manner in type replacements. (thanks @abdusco)
 
 ### Removed
 
@@ -41,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Properly handle indexes where the sorting order can be null.
 - Check for nullability when loading relationships.
 - Handle table names quoted with backticks in mysql query parser. (thanks @luiscleto)
+- Allow matching columns in type replacements by the `autoincr` property as stated in the docs. (thanks @abdusco)
 
 ## [v0.38.0] - 2025-06-04
 

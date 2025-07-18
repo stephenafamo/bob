@@ -236,8 +236,12 @@ replacements:
     # Note there is precedence for types.match, more specific things should appear
     # further down in the config as once a matching rule is found it is executed
     # immediately.
+    #
+    # All fields can be specified as a regular expression by enclosing it with /.../.
+    # Values are matched in a case-insensitive manner.
     match:
       name: "username" # Matches the column name
+      # name: "/id$/" # Regex is also supported (case-insensitive)
       db_type: "varchar(255)" # Matches the database type
       default: "NULL" # Matches the default value
       comment: "The username" # Matches the column comment

@@ -1,18 +1,20 @@
 package drivers
 
-import "strings"
+import (
+	"strings"
+)
 
 type Filter struct {
 	Only   []string
 	Except []string
 }
 
-func (f Filter) ClassifyPatterns(patterns []string) ([]string, []string) {
+//nolint:nonamedreturns
+func ClassifyPatterns(patterns []string) (stringPatterns []string, regexPatterns []string) {
 	const regexDelimiter = "/"
-	var stringPatterns, regexPatterns []string //nolint:prealloc
 
 	for _, pattern := range patterns {
-		if f.isRegexPattern(pattern, regexDelimiter) {
+		if isRegexPattern(pattern, regexDelimiter) {
 			regexPatterns = append(regexPatterns, strings.Trim(pattern, regexDelimiter))
 			continue
 		}
@@ -22,7 +24,7 @@ func (f Filter) ClassifyPatterns(patterns []string) ([]string, []string) {
 	return stringPatterns, regexPatterns
 }
 
-func (f Filter) isRegexPattern(pattern, delimiter string) bool {
+func isRegexPattern(pattern, delimiter string) bool {
 	return strings.HasPrefix(pattern, delimiter) && strings.HasSuffix(pattern, delimiter)
 }
 

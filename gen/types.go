@@ -2,7 +2,9 @@ package gen
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
+	"strings"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 )
@@ -55,49 +57,77 @@ func processTypeReplacements[C, I any](types drivers.Types, replacements []Repla
 	}
 }
 
-// matchColumn checks if a column 'c' matches specifiers in 'm'.
-// Anything defined in m is checked against a's values, the
-// match is a done using logical and (all specifiers must match).
-// Bool fields are only checked if a string type field matched first
-// and if a string field matched they are always checked (must be defined).
-//
-// Doesn't care about Unique columns since those can vary independent of type.
-func matchColumn(c, m drivers.Column) bool {
-	matchedSomething := false
-
-	// return true if we matched, or we don't have to match
-	// if we actually matched against something, then additionally set
-	// matchedSomething so we can check boolean values too.
-	matches := func(matcher, value string) bool {
-		if len(matcher) != 0 && matcher != value {
-			return false
+// matchString reports whether string a matches a pattern.
+// Pattern a can be either a literal string (case-insensitive comparison)
+// or a regular expression enclosed with / slashes.
+// Regex patterns are automatically made case-insensitive.
+func matchString(pattern, candidate string) bool {
+	stringPatterns, regexPatterns := drivers.ClassifyPatterns([]string{pattern})
+	for _, pattern := range stringPatterns {
+		if strings.EqualFold(pattern, candidate) {
+			return true
 		}
-		matchedSomething = true
-		return true
 	}
 
-	if !matches(m.Name, c.Name) {
-		return false
+	for _, pattern := range regexPatterns {
+		caseInsensitivePattern := "(?i)" + pattern
+		if matched, _ := regexp.MatchString(caseInsensitivePattern, candidate); matched {
+			return true
+		}
 	}
-	if !matches(m.Type, c.Type) {
-		return false
-	}
-	if !matches(m.DBType, c.DBType) {
+
+	return false
+}
+
+// matchColumn determines if col matches all specified criteria in spec (logical AND).
+//
+// Empty spec fields and the `Unique` property are ignored (as those can vary independent of type).
+// String fields are matched case-insensitively and by regex.
+// Boolean fields are only evaluated when string fields have matched.
+func matchColumn(col, spec drivers.Column) bool {
+	matchedStringRule := false
+
+	matches := func(pattern, value string) bool {
+		if pattern == "" {
+			return true // empty pattern matches anything
+		}
+		if matchString(pattern, value) {
+			matchedStringRule = true
+			return true
+		}
 		return false
 	}
 
-	if !matches(m.DomainName, c.DomainName) {
-		return false
-	}
-	if !matches(m.Comment, c.Comment) {
+	if !matches(spec.Name, col.Name) {
 		return false
 	}
 
-	if !matchedSomething {
+	if !matches(spec.Type, col.Type) {
 		return false
 	}
 
-	if m.Generated != c.Generated {
+	if !matches(spec.DBType, col.DBType) {
+		return false
+	}
+
+	if !matches(spec.DomainName, col.DomainName) {
+		return false
+	}
+
+	if !matches(spec.Comment, col.Comment) {
+		return false
+	}
+
+	// Boolean fields are only checked if at least one string field matched
+	if !matchedStringRule {
+		return false
+	}
+
+	if spec.Generated != col.Generated {
+		return false
+	}
+
+	if spec.AutoIncr != col.AutoIncr {
 		return false
 	}
 
