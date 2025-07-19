@@ -25,10 +25,10 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Nullable: true,
 				},
 				{
-					Name:       "domain",
+					Name:       "user_email",
 					Type:       "string",
 					DBType:     "text",
-					DomainName: "domain name",
+					DomainName: "email",
 				},
 				{
 					Name:     "by_named",
@@ -44,6 +44,12 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Default:  "some db nonsense",
 					Nullable: false,
 					Comment:  "xid",
+				},
+				{
+					Name:     "author_id",
+					Type:     "int",
+					DBType:   "integer",
+					Nullable: true,
 				},
 			},
 		},
@@ -64,6 +70,17 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Default:  "some db nonsense",
 					Nullable: false,
 					Comment:  "xid",
+				},
+			},
+		},
+		{
+			Columns: []drivers.Column{
+				{
+					Name:     "id",
+					Type:     "int",
+					DBType:   "serial",
+					AutoIncr: true,
+					Nullable: false,
 				},
 			},
 		},
@@ -89,12 +106,18 @@ func TestProcessTypeReplacements(t *testing.T) {
 		"xid.ID": {
 			Imports: []string{`"github.com/rs/xid"`},
 		},
+		"fk.ID": {
+			Imports: []string{`"github.com/fk"`},
+		},
+		"pk.ID": {
+			Imports: []string{`"github.com/pk"`},
+		},
 	})
 
 	replacements := []Replace{
 		{
 			Match: drivers.Column{
-				DBType: "serial",
+				DBType: "SERIAL",
 			},
 			Replace: "excellent.Type",
 		},
@@ -114,7 +137,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 		},
 		{
 			Match: drivers.Column{
-				DomainName: "domain name",
+				DomainName: "EMAIL",
 			},
 			Replace: "contextInt",
 		},
@@ -129,6 +152,19 @@ func TestProcessTypeReplacements(t *testing.T) {
 				Comment: "xid",
 			},
 			Replace: "xid.ID",
+		},
+		{
+			Match: drivers.Column{
+				Name: "/_id$/",
+			},
+			Replace: "fk.ID",
+		},
+		{
+			Match: drivers.Column{
+				Name:     "id",
+				AutoIncr: true,
+			},
+			Replace: "pk.ID",
 		},
 	}
 
@@ -154,11 +190,19 @@ func TestProcessTypeReplacements(t *testing.T) {
 		t.Error("type was wrong:", typ)
 	}
 
+	if typ := tables[0].Columns[5].Type; typ != "fk.ID" {
+		t.Error("type was wrong:", typ)
+	}
+
 	if typ := tables[1].Columns[0].Type; typ != "excellent.NamedType" {
 		t.Error("type was wrong:", typ)
 	}
 
 	if typ := tables[1].Columns[1].Type; typ != "xid.ID" {
+		t.Error("type was wrong:", typ)
+	}
+
+	if typ := tables[2].Columns[0].Type; typ != "pk.ID" {
 		t.Error("type was wrong:", typ)
 	}
 }

@@ -202,7 +202,7 @@ func (d *driver) buildQuery(schema string) (string, []any) {
 
 	if len(tableFilter.Only) > 0 {
 		var subqueries []string
-		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(tableFilter.Only)
+		stringPatterns, regexPatterns := drivers.ClassifyPatterns(tableFilter.Only)
 		include := make([]string, 0, len(stringPatterns))
 		for _, name := range stringPatterns {
 			if (schema == "main" && !strings.Contains(name, ".")) || strings.HasPrefix(name, schema+".") {
@@ -226,7 +226,7 @@ func (d *driver) buildQuery(schema string) (string, []any) {
 
 	if len(tableFilter.Except) > 0 {
 		var subqueries []string
-		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(tableFilter.Except)
+		stringPatterns, regexPatterns := drivers.ClassifyPatterns(tableFilter.Except)
 		exclude := make([]string, 0, len(tableFilter.Except))
 		for _, name := range stringPatterns {
 			if (schema == "main" && !strings.Contains(name, ".")) || strings.HasPrefix(name, schema+".") {

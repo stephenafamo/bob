@@ -114,7 +114,7 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 
 	if len(include) > 0 {
 		var subqueries []string
-		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(include)
+		stringPatterns, regexPatterns := drivers.ClassifyPatterns(include)
 		if len(stringPatterns) > 0 {
 			subqueries = append(subqueries, fmt.Sprintf("table_name in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
 			for _, w := range stringPatterns {
@@ -130,7 +130,7 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 
 	if len(exclude) > 0 {
 		var subqueries []string
-		stringPatterns, regexPatterns := tableFilter.ClassifyPatterns(exclude)
+		stringPatterns, regexPatterns := drivers.ClassifyPatterns(exclude)
 		if len(stringPatterns) > 0 {
 			subqueries = append(subqueries, fmt.Sprintf("table_name not in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
 			for _, w := range stringPatterns {
