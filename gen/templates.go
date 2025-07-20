@@ -105,19 +105,7 @@ var templateFunctions = template.FuncMap{
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 	"normalizeType":      NormalizeType,
-	"enumVal": func(val string) string {
-		var newval strings.Builder
-		for _, r := range val {
-			if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
-				newval.WriteRune(r)
-				continue
-			}
-			newval.WriteString(fmt.Sprintf("U%x", r))
-		}
-
-		// Title case after doing unicode replacements or they will be stripped
-		return strmangle.TitleCase(newval.String())
-	},
+	"enumVal":            enumValToIdentifier,
 	"columnTagName": func(casing, name, alias string) string {
 		switch casing {
 		case "camel":
@@ -147,6 +135,24 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
+}
+
+func enumValToIdentifier(val string) string {
+	val = strings.ToLower(val)
+	val = strings.ReplaceAll(val, "-", "_")
+	val = strings.ReplaceAll(val, " ", "_")
+
+	var newval strings.Builder
+	for _, r := range val {
+		if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
+			newval.WriteRune(r)
+			continue
+		}
+		newval.WriteString(fmt.Sprintf("U%x", r))
+	}
+
+	// Title case after doing unicode replacements or they will be stripped
+	return strmangle.TitleCase(newval.String())
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
