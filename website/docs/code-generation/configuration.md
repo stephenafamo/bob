@@ -227,23 +227,17 @@ There exists the ability to override types that the driver has inferred. The way
 replacements:
   - tables: ["table_name"] # What tables to look inside. Matches all tables if empty
 
-    # The match is a drivers.Column struct, and matches on almost all fields.
-    # Notable exception for the unique bool. Matches are done
-    # with "logical and" meaning it must match all specified matchers.
-    # Boolean values are only checked if all the string specifiers match first,
-    # and they must always match.
+    # The match is a `gen.ColumnFilter` struct, and specifies which column to match. 
+    # Matches are done using "logical AND" meaning all the specified conditions must be met.
     #
-    # Note there is precedence for types.match, more specific things should appear
-    # further down in the config as once a matching rule is found it is executed
-    # immediately.
-    #
-    # All fields can be specified as a regular expression by enclosing it with /.../.
+    # All string fields can be specified as a regular expression by enclosing them with /.../.
     # Values are matched in a case-insensitive manner.
     match:
       name: "username" # Matches the column name
       # name: "/id$/" # Regex is also supported (case-insensitive)
       db_type: "varchar(255)" # Matches the database type
-      default: "NULL" # Matches the default value
+      type: "string" # Matches the inferred column type
+      default: "NULL" # Matches the default value (case-insensitive)
       comment: "The username" # Matches the column comment
       nullable: true # Matches the nullable value. Defaults to false.
       generated: false # Matches the generated value. Defaults to false.

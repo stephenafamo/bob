@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Allx` now takes a `Transformer` type parameter to transform the result of the query.
 - Updated documentation for readability, added code gen examples. (thanks @singhsays)
 - Columns are now matched in a case-insensitive manner in type replacements. (thanks @abdusco)
+- Columns can now be matched with as many conditions as needed in type replacements. This removes the previous requirement that boolean fields had to be specified in addition to a string field. (thanks @abdusco)
 
 ### Removed
 

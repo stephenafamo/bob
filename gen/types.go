@@ -35,7 +35,7 @@ func processTypeReplacements[C, I any](types drivers.Types, replacements []Repla
 
 			for j := range t.Columns {
 				c := t.Columns[j]
-				if matchColumn(c, r.Match) {
+				if r.Match.Matches(c) {
 					didMatch = true
 
 					if ok := types.Contains(r.Replace); !ok && !isPrimitiveType(r.Replace) {
@@ -50,9 +50,7 @@ func processTypeReplacements[C, I any](types drivers.Types, replacements []Repla
 		// Print a warning if we didn't match anything
 		if !didMatch {
 			c := r.Match
-			fmt.Printf(
-				"WARNING: No match found for replacement:\nname: %s\ndb_type: %s\ndefault: %s\ncomment: %s\nnullable: %t\ngenerated: %t\nautoincr: %t\ndomain_name: %s\n",
-				c.Name, c.DBType, c.Default, c.Comment, c.Nullable, c.Generated, c.AutoIncr, c.DomainName)
+			fmt.Printf("WARNING: No match found for replacement: %+v\n", c)
 		}
 	}
 }
@@ -77,61 +75,6 @@ func matchString(pattern, candidate string) bool {
 	}
 
 	return false
-}
-
-// matchColumn determines if col matches all specified criteria in spec (logical AND).
-//
-// Empty spec fields and the `Unique` property are ignored (as those can vary independent of type).
-// String fields are matched case-insensitively and by regex.
-// Boolean fields are only evaluated when string fields have matched.
-func matchColumn(col, spec drivers.Column) bool {
-	matchedStringRule := false
-
-	matches := func(pattern, value string) bool {
-		if pattern == "" {
-			return true // empty pattern matches anything
-		}
-		if matchString(pattern, value) {
-			matchedStringRule = true
-			return true
-		}
-		return false
-	}
-
-	if !matches(spec.Name, col.Name) {
-		return false
-	}
-
-	if !matches(spec.Type, col.Type) {
-		return false
-	}
-
-	if !matches(spec.DBType, col.DBType) {
-		return false
-	}
-
-	if !matches(spec.DomainName, col.DomainName) {
-		return false
-	}
-
-	if !matches(spec.Comment, col.Comment) {
-		return false
-	}
-
-	// Boolean fields are only checked if at least one string field matched
-	if !matchedStringRule {
-		return false
-	}
-
-	if spec.Generated != col.Generated {
-		return false
-	}
-
-	if spec.AutoIncr != col.AutoIncr {
-		return false
-	}
-
-	return true
 }
 
 // shouldReplaceInTable checks if tables were specified in types.match in the config.
