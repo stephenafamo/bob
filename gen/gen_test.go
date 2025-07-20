@@ -3,6 +3,7 @@ package gen
 import (
 	"testing"
 
+	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/drivers"
 )
 
@@ -116,53 +117,53 @@ func TestProcessTypeReplacements(t *testing.T) {
 
 	replacements := []Replace{
 		{
-			Match: drivers.Column{
-				DBType: "SERIAL",
+			Match: ColumnFilter{
+				DBType: omit.From("SERIAL"),
 			},
 			Replace: "excellent.Type",
 		},
 		{
 			Tables: []string{"named_table"},
-			Match: drivers.Column{
-				Name: "id",
+			Match: ColumnFilter{
+				Name: omit.From("id"),
 			},
 			Replace: "excellent.NamedType",
 		},
 		{
-			Match: drivers.Column{
-				Type:     "null.String",
-				Nullable: true,
+			Match: ColumnFilter{
+				Type:     omit.From("null.String"),
+				Nullable: omit.From(true),
 			},
 			Replace: "int",
 		},
 		{
-			Match: drivers.Column{
-				DomainName: "EMAIL",
+			Match: ColumnFilter{
+				DomainName: omit.From("EMAIL"),
 			},
 			Replace: "contextInt",
 		},
 		{
-			Match: drivers.Column{
-				Name: "by_named",
+			Match: ColumnFilter{
+				Name: omit.From("by_named"),
 			},
 			Replace: "big.Int",
 		},
 		{
-			Match: drivers.Column{
-				Comment: "xid",
+			Match: ColumnFilter{
+				Comment: omit.From("xid"),
 			},
 			Replace: "xid.ID",
 		},
 		{
-			Match: drivers.Column{
-				Name: "/_id$/",
+			Match: ColumnFilter{
+				Name: omit.From("/_id$/"),
 			},
 			Replace: "fk.ID",
 		},
 		{
-			Match: drivers.Column{
-				Name:     "id",
-				AutoIncr: true,
+			Match: ColumnFilter{
+				Name:     omit.From("id"),
+				AutoIncr: omit.From(true),
 			},
 			Replace: "pk.ID",
 		},

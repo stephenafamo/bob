@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/drivers"
 )
 
@@ -46,9 +47,87 @@ type Config[ConstraintExtra any] struct {
 
 // Replace replaces a column type with something else
 type Replace struct {
-	Tables  []string       `yaml:"tables"`
-	Match   drivers.Column `yaml:"match"`
-	Replace string         `yaml:"replace"`
+	Tables  []string     `yaml:"tables"`
+	Match   ColumnFilter `yaml:"match"`
+	Replace string       `yaml:"replace"`
+}
+
+// ColumnFilter is used to filter columns in the config file.
+// It should mirror the fields of drivers.Column
+type ColumnFilter struct {
+	Name      omit.Val[string] `yaml:"name"`
+	DBType    omit.Val[string] `yaml:"db_type"`
+	Type      omit.Val[string] `yaml:"type"`
+	Default   omit.Val[string] `yaml:"default"`
+	Comment   omit.Val[string] `yaml:"comment"`
+	Nullable  omit.Val[bool]   `yaml:"nullable"`
+	Generated omit.Val[bool]   `yaml:"generated"`
+	AutoIncr  omit.Val[bool]   `yaml:"autoincr"`
+
+	// DomainName is the domain type name associated to the column. See here:
+	// https://www.postgresql.org/docs/16/extend-type-system.html
+	DomainName omit.Val[string] `yaml:"domain_name"`
+}
+
+func (f ColumnFilter) IsEmpty() bool {
+	return f.Name.IsUnset() &&
+		f.DBType.IsUnset() &&
+		f.Type.IsUnset() &&
+		f.Default.IsUnset() &&
+		f.Comment.IsUnset() &&
+		f.Nullable.IsUnset() &&
+		f.Generated.IsUnset() &&
+		f.AutoIncr.IsUnset() &&
+		f.DomainName.IsUnset()
+}
+
+// Matches determines if a drivers.Column matches all the specified criteria (logical AND).
+//
+// String fields are matched case-insensitively and by regex.
+func (f ColumnFilter) Matches(column drivers.Column) bool {
+	// empty filters should not match anything
+	if f.IsEmpty() {
+		return false
+	}
+
+	if val, ok := f.Name.Get(); ok && !matchString(val, column.Name) {
+		return false
+	}
+
+	if val, ok := f.DBType.Get(); ok && !matchString(val, column.DBType) {
+		return false
+	}
+
+	if val, ok := f.Type.Get(); ok && !matchString(val, column.Type) {
+		return false
+	}
+
+	if val, ok := f.Default.Get(); ok && !matchString(val, column.Default) {
+		return false
+	}
+
+	if val, ok := f.Comment.Get(); ok && !matchString(val, column.Comment) {
+		return false
+	}
+
+	if val, ok := f.DomainName.Get(); ok && !matchString(val, column.DomainName) {
+		return false
+	}
+
+	if val, ok := f.Nullable.Get(); ok && val != column.Nullable {
+		return false
+	}
+
+	if val, ok := f.Generated.Get(); ok && val != column.Generated {
+		return false
+	}
+
+	if val, ok := f.AutoIncr.Get(); ok && val != column.AutoIncr {
+		return false
+	}
+
+	// all specified conditions matched
+	return true
 }
 
 type Inflections struct {
