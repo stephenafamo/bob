@@ -25,7 +25,7 @@ func Test{{$upperName}} (t *testing.T) {
 
     query := {{$upperName}}({{join ", " $args}})
 
-    if _, err := query.WriteQuery(context.Background(), &sb, 1); err != nil {
+    if _, err := query.WriteQuery(t.Context(), &sb, 1); err != nil {
       t.Fatal(err)
     }
 
@@ -40,7 +40,7 @@ func Test{{$upperName}} (t *testing.T) {
 
     query := {{$upperName}}({{join ", " $args}})
 
-    if _, err := {{$.Dialect}}.{{$queryType}}(query).WriteQuery(context.Background(), &sb, 1); err != nil {
+    if _, err := {{$.Dialect}}.{{$queryType}}(query).WriteQuery(t.Context(), &sb, 1); err != nil {
       t.Fatal(err)
     }
 
@@ -60,7 +60,7 @@ func Test{{$upperName}} (t *testing.T) {
       t.Skip("skipping test, no DSN provided")
     }
 
-    ctxTx, cancel := context.WithCancel(context.Background())
+    ctxTx, cancel := context.WithCancel(t.Context())
     defer cancel()
 
     tx, err := testDB.Begin(ctxTx)
@@ -106,7 +106,7 @@ func Test{{$upperName}} (t *testing.T) {
       t.Skip("skipping test, no DSN provided")
     }
 
-    ctxTx, cancel := context.WithCancel(context.Background())
+    ctxTx, cancel := context.WithCancel(t.Context())
     defer cancel()
 
     tx, err := testDB.Begin(ctxTx)

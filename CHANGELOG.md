@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation for readability, added code gen examples. (thanks @singhsays)
 - Columns are now matched in a case-insensitive manner in type replacements. (thanks @abdusco)
 - Columns can now be matched with as many conditions as needed in type replacements. This removes the previous requirement that boolean fields had to be specified in addition to a string field. (thanks @abdusco)
+- Factories now expose a `NewXWithContext` that accepts a context in addition to `NewX` that does not. This provides a cleaner API for the callers, while still allowing the use of context internally. (thanks @abdusco)
 
 ### Removed
 

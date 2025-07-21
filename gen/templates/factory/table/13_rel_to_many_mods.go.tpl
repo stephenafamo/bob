@@ -22,10 +22,10 @@ func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(number int, mods ...{
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
     {{range $.Tables.NeededBridgeRels . -}}
 			{{$alias := $.Aliases.Table .Table -}}
-			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}(ctx)
+			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}WithContext(ctx)
 		{{end}}
 
-		related := o.f.New{{$ftable.UpSingular}}(ctx, mods...)
+		related := o.f.New{{$ftable.UpSingular}}WithContext(ctx, mods...)
 		m.With{{$relAlias}}(number, {{$.Tables.RelArgs $.Aliases .}} related).Apply(ctx, o)
 	})
 }
@@ -44,10 +44,10 @@ func (m {{$tAlias.DownSingular}}Mods) AddNew{{$relAlias}}(number int, mods ...{{
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
     {{range $.Tables.NeededBridgeRels . -}}
 			{{$alias := $.Aliases.Table .Table -}}
-			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}(ctx)
+			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}WithContext(ctx)
 		{{end}}
 
-		related := o.f.New{{$ftable.UpSingular}}(ctx, mods...)
+		related := o.f.New{{$ftable.UpSingular}}WithContext(ctx, mods...)
 		m.Add{{$relAlias}}(number, {{$.Tables.RelArgs $.Aliases .}} related).Apply(ctx, o)
 	})
 }

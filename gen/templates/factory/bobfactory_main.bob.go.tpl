@@ -14,7 +14,11 @@ func New() *Factory {
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
-func (f *Factory) New{{$tAlias.UpSingular}}(ctx context.Context, mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
+func (f *Factory) New{{$tAlias.UpSingular}}(mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
+	return f.New{{$tAlias.UpSingular}}WithContext(context.Background(), mods...)
+}
+
+func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods ...{{$tAlias.UpSingular}}Mod) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f}
 
   if f != nil {

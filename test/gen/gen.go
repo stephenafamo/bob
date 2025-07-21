@@ -138,6 +138,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		t.SkipNow()
 	}
 
+	//nolint:noctx
 	cmd := exec.Command("go", "env", "GOMOD")
 	output, err := cmd.Output()
 	if err != nil {
@@ -194,6 +195,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 	t.Helper()
 	buf := &bytes.Buffer{}
 
+	//nolint:noctx
 	cmd := exec.Command("go", "mod", "init", module)
 	cmd.Dir = dst
 	cmd.Stdout = buf
@@ -205,7 +207,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 		t.Fatalf("go mod init cmd execution failed: %s", err)
 	}
 
-	//nolint:gosec
+	//nolint:gosec,noctx
 	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(modPath)))
 	cmd.Dir = dst
 	cmd.Stdout = buf
@@ -228,6 +230,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 	}
 
 	// From go1.16 dependencies are not auto downloaded
+	//nolint:noctx
 	cmd = exec.Command("go", "mod", "tidy")
 	cmd.Dir = dst
 	cmd.Stdout = buf
@@ -239,6 +242,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 		t.Fatalf("go mod tidy cmd execution failed: %s", err)
 	}
 
+	//nolint:noctx
 	cmd = exec.Command("go", "test", "-v", "./...")
 	cmd.Dir = dst
 	cmd.Stdout = buf

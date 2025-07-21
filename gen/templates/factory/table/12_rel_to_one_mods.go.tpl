@@ -14,9 +14,9 @@ func (m {{$tAlias.DownSingular}}Mods) WithParentsCascading() {{$tAlias.UpSingula
     {
       {{range $.Tables.NeededBridgeRels . -}}
         {{$alias := $.Aliases.Table .Table -}}
-        {{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}(ctx)
+        {{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}WithContext(ctx)
       {{end}}
-      related := o.f.New{{$ftable.UpSingular}}(ctx, {{$ftable.UpSingular}}Mods.WithParentsCascading())
+      related := o.f.New{{$ftable.UpSingular}}WithContext(ctx, {{$ftable.UpSingular}}Mods.WithParentsCascading())
       m.With{{$relAlias}}({{$.Tables.RelArgs $.Aliases .}} related).Apply(ctx, o)
     }
     {{end -}}
@@ -41,9 +41,9 @@ func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(mods ...{{$ftable.UpS
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
 		{{range $.Tables.NeededBridgeRels . -}}
 			{{$alias := $.Aliases.Table .Table -}}
-			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}(ctx)
+			{{$alias.DownSingular}}{{.Position}} := o.f.New{{$alias.UpSingular}}WithContext(ctx)
 		{{end}}
-	  related := o.f.New{{$ftable.UpSingular}}(ctx, mods...)
+	  related := o.f.New{{$ftable.UpSingular}}WithContext(ctx, mods...)
 
 		m.With{{$relAlias}}({{$.Tables.RelArgs $.Aliases .}} related).Apply(ctx, o)
 	})

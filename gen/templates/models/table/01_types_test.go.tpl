@@ -40,7 +40,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
         {{end}}
 
         if shouldUpdate {
-          if err := obj.Update(ctx, exec, f.New{{$tAlias.UpSingular}}(ctx, updateMods...).BuildSetter()); err != nil {
+          if err := obj.Update(ctx, exec, f.New{{$tAlias.UpSingular}}WithContext(ctx, updateMods...).BuildSetter()); err != nil {
             t.Fatalf("Error updating object: %v", err)
           }
         }
@@ -59,7 +59,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-      ctx, cancel := context.WithCancel(context.Background())
+      ctx, cancel := context.WithCancel(t.Context())
       t.Cleanup(cancel)
 
 			tx, err := testDB.Begin(ctx)
@@ -75,17 +75,17 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 
       var exec bob.Executor = tx
 
-			obj, err := f.New{{$tAlias.UpSingular}}(ctx, factory.{{$tAlias.UpSingular}}Mods.WithParentsCascading()).Create(ctx, exec)
+			obj, err := f.New{{$tAlias.UpSingular}}WithContext(ctx, factory.{{$tAlias.UpSingular}}Mods.WithParentsCascading()).Create(ctx, exec)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			obj2, err := f.New{{$tAlias.UpSingular}}(ctx).Create(ctx, exec)
+			obj2, err := f.New{{$tAlias.UpSingular}}WithContext(ctx).Create(ctx, exec)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-      err = obj2.Update(ctx, exec, f.New{{$tAlias.UpSingular}}(ctx, tt.conflictMods(ctx, exec, obj)...).BuildSetter())
+      err = obj2.Update(ctx, exec, f.New{{$tAlias.UpSingular}}WithContext(ctx, tt.conflictMods(ctx, exec, obj)...).BuildSetter())
 			if !errors.Is(models.ErrUniqueConstraint, err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
