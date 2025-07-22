@@ -8,7 +8,7 @@ func TestCreate{{$tAlias.UpSingular}}(t *testing.T) {
     t.Skip("skipping test, no DSN provided")
   }
 
-  ctx, cancel := context.WithCancel(context.Background())
+  ctx, cancel := context.WithCancel(t.Context())
   t.Cleanup(cancel)
 
   tx, err := testDB.Begin(ctx)
@@ -22,7 +22,7 @@ func TestCreate{{$tAlias.UpSingular}}(t *testing.T) {
     }
   }()
 
-  if _, err := New().New{{$tAlias.UpSingular}}(ctx).Create(ctx, tx); err != nil {
+  if _, err := New().New{{$tAlias.UpSingular}}WithContext(ctx).Create(ctx, tx); err != nil {
     t.Fatalf("Error creating {{$tAlias.UpSingular}}: %v", err)
   }
 }

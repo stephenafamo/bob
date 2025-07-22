@@ -15,6 +15,7 @@ func Test_enumValToIdentifier(t *testing.T) {
 		{" in progress ", "InProgress"},
 		// This is OK, because enum values are prefixed with the type name, e.g. TaskStatus1InProgress
 		{"1-in-progress", "1InProgress"},
+		{"start < end", "StartU3CEnd"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.val, func(t *testing.T) {

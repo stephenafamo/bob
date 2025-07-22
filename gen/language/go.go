@@ -237,6 +237,7 @@ func findGoMod(path string) (string, error) {
 		return "", fmt.Errorf("could not create destination folder %q: %w", path, err)
 	}
 
+	//nolint:noctx
 	c := exec.Command("go", "env", "GOMOD")
 	c.Stdout = &outData
 	c.Stderr = &errData
