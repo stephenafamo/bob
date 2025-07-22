@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Check for nullability when loading relationships.
 - Handle table names quoted with backticks in mysql query parser. (thanks @luiscleto)
 - Allow matching columns in type replacements by the `autoincr` property as stated in the docs. (thanks @abdusco)
+- Handle dashes and spaces in generated enum values properly (thanks @abdusco)   
 
 ## [v0.38.0] - 2025-06-04
 
