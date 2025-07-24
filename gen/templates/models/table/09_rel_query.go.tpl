@@ -141,12 +141,15 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
       {{ $column := $.Table.GetColumn $local }}
       {{ $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable }}
 			{{$fromCol := index $firstFrom.Columns $local -}}
-      pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], len(os))
+      pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], 0, len(os))
 		{{- end}}
-    for i, o := range os {
+    for _, o := range os {
+      if o == nil {
+        continue
+      }
       {{- range $index, $local := $firstSide.FromColumns -}}
         {{$fromCol := index $firstFrom.Columns $local}}
-        pk{{$fromCol}}[i] = o.{{$fromCol}}
+        pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
       {{- end}}
     }
     PKArgExpr := psql.Select(sm.Columns(

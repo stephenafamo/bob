@@ -239,11 +239,19 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 
 	{{if $rel.IsToMany -}}
 		for _, o := range os {
+			if o == nil {
+				continue
+			}
+
 			o.R.{{$relAlias}} = nil
 		}
 	{{- end}}
 
 	for _, o := range os {
+		if o == nil {
+			continue
+		}
+
 		for _, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $side.FromColumns -}}
         {{- $foreign := index $side.ToColumns $index -}}
@@ -312,7 +320,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   if len(os) == 0 {
 	  return nil
 	}
-  
+
   // since we are changing the columns, we need to check if the original columns were set or add the defaults
   sq := dialect.SelectQuery{}
   for _, mod := range mods {
@@ -324,7 +332,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	}
 
 	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(
-		mods, 
+		mods,
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
