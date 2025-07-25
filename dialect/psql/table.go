@@ -14,25 +14,18 @@ import (
 	"github.com/stephenafamo/bob/orm"
 )
 
-type (
-	setter[T any]                      = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
-	ormInsertQuery[T any, Tslice ~[]T] = orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-	ormUpdateQuery[T any, Tslice ~[]T] = orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-	ormDeleteQuery[T any, Tslice ~[]T] = orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-)
-
-func NewTable[T any, Tset setter[T]](schema, tableName string) *Table[T, []T, Tset] {
+func NewTable[T any, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](schema, tableName string) *Table[T, []T, Tset] {
 	return NewTablex[T, []T, Tset](schema, tableName)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset setter[T]](schema, table string) *Table[T, Tslice, Tset] {
+func NewTablex[T any, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]](schema, table string) *Table[T, Tslice, Tset] {
 	setMapping := mappings.GetMappings(reflect.TypeOf((*new(Tset))))
-	view, mappings := newView[T, Tslice](schema, table)
+	view, tableMappings := newView[T, Tslice](schema, table)
 	t := &Table[T, Tslice, Tset]{
 		View:             view,
-		pkCols:           orm.NewColumns(mappings.PKs...).WithParent(view.alias),
+		pkCols:           orm.NewColumns(tableMappings.PKs...).WithParent(view.alias),
 		setterMapping:    setMapping,
-		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
+		nonGeneratedCols: internal.FilterNonZero(tableMappings.NonGenerated),
 	}
 
 	return t
@@ -40,7 +33,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T]](schema, table string) *Table[
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T any, Tslice ~[]T, Tset setter[T]] struct {
+type Table[T any, Tslice ~[]T, Tset orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]] struct {
 	*View[T, Tslice]
 	pkCols           orm.Columns
 	setterMapping    mappings.Mapping
@@ -66,8 +59,8 @@ func (t *Table[T, Tslice, Tset]) PrimaryKey() orm.Columns {
 }
 
 // Starts an insert query for this table
-func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *ormInsertQuery[T, Tslice] {
-	q := &ormInsertQuery[T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]] {
+	q := &orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
 			BaseQuery: Insert(im.Into(t.NameAs(), t.nonGeneratedCols...)),
 			Hooks:     &t.InsertQueryHooks,
@@ -90,8 +83,8 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 }
 
 // Starts an Update query for this table
-func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *ormUpdateQuery[T, Tslice] {
-	q := &ormUpdateQuery[T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]] {
+	q := &orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 		ExecQuery: orm.ExecQuery[*dialect.UpdateQuery]{
 			BaseQuery: Update(um.Table(t.NameAs())),
 			Hooks:     &t.UpdateQueryHooks,
@@ -114,8 +107,8 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 }
 
 // Starts a Delete query for this table
-func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *ormDeleteQuery[T, Tslice] {
-	q := &ormDeleteQuery[T, Tslice]{
+func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]] {
+	q := &orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 		ExecQuery: orm.ExecQuery[*dialect.DeleteQuery]{
 			BaseQuery: Delete(dm.From(t.NameAs())),
 			Hooks:     &t.DeleteQueryHooks,
