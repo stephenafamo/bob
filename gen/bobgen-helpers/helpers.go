@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"net"
 	"os"
 	"path"
 	"runtime/debug"
@@ -170,21 +169,6 @@ func EnumType(types drivers.Types, enum string) string {
 	})
 
 	return enum
-}
-
-func GetFreePort() (int, error) {
-	a, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, fmt.Errorf("resolve localhost:0: %w", err)
-	}
-
-	l, err := net.ListenTCP("tcp", a)
-	if err != nil {
-		return 0, fmt.Errorf("listen on localhost:0: %w", err)
-	}
-	defer l.Close()
-
-	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
 func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {

@@ -1,61 +1,71 @@
 package psql
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"os"
-	"path/filepath"
+	"os/signal"
+	"syscall"
 	"testing"
 
-	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
-	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
 var testDB bob.DB
 
 func TestMain(m *testing.M) {
-	port, err := helpers.GetFreePort()
-	if err != nil {
-		fmt.Printf("could not get a free port: %v\n", err)
-		os.Exit(1)
-	}
+	code := 1
+	defer func() {
+		os.Exit(code)
+	}()
 
-	dbConfig := embeddedpostgres.
-		DefaultConfig().
-		RuntimePath(filepath.Join(os.TempDir(), "psql_driver")).
-		Port(uint32(port)).
-		Logger(&bytes.Buffer{})
-	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer cancel()
+
+	postgresContainer, err := postgres.Run(
+		ctx, "postgres:16",
+		postgres.BasicWaitStrategies(),
+		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
+	)
+	if err != nil {
+		fmt.Printf("could not start postgres container: %v\n", err)
+		return
+	}
+	defer func() {
+		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
+			log.Printf("failed to terminate container: %s", err)
+		}
+	}()
+
+	dsn, err := postgresContainer.ConnectionString(ctx, "sslmode=disable")
+	if err != nil {
+		fmt.Printf("could not get connection string: %v\n", err)
+		return
+	}
 
 	testDB, err = bob.Open("postgres", dsn)
 	if err != nil {
 		fmt.Printf("could not connect to db: %v\n", err)
-		os.Exit(1)
+		return
 	}
 	defer testDB.Close()
 
-	postgres := embeddedpostgres.NewDatabase(dbConfig)
-	if err := postgres.Start(); err != nil {
-		fmt.Printf("starting embedded postgres: %v\n", err)
-		os.Exit(1)
-	}
-
-	code := m.Run()
-	if err := postgres.Stop(); err != nil {
-		fmt.Printf("could not stop postgres on port %d: %v\n", port, err)
-		os.Exit(1)
-	}
-
-	os.Exit(code)
+	code = m.Run()
 }
 
 type User struct {
@@ -120,8 +130,7 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 var userTable = NewTable[*User, *UserSetter]("", "users")
 
 func TestUpdate(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	tx, err := testDB.BeginTx(ctx, nil)
 	if err != nil {

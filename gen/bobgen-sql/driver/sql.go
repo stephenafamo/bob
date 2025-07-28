@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io"
 	"io/fs"
+	"log"
 	"os"
-	"path/filepath"
 
-	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
@@ -18,6 +18,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/testcontainers/testcontainers-go"
 	mysqltest "github.com/testcontainers/testcontainers-go/modules/mysql"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
 type Config struct {
@@ -51,26 +52,24 @@ func RunPostgres(ctx context.Context, state *gen.State[any], config Config) erro
 }
 
 func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, error) {
-	port, err := helpers.GetFreePort()
+	postgresContainer, err := postgres.Run(
+		ctx, "postgres:16",
+		postgres.BasicWaitStrategies(),
+		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("could not get a free port: %w", err)
-	}
-
-	dbConfig := embeddedpostgres.
-		DefaultConfig().
-		RuntimePath(filepath.Join(os.TempDir(), "bobgen_sql")).
-		Port(uint32(port))
-	dsn := dbConfig.GetConnectionURL() + "?sslmode=disable"
-
-	postgres := embeddedpostgres.NewDatabase(dbConfig)
-	if err := postgres.Start(); err != nil {
-		return nil, fmt.Errorf("starting embedded postgres: %w", err)
+		return nil, fmt.Errorf("failed to start container: %w", err)
 	}
 	defer func() {
-		if err := postgres.Stop(); err != nil {
-			fmt.Println("Error stopping postgres:", err)
+		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
+			log.Printf("failed to terminate container: %s", err)
 		}
 	}()
+
+	dsn, err := postgresContainer.ConnectionString(ctx, "sslmode=disable")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get connection string: %w", err)
+	}
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
