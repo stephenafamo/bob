@@ -208,7 +208,7 @@ CREATE TABLE multi_keys (
 	user_id INT NOT NULL,
 	sponsor_id INT UNIQUE,
 
-    something INT CHECK (something > 0),
+    something INT CHECK (something > 0 || something <= 0), -- Check constraint that is always true
     another INT,
     
   	one   int NULL,

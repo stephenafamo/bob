@@ -17,14 +17,14 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 	tests := []struct{
 		name        string
 		expectedErr   *models.UniqueConstraintError
-		conflictMods  func(context.Context, bob.Executor, *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice
+		conflictMods  func(context.Context, *testing.T, bob.Executor, *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice
 	}{
 	{{range $index := (prepend $table.Constraints.Uniques $table.Constraints.Primary)}}
 		{{- $errName := printf "ErrUnique%s" ($index.Name | camelcase) -}}
 		{
 			name: "{{$errName}}",
 			expectedErr: models.{{$tAlias.UpSingular}}Errors.{{$errName}},
-			conflictMods: func(ctx context.Context, exec bob.Executor, obj *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice {
+			conflictMods: func(ctx context.Context, t *testing.T, exec bob.Executor, obj *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice {
         shouldUpdate := false
         updateMods := make(factory.{{$tAlias.UpSingular}}ModSlice, 0, {{len $index.Columns}})
 
@@ -85,7 +85,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 
-      err = obj2.Update(ctx, exec, f.New{{$tAlias.UpSingular}}WithContext(ctx, tt.conflictMods(ctx, exec, obj)...).BuildSetter())
+      err = obj2.Update(ctx, exec, f.New{{$tAlias.UpSingular}}WithContext(ctx, tt.conflictMods(ctx, t, exec, obj)...).BuildSetter())
 			if !errors.Is(models.ErrUniqueConstraint, err) {
 				t.Fatalf("Expected: %s, Got: %v", tt.name, err)
 			}
