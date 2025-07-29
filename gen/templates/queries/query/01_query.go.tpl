@@ -98,7 +98,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
             return func(row *scan.Row) (any, error) {
                 var t {{$queryResultTypeOne}}
                 {{range $colIndex, $col := $query.Columns.WithNames -}}
-                  row.ScheduleScanByIndex({{$colIndex}}, &t.{{titleCase $col.Name}})
+                  row.ScheduleScanByIndex({{$colIndex}}, &t.{{$col.Name}})
                 {{end -}}
                 return &t, nil
               }, func(v any) ({{$queryResultTypeOne}}, error) {
