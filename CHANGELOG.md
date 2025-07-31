@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed issue with redundant title casing column names in query templates. (thanks @luiscleto)
+- Fix invalid expression with pointer-based type systems. (thanks @tak848)
 
 ## [v0.39.0] - 2025-07-28
 
