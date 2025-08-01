@@ -109,7 +109,24 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if s.Config.Aliases == nil {
 		s.Config.Aliases = make(map[string]drivers.TableAlias)
 	}
+
+	// Step 1: Populate aliases (no error return)
 	initAliases(s.Config.Aliases, dbInfo.Tables, relationships)
+
+	// Step 2: Validate aliases and get errors
+	aliasErrors := validateAliases(s.Config.Aliases, dbInfo.Tables, relationships)
+
+	// Step 3: Process validation errors (existing logic)
+	if len(aliasErrors) > 0 {
+		var errorMessages []string
+		errorMessages = append(errorMessages, "Alias clashes detected:")
+		for _, err := range aliasErrors {
+			errorMessages = append(errorMessages, fmt.Sprintf("  - %s", err.Error()))
+		}
+		errorMessages = append(errorMessages, "\nPlease resolve these clashes by providing manual aliases in your configuration file under the 'aliases' section.")
+		return errors.New(strings.Join(errorMessages, "\n"))
+	}
+
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
