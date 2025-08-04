@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed issue with redundant title casing column names in query templates. (thanks @luiscleto)
 - Fix invalid expression with pointer-based type systems. (thanks @tak848)
+- Fix panic when parsing SQLite `UPDATE` queries that do not contain a `FROM` clause.
 
 ## [v0.39.0] - 2025-07-28
 

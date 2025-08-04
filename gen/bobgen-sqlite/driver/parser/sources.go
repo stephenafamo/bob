@@ -52,6 +52,10 @@ func (v *visitor) addSourcesFromWithClause(ctx sqliteparser.IWith_clauseContext)
 }
 
 func (v *visitor) addSourcesFromFrom_item(ctx sqliteparser.IFrom_itemContext) {
+	if ctx == nil {
+		return
+	}
+
 	tables := ctx.AllTable_or_subquery()
 
 	sources := make([]QuerySource, len(tables))
