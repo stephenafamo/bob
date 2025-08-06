@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Enums are now imported directly from the `models` package instead of being generated as aliases in the `factory` package.
+
 ### Fixed
 
 - Fixed issue with redundant title casing column names in query templates. (thanks @luiscleto)
 - Fix invalid expression with pointer-based type systems. (thanks @tak848)
 - Fix panic when parsing SQLite `UPDATE` queries that do not contain a `FROM` clause.
+- Fix issue when using enums in generated queries.
+- Fix randomization of floats and decimals in the factory.
 
 ## [v0.39.0] - 2025-07-28
 

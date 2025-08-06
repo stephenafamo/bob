@@ -90,6 +90,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
 	processTypeReplacements(types, s.Config.Replacements, dbInfo.Tables)
+	types.SetOutputImports(pkgMap)
 
 	relationships := buildRelationships(dbInfo.Tables)
 	if err := processRelationshipConfig(&s.Config, dbInfo.Tables, relationships); err != nil {

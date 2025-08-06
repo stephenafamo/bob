@@ -11,7 +11,6 @@ code generation is configured through a yaml configuration file (defaults to `./
 
 The configuration is unmarshalled into the following [Config](https://pkg.go.dev/github.com/stephenafamo/bob/gen#Config) struct.
 
-
 ```go
 // Config for the running of the commands
 type Config struct {
@@ -166,7 +165,7 @@ types:
     depends_on:
       - "string"
     # To be used in factory.random_type
-    # Use TYPE as a placeholder for the type
+    # Use BASETYPE as a placeholder for the type
     # * a variable `f` of type `faker.Faker` is available
     # * another variable `limits` which is a slice of strings with any limits
     #   for example, a VARCHAR(255) would have limits = ["255"]
@@ -227,7 +226,7 @@ There exists the ability to override types that the driver has inferred. The way
 replacements:
   - tables: ["table_name"] # What tables to look inside. Matches all tables if empty
 
-    # The match is a `gen.ColumnFilter` struct, and specifies which column to match. 
+    # The match is a `gen.ColumnFilter` struct, and specifies which column to match.
     # Matches are done using "logical AND" meaning all the specified conditions must be met.
     #
     # All string fields can be specified as a regular expression by enclosing them with /.../.

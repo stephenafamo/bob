@@ -822,7 +822,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "TypeMonstersEnumUse",
+					"type": "models.TypeMonstersEnumUse",
 					"type_limits": null
 				},
 				{
@@ -834,7 +834,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "TypeMonstersEnumNullable",
+					"type": "models.TypeMonstersEnumNullable",
 					"type_limits": null
 				},
 				{

@@ -162,13 +162,16 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 }
 
 func EnumType(types drivers.Types, enum string) string {
-	types.Register(enum, drivers.Type{
+	fullTyp := fmt.Sprintf("models.%s", enum)
+	types.Register(fullTyp, drivers.Type{
 		NoRandomizationTest: true, // enums are often not random enough
-		RandomExpr: fmt.Sprintf(`all := all%s()
-            return all[f.IntBetween(0, len(all)-1)]`, enum),
+		Imports:             []string{"output(models)"},
+		RandomExpr: `var e BASETYPE
+			all := e.All()
+			return all[f.IntBetween(0, len(all)-1)]`,
 	})
 
-	return enum
+	return fullTyp
 }
 
 func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {
