@@ -3,6 +3,7 @@ package drivers
 import (
 	"fmt"
 	"maps"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -20,7 +21,7 @@ type Type struct {
 	// Any other types that this type depends on
 	DependsOn []string `yaml:"depends_on"`
 	// To be used in factory.random_type
-	// Use TYPE to reference the name of the type
+	// Use BASETYPE to reference the name of the type
 	// * A variable `f` of type `faker.Faker` is available
 	// * Another variable `limits` which is a slice of strings with any limits
 	//   for example, a VARCHAR(255) would have limits = ["255"]
@@ -89,6 +90,24 @@ type Types struct {
 	typeModifier TypeModifier
 }
 
+var outputImportRgex = regexp.MustCompile(`output\(([a-zA-Z0-9_]+)\)`)
+
+func (t *Types) SetOutputImports(pkgMap map[string]string) {
+	for name, typedef := range t.registered {
+		for j, imp := range typedef.Imports {
+			match := outputImportRgex.FindStringSubmatch(imp)
+			if len(match) != 2 {
+				continue
+			}
+
+			if pkg, ok := pkgMap[match[1]]; ok {
+				typedef.Imports[j] = fmt.Sprintf(`%s "%s"`, match[1], pkg)
+			}
+		}
+		t.registered[name] = typedef
+	}
+}
+
 func (t *Types) SetTypeModifier(creator TypeModifier) {
 	t.typeModifier = creator
 }
@@ -152,7 +171,13 @@ func (t Types) GetNameAndDef(curr string, namedType string) (string, Type) {
 	}
 
 	if len(typedef.Imports) > 0 && strings.HasSuffix(typedef.Imports[0], `"`+curr+`"`) {
-		_, namedType, _ = strings.Cut(namedType, ".")
+		pkgAlias, _, found := strings.Cut(typedef.Imports[0], ` `)
+		if found {
+			pkgRgx := regexp.MustCompile(fmt.Sprintf(`(^|[^A-Za-z0-9_])%s\.`, pkgAlias))
+			namedType = pkgRgx.ReplaceAllStringFunc(namedType, func(s string) string {
+				return s[0 : len(s)-len(pkgAlias)-1]
+			})
+		}
 	}
 
 	return namedType, typedef

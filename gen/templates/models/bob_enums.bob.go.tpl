@@ -36,6 +36,11 @@
     } 
   }
 
+  // useful when testing in other packages
+  func (e {{$enum.Type}}) All() []{{$enum.Type}} {
+    return All{{$enum.Type}}()
+  }
+
   func (e {{$enum.Type}}) MarshalText() ([]byte, error) {
     return []byte(e), nil
   }
