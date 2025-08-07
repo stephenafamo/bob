@@ -27,7 +27,15 @@ type JSON[T any] struct {
 
 // Value implements the driver Valuer interface.
 func (j JSON[T]) Value() (driver.Value, error) {
-	return json.Marshal(j)
+	data, err := json.Marshal(j)
+	if err != nil {
+		return nil, err
+	}
+	// Return string instead of []byte to avoid pgx treating it as bytea
+	// when using the simple protocol with database/sql.
+	// This matches the behavior of pgtype.JSON for compatibility.
+	// See: https://github.com/jackc/pgtype/issues/45
+	return string(data), nil
 }
 
 // Scan implements the Scanner interface.
