@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix panic when parsing SQLite `UPDATE` queries that do not contain a `FROM` clause.
 - Fix issue when using enums in generated queries.
 - Fix randomization of floats and decimals in the factory.
+- Fix JSON data being incorrectly hex-encoded as bytea when using pgx through simple protocol, causing PostgreSQL to reject it with invalid input syntax errors. (by @Maxitosh)
 
 ## [v0.39.0] - 2025-07-28
 
