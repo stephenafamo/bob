@@ -110,7 +110,9 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if s.Config.Aliases == nil {
 		s.Config.Aliases = make(map[string]drivers.TableAlias)
 	}
-	initAliases(s.Config.Aliases, dbInfo.Tables, relationships)
+	if err := initAliases(s.Config.Aliases, dbInfo.Tables, relationships); err != nil {
+		return fmt.Errorf("initializing aliases: %w\nSee: https://bob.stephenafamo.com/docs/code-generation/configuration#aliases", err)
+	}
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
