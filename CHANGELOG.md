@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enums are now imported directly from the `models` package instead of being generated as aliases in the `factory` package.
+- Preload functions now take a custom `orm.PreloadRel` struct instead of reusing `orm.Relationship`.
 
 ### Fixed
 
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue when using enums in generated queries.
 - Fix randomization of floats and decimals in the factory.
 - Fix JSON data being incorrectly hex-encoded as bytea when using pgx through simple protocol, causing PostgreSQL to reject it with invalid input syntax errors. (by @Maxitosh)
+- Fix issue with preload queries not using a defined schema on the related tables
 
 ## [v0.39.0] - 2025-07-28
 
