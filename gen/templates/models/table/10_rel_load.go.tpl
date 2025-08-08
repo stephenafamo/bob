@@ -81,9 +81,9 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
     {{- $relAlias := $tAlias.Relationship $rel.Name -}}
     {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
     {{$relAlias}}: func(opts ...{{$.Dialect}}.PreloadOption) {{$.Dialect}}.Preloader {
-      return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice](orm.Relationship{
+      return {{$.Dialect}}.Preload[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice]({{$.Dialect}}.PreloadRel{
           Name: "{{$relAlias}}",
-          Sides:  []orm.RelSide{
+          Sides:  []{{$.Dialect}}.PreloadSide{
             {{- $toTable := $table }}{{/* To be able to access the last one after the loop */}}
             {{range $side := $rel.Sides -}}
             {{- $from := $.Aliases.Table $side.From -}}
@@ -91,8 +91,8 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
             {{- $fromTable := $.Tables.Get $side.From -}}
             {{- $toTable = $.Tables.Get $side.To -}}
             {
-              From: TableNames.{{$from.UpPlural}},
-              To: TableNames.{{$to.UpPlural}},
+              From: {{$from.UpPlural}},
+              To: {{$to.UpPlural}},
               {{if $side.FromColumns -}}
               FromColumns: []string{
                 {{range $name := $side.FromColumns -}}
