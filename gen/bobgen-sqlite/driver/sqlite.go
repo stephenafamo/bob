@@ -97,14 +97,6 @@ func (d *driver) Dialect() string {
 	return "sqlite"
 }
 
-func (d *driver) Destination() string {
-	return d.config.Output
-}
-
-func (d *driver) PackageName() string {
-	return d.config.Pkgname
-}
-
 func (d *driver) Types() drivers.Types {
 	return helpers.Types()
 }

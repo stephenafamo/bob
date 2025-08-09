@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"strings"
@@ -119,7 +118,7 @@ func testPostgresDriver(t *testing.T, dsn string) {
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root:      out,
-				Templates: &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+				Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(testConfig)
 				},
@@ -213,7 +212,7 @@ func testPostgresAssemble(t *testing.T, dsn string) {
 
 			if i > 0 {
 				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
-					Templates: &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+					Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
 					GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 						return New(testConfig)
 					},
@@ -238,7 +237,7 @@ func testPostgresAssemble(t *testing.T, dsn string) {
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root:      out,
-				Templates: &helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+				Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(testConfig)
 				},

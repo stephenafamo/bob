@@ -34,6 +34,10 @@ func (t templatePlugin[C]) PlugState(s *gen.State[C]) error {
 	}
 
 	for i := range s.Outputs {
+		if s.Outputs[i].Key == "enums" {
+			// Skip the enums output, since there is no testDB defined
+			continue
+		}
 		s.Outputs[i].Templates = append(s.Outputs[i].Templates, templates)
 	}
 

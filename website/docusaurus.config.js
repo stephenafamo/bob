@@ -95,6 +95,10 @@ const config = {
                 to: "docs/code-generation/intro",
               },
               {
+                label: "Configuration",
+                to: "docs/code-generation/configuration",
+              },
+              {
                 label: "PostgreSQL",
                 to: "docs/code-generation/psql",
               },

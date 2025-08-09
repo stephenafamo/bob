@@ -17,6 +17,9 @@ import (
 )
 
 type Output struct {
+	// If true, new files are not generated, but existing files are deleted
+	Disabled bool
+
 	// The key has to be unique in a gen.State
 	// it also makes it possible to target modifing a specific output
 	// There are special keys that are reserved for internal use
@@ -73,6 +76,13 @@ func (o *Output) initOutFolders() error {
 		}
 	}
 
+	// Do not create the output folder if it is disabled
+	// However, we do this after cleaning up any old `.bob` files
+	if o.Disabled {
+		fmt.Fprintf(os.Stderr, "%-20s %s\n", "== DISABLED ==", o.OutFolder)
+		return nil
+	}
+
 	if err := os.MkdirAll(o.OutFolder, os.ModePerm); err != nil {
 		return fmt.Errorf("unable to create output folder %q: %w", o.OutFolder, err)
 	}
@@ -94,7 +104,7 @@ func (o *Output) initOutFolders() error {
 // be forced back to linux style paths.
 func (o *Output) initTemplates(funcs template.FuncMap) error {
 	if len(o.Templates) == 0 {
-		return errors.New("no templates defined")
+		return nil
 	}
 
 	o.singletonTemplates = template.New("")
@@ -298,12 +308,12 @@ func executeTemplates[T, C, I any](e executeTemplateData[T, C, I], tests bool) e
 		// Skip writing the file if the content is empty
 		if out.Len()-prevLen < 1 {
 			fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
-				"== SKIPPED ==", e.output.OutFolder, fName)
+				"==  SKIPPED ==", e.output.OutFolder, fName)
 			continue
 		}
 
 		fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
-			fmt.Sprintf("%7d bytes", out.Len()-prevLen),
+			fmt.Sprintf("%8d bytes", out.Len()-prevLen),
 			e.output.OutFolder, fName)
 
 		path := filepath.Join(e.output.OutFolder, fName)
@@ -354,12 +364,12 @@ func executeSingletonTemplates[T, C, I any](e executeTemplateData[T, C, I], test
 		// Skip writing the file if the content is empty
 		if out.Len()-prevLen < 1 {
 			fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
-				"== SKIPPED ==", e.output.OutFolder, fileName)
+				"==  SKIPPED ==", e.output.OutFolder, fileName)
 			continue
 		}
 
 		fmt.Fprintf(os.Stderr, "%-20s %s/%s\n",
-			fmt.Sprintf("%7d bytes", out.Len()-prevLen),
+			fmt.Sprintf("%8d bytes", out.Len()-prevLen),
 			e.output.OutFolder, fileName)
 
 		path := filepath.Join(e.output.OutFolder, fileName)

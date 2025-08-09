@@ -20,6 +20,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/plugins"
 )
 
 const module = "github.com/stephenafamo/bob/orm/bob-gen-test"
@@ -87,7 +88,7 @@ func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 
 type DriverTestConfig[T, C, I any] struct {
 	Root            string
-	Templates       *helpers.Templates
+	Templates       helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
 	GoldenFileMod   func([]byte) []byte
@@ -95,7 +96,7 @@ type DriverTestConfig[T, C, I any] struct {
 }
 
 type AssembleTestConfig[T, C, I any] struct {
-	Templates       *helpers.Templates
+	Templates       helpers.Templates
 	OverwriteGolden bool
 	GoldenFile      string
 	GoldenFileMod   func([]byte) []byte
@@ -191,7 +192,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 	})
 }
 
-func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, plugins ...gen.Plugin) {
+func testDriver[T, C, I any](t *testing.T, dst string, tpls helpers.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, extraPlugins ...gen.Plugin) {
 	t.Helper()
 	buf := &bytes.Buffer{}
 
@@ -219,13 +220,29 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls *helpers.Templates, 
 		t.Fatalf("go mod edit cmd execution failed: %s", err)
 	}
 
-	outputs := helpers.DefaultOutputs(dst, "models", false, tpls)
+	state := &gen.State[C]{Config: config}
+	allPlugins := []gen.Plugin{
+		plugins.Enums[C](plugins.OutputConfig{
+			Destination: filepath.Join(dst, "enums"),
+			Pkgname:     "enums",
+		}, tpls.Enums...),
+		plugins.Models[C](plugins.OutputConfig{
+			Destination: filepath.Join(dst, "models"),
+			Pkgname:     "models",
+		}, tpls.Models...),
+		plugins.Factory[C](plugins.OutputConfig{
+			Destination: filepath.Join(dst, "factory"),
+			Pkgname:     "factory",
+		}, tpls.Factory...),
+		plugins.DBErrors[C](plugins.OutputConfig{
+			Destination: filepath.Join(dst, "querypath"),
+			Pkgname:     "querypath",
+		}, tpls.DBErrors...),
+		plugins.Queries[C](tpls.Queries...),
+	}
+	allPlugins = append(allPlugins, extraPlugins...)
 
-	if err := gen.Run(
-		context.Background(),
-		&gen.State[C]{Config: config, Outputs: outputs},
-		d, plugins...,
-	); err != nil {
+	if err := gen.Run(context.Background(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
 

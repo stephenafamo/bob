@@ -29,12 +29,14 @@ var sqliteTemplates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	ModelTemplates, _       = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _     = fs.Sub(templates, "templates/factory")
-	QueriesTemplates, _     = fs.Sub(templates, "templates/queries")
-	MySQLModelTemplates, _  = fs.Sub(mysqlTemplates, "bobgen-mysql/templates/models")
-	PSQLModelTemplates, _   = fs.Sub(psqlTemplates, "bobgen-psql/templates/models")
-	SQLiteModelTemplates, _ = fs.Sub(sqliteTemplates, "bobgen-sqlite/templates/models")
+	EnumTemplates, _    = fs.Sub(templates, "templates/enums")
+	ModelTemplates, _   = fs.Sub(templates, "templates/models")
+	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
+	QueriesTemplates, _ = fs.Sub(templates, "templates/queries")
+	DBErrorTemplates, _ = fs.Sub(templates, "templates/dberrors")
+	MySQLTemplates, _   = fs.Sub(mysqlTemplates, "bobgen-mysql")
+	PSQLTemplates, _    = fs.Sub(psqlTemplates, "bobgen-psql")
+	SQLiteTemplates, _  = fs.Sub(sqliteTemplates, "bobgen-sqlite")
 )
 
 type TemplateData[T, C, I any] struct {
@@ -55,7 +57,6 @@ type TemplateData[T, C, I any] struct {
 	PkgName string
 
 	// Control various generation features
-	NoFactory         bool
 	NoTests           bool
 	NoBackReferencing bool
 

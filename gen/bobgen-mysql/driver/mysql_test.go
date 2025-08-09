@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"os"
 	"testing"
 
@@ -154,7 +153,7 @@ func TestDriver(t *testing.T) {
 					},
 					GoldenFile:      tt.goldenJson,
 					OverwriteGolden: *flagOverwriteGolden,
-					Templates:       &helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
+					Templates:       helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
 				})
 				return
 			}
@@ -179,7 +178,7 @@ func TestDriver(t *testing.T) {
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
-				Templates:       &helpers.Templates{Models: []fs.FS{gen.MySQLModelTemplates}},
+				Templates:       helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
 			})
 		})
 	}

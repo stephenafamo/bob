@@ -18,8 +18,6 @@ type Config[ConstraintExtra any] struct {
 	TypeSystem string `yaml:"type_system"`
 	// Struct tags to generate
 	Tags []string `yaml:"tags"`
-	// Disable generating factories for models
-	NoFactory bool `yaml:"no_factory"`
 	// Disable generating go test files
 	NoTests bool `yaml:"no_tests"`
 	// Disable back referencing in the loaded relationship structs

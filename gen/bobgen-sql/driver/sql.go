@@ -42,13 +42,13 @@ type Config struct {
 	fs      fs.FS
 }
 
-func RunPostgres(ctx context.Context, state *gen.State[any], config Config) error {
+func RunPostgres(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
 	d, err := getPsqlDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting psql driver: %w", err)
 	}
 
-	return gen.Run(ctx, state, d)
+	return gen.Run(ctx, state, d, plugins...)
 }
 
 func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, error) {
@@ -94,13 +94,13 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	return d, nil
 }
 
-func RunMySQL(ctx context.Context, state *gen.State[any], config Config) error {
+func RunMySQL(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
 	d, err := getMySQLDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting mysql driver: %w", err)
 	}
 
-	return gen.Run(ctx, state, d)
+	return gen.Run(ctx, state, d, plugins...)
 }
 
 func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, error) {
@@ -144,13 +144,13 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	return d, nil
 }
 
-func RunSQLite(ctx context.Context, state *gen.State[any], config Config) error {
+func RunSQLite(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
 	d, err := getSQLiteDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting sqlite driver: %w", err)
 	}
 
-	return gen.Run(ctx, state, d)
+	return gen.Run(ctx, state, d, plugins...)
 }
 
 func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface, error) {

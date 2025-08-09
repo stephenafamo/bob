@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"runtime/debug"
 	"strings"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/stephenafamo/bob/gen"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/plugins"
 )
 
 const DefaultConfigPath = "./bobgen.yaml"
@@ -41,62 +41,52 @@ type Config struct {
 	Queries []string `yaml:"queries"`
 	// List of tables that will be should be ignored. Others are included
 	Except map[string][]string
-
-	//-------
-
-	// The name of the folder to output the models package to
-	Output string
-	// The name you wish to assign to your generated models package
-	Pkgname   string
-	NoFactory bool `yaml:"no_factory"`
 }
 
 type Templates struct {
-	Models  []fs.FS
-	Factory []fs.FS
-	Queries []fs.FS
+	Enums    []fs.FS
+	Models   []fs.FS
+	Factory  []fs.FS
+	Queries  []fs.FS
+	DBErrors []fs.FS
 }
 
-func DefaultOutputs(destination, pkgname string, noFactory bool, templates *Templates) []*gen.Output {
-	if templates == nil {
-		templates = &Templates{}
+func (t Templates) Merge(other Templates) Templates {
+	return Templates{
+		Enums:    append(t.Enums, other.Enums...),
+		Models:   append(t.Models, other.Models...),
+		Factory:  append(t.Factory, other.Factory...),
+		Queries:  append(t.Queries, other.Queries...),
+		DBErrors: append(t.DBErrors, other.DBErrors...),
 	}
-
-	if destination == "" {
-		destination = "models"
-	}
-
-	if pkgname == "" {
-		pkgname = "models"
-	}
-
-	outputs := []*gen.Output{
-		{
-			Key:                     "models",
-			OutFolder:               destination,
-			PkgName:                 pkgname,
-			SeparatePackageForTests: true,
-			Templates:               append(templates.Models, gen.ModelTemplates),
-		},
-		{
-			Key:       "queries",
-			Templates: append(templates.Queries, gen.QueriesTemplates),
-		},
-	}
-
-	if !noFactory {
-		outputs = append(outputs, &gen.Output{
-			Key:       "factory",
-			OutFolder: path.Join(destination, "factory"),
-			PkgName:   "factory",
-			Templates: append(templates.Factory, gen.FactoryTemplates),
-		})
-	}
-
-	return outputs
 }
 
-func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, error) {
+func TemplatesFromWellKnownTree(templates fs.FS) Templates {
+	EnumTemplates, _ := fs.Sub(templates, "templates/enums")
+	ModelTemplates, _ := fs.Sub(templates, "templates/models")
+	FactoryTemplates, _ := fs.Sub(templates, "templates/factory")
+	QueriesTemplates, _ := fs.Sub(templates, "templates/queries")
+	DBErrorTemplates, _ := fs.Sub(templates, "templates/dberrors")
+	return Templates{
+		Enums:    []fs.FS{EnumTemplates},
+		Models:   []fs.FS{ModelTemplates},
+		Factory:  []fs.FS{FactoryTemplates},
+		Queries:  []fs.FS{QueriesTemplates},
+		DBErrors: []fs.FS{DBErrorTemplates},
+	}
+}
+
+func OutputPlugins[C any](config plugins.Config, templates Templates) []gen.Plugin {
+	return []gen.Plugin{
+		plugins.Enums[C](config.Enums, templates.Enums...),
+		plugins.Models[C](config.Models, templates.Models...),
+		plugins.Factory[C](config.Factory, templates.Factory...),
+		plugins.Queries[C](templates.Queries...),
+		plugins.DBErrors[C](config.DBErrors, templates.DBErrors...),
+	}
+}
+
+func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, plugins.Config, error) {
 	var provider koanf.Provider
 	var config gen.Config[ConstraintExtra]
 	var driverConfig DriverConfig
@@ -107,34 +97,56 @@ func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConf
 		provider = file.Provider(configPath)
 	}
 	if err != nil && (configPath != DefaultConfigPath || !errors.Is(err, os.ErrNotExist)) {
-		return config, driverConfig, err
+		return config, driverConfig, plugins.Config{}, err
 	}
 
 	return GetConfigFromProvider[ConstraintExtra, DriverConfig](provider, driverConfigKey)
 }
 
-func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Provider, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, error) {
+func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Provider, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, plugins.Config, error) {
 	var config gen.Config[ConstraintExtra]
 	var driverConfig DriverConfig
+	var pluginsConfig plugins.Config
 
 	k := koanf.New(".")
 
 	// Add some defaults
 	err := k.Load(confmap.Provider(map[string]any{
-		"wipe":              true,
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
+		"plugins": map[string]any{
+			"enums": map[string]any{
+				"disabled":    false,
+				"destination": "enums",
+				"pkgname":     "enums",
+			},
+			"models": map[string]any{
+				"disabled":    false,
+				"destination": "models",
+				"pkgname":     "models",
+			},
+			"factory": map[string]any{
+				"disabled":    false,
+				"destination": "factory",
+				"pkgname":     "factory",
+			},
+			"dberrors": map[string]any{
+				"disabled":    false,
+				"destination": "dberrors",
+				"pkgname":     "dberrors",
+			},
+		},
 	}, ""), nil)
 	if err != nil {
-		return config, driverConfig, err
+		return config, driverConfig, pluginsConfig, err
 	}
 
 	if provider != nil {
 		// Load YAML config and merge into the previously loaded config (because we can).
 		err := k.Load(provider, yaml.Parser())
 		if err != nil {
-			return config, driverConfig, err
+			return config, driverConfig, pluginsConfig, err
 		}
 	}
 
@@ -145,27 +157,32 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		return strings.Replace(strings.ToLower(s), "_", ".", 1)
 	}), nil)
 	if err != nil {
-		return config, driverConfig, err
+		return config, driverConfig, pluginsConfig, err
 	}
 
 	err = k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
-		return config, driverConfig, err
+		return config, driverConfig, pluginsConfig, err
 	}
 
 	err = k.UnmarshalWithConf(driverConfigKey, &driverConfig, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
-		return config, driverConfig, err
+		return config, driverConfig, pluginsConfig, err
 	}
 
-	return config, driverConfig, nil
+	err = k.UnmarshalWithConf("plugins", &pluginsConfig, koanf.UnmarshalConf{Tag: "yaml"})
+	if err != nil {
+		return config, driverConfig, pluginsConfig, err
+	}
+
+	return config, driverConfig, pluginsConfig, nil
 }
 
 func EnumType(types drivers.Types, enum string) string {
-	fullTyp := fmt.Sprintf("models.%s", enum)
+	fullTyp := fmt.Sprintf("enums.%s", enum)
 	types.Register(fullTyp, drivers.Type{
 		NoRandomizationTest: true, // enums are often not random enough
-		Imports:             []string{"output(models)"},
+		Imports:             []string{"output(enums)"},
 		RandomExpr: `var e BASETYPE
 			all := e.All()
 			return all[f.IntBetween(0, len(all)-1)]`,

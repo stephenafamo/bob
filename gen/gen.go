@@ -126,7 +126,6 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		Aliases:           s.Config.Aliases,
 		Types:             types,
 		Relationships:     relationships,
-		NoFactory:         s.Config.NoFactory,
 		NoTests:           s.Config.NoTests,
 		NoBackReferencing: s.Config.NoBackReferencing,
 		StructTagCasing:   s.Config.StructTagCasing,
@@ -168,16 +167,8 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I]) error {
 		}
 		knownKeys[o.Key] = struct{}{}
 
-		if len(o.Templates) == 0 {
-			continue
-		}
-
 		if err := o.initTemplates(s.CustomTemplateFuncs); err != nil {
 			return fmt.Errorf("unable to initialize templates: %w", err)
-		}
-
-		if o.numTemplates() == 0 {
-			continue
 		}
 
 		iterator := slices.Values([]struct{}{{}})
@@ -202,6 +193,14 @@ func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I]) error {
 
 			if err := o.initOutFolders(); err != nil {
 				return fmt.Errorf("unable to initialize the output folders: %w", err)
+			}
+
+			if o.Disabled {
+				continue
+			}
+
+			if o.numTemplates() == 0 {
+				return fmt.Errorf("no templates found for output %q", o.Key)
 			}
 
 			// assign reusable scratch buffers to provided Output
@@ -291,6 +290,10 @@ func buildPkgMap(outputs []*Output) (map[string]string, error) {
 	pkgMap := make(map[string]string)
 
 	for _, o := range outputs {
+		if o.Disabled {
+			continue // skip disabled outputs
+		}
+
 		if o.Key == "queries" {
 			continue // queries have no fixed output folder
 		}
