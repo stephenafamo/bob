@@ -6,7 +6,6 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -105,7 +104,7 @@ func TestAssembleLibSQL(t *testing.T) {
 			))
 		},
 		OverwriteGolden: *flagOverwriteGolden,
-		Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+		Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
 	})
 }
 
@@ -215,7 +214,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 					))
 				},
 				OverwriteGolden: overwriteGolden,
-				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+				Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
 			})
 		})
 	}
@@ -317,7 +316,7 @@ func testSQLiteAssemble(t *testing.T, config Config) {
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: overwriteGolden,
-				Templates:       &helpers.Templates{Models: []fs.FS{gen.SQLiteModelTemplates}},
+				Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
 			})
 		})
 	}

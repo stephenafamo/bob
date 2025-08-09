@@ -7,10 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Built-in Plugins `enums`, `models`, `factory`, `queries` and `dberrors`.
+
 ### Changed
 
-- Enums are now imported directly from the `models` package instead of being generated as aliases in the `factory` package.
+- Enums are now imported directly from a new generated `enums` package. This makes it easier to use enums in other packages without having to depend on the `models` package.
 - Preload functions now take a custom `orm.PreloadRel` struct instead of reusing `orm.Relationship`.
+- By default, factories are now generated in `./factory` instead of `./models/factory`.
+- Outputs are now determined by plugins which can be enabled or disabled in the configuration.
+- UniqueConstraintErrors are now generated in a separate `dberrors` package instead of being generated in the `models` package.
+- Tests in the generated `models` package are no longer generated in a separate `models_test` package. There is no longer any circular dependency since tests for the unique constraint errors are generated in the `dberrors` package.
+
+### Removed
+
+- Removed the `no_factory` configuration option. It is now replaced with the `factory` plugin which can be enabled or disabled. See <https://bob.stephenafamo.com/docs/code-generation/configuration#plugins-configuration> for more details.
 
 ### Fixed
 

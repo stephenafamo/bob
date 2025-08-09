@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"io/fs"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,26 +38,22 @@ func main() {
 	}
 
 	if err := app.RunContext(ctx, os.Args); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
 func run(c *cli.Context) error {
-	config, driverConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "psql")
+	config, driverConfig, pluginsConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "psql")
 	if err != nil {
 		return err
 	}
 
-	d := driver.New(driverConfig)
-	outputs := helpers.DefaultOutputs(
-		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
-		&helpers.Templates{Models: []fs.FS{gen.PSQLModelTemplates}},
+	outputPlugins := helpers.OutputPlugins[any](
+		pluginsConfig,
+		helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
 	)
 
-	state := &gen.State[any]{
-		Config:  config,
-		Outputs: outputs,
-	}
-
-	return gen.Run(c.Context, state, d)
+	state := &gen.State[any]{Config: config}
+	return gen.Run(c.Context, state, driver.New(driverConfig), outputPlugins...)
 }

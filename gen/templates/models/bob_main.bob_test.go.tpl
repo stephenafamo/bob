@@ -1,19 +1,12 @@
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 // Set the testDB to enable tests that use the database
 var testDB bob.Transactor
 
-type (
-	{{range $enum := $.Enums -}}
-		{{$enum.Type}} = models.{{$enum.Type}}
-	{{end}}
-)
-
-{{- range $table := .Tables}}
+{{range $table := .Tables}}
 	{{$tAlias := $.Aliases.Table $table.Key -}}
   // Make sure the type {{$tAlias.UpSingular}} runs hooks after queries
-	var _ bob.HookableType = &models.{{$tAlias.UpSingular}}{}
+	var _ bob.HookableType = &{{$tAlias.UpSingular}}{}
 {{end}}
 
 {{$doneTypes := dict }}

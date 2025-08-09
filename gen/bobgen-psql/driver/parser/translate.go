@@ -179,7 +179,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	arrTyp := fmt.Sprintf("pgtypes.EnumArray[models.%s]", enumTyp)
+	arrTyp := fmt.Sprintf("pgtypes.EnumArray[enums.%s]", enumTyp)
 
 	// premptively add the enum type
 	// this is to prevent issues if the enum is only used in an array
@@ -187,7 +187,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 
 	types.Register(arrTyp, drivers.Type{
 		DependsOn:           []string{enumTyp},
-		Imports:             []string{"output(models)", pgtypesImport},
+		Imports:             []string{"output(enums)", pgtypesImport},
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {

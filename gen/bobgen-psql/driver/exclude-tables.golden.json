@@ -502,7 +502,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "models.UnicodeEnum",
+					"type": "enums.UnicodeEnum",
 					"type_limits": null
 				},
 				{
@@ -514,7 +514,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "models.UnicodeEnum",
+					"type": "enums.UnicodeEnum",
 					"type_limits": null
 				},
 				{
@@ -2790,7 +2790,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.EnumArray[models.UnicodeEnum]",
+					"type": "pgtypes.EnumArray[enums.UnicodeEnum]",
 					"type_limits": null
 				},
 				{
@@ -2802,7 +2802,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.EnumArray[models.UnicodeEnum]",
+					"type": "pgtypes.EnumArray[enums.UnicodeEnum]",
 					"type_limits": null
 				},
 				{
@@ -2966,7 +2966,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "models.UnicodeEnum",
+					"type": "enums.UnicodeEnum",
 					"type_limits": null
 				},
 				{
@@ -2978,7 +2978,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "models.UnicodeEnum",
+					"type": "enums.UnicodeEnum",
 					"type_limits": null
 				},
 				{
@@ -5254,7 +5254,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.EnumArray[models.UnicodeEnum]",
+					"type": "pgtypes.EnumArray[enums.UnicodeEnum]",
 					"type_limits": null
 				},
 				{
@@ -5266,7 +5266,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.EnumArray[models.UnicodeEnum]",
+					"type": "pgtypes.EnumArray[enums.UnicodeEnum]",
 					"type_limits": null
 				},
 				{

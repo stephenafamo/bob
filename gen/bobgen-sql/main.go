@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/fs"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -40,47 +38,42 @@ func main() {
 	}
 
 	if err := app.RunContext(ctx, os.Args); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
 func run(c *cli.Context) error {
-	config, driverConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "sql")
+	config, driverConfig, pluginsConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "sql")
 	if err != nil {
 		return err
 	}
 
-	var modelTemplates []fs.FS
+	var templates helpers.Templates
 	switch driverConfig.Dialect {
 	case "psql", "postgres":
-		modelTemplates = append(modelTemplates, gen.PSQLModelTemplates)
+		templates = helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates)
 	case "mysql":
-		modelTemplates = append(modelTemplates, gen.MySQLModelTemplates)
+		templates = helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates)
 	case "sqlite":
-		modelTemplates = append(modelTemplates, gen.SQLiteModelTemplates)
+		templates = helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates)
 	}
 
-	outputs := helpers.DefaultOutputs(
-		driverConfig.Output, driverConfig.Pkgname, config.NoFactory,
-		&helpers.Templates{Models: modelTemplates},
-	)
+	outputPlugins := helpers.OutputPlugins[any](pluginsConfig, templates)
 
 	if driverConfig.Pattern == "" {
 		driverConfig.Pattern = "*.sql"
 	}
 
-	state := &gen.State[any]{
-		Config:  config,
-		Outputs: outputs,
-	}
+	state := &gen.State[any]{Config: config}
 
 	switch driverConfig.Dialect {
 	case "psql", "postgres":
-		return driver.RunPostgres(c.Context, state, driverConfig)
+		return driver.RunPostgres(c.Context, state, driverConfig, outputPlugins...)
 	case "mysql":
-		return driver.RunMySQL(c.Context, state, driverConfig)
+		return driver.RunMySQL(c.Context, state, driverConfig, outputPlugins...)
 	case "sqlite":
-		return driver.RunSQLite(c.Context, state, driverConfig)
+		return driver.RunSQLite(c.Context, state, driverConfig, outputPlugins...)
 	default:
 		return fmt.Errorf("unsupported dialect %s", driverConfig.Dialect)
 	}
