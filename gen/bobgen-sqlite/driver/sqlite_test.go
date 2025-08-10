@@ -104,7 +104,7 @@ func TestAssembleLibSQL(t *testing.T) {
 			))
 		},
 		OverwriteGolden: *flagOverwriteGolden,
-		Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
+		Templates:       gen.SQLiteTemplates,
 	})
 }
 
@@ -214,7 +214,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 					))
 				},
 				OverwriteGolden: overwriteGolden,
-				Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
+				Templates:       gen.SQLiteTemplates,
 			})
 		})
 	}
@@ -316,7 +316,7 @@ func testSQLiteAssemble(t *testing.T, config Config) {
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: overwriteGolden,
-				Templates:       helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates),
+				Templates:       gen.SQLiteTemplates,
 			})
 		})
 	}

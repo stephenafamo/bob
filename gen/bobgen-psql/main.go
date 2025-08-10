@@ -50,8 +50,7 @@ func run(c *cli.Context) error {
 	}
 
 	outputPlugins := helpers.OutputPlugins[any, any, driver.IndexExtra](
-		pluginsConfig,
-		helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
+		pluginsConfig, gen.PSQLTemplates,
 	)
 
 	state := &gen.State[any]{Config: config}

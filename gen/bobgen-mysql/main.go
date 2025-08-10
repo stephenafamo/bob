@@ -49,10 +49,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := helpers.OutputPlugins[any, any, any](
-		pluginsConfig,
-		helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
-	)
+	outputPlugins := helpers.OutputPlugins[any, any, any](pluginsConfig, gen.MySQLTemplates)
 
 	state := &gen.State[any]{Config: config}
 	return gen.Run(c.Context, state, driver.New(driverConfig), outputPlugins...)

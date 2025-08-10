@@ -29,15 +29,38 @@ var sqliteTemplates embed.FS
 
 //nolint:gochecknoglobals
 var (
-	EnumTemplates, _    = fs.Sub(templates, "templates/enums")
-	ModelTemplates, _   = fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ = fs.Sub(templates, "templates/factory")
-	QueriesTemplates, _ = fs.Sub(templates, "templates/queries")
-	DBErrorTemplates, _ = fs.Sub(templates, "templates/dberrors")
-	MySQLTemplates, _   = fs.Sub(mysqlTemplates, "bobgen-mysql")
-	PSQLTemplates, _    = fs.Sub(psqlTemplates, "bobgen-psql")
-	SQLiteTemplates, _  = fs.Sub(sqliteTemplates, "bobgen-sqlite")
+	BaseTemplates   = buildTemplatesFromKnownDirStructure(templates, "")
+	MySQLTemplates  = buildTemplatesFromKnownDirStructure(mysqlTemplates, "bobgen-mysql")
+	PSQLTemplates   = buildTemplatesFromKnownDirStructure(psqlTemplates, "bobgen-psql")
+	SQLiteTemplates = buildTemplatesFromKnownDirStructure(sqliteTemplates, "bobgen-sqlite")
 )
+
+func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates {
+	if dir != "" {
+		templates, _ = fs.Sub(templates, dir)
+	}
+
+	EnumTemplates, _ := fs.Sub(templates, "templates/enums")
+	ModelTemplates, _ := fs.Sub(templates, "templates/models")
+	FactoryTemplates, _ := fs.Sub(templates, "templates/factory")
+	QueriesTemplates, _ := fs.Sub(templates, "templates/queries")
+	DBErrorTemplates, _ := fs.Sub(templates, "templates/dberrors")
+	return Templates{
+		Enums:    EnumTemplates,
+		Models:   ModelTemplates,
+		Factory:  FactoryTemplates,
+		Queries:  QueriesTemplates,
+		DBErrors: DBErrorTemplates,
+	}
+}
+
+type Templates struct {
+	Enums    fs.FS
+	Models   fs.FS
+	Factory  fs.FS
+	Queries  fs.FS
+	DBErrors fs.FS
+}
 
 type TemplateData[T, C, I any] struct {
 	Dialect  string

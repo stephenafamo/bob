@@ -38,7 +38,7 @@ func (d dbErrorsPlugin[C]) PlugState(state *gen.State[C]) error {
 		Key:       "dberrors",
 		OutFolder: d.config.Destination,
 		PkgName:   d.config.Pkgname,
-		Templates: append(d.templates, gen.DBErrorTemplates),
+		Templates: append(d.templates, gen.BaseTemplates.DBErrors),
 	})
 
 	return nil

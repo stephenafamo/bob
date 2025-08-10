@@ -118,7 +118,7 @@ func testPostgresDriver(t *testing.T, dsn string) {
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root:      out,
-				Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
+				Templates: gen.PSQLTemplates,
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(testConfig)
 				},
@@ -212,7 +212,7 @@ func testPostgresAssemble(t *testing.T, dsn string) {
 
 			if i > 0 {
 				testgen.TestAssemble(t, testgen.AssembleTestConfig[any, any, IndexExtra]{
-					Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
+					Templates: gen.PSQLTemplates,
 					GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 						return New(testConfig)
 					},
@@ -237,7 +237,7 @@ func testPostgresAssemble(t *testing.T, dsn string) {
 
 			testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
 				Root:      out,
-				Templates: helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates),
+				Templates: gen.PSQLTemplates,
 				GetDriver: func() drivers.Interface[any, any, IndexExtra] {
 					return New(testConfig)
 				},

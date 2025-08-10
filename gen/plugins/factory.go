@@ -38,7 +38,7 @@ func (f factoryPlugin[C]) PlugState(state *gen.State[C]) error {
 		Key:       "factory",
 		OutFolder: f.config.Destination,
 		PkgName:   f.config.Pkgname,
-		Templates: append(f.templates, gen.FactoryTemplates),
+		Templates: append(f.templates, gen.BaseTemplates.Factory),
 	})
 
 	return nil

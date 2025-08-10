@@ -39,7 +39,7 @@ func (m modelsPlugin[C]) PlugState(state *gen.State[C]) error {
 		Key:       "models",
 		OutFolder: m.config.Destination,
 		PkgName:   m.config.Pkgname,
-		Templates: append(m.templates, gen.ModelTemplates),
+		Templates: append(m.templates, gen.BaseTemplates.Models),
 	})
 
 	// To delete the old factory output if it exists

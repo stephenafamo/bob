@@ -153,7 +153,7 @@ func TestDriver(t *testing.T) {
 					},
 					GoldenFile:      tt.goldenJson,
 					OverwriteGolden: *flagOverwriteGolden,
-					Templates:       helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
+					Templates:       gen.MySQLTemplates,
 				})
 				return
 			}
@@ -178,7 +178,7 @@ func TestDriver(t *testing.T) {
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
-				Templates:       helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
+				Templates:       gen.MySQLTemplates,
 			})
 		})
 	}

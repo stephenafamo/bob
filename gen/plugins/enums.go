@@ -15,7 +15,7 @@ func Enums[T, C, I any](config OutputConfig, templates ...fs.FS) gen.StatePlugin
 			Key:       "enums",
 			OutFolder: config.Destination,
 			PkgName:   config.Pkgname,
-			Templates: append(templates, gen.EnumTemplates),
+			Templates: append(templates, gen.BaseTemplates.Enums),
 		},
 	}
 }

@@ -29,7 +29,7 @@ func (q queriesOutputPlugin[C]) PlugState(state *gen.State[C]) error {
 
 	state.Outputs = append(state.Outputs, &gen.Output{
 		Key:       "queries",
-		Templates: append(q.templates, gen.QueriesTemplates),
+		Templates: append(q.templates, gen.BaseTemplates.Queries),
 	})
 
 	return nil

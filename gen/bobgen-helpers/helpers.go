@@ -43,36 +43,13 @@ type Config struct {
 	Except map[string][]string
 }
 
-type Templates struct {
-	Enums    []fs.FS
-	Models   []fs.FS
-	Factory  []fs.FS
-	Queries  []fs.FS
-	DBErrors []fs.FS
-}
-
-func TemplatesFromWellKnownTree(templates fs.FS) Templates {
-	EnumTemplates, _ := fs.Sub(templates, "templates/enums")
-	ModelTemplates, _ := fs.Sub(templates, "templates/models")
-	FactoryTemplates, _ := fs.Sub(templates, "templates/factory")
-	QueriesTemplates, _ := fs.Sub(templates, "templates/queries")
-	DBErrorTemplates, _ := fs.Sub(templates, "templates/dberrors")
-	return Templates{
-		Enums:    []fs.FS{EnumTemplates},
-		Models:   []fs.FS{ModelTemplates},
-		Factory:  []fs.FS{FactoryTemplates},
-		Queries:  []fs.FS{QueriesTemplates},
-		DBErrors: []fs.FS{DBErrorTemplates},
-	}
-}
-
-func OutputPlugins[T, C, I any](config plugins.Config, templates Templates) []gen.Plugin {
+func OutputPlugins[T, C, I any](config plugins.Config, templates gen.Templates) []gen.Plugin {
 	return []gen.Plugin{
-		plugins.Enums[T, C, I](config.Enums, templates.Enums...),
-		plugins.Models[C](config.Models, templates.Models...),
-		plugins.Factory[C](config.Factory, templates.Factory...),
-		plugins.Queries[C](templates.Queries...),
-		plugins.DBErrors[C](config.DBErrors, templates.DBErrors...),
+		plugins.Enums[T, C, I](config.Enums, templates.Enums),
+		plugins.Models[C](config.Models, templates.Models),
+		plugins.Factory[C](config.Factory, templates.Factory),
+		plugins.Queries[C](templates.Queries),
+		plugins.DBErrors[C](config.DBErrors, templates.DBErrors),
 	}
 }
 
