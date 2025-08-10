@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Built-in Plugins `enums`, `models`, `factory`, `queries` and `dberrors`.
+- Made the code generation modular by relying on built-in plugins that can be enabled or disabled in the configuration.
+  - `enums`: Generates code for enums in a separate package, if there are any present.
+  - `models`: Generates code for models. Depends on `enums`.
+  - `factory`: Generates code for factories. Depends on `models`.
+  - `queries`: Generates code for queries. Depends on `enums`.
+  - `dberrors`: Generates code for unique constraint errors. Depends on `models`.
+  - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
 
 ### Changed
 

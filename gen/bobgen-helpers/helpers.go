@@ -50,6 +50,7 @@ func OutputPlugins[T, C, I any](config plugins.Config, templates gen.Templates) 
 		plugins.Factory[C](config.Factory, templates.Factory),
 		plugins.Queries[C](templates.Queries),
 		plugins.DBErrors[C](config.DBErrors, templates.DBErrors),
+		plugins.Joins[C](templates.Joins),
 	}
 }
 
@@ -84,22 +85,18 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
 		"plugins": map[string]any{
 			"enums": map[string]any{
-				"disabled":    false,
 				"destination": "enums",
 				"pkgname":     "enums",
 			},
 			"models": map[string]any{
-				"disabled":    false,
 				"destination": "models",
 				"pkgname":     "models",
 			},
 			"factory": map[string]any{
-				"disabled":    false,
 				"destination": "factory",
 				"pkgname":     "factory",
 			},
 			"dberrors": map[string]any{
-				"disabled":    false,
 				"destination": "dberrors",
 				"pkgname":     "dberrors",
 			},
