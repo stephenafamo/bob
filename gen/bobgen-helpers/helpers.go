@@ -51,16 +51,6 @@ type Templates struct {
 	DBErrors []fs.FS
 }
 
-func (t Templates) Merge(other Templates) Templates {
-	return Templates{
-		Enums:    append(t.Enums, other.Enums...),
-		Models:   append(t.Models, other.Models...),
-		Factory:  append(t.Factory, other.Factory...),
-		Queries:  append(t.Queries, other.Queries...),
-		DBErrors: append(t.DBErrors, other.DBErrors...),
-	}
-}
-
 func TemplatesFromWellKnownTree(templates fs.FS) Templates {
 	EnumTemplates, _ := fs.Sub(templates, "templates/enums")
 	ModelTemplates, _ := fs.Sub(templates, "templates/models")

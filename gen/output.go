@@ -13,6 +13,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
 )
 
@@ -22,13 +23,6 @@ type Output struct {
 
 	// The key has to be unique in a gen.State
 	// it also makes it possible to target modifing a specific output
-	// There are special keys that are reserved for internal use
-	// * "models" - for model templates.
-	// * "factory" - for factory templates
-	// * "queries" - for query templates.
-	//    - This is run once for each query folder
-	//    - The PkgName is set to the folder name in each run
-	//    - The OutFolder is set to the same folder
 	Key string
 
 	PkgName                 string
@@ -212,6 +206,55 @@ type executeTemplateData[T, C, I any] struct {
 	langs        language.Languages
 }
 
+func generateTableOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], generator string, noTests bool) error {
+	if o.tableTemplates == nil || len(o.tableTemplates.Templates()) == 0 {
+		return nil
+	}
+
+	dirExtMap := groupTemplatesByExtension(o.tableTemplates)
+	langs := language.Languages{
+		GeneratorName:           generator,
+		SeparatePackageForTests: o.SeparatePackageForTests,
+	}
+	for _, table := range data.Tables {
+		data.Table = table
+
+		// Generate the regular templates
+		if err := generateOutput(o, dirExtMap, o.tableTemplates, data, langs, noTests); err != nil {
+			return fmt.Errorf("unable to generate output: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func generateQueryOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], generator string, noTests bool) error {
+	if o.queryTemplates == nil || len(o.queryTemplates.Templates()) == 0 {
+		return nil
+	}
+
+	dirExtMap := groupTemplatesByExtension(o.queryTemplates)
+	langs := language.Languages{
+		GeneratorName:           generator,
+		SeparatePackageForTests: o.SeparatePackageForTests,
+	}
+	for _, file := range data.QueryFolder.Files {
+		data.QueryFile = file
+
+		// We do this so that the name of the file is correct
+		data.Table = drivers.Table[C, I]{
+			Name: file.BaseName(),
+		}
+
+		// Generate the regular templates
+		if err := generateOutput(o, dirExtMap, o.queryTemplates, data, langs, noTests); err != nil {
+			return fmt.Errorf("unable to generate output: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // generateOutput builds the file output and sends it to outHandler for saving
 func generateOutput[T, C, I any](o *Output, dirExts extMap, tpl *template.Template, data *TemplateData[T, C, I], langs language.Languages, noTests bool) error {
 	if err := executeTemplates(executeTemplateData[T, C, I]{
@@ -243,7 +286,31 @@ func generateOutput[T, C, I any](o *Output, dirExts extMap, tpl *template.Templa
 
 // generateSingletonOutput processes the templates that should only be run
 // one time.
-func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], langs language.Languages, noTests bool) error {
+func generateSingletonOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], generator string, noTests bool) error {
+	// set the package name for this output
+	data.PkgName = o.PkgName
+
+	if err := o.initOutFolders(); err != nil {
+		return fmt.Errorf("unable to initialize the output folders: %w", err)
+	}
+
+	if o.Disabled {
+		return nil // skip disabled outputs
+	}
+
+	if o.numTemplates() == 0 {
+		return fmt.Errorf("no templates found for output %q", o.Key)
+	}
+
+	// assign reusable scratch buffers to provided Output
+	o.templateByteBuffer = &bytes.Buffer{}
+	o.templateHeaderByteBuffer = &bytes.Buffer{}
+
+	langs := language.Languages{
+		GeneratorName:           generator,
+		SeparatePackageForTests: o.SeparatePackageForTests,
+	}
+
 	if err := executeSingletonTemplates(executeTemplateData[T, C, I]{
 		output:    o,
 		data:      data,
