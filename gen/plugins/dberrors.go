@@ -19,7 +19,7 @@ type dbErrorsPlugin[C any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (d dbErrorsPlugin[C]) Name() string {
+func (dbErrorsPlugin[C]) Name() string {
 	return "DB Errors Output Plugin"
 }
 

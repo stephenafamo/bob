@@ -26,7 +26,7 @@ type enumsPlugin[T, C, I any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (e *enumsPlugin[T, C, I]) Name() string {
+func (*enumsPlugin[T, C, I]) Name() string {
 	return "Enums Output Plugin"
 }
 

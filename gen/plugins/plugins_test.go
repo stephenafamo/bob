@@ -9,4 +9,6 @@ var (
 	_ gen.StatePlugin[any]            = factoryPlugin[any]{}
 	_ gen.StatePlugin[any]            = queriesOutputPlugin[any]{}
 	_ gen.StatePlugin[any]            = dbErrorsPlugin[any]{}
+	_ gen.StatePlugin[any]            = joinsPlugin[any]{}
+	_ gen.StatePlugin[any]            = loadersPlugin[any]{}
 )

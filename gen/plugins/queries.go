@@ -17,7 +17,7 @@ type queriesOutputPlugin[C any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (q queriesOutputPlugin[C]) Name() string {
+func (queriesOutputPlugin[C]) Name() string {
 	return "Queries Output Plugin"
 }
 

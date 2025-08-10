@@ -1,11 +1,13 @@
+{{if $.Relationships.Get .Table.Key -}}
+{{$.Importer.Import "fmt" -}}
+{{$.Importer.Import "context" -}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm" -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect) -}}
+
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
-{{if $.Relationships.Get $table.Key -}}
-{{$.Importer.Import "fmt" -}}
-{{$.Importer.Import "context" -}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm" -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect) -}}
 
 func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	if o == nil {
@@ -172,7 +174,6 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
   }
 }
 
-{{- end}}
 
 
 {{range $rel := $.Relationships.Get $table.Key -}}
@@ -420,5 +421,6 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	return nil
 }
 
+{{end -}}
 {{end -}}
 {{end -}}

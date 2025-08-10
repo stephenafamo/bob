@@ -20,7 +20,7 @@ type modelsPlugin[C any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (m modelsPlugin[C]) Name() string {
+func (modelsPlugin[C]) Name() string {
 	return "Models Output Plugin"
 }
 

@@ -17,7 +17,7 @@ type joinsPlugin[C any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (j joinsPlugin[C]) Name() string {
+func (joinsPlugin[C]) Name() string {
 	return "Joins Output Plugin"
 }
 
@@ -33,6 +33,14 @@ func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
 			output.Templates = append(output.Templates, j.templates...)
 		}
 	}
+
+	// For debugging
+	state.Outputs = append(state.Outputs, &gen.Output{
+		Key:       "joins",
+		OutFolder: "debug/joins",
+		PkgName:   "joins",
+		Templates: append(j.templates, gen.BaseTemplates.Joins),
+	})
 
 	return nil
 }

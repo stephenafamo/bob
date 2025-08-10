@@ -19,7 +19,7 @@ type factoryPlugin[C any] struct {
 }
 
 // Name implements gen.StatePlugin.
-func (f factoryPlugin[C]) Name() string {
+func (factoryPlugin[C]) Name() string {
 	return "Factory Output Plugin"
 }
 

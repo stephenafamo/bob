@@ -2,6 +2,10 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 
+{{if $.Relationships.Get $table.Key -}}
+{{$.Importer.Import "fmt"}}
+{{end}}
+
 {{range $rel := $.Relationships.Get $table.Key -}}{{if not ($.Tables.RelIsView $rel) -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
@@ -182,8 +186,6 @@
       return {{$sideAlias.DownSingular}}{{$side.Position}}, nil
     {{end}}
   }
-
-
 {{end}}
 
 {{if not $rel.IsToMany -}}

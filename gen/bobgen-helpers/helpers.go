@@ -51,6 +51,7 @@ func OutputPlugins[T, C, I any](config plugins.Config, templates gen.Templates) 
 		plugins.Queries[C](templates.Queries),
 		plugins.DBErrors[C](config.DBErrors, templates.DBErrors),
 		plugins.Joins[C](templates.Joins),
+		plugins.Loaders[C](templates.Loaders),
 	}
 }
 
