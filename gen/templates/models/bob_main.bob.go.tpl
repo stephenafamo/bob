@@ -28,6 +28,7 @@ var ColumnNames = struct {
 }
 
 {{block "helpers/where_variables" . -}}
+{{$.Importer.Import "github.com/stephenafamo/bob/clause"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
 	SelectWhere = Where[*dialect.SelectQuery]()

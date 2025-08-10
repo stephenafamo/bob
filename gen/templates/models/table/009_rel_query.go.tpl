@@ -2,7 +2,6 @@
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{if $.Relationships.Get $table.Key -}}
   {{$.Importer.Import "github.com/stephenafamo/bob"}}
-  {{$.Importer.Import "github.com/stephenafamo/bob/mods"}}
   {{$.Importer.Import "context"}}
 {{end}}
 

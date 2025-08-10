@@ -6,13 +6,15 @@ import (
 	"github.com/stephenafamo/bob/gen"
 )
 
-func Joins[C any](templates ...fs.FS) gen.StatePlugin[C] {
+func Joins[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
 	return joinsPlugin[C]{
+		disabled:  config.Disabled,
 		templates: templates,
 	}
 }
 
 type joinsPlugin[C any] struct {
+	disabled  bool
 	templates []fs.FS
 }
 
@@ -23,6 +25,10 @@ func (joinsPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
+	if j.disabled {
+		return nil
+	}
+
 	if err := dependsOn(state, "models"); err != nil {
 		return err
 	}
@@ -33,14 +39,6 @@ func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
 			output.Templates = append(output.Templates, j.templates...)
 		}
 	}
-
-	// For debugging
-	state.Outputs = append(state.Outputs, &gen.Output{
-		Key:       "joins",
-		OutFolder: "debug/joins",
-		PkgName:   "joins",
-		Templates: append(j.templates, gen.BaseTemplates.Joins),
-	})
 
 	return nil
 }

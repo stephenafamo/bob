@@ -48,10 +48,10 @@ func OutputPlugins[T, C, I any](config plugins.Config, templates gen.Templates) 
 		plugins.Enums[T, C, I](config.Enums, templates.Enums),
 		plugins.Models[C](config.Models, templates.Models),
 		plugins.Factory[C](config.Factory, templates.Factory),
-		plugins.Queries[C](templates.Queries),
 		plugins.DBErrors[C](config.DBErrors, templates.DBErrors),
-		plugins.Joins[C](templates.Joins),
-		plugins.Loaders[C](templates.Loaders),
+		plugins.Joins[C](config.Joins, templates.Joins),
+		plugins.Loaders[C](config.Loaders, templates.Loaders),
+		plugins.Queries[C](templates.Queries),
 	}
 }
 

@@ -6,13 +6,15 @@ import (
 	"github.com/stephenafamo/bob/gen"
 )
 
-func Loaders[C any](templates ...fs.FS) gen.StatePlugin[C] {
+func Loaders[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
 	return loadersPlugin[C]{
+		disabled:  config.Disabled,
 		templates: templates,
 	}
 }
 
 type loadersPlugin[C any] struct {
+	disabled  bool
 	templates []fs.FS
 }
 
@@ -23,6 +25,10 @@ func (loadersPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (l loadersPlugin[C]) PlugState(state *gen.State[C]) error {
+	if l.disabled {
+		return nil
+	}
+
 	if err := dependsOn(state, "models"); err != nil {
 		return err
 	}

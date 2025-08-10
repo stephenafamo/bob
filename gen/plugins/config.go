@@ -11,6 +11,12 @@ type Config struct {
 	Models   OutputConfig `yaml:"models"`
 	Factory  OutputConfig `yaml:"factory"`
 	DBErrors OutputConfig `yaml:"dberrors"`
+	Joins    OnOffConfig  `yaml:"joins"`
+	Loaders  OnOffConfig  `yaml:"loaders"`
+}
+
+type OnOffConfig struct {
+	Disabled bool `yaml:"disabled"`
 }
 
 type OutputConfig struct {

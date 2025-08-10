@@ -18,6 +18,7 @@ import (
 
 	"github.com/nsf/jsondiff"
 	"github.com/stephenafamo/bob/gen"
+	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/plugins"
 )
@@ -220,26 +221,20 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	}
 
 	state := &gen.State[C]{Config: config}
-	allPlugins := []gen.Plugin{
-		plugins.Enums[T, C, I](plugins.OutputConfig{
-			Destination: filepath.Join(dst, "enums"),
-			Pkgname:     "enums",
-		}, tpls.Enums),
-		plugins.Models[C](plugins.OutputConfig{
-			Destination: filepath.Join(dst, "models"),
-			Pkgname:     "models",
-		}, tpls.Models),
-		plugins.Factory[C](plugins.OutputConfig{
-			Destination: filepath.Join(dst, "factory"),
-			Pkgname:     "factory",
-		}, tpls.Factory),
-		plugins.DBErrors[C](plugins.OutputConfig{
-			Destination: filepath.Join(dst, "querypath"),
-			Pkgname:     "querypath",
-		}, tpls.DBErrors),
-		plugins.Queries[C](tpls.Queries),
-	}
-	allPlugins = append(allPlugins, extraPlugins...)
+	allPlugins := append(helpers.OutputPlugins[T, C, I](plugins.Config{
+		Models: plugins.OutputConfig{
+			Pkgname: "models", Destination: filepath.Join(dst, "models"),
+		},
+		Enums: plugins.OutputConfig{
+			Pkgname: "enums", Destination: filepath.Join(dst, "enums"),
+		},
+		Factory: plugins.OutputConfig{
+			Pkgname: "factory", Destination: filepath.Join(dst, "factory"),
+		},
+		DBErrors: plugins.OutputConfig{
+			Pkgname: "dberrors", Destination: filepath.Join(dst, "dberrors"),
+		},
+	}, tpls), extraPlugins...)
 
 	if err := gen.Run(context.Background(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
