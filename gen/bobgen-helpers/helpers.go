@@ -66,9 +66,9 @@ func TemplatesFromWellKnownTree(templates fs.FS) Templates {
 	}
 }
 
-func OutputPlugins[C any](config plugins.Config, templates Templates) []gen.Plugin {
+func OutputPlugins[T, C, I any](config plugins.Config, templates Templates) []gen.Plugin {
 	return []gen.Plugin{
-		plugins.Enums[C](config.Enums, templates.Enums...),
+		plugins.Enums[T, C, I](config.Enums, templates.Enums...),
 		plugins.Models[C](config.Models, templates.Models...),
 		plugins.Factory[C](config.Factory, templates.Factory...),
 		plugins.Queries[C](templates.Queries...),

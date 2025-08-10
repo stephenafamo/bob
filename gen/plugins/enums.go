@@ -4,38 +4,48 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/gen/drivers"
 )
 
-func Enums[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
-	return enumsPlugin[C]{
-		config:    config,
-		templates: templates,
+func Enums[T, C, I any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
+	return &enumsPlugin[T, C, I]{
+		config: config,
+		output: &gen.Output{
+			Disabled:  config.Disabled,
+			Key:       "enums",
+			OutFolder: config.Destination,
+			PkgName:   config.Pkgname,
+			Templates: append(templates, gen.EnumTemplates),
+		},
 	}
 }
 
-type enumsPlugin[C any] struct {
-	config    OutputConfig
-	templates []fs.FS
+type enumsPlugin[T, C, I any] struct {
+	config OutputConfig
+	output *gen.Output
 }
 
 // Name implements gen.StatePlugin.
-func (e enumsPlugin[C]) Name() string {
+func (e *enumsPlugin[T, C, I]) Name() string {
 	return "Enums Output Plugin"
 }
 
 // PlugState implements gen.StatePlugin.
-func (e enumsPlugin[C]) PlugState(state *gen.State[C]) error {
+func (e *enumsPlugin[T, C, I]) PlugState(state *gen.State[C]) error {
 	if err := e.config.Validate(); err != nil {
 		return err
 	}
 
-	state.Outputs = append(state.Outputs, &gen.Output{
-		Disabled:  e.config.Disabled,
-		Key:       "enums",
-		OutFolder: e.config.Destination,
-		PkgName:   e.config.Pkgname,
-		Templates: append(e.templates, gen.EnumTemplates),
-	})
+	state.Outputs = append(state.Outputs, e.output)
 
+	return nil
+}
+
+// PlugDBInfo implements gen.DBInfoPlugin.
+func (e *enumsPlugin[T, C, I]) PlugDBInfo(info *drivers.DBInfo[T, C, I]) error {
+	// Disable the output if there are no enums
+	if len(info.Enums) == 0 {
+		e.output.Disabled = true
+	}
 	return nil
 }

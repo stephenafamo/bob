@@ -49,18 +49,6 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	var templates helpers.Templates
-	switch driverConfig.Dialect {
-	case "psql", "postgres":
-		templates = helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates)
-	case "mysql":
-		templates = helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates)
-	case "sqlite":
-		templates = helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates)
-	}
-
-	outputPlugins := helpers.OutputPlugins[any](pluginsConfig, templates)
-
 	if driverConfig.Pattern == "" {
 		driverConfig.Pattern = "*.sql"
 	}
@@ -69,11 +57,11 @@ func run(c *cli.Context) error {
 
 	switch driverConfig.Dialect {
 	case "psql", "postgres":
-		return driver.RunPostgres(c.Context, state, driverConfig, outputPlugins...)
+		return driver.RunPostgres(c.Context, state, driverConfig, pluginsConfig)
 	case "mysql":
-		return driver.RunMySQL(c.Context, state, driverConfig, outputPlugins...)
+		return driver.RunMySQL(c.Context, state, driverConfig, pluginsConfig)
 	case "sqlite":
-		return driver.RunSQLite(c.Context, state, driverConfig, outputPlugins...)
+		return driver.RunSQLite(c.Context, state, driverConfig, pluginsConfig)
 	default:
 		return fmt.Errorf("unsupported dialect %s", driverConfig.Dialect)
 	}

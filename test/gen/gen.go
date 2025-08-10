@@ -222,7 +222,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls helpers.Templates, c
 
 	state := &gen.State[C]{Config: config}
 	allPlugins := []gen.Plugin{
-		plugins.Enums[C](plugins.OutputConfig{
+		plugins.Enums[T, C, I](plugins.OutputConfig{
 			Destination: filepath.Join(dst, "enums"),
 			Pkgname:     "enums",
 		}, tpls.Enums...),

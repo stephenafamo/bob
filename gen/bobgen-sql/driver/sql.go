@@ -16,6 +16,7 @@ import (
 	psqlDriver "github.com/stephenafamo/bob/gen/bobgen-psql/driver"
 	sqliteDriver "github.com/stephenafamo/bob/gen/bobgen-sqlite/driver"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/gen/plugins"
 	"github.com/testcontainers/testcontainers-go"
 	mysqltest "github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -42,11 +43,14 @@ type Config struct {
 	fs      fs.FS
 }
 
-func RunPostgres(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
+func RunPostgres(ctx context.Context, state *gen.State[any], config Config, pluginsConfig plugins.Config) error {
 	d, err := getPsqlDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting psql driver: %w", err)
 	}
+
+	templates := helpers.TemplatesFromWellKnownTree(gen.PSQLTemplates)
+	plugins := helpers.OutputPlugins[any, any, psqlDriver.IndexExtra](pluginsConfig, templates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }
@@ -94,11 +98,14 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	return d, nil
 }
 
-func RunMySQL(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
+func RunMySQL(ctx context.Context, state *gen.State[any], config Config, pluginsConfig plugins.Config) error {
 	d, err := getMySQLDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting mysql driver: %w", err)
 	}
+
+	templates := helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates)
+	plugins := helpers.OutputPlugins[any, any, any](pluginsConfig, templates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }
@@ -144,11 +151,14 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	return d, nil
 }
 
-func RunSQLite(ctx context.Context, state *gen.State[any], config Config, plugins ...gen.Plugin) error {
+func RunSQLite(ctx context.Context, state *gen.State[any], config Config, pluginsConfig plugins.Config) error {
 	d, err := getSQLiteDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("getting sqlite driver: %w", err)
 	}
+
+	templates := helpers.TemplatesFromWellKnownTree(gen.SQLiteTemplates)
+	plugins := helpers.OutputPlugins[any, any, sqliteDriver.IndexExtra](pluginsConfig, templates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }

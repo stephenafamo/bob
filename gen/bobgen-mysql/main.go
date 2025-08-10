@@ -49,7 +49,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := helpers.OutputPlugins[any](
+	outputPlugins := helpers.OutputPlugins[any, any, any](
 		pluginsConfig,
 		helpers.TemplatesFromWellKnownTree(gen.MySQLTemplates),
 	)
