@@ -220,7 +220,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	}
 
 	state := &gen.State[C]{Config: config}
-	allPlugins := append(plugins.All[T, C, I](plugins.Config{
+	allPlugins := append(plugins.Setup[T, C, I](plugins.Config{
 		Models: plugins.OutputConfig{
 			Pkgname: "models", Destination: filepath.Join(dst, "models"),
 		},

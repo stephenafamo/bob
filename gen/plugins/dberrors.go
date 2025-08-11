@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func DBErrors[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -25,7 +26,7 @@ func (dbErrorsPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (d dbErrorsPlugin[C]) PlugState(state *gen.State[C]) error {
-	if err := dependsOn(state, "models", "factory"); err != nil {
+	if err := dependsOn(d.config.Disabled, state, "models", "factory"); err != nil {
 		return err
 	}
 
@@ -34,7 +35,7 @@ func (d dbErrorsPlugin[C]) PlugState(state *gen.State[C]) error {
 	}
 
 	state.Outputs = append(state.Outputs, &gen.Output{
-		Disabled:  d.config.Disabled,
+		Disabled:  internal.ValOrZero(d.config.Disabled),
 		Key:       "dberrors",
 		OutFolder: d.config.Destination,
 		PkgName:   d.config.Pkgname,

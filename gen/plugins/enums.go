@@ -5,13 +5,14 @@ import (
 
 	"github.com/stephenafamo/bob/gen"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 )
 
-func Enums[T, C, I any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
+func Enums[T, C, I any](config OutputConfig, templates ...fs.FS) gen.Plugin {
 	return &enumsPlugin[T, C, I]{
 		config: config,
 		output: &gen.Output{
-			Disabled:  config.Disabled,
+			Disabled:  internal.ValOrZero(config.Disabled),
 			Key:       "enums",
 			OutFolder: config.Destination,
 			PkgName:   config.Pkgname,
@@ -32,7 +33,8 @@ func (*enumsPlugin[T, C, I]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (e *enumsPlugin[T, C, I]) PlugState(state *gen.State[C]) error {
-	if err := e.config.Validate(); err != nil {
+	err := e.config.Validate()
+	if internal.ValOrZero(e.config.Disabled) && err != nil {
 		return err
 	}
 

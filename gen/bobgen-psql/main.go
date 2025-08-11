@@ -50,7 +50,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := plugins.All[any, any, driver.IndexExtra](
+	outputPlugins := plugins.Setup[any, any, driver.IndexExtra](
 		pluginsConfig, gen.PSQLTemplates,
 	)
 

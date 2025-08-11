@@ -14,7 +14,7 @@ func Joins[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
 }
 
 type joinsPlugin[C any] struct {
-	disabled  bool
+	disabled  *bool
 	templates []fs.FS
 }
 
@@ -25,11 +25,7 @@ func (joinsPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
-	if j.disabled {
-		return nil
-	}
-
-	if err := dependsOn(state, "models"); err != nil {
+	if err := dependsOn(j.disabled, state, "models"); err != nil {
 		return err
 	}
 
@@ -38,6 +34,7 @@ func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
 			output.Templates = append(output.Templates, gen.BaseTemplates.Joins)
 			output.Templates = append(output.Templates, j.templates...)
 		}
+		break
 	}
 
 	return nil

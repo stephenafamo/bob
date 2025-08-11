@@ -50,7 +50,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := plugins.All[any, any, any](pluginsConfig, gen.MySQLTemplates)
+	outputPlugins := plugins.Setup[any, any, any](pluginsConfig, gen.MySQLTemplates)
 
 	state := &gen.State[any]{Config: config}
 	return gen.Run(c.Context, state, driver.New(driverConfig), outputPlugins...)

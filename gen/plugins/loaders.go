@@ -14,7 +14,7 @@ func Loaders[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
 }
 
 type loadersPlugin[C any] struct {
-	disabled  bool
+	disabled  *bool
 	templates []fs.FS
 }
 
@@ -25,11 +25,7 @@ func (loadersPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (l loadersPlugin[C]) PlugState(state *gen.State[C]) error {
-	if l.disabled {
-		return nil
-	}
-
-	if err := dependsOn(state, "models"); err != nil {
+	if err := dependsOn(l.disabled, state, "models"); err != nil {
 		return err
 	}
 
@@ -38,6 +34,7 @@ func (l loadersPlugin[C]) PlugState(state *gen.State[C]) error {
 			output.Templates = append(output.Templates, gen.BaseTemplates.Loaders)
 			output.Templates = append(output.Templates, l.templates...)
 		}
+		break
 	}
 
 	return nil

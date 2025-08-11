@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func Factory[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -25,7 +26,7 @@ func (factoryPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (f factoryPlugin[C]) PlugState(state *gen.State[C]) error {
-	if err := dependsOn(state, "enums", "models"); err != nil {
+	if err := dependsOn(f.config.Disabled, state, "enums", "models"); err != nil {
 		return err
 	}
 
@@ -34,7 +35,7 @@ func (f factoryPlugin[C]) PlugState(state *gen.State[C]) error {
 	}
 
 	state.Outputs = append(state.Outputs, &gen.Output{
-		Disabled:  f.config.Disabled,
+		Disabled:  internal.ValOrZero(f.config.Disabled),
 		Key:       "factory",
 		OutFolder: f.config.Destination,
 		PkgName:   f.config.Pkgname,

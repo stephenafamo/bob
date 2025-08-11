@@ -72,24 +72,6 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		"struct_tag_casing": "snake",
 		"relation_tag":      "-",
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
-		"plugins": map[string]any{
-			"enums": map[string]any{
-				"destination": "enums",
-				"pkgname":     "enums",
-			},
-			"models": map[string]any{
-				"destination": "models",
-				"pkgname":     "models",
-			},
-			"factory": map[string]any{
-				"destination": "factory",
-				"pkgname":     "factory",
-			},
-			"dberrors": map[string]any{
-				"destination": "dberrors",
-				"pkgname":     "dberrors",
-			},
-		},
 	}, ""), nil)
 	if err != nil {
 		return config, driverConfig, pluginsConfig, err
@@ -126,6 +108,13 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 	err = k.UnmarshalWithConf("plugins", &pluginsConfig, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
 		return config, driverConfig, pluginsConfig, err
+	}
+
+	switch k.String("plugins_preset") {
+	case "none":
+		pluginsConfig = plugins.PresetNone.Merge(pluginsConfig)
+	default:
+		pluginsConfig = plugins.PresetAll.Merge(pluginsConfig)
 	}
 
 	return config, driverConfig, pluginsConfig, nil

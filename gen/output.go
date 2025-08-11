@@ -257,6 +257,14 @@ func generateQueryOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], ge
 
 // generateOutput builds the file output and sends it to outHandler for saving
 func generateOutput[T, C, I any](o *Output, dirExts extMap, tpl *template.Template, data *TemplateData[T, C, I], langs language.Languages, noTests bool) error {
+	if o.Disabled {
+		return nil // skip disabled outputs
+	}
+
+	// assign reusable scratch buffers to provided Output
+	o.templateByteBuffer = &bytes.Buffer{}
+	o.templateHeaderByteBuffer = &bytes.Buffer{}
+
 	if err := executeTemplates(executeTemplateData[T, C, I]{
 		output:       o,
 		data:         data,

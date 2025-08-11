@@ -1,30 +1,36 @@
 package plugins
 
 import (
+	"fmt"
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/gen/drivers"
 )
 
-func Queries[C any](templates ...fs.FS) gen.StatePlugin[C] {
-	return queriesOutputPlugin[C]{
+func Queries[T, C, I any](templates ...fs.FS) gen.Plugin {
+	return &queriesOutputPlugin[T, C, I]{
 		templates: templates,
 	}
 }
 
-type queriesOutputPlugin[C any] struct {
-	templates []fs.FS
+type queriesOutputPlugin[T, C, I any] struct {
+	hasEnumsOutput bool
+	templates      []fs.FS
 }
 
 // Name implements gen.StatePlugin.
-func (queriesOutputPlugin[C]) Name() string {
+func (*queriesOutputPlugin[T, C, I]) Name() string {
 	return "Queries Output Plugin"
 }
 
 // PlugState implements gen.StatePlugin.
-func (q queriesOutputPlugin[C]) PlugState(state *gen.State[C]) error {
-	if err := dependsOn(state, "enums"); err != nil {
-		return err
+func (q *queriesOutputPlugin[T, C, I]) PlugState(state *gen.State[C]) error {
+	for _, output := range state.Outputs {
+		if output.Key == "enums" && !output.Disabled {
+			q.hasEnumsOutput = true
+			break
+		}
 	}
 
 	state.Outputs = append(state.Outputs, &gen.Output{
@@ -33,4 +39,57 @@ func (q queriesOutputPlugin[C]) PlugState(state *gen.State[C]) error {
 	})
 
 	return nil
+}
+
+// PlugDBInfo implements gen.DBInfoPlugin.
+func (q *queriesOutputPlugin[T, C, I]) PlugTemplateData(data *gen.TemplateData[T, C, I]) error {
+	var usesEnums bool
+
+MainLoop:
+	for _, folder := range data.QueryFolders {
+		for _, file := range folder.Files {
+			for _, query := range file.Queries {
+				for _, col := range query.Columns {
+					if hasEnumImports(data.Types.Index(col.TypeName)) {
+						usesEnums = true
+						break MainLoop
+					}
+				}
+				for _, arg := range query.Args {
+					if hasEnumImports(data.Types.Index(arg.Col.TypeName)) {
+						usesEnums = true
+						break MainLoop
+					}
+				}
+			}
+		}
+	}
+	// Disable the output if there are no enums
+	if usesEnums && !q.hasEnumsOutput {
+		return fmt.Errorf("Your queries require the \"enum\" output to be enabled")
+	}
+
+	return nil
+}
+
+func hasEnumImports(typ drivers.Type) bool {
+	for _, importPath := range typ.Imports {
+		if importPath == "output(enums)" {
+			return true
+		}
+	}
+
+	for _, importPath := range typ.RandomExprImports {
+		if importPath == "output(enums)" {
+			return true
+		}
+	}
+
+	for _, importPath := range typ.CompareExprImports {
+		if importPath == "output(enums)" {
+			return true
+		}
+	}
+
+	return false
 }

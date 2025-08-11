@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func Models[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -26,7 +27,8 @@ func (modelsPlugin[C]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (m modelsPlugin[C]) PlugState(state *gen.State[C]) error {
-	if err := dependsOn(state, "enums"); err != nil {
+	err := dependsOn(m.config.Disabled, state, "enums")
+	if internal.ValOrZero(m.config.Disabled) && err != nil {
 		return err
 	}
 
@@ -35,7 +37,7 @@ func (m modelsPlugin[C]) PlugState(state *gen.State[C]) error {
 	}
 
 	state.Outputs = append(state.Outputs, &gen.Output{
-		Disabled:  m.config.Disabled,
+		Disabled:  internal.ValOrZero(m.config.Disabled),
 		Key:       "models",
 		OutFolder: m.config.Destination,
 		PkgName:   m.config.Pkgname,

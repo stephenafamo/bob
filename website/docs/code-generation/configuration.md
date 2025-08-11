@@ -15,10 +15,20 @@ Configuration is split into 3 parts:
 
 ## Plugins Configuration
 
-When using the CLI, Bob loads several built-in plugins.  
+When using the CLI, Bob loads several built-in plugins.
+
+- `enums`: Generates code for enums in a separate package, if there are any present.
+- `models`: Generates code for models. Depends on `enums`.
+- `factory`: Generates code for factories. Depends on `models`.
+- `queries`: Generates code for queries.
+- `dberrors`: Generates code for unique constraint errors. Depends on `models`.
+- `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
+- `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
+
 They can be configured in the `plugins` section of the configuration file.
 
 ```yaml
+plugins_preset: "all" # Valid values are "all" or "none". Defaults to "all"
 plugins:
   enums:
     disabled: false
@@ -36,7 +46,18 @@ plugins:
     disabled: false
     pkgname: "dberrors"
     destination: "dberrors"
+  joins:
+    disabled: false
+  loaders:
+    disabled: false
 ```
+
+:::tip
+
+Use the `plugins_preset` key to quickly enable or disable all plugins.
+Valid values are `all` or `none`. Defaults to `all`.
+
+:::
 
 ## Driver Configuration
 

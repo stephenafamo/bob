@@ -9,6 +9,15 @@ func Pointer[T any](val T) *T {
 	return &val
 }
 
+func ValOrZero[T comparable](val *T) T {
+	if val == nil {
+		var zero T
+		return zero
+	}
+
+	return *val
+}
+
 func ToAnySlice[T any, Ts ~[]T](slice Ts) []any {
 	ret := make([]any, len(slice))
 	for i, val := range slice {
