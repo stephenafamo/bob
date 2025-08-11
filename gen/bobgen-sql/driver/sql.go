@@ -49,7 +49,7 @@ func RunPostgres(ctx context.Context, state *gen.State[any], config Config, plug
 		return fmt.Errorf("getting psql driver: %w", err)
 	}
 
-	plugins := helpers.OutputPlugins[any, any, psqlDriver.IndexExtra](pluginsConfig, gen.PSQLTemplates)
+	plugins := plugins.All[any, any, psqlDriver.IndexExtra](pluginsConfig, gen.PSQLTemplates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }
@@ -103,7 +103,7 @@ func RunMySQL(ctx context.Context, state *gen.State[any], config Config, plugins
 		return fmt.Errorf("getting mysql driver: %w", err)
 	}
 
-	plugins := helpers.OutputPlugins[any, any, any](pluginsConfig, gen.MySQLTemplates)
+	plugins := plugins.All[any, any, any](pluginsConfig, gen.MySQLTemplates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }
@@ -155,7 +155,7 @@ func RunSQLite(ctx context.Context, state *gen.State[any], config Config, plugin
 		return fmt.Errorf("getting sqlite driver: %w", err)
 	}
 
-	plugins := helpers.OutputPlugins[any, any, sqliteDriver.IndexExtra](pluginsConfig, gen.SQLiteTemplates)
+	plugins := plugins.All[any, any, sqliteDriver.IndexExtra](pluginsConfig, gen.SQLiteTemplates)
 
 	return gen.Run(ctx, state, d, plugins...)
 }

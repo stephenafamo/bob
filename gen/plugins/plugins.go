@@ -6,6 +6,18 @@ import (
 	"github.com/stephenafamo/bob/gen"
 )
 
+func All[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
+	return []gen.Plugin{
+		Enums[T, C, I](config.Enums, templates.Enums),
+		Models[C](config.Models, templates.Models),
+		Factory[C](config.Factory, templates.Factory),
+		DBErrors[C](config.DBErrors, templates.DBErrors),
+		Joins[C](config.Joins, templates.Joins),
+		Loaders[C](config.Loaders, templates.Loaders),
+		Queries[C](templates.Queries),
+	}
+}
+
 type Config struct {
 	Enums    OutputConfig `yaml:"enums"`
 	Models   OutputConfig `yaml:"models"`

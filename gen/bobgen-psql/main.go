@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-psql/driver"
+	"github.com/stephenafamo/bob/gen/plugins"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,7 +50,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := helpers.OutputPlugins[any, any, driver.IndexExtra](
+	outputPlugins := plugins.All[any, any, driver.IndexExtra](
 		pluginsConfig, gen.PSQLTemplates,
 	)
 

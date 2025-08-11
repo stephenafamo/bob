@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/bobgen-mysql/driver"
+	"github.com/stephenafamo/bob/gen/plugins"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,7 +50,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	outputPlugins := helpers.OutputPlugins[any, any, any](pluginsConfig, gen.MySQLTemplates)
+	outputPlugins := plugins.All[any, any, any](pluginsConfig, gen.MySQLTemplates)
 
 	state := &gen.State[any]{Config: config}
 	return gen.Run(c.Context, state, driver.New(driverConfig), outputPlugins...)

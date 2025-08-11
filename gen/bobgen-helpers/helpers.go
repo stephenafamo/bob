@@ -43,18 +43,6 @@ type Config struct {
 	Except map[string][]string
 }
 
-func OutputPlugins[T, C, I any](config plugins.Config, templates gen.Templates) []gen.Plugin {
-	return []gen.Plugin{
-		plugins.Enums[T, C, I](config.Enums, templates.Enums),
-		plugins.Models[C](config.Models, templates.Models),
-		plugins.Factory[C](config.Factory, templates.Factory),
-		plugins.DBErrors[C](config.DBErrors, templates.DBErrors),
-		plugins.Joins[C](config.Joins, templates.Joins),
-		plugins.Loaders[C](config.Loaders, templates.Loaders),
-		plugins.Queries[C](templates.Queries),
-	}
-}
-
 func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, plugins.Config, error) {
 	var provider koanf.Provider
 	var config gen.Config[ConstraintExtra]
