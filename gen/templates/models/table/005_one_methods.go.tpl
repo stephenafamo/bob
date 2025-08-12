@@ -80,7 +80,7 @@ func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) 
 	o2, err := {{$tAlias.UpPlural}}.Query(
 		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
-		SelectWhere.{{$tAlias.UpPlural}}.{{$colAlias}}.EQ(o.{{$colAlias}}),
+    sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg(o.{{$colAlias}}))),
 		{{end -}}
 	).One(ctx, exec)
 	if err != nil {

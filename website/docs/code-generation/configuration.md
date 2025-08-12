@@ -46,9 +46,11 @@ plugins:
     disabled: false
     pkgname: "dberrors"
     destination: "dberrors"
-  joins:
+  where:
     disabled: false
   loaders:
+    disabled: false
+  joins:
     disabled: false
 ```
 

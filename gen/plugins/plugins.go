@@ -14,8 +14,9 @@ func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 		Models[C](config.Models, templates.Models),
 		Factory[C](config.Factory, templates.Factory),
 		DBErrors[C](config.DBErrors, templates.DBErrors),
-		Joins[C](config.Joins, templates.Joins),
+		Where[C](config.Where, templates.Where),
 		Loaders[C](config.Loaders, templates.Loaders),
+		Joins[C](config.Joins, templates.Joins),
 		Queries[T, C, I](templates.Queries),
 	}
 }
@@ -25,8 +26,9 @@ type Config struct {
 	Models   OutputConfig `yaml:"models"`
 	Factory  OutputConfig `yaml:"factory"`
 	DBErrors OutputConfig `yaml:"dberrors"`
-	Joins    OnOffConfig  `yaml:"joins"`
+	Where    OnOffConfig  `yaml:"where"`
 	Loaders  OnOffConfig  `yaml:"loaders"`
+	Joins    OnOffConfig  `yaml:"joins"`
 }
 
 func (c Config) Merge(c2 Config) Config {
@@ -35,6 +37,7 @@ func (c Config) Merge(c2 Config) Config {
 		Models:   mergeOutputConfig(c.Models, c2.Models),
 		Factory:  mergeOutputConfig(c.Factory, c2.Factory),
 		DBErrors: mergeOutputConfig(c.DBErrors, c2.DBErrors),
+		Where:    mergeOnOffConfig(c.Where, c2.Where),
 		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
 		Loaders:  mergeOnOffConfig(c.Loaders, c2.Loaders),
 	}
@@ -46,6 +49,7 @@ var PresetAll = Config{
 	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
 	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
 	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
+	Where:    OnOffConfig{},
 	Joins:    OnOffConfig{},
 	Loaders:  OnOffConfig{},
 }
@@ -56,6 +60,7 @@ var PresetDefault = Config{
 	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
 	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
 	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
+	Where:    OnOffConfig{},
 	Joins:    OnOffConfig{},
 	Loaders:  OnOffConfig{},
 }
@@ -66,6 +71,7 @@ var PresetNone = Config{
 	Models:   OutputConfig{Disabled: internal.Pointer(true)},
 	Factory:  OutputConfig{Disabled: internal.Pointer(true)},
 	DBErrors: OutputConfig{Disabled: internal.Pointer(true)},
+	Where:    OnOffConfig{Disabled: internal.Pointer(true)},
 	Joins:    OnOffConfig{Disabled: internal.Pointer(true)},
 	Loaders:  OnOffConfig{Disabled: internal.Pointer(true)},
 }

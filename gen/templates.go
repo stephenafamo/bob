@@ -45,6 +45,7 @@ func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates 
 	FactoryTemplates, _ := fs.Sub(templates, "templates/factory")
 	QueriesTemplates, _ := fs.Sub(templates, "templates/queries")
 	DBErrorTemplates, _ := fs.Sub(templates, "templates/dberrors")
+	WhereTemplates, _ := fs.Sub(templates, "templates/where")
 	LoadersTemplates, _ := fs.Sub(templates, "templates/loaders")
 	JoinTemplates, _ := fs.Sub(templates, "templates/joins")
 
@@ -54,6 +55,7 @@ func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates 
 		Factory:  FactoryTemplates,
 		Queries:  QueriesTemplates,
 		DBErrors: DBErrorTemplates,
+		Where:    WhereTemplates,
 		Loaders:  LoadersTemplates,
 		Joins:    JoinTemplates,
 	}
@@ -65,6 +67,7 @@ type Templates struct {
 	Factory  fs.FS
 	Queries  fs.FS
 	DBErrors fs.FS
+	Where    fs.FS
 	Loaders  fs.FS
 	Joins    fs.FS
 }
