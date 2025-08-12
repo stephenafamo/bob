@@ -33,8 +33,8 @@ func (l loadersPlugin[C]) PlugState(state *gen.State[C]) error {
 		if output.Key == "models" {
 			output.Templates = append(output.Templates, gen.BaseTemplates.Loaders)
 			output.Templates = append(output.Templates, l.templates...)
+			break
 		}
-		break
 	}
 
 	return nil

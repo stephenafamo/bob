@@ -40,6 +40,7 @@ func (c Config) Merge(c2 Config) Config {
 	}
 }
 
+//nolint:gochecknoglobals
 var PresetAll = Config{
 	Enums:    OutputConfig{Destination: "enums", Pkgname: "enums"},
 	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
@@ -49,6 +50,7 @@ var PresetAll = Config{
 	Loaders:  OnOffConfig{}, // Loaders are enabled by default
 }
 
+//nolint:gochecknoglobals
 var PresetNone = PresetAll.Merge(Config{
 	Enums:    OutputConfig{Disabled: internal.Pointer(true)},
 	Models:   OutputConfig{Disabled: internal.Pointer(true)},

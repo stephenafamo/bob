@@ -33,8 +33,8 @@ func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
 		if output.Key == "models" {
 			output.Templates = append(output.Templates, gen.BaseTemplates.Joins)
 			output.Templates = append(output.Templates, j.templates...)
+			break
 		}
-		break
 	}
 
 	return nil

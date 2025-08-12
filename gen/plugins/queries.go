@@ -3,6 +3,7 @@ package plugins
 import (
 	"fmt"
 	"io/fs"
+	"slices"
 
 	"github.com/stephenafamo/bob/gen"
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -66,30 +67,20 @@ MainLoop:
 	}
 	// Disable the output if there are no enums
 	if usesEnums && !q.hasEnumsOutput {
-		return fmt.Errorf("Your queries require the \"enum\" output to be enabled")
+		return fmt.Errorf("your queries uses enums and so requires the \"enum\" output to be enabled")
 	}
 
 	return nil
 }
 
 func hasEnumImports(typ drivers.Type) bool {
-	for _, importPath := range typ.Imports {
-		if importPath == "output(enums)" {
-			return true
-		}
+	if slices.Contains(typ.Imports, "output(enums)") {
+		return true
 	}
 
-	for _, importPath := range typ.RandomExprImports {
-		if importPath == "output(enums)" {
-			return true
-		}
+	if slices.Contains(typ.RandomExprImports, "output(enums)") {
+		return true
 	}
 
-	for _, importPath := range typ.CompareExprImports {
-		if importPath == "output(enums)" {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(typ.CompareExprImports, "output(enums)")
 }
