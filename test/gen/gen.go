@@ -220,20 +220,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	}
 
 	state := &gen.State[C]{Config: config}
-	allPlugins := append(plugins.Setup[T, C, I](plugins.Config{
-		Models: plugins.OutputConfig{
-			Pkgname: "models", Destination: filepath.Join(dst, "models"),
-		},
-		Enums: plugins.OutputConfig{
-			Pkgname: "enums", Destination: filepath.Join(dst, "enums"),
-		},
-		Factory: plugins.OutputConfig{
-			Pkgname: "factory", Destination: filepath.Join(dst, "factory"),
-		},
-		DBErrors: plugins.OutputConfig{
-			Pkgname: "dberrors", Destination: filepath.Join(dst, "dberrors"),
-		},
-	}, tpls), extraPlugins...)
+	allPlugins := append(plugins.Setup[T, C, I](plugins.PresetAll, tpls), extraPlugins...)
 
 	if err := gen.Run(context.Background(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)

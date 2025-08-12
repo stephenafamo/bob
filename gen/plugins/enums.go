@@ -9,6 +9,7 @@ import (
 )
 
 func Enums[T, C, I any](config OutputConfig, templates ...fs.FS) gen.Plugin {
+	config = config.WithDefaults("enums")
 	return &enumsPlugin[T, C, I]{
 		config: config,
 		output: &gen.Output{
@@ -33,11 +34,6 @@ func (*enumsPlugin[T, C, I]) Name() string {
 
 // PlugState implements gen.StatePlugin.
 func (e *enumsPlugin[T, C, I]) PlugState(state *gen.State[C]) error {
-	err := e.config.Validate()
-	if internal.ValOrZero(e.config.Disabled) && err != nil {
-		return err
-	}
-
 	state.Outputs = append(state.Outputs, e.output)
 
 	return nil

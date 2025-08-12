@@ -46,19 +46,29 @@ var PresetAll = Config{
 	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
 	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
 	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
-	Joins:    OnOffConfig{}, // Joins are enabled by default
-	Loaders:  OnOffConfig{}, // Loaders are enabled by default
+	Joins:    OnOffConfig{},
+	Loaders:  OnOffConfig{},
 }
 
 //nolint:gochecknoglobals
-var PresetNone = PresetAll.Merge(Config{
+var PresetDefault = Config{
+	Enums:    OutputConfig{Destination: "enums", Pkgname: "enums"},
+	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
+	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
+	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
+	Joins:    OnOffConfig{},
+	Loaders:  OnOffConfig{},
+}
+
+//nolint:gochecknoglobals
+var PresetNone = Config{
 	Enums:    OutputConfig{Disabled: internal.Pointer(true)},
 	Models:   OutputConfig{Disabled: internal.Pointer(true)},
 	Factory:  OutputConfig{Disabled: internal.Pointer(true)},
 	DBErrors: OutputConfig{Disabled: internal.Pointer(true)},
-	Joins:    OnOffConfig{Disabled: internal.Pointer(true)}, // Joins are disabled
-	Loaders:  OnOffConfig{Disabled: internal.Pointer(true)}, // Loaders are disabled
-})
+	Joins:    OnOffConfig{Disabled: internal.Pointer(true)},
+	Loaders:  OnOffConfig{Disabled: internal.Pointer(true)},
+}
 
 func mergeOnOffConfig(c1, c2 OnOffConfig) OnOffConfig {
 	return OnOffConfig{
@@ -84,16 +94,14 @@ type OutputConfig struct {
 	Pkgname     string `yaml:"pkgname"`
 }
 
-func (o OutputConfig) Validate() error {
-	if internal.ValOrZero(o.Disabled) {
-		return nil
+func (o OutputConfig) WithDefaults(name string) OutputConfig {
+	if o.Destination == "" {
+		o.Destination = name
 	}
-
-	if o.Destination != "" && o.Pkgname != "" {
-		return nil
+	if o.Pkgname == "" {
+		o.Pkgname = name
 	}
-
-	return fmt.Errorf("output config must have both destination and pkgname set, got: destination=%s, pkgname=%s", o.Destination, o.Pkgname)
+	return o
 }
 
 func dependsOn[C any](disabled *bool, state *gen.State[C], keys ...string) error {

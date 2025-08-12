@@ -59,6 +59,12 @@ Valid values are `all` or `none`. Defaults to `all`.
 
 :::
 
+:::warning
+
+The `disabled` setting will clear any generated `.bob.go` files in the target directory.
+
+:::
+
 ## Driver Configuration
 
 The driver configruation is specific to each driver and is used to configure the connection to the database, as well as any driver-specific options.

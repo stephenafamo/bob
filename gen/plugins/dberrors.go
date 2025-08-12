@@ -8,6 +8,7 @@ import (
 )
 
 func DBErrors[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
+	config = config.WithDefaults("dberrors")
 	return dbErrorsPlugin[C]{
 		config:    config,
 		templates: templates,
@@ -27,10 +28,6 @@ func (dbErrorsPlugin[C]) Name() string {
 // PlugState implements gen.StatePlugin.
 func (d dbErrorsPlugin[C]) PlugState(state *gen.State[C]) error {
 	if err := dependsOn(d.config.Disabled, state, "models", "factory"); err != nil {
-		return err
-	}
-
-	if err := d.config.Validate(); err != nil {
 		return err
 	}
 

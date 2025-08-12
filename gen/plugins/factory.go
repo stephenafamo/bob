@@ -8,6 +8,7 @@ import (
 )
 
 func Factory[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
+	config = config.WithDefaults("factory")
 	return factoryPlugin[C]{
 		config:    config,
 		templates: templates,
@@ -27,10 +28,6 @@ func (factoryPlugin[C]) Name() string {
 // PlugState implements gen.StatePlugin.
 func (f factoryPlugin[C]) PlugState(state *gen.State[C]) error {
 	if err := dependsOn(f.config.Disabled, state, "enums", "models"); err != nil {
-		return err
-	}
-
-	if err := f.config.Validate(); err != nil {
 		return err
 	}
 

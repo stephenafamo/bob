@@ -9,6 +9,7 @@ import (
 )
 
 func Models[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
+	config = config.WithDefaults("models")
 	return modelsPlugin[C]{
 		config:    config,
 		templates: templates,
@@ -29,10 +30,6 @@ func (modelsPlugin[C]) Name() string {
 func (m modelsPlugin[C]) PlugState(state *gen.State[C]) error {
 	err := dependsOn(m.config.Disabled, state, "enums")
 	if internal.ValOrZero(m.config.Disabled) && err != nil {
-		return err
-	}
-
-	if err := m.config.Validate(); err != nil {
 		return err
 	}
 
