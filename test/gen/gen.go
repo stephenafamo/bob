@@ -222,8 +222,18 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	state := &gen.State[C]{Config: config}
 	allPlugins := append(plugins.Setup[T, C, I](plugins.PresetAll, tpls), extraPlugins...)
 
+	currentDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Unable to get current working directory: %s", err)
+	}
+	if err := os.Chdir(dst); err != nil { // ensure we are in the destination directory
+		t.Fatalf("Unable to change directory to %s: %s", dst, err)
+	}
 	if err := gen.Run(context.Background(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
+	}
+	if err := os.Chdir(currentDir); err != nil { // ensure we are back in the original directory
+		t.Fatalf("Unable to change directory back to %s: %s", currentDir, err)
 	}
 
 	// From go1.16 dependencies are not auto downloaded
