@@ -111,10 +111,12 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 	}
 
 	switch k.String("plugins_preset") {
+	case "all":
+		pluginsConfig = plugins.PresetAll.Merge(pluginsConfig)
 	case "none":
 		pluginsConfig = plugins.PresetNone.Merge(pluginsConfig)
 	default:
-		pluginsConfig = plugins.PresetAll.Merge(pluginsConfig)
+		pluginsConfig = plugins.PresetDefault.Merge(pluginsConfig)
 	}
 
 	return config, driverConfig, pluginsConfig, nil

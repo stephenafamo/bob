@@ -17,6 +17,7 @@ func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 		Where[C](config.Where, templates.Where),
 		Loaders[C](config.Loaders, templates.Loaders),
 		Joins[C](config.Joins, templates.Joins),
+		Names[C](config.Names, templates.Names),
 		Queries[T, C, I](templates.Queries),
 	}
 }
@@ -29,6 +30,7 @@ type Config struct {
 	Where    OnOffConfig  `yaml:"where"`
 	Loaders  OnOffConfig  `yaml:"loaders"`
 	Joins    OnOffConfig  `yaml:"joins"`
+	Names    OnOffConfig  `yaml:"constants,omitempty"`
 }
 
 func (c Config) Merge(c2 Config) Config {
@@ -38,42 +40,10 @@ func (c Config) Merge(c2 Config) Config {
 		Factory:  mergeOutputConfig(c.Factory, c2.Factory),
 		DBErrors: mergeOutputConfig(c.DBErrors, c2.DBErrors),
 		Where:    mergeOnOffConfig(c.Where, c2.Where),
-		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
 		Loaders:  mergeOnOffConfig(c.Loaders, c2.Loaders),
+		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
+		Names:    mergeOnOffConfig(c.Names, c2.Names),
 	}
-}
-
-//nolint:gochecknoglobals
-var PresetAll = Config{
-	Enums:    OutputConfig{Destination: "enums", Pkgname: "enums"},
-	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
-	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
-	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
-	Where:    OnOffConfig{},
-	Joins:    OnOffConfig{},
-	Loaders:  OnOffConfig{},
-}
-
-//nolint:gochecknoglobals
-var PresetDefault = Config{
-	Enums:    OutputConfig{Destination: "enums", Pkgname: "enums"},
-	Models:   OutputConfig{Destination: "models", Pkgname: "models"},
-	Factory:  OutputConfig{Destination: "factory", Pkgname: "factory"},
-	DBErrors: OutputConfig{Destination: "dberrors", Pkgname: "dberrors"},
-	Where:    OnOffConfig{},
-	Joins:    OnOffConfig{},
-	Loaders:  OnOffConfig{},
-}
-
-//nolint:gochecknoglobals
-var PresetNone = Config{
-	Enums:    OutputConfig{Disabled: internal.Pointer(true)},
-	Models:   OutputConfig{Disabled: internal.Pointer(true)},
-	Factory:  OutputConfig{Disabled: internal.Pointer(true)},
-	DBErrors: OutputConfig{Disabled: internal.Pointer(true)},
-	Where:    OnOffConfig{Disabled: internal.Pointer(true)},
-	Joins:    OnOffConfig{Disabled: internal.Pointer(true)},
-	Loaders:  OnOffConfig{Disabled: internal.Pointer(true)},
 }
 
 func mergeOnOffConfig(c1, c2 OnOffConfig) OnOffConfig {

@@ -47,7 +47,8 @@ func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates 
 	DBErrorTemplates, _ := fs.Sub(templates, "templates/dberrors")
 	WhereTemplates, _ := fs.Sub(templates, "templates/where")
 	LoadersTemplates, _ := fs.Sub(templates, "templates/loaders")
-	JoinTemplates, _ := fs.Sub(templates, "templates/joins")
+	JoinsTemplates, _ := fs.Sub(templates, "templates/joins")
+	NamesTemplates, _ := fs.Sub(templates, "templates/names")
 
 	return Templates{
 		Enums:    EnumTemplates,
@@ -57,7 +58,8 @@ func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates 
 		DBErrors: DBErrorTemplates,
 		Where:    WhereTemplates,
 		Loaders:  LoadersTemplates,
-		Joins:    JoinTemplates,
+		Joins:    JoinsTemplates,
+		Names:    NamesTemplates,
 	}
 }
 
@@ -70,6 +72,7 @@ type Templates struct {
 	Where    fs.FS
 	Loaders  fs.FS
 	Joins    fs.FS
+	Names    fs.FS
 }
 
 type TemplateData[T, C, I any] struct {

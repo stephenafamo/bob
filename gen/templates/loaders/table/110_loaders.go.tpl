@@ -97,18 +97,16 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
               To: {{$to.UpPlural}},
               {{if $side.FromColumns -}}
               FromColumns: []string{
-                {{range $name := $side.FromColumns -}}
-                {{- $colAlias := index $from.Columns $name -}}
-                ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
-                {{- end}}
+                {{- range $name := $side.FromColumns -}}
+                {{$name | quote}},
+                {{- end -}}
               },
               {{- end}}
               {{if $side.ToColumns -}}
               ToColumns: []string{
-                {{range $name := $side.ToColumns -}}
-                {{- $colAlias := index $to.Columns $name -}}
-                ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
-                {{- end}}
+                {{- range $name := $side.ToColumns -}}
+                {{$name | quote}},
+                {{- end -}}
               },
               {{end -}}
               {{if $side.FromWhere -}}

@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func Where[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -24,15 +25,19 @@ func (wherePlugin[C]) Name() string {
 }
 
 // PlugState implements gen.StatePlugin.
-func (l wherePlugin[C]) PlugState(state *gen.State[C]) error {
-	if err := dependsOn(l.disabled, state, "models"); err != nil {
+func (w wherePlugin[C]) PlugState(state *gen.State[C]) error {
+	if err := dependsOn(w.disabled, state, "models"); err != nil {
 		return err
+	}
+
+	if internal.ValOrZero(w.disabled) {
+		return nil
 	}
 
 	for _, output := range state.Outputs {
 		if output.Key == "models" {
 			output.Templates = append(output.Templates, gen.BaseTemplates.Where)
-			output.Templates = append(output.Templates, l.templates...)
+			output.Templates = append(output.Templates, w.templates...)
 			break
 		}
 	}

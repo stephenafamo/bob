@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func Joins[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -27,6 +28,10 @@ func (joinsPlugin[C]) Name() string {
 func (j joinsPlugin[C]) PlugState(state *gen.State[C]) error {
 	if err := dependsOn(j.disabled, state, "models"); err != nil {
 		return err
+	}
+
+	if internal.ValOrZero(j.disabled) {
+		return nil
 	}
 
 	for _, output := range state.Outputs {

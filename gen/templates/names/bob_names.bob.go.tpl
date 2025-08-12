@@ -26,3 +26,14 @@ var ColumnNames = struct {
 	},
 	{{end -}}
 }
+
+
+{{range $table := .Tables -}}
+{{$tAlias := $.Aliases.Table $table.Key -}}
+type {{$tAlias.DownSingular}}ColumnNames struct {
+	{{range $column := $table.Columns -}}
+	{{- $colAlias := $tAlias.Column $column.Name -}}
+	{{$colAlias}} string
+  {{end -}}
+}
+{{end -}}

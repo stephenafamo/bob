@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Made the code generation modular by relying on built-in plugins that can be enabled or disabled in the configuration.
+- Made code generation modular by relying on built-in plugins that can be enabled or disabled in the configuration.
   - `enums`: Generates code for enums in a separate package, if there are any present.
   - `models`: Generates code for models. Depends on `enums`.
   - `factory`: Generates code for factories. Depends on `models`.
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `where`: Generates type-safe code for `WHERE` clauses in queries. Depends on `models`.
   - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
   - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
+  - `names`: Generates code for table and column names in the `models` package. Disabled by default.
 
 ### Changed
 

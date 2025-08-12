@@ -4,6 +4,7 @@ import (
 	"io/fs"
 
 	"github.com/stephenafamo/bob/gen"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func Loaders[C any](config OnOffConfig, templates ...fs.FS) gen.StatePlugin[C] {
@@ -27,6 +28,10 @@ func (loadersPlugin[C]) Name() string {
 func (l loadersPlugin[C]) PlugState(state *gen.State[C]) error {
 	if err := dependsOn(l.disabled, state, "models"); err != nil {
 		return err
+	}
+
+	if internal.ValOrZero(l.disabled) {
+		return nil
 	}
 
 	for _, output := range state.Outputs {
