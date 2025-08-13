@@ -3024,6 +3024,90 @@
 					"type_limits": null
 				},
 				{
+					"name": "vector_null",
+					"db_type": "vector",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.Vector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "vector_nnull",
+					"db_type": "vector",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.Vector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "half_vector_null",
+					"db_type": "halfvec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.HalfVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "half_vector_nnull",
+					"db_type": "halfvec",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.HalfVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "sparse_vector_null",
+					"db_type": "sparsevec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.SparseVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "sparse_vector_nnull",
+					"db_type": "sparsevec",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.SparseVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
 					"name": "base",
 					"db_type": "text",
 					"default": "NULL",
@@ -5486,6 +5570,90 @@
 					"domain_name": "uint3",
 					"type": "decimal.Decimal",
 					"type_limits": null
+				},
+				{
+					"name": "vector_null",
+					"db_type": "vector",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.Vector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "vector_nnull",
+					"db_type": "vector",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.Vector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "half_vector_null",
+					"db_type": "halfvec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.HalfVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "half_vector_nnull",
+					"db_type": "halfvec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.HalfVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "sparse_vector_null",
+					"db_type": "sparsevec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.SparseVector",
+					"type_limits": [
+						"3"
+					]
+				},
+				{
+					"name": "sparse_vector_nnull",
+					"db_type": "sparsevec",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "pgvector.SparseVector",
+					"type_limits": [
+						"3"
+					]
 				},
 				{
 					"name": "base",

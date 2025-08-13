@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
   - `queries`: Generates code for queries.
 - Added new `types.Uint64` type that sends values to the database as strings. This is necessary because using `uint64` directly can cause an overflow if the value exceeds the maximum value of an `int64`. This is a limitation imposed by `database/sql/driver.Valuer` interface.
+- Added support for `pgvector` types during code generation.
+  - `pgvector.Vector`
+  - `pgvector.HalfVector`
+  - `pgvector.SparseVector`
 
 ### Changed
 

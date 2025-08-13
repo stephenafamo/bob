@@ -118,16 +118,24 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		var dbType string
 		c.Type, dbType = t.getArrayType(info)
 		c.DBType = dbType + "[]"
-	default:
+
+	case "USER-DEFINED":
+		c.DBType = info.UDTName
 		switch info.UDTName {
 		case "hstore":
 			c.Type = "pgtypes.HStore"
-			c.DBType = "hstore"
-		case "citext":
-			c.Type = "string"
+		case "vector":
+			c.Type = "pgvector.Vector"
+		case "halfvec":
+			c.Type = "pgvector.HalfVector"
+		case "sparsevec":
+			c.Type = "pgvector.SparseVector"
 		default:
 			c.Type = "string"
 		}
+
+	default:
+		c.Type = "string"
 	}
 
 	return c
