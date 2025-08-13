@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 	defer cancel()
 
 	postgresContainer, err := postgres.Run(
-		ctx, "postgres:16",
+		ctx, "pgvector/pgvector:0.8.0-pg16",
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)

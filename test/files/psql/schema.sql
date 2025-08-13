@@ -1,5 +1,6 @@
 -- Extensions
 CREATE EXTENSION IF NOT EXISTS hstore;
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Don't forget to maintain order here, foreign keys!
 drop table if exists video_tags;
@@ -308,6 +309,15 @@ create table type_monsters (
 	customarr_nnull  my_int_array not null,
 
     domainuint3_nnull uint3 not null,
+
+    vector_null vector(3) NULL,
+    vector_nnull vector(3) NOT NULL,
+
+    half_vector_null halfvec(3) NULL,
+    half_vector_nnull halfvec(3) NOT NULL,
+
+    sparse_vector_null sparsevec(3) NULL,
+    sparse_vector_nnull sparsevec(3) NOT NULL,
 
     base text null,
 

@@ -26,7 +26,7 @@ var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the go
 
 func TestDriver(t *testing.T) {
 	postgresContainer, err := postgres.Run(
-		t.Context(), "postgres:16",
+		t.Context(), "pgvector/pgvector:0.8.0-pg16",
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)

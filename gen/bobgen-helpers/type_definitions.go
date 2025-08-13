@@ -294,6 +294,60 @@ func Types() drivers.Types {
 			CompareExpr:        `slices.Equal(AAA, BBB)`,
 			CompareExprImports: []string{`"slices"`},
 		},
+		"pgvector.Vector": {
+			DependsOn: []string{"float32"},
+			Imports:   []string{`pgvector "github.com/pgvector/pgvector-go"`},
+			RandomExpr: `
+				var dims int64 = f.Int64Between(1, 5)
+				if len(limits) > 0 {
+					dims, _ = strconv.ParseInt(limits[0], 10, 32)
+				}
+
+				arr := make([]float32, dims)
+                for i := range arr {
+                    arr[i] = random_float32(f)
+                }
+
+                return pgvector.NewVector(arr)`,
+			CompareExpr:        `slices.Equal(AAA.Slice(), BBB.Slice())`,
+			CompareExprImports: []string{`"slices"`},
+		},
+		"pgvector.HalfVector": {
+			DependsOn: []string{"float32"},
+			Imports:   []string{`pgvector "github.com/pgvector/pgvector-go"`},
+			RandomExpr: `
+				var dims int64 = f.Int64Between(1, 5)
+				if len(limits) > 0 {
+					dims, _ = strconv.ParseInt(limits[0], 10, 32)
+				}
+
+				arr := make([]float32, dims)
+                for i := range arr {
+                    arr[i] = random_float32(f)
+                }
+
+                return pgvector.NewHalfVector(arr)`,
+			CompareExpr:        `slices.Equal(AAA.Slice(), BBB.Slice())`,
+			CompareExprImports: []string{`"slices"`},
+		},
+		"pgvector.SparseVector": {
+			DependsOn: []string{"float32"},
+			Imports:   []string{`pgvector "github.com/pgvector/pgvector-go"`},
+			RandomExpr: `
+				var dims int64 = f.Int64Between(1, 5)
+				if len(limits) > 0 {
+					dims, _ = strconv.ParseInt(limits[0], 10, 32)
+				}
+
+				arr := make([]float32, dims)
+                for i := range arr {
+                    arr[i] = random_float32(f)
+                }
+
+                return pgvector.NewSparseVector(arr)`,
+			CompareExpr:        `slices.Equal(AAA.Slice(), BBB.Slice())`,
+			CompareExprImports: []string{`"slices"`},
+		},
 		"decimal.Decimal": {
 			Imports: []string{`"github.com/shopspring/decimal"`},
 			RandomExpr: `
