@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
 )
@@ -43,9 +44,9 @@ type OptionalWithUnique struct {
 }
 
 var (
-	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("")
+	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("", expr.ColsForStruct[WithAutoIncr](""), nil)
 	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
-		"", []string{"id"}, []string{"title", "author_id"},
+		"", expr.ColsForStruct[WithUnique](""), []string{"id"}, []string{"title", "author_id"},
 	)
 )
 

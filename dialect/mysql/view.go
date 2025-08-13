@@ -7,62 +7,66 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
-func NewView[T any](tableName string) *View[T, []T] {
-	return NewViewx[T, []T](tableName)
+func NewView[T any, C bob.Expression](tableName string, columns C) *View[T, []T, C] {
+	return NewViewx[T, []T](tableName, columns)
 }
 
-func NewViewx[T any, Tslice ~[]T](tableName string) *View[T, Tslice] {
-	v, _ := newView[T, Tslice](tableName)
+func NewViewx[T any, Tslice ~[]T, C bob.Expression](tableName string, columns C) *View[T, Tslice, C] {
+	v, _ := newView[T, Tslice](tableName, columns)
 	return v
 }
 
-func newView[T any, Tslice ~[]T](tableName string) (*View[T, Tslice], mappings.Mapping) {
+func newView[T any, Tslice ~[]T, C bob.Expression](tableName string, columns C) (*View[T, Tslice, C], mappings.Mapping) {
 	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 
-	return &View[T, Tslice]{
+	return &View[T, Tslice, C]{
 		name:    tableName,
 		alias:   tableName,
-		allCols: orm.NewColumns(mappings.All...).WithParent(tableName),
+		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(tableName),
 		scanner: scan.StructMapper[T](),
+		Columns: columns,
 	}, mappings
 }
 
-type View[T any, Tslice ~[]T] struct {
+type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	name  string
 	alias string
 
-	allCols orm.Columns
+	allCols expr.ColumnsExpr
 	scanner scan.Mapper[T]
+
+	Columns C
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
-func (v *View[T, Tslice]) Name() Expression {
+func (v *View[T, Tslice, C]) Name() Expression {
 	return Quote(v.name)
 }
 
-func (v *View[T, Tslice]) NameAs() bob.Expression {
+func (v *View[T, Tslice, C]) NameAs() bob.Expression {
 	return v.Name().As(v.alias)
 }
 
-func (v *View[T, Tslice]) Alias() string {
+func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
 // Returns a column list
-func (v *View[T, Tslice]) Columns() orm.Columns {
+func (v *View[T, Tslice, C]) ColumnsExpr() expr.ColumnsExpr {
 	// get the schema
 	return v.allCols
 }
 
 // Adds table name et al
-func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
+func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
@@ -76,7 +80,7 @@ func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *Vie
 	q.BaseQuery.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
-				q.AppendSelect(v.Columns())
+				q.AppendSelect(v.ColumnsExpr())
 			}
 			return ctx, nil
 		},

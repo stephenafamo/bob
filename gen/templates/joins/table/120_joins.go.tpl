@@ -25,7 +25,7 @@
         {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
         {{- $relAlias := $tAlias.Relationship $rel.Name -}}
         {{$relAlias}}: modAs[Q, {{$fAlias.DownSingular}}Columns] {
-          c: {{$fAlias.UpSingular}}Columns,
+          c: {{$fAlias.UpPlural}}.Columns,
           f: func(to {{$fAlias.DownSingular}}Columns) bob.Mod[Q] {
             {{if gt (len $rel.Sides) 1 -}}{{$.Importer.Import "strconv" -}}
               random := strconv.FormatInt(randInt(), 10)
@@ -34,9 +34,9 @@
 
             {{range $index, $side := $rel.Sides -}}
             {{- $from := $.Aliases.Table $side.From -}}
-            {{- $fromCols := printf "%sColumns" $from.UpSingular -}}
+            {{- $fromCols := printf "%s.Columns" $from.UpPlural -}}
             {{- $to := $.Aliases.Table $side.To -}}
-            {{- $toCols := printf "%sColumns" $to.UpSingular -}}
+            {{- $toCols := printf "%s.Columns" $to.UpPlural -}}
             {{- $toTable := $.Tables.Get $side.To -}}
             {
               {{if ne $index 0 -}}

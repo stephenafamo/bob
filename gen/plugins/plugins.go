@@ -10,6 +10,7 @@ import (
 
 func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 	return []gen.Plugin{
+		DBInfo[C](config.DBInfo, templates.DBInfo),
 		Enums[T, C, I](config.Enums, templates.Enums),
 		Models[C](config.Models, templates.Models),
 		Factory[C](config.Factory, templates.Factory),
@@ -17,12 +18,12 @@ func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 		Where[C](config.Where, templates.Where),
 		Loaders[C](config.Loaders, templates.Loaders),
 		Joins[C](config.Joins, templates.Joins),
-		Names[C](config.Names, templates.Names),
 		Queries[T, C, I](templates.Queries),
 	}
 }
 
 type Config struct {
+	DBInfo   OutputConfig `yaml:"dbinfo"`
 	Enums    OutputConfig `yaml:"enums"`
 	Models   OutputConfig `yaml:"models"`
 	Factory  OutputConfig `yaml:"factory"`
@@ -30,11 +31,11 @@ type Config struct {
 	Where    OnOffConfig  `yaml:"where"`
 	Loaders  OnOffConfig  `yaml:"loaders"`
 	Joins    OnOffConfig  `yaml:"joins"`
-	Names    OnOffConfig  `yaml:"constants,omitempty"`
 }
 
 func (c Config) Merge(c2 Config) Config {
 	return Config{
+		DBInfo:   mergeOutputConfig(c.DBInfo, c2.DBInfo),
 		Enums:    mergeOutputConfig(c.Enums, c2.Enums),
 		Models:   mergeOutputConfig(c.Models, c2.Models),
 		Factory:  mergeOutputConfig(c.Factory, c2.Factory),
@@ -42,7 +43,6 @@ func (c Config) Merge(c2 Config) Config {
 		Where:    mergeOnOffConfig(c.Where, c2.Where),
 		Loaders:  mergeOnOffConfig(c.Loaders, c2.Loaders),
 		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
-		Names:    mergeOnOffConfig(c.Names, c2.Names),
 	}
 }
 

@@ -18,7 +18,7 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 		return {{$tAlias.UpPlural}}.Query(
 			{{range $column := $table.Constraints.Primary.Columns -}}
 			{{- $colAlias := $tAlias.Column $column -}}
-      sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
+      sm.Where({{$tAlias.UpPlural}}.Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
 			{{end -}}
 		).One(ctx, exec)
 	}
@@ -26,9 +26,9 @@ func Find{{$tAlias.UpSingular}}(ctx context.Context, exec bob.Executor, {{$pkArg
 	return {{$tAlias.UpPlural}}.Query(
 		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
-    sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
+    sm.Where({{$tAlias.UpPlural}}.Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
 		{{end -}}
-		sm.Columns({{$tAlias.UpPlural}}.Columns().Only(cols...)),
+		sm.Columns({{$tAlias.UpPlural}}.Columns.Only(cols...)),
 	).One(ctx, exec)
 }
 
@@ -37,10 +37,9 @@ func {{$tAlias.UpSingular}}Exists(ctx context.Context, exec bob.Executor, {{$pkA
 	return {{$tAlias.UpPlural}}.Query(
 		{{range $column := $table.Constraints.Primary.Columns -}}
 		{{- $colAlias := $tAlias.Column $column -}}
-    sm.Where({{$tAlias.UpSingular}}Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
+    sm.Where({{$tAlias.UpPlural}}.Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg({{$colAlias}}PK))),
 		{{end -}}
 	).Exists(ctx, exec)
 }
 
 {{- end}}
-

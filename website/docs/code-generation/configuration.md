@@ -17,21 +17,25 @@ Configuration is split into 3 parts:
 
 When using the CLI, Bob loads several built-in plugins.
 
+- `dbinfo`: Generates code for information about each database. Schemas, tables, columns, indexes, primary keys, foreign keys, unique constraints, and check constraints.
 - `enums`: Generates code for enums in a separate package, if there are any present.
 - `models`: Generates code for models. Depends on `enums`.
 - `factory`: Generates code for factories. Depends on `models`.
-- `queries`: Generates code for queries.
 - `dberrors`: Generates code for unique constraint errors. Depends on `models`.
 - `where`: Adds templates to the `models` package to generate code for where clauses e.g `models.SelectWhere.Table.Where.Rel()`.
 - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
 - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
-- `names`: Adds templates to the `models` package for table and column names, allowing you to use `models.TableNames` and `models.ColumnNames`. This is disabled by default.
+- `queries`: Generates code for queries.
 
 They can be configured in the `plugins` section of the configuration file.
 
 ```yaml
 plugins_preset: "all" # Valid values are "default", "all" or "none".
 plugins:
+  dbinfo:
+    disabled: false
+    pkgname: "dbinfo"
+    destination: "dbinfo"
   enums:
     disabled: false
     pkgname: "enums"
@@ -54,8 +58,6 @@ plugins:
     disabled: false
   joins:
     disabled: false
-  names:
-    disabled: true # This is disabled by default
 ```
 
 :::tip

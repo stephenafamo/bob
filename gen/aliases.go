@@ -40,6 +40,12 @@ func initAliases[C, I any](a drivers.Aliases, tables drivers.Tables[C, I], relMa
 		if tableAlias.Relationships == nil {
 			tableAlias.Relationships = make(map[string]string)
 		}
+		if tableAlias.Indexes == nil {
+			tableAlias.Indexes = make(map[string]string)
+		}
+		if tableAlias.Constraints == nil {
+			tableAlias.Constraints = make(map[string]string)
+		}
 
 		for _, c := range t.Columns {
 			if _, ok := tableAlias.Columns[c.Name]; !ok {
@@ -57,6 +63,28 @@ func initAliases[C, I any](a drivers.Aliases, tables drivers.Tables[C, I], relMa
 		for _, rel := range tableRels {
 			if _, ok := tableAlias.Relationships[rel.Name]; !ok {
 				tableAlias.Relationships[rel.Name] = computed[rel.Name]
+			}
+		}
+
+		for _, idx := range t.Indexes {
+			if _, ok := tableAlias.Indexes[idx.Name]; !ok {
+				tableAlias.Indexes[idx.Name] = strmangle.TitleCase(idx.Name)
+			}
+
+			r, _ := utf8.DecodeRuneInString(tableAlias.Indexes[idx.Name])
+			if unicode.IsNumber(r) {
+				tableAlias.Indexes[idx.Name] = "I" + tableAlias.Indexes[idx.Name]
+			}
+		}
+
+		for _, con := range t.Constraints.All() {
+			if _, ok := tableAlias.Constraints[con.Name]; !ok {
+				tableAlias.Constraints[con.Name] = strmangle.TitleCase(con.Name)
+			}
+
+			r, _ := utf8.DecodeRuneInString(tableAlias.Constraints[con.Name])
+			if unicode.IsNumber(r) {
+				tableAlias.Constraints[con.Name] = "C" + tableAlias.Constraints[con.Name]
 			}
 		}
 

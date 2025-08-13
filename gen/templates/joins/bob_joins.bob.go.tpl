@@ -43,7 +43,7 @@ func getJoins[Q dialect.Joinable]() joins[Q] {
 	return joins[Q]{
 		{{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
-		{{$tAlias.UpPlural}}: buildJoinSet[{{$tAlias.DownSingular}}Joins[Q]]({{$tAlias.UpSingular}}Columns, build{{$tAlias.UpSingular}}Joins),
+		{{$tAlias.UpPlural}}: buildJoinSet[{{$tAlias.DownSingular}}Joins[Q]]({{$tAlias.UpPlural}}.Columns, build{{$tAlias.UpSingular}}Joins),
 		{{end}}{{end}}
 	}
 }

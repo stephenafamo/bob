@@ -136,7 +136,7 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
             },
             {{- end}}
           },
-        }, {{$fAlias.UpPlural}}.Columns().Names(), opts...)
+        }, {{$fAlias.UpPlural}}.Columns.Names(), opts...)
     },
     {{end -}}
   }
@@ -327,7 +327,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   }
 
 	if len(sq.SelectList.Columns) == 0 {
-		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns()))
+		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns))
 	}
 
 	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(
@@ -335,7 +335,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
-			sm.Columns({{$firstTo.UpSingular}}Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
+			sm.Columns({{$firstTo.UpPlural}}.Columns.{{$toCol}}.As("related_{{$firstSide.From}}.{{$fromCol}}")),
 		{{- end}}
 	)...)
 

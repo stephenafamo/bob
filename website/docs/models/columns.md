@@ -1,13 +1,11 @@
 ---
-
 sidebar_position: 4
 description: Manipulate column lists
-
 ---
 
 # Columns
 
-The [`orm.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/orm#Columns) type is a bob [expression](../query-builder/building-queries#expressions).
+The [`expr.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/expr.Columns) type is a bob [expression](../query-builder/building-queries#expressions).
 
 To create a new columns list, use `orm.NewColumns(names ...string)`. You can then add the parent table with [WithParent()](#withparent)
 
@@ -22,14 +20,14 @@ orm.NewColumns("id", "name", "email").WithParent("public.users")
 "public.users"."email" AS "email"
 ```
 
-The [View](./view) and [Table](./table) models for a table also implement the `Columns()` method that returns a column list with all of the table's columns. In addition, there are several convenience methods to manipulate the columns list.
+The [View](./view) and [Table](./table) models for a table also include a `Columns` field embeds a column list with all of the table's columns. In addition, there are several convenience methods to manipulate the columns list.
 
 ## `Only`
 
 Returns the column list with ONLY the given column names.
 
 ```go
-userView.Columns().Only("email")
+userView.Columns.Only("email")
 ```
 
 ```sql
@@ -41,7 +39,7 @@ userView.Columns().Only("email")
 Returns the columns list without the given column names.
 
 ```go
-userView.Columns().Except("email")
+userView.Columns.Except("email")
 ```
 
 ```sql
@@ -55,7 +53,7 @@ Changes the parent of the column list. For example if selecting with an alias.
 Multiple strings are quoted and joined with a dot.
 
 ```go
-userView.Columns().WithParent("backup", "users_old")
+userView.Columns.WithParent("backup", "users_old")
 ```
 
 ```sql
@@ -69,7 +67,7 @@ userView.Columns().WithParent("backup", "users_old")
 Sets a prefix for all columns, useful for joins with duplicate column names.
 
 ```go
-userView.Columns().WithPrefix("users.")
+userView.Columns.WithPrefix("users.")
 ```
 
 ```sql
@@ -77,4 +75,3 @@ userView.Columns().WithPrefix("users.")
 "public.users"."name" AS "users.name",
 "public.users"."email" AS "users.email"
 ```
-

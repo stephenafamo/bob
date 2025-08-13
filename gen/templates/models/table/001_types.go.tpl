@@ -32,12 +32,12 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{if not $table.Constraints.Primary -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} view
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}")
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote $table.Key}}))
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} view
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}")
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote $table.Key}}))
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
@@ -58,10 +58,23 @@ type {{$tAlias.DownSingular}}R struct {
 }
 {{- end}}
 
+{{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-var {{$tAlias.UpSingular}}Columns = build{{$tAlias.UpSingular}}Columns({{quote $table.Key}})
+func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Columns {
+  return {{$tAlias.DownSingular}}Columns{
+    ColumnsExpr: expr.NewColumnsExpr(
+      {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
+    ).WithParent({{quote $table.Key}}),
+    tableAlias: alias,
+    {{range $column := $table.Columns -}}
+    {{- $colAlias := $tAlias.Column $column.Name -}}
+    {{$colAlias}}: {{$.Dialect}}.Quote(alias, {{quote $column.Name}}),
+    {{end -}}
+  }
+}
 
 type {{$tAlias.DownSingular}}Columns struct {
+  expr.ColumnsExpr
   tableAlias string
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
@@ -76,15 +89,3 @@ func (c {{$tAlias.DownSingular}}Columns) Alias() string {
 func ({{$tAlias.DownSingular}}Columns) AliasedAs(alias string) {{$tAlias.DownSingular}}Columns {
   return build{{$tAlias.UpSingular}}Columns(alias)
 }
-
-func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Columns {
-  return {{$tAlias.DownSingular}}Columns{
-    tableAlias: alias,
-    {{range $column := $table.Columns -}}
-    {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: {{$.Dialect}}.Quote(alias, {{quote $column.Name}}),
-    {{end -}}
-  }
-}
-
-

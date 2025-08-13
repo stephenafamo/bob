@@ -125,3 +125,48 @@ var TypesReplacer = strings.NewReplacer(
 	"[", "_",
 	"]", "_",
 )
+
+// Only drops other column names from the column set
+func Only[T comparable](src []T, includes ...T) []T {
+	var zero T
+	filtered := make([]T, 0, len(includes)) // max capacity is the only list
+
+Outer:
+	for _, item := range src {
+		if item == zero {
+			continue
+		}
+
+		for _, include := range includes {
+			if include == item {
+				filtered = append(filtered, item)
+				continue Outer
+			}
+		}
+	}
+
+	return filtered
+}
+
+// Except drops the given column names from the column set
+func Except[T comparable](src []T, excludes ...T) []T {
+	var zero T
+	filtered := make([]T, 0, len(src)) // max capacity is current capacity
+
+Outer:
+	for _, item := range src {
+		if item == zero {
+			continue
+		}
+
+		for _, exclude := range excludes {
+			if exclude == item {
+				continue Outer
+			}
+		}
+
+		filtered = append(filtered, item)
+	}
+
+	return filtered
+}

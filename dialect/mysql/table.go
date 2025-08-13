@@ -17,6 +17,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/im"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
@@ -25,16 +26,16 @@ import (
 
 type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 
-func NewTable[T any, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, []T, Tset] {
-	return NewTablex[T, []T, Tset](tableName, uniques...)
+func NewTable[T any, Tset setter[T], C bob.Expression](tableName string, columns C, uniques ...[]string) *Table[T, []T, Tset, C] {
+	return NewTablex[T, []T, Tset](tableName, columns, uniques...)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...[]string) *Table[T, Tslice, Tset] {
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](tableName string, columns C, uniques ...[]string) *Table[T, Tslice, Tset, C] {
 	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
-	view, mappings := newView[T, Tslice](tableName)
-	t := &Table[T, Tslice, Tset]{
+	view, mappings := newView[T, Tslice](tableName, columns)
+	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
-		pkCols:           orm.NewColumns(mappings.PKs...).WithParent(view.alias),
+		pkCols:           expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
 		setterMapping:    setMapping,
 		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
 		uniqueIdx:        uniqueIndexes(setMapping.All, uniques...),
@@ -50,9 +51,9 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T]](tableName string, uniques ...
 
 // The table contains extract information from the struct and contains
 // caches ???
-type Table[T any, Tslice ~[]T, Tset setter[T]] struct {
-	*View[T, Tslice]
-	pkCols           orm.Columns
+type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
+	*View[T, Tslice, C]
+	pkCols           expr.ColumnsExpr
 	setterMapping    mappings.Mapping
 	nonGeneratedCols []string
 
@@ -78,13 +79,13 @@ type Table[T any, Tslice ~[]T, Tset setter[T]] struct {
 }
 
 // Returns the primary key columns for this table.
-func (t *Table[T, Tslice, Tset]) PrimaryKey() orm.Columns {
+func (t *Table[T, Tslice, Tset, C]) PrimaryKey() expr.ColumnsExpr {
 	return t.pkCols
 }
 
 // Starts an insert query for this table
-func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Tslice, Tset] {
-	q := &insertQuery[T, Tslice, Tset]{
+func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Tslice, Tset, C] {
+	q := &insertQuery[T, Tslice, Tset, C]{
 		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
 			BaseQuery: Insert(im.Into(t.Name(), t.nonGeneratedCols...)),
 			Hooks:     &t.InsertQueryHooks,
@@ -98,7 +99,7 @@ func (t *Table[T, Tslice, Tset]) Insert(queryMods ...bob.Mod[*dialect.InsertQuer
 }
 
 // Starts an update query for this table
-func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery] {
+func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery] {
 	q := &orm.ExecQuery[*dialect.UpdateQuery]{
 		BaseQuery: Update(um.Table(t.NameAs())),
 		Hooks:     &t.UpdateQueryHooks,
@@ -109,7 +110,7 @@ func (t *Table[T, Tslice, Tset]) Update(queryMods ...bob.Mod[*dialect.UpdateQuer
 }
 
 // Starts a delete query for this table
-func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery] {
+func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery] {
 	q := &orm.ExecQuery[*dialect.DeleteQuery]{
 		BaseQuery: Delete(dm.From(t.NameAs())),
 		Hooks:     &t.DeleteQueryHooks,
@@ -120,9 +121,9 @@ func (t *Table[T, Tslice, Tset]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuer
 	return q
 }
 
-type insertQuery[T any, Ts ~[]T, Tset setter[T]] struct {
+type insertQuery[T any, Ts ~[]T, Tset setter[T], C bob.Expression] struct {
 	orm.ExecQuery[*dialect.InsertQuery]
-	table *Table[T, Ts, Tset]
+	table *Table[T, Ts, Tset, C]
 }
 
 // Insert One Row
@@ -130,7 +131,7 @@ type insertQuery[T any, Ts ~[]T, Tset setter[T]] struct {
 // to retrieve the row.
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
-func (t *insertQuery[T, Ts, Tset]) One(ctx context.Context, exec bob.Executor) (T, error) {
+func (t *insertQuery[T, Ts, Tset, C]) One(ctx context.Context, exec bob.Executor) (T, error) {
 	q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return *new(T), err
@@ -144,7 +145,7 @@ func (t *insertQuery[T, Ts, Tset]) One(ctx context.Context, exec bob.Executor) (
 // and then attempt to retrieve all the rows using a SELECT query.
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
-func (t *insertQuery[T, Ts, Tset]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
+func (t *insertQuery[T, Ts, Tset, C]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
 	q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return nil, err
@@ -158,7 +159,7 @@ func (t *insertQuery[T, Ts, Tset]) All(ctx context.Context, exec bob.Executor) (
 // and then attempt to retrieve all the rows using a SELECT query.
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
-func (t *insertQuery[T, Ts, Tset]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
+func (t *insertQuery[T, Ts, Tset, C]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return nil, err
@@ -167,7 +168,7 @@ func (t *insertQuery[T, Ts, Tset]) Cursor(ctx context.Context, exec bob.Executor
 	return bob.Cursor(ctx, exec, q, t.table.scanner)
 }
 
-func (t *insertQuery[T, Tslice, Tset]) retrievable() error {
+func (t *insertQuery[T, Tslice, Tset, C]) retrievable() error {
 	if t.Expression.Values.Query != nil {
 		return fmt.Errorf("inserting from query: %w", orm.ErrCannotRetrieveRow)
 	}
@@ -188,7 +189,7 @@ func (t *insertQuery[T, Tslice, Tset]) retrievable() error {
 }
 
 // inserts all and returns the select query
-func (t *insertQuery[T, Ts, Tset]) insertAll(ctx context.Context, exec bob.Executor) (bob.Query, error) {
+func (t *insertQuery[T, Ts, Tset, C]) insertAll(ctx context.Context, exec bob.Executor) (bob.Query, error) {
 	if retrievalErr := t.retrievable(); retrievalErr != nil {
 		return nil, retrievalErr
 	}
@@ -226,7 +227,7 @@ func (t *insertQuery[T, Ts, Tset]) insertAll(ctx context.Context, exec bob.Execu
 	return t.getInserted(oldVals, results)
 }
 
-func (t *insertQuery[T, Tslice, Tset]) getInserted(vals []clause.Value, results []sql.Result) (bob.Query, error) {
+func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, results []sql.Result) (bob.Query, error) {
 	w := &bytes.Buffer{}
 
 	if retrievalErr := t.retrievable(); retrievalErr != nil {
@@ -333,7 +334,7 @@ func isDefaultOrNull(w *bytes.Buffer, e bob.Expression) bool {
 	return strings.EqualFold(s, "DEFAULT") || strings.EqualFold(s, "NULL")
 }
 
-func (t *insertQuery[T, Tslice, Tset]) uniqueSet(w *bytes.Buffer, row []bob.Expression) (int, []bob.Expression) {
+func (t *insertQuery[T, Tslice, Tset, C]) uniqueSet(w *bytes.Buffer, row []bob.Expression) (int, []bob.Expression) {
 Outer:
 	for whichUnique, unique := range t.table.uniqueIdx {
 		colVals := make([]bob.Expression, 0, len(unique))
@@ -357,7 +358,7 @@ Outer:
 	return -1, nil
 }
 
-func (t *Table[T, Tslice, Tset]) uniqueColNames(i int) []bob.Expression {
+func (t *Table[T, Tslice, Tset, C]) uniqueColNames(i int) []bob.Expression {
 	if i < 0 || i >= len(t.uniqueIdx) {
 		return nil
 	}

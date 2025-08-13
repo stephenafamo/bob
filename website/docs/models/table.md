@@ -34,7 +34,7 @@ type UserSetter struct {
     Email     omit.Val[string]
 }
 
-var userTable = psql.NewTable[User, UserSetter]("public", "users")
+var userTable = psql.NewTable[any, User, UserSetter]("public", "users")
 ```
 
 :::tip

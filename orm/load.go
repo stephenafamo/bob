@@ -71,7 +71,7 @@ type PreloadOnly[Q Loadable] []string
 
 func (o PreloadOnly[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(o) > 0 {
-		el.Columns = Only(el.Columns, o...)
+		el.Columns = internal.Only(el.Columns, o...)
 	}
 }
 
@@ -79,7 +79,7 @@ type PreloadExcept[Q Loadable] []string
 
 func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
-		el.Columns = Except(el.Columns, e...)
+		el.Columns = internal.Except(el.Columns, e...)
 	}
 }
 
@@ -281,7 +281,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		}
 
 		queryMods = append(queryMods, mods.Preload[Q]{
-			NewColumns(settings.Columns...).WithParent(alias).WithPrefix(alias + "."),
+			expr.NewColumnsExpr(settings.Columns...).WithParent(alias).WithPrefix(alias + "."),
 		})
 		return alias, queryMods
 	}, rel.Name, settings)

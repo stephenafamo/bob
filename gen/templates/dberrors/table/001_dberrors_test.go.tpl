@@ -1,4 +1,4 @@
-{{if or .Table.Constraints.Uniques }}
+{{if and .Table.Constraints.Uniques (index $.OutputPackages "factory") }}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 {{$.Importer.Import "context"}}

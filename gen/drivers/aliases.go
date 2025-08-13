@@ -16,6 +16,8 @@ type TableAlias struct {
 
 	Columns       map[string]string `yaml:"columns,omitempty" json:"columns,omitempty"`
 	Relationships map[string]string `yaml:"relationships,omitempty" json:"relationships,omitempty"`
+	Indexes       map[string]string `yaml:"indexes,omitempty" json:"indexes,omitempty"`
+	Constraints   map[string]string `yaml:"constraints,omitempty" json:"constraints,omitempty"`
 }
 
 // Table gets a table alias, panics if not found.
@@ -47,4 +49,24 @@ func (t TableAlias) Relationship(fkey string) string {
 	}
 
 	return r
+}
+
+// Index looks up an index, panics if not found.
+func (t TableAlias) Index(index string) string {
+	i, ok := t.Indexes[index]
+	if !ok {
+		panic(fmt.Sprintf("could not find index alias for: %s.%s", t.UpSingular, index))
+	}
+
+	return i
+}
+
+// Constraint looks up a constraint, panics if not found.
+func (t TableAlias) Constraint(constraint string) string {
+	c, ok := t.Constraints[constraint]
+	if !ok {
+		panic(fmt.Sprintf("could not find constraint alias for: %s.%s", t.UpSingular, constraint))
+	}
+
+	return c
 }

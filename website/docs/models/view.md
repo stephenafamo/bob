@@ -1,8 +1,6 @@
 ---
-
 sidebar_position: 2
 description: Easily query a database table
-
 ---
 
 # View
@@ -18,7 +16,7 @@ type User struct {
     Email string
 }
 
-var userView = psql.NewView[User]("public", "users")
+var userView = psql.NewView[any, User]("public", "users")
 ```
 
 :::tip
@@ -39,7 +37,7 @@ Similar to `Name()`, but adds an alias. e.g. `"public"."users" as "public.users"
 
 ## Columns()
 
-Returns an [`orm.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/orm#Columns) object.  
+Returns an [`expr.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/expr.Columns) object.  
 This is also a bob [expression](../query-builder/building-queries#expressions). Which by default, the expression evaluates to:
 
 ```sql
@@ -57,7 +55,7 @@ The `Query()` method on a View model starts a SELECT query on the model's databa
 
 ```go
 q := userView.Query(
-    ctx, db, 
+    ctx, db,
     sm.Limit(10), // LIMIT 10
 )
 ```
@@ -86,3 +84,4 @@ userView.Query().Exists(ctx, db)
 The `Count()` function clones the current query which can be an expensive operation.
 
 :::
+

@@ -8,6 +8,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
@@ -19,44 +20,47 @@ func UseSchema(ctx context.Context, schema string) context.Context {
 	return context.WithValue(ctx, orm.CtxUseSchema, schema)
 }
 
-func NewView[T any](schema, tableName string) *View[T, []T] {
-	return NewViewx[T, []T](schema, tableName)
+func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View[T, []T, C] {
+	return NewViewx[T, []T](schema, tableName, columns)
 }
 
-func NewViewx[T any, Tslice ~[]T](schema, tableName string) *View[T, Tslice] {
-	v, _ := newView[T, Tslice](schema, tableName)
+func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) *View[T, Tslice, C] {
+	v, _ := newView[T, Tslice](schema, tableName, columns)
 	return v
 }
 
-func newView[T any, Tslice ~[]T](schema, tableName string) (*View[T, Tslice], mappings.Mapping) {
+func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) (*View[T, Tslice, C], mappings.Mapping) {
 	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	return &View[T, Tslice]{
+	return &View[T, Tslice, C]{
 		schema:  schema,
 		name:    tableName,
 		alias:   alias,
-		allCols: orm.NewColumns(mappings.All...).WithParent(alias),
+		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(alias),
 		scanner: scan.StructMapper[T](),
+		Columns: columns,
 	}, mappings
 }
 
-type View[T any, Tslice ~[]T] struct {
+type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	schema string
 	name   string
 	alias  string
 
-	allCols orm.Columns
+	allCols expr.ColumnsExpr
 	scanner scan.Mapper[T]
+
+	Columns C
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
-func (v *View[T, Tslice]) Name() Expression {
+func (v *View[T, Tslice, C]) Name() Expression {
 	// schema is not empty, never override
 	if v.schema != "" {
 		return Quote(v.schema, v.name)
@@ -65,21 +69,16 @@ func (v *View[T, Tslice]) Name() Expression {
 	return Expression{}.New(orm.SchemaTable(v.name))
 }
 
-func (v *View[T, Tslice]) NameAs() bob.Expression {
+func (v *View[T, Tslice, C]) NameAs() bob.Expression {
 	return v.Name().As(v.alias)
 }
 
-func (v *View[T, Tslice]) Alias() string {
+func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
-// Returns a column list
-func (v *View[T, Tslice]) Columns() orm.Columns {
-	return v.allCols
-}
-
 // Starts a select query
-func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
+func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
@@ -93,7 +92,7 @@ func (v *View[T, Tslice]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *Vie
 	q.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
-				q.AppendSelect(v.Columns())
+				q.AppendSelect(v.Columns)
 			}
 			return ctx, nil
 		},
@@ -146,3 +145,4 @@ func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dial
 
 	return countQuery
 }
+
