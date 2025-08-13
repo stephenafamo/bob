@@ -1220,7 +1220,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uint64",
+					"type": "types.Uint64",
 					"type_limits": []
 				},
 				{
@@ -1232,7 +1232,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "uint64",
+					"type": "types.Uint64",
 					"type_limits": []
 				},
 				{

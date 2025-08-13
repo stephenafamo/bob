@@ -47,6 +47,10 @@ func Types() drivers.Types {
 		"uint64": {
 			RandomExpr: `return f.UInt64()`,
 		},
+		"types.Uint64": {
+			Imports:    []string{`"github.com/stephenafamo/bob/types"`},
+			RandomExpr: `return BASETYPE(f.UInt64())`,
+		},
 		"float32": {
 			RandomExpr: `
 				var precision int64 = 5 
