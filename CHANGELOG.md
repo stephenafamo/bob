@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.40.0] - 2025-08-13
+
 ### Added
 
 - Made code generation modular by relying on built-in plugins that can be enabled or disabled in the configuration.
