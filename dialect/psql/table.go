@@ -137,4 +137,3 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 
 	return q
 }
-

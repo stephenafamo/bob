@@ -9,7 +9,7 @@ import (
 
 func DBInfo[C any](config OutputConfig, templates ...fs.FS) gen.StatePlugin[C] {
 	return dbInfoPlugin[C]{
-		config:    config.WithDefaults("info"),
+		config:    config.WithDefaults("dbinfo"),
 		templates: templates,
 	}
 }

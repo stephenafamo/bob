@@ -145,4 +145,3 @@ func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dial
 
 	return countQuery
 }
-
