@@ -65,7 +65,7 @@ func TranslateColumnType(fullType string) (string, []string) {
 
 	case "bigint":
 		if unsigned {
-			return "uint64", limits
+			return "types.Uint64", limits
 		}
 		return "int64", limits
 

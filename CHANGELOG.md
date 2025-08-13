@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
   - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
   - `queries`: Generates code for queries.
+- Added new `types.Uint64` type that sends values to the database as strings. This is necessary because using `uint64` directly can cause an overflow if the value exceeds the maximum value of an `int64`. This is a limitation imposed by `database/sql/driver.Valuer` interface.
 
 ### Changed
 
