@@ -56,7 +56,7 @@ func RunPostgres(ctx context.Context, state *gen.State[any], config Config, plug
 
 func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, error) {
 	postgresContainer, err := postgres.Run(
-		ctx, "postgres:16",
+		ctx, "pgvector/pgvector:0.8.0-pg16",
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
