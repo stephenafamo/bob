@@ -194,7 +194,7 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 	fullEnumTyp := helpers.EnumType(types, enumTyp)
 
 	types.Register(arrTyp, drivers.Type{
-		DependsOn:           []string{enumTyp},
+		DependsOn:           []string{fullEnumTyp},
 		Imports:             []string{"output(enums)", pgtypesImport},
 		NoRandomizationTest: true, // enums are often not random enough
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
