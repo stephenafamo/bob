@@ -20,7 +20,7 @@ var testDB bob.Transactor
     * So we use backslashes as the package name which will never match a package
       to prevent assuming that the type is in the current package
     */}}
-    {{- $colTyp := $.Types.GetWithoutImporting `\\\\\\\\\\\\` $column.Type -}}
+    {{- $colTyp := $.Types.GetWithoutImporting (index $.OutputPackages "models") $column.Type -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ :=  set $doneTypes $column.Type nil -}}
     {{- $typInfo :=  $.Types.Index $colTyp -}}
