@@ -374,13 +374,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
       {{- $foreign := index $firstSide.ToColumns $index -}}
-			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
+      {{- $fromColDef := $.Tables.GetColumn $firstSide.From $local -}}
+      {{- $toColDef := $.Tables.GetColumn $firstSide.To $foreign -}}
 
       {{- $fromColGet := (printf "o.%s" $fromCol) -}}
       {{- $toColGet := (printf "%sSlice[i]" $fromCol) -}}
 
 			{{- $typInfo := $.Types.Index ($.Tables.GetColumn $firstSide.From $local).Type -}}
-      {{- with $.Types.GetCompareExpr $.CurrentPackage $.Importer $fromCol.Type $fromCol.Nullable $toCol.Nullable -}}
+      {{- with $.Types.GetCompareExpr $.CurrentPackage $.Importer $fromColDef.Type $fromColDef.Nullable $toColDef.Nullable -}}
 				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
 					continue
 				}
