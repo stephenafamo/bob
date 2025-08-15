@@ -275,16 +275,10 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 
 
 
-        {{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.From $local (cat "o." ($fromAlias.Column $local)) -}}
-        {{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $side.To $foreign (cat "rel." ($toAlias.Column $foreign)) -}}
-        {{- $typInfo := $.Types.Index $fromCol.Type -}}
-        {{- with $typInfo.CompareExpr -}}
-          {{$.Importer.ImportList $typInfo.CompareExprImports -}}
-          if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
-            continue
-          }
-        {{- else -}}
-          if {{$fromColGet}} != {{$toColGet}} {
+        {{- $fromColGet := (cat "o." ($fromAlias.Column $local)) -}}
+        {{- $toColGet := (cat "rel." ($toAlias.Column $foreign)) -}}
+        {{- with $.Types.GetCompareExpr $.CurrentPackage $.Importer $fromCol.Type $fromCol.Nullable $toCol.Nullable -}}
+          if !({{replace "AAA" $fromColGet . | replace "BBB" $toColGet}}) {
             continue
           }
         {{- end}}
@@ -380,18 +374,14 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
       {{- $foreign := index $firstSide.ToColumns $index -}}
+			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 
-      {{- $fromColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $firstSide.From $local (printf "o.%s" $fromCol) -}}
-      {{- $toColGet := $.Tables.ColumnGetter $.CurrentPackage $.Importer $.Types $firstSide.To $foreign (printf "%sSlice[i]" $fromCol) -}}
+      {{- $fromColGet := (printf "o.%s" $fromCol) -}}
+      {{- $toColGet := (printf "%sSlice[i]" $fromCol) -}}
 
 			{{- $typInfo := $.Types.Index ($.Tables.GetColumn $firstSide.From $local).Type -}}
-			{{- with $typInfo.CompareExpr -}}
-				{{$.Importer.ImportList $typInfo.CompareExprImports -}}
+      {{- with $.Types.GetCompareExpr $.CurrentPackage $.Importer $fromCol.Type $fromCol.Nullable $toCol.Nullable -}}
 				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
-					continue
-				}
-			{{- else -}}
-        if {{$fromColGet}} != {{$toColGet}} {
 					continue
 				}
 			{{- end}}

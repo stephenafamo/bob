@@ -183,6 +183,55 @@ func (t Types) GetNameAndDef(curr string, namedType string) (string, Type) {
 	return namedType, typedef
 }
 
+func (t Types) GetCompareExpr(currentPkg string, i language.Importer, forType string, aNullable, bNullable bool) string {
+	_, typDef := t.GetNameAndDef(currentPkg, forType)
+	compareExpr := typDef.CompareExpr
+	if compareExpr == "" {
+		compareExpr = "AAA == BBB"
+	}
+	i.ImportList(typDef.CompareExprImports)
+
+	if !aNullable && !bNullable {
+		return compareExpr
+	}
+
+	nullTyp := t.GetNullType(currentPkg, forType)
+
+	aUse := "AAA"
+	if aNullable {
+		aUse = strings.NewReplacer(
+			"SRC", "AAA",
+			"BASETYPE", forType,
+			"NULLTYPE", nullTyp.Name,
+		).Replace(nullTyp.UseExpr)
+	}
+
+	bUse := "BBB"
+	if bNullable {
+		bUse = strings.NewReplacer(
+			"SRC", "BBB",
+			"BASETYPE", forType,
+			"NULLTYPE", nullTyp.Name,
+		).Replace(nullTyp.UseExpr)
+	}
+
+	compared := strings.NewReplacer("AAA", aUse, "BBB", bUse).Replace(compareExpr)
+
+	aValid := t.GetNullTypeValid(currentPkg, forType, "AAA")
+	bValid := t.GetNullTypeValid(currentPkg, forType, "BBB")
+
+	switch {
+	case aNullable && bNullable:
+		return fmt.Sprintf("%s == %s && %s && %s", aValid, bValid, aValid, compared)
+	case aNullable && !bNullable:
+		return fmt.Sprintf("%s && %s", aValid, compared)
+	case !aNullable && bNullable:
+		return fmt.Sprintf("%s && %s", bValid, compared)
+	default:
+		return compared
+	}
+}
+
 func (t Types) GetNullType(currentPkg string, forType string) NullType {
 	typ, _ := t.GetNullTypeWithImports(currentPkg, forType)
 	return typ

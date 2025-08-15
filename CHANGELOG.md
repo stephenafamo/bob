@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed Scanner/Valuer test gen for types defined in the models package.
 - Fix issue with randomization test when enum is only used in an array.
+- Fix issue with using `CompareExpr` with values that are null.
+- Fix issue with imports in query tests.
 
 ## [v0.40.1] - 2025-08-14
 

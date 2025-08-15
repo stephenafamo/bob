@@ -94,19 +94,16 @@ func (n nested) Assign(selfName, rowName string, cols []QueryCol) string {
 	return ""
 }
 
-func (n nested) Compare(currPkg string, types Types, selfName, rowName string, cols []QueryCol) string {
+func (n nested) Compare(currPkg string, i language.Importer, types Types, selfName, rowName string, cols []QueryCol) string {
 	if len(n.Children) > 0 {
 		return ""
 	}
 
 	lhs := fmt.Sprintf("%s.%s", selfName, n.Col.Name)
 	rhs := fmt.Sprintf("%s.%s", rowName, cols[n.Index].Name)
-	_, typDef := types.GetNameAndDef(currPkg, n.Col.TypeName)
-	cmpExpr := typDef.CompareExpr
-	if cmpExpr == "" {
-		cmpExpr = "AAA == BBB"
-	}
 
+	nullable := *n.Col.Nullable
+	cmpExpr := types.GetCompareExpr(currPkg, i, n.Col.TypeName, nullable, nullable)
 	cmpExpr = strings.ReplaceAll(cmpExpr, "AAA", lhs)
 	cmpExpr = strings.ReplaceAll(cmpExpr, "BBB", rhs)
 
@@ -225,10 +222,10 @@ func (n nestedSlice) Assign(currPkg string, i language.Importer, types Types, se
 	return strings.Join(assigns, "\n")
 }
 
-func (n nestedSlice) Compare(currPkg string, types Types, selfName, rowName string, cols []QueryCol) string {
+func (n nestedSlice) Compare(currPkg string, i language.Importer, types Types, selfName, rowName string, cols []QueryCol) string {
 	assigns := make([]string, 0, len(n))
 	for _, child := range n {
-		assign := child.Compare(currPkg, types, selfName, rowName, cols)
+		assign := child.Compare(currPkg, i, types, selfName, rowName, cols)
 		if assign == "" {
 			continue
 		}
@@ -276,14 +273,11 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 		)
 
 	case isSingle: // isSingle == true && !n.AllNullable()
-		firstNNull := n.FistNotNull()
-		nnTypName, typDef := types.GetNameAndDef(currPkg, firstNNull.Col.TypeName)
-		cmpExpr := typDef.CompareExpr
-		if cmpExpr == "" {
-			cmpExpr = "AAA == BBB"
-		}
-		lhs := fmt.Sprintf("%s.%s", collectedRowsVar, firstNNull.Col.Name)
-		rhs := fmt.Sprintf("zero%s%s", firstNNull.Col.Name, indexName)
+		col := n.FistNotNull().Col
+		nnTypName, _ := types.GetNameAndDef(currPkg, col.TypeName)
+		lhs := fmt.Sprintf("%s.%s", collectedRowsVar, col.Name)
+		rhs := fmt.Sprintf("zero%s%s", col.Name, indexName)
+		cmpExpr := types.GetCompareExpr(currPkg, i, col.TypeName, *col.Nullable, *col.Nullable)
 		cmpExpr = strings.ReplaceAll(cmpExpr, "AAA", lhs)
 		cmpExpr = strings.ReplaceAll(cmpExpr, "BBB", rhs)
 
@@ -318,7 +312,7 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
         }
 		`,
 			indexName, collectedRowsVar,
-			n.Compare(currPkg, types, "existing", "row", cols),
+			n.Compare(currPkg, i, types, "existing", "row", cols),
 			indexName, indexName, typeName,
 			n.Assign(currPkg, i, types, "fresh", "row", cols),
 			collectedRowsVar, collectedRowsVar, indexName, collectedRowsVar)

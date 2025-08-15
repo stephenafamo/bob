@@ -56,7 +56,7 @@ var {{$lowerName}}SQL = formattedQueries_{{$.QueryFile.BaseName}}[{{$.QueryFile.
 
   {{if gt (len $arg.Children) 0}}
     {{ $argType = printf "%s_%s" $upperName $argName }}
-    type {{$argType}} = {{$arg.TypeDef $.CurrentPackage $.Importer $.Types}}
+    type {{$argType}} = {{$arg.TypeDef $.CurrentPackage $.Importer $.Types true}}
     {{if $arg.CanBeMultiple}}
       {{ $argType = printf "[]%s" $argType }}
     {{end}}
