@@ -9,10 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ 'stable' ]
-        # Disable oldstable until 1.25 is released
-        # tests with `sql.Null[T]` break when T is primitive, but not one of the driver.Value types
-        # go: [ 'oldstable', 'stable' ]
+        go: [ 'oldstable', 'stable' ]
 
     steps:
       - name: Checkout Repo
