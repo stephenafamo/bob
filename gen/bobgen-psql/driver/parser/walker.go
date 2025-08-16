@@ -642,6 +642,7 @@ func (w *walker) walkSortBy(a *pg.SortBy) nodeInfo {
 
 func (w *walker) walkFuncCall(a *pg.FuncCall) nodeInfo {
 	info := w.reflectWalk(reflect.ValueOf(a))
+	info.end = w.getEndOfTokenAfter(info.end, closeParToken)
 	if len(a.Funcname) > 0 {
 		funcNameInfo := info.children["Funcname"].children["0"]
 		if funcNameInfo.isValid() {

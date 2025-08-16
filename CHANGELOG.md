@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue with using `CompareExpr` with values that are null.
 - Fix issue with imports in query tests.
 - Fix issue with detecting the columns in a CTE in `bobgen-psql`.
+- Properly detect the end of a function call in postgres qury parser.
 
 ## [v0.40.1] - 2025-08-14
 
