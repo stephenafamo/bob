@@ -6324,7 +6324,7 @@
 											"col": {
 												"name": "primary_email",
 												"db_name": "",
-												"nullable": false,
+												"nullable": true,
 												"type": "string",
 												"type_limits": null
 											},
@@ -6390,7 +6390,7 @@
 											"col": {
 												"name": "primary_email",
 												"db_name": "",
-												"nullable": false,
+												"nullable": true,
 												"type": "string",
 												"type_limits": null
 											},
@@ -6442,7 +6442,7 @@
 											"col": {
 												"name": "primary_email",
 												"db_name": "",
-												"nullable": false,
+												"nullable": true,
 												"type": "string",
 												"type_limits": null
 											},
