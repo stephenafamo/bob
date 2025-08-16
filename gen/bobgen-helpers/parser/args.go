@@ -88,6 +88,8 @@ func GetArgs(bindArgs, groupArgs []drivers.QueryArg) []drivers.QueryArg {
 			if !group.CanBeMultiple {
 				allArgs = append(allArgs, group.Children[0])
 				continue
+			} else if !group.Children[0].CanBeMultiple {
+				group.Children = group.Children[0].Children
 			}
 			fallthrough
 		default:
