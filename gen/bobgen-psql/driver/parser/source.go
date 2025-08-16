@@ -31,7 +31,7 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 		if rangeInfo, ok := info.children["RangeVar"]; ok {
 			info = rangeInfo
 		}
-		return w.getTableSource(stmt.RangeVar, info)
+		return w.getTableSource(stmt.RangeVar, info, cloned...)
 
 	case *pg.Node_RangeSubselect:
 		if subSelInfo, ok := info.children["RangeSubselect"]; ok {
@@ -61,37 +61,49 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 	}
 }
 
-func (w *walker) getTableSource(sub *pg.RangeVar, info nodeInfo) queryResult {
-	schema := w.names[info.children["Schemaname"].position()]
+func (w *walker) getTableSource(sub *pg.RangeVar, info nodeInfo, sources ...queryResult) queryResult {
 	name := w.names[info.children["Relname"].position()]
-
-	source := queryResult{}
-
-	for _, table := range w.db {
-		if table.Name != name {
-			continue
-		}
-
-		switch {
-		case table.Schema == schema: // schema matches
-		case table.Schema == "" && schema == w.sharedSchema: // schema is shared
-		default:
-			continue
-		}
-
-		source = queryResult{
-			schema:  table.Schema,
-			name:    table.Name,
-			columns: make([]col, len(table.Columns)),
-		}
-		for j, column := range table.Columns {
-			source.columns[j] = col{name: column.Name, nullable: column.Nullable}
-		}
-
-		break
+	schema := ""
+	if schemaInfo, ok := info.children["Schemaname"]; ok {
+		schema = w.names[schemaInfo.position()]
 	}
 
-	if source.name == "" || sub.Alias == nil {
+	source := queryResult{}
+	for _, given := range sources {
+		if given.schema != schema || given.name != name {
+			continue
+		}
+		// Found a source with the same schema and name
+		source = given
+	}
+
+	if source.name == "" {
+		for _, table := range w.db {
+			if table.Name != name {
+				continue
+			}
+
+			switch {
+			case table.Schema == schema: // schema matches
+			case table.Schema == "" && schema == w.sharedSchema: // schema is shared
+			default:
+				continue
+			}
+
+			source = queryResult{
+				schema:  table.Schema,
+				name:    table.Name,
+				columns: make([]col, len(table.Columns)),
+			}
+			for j, column := range table.Columns {
+				source.columns[j] = col{name: column.Name, nullable: column.Nullable}
+			}
+
+			break
+		}
+	}
+
+	if sub.Alias == nil {
 		return source
 	}
 
@@ -212,11 +224,15 @@ func (w *walker) addSourcesOfWithClause(with *pg.WithClause, info nodeInfo, sour
 		}
 
 		cteNode := cteNodeWrap.CommonTableExpr
-		cteInfo := cteInfos.children[strconv.Itoa(i)]
+		cteInfo := cteInfos.children[strconv.Itoa(i)].children["CommonTableExpr"]
+		var queryInfo nodeInfo
+		for _, val := range cteInfo.children["Ctequery"].children {
+			queryInfo = val
+			break
+		}
 
-		stmtSource := w.getSource(
-			cteNode.Ctequery, cteInfo.children["Ctequery"], sources...,
-		)
+		stmtSource := w.getSource(cteNode.Ctequery, queryInfo, sources...)
+		stmtSource.name = cteNode.Ctename
 		stmtSource.mustBeQualified = true
 
 		if len(cteNode.Aliascolnames) != len(stmtSource.columns) {
@@ -277,6 +293,9 @@ func (w *walker) addSourcesOfFromItem(from *pg.Node, fromInfo nodeInfo, sources 
 			j.info,
 			sources...,
 		)
+		// Do not qualify joined tables by default
+		joinSource.mustBeQualified = false
+
 		var right, left bool
 
 		switch j.joinType {

@@ -134,6 +134,4 @@ require (
 
 // replace github.com/stephenafamo/sqlparser => ../sqlparser
 
-retract (
-	v0.40.0 // Fatal bug in preloading relationships with `models.Preload.<Table>.<Relationship>()`
-)
+retract v0.40.0 // Fatal bug in preloading relationships with `models.Preload.<Table>.<Relationship>()`
