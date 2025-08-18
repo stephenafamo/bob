@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Use the full column type and not just the datatype as the `DBType` in bobgen-mysql.
+
+### Fixed
+
+- Fixed an issue where `bobgen-mysql` could not detect unsigned integer columns in queries.
+
 ## [v0.40.2] - 2025-08-16
 
 ### Fixed

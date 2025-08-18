@@ -19,7 +19,7 @@
 				},
 				{
 					"name": "secret_col",
-					"db_type": "varchar",
+					"db_type": "varchar(255)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -82,7 +82,7 @@
 				},
 				{
 					"name": "secret_col",
-					"db_type": "varchar",
+					"db_type": "varchar(255)",
 					"default": "",
 					"comment": "",
 					"nullable": false,

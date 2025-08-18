@@ -162,7 +162,6 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
     c.column_name,
     c.column_type,
     c.column_comment,
-    c.data_type,
     c.column_default,
     c.extra = 'auto_increment' AS autoincr,
     c.is_nullable = 'YES' AS nullable,
@@ -193,21 +192,17 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colFullType, colComment, colType string
+		var colName, colFullType, colComment string
 		var autoIncr, nullable, generated bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &autoIncr, &nullable, &generated); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &defaultValue, &autoIncr, &nullable, &generated); err != nil {
 			return "", "", nil, fmt.Errorf("unable to scan for table %s: %w", tableName, err)
-		}
-
-		if colFullType == "tinyint(1)" {
-			colType = "bool"
 		}
 
 		column := drivers.Column{
 			Name:      colName,
 			Comment:   colComment,
-			DBType:    colType,
+			DBType:    colFullType,
 			Nullable:  nullable,
 			Generated: generated,
 			AutoIncr:  autoIncr,
