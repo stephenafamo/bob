@@ -647,7 +647,7 @@
 				},
 				{
 					"name": "enum_use",
-					"db_type": "enum",
+					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -659,7 +659,7 @@
 				},
 				{
 					"name": "enum_nullable",
-					"db_type": "enum",
+					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -695,7 +695,7 @@
 				},
 				{
 					"name": "bool_zero",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -709,7 +709,7 @@
 				},
 				{
 					"name": "bool_one",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -723,7 +723,7 @@
 				},
 				{
 					"name": "bool_two",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -737,7 +737,7 @@
 				},
 				{
 					"name": "bool_three",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "0",
 					"comment": "",
 					"nullable": true,
@@ -751,7 +751,7 @@
 				},
 				{
 					"name": "bool_four",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "1",
 					"comment": "",
 					"nullable": true,
@@ -765,7 +765,7 @@
 				},
 				{
 					"name": "bool_five",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "0",
 					"comment": "",
 					"nullable": false,
@@ -779,7 +779,7 @@
 				},
 				{
 					"name": "bool_six",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "1",
 					"comment": "",
 					"nullable": false,
@@ -793,7 +793,7 @@
 				},
 				{
 					"name": "string_zero",
-					"db_type": "varchar",
+					"db_type": "varchar(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -807,7 +807,7 @@
 				},
 				{
 					"name": "string_one",
-					"db_type": "varchar",
+					"db_type": "varchar(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -821,7 +821,7 @@
 				},
 				{
 					"name": "string_two",
-					"db_type": "varchar",
+					"db_type": "varchar(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -835,7 +835,7 @@
 				},
 				{
 					"name": "string_three",
-					"db_type": "varchar",
+					"db_type": "varchar(1)",
 					"default": "a",
 					"comment": "",
 					"nullable": true,
@@ -849,7 +849,7 @@
 				},
 				{
 					"name": "string_four",
-					"db_type": "varchar",
+					"db_type": "varchar(1)",
 					"default": "b",
 					"comment": "",
 					"nullable": false,
@@ -863,7 +863,7 @@
 				},
 				{
 					"name": "string_five",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -877,7 +877,7 @@
 				},
 				{
 					"name": "string_six",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -891,7 +891,7 @@
 				},
 				{
 					"name": "string_seven",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -905,7 +905,7 @@
 				},
 				{
 					"name": "string_eight",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "abcdefgh",
 					"comment": "",
 					"nullable": true,
@@ -919,7 +919,7 @@
 				},
 				{
 					"name": "string_nine",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "abcdefgh",
 					"comment": "",
 					"nullable": false,
@@ -933,7 +933,7 @@
 				},
 				{
 					"name": "string_ten",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -947,7 +947,7 @@
 				},
 				{
 					"name": "string_eleven",
-					"db_type": "varchar",
+					"db_type": "varchar(1000)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1045,7 +1045,7 @@
 				},
 				{
 					"name": "big_int_seven",
-					"db_type": "bigint",
+					"db_type": "bigint unsigned",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1057,7 +1057,7 @@
 				},
 				{
 					"name": "big_int_eight",
-					"db_type": "bigint",
+					"db_type": "bigint unsigned",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1153,7 +1153,7 @@
 				},
 				{
 					"name": "int_seven",
-					"db_type": "int",
+					"db_type": "int unsigned",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1165,7 +1165,7 @@
 				},
 				{
 					"name": "int_eight",
-					"db_type": "int",
+					"db_type": "int unsigned",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1201,7 +1201,7 @@
 				},
 				{
 					"name": "float_two",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1216,7 +1216,7 @@
 				},
 				{
 					"name": "float_three",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1231,7 +1231,7 @@
 				},
 				{
 					"name": "float_four",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1246,7 +1246,7 @@
 				},
 				{
 					"name": "float_five",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1261,7 +1261,7 @@
 				},
 				{
 					"name": "float_six",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "1.1",
 					"comment": "",
 					"nullable": true,
@@ -1276,7 +1276,7 @@
 				},
 				{
 					"name": "float_seven",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "1.1",
 					"comment": "",
 					"nullable": false,
@@ -1291,7 +1291,7 @@
 				},
 				{
 					"name": "float_eight",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "0.0",
 					"comment": "",
 					"nullable": true,
@@ -1306,7 +1306,7 @@
 				},
 				{
 					"name": "float_nine",
-					"db_type": "float",
+					"db_type": "float(2,1)",
 					"default": "0.0",
 					"comment": "",
 					"nullable": true,
@@ -1321,7 +1321,7 @@
 				},
 				{
 					"name": "decimal_zero",
-					"db_type": "decimal",
+					"db_type": "decimal(10,0)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1336,7 +1336,7 @@
 				},
 				{
 					"name": "decimal_one",
-					"db_type": "decimal",
+					"db_type": "decimal(10,0)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1351,7 +1351,7 @@
 				},
 				{
 					"name": "decimal_two",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1366,7 +1366,7 @@
 				},
 				{
 					"name": "decimal_three",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1381,7 +1381,7 @@
 				},
 				{
 					"name": "decimal_four",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1396,7 +1396,7 @@
 				},
 				{
 					"name": "decimal_five",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1411,7 +1411,7 @@
 				},
 				{
 					"name": "decimal_six",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "1.1",
 					"comment": "",
 					"nullable": true,
@@ -1426,7 +1426,7 @@
 				},
 				{
 					"name": "decimal_seven",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "1.1",
 					"comment": "",
 					"nullable": false,
@@ -1441,7 +1441,7 @@
 				},
 				{
 					"name": "decimal_eight",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "0.0",
 					"comment": "",
 					"nullable": true,
@@ -1456,7 +1456,7 @@
 				},
 				{
 					"name": "decimal_nine",
-					"db_type": "decimal",
+					"db_type": "decimal(2,1)",
 					"default": "0.0",
 					"comment": "",
 					"nullable": true,
@@ -1471,7 +1471,7 @@
 				},
 				{
 					"name": "bytea_zero",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1485,7 +1485,7 @@
 				},
 				{
 					"name": "bytea_one",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1499,7 +1499,7 @@
 				},
 				{
 					"name": "bytea_two",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1513,7 +1513,7 @@
 				},
 				{
 					"name": "bytea_three",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "0x61",
 					"comment": "",
 					"nullable": false,
@@ -1527,7 +1527,7 @@
 				},
 				{
 					"name": "bytea_four",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "0x62",
 					"comment": "",
 					"nullable": true,
@@ -1541,7 +1541,7 @@
 				},
 				{
 					"name": "bytea_five",
-					"db_type": "binary",
+					"db_type": "binary(100)",
 					"default": "0x616263646566676861626364656667686162636465666768",
 					"comment": "",
 					"nullable": false,
@@ -1555,7 +1555,7 @@
 				},
 				{
 					"name": "bytea_six",
-					"db_type": "binary",
+					"db_type": "binary(100)",
 					"default": "0x686766656463626168676665646362616867666564636261",
 					"comment": "",
 					"nullable": true,
@@ -1569,7 +1569,7 @@
 				},
 				{
 					"name": "bytea_seven",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "0x",
 					"comment": "",
 					"nullable": false,
@@ -1583,7 +1583,7 @@
 				},
 				{
 					"name": "bytea_eight",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "0x",
 					"comment": "",
 					"nullable": false,
@@ -1765,7 +1765,7 @@
 				},
 				{
 					"name": "tinyint1_null",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1779,7 +1779,7 @@
 				},
 				{
 					"name": "tinyint1_nnull",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1937,7 +1937,7 @@
 				},
 				{
 					"name": "decimal_null",
-					"db_type": "decimal",
+					"db_type": "decimal(10,0)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1952,7 +1952,7 @@
 				},
 				{
 					"name": "decimal_nnull",
-					"db_type": "decimal",
+					"db_type": "decimal(10,0)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1991,7 +1991,7 @@
 				},
 				{
 					"name": "boolean_null",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -2005,7 +2005,7 @@
 				},
 				{
 					"name": "boolean_nnull",
-					"db_type": "bool",
+					"db_type": "tinyint(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2091,7 +2091,7 @@
 				},
 				{
 					"name": "binary_null",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -2105,7 +2105,7 @@
 				},
 				{
 					"name": "binary_nnull",
-					"db_type": "binary",
+					"db_type": "binary(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2119,7 +2119,7 @@
 				},
 				{
 					"name": "varbinary_null",
-					"db_type": "varbinary",
+					"db_type": "varbinary(100)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -2133,7 +2133,7 @@
 				},
 				{
 					"name": "varbinary_nnull",
-					"db_type": "varbinary",
+					"db_type": "varbinary(100)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2243,7 +2243,7 @@
 				},
 				{
 					"name": "varchar_null",
-					"db_type": "varchar",
+					"db_type": "varchar(100)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -2257,7 +2257,7 @@
 				},
 				{
 					"name": "varchar_nnull",
-					"db_type": "varchar",
+					"db_type": "varchar(100)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -2271,7 +2271,7 @@
 				},
 				{
 					"name": "char_null",
-					"db_type": "char",
+					"db_type": "char(1)",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -2285,7 +2285,7 @@
 				},
 				{
 					"name": "char_nnull",
-					"db_type": "char",
+					"db_type": "char(1)",
 					"default": "",
 					"comment": "",
 					"nullable": false,
