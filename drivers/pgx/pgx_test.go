@@ -13,13 +13,13 @@ var (
 )
 
 var (
-	_ bob.Executor   = Pool{}
-	_ bob.Transactor = Pool{}
+	_ bob.Executor       = Pool{}
+	_ bob.Transactor[Tx] = Pool{}
 )
 
 var (
-	_ bob.Executor   = Conn{}
-	_ bob.Transactor = Conn{}
+	_ bob.Executor       = Conn{}
+	_ bob.Transactor[Tx] = Conn{}
 )
 
 var (

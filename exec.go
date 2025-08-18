@@ -31,9 +31,9 @@ type Executor interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 }
 
-type Transactor interface {
+type Transactor[Tx Transaction] interface {
 	Executor
-	Begin(context.Context) (Transaction, error)
+	Begin(context.Context) (Tx, error)
 }
 
 type Transaction interface {

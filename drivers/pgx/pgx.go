@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/scan"
 )
 
@@ -50,14 +49,107 @@ func (p Pool) QueryContext(ctx context.Context, query string, args ...any) (scan
 
 // Begin is similar to [*pgxpool.Pool.Begin], but return a transaction that
 // implements [Queryer]
-func (p Pool) Begin(ctx context.Context) (bob.Transaction, error) {
+func (p Pool) Begin(ctx context.Context) (Tx, error) {
 	return p.BeginTx(ctx, pgx.TxOptions{})
 }
 
 // BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
 // implements [Queryer]
-func (p Pool) BeginTx(ctx context.Context, opts pgx.TxOptions) (bob.Transaction, error) {
+func (p Pool) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
 	tx, err := p.Pool.BeginTx(ctx, opts)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	return NewTx(tx), nil
+}
+
+// Acquire is similar to [*pgxpool.Pool.Acquire] but returns a connection that implement [Queryer]
+func (p Pool) Acquire(ctx context.Context) (PoolConn, error) {
+	pgxConn, err := p.Pool.Acquire(ctx)
+	return NewPoolConn(pgxConn), err
+}
+
+// AcquireFunc is similar to [*pgxpool.Pool.AcquireFunc] but uses a function that accepts a connection that implements [Queryer].
+func (p *Pool) AcquireFunc(ctx context.Context, f func(PoolConn) error) error {
+	return p.Pool.AcquireFunc(ctx, func(pgxConn *pgxpool.Conn) error {
+		return f(NewPoolConn(pgxConn))
+	})
+}
+
+// NewConn wraps an [*pgx.Conn] and returns a type that implements [Queryer]
+// This is useful when an existing *pgx.Conn is used in other places in the codebase
+func NewPoolConn(conn *pgxpool.Conn) PoolConn {
+	return PoolConn{conn}
+}
+
+// Conn is similar to *pgx.Conn but implements [Queryer]
+type PoolConn struct {
+	*pgxpool.Conn
+}
+
+// ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
+func (c PoolConn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	tag, err := c.Conn.Exec(ctx, query, args...)
+	return result{tag}, err
+}
+
+// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
+func (c PoolConn) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	pgxRows, err := c.Conn.Query(ctx, query, args...)
+	return rows{pgxRows}, err
+}
+
+// Begin is similar to [*pgxpool.Pool.Begin], but return a transaction that
+// implements [Queryer]
+func (c PoolConn) Begin(ctx context.Context) (Tx, error) {
+	return c.BeginTx(ctx, pgx.TxOptions{})
+}
+
+// BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
+// implements [Queryer]
+func (c PoolConn) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
+	tx, err := c.Conn.BeginTx(ctx, opts)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	return NewTx(tx), nil
+}
+
+// NewConn wraps an [*pgx.Conn] and returns a type that implements [Queryer]
+// This is useful when an existing *pgx.Conn is used in other places in the codebase
+func NewConn(conn *pgx.Conn) Conn {
+	return Conn{conn}
+}
+
+// Conn is similar to *pgx.Conn but implements [Queryer]
+type Conn struct {
+	*pgx.Conn
+}
+
+// ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
+func (c Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	tag, err := c.Conn.Exec(ctx, query, args...)
+	return result{tag}, err
+}
+
+// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
+func (c Conn) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
+	pgxRows, err := c.Conn.Query(ctx, query, args...)
+	return rows{pgxRows}, err
+}
+
+// Begin is similar to [*pgxpool.Pool.Begin], but return a transaction that
+// implements [Queryer]
+func (c Conn) Begin(ctx context.Context) (Tx, error) {
+	return c.BeginTx(ctx, pgx.TxOptions{})
+}
+
+// BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
+// implements [Queryer]
+func (c Conn) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
+	tx, err := c.Conn.BeginTx(ctx, opts)
 	if err != nil {
 		return Tx{}, err
 	}
@@ -87,46 +179,6 @@ func (t Tx) ExecContext(ctx context.Context, query string, args ...any) (sql.Res
 func (t Tx) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
 	pgxRows, err := t.Tx.Query(ctx, query, args...)
 	return rows{pgxRows}, err
-}
-
-// NewConn wraps an [*pgx.Conn] and returns a type that implements [Queryer]
-// This is useful when an existing *pgx.Conn is used in other places in the codebase
-func NewConn(conn *pgx.Conn) Conn {
-	return Conn{conn}
-}
-
-// Conn is similar to *pgx.Conn but implements [Queryer]
-type Conn struct {
-	*pgx.Conn
-}
-
-// ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (c Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	tag, err := c.Conn.Exec(ctx, query, args...)
-	return result{tag}, err
-}
-
-// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
-func (c Conn) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
-	pgxRows, err := c.Conn.Query(ctx, query, args...)
-	return rows{pgxRows}, err
-}
-
-// Begin is similar to [*pgxpool.Pool.Begin], but return a transaction that
-// implements [Queryer]
-func (c Conn) Begin(ctx context.Context) (bob.Transaction, error) {
-	return c.BeginTx(ctx, pgx.TxOptions{})
-}
-
-// BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
-// implements [Queryer]
-func (c Conn) BeginTx(ctx context.Context, opts pgx.TxOptions) (bob.Transaction, error) {
-	tx, err := c.Conn.BeginTx(ctx, opts)
-	if err != nil {
-		return Tx{}, err
-	}
-
-	return NewTx(tx), nil
 }
 
 type result struct {
