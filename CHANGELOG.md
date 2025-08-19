@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `drivers/pgx.Pool` now includes the methods `Acquire` and `AcquireFunc` which mirror the methods in `pgx/v5/pgxpool` to acquire a connection from the pool (thanks @Eyal-Shalev).
+- Added the `drivers/pgx.PoolConn` type which is a wrapper around `pgx/v5/pgxpool.Conn`.
+
 ### Changed
 
 - Use the full column type and not just the datatype as the `DBType` in bobgen-mysql.
+- `bob.Transactor` is now a generic interface so that implementations can use a concrete transaction type.
 
 ### Fixed
 

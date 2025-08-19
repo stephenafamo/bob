@@ -3,13 +3,13 @@ package bob
 var (
 	_ Preparer[StdPrepared] = DB{}
 	_ Executor              = DB{}
-	_ Transactor            = DB{}
+	_ Transactor[Tx]        = DB{}
 )
 
 var (
 	_ Preparer[StdPrepared] = Conn{}
 	_ Executor              = Conn{}
-	_ Transactor            = Conn{}
+	_ Transactor[Tx]        = Conn{}
 )
 
 var (
