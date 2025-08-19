@@ -47,16 +47,15 @@ The values that exist for the drivers:
 
 | Name          | Description                                       | Default                  |
 | ------------- | ------------------------------------------------- | ------------------------ |
-| dsn           | URL to connect to                                 |                          |
 | driver        | Driver to use for generating driver-specific code | `github.com/lib/pq`      |
+| dsn           | URL to connect to                                 |                          |
 | schemas       | Schemas find tables in                            | ["public"]               |
 | shared_schema | Schema to not include prefix in model             | first value in "schemas" |
-| output        | Folder for generated files                        | "models"                 |
-| pkgname       | Package name for generated code                   | "models"                 |
 | uuid_pkg      | UUID package to use (gofrs or google)             | "gofrs"                  |
-| concurrency   | How many tables to fetch in parallel              | 10                       |
+| queries       | Folders containing sql query files                |                          |
 | only          | Only generate these                               |                          |
 | except        | Skip generation for these                         |                          |
+| concurrency   | How many tables to fetch in parallel              | 10                       |
 
 ## Driver-specific code
 

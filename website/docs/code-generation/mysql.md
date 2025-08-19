@@ -39,14 +39,13 @@ MYSQL_DSN="user:pass@tcp(host:port)/dbname"
 
 The values that exist for the drivers:
 
-| Name        | Description                          | Default  |
-|-------------|--------------------------------------|----------|
-| dsn         | URL to connect to                    |          |
-| output      | Folder for generated files           | "models" |
-| pkgname     | Package name for generated code      | "models" |
-| concurrency | How many tables to fetch in parallel | 10       |
-| only        | Only generate these                  |          |
-| except      | Skip generation for these            |          |
+| Name        | Description                          | Default |
+| ----------- | ------------------------------------ | ------- |
+| dsn         | URL to connect to                    |         |
+| only        | Only generate these                  |         |
+| except      | Skip generation for these            |         |
+| queries     | Folders containing sql query files   |         |
+| concurrency | How many tables to fetch in parallel | 10      |
 
 ## Only/Except:
 

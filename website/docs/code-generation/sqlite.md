@@ -41,13 +41,11 @@ The values that exist for the drivers:
 
 | Name          | Description                                       | Default              |
 | ------------- | ------------------------------------------------- | -------------------- |
-| dsn           | Path to database                                  |                      |
 | driver        | Driver to use for generating driver-specific code | `modernc.org/sqlite` |
+| dsn           | Path to database                                  |                      |
 | attach        | Schemas to attach and the path to the db          | map[string]string{}  |
 | shared_schema | Schema to not include prefix in model             | "main"               |
 | queries       | List of folders containing query files            | []string{}           |
-| output        | Folder for generated files                        | "models"             |
-| pkgname       | Package name for generated code                   | "models"             |
 | only          | Only generate these                               |                      |
 | except        | Skip generation for these                         |                      |
 

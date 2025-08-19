@@ -43,14 +43,15 @@ The values that exist for the drivers:
 | Name          | Description                                                     | Default                                      |
 | ------------- | --------------------------------------------------------------- | -------------------------------------------- |
 | dialect       | Database dialect to use. `psql`, `mysql` or `sqlite` (REQUIRED) |                                              |
+| driver        | Driver to use for generating driver-specific code               |                                              |
 | pattern       | Glob pattern of SQL migration files                             | \*.sql                                       |
 | schemas       | The database schemas to generate models for                     | public (psql dialect), main (sqlite dialect) |
 | shared_schema | Schema to not include prefix in model                           | first schema found                           |
-| output        | Folder for generated files                                      | "models"                                     |
-| pkgname       | Package name for generated code                                 | "models"                                     |
 | uuid_pkg      | UUID package to use (gofrs or google)                           | "gofrs"                                      |
+| queries       | Folders containing sql query files                              |                                              |
 | only          | Only generate these                                             |                                              |
 | except        | Skip generation for these                                       |                                              |
+| concurrency   | How many tables to fetch in parallel                            | 10                                           |
 
 Example of Only/Except:
 
