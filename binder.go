@@ -55,7 +55,7 @@ func makeBinder[Arg any](args []any) (binder[Arg], error) {
 }
 
 func canUseAsSingleValue(typ reflect.Type) bool {
-	if typ.Kind() == reflect.Ptr {
+	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 
@@ -115,7 +115,7 @@ func makeMultiArgBinder[Arg any](args []any) (binder[Arg], error) {
 	case reflect.Struct:
 		return makeStructBinder[Arg](args)
 
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if typ.Elem().Kind() == reflect.Struct {
 			return makeStructBinder[Arg](args)
 		}
@@ -138,7 +138,7 @@ func makeStructBinder[Arg any](args []any) (binder[Arg], error) {
 	typ := reflect.TypeFor[Arg]()
 
 	isStruct := typ.Kind() == reflect.Struct
-	if typ.Kind() == reflect.Ptr {
+	if typ.Kind() == reflect.Pointer {
 		isStruct = typ.Elem().Kind() == reflect.Struct
 	}
 
