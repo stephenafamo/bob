@@ -4,7 +4,7 @@ package parser
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html
-func TranslateColumnType(dbType string, driver string) string {
+func TranslateColumnType(dbType, driver string) string {
 	switch dbType {
 	case "TINYINT", "INT8":
 		return "int8"

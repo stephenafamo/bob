@@ -74,14 +74,14 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
 	}, ""), nil)
 	if err != nil {
-		return config, driverConfig, pluginsConfig, err
+		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to load defaults: %w", err)
 	}
 
 	if provider != nil {
 		// Load YAML config and merge into the previously loaded config (because we can).
 		err := k.Load(provider, yaml.Parser())
 		if err != nil {
-			return config, driverConfig, pluginsConfig, err
+			return config, driverConfig, pluginsConfig, fmt.Errorf("failed to load config from %s: %w", provider, err)
 		}
 	}
 
@@ -92,22 +92,22 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 		return strings.Replace(strings.ToLower(s), "_", ".", 1)
 	}), nil)
 	if err != nil {
-		return config, driverConfig, pluginsConfig, err
+		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to load env variables with prefix %s: %w", envKey, err)
 	}
 
 	err = k.UnmarshalWithConf("", &config, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
-		return config, driverConfig, pluginsConfig, err
+		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
 	err = k.UnmarshalWithConf(driverConfigKey, &driverConfig, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
-		return config, driverConfig, pluginsConfig, err
+		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to unmarshal driver config: %w", err)
 	}
 
 	err = k.UnmarshalWithConf("plugins", &pluginsConfig, koanf.UnmarshalConf{Tag: "yaml"})
 	if err != nil {
-		return config, driverConfig, pluginsConfig, err
+		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to unmarshal plugins config: %w", err)
 	}
 
 	switch k.String("plugins_preset") {

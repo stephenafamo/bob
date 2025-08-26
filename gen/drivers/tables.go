@@ -22,7 +22,7 @@ func (tables Tables[C, I]) Get(name string) Table[C, I] {
 	panic(fmt.Sprintf("could not find table name: %s", name))
 }
 
-func (tables Tables[C, I]) GetColumn(table string, column string) Column {
+func (tables Tables[C, I]) GetColumn(table, column string) Column {
 	for _, t := range tables {
 		if t.Key != table {
 			continue

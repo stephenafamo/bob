@@ -244,7 +244,7 @@ func RecordPoints(oldStart, oldEnd int, callbacks ...func(start, end int) error)
 	return []EditRule{
 		EditCallback(
 			insertRule{oldStart, nil, -1},
-			func(start int, _ int, _, _ string) error { firstPoint = start; return nil },
+			func(start, _ int, _, _ string) error { firstPoint = start; return nil },
 		),
 		EditCallback(
 			insertRule{oldEnd + 1, nil, 1},

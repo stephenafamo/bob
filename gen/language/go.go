@@ -90,7 +90,7 @@ func (g goOutputLanguage) endsWithSpecialSuffix(tableName string) bool {
 
 func (g goOutputLanguage) Write(
 	imps Importer,
-	pkgName string, folder string,
+	pkgName, folder string,
 	contents io.Reader, inTest bool,
 	destination io.Writer,
 ) error {

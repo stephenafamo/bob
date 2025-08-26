@@ -250,7 +250,7 @@ func (n nestedSlice) NotNull(currPkg string, types Types, rowName string, cols [
 	return strings.Join(assigns, " ||\n")
 }
 
-func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types, cols []QueryCol, isSingle bool, typeName string, collectedRowsVar, indexName string) string {
+func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types, cols []QueryCol, isSingle bool, typeName, collectedRowsVar, indexName string) string {
 	nullable := n.Nullable()
 	transformation := &strings.Builder{}
 

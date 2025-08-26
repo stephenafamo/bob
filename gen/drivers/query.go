@@ -74,7 +74,7 @@ func (q QueryFile) Formatted() string {
 	return sb.String()
 }
 
-func (q QueryFile) QueryPosition(i int, headerLen int) string {
+func (q QueryFile) QueryPosition(i, headerLen int) string {
 	if i >= len(q.Queries) {
 		return "-1:-1"
 	}

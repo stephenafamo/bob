@@ -11,7 +11,7 @@ import (
 )
 
 // Open works just like [sql.Open], but converts the returned [*sql.DB] to [DB]
-func Open(driverName string, dataSource string) (DB, error) {
+func Open(driverName, dataSource string) (DB, error) {
 	db, err := sql.Open(driverName, dataSource)
 	return NewDB(db), err
 }

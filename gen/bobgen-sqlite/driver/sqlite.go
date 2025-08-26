@@ -584,7 +584,7 @@ type info struct {
 	Hidden       int
 }
 
-func (d *driver) key(schema string, table string) string {
+func (d *driver) key(schema, table string) string {
 	key := table
 	if schema != "" && schema != d.config.SharedSchema {
 		key = schema + "." + table

@@ -47,7 +47,7 @@ func main() {
 func run(c *cli.Context) error {
 	config, driverConfig, pluginsConfig, err := helpers.GetConfigFromFile[any, driver.Config](c.String("config"), "psql")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
 	outputPlugins := plugins.Setup[any, any, driver.IndexExtra](

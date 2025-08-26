@@ -39,7 +39,7 @@ type Language interface {
 	OutputFileName(schema, tableName string, isTest bool) string
 	Write(
 		imps Importer,
-		pkgName string, folder string,
+		pkgName, folder string,
 		contents io.Reader, isTest bool,
 		destination io.Writer,
 	) error
@@ -71,7 +71,7 @@ func (u unknownOutputLanguage) OutputFileName(schema, tableName string, isTest b
 
 func (unknownOutputLanguage) Write(
 	imps Importer,
-	pkgName string, folder string,
+	pkgName, folder string,
 	contents io.Reader, isTest bool,
 	destination io.Writer,
 ) error {
@@ -108,7 +108,7 @@ func (s sqlOutputLanguage) IsTest(templateName string) bool {
 }
 
 // OutputFileName implements outputLanguage.
-func (s sqlOutputLanguage) OutputFileName(schema string, tableName string, isTest bool) string {
+func (s sqlOutputLanguage) OutputFileName(schema, tableName string, isTest bool) string {
 	if schema != "" {
 		return fmt.Sprintf("%s.%s.bob.sql", schema, tableName)
 	}
@@ -118,7 +118,7 @@ func (s sqlOutputLanguage) OutputFileName(schema string, tableName string, isTes
 
 func (g sqlOutputLanguage) Write(
 	imps Importer,
-	pkgName string, folder string,
+	pkgName, folder string,
 	contents io.Reader, isTest bool,
 	destination io.Writer,
 ) error {

@@ -97,7 +97,7 @@ type walker struct {
 	errors []error
 }
 
-func (w *walker) matchNames(p1 [2]int32, p2 [2]int32) {
+func (w *walker) matchNames(p1, p2 [2]int32) {
 	w.maybeSetName(p1, w.names[p2])
 	w.maybeSetName(p2, w.names[p1])
 }

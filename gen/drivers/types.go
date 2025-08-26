@@ -82,7 +82,7 @@ type TypeModifier interface {
 	// When `fromOrToNull` is true
 	// * the `UseExpr` should convert the optional value to a non-optional but nullable value
 	// * the `CreateExpr` should convert a non-optional but nullable value to an optional value
-	OptionalType(typName string, def Type, isNull bool, fromOrToNull bool) (NullType, []string)
+	OptionalType(typName string, def Type, isNull, fromOrToNull bool) (NullType, []string)
 }
 
 type Types struct {
@@ -153,12 +153,12 @@ func (t Types) GetNullable(curr string, i language.Importer, namedType string, n
 	return nullTyp.Name
 }
 
-func (t Types) GetWithoutImporting(curr string, namedType string) string {
+func (t Types) GetWithoutImporting(curr, namedType string) string {
 	name, _ := t.GetNameAndDef(curr, namedType)
 	return name
 }
 
-func (t Types) GetNameAndDef(curr string, namedType string) (string, Type) {
+func (t Types) GetNameAndDef(curr, namedType string) (string, Type) {
 	var ok bool
 	typedef := Type{AliasOf: namedType}
 
@@ -232,12 +232,12 @@ func (t Types) GetCompareExpr(currentPkg string, i language.Importer, forType st
 	}
 }
 
-func (t Types) GetNullType(currentPkg string, forType string) NullType {
+func (t Types) GetNullType(currentPkg, forType string) NullType {
 	typ, _ := t.GetNullTypeWithImports(currentPkg, forType)
 	return typ
 }
 
-func (t Types) GetNullTypeWithImports(currentPkg string, forType string) (NullType, []string) {
+func (t Types) GetNullTypeWithImports(currentPkg, forType string) (NullType, []string) {
 	name, def := t.GetNameAndDef(currentPkg, forType)
 
 	if def.NullType.Name != "" {
@@ -258,7 +258,7 @@ func (t Types) GetNullTypeWithImports(currentPkg string, forType string) (NullTy
 	return t.typeModifier.NullType(name), t.typeModifier.NullTypeImports(def)
 }
 
-func (t Types) GetNullTypeValid(currentPkg string, forType string, varName string) string {
+func (t Types) GetNullTypeValid(currentPkg, forType, varName string) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	nullTyp, _ := t.GetNullTypeWithImports(currentPkg, forType)
 	return strings.NewReplacer(
@@ -275,17 +275,17 @@ func (t Types) GetOptional(curr string, i language.Importer, namedType string, n
 	return opt
 }
 
-func (t Types) GetOptionalWithoutImporting(curr string, namedType string, null bool) NullType {
+func (t Types) GetOptionalWithoutImporting(curr, namedType string, null bool) NullType {
 	opt, _ := t.getOptional(curr, namedType, null, null)
 	return opt
 }
 
-func (t Types) getOptional(curr string, namedType string, isNull, fromOrToNull bool) (NullType, []string) {
+func (t Types) getOptional(curr, namedType string, isNull, fromOrToNull bool) (NullType, []string) {
 	name, def := t.GetNameAndDef(curr, namedType)
 	return t.typeModifier.OptionalType(name, def, isNull, fromOrToNull)
 }
 
-func (t Types) IsOptionalValid(currentPkg string, forType string, null bool, varName string) string {
+func (t Types) IsOptionalValid(currentPkg, forType string, null bool, varName string) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, _ := t.getOptional(currentPkg, forType, null, null)
 	nullTyp := t.GetNullType(currentPkg, forType)
@@ -297,7 +297,7 @@ func (t Types) IsOptionalValid(currentPkg string, forType string, null bool, var
 	).Replace(optTyp.ValidExpr)
 }
 
-func (t Types) FromOptional(currentPkg string, i language.Importer, forType string, varName string, isNull, fromOrToNull bool) string {
+func (t Types) FromOptional(currentPkg string, i language.Importer, forType, varName string, isNull, fromOrToNull bool) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, _ := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)
@@ -310,7 +310,7 @@ func (t Types) FromOptional(currentPkg string, i language.Importer, forType stri
 	).Replace(optTyp.UseExpr)
 }
 
-func (t Types) ToOptional(currentPkg string, i language.Importer, forType string, varName string, isNull, fromOrToNull bool) string {
+func (t Types) ToOptional(currentPkg string, i language.Importer, forType, varName string, isNull, fromOrToNull bool) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, _ := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)

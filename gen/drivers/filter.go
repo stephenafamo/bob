@@ -10,7 +10,7 @@ type Filter struct {
 }
 
 //nolint:nonamedreturns
-func ClassifyPatterns(patterns []string) (stringPatterns []string, regexPatterns []string) {
+func ClassifyPatterns(patterns []string) (stringPatterns, regexPatterns []string) {
 	const regexDelimiter = "/"
 
 	for _, pattern := range patterns {

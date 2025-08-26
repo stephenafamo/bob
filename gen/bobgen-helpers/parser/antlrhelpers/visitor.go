@@ -124,7 +124,7 @@ func (w *Visitor[C, I]) MatchNames(p1, p2 NodeKey) {
 	w.MaybeSetName(p2, w.Names[p1])
 }
 
-func (v *Visitor[C, I]) MatchNodeNames(p1 Node, p2 Node) {
+func (v *Visitor[C, I]) MatchNodeNames(p1, p2 Node) {
 	v.MatchNames(Key(p1), Key(p2))
 }
 

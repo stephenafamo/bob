@@ -1,6 +1,8 @@
 package bob
 
-import "context"
+import (
+	"context"
+)
 
 // Mod is a generic interface for modifying a query
 // It is the building block for creating queries
