@@ -56,12 +56,7 @@ func (p Pool) Begin(ctx context.Context) (Tx, error) {
 // BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
 // implements [Queryer]
 func (p Pool) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
-	tx, err := p.Pool.BeginTx(ctx, opts)
-	if err != nil {
-		return Tx{}, err
-	}
-
-	return NewTx(tx), nil
+	return beginTx(ctx, opts, p.Pool)
 }
 
 // Acquire is similar to [*pgxpool.Pool.Acquire] but returns a connection that implement [Queryer]
@@ -109,12 +104,7 @@ func (c PoolConn) Begin(ctx context.Context) (Tx, error) {
 // BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
 // implements [Queryer]
 func (c PoolConn) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
-	tx, err := c.Conn.BeginTx(ctx, opts)
-	if err != nil {
-		return Tx{}, err
-	}
-
-	return NewTx(tx), nil
+	return beginTx(ctx, opts, c.Conn)
 }
 
 // NewConn wraps an [*pgx.Conn] and returns a type that implements [Queryer]
@@ -149,36 +139,7 @@ func (c Conn) Begin(ctx context.Context) (Tx, error) {
 // BeginTx is similar to [*pgxpool.Pool.BeginTx], but return a transaction that
 // implements [Queryer]
 func (c Conn) BeginTx(ctx context.Context, opts pgx.TxOptions) (Tx, error) {
-	tx, err := c.Conn.BeginTx(ctx, opts)
-	if err != nil {
-		return Tx{}, err
-	}
-
-	return NewTx(tx), nil
-}
-
-// NewTx wraps an [*pgx.Tx] and returns a type that implements [Queryer] but still
-// retains the expected methods used by *pgx.Tx
-// This is useful when an existing *pgx.Tx is used in other places in the codebase
-func NewTx(tx pgx.Tx) Tx {
-	return Tx{tx}
-}
-
-// Tx is similar to *pgx.Tx but implements [Queryer]
-type Tx struct {
-	pgx.Tx
-}
-
-// ExecContext executes a query without returning any rows. The args are for any placeholder parameters in the query.
-func (t Tx) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	tag, err := t.Tx.Exec(ctx, query, args...)
-	return result{tag}, err
-}
-
-// QueryContext executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
-func (t Tx) QueryContext(ctx context.Context, query string, args ...any) (scan.Rows, error) {
-	pgxRows, err := t.Tx.Query(ctx, query, args...)
-	return rows{pgxRows}, err
+	return beginTx(ctx, opts, c.Conn)
 }
 
 type result struct {
