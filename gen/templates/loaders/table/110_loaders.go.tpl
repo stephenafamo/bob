@@ -112,9 +112,8 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
               {{if $side.FromWhere -}}
               FromWhere: []orm.RelWhere{
                 {{range $where := $side.FromWhere -}}
-                {{- $colAlias := index $from.Columns $where.Column -}}
                 {
-                  Column: ColumnNames.{{$from.UpPlural}}.{{$colAlias}},
+                  Column: {{quote $where.Column}},
                   SQLValue: {{quote $where.SQLValue}},
                   GoValue: {{quote $where.GoValue}},
                 },
@@ -124,9 +123,8 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
               {{if $side.ToWhere -}}
               ToWhere: []orm.RelWhere{
                 {{range $where := $side.ToWhere -}}
-                {{- $colAlias := index $to.Columns $where.Column -}}
                 {
-                  Column: ColumnNames.{{$to.UpPlural}}.{{$colAlias}},
+                  Column: {{quote $where.Column}},
                   SQLValue: {{quote $where.SQLValue}},
                   GoValue: {{quote $where.GoValue}},
                 },

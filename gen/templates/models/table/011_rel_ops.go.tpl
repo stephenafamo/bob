@@ -49,7 +49,7 @@
         {{$colName := $sideAlias.Column $map.Column -}}
         {{if .HasValue -}}
           {{$val := index .Value 1 -}}
-          {{$tblName}}.{{$colName}} = &{{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $side.TableName .Column $val "true"}}
+          {{$tblName}}.{{$colName}} = {{$.Types.ToOptional $.CurrentPackage $.Importer $sideC.Type $val $sideC.Nullable false}}
         {{else}}
           {{$a := $.Aliases.Table .ExternalTable -}}
           {{$t := $.Tables.Get .ExternalTable -}}
@@ -107,7 +107,7 @@
           {{$column := $table.GetColumn .ExternalColumn -}}
           {{if .HasValue -}}
             {{$val := index .Value 1 -}}
-            {{$colName}}: &{{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $side.TableName .Column $val "true"}},
+            {{$colName}}: {{$.Types.ToOptional $.CurrentPackage $.Importer $sideColumn.Type $val $sideColumn.Nullable false}},
           {{else}}
             {{$colVal := printf "%s%d" $tableAlias.DownSingular $map.ExtPosition -}}
             {{if $rel.NeedsMany .ExtPosition -}}
@@ -146,7 +146,7 @@
           {{$colName := $sideAlias.Column $map.Column -}}
           {{if .HasValue -}}
             {{$val := index .Value 1 -}}
-            {{$colName}}: &{{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $side.TableName .Column $val "true"}},
+            {{$colName}}: {{$.Types.ToOptional $.CurrentPackage $.Importer $sideC.Type $val $sideC.Nullable false}},
           {{else}}
             {{$a := $.Aliases.Table .ExternalTable -}}
             {{$t := $.Tables.Get .ExternalTable -}}
@@ -190,6 +190,8 @@
 
 {{if not $rel.IsToMany -}}
   func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} related *{{$ftable.UpSingular}}Setter) error {
+    var err error
+
     {{if $rel.InsertEarly -}}
       {{$to}}, err := {{$ftable.UpPlural}}.Insert(related).One(ctx, exec)
       if err != nil {
