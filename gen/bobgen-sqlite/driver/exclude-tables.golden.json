@@ -14,7 +14,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -26,7 +26,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -38,7 +38,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -183,7 +183,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -247,7 +247,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -298,7 +298,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -349,7 +349,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -400,7 +400,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -412,7 +412,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -436,7 +436,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -499,7 +499,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -511,7 +511,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -535,7 +535,7 @@
 					"generated": true,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -598,7 +598,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -610,7 +610,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -661,7 +661,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -712,7 +712,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -763,7 +763,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -814,7 +814,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -865,7 +865,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -916,7 +916,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -967,7 +967,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -979,7 +979,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -991,7 +991,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1018,7 +1018,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1069,7 +1069,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1081,7 +1081,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1163,7 +1163,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1175,7 +1175,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1187,7 +1187,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1288,7 +1288,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1339,7 +1339,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1390,7 +1390,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1402,7 +1402,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1414,7 +1414,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -1553,7 +1553,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1565,7 +1565,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1577,7 +1577,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1901,7 +1901,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1913,7 +1913,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1925,7 +1925,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1937,7 +1937,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1949,7 +1949,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1961,7 +1961,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1973,7 +1973,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -1985,7 +1985,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -1997,7 +1997,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2009,7 +2009,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2021,7 +2021,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2033,7 +2033,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2045,7 +2045,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2057,7 +2057,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2069,7 +2069,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2081,7 +2081,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2093,7 +2093,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2345,7 +2345,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2357,7 +2357,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int8",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2369,7 +2369,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2381,7 +2381,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2393,7 +2393,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2405,7 +2405,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2417,7 +2417,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2429,7 +2429,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int16",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2441,7 +2441,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2453,7 +2453,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2489,7 +2489,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2501,7 +2501,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2561,7 +2561,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2573,7 +2573,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "float32",
+					"type": "float64",
 					"type_limits": null
 				},
 				{
@@ -2729,7 +2729,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2741,7 +2741,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2777,7 +2777,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2789,7 +2789,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2801,7 +2801,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2813,7 +2813,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "string",
+					"type": "[]byte",
 					"type_limits": null
 				},
 				{
@@ -2936,7 +2936,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2948,7 +2948,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -2960,7 +2960,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -2987,7 +2987,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -3038,7 +3038,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -3050,7 +3050,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
@@ -3132,7 +3132,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -3144,7 +3144,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				},
 				{
@@ -3156,7 +3156,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "int32",
+					"type": "int64",
 					"type_limits": null
 				}
 			],
