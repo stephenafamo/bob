@@ -394,6 +394,7 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 		if _, ok := excludedColumns[colInfo.Name]; ok {
 			continue
 		}
+
 		column := drivers.Column{
 			Name:     colInfo.Name,
 			DBType:   strings.ToUpper(colInfo.Type),
@@ -402,12 +403,15 @@ func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []i
 
 		isPrimaryKeyInteger := colInfo.Pk == 1 && column.DBType == "INTEGER"
 		// This is special behavior noted in the sqlite documentation.
-		// An integer primary key becomes synonymous with the internal ROWID
+		// An integer primary key becomes synonymous with the internal ROWID (int64)
 		// and acts as an auto incrementing value. Although there's important
 		// differences between using the keyword AUTOINCREMENT and this inferred
 		// version, they don't matter here so just masquerade as the same thing as
 		// above.
 		autoIncr := isPrimaryKeyInteger && (tableHasAutoIncr || nPkeys == 1)
+		if isPrimaryKeyInteger {
+			column.DBType = "BIGINT"
+		}
 
 		// See: https://github.com/sqlite/sqlite/blob/91f621531dc1cb9ba5f6a47eb51b1de9ed8bdd07/src/pragma.c#L1165
 		column.Generated = colInfo.Hidden == 2 || colInfo.Hidden == 3
