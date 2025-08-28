@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use the full column type and not just the datatype as the `DBType` in bobgen-mysql.
 - `bob.Transactor` is now a generic interface so that implementations can use a concrete transaction type.
+- The data types generated for SQLite now follow SQLite's type affinity rules more closely (excluding some common names). As a result, all integer types are now mapped to `int64` and all floating point types are mapped to `float64`.
 
 ### Fixed
 

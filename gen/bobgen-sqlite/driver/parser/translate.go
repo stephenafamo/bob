@@ -1,32 +1,14 @@
 package parser
 
+import "strings"
+
 // TranslateColumnType converts sqlite database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html
 func TranslateColumnType(dbType, driver string) string {
+	// Some common types
 	switch dbType {
-	case "TINYINT", "INT8":
-		return "int8"
-	case "SMALLINT", "INT2":
-		return "int16"
-	case "MEDIUMINT":
-		return "int32"
-	case "INT", "INTEGER":
-		return "int32"
-	case "BIGINT":
-		return "int64"
-	case "UNSIGNED BIG INT":
-		return "uint64"
-	case "CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR",
-		"NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB":
-		return "string"
-	case "BLOB":
-		return "[]byte"
-	case "FLOAT", "REAL":
-		return "float32"
-	case "DOUBLE", "DOUBLE PRECISION":
-		return "float64"
 	case "NUMERIC", "DECIMAL":
 		return "decimal.Decimal"
 	case "BOOLEAN":
@@ -36,10 +18,34 @@ func TranslateColumnType(dbType, driver string) string {
 			return "types.Time"
 		}
 		return "time.Time"
-	case "JSON":
+	case "JSON", "JSONB":
 		return "types.JSON[json.RawMessage]"
+	}
+
+	switch {
+	case strings.Contains(dbType, "INT"):
+		// Any type with "INT" in it is INTEGER affinity
+		// and integers are ALWAYS int64 in SQLite
+		return "int64"
+
+	case strings.Contains(dbType, "CHAR"),
+		strings.Contains(dbType, "CLOB"),
+		strings.Contains(dbType, "TEXT"):
+		return "string"
+
+	case strings.Contains(dbType, "BLOB"):
+		return "[]byte"
+
+	case strings.Contains(dbType, "REAL"),
+		strings.Contains(dbType, "FLOA"),
+		strings.Contains(dbType, "DOUB"): //nolint:misspell
+		// All floats are float64 in SQLite
+		return "float64"
 
 	default:
+		// Even if the default affinity is NUMERIC, we map it to "string"
+		// because in SQLite NUMERIC can use all storage classes
 		return "string"
+
 	}
 }

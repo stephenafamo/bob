@@ -41,7 +41,7 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 	}
 }
 
-func TestAssembleLibSQL(t *testing.T) {
+func TestLibSQL(t *testing.T) {
 	ctx := context.Background()
 
 	libsqlServer, err := testcontainers.Run(
@@ -108,7 +108,7 @@ func TestAssembleLibSQL(t *testing.T) {
 	})
 }
 
-func TestAssembleSQLite(t *testing.T) {
+func TestSQLite(t *testing.T) {
 	ctx := context.Background()
 
 	dir, err := os.MkdirTemp("", "bobgen_sqlite_*")
