@@ -3,8 +3,8 @@ package gen
 import (
 	"testing"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func TestColumnFilter_IsEmpty(t *testing.T) {
@@ -20,7 +20,7 @@ func TestColumnFilter_IsEmpty(t *testing.T) {
 		},
 		{
 			name:     "not empty",
-			filter:   ColumnFilter{Name: omit.From("id")},
+			filter:   ColumnFilter{Name: internal.Pointer("id")},
 			expected: false,
 		},
 	}
@@ -49,99 +49,99 @@ func TestColumnFilter_Matches(t *testing.T) {
 		},
 		{
 			name:     "names do not match",
-			filter:   ColumnFilter{Name: omit.From("not_id")},
+			filter:   ColumnFilter{Name: internal.Pointer("not_id")},
 			column:   drivers.Column{Name: "id"},
 			expected: false,
 		},
 		{
 			name:     "names match case-insensitively",
-			filter:   ColumnFilter{Name: omit.From("ID")},
+			filter:   ColumnFilter{Name: internal.Pointer("ID")},
 			column:   drivers.Column{Name: "id"},
 			expected: true,
 		},
 		{
 			name:     "names match with regex",
-			filter:   ColumnFilter{Name: omit.From("/id$/")},
+			filter:   ColumnFilter{Name: internal.Pointer("/id$/")},
 			column:   drivers.Column{Name: "author_id"},
 			expected: true,
 		},
 		{
 			name:     "regex is always case insensitive",
-			filter:   ColumnFilter{Name: omit.From("/ID$/")},
+			filter:   ColumnFilter{Name: internal.Pointer("/ID$/")},
 			column:   drivers.Column{Name: "author_id"},
 			expected: true,
 		},
 		{
 			name:     "types match case-insensitively",
-			filter:   ColumnFilter{Type: omit.From("INTEGER")},
+			filter:   ColumnFilter{Type: internal.Pointer("INTEGER")},
 			column:   drivers.Column{Type: "integer"},
 			expected: true,
 		},
 		{
 			name:     "db types match case-insensitively",
-			filter:   ColumnFilter{DBType: omit.From("int")},
+			filter:   ColumnFilter{DBType: internal.Pointer("int")},
 			column:   drivers.Column{DBType: "INT"},
 			expected: true,
 		},
 		{
 			name:     "domain names match case-insensitively",
-			filter:   ColumnFilter{DomainName: omit.From("email")},
+			filter:   ColumnFilter{DomainName: internal.Pointer("email")},
 			column:   drivers.Column{DomainName: "EMAIL"},
 			expected: true,
 		},
 		{
 			name:     "default values match case-insensitively",
-			filter:   ColumnFilter{Default: omit.From("null")},
+			filter:   ColumnFilter{Default: internal.Pointer("null")},
 			column:   drivers.Column{Default: "NULL"},
 			expected: true,
 		},
 		{
 			name:     "comments match case-insensitively",
-			filter:   ColumnFilter{Comment: omit.From("primary key")},
+			filter:   ColumnFilter{Comment: internal.Pointer("primary key")},
 			column:   drivers.Column{Comment: "PRIMARY KEY"},
 			expected: true,
 		},
 		{
 			name:     "generated matches exactly",
-			filter:   ColumnFilter{Generated: omit.From(false)},
+			filter:   ColumnFilter{Generated: internal.Pointer(false)},
 			column:   drivers.Column{Generated: false},
 			expected: true,
 		},
 		{
 			name:     "generated does not match",
-			filter:   ColumnFilter{Generated: omit.From(false)},
+			filter:   ColumnFilter{Generated: internal.Pointer(false)},
 			column:   drivers.Column{Generated: true},
 			expected: false,
 		},
 		{
 			name:     "autoincr matches exactly",
-			filter:   ColumnFilter{AutoIncr: omit.From(false)},
+			filter:   ColumnFilter{AutoIncr: internal.Pointer(false)},
 			column:   drivers.Column{AutoIncr: false},
 			expected: true,
 		},
 		{
 			name:     "autoincr does not match",
-			filter:   ColumnFilter{AutoIncr: omit.From(false)},
+			filter:   ColumnFilter{AutoIncr: internal.Pointer(false)},
 			column:   drivers.Column{AutoIncr: true},
 			expected: false,
 		},
 		{
 			name:     "nullable matches exactly",
-			filter:   ColumnFilter{Nullable: omit.From(true)},
+			filter:   ColumnFilter{Nullable: internal.Pointer(true)},
 			column:   drivers.Column{Nullable: true},
 			expected: true,
 		},
 		{
 			name:     "nullable does not match",
-			filter:   ColumnFilter{Nullable: omit.From(true)},
+			filter:   ColumnFilter{Nullable: internal.Pointer(true)},
 			column:   drivers.Column{Nullable: false},
 			expected: false,
 		},
 		{
 			name: "filters are combined with AND",
 			filter: ColumnFilter{
-				Name: omit.From("id"),
-				Type: omit.From("wrong_type"),
+				Name: internal.Pointer("id"),
+				Type: internal.Pointer("wrong_type"),
 			},
 			column: drivers.Column{
 				Name: "id",

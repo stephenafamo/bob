@@ -3,8 +3,8 @@ package gen
 import (
 	"testing"
 
-	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/drivers"
+	"github.com/stephenafamo/bob/internal"
 )
 
 func TestProcessTypeReplacements(t *testing.T) {
@@ -118,52 +118,52 @@ func TestProcessTypeReplacements(t *testing.T) {
 	replacements := []Replace{
 		{
 			Match: ColumnFilter{
-				DBType: omit.From("SERIAL"),
+				DBType: internal.Pointer("SERIAL"),
 			},
 			Replace: "excellent.Type",
 		},
 		{
 			Tables: []string{"named_table"},
 			Match: ColumnFilter{
-				Name: omit.From("id"),
+				Name: internal.Pointer("id"),
 			},
 			Replace: "excellent.NamedType",
 		},
 		{
 			Match: ColumnFilter{
-				Type:     omit.From("null.String"),
-				Nullable: omit.From(true),
+				Type:     internal.Pointer("null.String"),
+				Nullable: internal.Pointer(true),
 			},
 			Replace: "int",
 		},
 		{
 			Match: ColumnFilter{
-				DomainName: omit.From("EMAIL"),
+				DomainName: internal.Pointer("EMAIL"),
 			},
 			Replace: "contextInt",
 		},
 		{
 			Match: ColumnFilter{
-				Name: omit.From("by_named"),
+				Name: internal.Pointer("by_named"),
 			},
 			Replace: "big.Int",
 		},
 		{
 			Match: ColumnFilter{
-				Comment: omit.From("xid"),
+				Comment: internal.Pointer("xid"),
 			},
 			Replace: "xid.ID",
 		},
 		{
 			Match: ColumnFilter{
-				Name: omit.From("/_id$/"),
+				Name: internal.Pointer("/_id$/"),
 			},
 			Replace: "fk.ID",
 		},
 		{
 			Match: ColumnFilter{
-				Name:     omit.From("id"),
-				AutoIncr: omit.From(true),
+				Name:     internal.Pointer("id"),
+				AutoIncr: internal.Pointer(true),
 			},
 			Replace: "pk.ID",
 		},

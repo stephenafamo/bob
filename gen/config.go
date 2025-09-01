@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"github.com/aarondl/opt/omit"
 	"github.com/stephenafamo/bob/gen/drivers"
 )
 
@@ -53,30 +52,30 @@ type Replace struct {
 // ColumnFilter is used to filter columns in the config file.
 // It should mirror the fields of drivers.Column
 type ColumnFilter struct {
-	Name      omit.Val[string] `yaml:"name"`
-	DBType    omit.Val[string] `yaml:"db_type"`
-	Type      omit.Val[string] `yaml:"type"`
-	Default   omit.Val[string] `yaml:"default"`
-	Comment   omit.Val[string] `yaml:"comment"`
-	Nullable  omit.Val[bool]   `yaml:"nullable"`
-	Generated omit.Val[bool]   `yaml:"generated"`
-	AutoIncr  omit.Val[bool]   `yaml:"autoincr"`
+	Name      *string `yaml:"name"`
+	DBType    *string `yaml:"db_type"`
+	Type      *string `yaml:"type"`
+	Default   *string `yaml:"default"`
+	Comment   *string `yaml:"comment"`
+	Nullable  *bool   `yaml:"nullable"`
+	Generated *bool   `yaml:"generated"`
+	AutoIncr  *bool   `yaml:"autoincr"`
 
 	// DomainName is the domain type name associated to the column. See here:
 	// https://www.postgresql.org/docs/16/extend-type-system.html
-	DomainName omit.Val[string] `yaml:"domain_name"`
+	DomainName *string `yaml:"domain_name"`
 }
 
 func (f ColumnFilter) IsEmpty() bool {
-	return f.Name.IsUnset() &&
-		f.DBType.IsUnset() &&
-		f.Type.IsUnset() &&
-		f.Default.IsUnset() &&
-		f.Comment.IsUnset() &&
-		f.Nullable.IsUnset() &&
-		f.Generated.IsUnset() &&
-		f.AutoIncr.IsUnset() &&
-		f.DomainName.IsUnset()
+	return f.Name == nil &&
+		f.DBType == nil &&
+		f.Type == nil &&
+		f.Default == nil &&
+		f.Comment == nil &&
+		f.Nullable == nil &&
+		f.Generated == nil &&
+		f.AutoIncr == nil &&
+		f.DomainName == nil
 }
 
 // Matches determines if a drivers.Column matches all the specified criteria (logical AND).
@@ -88,39 +87,39 @@ func (f ColumnFilter) Matches(column drivers.Column) bool {
 		return false
 	}
 
-	if val, ok := f.Name.Get(); ok && !matchString(val, column.Name) {
+	if val := f.Name; val != nil && !matchString(*val, column.Name) {
 		return false
 	}
 
-	if val, ok := f.DBType.Get(); ok && !matchString(val, column.DBType) {
+	if val := f.DBType; val != nil && !matchString(*val, column.DBType) {
 		return false
 	}
 
-	if val, ok := f.Type.Get(); ok && !matchString(val, column.Type) {
+	if val := f.Type; val != nil && !matchString(*val, column.Type) {
 		return false
 	}
 
-	if val, ok := f.Default.Get(); ok && !matchString(val, column.Default) {
+	if val := f.Default; val != nil && !matchString(*val, column.Default) {
 		return false
 	}
 
-	if val, ok := f.Comment.Get(); ok && !matchString(val, column.Comment) {
+	if val := f.Comment; val != nil && !matchString(*val, column.Comment) {
 		return false
 	}
 
-	if val, ok := f.DomainName.Get(); ok && !matchString(val, column.DomainName) {
+	if val := f.DomainName; val != nil && !matchString(*val, column.DomainName) {
 		return false
 	}
 
-	if val, ok := f.Nullable.Get(); ok && val != column.Nullable {
+	if val := f.Nullable; val != nil && *val != column.Nullable {
 		return false
 	}
 
-	if val, ok := f.Generated.Get(); ok && val != column.Generated {
+	if val := f.Generated; val != nil && *val != column.Generated {
 		return false
 	}
 
-	if val, ok := f.AutoIncr.Get(); ok && val != column.AutoIncr {
+	if val := f.AutoIncr; val != nil && *val != column.AutoIncr {
 		return false
 	}
 
