@@ -25,6 +25,9 @@ func (u *Uint64) Scan(src any) error {
 	case int64:
 		*u = Uint64(v)
 		return nil
+	case uint64:
+		*u = Uint64(v)
+		return nil
 	case nil:
 		return fmt.Errorf("cannot scan nil value into Uint64")
 	default:

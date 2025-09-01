@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed an issue where `bobgen-mysql` could not detect unsigned integer columns in queries.
 - Properly close `pgx` transactions if the context used in `BeginTx` is cancelled.
 - Fix issues with generating code for relationships defined with `WhereExpr`.
+- Support `uint64` type when scanning columns as `types.Uint64`. This fixes scanning `BIGINT UNSIGNED` MySQL columns as `types.Uint64` when `interpolateParams` is enabled. (thanks @luiscleto)
 
 ## [v0.40.2] - 2025-08-16
 
