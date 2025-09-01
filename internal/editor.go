@@ -9,25 +9,19 @@ import (
 type RuleType int
 
 const (
-	CopyRuleType RuleType = iota
-	InsertRuleType
+	InsertRuleType RuleType = iota
 	DeleteRuleType
 	ReplaceRuleType
-	RecordRuleType
 )
 
 func (r RuleType) String() string {
 	switch r {
-	case CopyRuleType:
-		return "copy"
 	case InsertRuleType:
 		return "insert"
 	case ReplaceRuleType:
 		return "replace"
 	case DeleteRuleType:
 		return "delete"
-	case RecordRuleType:
-		return "record"
 	default:
 		return "unknown"
 	}
@@ -166,6 +160,10 @@ func (i insertRule) priority() int {
 
 func Insert(pos int, content string) insertRule {
 	return insertRule{pos, func() string { return content }, 0}
+}
+
+func InsertWithPriority(pos int, content string, priority int) insertRule {
+	return insertRule{pos, func() string { return content }, priority}
 }
 
 func InsertFromFunc(pos int, content func() string) insertRule {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob/internal"
 	mysqlparser "github.com/stephenafamo/sqlparser/mysql"
 )
@@ -59,11 +60,16 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 	}
 
 	for _, compound := range compounds {
+		setQ := compound.SetQuery()
+		var query antlr.ParserRuleContext = setQ.SetQueryBase()
+		if query == nil {
+			query = setQ.SetQueryInParenthesis()
+		}
+
 		strategy := strings.ToUpper(compound.GetSetOp().GetText())
 		all := compound.ALL() != nil
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-			compound.SetQuery().GetStart().GetStart(),
-			compound.SetQuery().GetStop().GetStop(),
+			query.GetStart().GetStart(), query.GetStop().GetStop(),
 			func(start, end int) error {
 				fmt.Fprintf(sb, `
                         q.AppendCombine(clause.Combine{
@@ -75,7 +81,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
                                 Dialect: dialect.Dialect,
                             },
                         })
-                    `, strategy, all, start, end)
+                    `, strategy, all, start+1, end-1) // skip surrounding parens
 				return nil
 			},
 		)...)

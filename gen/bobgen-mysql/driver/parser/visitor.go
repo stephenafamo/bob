@@ -24,7 +24,6 @@ func NewVisitor(db tables) *visitor {
 			Names:     make(map[NodeKey]string),
 			Infos:     make(map[NodeKey]NodeInfo),
 			Functions: defaultFunctions,
-			Atom:      &atomic.Int64{},
 		},
 		querySources: make(map[antlrhelpers.NodeKey]QuerySource),
 	}
@@ -1765,6 +1764,17 @@ func (v *visitor) VisitSetQueryInParenthesis(ctx *mysqlparser.SetQueryInParenthe
 
 // VisitSetQueryPart implements parser.MySqlParserVisitor.
 func (v *visitor) VisitSetQueryPart(ctx *mysqlparser.SetQueryPartContext) any {
+	if single := ctx.SetQuery().SetQueryBase(); single != nil {
+		// Wrap the entire set query in parentheses to avoid issues
+		v.StmtRules = append(v.StmtRules, internal.Insert(
+			single.GetStart().GetStart(), "(",
+		))
+
+		v.StmtRules = append(v.StmtRules, internal.InsertWithPriority(
+			single.GetStop().GetStop(), ")", 3,
+		))
+	}
+
 	return v.VisitChildren(ctx)
 }
 
