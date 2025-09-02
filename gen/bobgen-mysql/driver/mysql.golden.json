@@ -3260,6 +3260,62 @@
 								}
 							],
 							"mods": "q.AppendSelect(EXPR.subExpr(7, 17))\nq.SetTable(EXPR.subExpr(23, 28))\nq.AppendWhere(EXPR.subExpr(35, 49))\n"
+						},
+						{
+							"type": 1,
+							"name": "SelectUsersUnionRaw",
+							"raw": "SELECT `id` FROM `users` WHERE `id` IN (?)\nUNION (SELECT `id` FROM `users` WHERE `id` = ?)",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": []
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": []
+									},
+									"children": null,
+									"positions": [
+										[
+											40,
+											41
+										]
+									],
+									"can_be_multiple": true
+								},
+								{
+									"col": {
+										"name": "id_2",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": []
+									},
+									"children": null,
+									"positions": [
+										[
+											88,
+											89
+										]
+									],
+									"can_be_multiple": false
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(50, 89),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    "
 						}
 					]
 				}
