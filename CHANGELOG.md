@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issues with generating code for relationships defined with `WhereExpr`.
 - Support `uint64` type when scanning columns as `types.Uint64`. This fixes scanning `BIGINT UNSIGNED` MySQL columns as `types.Uint64` when `interpolateParams` is enabled. (thanks @luiscleto)
 - Properly handle code generation tests for compound queries in MySQL.
+- Fix an issue where some ids are uppercased by the MySQL query code generator.
 
 ## [v0.40.2] - 2025-08-16
 

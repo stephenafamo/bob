@@ -380,6 +380,91 @@
 			"comment": ""
 		},
 		{
+			"key": "query",
+			"schema": "",
+			"name": "query",
+			"columns": [
+				{
+					"name": "id",
+					"db_type": "int",
+					"default": "AUTO_INCREMENT",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": true,
+					"domain_name": "",
+					"type": "int32",
+					"type_limits": []
+				},
+				{
+					"name": "query_text",
+					"db_type": "text",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "string",
+					"type_limits": []
+				},
+				{
+					"name": "created_at",
+					"db_type": "timestamp",
+					"default": "CURRENT_TIMESTAMP",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "time.Time",
+					"type_limits": []
+				},
+				{
+					"name": "updated_at",
+					"db_type": "timestamp",
+					"default": "CURRENT_TIMESTAMP",
+					"comment": "",
+					"nullable": true,
+					"generated": false,
+					"autoincr": false,
+					"domain_name": "",
+					"type": "time.Time",
+					"type_limits": []
+				}
+			],
+			"indexes": [
+				{
+					"type": "BTREE",
+					"name": "PRIMARY",
+					"columns": [
+						{
+							"name": "id",
+							"desc": false,
+							"is_expression": false
+						}
+					],
+					"unique": true,
+					"comment": "",
+					"extra": null
+				}
+			],
+			"constraints": {
+				"primary": {
+					"name": "PRIMARY",
+					"columns": [
+						"id"
+					],
+					"comment": "",
+					"extra": null
+				},
+				"foreign": null,
+				"uniques": null,
+				"check": null
+			},
+			"comment": ""
+		},
+		{
 			"key": "sponsors",
 			"schema": "",
 			"name": "sponsors",
