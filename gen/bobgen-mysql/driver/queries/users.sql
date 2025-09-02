@@ -24,3 +24,7 @@ FROM query
 WHERE query.id = ?
 ;
 
+-- SelectUsersUnionRaw
+SELECT id FROM `users` WHERE id IN (?)
+UNION SELECT id FROM `users` WHERE id = ?
+;

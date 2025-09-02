@@ -162,10 +162,6 @@ func Insert(pos int, content string) insertRule {
 	return insertRule{pos, func() string { return content }, 0}
 }
 
-func InsertWithPriority(pos int, content string, priority int) insertRule {
-	return insertRule{pos, func() string { return content }, priority}
-}
-
 func InsertFromFunc(pos int, content func() string) insertRule {
 	return insertRule{pos, content, 0}
 }
@@ -235,6 +231,20 @@ func (r callbackRule) edit(source string, buf *strings.Builder) error {
 
 func EditCallback(rule EditRule, callbacks ...func(start, end int, before, after string) error) callbackRule {
 	return callbackRule{rule, callbacks}
+}
+
+func RecordPoint(point int, callbacks ...func(point int) error) EditRule {
+	return EditCallback(
+		insertRule{point, nil, 1},
+		func(point, _ int, _, content string) error {
+			for _, cb := range callbacks {
+				if err := cb(point); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	)
 }
 
 func RecordPoints(oldStart, oldEnd int, callbacks ...func(start, end int) error) []EditRule {

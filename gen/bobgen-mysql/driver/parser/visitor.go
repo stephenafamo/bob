@@ -1785,8 +1785,8 @@ func (v *visitor) VisitSetQueryPart(ctx *mysqlparser.SetQueryPartContext) any {
 			single.GetStart().GetStart(), "(",
 		))
 
-		v.StmtRules = append(v.StmtRules, internal.InsertWithPriority(
-			single.GetStop().GetStop(), ")", 3,
+		v.StmtRules = append(v.StmtRules, internal.Insert(
+			single.GetStop().GetStop()+1, ")",
 		))
 	}
 
@@ -3649,15 +3649,15 @@ func (v *visitor) VisitBindExpressionAtom(ctx *mysqlparser.BindExpressionAtomCon
 
 	v.SetArg(ctx)
 	v.UpdateInfo(info)
-	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
-		ctx.GetStart().GetStart(), ctx.GetStop().GetStop(),
-		func(start, end int) error {
+	v.StmtRules = append(v.StmtRules, internal.RecordPoint(
+		ctx.GetStart().GetStart(),
+		func(start int) error {
 			v.UpdateInfo(NodeInfo{
 				Node:           ctx,
-				EditedPosition: [2]int{start, end},
+				EditedPosition: [2]int{start, start + 1},
 			})
 			return nil
-		})...,
+		}),
 	)
 
 	return nil
