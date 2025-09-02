@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -36,9 +36,9 @@ type driverWrapper[T, C, I any] struct {
 	once            sync.Once
 }
 
-func (d *driverWrapper[T, C, I]) Assemble(context.Context) (*drivers.DBInfo[T, C, I], error) {
+func (d *driverWrapper[T, C, I]) Assemble(ctx context.Context) (*drivers.DBInfo[T, C, I], error) {
 	d.once.Do(func() {
-		d.info, d.infoErr = d.Interface.Assemble(context.Background())
+		d.info, d.infoErr = d.Interface.Assemble(ctx)
 	})
 
 	return d.info, d.infoErr
@@ -47,13 +47,13 @@ func (d *driverWrapper[T, C, I]) Assemble(context.Context) (*drivers.DBInfo[T, C
 func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 	t.Helper()
 
-	_, err := d.Assemble(context.Background())
+	_, err := d.Assemble(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	sort.Slice(d.info.Tables, func(i, j int) bool {
-		return d.info.Tables[i].Key < d.info.Tables[j].Key
+	slices.SortFunc(d.info.Tables, func(a, b drivers.Table[C, I]) int {
+		return strings.Compare(a.Key, b.Key)
 	})
 
 	got, err := json.MarshalIndent(d.info, "", "\t")
@@ -128,6 +128,10 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		goldenFile:      config.GoldenFile,
 		goldenFileMod:   config.GoldenFileMod,
 	}
+
+	// Assemble in the driver first because the `queries` are a relative path
+	// if not, running "generate" will fail if `assemble` was not run first
+	_, _ = d.Assemble(t.Context())
 
 	t.Run("assemble", func(t *testing.T) {
 		d.TestAssemble(t)
@@ -229,7 +233,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	if err := os.Chdir(dst); err != nil { // ensure we are in the destination directory
 		t.Fatalf("Unable to change directory to %s: %s", dst, err)
 	}
-	if err := gen.Run(context.Background(), state, d, allPlugins...); err != nil {
+	if err := gen.Run(t.Context(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
 	if err := os.Chdir(currentDir); err != nil { // ensure we are back in the original directory
