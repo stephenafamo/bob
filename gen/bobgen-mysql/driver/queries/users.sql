@@ -18,3 +18,9 @@ SELECT id FROM `users` WHERE id IN (?)
 UNION (SELECT id FROM `users` WHERE id IN (?))
 ;
 
+-- GetQueryIDByID
+SELECT query.id
+FROM query
+WHERE query.id = ?
+;
+

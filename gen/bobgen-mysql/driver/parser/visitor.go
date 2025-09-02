@@ -97,15 +97,30 @@ func (v *visitor) VisitTerminal(node antlr.TerminalNode) any {
 		}, name)
 	}
 
+	// if the parent token is "keywordsCanBeId", then we skip
+	// the replacement, because in that context the keyword is allowed
+	if parent := node.GetParent(); parent != nil {
+		if pctx, ok := parent.(antlr.RuleContext); ok {
+			if pctx.GetRuleIndex() == mysqlparser.MySqlParserRULE_keywordsCanBeId {
+				return nil
+			}
+		}
+	}
+
 	literals := mysqlparser.MySqlLexerLexerStaticData.LiteralNames
 	if token.GetTokenType() >= len(literals) {
 		return nil
 	}
 
+	// Literals are surrounded by single quotes
+	// so a valid literal is at least 3 characters long ('a')
+	// however, we are not interested in single character literals
+	// because they are usually symbols like commas, parentheses, etc.
 	literal := literals[token.GetTokenType()]
 	if len(literal) < 4 {
 		return nil
 	}
+
 	v.StmtRules = append(v.StmtRules, internal.Replace(
 		token.GetStart(),
 		token.GetStop(),
