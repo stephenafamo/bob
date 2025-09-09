@@ -68,7 +68,7 @@ Code:
 ```go
 sqlite.Update(
   um.TableAs("employees", "e"),
-  um.TableNotIndexed(),
+  um.NotIndexed(),
   um.SetCol("sales_count").To("sales_count + 1"),
   um.Where(sqlite.Quote("id").EQ(sqlite.Select(
     sm.Columns("sales_person"),

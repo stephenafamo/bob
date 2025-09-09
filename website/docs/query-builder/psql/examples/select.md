@@ -438,3 +438,56 @@ psql.Select(
   )),
 )
 ```
+
+## Union With Combined Args
+
+SQL:
+
+```sql
+(SELECT id, name FROM users ORDER BY id LIMIT 100) UNION (SELECT id, name FROM admins ORDER BY id LIMIT 10)
+ORDER BY id LIMIT 1000
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Limit(100),
+  sm.OrderBy("id"),
+  sm.Union(psql.Select(
+    sm.Columns("id", "name"),
+    sm.From("admins"),
+    sm.Limit(10),
+    sm.OrderBy("id"),
+  )),
+  sm.OrderCombined("id"),
+  sm.LimitCombined(1000),
+)
+```
+
+## Union With Uncombined Args
+
+SQL:
+
+```sql
+(SELECT id, name FROM users ORDER BY id LIMIT 1) UNION (SELECT id, name FROM admins ORDER BY id LIMIT 1)
+```
+
+Code:
+
+```go
+psql.Select(
+  sm.Columns("id", "name"),
+  sm.From("users"),
+  sm.Limit(1),
+  sm.OrderBy("id"),
+  sm.Union(psql.Select(
+    sm.Columns("id", "name"),
+    sm.From("admins"),
+    sm.Limit(1),
+    sm.OrderBy("id"),
+  )),
+)
+```
