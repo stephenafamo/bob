@@ -145,6 +145,14 @@ $ golangci-lint run
 0 issues.
 ```
 
+### Formatting
+
+This repository uses [gofumpt](https://github.com/mvdan/gofumpt) for formatting. It's more strict than `go fmt`. The linter will fail if you haven't formatted for code correctly. You can format your code with:
+
+```
+$ gofumpt -l -w ./some/file
+```
+
 ### Test
 
 You can test this repository using [go test](https://pkg.go.dev/testing). A simple test of a single module can be run with:

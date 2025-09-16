@@ -6,8 +6,8 @@ pkgs.mkShell {
 		pkgs.golangci-lint
 	];
 	shellHook = ''
-		# Install noctx if not already installed
 		go install github.com/sonatard/noctx/cmd/noctx@latest
+		go install mvdan.cc/gofumpt@latest
 
 		# Add Go binaries to PATH
 		export PATH=$PATH:$(go env GOPATH)/bin
