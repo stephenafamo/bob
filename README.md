@@ -124,6 +124,27 @@ query := psql.Select(
 )
 ```
 
+## Development
+
+### Nix
+
+You can get all the tools you need for developing against this repository with [nix](https://nixos.org/). Use `nix-shell` in the root of the repository to get a shell with all the dependencies and tools for development.
+
+### Lint
+
+This repository uses [golangci-lint](https://github.com/golangci/golangci-lint) for linting. You can run the linter with:
+
+```
+$ golangci-lint run
+```
+
+Before submitting pull requests you should ensure that your changes lint clean:
+
+```
+$ golangci-lint run
+0 issues.
+```
+
 ## Contributing
 
 Thanks to all the people who have contributed to Bob!
