@@ -147,7 +147,13 @@ $ golangci-lint run
 
 ### Test
 
-You can test this repository using [go test](https://pkg.go.dev/testing). A simple test run could be done with:
+You can test this repository using [go test](https://pkg.go.dev/testing). A simple test of a single module can be run with:
+
+```
+$ go test ./dialect/psql/
+```
+
+A comprehensive test of all modules could be done with:
 
 ```
 $ go test ./...

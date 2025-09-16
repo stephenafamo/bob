@@ -10,13 +10,19 @@ A View model makes it easy to map an entity to a database table and query it.
 To create a View model, use the `NewView()` function.
 
 ```go
+import (
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/dialect/psql"
+)
+
 type User struct {
-    ID    int
-    Name  string
-    Email string
+	ID	int
+	Name  string
+	Email string
 }
 
-var userView = psql.NewView[any, User]("public", "users")
+var userView = psql.NewView[*User, bob.Expression]("public", "users", expr.ColsForStruct[User]("users"))
 ```
 
 :::tip
@@ -33,11 +39,19 @@ This returns a properly quoted name of the table and can be used as a bob [expre
 
 ## NameAs()
 
-Similar to `Name()`, but adds an alias. e.g. `"public"."users" as "public.users"`
+Similar to `Name()`, but adds an alias. e.g. `"public"."users" as "public.users"`. It should be used as a modifier to a query:
 
-## Columns()
+```go
+import (
+	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
+)
+query := psql.Select(sm.From(userView.NameAs()))
+```
 
-Returns an [`expr.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/expr.Columns) object.  
+## Columns
+
+A [`expr.Columns`](https://pkg.go.dev/github.com/stephenafamo/bob/expr.Columns) field.
 This is also a bob [expression](../query-builder/building-queries#expressions). Which by default, the expression evaluates to:
 
 ```sql
@@ -47,16 +61,25 @@ This is also a bob [expression](../query-builder/building-queries#expressions). 
 "public.users"."email" AS "email"
 ```
 
-Learn about how to manipulate a columns list in the [columns documentation](./columns)
+Learn about how to manipulate a columns list in the [columns documentation](./columns).
 
 ## Query()
 
 The `Query()` method on a View model starts a SELECT query on the model's database view/table. It accepts [query mods](../query-builder/building-queries#query-mods) to modify the final query.
 
 ```go
-q := userView.Query(
-    ctx, db,
-    sm.Limit(10), // LIMIT 10
+import (
+	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
+)
+
+query := userView.Query(
+	sm.Where(
+		psql.Quote("name").In(
+			psql.Arg("Ayan", "Rudra", "Ila")
+		),
+		sm.Limit(10), // LIMIT 10
+	)
 )
 ```
 
