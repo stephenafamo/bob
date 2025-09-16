@@ -145,6 +145,24 @@ $ golangci-lint run
 0 issues.
 ```
 
+### Test
+
+You can test this repository using [go test](https://pkg.go.dev/testing). A simple test run could be done with:
+
+```
+$ go test ./...
+```
+
+If you're interested in data [race detection](https://go.dev/doc/articles/race_detector) and [coverage](https://go.dev/blog/integration-test-coverage), both of which are done by the Github workflow prior to merging code, you'll need to add a few more arguments:
+
+```
+$ go test -race -covermode atomic --coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
+```
+
+### Workflows
+
+The project uses [Github Actions](https://docs.github.com/en/actions) as defined in [.github/workflows](.github/workflows). Pull requests are expected to pass linting and testing workflows before being accepted.
+
 ## Contributing
 
 Thanks to all the people who have contributed to Bob!
