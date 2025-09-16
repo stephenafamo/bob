@@ -3,6 +3,7 @@ package language
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -237,8 +238,7 @@ func findGoMod(path string) (string, error) {
 		return "", fmt.Errorf("could not create destination folder %q: %w", path, err)
 	}
 
-	//nolint:noctx
-	c := exec.Command("go", "env", "GOMOD")
+	c := exec.CommandContext(context.Background(), "go", "env", "GOMOD")
 	c.Stdout = &outData
 	c.Stderr = &errData
 	c.Dir = path
