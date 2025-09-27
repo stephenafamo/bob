@@ -124,6 +124,59 @@ query := psql.Select(
 )
 ```
 
+## Development
+
+### Nix
+
+You can get all the tools you need for developing against this repository with [nix](https://nixos.org/). Use `nix-shell` in the root of the repository to get a shell with all the dependencies and tools for development.
+
+### Lint
+
+This repository uses [golangci-lint](https://github.com/golangci/golangci-lint) for linting. You can run the linter with:
+
+```
+$ golangci-lint run
+```
+
+Before submitting pull requests you should ensure that your changes lint clean:
+
+```
+$ golangci-lint run
+0 issues.
+```
+
+### Formatting
+
+This repository uses [gofumpt](https://github.com/mvdan/gofumpt) for formatting. It's more strict than `go fmt`. The linter will fail if you haven't formatted for code correctly. You can format your code with:
+
+```
+$ gofumpt -l -w ./some/file
+```
+
+### Test
+
+You can test this repository using [go test](https://pkg.go.dev/testing). A simple test of a single module can be run with:
+
+```
+$ go test ./dialect/psql/
+```
+
+A comprehensive test of all modules could be done with:
+
+```
+$ go test ./...
+```
+
+If you're interested in data [race detection](https://go.dev/doc/articles/race_detector) and [coverage](https://go.dev/blog/integration-test-coverage), both of which are done by the Github workflow prior to merging code, you'll need to add a few more arguments:
+
+```
+$ go test -race -covermode atomic --coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
+```
+
+### Workflows
+
+The project uses [Github Actions](https://docs.github.com/en/actions) as defined in [.github/workflows](.github/workflows). Pull requests are expected to pass linting and testing workflows before being accepted.
+
 ## Contributing
 
 Thanks to all the people who have contributed to Bob!

@@ -142,8 +142,8 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 		t.SkipNow()
 	}
 
-	//nolint:noctx
-	cmd := exec.Command("go", "env", "GOMOD")
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "go", "env", "GOMOD")
 	output, err := cmd.Output()
 	if err != nil {
 		t.Fatalf("go env GOMOD cmd execution failed: %s", err)
@@ -199,8 +199,8 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	t.Helper()
 	buf := &bytes.Buffer{}
 
-	//nolint:noctx
-	cmd := exec.Command("go", "mod", "init", module)
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "go", "mod", "init", module)
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf
@@ -211,8 +211,8 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 		t.Fatalf("go mod init cmd execution failed: %s", err)
 	}
 
-	//nolint:gosec,noctx
-	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(modPath)))
+	replaceFlag := fmt.Sprintf("-replace=github.com/stephenafamo/bob=%s", filepath.Dir(modPath))
+	cmd = exec.CommandContext(ctx, "go", "mod", "edit", replaceFlag)
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf
@@ -241,8 +241,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	}
 
 	// From go1.16 dependencies are not auto downloaded
-	//nolint:noctx
-	cmd = exec.Command("go", "mod", "tidy")
+	cmd = exec.CommandContext(ctx, "go", "mod", "tidy")
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf
@@ -253,8 +252,7 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 		t.Fatalf("go mod tidy cmd execution failed: %s", err)
 	}
 
-	//nolint:noctx
-	cmd = exec.Command("go", "test", "-v", "./...")
+	cmd = exec.CommandContext(ctx, "go", "test", "-v", "./...")
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf
