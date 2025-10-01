@@ -18,7 +18,7 @@ type someStruct struct {
 	Email string `db:"email"`
 }
 
-var someStructView = NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
+var someStructView = NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct](""), expr.ColsForStruct[someStruct]("some_struct"))
 
 func TestSomeViewName(t *testing.T) {
 	name := someStructView.Name().String()
@@ -41,6 +41,15 @@ func TestSomeViewColumns(t *testing.T) {
 	c := someStructView.Columns
 	query := selectToString(t, Select(sm.Columns(c)), 0)
 	expected := "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\n"
+	if query != expected {
+		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
+	}
+}
+
+func TestSomeViewColumnNames(t *testing.T) {
+	c := someStructView.ColumnNames
+	query := selectToString(t, Select(sm.Columns(c)), 0)
+	expected := "SELECT \n\"id\" AS \"id\", \"name\" AS \"name\", \"email\" AS \"email\"\n"
 	if query != expected {
 		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
 	}

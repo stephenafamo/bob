@@ -127,7 +127,7 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 	return exprs
 }
 
-var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"))
+var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User](""), expr.ColsForStruct[User]("users"))
 
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()

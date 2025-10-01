@@ -20,16 +20,16 @@ func UseSchema(ctx context.Context, schema string) context.Context {
 	return context.WithValue(ctx, orm.CtxUseSchema, schema)
 }
 
-func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View[T, []T, C] {
-	return NewViewx[T, []T](schema, tableName, columns)
+func NewView[T any, C bob.Expression](schema, tableName string, columnNames, columns C) *View[T, []T, C] {
+	return NewViewx[T, []T](schema, tableName, columnNames, columns)
 }
 
-func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) *View[T, Tslice, C] {
-	v, _ := newView[T, Tslice](schema, tableName, columns)
+func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columnNames, columns C) *View[T, Tslice, C] {
+	v, _ := newView[T, Tslice](schema, tableName, columnNames, columns)
 	return v
 }
 
-func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) (*View[T, Tslice, C], mappings.Mapping) {
+func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columnNames, columns C) (*View[T, Tslice, C], mappings.Mapping) {
 	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
@@ -37,12 +37,13 @@ func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, col
 	}
 
 	return &View[T, Tslice, C]{
-		schema:  schema,
-		name:    tableName,
-		alias:   alias,
-		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(alias),
-		scanner: scan.StructMapper[T](),
-		Columns: columns,
+		schema:      schema,
+		name:        tableName,
+		alias:       alias,
+		allCols:     expr.NewColumnsExpr(mappings.All...).WithParent(alias),
+		scanner:     scan.StructMapper[T](),
+		ColumnNames: columnNames,
+		Columns:     columns,
 	}, mappings
 }
 
@@ -54,7 +55,8 @@ type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	allCols expr.ColumnsExpr
 	scanner scan.Mapper[T]
 
-	Columns C
+	ColumnNames C
+	Columns     C
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
