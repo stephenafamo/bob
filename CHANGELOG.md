@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Include `shell.nix` for developers using [Nix](https://nixos.org/) to create development environments
 - Additional README content on how developers can use linting and unit testing to contribute
-- expr.Plus(target bob.Expression) operator added
+- Added `Plus` expression chain method (thanks @atzedus).
 
 ## [v0.41.1] - 2025-09-02
 
