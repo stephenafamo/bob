@@ -113,6 +113,11 @@ func (x Chain[T, B]) Minus(target bob.Expression) T {
 	return X[T, B](leftRight{operator: "-", left: x.Base, right: target})
 }
 
+// Addition
+func (x Chain[T, B]) Plus(target bob.Expression) T {
+	return X[T, B](leftRight{operator: "+", left: x.Base, right: target})
+}
+
 // Like operator
 func (x Chain[T, B]) Like(target bob.Expression) T {
 	return X[T, B](leftRight{operator: "LIKE", left: x.Base, right: target})
