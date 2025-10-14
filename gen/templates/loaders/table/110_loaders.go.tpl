@@ -380,7 +380,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 
 			{{- $typInfo := $.Types.Index ($.Tables.GetColumn $firstSide.From $local).Type -}}
       {{- with $.Types.GetCompareExpr $.CurrentPackage $.Importer $fromColDef.Type $fromColDef.Nullable $toColDef.Nullable -}}
-				if {{replace "AAA" $fromColGet . | replace "BBB" $toColGet}} {
+				if !({{replace "AAA" $fromColGet . | replace "BBB" $toColGet}}) {
 					continue
 				}
 			{{- end}}
