@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed a bug where the generated loaders for many-to-many relationships were skipping related rows.
+- Fixed a bug where the generated loaders for many-to-many relationships were skipping related rows. (thanks @TylerJGabb)
 
 ### Added
 
