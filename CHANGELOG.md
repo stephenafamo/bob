@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a bug where the generated loaders for many-to-many relationships were skipping related rows. (thanks @TylerJGabb)
+
 ### Added
 
 - Include `shell.nix` for developers using [Nix](https://nixos.org/) to create development environments
