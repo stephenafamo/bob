@@ -20,7 +20,7 @@ func (o *OrderBy) AppendOrder(order bob.Expression) {
 	o.Expressions = append(o.Expressions, order)
 }
 
-func (o OrderBy) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (o OrderBy) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, o.Expressions, "ORDER BY ", ", ", "")
 }
 
@@ -31,24 +31,24 @@ type OrderDef struct {
 	Collation  string
 }
 
-func (o OrderDef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (o OrderDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	args, err := bob.Express(ctx, w, d, start, o.Expression)
 	if err != nil {
 		return nil, err
 	}
 
 	if o.Collation != "" {
-		w.Write([]byte(" COLLATE "))
+		w.WriteString(" COLLATE ")
 		d.WriteQuoted(w, o.Collation)
 	}
 
 	if o.Direction != "" {
-		w.Write([]byte(" "))
-		w.Write([]byte(o.Direction))
+		w.WriteString(" ")
+		w.WriteString(o.Direction)
 	}
 
 	if o.Nulls != "" {
-		fmt.Fprintf(w, " NULLS %s", o.Nulls)
+		w.WriteString(fmt.Sprintf(" NULLS %s", o.Nulls))
 	}
 
 	return args, nil

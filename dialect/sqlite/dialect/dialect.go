@@ -6,27 +6,22 @@ import (
 )
 
 //nolint:gochecknoglobals
-var (
-	Dialect      dialect
-	questionMark = []byte("?")
-	colon        = []byte(":")
-	doubleQuote  = []byte(`"`)
-)
+var Dialect dialect
 
 type dialect struct{}
 
-func (d dialect) WriteArg(w io.Writer, position int) {
-	w.Write(questionMark)
-	w.Write([]byte(strconv.Itoa(position)))
+func (d dialect) WriteArg(w io.StringWriter, position int) {
+	w.WriteString("?")
+	w.WriteString(strconv.Itoa(position))
 }
 
-func (d dialect) WriteNamedArg(w io.Writer, name string) {
-	w.Write(colon)
-	w.Write([]byte(name))
+func (d dialect) WriteNamedArg(w io.StringWriter, name string) {
+	w.WriteString(":")
+	w.WriteString(name)
 }
 
-func (d dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write(doubleQuote)
-	w.Write([]byte(s))
-	w.Write(doubleQuote)
+func (d dialect) WriteQuoted(w io.StringWriter, s string) {
+	w.WriteString(`"`)
+	w.WriteString(s)
+	w.WriteString(`"`)
 }

@@ -5,20 +5,16 @@ import (
 )
 
 //nolint:gochecknoglobals
-var (
-	Dialect      dialect
-	questionMark = []byte("?")
-	backtick     = []byte("`")
-)
+var Dialect dialect
 
 type dialect struct{}
 
-func (d dialect) WriteArg(w io.Writer, position int) {
-	w.Write(questionMark)
+func (d dialect) WriteArg(w io.StringWriter, position int) {
+	w.WriteString("?")
 }
 
-func (d dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write(backtick)
-	w.Write([]byte(s))
-	w.Write(backtick)
+func (d dialect) WriteQuoted(w io.StringWriter, s string) {
+	w.WriteString("`")
+	w.WriteString(s)
+	w.WriteString("`")
 }

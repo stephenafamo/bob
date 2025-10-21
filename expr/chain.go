@@ -12,7 +12,7 @@ type Chain[T bob.Expression, B builder[T]] struct {
 }
 
 // WriteSQL satisfies the bob.Expression interface
-func (x Chain[T, B]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (x Chain[T, B]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.Express(ctx, w, d, start, x.Base)
 }
 

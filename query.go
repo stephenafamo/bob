@@ -50,7 +50,7 @@ type Query interface {
 	// start is the index of the args, usually 1.
 	// it is present to allow re-indexing in cases of a subquery
 	// The method returns the value of any args placed
-	WriteQuery(ctx context.Context, w io.Writer, start int) (args []any, err error)
+	WriteQuery(ctx context.Context, w io.StringWriter, start int) (args []any, err error)
 	// Type returns the query type
 	Type() QueryType
 }
@@ -115,10 +115,10 @@ func (b BaseQuery[E]) Apply(mods ...Mod[E]) {
 	}
 }
 
-func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
+func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
 	// If it a query, just call its WriteQuery method
 	if e, ok := any(b.Expression).(interface {
-		WriteQuery(context.Context, io.Writer, int) ([]any, error)
+		WriteQuery(context.Context, io.StringWriter, int) ([]any, error)
 	}); ok {
 		return e.WriteQuery(ctx, w, start)
 	}
@@ -128,16 +128,16 @@ func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.Writer, start int) ([
 
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
-func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
+func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
 	// If it a query, don't wrap it in parentheses
 	// it may already do this on its own and we don't want to double wrap
 	if e, ok := any(b.Expression).(Query); ok {
 		return e.WriteSQL(ctx, w, d, start)
 	}
 
-	w.Write([]byte(openPar))
+	w.WriteString(openPar)
 	args, err := b.Expression.WriteSQL(ctx, w, b.Dialect, start)
-	w.Write([]byte(closePar))
+	w.WriteString(closePar)
 
 	return args, err
 }
@@ -183,7 +183,7 @@ type BoundQuery[Arg any] struct {
 	namedArgs Arg
 }
 
-func (b BoundQuery[Arg]) WriteQuery(ctx context.Context, w io.Writer, start int) ([]any, error) {
+func (b BoundQuery[Arg]) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
 	args, err := b.Query.WriteQuery(ctx, w, start)
 	if err != nil {
 		return nil, err
@@ -194,7 +194,7 @@ func (b BoundQuery[Arg]) WriteQuery(ctx context.Context, w io.Writer, start int)
 
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
-func (b BoundQuery[E]) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
+func (b BoundQuery[E]) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
 	args, err := b.Query.WriteSQL(ctx, w, d, start)
 	if err != nil {
 		return nil, err

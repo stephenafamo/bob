@@ -36,7 +36,7 @@ type SelectQuery struct {
 	CombinedOffset clause.Offset
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
@@ -58,11 +58,11 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 			s.Offset.Count != nil ||
 			s.Fetch.Count != nil ||
 			len(s.Locks.Locks) > 0) {
-		w.Write([]byte("("))
+		w.WriteString("(")
 		needsParens = true
 	}
 
-	w.Write([]byte("SELECT "))
+	w.WriteString("SELECT ")
 
 	distinctArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Distinct,
 		s.Distinct.On != nil, "", " ")
@@ -147,7 +147,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	args = append(args, lockArgs...)
 
 	if needsParens {
-		w.Write([]byte(")"))
+		w.WriteString(")")
 	}
 
 	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
@@ -185,6 +185,6 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, combinedFetchArgs...)
 
-	w.Write([]byte("\n"))
+	w.WriteString("\n")
 	return args, nil
 }

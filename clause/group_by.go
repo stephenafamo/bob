@@ -29,7 +29,7 @@ func (g *GroupBy) SetGroupByDistinct(distinct bool) {
 	g.Distinct = distinct
 }
 
-func (g GroupBy) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (g GroupBy) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	// don't write anything if there are no groups
@@ -37,9 +37,9 @@ func (g GroupBy) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 		return args, nil
 	}
 
-	w.Write([]byte("GROUP BY "))
+	w.WriteString("GROUP BY ")
 	if g.Distinct {
-		w.Write([]byte("DISTINCT "))
+		w.WriteString("DISTINCT ")
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, g.Groups, "", ", ", "")
@@ -48,8 +48,8 @@ func (g GroupBy) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start
 	}
 
 	if g.With != "" {
-		w.Write([]byte(" WITH "))
-		w.Write([]byte(g.With))
+		w.WriteString(" WITH ")
+		w.WriteString(g.With)
 	}
 
 	return args, nil
@@ -60,8 +60,8 @@ type GroupingSet struct {
 	Type   string // GROUPING SET | CUBE | ROLLUP
 }
 
-func (g GroupingSet) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte(g.Type))
+func (g GroupingSet) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString(g.Type)
 	args, err := bob.ExpressSlice(ctx, w, d, start, g.Groups, " (", ", ", ")")
 	if err != nil {
 		return nil, err

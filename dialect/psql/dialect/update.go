@@ -24,7 +24,7 @@ type UpdateQuery struct {
 	bob.ContextualModdable[*UpdateQuery]
 }
 
-func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
@@ -39,10 +39,10 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, withArgs...)
 
-	w.Write([]byte("UPDATE "))
+	w.WriteString("UPDATE ")
 
 	if u.Only {
-		w.Write([]byte("ONLY "))
+		w.WriteString("ONLY ")
 	}
 
 	tableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Table, true, "", "")

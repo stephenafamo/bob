@@ -28,7 +28,7 @@ type InsertQuery struct {
 	bob.ContextualModdable[*InsertQuery]
 }
 
-func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
@@ -36,7 +36,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 		return nil, err
 	}
 
-	w.Write([]byte("INSERT "))
+	w.WriteString("INSERT ")
 
 	// no optimizer hint args
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.hints,
@@ -74,21 +74,21 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 
 	// The aliases
 	if i.RowAlias != "" {
-		_, err = fmt.Fprintf(w, "\nAS %s", i.RowAlias)
+		_, err = w.WriteString(fmt.Sprintf("\nAS %s", i.RowAlias))
 		if err != nil {
 			return nil, err
 		}
 
 		if len(i.ColumnAlias) > 0 {
-			w.Write([]byte("("))
+			w.WriteString("(")
 			for k, cAlias := range i.ColumnAlias {
 				if k != 0 {
-					w.Write([]byte(", "))
+					w.WriteString(", ")
 				}
 
 				d.WriteQuoted(w, cAlias)
 			}
-			w.Write([]byte(")"))
+			w.WriteString(")")
 		}
 	}
 
@@ -99,6 +99,6 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, updateArgs...)
 
-	w.Write([]byte("\n"))
+	w.WriteString("\n")
 	return args, nil
 }

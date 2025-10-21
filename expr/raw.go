@@ -10,10 +10,10 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type Raw []byte
+type Raw string
 
-func (r Raw) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write(r)
+func (r Raw) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString(string(r))
 	return nil, nil
 }
 
@@ -30,7 +30,7 @@ type Clause struct {
 	args  []any  // The replacements for the placeholders in order
 }
 
-func (r Clause) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (r Clause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately
 	total, args, err := r.convertQuestionMarks(ctx, w, d, start)
 	if err != nil {
@@ -47,7 +47,7 @@ func (r Clause) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start 
 // convertQuestionMarks converts each occurrence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func (r Clause) convertQuestionMarks(ctx context.Context, w io.Writer, d bob.Dialect, startAt int) (int, []any, error) {
+func (r Clause) convertQuestionMarks(ctx context.Context, w io.StringWriter, d bob.Dialect, startAt int) (int, []any, error) {
 	if startAt == 0 {
 		panic("Not a valid start number.")
 	}
@@ -62,18 +62,18 @@ func (r Clause) convertQuestionMarks(ctx context.Context, w io.Writer, d bob.Dia
 		paramIndex = strings.IndexByte(clause, '?')
 
 		if paramIndex == -1 {
-			w.Write([]byte(clause))
+			w.WriteString(clause)
 			break
 		}
 
 		escapeIndex := strings.Index(clause, `\?`)
 		if escapeIndex != -1 && paramIndex > escapeIndex {
-			w.Write([]byte(clause[:escapeIndex] + "?"))
+			w.WriteString(clause[:escapeIndex] + "?")
 			paramIndex++
 			continue
 		}
 
-		w.Write([]byte(clause[:paramIndex]))
+		w.WriteString(clause[:paramIndex])
 
 		var arg any
 		if total < len(r.args) {

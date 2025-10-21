@@ -44,7 +44,7 @@ func (o *{{$tAlias.UpSingular}}) primaryKeyVals() bob.Expression {
 {{$multiPK := gt (len $pkCols) 1}}
 func (o *{{$tAlias.UpSingular}}) pkEQ() dialect.Expression {
    return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{$table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
-    .EQ(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
+    .EQ(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
       return o.primaryKeyVals().WriteSQL(ctx, w, d, start)
     }))
 }

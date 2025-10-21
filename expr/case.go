@@ -19,23 +19,23 @@ type (
 	}
 )
 
-func (c caseExpr) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c caseExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	if len(c.whens) == 0 {
 		return nil, errors.New("case must have at least one when expression")
 	}
 
-	w.Write([]byte("CASE"))
+	w.WriteString("CASE")
 	for _, when := range c.whens {
-		w.Write([]byte(" WHEN "))
+		w.WriteString(" WHEN ")
 		whenArgs, err := when.condition.WriteSQL(ctx, w, d, start+len(args))
 		if err != nil {
 			return nil, err
 		}
 		args = append(args, whenArgs...)
 
-		w.Write([]byte(" THEN "))
+		w.WriteString(" THEN ")
 		thenArgs, err := when.then.WriteSQL(ctx, w, d, start+len(args))
 		if err != nil {
 			return nil, err
@@ -44,14 +44,14 @@ func (c caseExpr) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 	}
 
 	if c.elseExpr != nil {
-		w.Write([]byte(" ELSE "))
+		w.WriteString(" ELSE ")
 		elseArgs, err := c.elseExpr.WriteSQL(ctx, w, d, start+len(args))
 		if err != nil {
 			return nil, err
 		}
 		args = append(args, elseArgs...)
 	}
-	w.Write([]byte(" END"))
+	w.WriteString(" END")
 
 	return args, nil
 }
@@ -62,7 +62,7 @@ func NewCase[T bob.Expression, B builder[T]]() CaseChain[T, B] {
 	return CaseChain[T, B](func() caseExpr { return caseExpr{} })
 }
 
-func (cc CaseChain[T, B]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (cc CaseChain[T, B]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return cc().WriteSQL(ctx, w, d, start)
 }
 

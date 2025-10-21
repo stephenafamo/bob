@@ -34,16 +34,16 @@ func (f *Function) SetWindow(w clause.Window) {
 	f.w = &w
 }
 
-func (f Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
 
-	w.Write([]byte(f.name))
-	w.Write([]byte("("))
+	w.WriteString(f.name)
+	w.WriteString("(")
 
 	if f.Distinct {
-		w.Write([]byte("DISTINCT "))
+		w.WriteString("DISTINCT ")
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, f.args, "", ", ", "")
@@ -58,7 +58,7 @@ func (f Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 	}
 	args = append(args, orderArgs...)
 
-	w.Write([]byte(")"))
+	w.WriteString(")")
 
 	filterArgs, err := bob.ExpressSlice(ctx, w, d, start, f.Filter, " FILTER (WHERE ", " AND ", ")")
 	if err != nil {
