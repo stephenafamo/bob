@@ -21,7 +21,7 @@ func (q QueryMods[T]) Apply(query T) {
 // allows for some fluent API, for example with functions
 type Moddable[T bob.Expression] func(...bob.Mod[T]) T
 
-func (m Moddable[T]) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (m Moddable[T]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return m().WriteSQL(ctx, w, d, start)
 }
 

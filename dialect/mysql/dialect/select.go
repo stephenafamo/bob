@@ -41,7 +41,7 @@ func (s *SelectQuery) SetInto(i any) {
 	s.into = i
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
@@ -62,11 +62,11 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 			s.Limit.Count != nil ||
 			s.Offset.Count != nil ||
 			len(s.Locks.Locks) > 0) {
-		w.Write([]byte("("))
+		w.WriteString("(")
 		needsParens = true
 	}
 
-	w.Write([]byte("SELECT "))
+	w.WriteString("SELECT ")
 
 	// no optimizer hint args
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), s.hints,
@@ -149,7 +149,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	args = append(args, lockArgs...)
 
 	if needsParens {
-		w.Write([]byte(")"))
+		w.WriteString(")")
 	}
 
 	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
@@ -185,6 +185,6 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, intoArgs...)
 
-	w.Write([]byte("\n"))
+	w.WriteString("\n")
 	return args, nil
 }

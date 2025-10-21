@@ -19,6 +19,6 @@ func (r *Returning) AppendReturning(columns ...any) {
 	r.Expressions = append(r.Expressions, columns...)
 }
 
-func (r Returning) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (r Returning) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, r.Expressions, "RETURNING ", ", ", "")
 }

@@ -50,7 +50,7 @@ func FromUnboundedPreceding() bob.Mod[*clause.Window] {
 func FromPreceding(exp any) bob.Mod[*clause.Window] {
 	return bob.ModFunc[*clause.Window](func(w *clause.Window) {
 		w.SetStart(bob.ExpressionFunc(
-			func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 				return bob.ExpressIf(ctx, w, d, start, exp, true, "", " PRECEDING")
 			}),
 		)
@@ -66,7 +66,7 @@ func FromCurrentRow() bob.Mod[*clause.Window] {
 func FromFollowing(exp any) bob.Mod[*clause.Window] {
 	return bob.ModFunc[*clause.Window](func(w *clause.Window) {
 		w.SetStart(bob.ExpressionFunc(
-			func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 				return bob.ExpressIf(ctx, w, d, start, exp, true, "", " FOLLOWING")
 			}),
 		)
@@ -76,7 +76,7 @@ func FromFollowing(exp any) bob.Mod[*clause.Window] {
 func ToPreceding(exp any) bob.Mod[*clause.Window] {
 	return bob.ModFunc[*clause.Window](func(w *clause.Window) {
 		w.SetEnd(bob.ExpressionFunc(
-			func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 				return bob.ExpressIf(ctx, w, d, start, exp, true, "", " PRECEDING")
 			}),
 		)
@@ -92,7 +92,7 @@ func ToCurrentRow() bob.Mod[*clause.Window] {
 func ToFollowing(exp any) bob.Mod[*clause.Window] {
 	return bob.ModFunc[*clause.Window](func(w *clause.Window) {
 		w.SetEnd(bob.ExpressionFunc(
-			func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+			func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 				return bob.ExpressIf(ctx, w, d, start, exp, true, "", " FOLLOWING")
 			}),
 		)

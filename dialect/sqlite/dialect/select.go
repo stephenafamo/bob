@@ -29,7 +29,7 @@ type SelectQuery struct {
 	bob.ContextualModdable[*SelectQuery]
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
@@ -44,10 +44,10 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, withArgs...)
 
-	w.Write([]byte("SELECT "))
+	w.WriteString("SELECT ")
 
 	if s.Distinct {
-		w.Write([]byte("DISTINCT "))
+		w.WriteString("DISTINCT ")
 	}
 
 	selArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.SelectList, true, "\n", "")
@@ -118,6 +118,6 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, offsetArgs...)
 
-	w.Write([]byte("\n"))
+	w.WriteString("\n")
 	return args, nil
 }

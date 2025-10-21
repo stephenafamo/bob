@@ -23,7 +23,7 @@ type DeleteQuery struct {
 	bob.ContextualModdable[*DeleteQuery]
 }
 
-func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, start int) ([]any, error) {
+func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
@@ -38,10 +38,10 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.Writer, dl bob.Dialect, 
 	}
 	args = append(args, withArgs...)
 
-	w.Write([]byte("DELETE FROM "))
+	w.WriteString("DELETE FROM ")
 
 	if d.Only {
-		w.Write([]byte("ONLY "))
+		w.WriteString("ONLY ")
 	}
 
 	tableArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Table, true, "", "")

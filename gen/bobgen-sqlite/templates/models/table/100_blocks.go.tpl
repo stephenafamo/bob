@@ -19,7 +19,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     {{end}}
   }
 
-	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error){
+	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
     vals := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
     {{range $index, $column := $table.NonGeneratedColumns -}}
       {{$colAlias := $tAlias.Column $column.Name -}}

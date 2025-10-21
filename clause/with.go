@@ -20,7 +20,7 @@ func (w *With) SetRecursive(r bool) {
 	w.Recursive = r
 }
 
-func (w With) WriteSQL(ctx context.Context, wr io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (w With) WriteSQL(ctx context.Context, wr io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	prefix := "WITH\n"
 	if w.Recursive {
 		prefix = "WITH RECURSIVE\n"

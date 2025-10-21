@@ -208,7 +208,7 @@ func (o {{$lowerName}}) subExpr(from, to int) bob.Expression {
   return orm.ArgsToExpression({{$lowerName}}SQL, from, to, o.args())
 }
 
-func (o {{$lowerName}}) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (o {{$lowerName}}) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return o.subExpr(0, len({{$lowerName}}SQL)).WriteSQL(ctx, w, d, start)
 }
 

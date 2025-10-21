@@ -21,7 +21,7 @@ type Setter[T, InsertQ, UpdateQ any] interface {
 
 type SchemaTable string
 
-func (s SchemaTable) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SchemaTable) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	schema, _ := ctx.Value(CtxUseSchema).(string)
 	return expr.Quote(schema, string(s)).WriteSQL(ctx, w, d, start)
 }

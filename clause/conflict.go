@@ -22,16 +22,16 @@ type ConflictClause struct {
 	Where
 }
 
-func (c ConflictClause) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte("ON CONFLICT"))
+func (c ConflictClause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("ON CONFLICT")
 
 	args, err := bob.ExpressIf(ctx, w, d, start, c.Target, true, "", "")
 	if err != nil {
 		return nil, err
 	}
 
-	w.Write([]byte(" DO "))
-	w.Write([]byte(c.Do))
+	w.WriteString(" DO ")
+	w.WriteString(c.Do)
 
 	setArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.Set, len(c.Set.Set) > 0, " SET\n", "")
 	if err != nil {
@@ -55,7 +55,7 @@ type ConflictTarget struct {
 	Where      []any
 }
 
-func (c ConflictTarget) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c ConflictTarget) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if c.Constraint != "" {
 		return bob.ExpressIf(ctx, w, d, start, c.Constraint, true, " ON CONSTRAINT ", "")
 	}

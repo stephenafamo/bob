@@ -9,10 +9,10 @@ import (
 
 type rawString string
 
-func (s rawString) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte("'"))
-	w.Write([]byte(s))
-	w.Write([]byte("'"))
+func (s rawString) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("'")
+	w.WriteString(string(s))
+	w.WriteString("'")
 
 	return nil, nil
 }

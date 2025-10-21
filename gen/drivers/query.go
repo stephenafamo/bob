@@ -411,7 +411,7 @@ func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName 
 func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varName string) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(`bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	sb.WriteString(fmt.Sprintf(`bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
                   args := make([]any, 0, %d)`, len(a.Children)))
 
 	start := a.Positions[0][0]
@@ -419,7 +419,7 @@ func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varNa
 		childName := strmangle.TitleCase(child.Col.Name)
 		childExpression := child.ToExpression(i, dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
 		sb.WriteString(fmt.Sprintf(`
-            w.Write([]byte(%sSQL[%d:%d]))
+            w.WriteString(%sSQL[%d:%d])
             %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)
             if err != nil {
                 return nil, err
@@ -435,7 +435,7 @@ func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varNa
 	}
 
 	sb.WriteString(fmt.Sprintf(`
-            w.Write([]byte(%sSQL[%d:%d]))
+            w.WriteString(%sSQL[%d:%d])
             return args, nil
         })
     `, queryName, start, a.Positions[0][1]))

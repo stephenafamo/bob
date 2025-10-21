@@ -23,7 +23,7 @@ func TestDebugExecutorDefaultWriter(t *testing.T) {
 		t.Fatal("printer for debugExecutor is not a writerPrinter")
 	}
 
-	debugFile, ok := writer.Writer.(*os.File)
+	debugFile, ok := writer.StringWriter.(*os.File)
 	if !ok {
 		t.Fatal("writer for writerPrinter is not an *os.File")
 	}
@@ -44,7 +44,7 @@ func TestDebugExecutorDefaultPrinter(t *testing.T) {
 		t.Fatal("printer for debugExecutor is not a writerPrinter")
 	}
 
-	debugFile, ok := writer.Writer.(*os.File)
+	debugFile, ok := writer.StringWriter.(*os.File)
 	if !ok {
 		t.Fatal("writer for writerPrinter is not an *os.File")
 	}

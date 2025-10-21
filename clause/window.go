@@ -22,10 +22,10 @@ func (wi *Window) AddPartitionBy(condition ...any) {
 	wi.partitionBy = append(wi.partitionBy, condition...)
 }
 
-func (wi Window) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (wi Window) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if wi.BasedOn != "" {
-		w.Write([]byte(wi.BasedOn))
-		w.Write([]byte(" "))
+		w.WriteString(wi.BasedOn)
+		w.WriteString(" ")
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, wi.partitionBy, "PARTITION BY ", ", ", " ")
@@ -54,11 +54,11 @@ type NamedWindow struct {
 	Definition Window
 }
 
-func (n NamedWindow) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte(n.Name))
-	w.Write([]byte(" AS ("))
+func (n NamedWindow) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString(n.Name)
+	w.WriteString(" AS (")
 	args, err := bob.Express(ctx, w, d, start, n.Definition)
-	w.Write([]byte(")"))
+	w.WriteString(")")
 
 	return args, err
 }
@@ -71,6 +71,6 @@ func (wi *Windows) AppendWindow(w bob.Expression) {
 	wi.Windows = append(wi.Windows, w)
 }
 
-func (wi Windows) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (wi Windows) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, wi.Windows, "WINDOW ", ", ", "")
 }

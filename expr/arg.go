@@ -22,25 +22,25 @@ type args struct {
 	grouped bool
 }
 
-func (a args) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (a args) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if a.grouped {
-		w.Write([]byte(openPar))
+		w.WriteString(openPar)
 	}
 
 	if len(a.vals) == 0 {
-		w.Write([]byte("NULL"))
+		w.WriteString("NULL")
 	}
 
 	for k := range a.vals {
 		if k > 0 {
-			w.Write([]byte(commaSpace))
+			w.WriteString(commaSpace)
 		}
 
 		d.WriteArg(w, start+k)
 	}
 
 	if a.grouped {
-		w.Write([]byte(closePar))
+		w.WriteString(closePar)
 	}
 
 	return a.vals, nil

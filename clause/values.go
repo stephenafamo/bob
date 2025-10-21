@@ -19,7 +19,7 @@ type Values struct {
 
 type Value []bob.Expression
 
-func (v Value) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (v Value) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, v, "(", ", ", ")")
 }
 
@@ -31,7 +31,7 @@ func (v *Values) AppendValues(vals ...bob.Expression) {
 	v.Vals = append(v.Vals, vals)
 }
 
-func (v Values) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (v Values) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	// If a query is present, use it
 	if v.Query != nil {
 		return v.Query.WriteQuery(ctx, w, start)
@@ -43,6 +43,6 @@ func (v Values) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start 
 	}
 
 	// If no value was present, use default value
-	w.Write([]byte("DEFAULT VALUES"))
+	w.WriteString("DEFAULT VALUES")
 	return nil, nil
 }

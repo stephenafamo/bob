@@ -34,27 +34,27 @@ func (s *Combine) SetCombine(c Combine) {
 	*s = c
 }
 
-func (s Combine) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s Combine) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if s.Strategy == "" {
 		return nil, ErrNoCombinationStrategy
 	}
 
-	w.Write([]byte(s.Strategy))
+	w.WriteString(s.Strategy)
 
 	if s.All {
-		w.Write([]byte(" ALL "))
+		w.WriteString(" ALL ")
 	} else {
-		w.Write([]byte(" "))
+		w.WriteString(" ")
 	}
 
-	w.Write([]byte("("))
+	w.WriteString("(")
 
 	args, err := s.Query.WriteQuery(ctx, w, start)
 	if err != nil {
 		return nil, err
 	}
 
-	w.Write([]byte(")"))
+	w.WriteString(")")
 
 	return args, nil
 }

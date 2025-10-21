@@ -43,16 +43,16 @@ func (f *Function) AppendColumn(name, datatype string) {
 	})
 }
 
-func (f *Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f *Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.name == "" {
 		return nil, nil
 	}
 
-	w.Write([]byte(f.name))
-	w.Write([]byte("("))
+	w.WriteString(f.name)
+	w.WriteString("(")
 
 	if f.Distinct {
-		w.Write([]byte("DISTINCT "))
+		w.WriteString("DISTINCT ")
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, f.args, "", ", ", "")
@@ -68,7 +68,7 @@ func (f *Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, sta
 		}
 		args = append(args, orderArgs...)
 	}
-	w.Write([]byte(")"))
+	w.WriteString(")")
 
 	if f.WithinGroup {
 		orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.OrderBy,
@@ -86,12 +86,12 @@ func (f *Function) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, sta
 	args = append(args, filterArgs...)
 
 	if len(f.Columns) > 0 || len(f.Alias) > 0 {
-		w.Write([]byte(" AS "))
+		w.WriteString(" AS ")
 	}
 
 	if len(f.Alias) > 0 {
-		w.Write([]byte(f.Alias))
-		w.Write([]byte(" "))
+		w.WriteString(f.Alias)
+		w.WriteString(" ")
 	}
 
 	colArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Columns, "(", ", ", ")")
@@ -114,17 +114,17 @@ type columnDef struct {
 	dataType string
 }
 
-func (c columnDef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte(c.name + " " + c.dataType))
+func (c columnDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString(c.name + " " + c.dataType)
 
 	return nil, nil
 }
 
 type Functions []*Function
 
-func (f Functions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Functions) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {
-		w.Write([]byte("ROWS FROM ("))
+		w.WriteString("ROWS FROM (")
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, f, "", ", ", "")
@@ -133,7 +133,7 @@ func (f Functions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, sta
 	}
 
 	if len(f) > 1 {
-		w.Write([]byte(")"))
+		w.WriteString(")")
 	}
 
 	return args, nil

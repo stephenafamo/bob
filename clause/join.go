@@ -27,13 +27,13 @@ type Join struct {
 	Using   []string
 }
 
-func (j Join) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (j Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if j.Natural {
-		w.Write([]byte("NATURAL "))
+		w.WriteString("NATURAL ")
 	}
 
-	w.Write([]byte(j.Type))
-	w.Write([]byte(" "))
+	w.WriteString(j.Type)
+	w.WriteString(" ")
 
 	args, err := bob.Express(ctx, w, d, start, j.To)
 	if err != nil {
@@ -48,9 +48,9 @@ func (j Join) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 
 	for k, col := range j.Using {
 		if k == 0 {
-			w.Write([]byte(" USING("))
+			w.WriteString(" USING(")
 		} else {
-			w.Write([]byte(", "))
+			w.WriteString(", ")
 		}
 
 		_, err = expr.Quote(col).WriteSQL(ctx, w, d, 1) // start does not matter
@@ -59,7 +59,7 @@ func (j Join) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 		}
 
 		if k == len(j.Using)-1 {
-			w.Write([]byte(") "))
+			w.WriteString(") ")
 		}
 
 	}

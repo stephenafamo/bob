@@ -7,18 +7,18 @@ import (
 
 type dialect struct{}
 
-func (d dialect) WriteArg(w io.Writer, position int) {
-	w.Write([]byte("?"))
-	w.Write([]byte(strconv.Itoa(position)))
+func (d dialect) WriteArg(w io.StringWriter, position int) {
+	w.WriteString("?")
+	w.WriteString(strconv.Itoa(position))
 }
 
-func (d dialect) WriteNamedArg(w io.Writer, name string) {
-	w.Write([]byte(":"))
-	w.Write([]byte(name))
+func (d dialect) WriteNamedArg(w io.StringWriter, name string) {
+	w.WriteString(":")
+	w.WriteString(name)
 }
 
-func (d dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write([]byte(`"`))
-	w.Write([]byte(s))
-	w.Write([]byte(`"`))
+func (d dialect) WriteQuoted(w io.StringWriter, s string) {
+	w.WriteString(`"`)
+	w.WriteString(s)
+	w.WriteString(`"`)
 }

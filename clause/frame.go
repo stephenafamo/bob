@@ -35,7 +35,7 @@ func (f *Frame) SetExclusion(excl string) {
 	f.Exclusion = excl
 }
 
-func (f Frame) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Frame) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.Mode == "" {
 		f.Mode = "RANGE"
 	}
@@ -46,11 +46,11 @@ func (f Frame) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start i
 
 	var args []any
 
-	w.Write([]byte(f.Mode))
-	w.Write([]byte(" "))
+	w.WriteString(f.Mode)
+	w.WriteString(" ")
 
 	if f.End != nil {
-		w.Write([]byte("BETWEEN "))
+		w.WriteString("BETWEEN ")
 	}
 
 	startArgs, err := bob.Express(ctx, w, d, start, f.Start)

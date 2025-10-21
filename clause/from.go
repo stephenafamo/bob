@@ -94,13 +94,13 @@ func (f TableRef) As(alias string, columns ...string) TableRef {
 	return f
 }
 
-func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f TableRef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.Only {
-		w.Write([]byte("ONLY "))
+		w.WriteString("ONLY ")
 	}
 
 	if f.Lateral {
-		w.Write([]byte("LATERAL "))
+		w.WriteString("LATERAL ")
 	}
 
 	args, err := bob.Express(ctx, w, d, start, f.Expression)
@@ -109,7 +109,7 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 	}
 
 	if f.WithOrdinality {
-		w.Write([]byte(" WITH ORDINALITY"))
+		w.WriteString(" WITH ORDINALITY")
 	}
 
 	_, err = bob.ExpressSlice(ctx, w, d, start, f.Partitions, " PARTITION (", ", ", ")")
@@ -118,20 +118,20 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 	}
 
 	if f.Alias != "" {
-		w.Write([]byte(" AS "))
+		w.WriteString(" AS ")
 		d.WriteQuoted(w, f.Alias)
 	}
 
 	if len(f.Columns) > 0 {
-		w.Write([]byte("("))
+		w.WriteString("(")
 		for k, cAlias := range f.Columns {
 			if k != 0 {
-				w.Write([]byte(", "))
+				w.WriteString(", ")
 			}
 
 			d.WriteQuoted(w, cAlias)
 		}
-		w.Write([]byte(")"))
+		w.WriteString(")")
 	}
 
 	// No args for index hints
@@ -144,9 +144,9 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, star
 	case f.IndexedBy == nil:
 		break
 	case *f.IndexedBy == "":
-		w.Write([]byte(" NOT INDEXED"))
+		w.WriteString(" NOT INDEXED")
 	default:
-		fmt.Fprintf(w, " INDEXED BY %q", *f.IndexedBy)
+		w.WriteString(fmt.Sprintf(" INDEXED BY %q", *f.IndexedBy))
 	}
 
 	joinArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Joins, "\n", "\n", "")
@@ -164,11 +164,11 @@ type IndexHint struct {
 	For     string // JOIN, ORDER BY or GROUP BY
 }
 
-func (f IndexHint) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f IndexHint) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.Type == "" {
 		return nil, nil
 	}
-	fmt.Fprintf(w, "%s INDEX ", f.Type)
+	w.WriteString(fmt.Sprintf("%s INDEX ", f.Type))
 
 	_, err := bob.ExpressIf(ctx, w, d, start, f.For, f.For != "", " FOR ", "")
 	if err != nil {
@@ -176,12 +176,12 @@ func (f IndexHint) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, sta
 	}
 
 	// Always include the brackets
-	fmt.Fprint(w, " (")
+	w.WriteString(" (")
 	_, err = bob.ExpressSlice(ctx, w, d, start, f.Indexes, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
-	fmt.Fprint(w, ")")
+	w.WriteString(")")
 
 	return nil, nil
 }

@@ -6,21 +6,17 @@ import (
 )
 
 //nolint:gochecknoglobals
-var (
-	Dialect     dialect
-	dollar      = []byte("$")
-	doubleQuote = []byte(`"`)
-)
+var Dialect dialect
 
 type dialect struct{}
 
-func (d dialect) WriteArg(w io.Writer, position int) {
-	w.Write(dollar)
-	w.Write([]byte(strconv.Itoa(position)))
+func (d dialect) WriteArg(w io.StringWriter, position int) {
+	w.WriteString("$")
+	w.WriteString(strconv.Itoa(position))
 }
 
-func (d dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write(doubleQuote)
-	w.Write([]byte(s))
-	w.Write(doubleQuote)
+func (d dialect) WriteQuoted(w io.StringWriter, s string) {
+	w.WriteString(`"`)
+	w.WriteString(s)
+	w.WriteString(`"`)
 }

@@ -34,7 +34,7 @@ func (s *SelectList) AppendPreloadSelect(columns ...any) {
 	s.PreloadColumns = append(s.PreloadColumns, columns...)
 }
 
-func (s SelectList) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s SelectList) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
 	all := append(s.Columns, s.PreloadColumns...)
@@ -45,7 +45,7 @@ func (s SelectList) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, st
 		}
 		args = append(args, colArgs...)
 	} else {
-		w.Write([]byte("*"))
+		w.WriteString("*")
 	}
 
 	return args, nil

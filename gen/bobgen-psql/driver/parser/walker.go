@@ -64,8 +64,8 @@ type col struct {
 	nullable bool
 }
 
-func (c col) LitterDump(w io.Writer) {
-	fmt.Fprintf(w, "(%s, %s, %t)", c.name, c.pos.String(), c.nullable)
+func (c col) LitterDump(w io.StringWriter) {
+	w.WriteString(fmt.Sprintf("(%s, %s, %t))", c.name, c.pos.String(), c.nullable))
 }
 
 type queryResult struct {
@@ -262,7 +262,7 @@ func (w *walker) reflectWalk(reflected reflect.Value) nodeInfo {
 
 	refStruct := reflected
 
-	if reflected.Kind() == reflect.Ptr {
+	if reflected.Kind() == reflect.Pointer {
 		if reflected.IsNil() {
 			return newNodeInfo()
 		}
