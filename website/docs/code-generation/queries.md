@@ -161,6 +161,7 @@ Each query has the following attributes that can be modified with annotations:
 - `result_type_one`: The type of the result when using `One()`. This is used to generate the result type. e.g. `AllUsersRow`.
 - `result_type_all`: The type of the result when using `All()`. This is used to generate the result type. e.g. `[]AllUsersRow`.
 - `transformer`. The name of the slice transformer to use when using `Allx()`. If manually set the `result_type` will not be generated. Use placeholders `ONETYPE` and `ALLTYPE` to indicate where the types should be placed. e.g. `bob.SliceTransformer[ONETYPE, ALLTYPE]()`.
+- `batch`: Enable batch code generation for this query. Accepts `batch`, `true`, `yes`, or `1`. **(PostgreSQL/pgx only)**.
 
 Each return column and parameter can also be annotated with the following attributes:
 
@@ -208,3 +209,205 @@ SELECT
     --prefix:
     users.name -- "name"
 ```
+
+## Batch Query Generation
+
+:::info PostgreSQL Only
+
+Batch query generation is currently only available for PostgreSQL when using the `pgx` driver.
+
+:::
+
+Bob can auto-generate batch-enabled query functions by adding the `:batch` annotation to your SQL queries. This provides a type-safe, ergonomic API for executing multiple queries in a single database round trip.
+
+### Enabling Batch Generation
+
+Add `:batch` as the 4th parameter in the query comment:
+
+```sql
+-- QueryName result_type_one:result_type_all:result_type_transformer:batch
+```
+
+You can use any of these values to enable batch mode: `batch`, `true`, `yes`, or `1`.
+
+### Example
+
+Given this SQL query:
+
+```sql
+-- InsertUser :::batch
+INSERT INTO users (name, email) VALUES ($1, $2)
+RETURNING *;
+```
+
+Bob generates a batch type with these methods:
+
+```go
+type InsertUserBatch struct {
+    qb      *pgx.QueuedBatch
+    results []InsertUserRow
+}
+
+func NewInsertUserBatch() *InsertUserBatch
+func (b *InsertUserBatch) Queue(ctx context.Context, Name string, Email string) error
+func (b *InsertUserBatch) Execute(ctx context.Context, exec bob.Executor) error
+func (b *InsertUserBatch) Results() []InsertUserRow
+func (b *InsertUserBatch) Len() int
+```
+
+### Usage
+
+```go
+// Create a batch
+batch := NewInsertUserBatch()
+
+// Queue multiple inserts
+batch.Queue(ctx, "Alice", "alice@example.com")
+batch.Queue(ctx, "Bob", "bob@example.com")
+batch.Queue(ctx, "Charlie", "charlie@example.com")
+
+// Execute all in one database round trip
+if err := batch.Execute(ctx, db); err != nil {
+    return err
+}
+
+// Access all results
+users := batch.Results()
+for _, user := range users {
+    fmt.Printf("Inserted: %+v\n", user)
+}
+```
+
+### Performance Benefits
+
+Batch operations reduce database round trips from N to 1:
+
+```go
+// Without batch: 100 round trips
+for i := 0; i < 100; i++ {
+    user, _ := GetUser(i).One(ctx, db)  // 100 database calls
+}
+
+// With batch: 1 round trip
+batch := NewGetUserBatch()
+for i := 0; i < 100; i++ {
+    batch.Queue(ctx, i)
+}
+batch.Execute(ctx, db)  // Single database call
+users := batch.Results()
+```
+
+### Supported Query Types
+
+Batch generation works with all query types:
+
+```sql
+-- Batch SELECT
+-- GetUser :::batch
+SELECT * FROM users WHERE id = $1;
+
+-- Batch INSERT with RETURNING
+-- InsertUser :::batch
+INSERT INTO users (name) VALUES ($1) RETURNING *;
+
+-- Batch UPDATE with RETURNING
+-- UpdateUser :::batch
+UPDATE users SET name = $1 WHERE id = $2 RETURNING *;
+
+-- Batch DELETE (no RETURNING)
+-- DeleteUser :::batch
+DELETE FROM users WHERE id = $1;
+```
+
+### Combining with Custom Types
+
+Batch works with custom result types:
+
+```sql
+-- InsertUser *models.User::scan.StructMapper[ONETYPE, ALLTYPE]:batch
+INSERT INTO users (name) VALUES ($1) RETURNING *;
+```
+
+This generates a batch that returns `[]*models.User`:
+
+```go
+func (b *InsertUserBatch) Results() []*models.User {
+    return b.results
+}
+```
+
+### Queries Without RETURNING
+
+For queries without a RETURNING clause, no `Results()` method is generated:
+
+```sql
+-- DeleteUser :::batch
+DELETE FROM users WHERE id = $1;
+```
+
+```go
+batch := NewDeleteUserBatch()
+batch.Queue(ctx, 1)
+batch.Queue(ctx, 2)
+batch.Execute(ctx, db)  // No Results() method
+```
+
+### Complete Example
+
+```sql
+-- users.sql
+
+-- InsertUser :::batch
+INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *;
+
+-- GetUsersByIDs :::batch
+SELECT * FROM users WHERE id = $1;
+
+-- UpdateUserEmail :::batch
+UPDATE users SET email = $1 WHERE id = $2 RETURNING *;
+```
+
+Usage:
+
+```go
+// Insert users
+insertBatch := NewInsertUserBatch()
+insertBatch.Queue(ctx, "Alice", "alice@example.com")
+insertBatch.Queue(ctx, "Bob", "bob@example.com")
+insertBatch.Execute(ctx, db)
+
+insertedUsers := insertBatch.Results()
+
+// Fetch them back
+selectBatch := NewGetUsersByIDsBatch()
+for _, user := range insertedUsers {
+    selectBatch.Queue(ctx, user.ID)
+}
+selectBatch.Execute(ctx, db)
+
+fetchedUsers := selectBatch.Results()
+
+// Update emails
+updateBatch := NewUpdateUserEmailBatch()
+for _, user := range fetchedUsers {
+    updateBatch.Queue(ctx, "new_"+user.Email, user.ID)
+}
+updateBatch.Execute(ctx, db)
+
+updatedUsers := updateBatch.Results()
+```
+
+### When to Use Batches
+
+**Good use cases:**
+- Bulk inserts of multiple records
+- Fetching multiple records by ID
+- Updating multiple records individually
+- High-latency database connections
+
+**Not recommended:**
+- Single operations (use regular queries)
+- Operations depending on previous results
+- Extremely large datasets (consider COPY)
+
+For more details and advanced usage, see the [Batch Query Generation Guide](../../gen/BATCH_QUERY_GENERATION.md).

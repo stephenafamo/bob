@@ -9,7 +9,7 @@ import (
 
 // ParseQueryConfig parses a user configuration string into a QueryCoonfig.
 // The configuration string should be in the format:
-// "result_type_one:result_type_all:result_type_transformer"
+// "result_type_one:result_type_all:result_type_transformer:batch"
 func ParseQueryConfig(options string) drivers.QueryConfig {
 	var i int
 	var part string
@@ -25,6 +25,11 @@ func ParseQueryConfig(options string) drivers.QueryConfig {
 			col.ResultTypeAll = part
 		case 2:
 			col.ResultTransformer = part
+		case 3:
+			switch strings.ToLower(part) {
+			case "batch", "true", "yes", "1":
+				col.Batch = true
+			}
 		}
 		if !found {
 			break

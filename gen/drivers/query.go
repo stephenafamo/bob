@@ -183,6 +183,7 @@ type QueryConfig struct {
 	ResultTypeOne     string `json:"result_type_one"`
 	ResultTypeAll     string `json:"result_type_all"`
 	ResultTransformer string `json:"result_type_transformer"`
+	Batch             bool   `json:"batch"`
 }
 
 func (q QueryConfig) Merge(other QueryConfig) QueryConfig {
@@ -196,6 +197,10 @@ func (q QueryConfig) Merge(other QueryConfig) QueryConfig {
 
 	if other.ResultTransformer != "" {
 		q.ResultTransformer = other.ResultTransformer
+	}
+
+	if other.Batch {
+		q.Batch = other.Batch
 	}
 
 	return q
