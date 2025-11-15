@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stephenafamo/bob"
@@ -201,4 +202,354 @@ func ScanAll[T any](ctx context.Context, br BatchResults, m scan.Mapper[T]) ([]T
 		return nil, err
 	}
 	return scan.AllFromRows(ctx, m, rows{pgxRows})
+}
+
+// ExecRow processes the next query result and validates that exactly one row was affected.
+// Returns an error if zero or more than one row was affected.
+//
+// This is useful for UPDATE/DELETE operations that should affect exactly one row.
+//
+// Example:
+//
+//	err := pgx.ExecRow(results)
+//	if err != nil {
+//		// Either no rows or multiple rows were affected
+//	}
+func ExecRow(br BatchResults) error {
+	tag, err := br.results.Exec()
+	if err != nil {
+		return err
+	}
+
+	rows := tag.RowsAffected()
+	if rows == 0 {
+		return ErrNoRowsAffected
+	}
+	if rows > 1 {
+		return ErrTooManyRowsAffected
+	}
+
+	return nil
+}
+
+// ExecRowResult processes the next query result, validates that exactly one row was affected,
+// and returns the sql.Result.
+//
+// Example:
+//
+//	res, err := pgx.ExecRowResult(results)
+func ExecRowResult(br BatchResults) (sql.Result, error) {
+	tag, err := br.results.Exec()
+	if err != nil {
+		return nil, err
+	}
+
+	res := result{tag}
+	rows, _ := res.RowsAffected()
+	if rows == 0 {
+		return res, ErrNoRowsAffected
+	}
+	if rows > 1 {
+		return res, ErrTooManyRowsAffected
+	}
+
+	return res, nil
+}
+
+var (
+	// ErrNoRowsAffected is returned when ExecRow expects one row but zero were affected
+	ErrNoRowsAffected = errors.New("expected 1 row affected, got 0")
+	// ErrTooManyRowsAffected is returned when ExecRow expects one row but multiple were affected
+	ErrTooManyRowsAffected = errors.New("expected 1 row affected, got multiple")
+)
+
+// QueuedBatch provides pgxutil-style batch operations with deferred result population.
+// This is an alternative API inspired by pgxutil that allows passing result pointers
+// when queuing operations, which are then populated during batch execution.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	var count int64
+//	pgx.QueueSelectRow(qb, ctx, userQuery, scan.StructMapper[User](), &user)
+//	pgx.QueueSelectRow(qb, ctx, countQuery, scan.SingleColumnMapper[int64], &count)
+//	err := qb.Execute(ctx, tx)
+//	// user and count are now populated
+type QueuedBatch struct {
+	batch   *pgx.Batch
+	actions []batchAction
+}
+
+type batchAction func(context.Context, BatchResults) error
+
+// NewQueuedBatch creates a new QueuedBatch.
+func NewQueuedBatch() *QueuedBatch {
+	return &QueuedBatch{
+		batch:   &pgx.Batch{},
+		actions: make([]batchAction, 0),
+	}
+}
+
+// QueueQuery queues a Bob query without expecting a result.
+// The result will be validated during Execute but not returned.
+func (qb *QueuedBatch) QueueQuery(q bob.Query) error {
+	return qb.QueueQueryContext(context.Background(), q)
+}
+
+// QueueQueryContext queues a Bob query with context without expecting a result.
+func (qb *QueuedBatch) QueueQueryContext(ctx context.Context, q bob.Query) error {
+	sql, args, err := bob.Build(ctx, q)
+	if err != nil {
+		return err
+	}
+
+	qb.batch.Queue(sql, args...)
+	qb.actions = append(qb.actions, func(execCtx context.Context, br BatchResults) error {
+		_, err := br.Exec()
+		return err
+	})
+
+	return nil
+}
+
+// QueueRawQuery queues a raw SQL query without expecting a result.
+func (qb *QueuedBatch) QueueRawQuery(sql string, args ...any) {
+	qb.batch.Queue(sql, args...)
+	qb.actions = append(qb.actions, func(ctx context.Context, br BatchResults) error {
+		_, err := br.Exec()
+		return err
+	})
+}
+
+// QueueExecRow queues a query that must affect exactly one row.
+// Returns an error during Execute if zero or multiple rows are affected.
+func (qb *QueuedBatch) QueueExecRow(q bob.Query) error {
+	return qb.QueueExecRowContext(context.Background(), q)
+}
+
+// QueueExecRowContext queues a query with context that must affect exactly one row.
+func (qb *QueuedBatch) QueueExecRowContext(ctx context.Context, q bob.Query) error {
+	sql, args, err := bob.Build(ctx, q)
+	if err != nil {
+		return err
+	}
+
+	qb.batch.Queue(sql, args...)
+	qb.actions = append(qb.actions, func(execCtx context.Context, br BatchResults) error {
+		return ExecRow(br)
+	})
+
+	return nil
+}
+
+// QueueUpdateRow queues an UPDATE query that must affect exactly one row.
+func (qb *QueuedBatch) QueueUpdateRow(q bob.Query) error {
+	return qb.QueueExecRow(q)
+}
+
+// QueueUpdateRowContext queues an UPDATE query with context that must affect exactly one row.
+func (qb *QueuedBatch) QueueUpdateRowContext(ctx context.Context, q bob.Query) error {
+	return qb.QueueExecRowContext(ctx, q)
+}
+
+// Generic helper functions for QueuedBatch (standalone functions due to Go's limitation on generic methods)
+
+// QueueSelectRow queues a SELECT query that must return exactly one row.
+// The result pointer will be populated during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	pgx.QueueSelectRow(qb, ctx, query, scan.StructMapper[User](), &user)
+//	err := qb.Execute(ctx, tx)
+//	// user is now populated
+func QueueSelectRow[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *T) error {
+	sql, args, err := bob.Build(ctx, q)
+	if err != nil {
+		return err
+	}
+
+	qb.batch.Queue(sql, args...)
+	qb.actions = append(qb.actions, func(execCtx context.Context, br BatchResults) error {
+		val, err := ScanOne(execCtx, br, m)
+		if err != nil {
+			return err
+		}
+		*result = val
+		return nil
+	})
+
+	return nil
+}
+
+// QueueSelectAll queues a SELECT query that returns multiple rows.
+// The result slice pointer will be populated during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var users []User
+//	pgx.QueueSelectAll(qb, ctx, query, scan.StructMapper[User](), &users)
+//	err := qb.Execute(ctx, tx)
+//	// users slice is now populated
+func QueueSelectAll[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *[]T) error {
+	sql, args, err := bob.Build(ctx, q)
+	if err != nil {
+		return err
+	}
+
+	qb.batch.Queue(sql, args...)
+	qb.actions = append(qb.actions, func(execCtx context.Context, br BatchResults) error {
+		val, err := ScanAll(execCtx, br, m)
+		if err != nil {
+			return err
+		}
+		*result = val
+		return nil
+	})
+
+	return nil
+}
+
+// QueueInsertReturning queues an INSERT query with RETURNING clause.
+// The returned rows will be scanned into the result slice during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var insertedUsers []User
+//	insertQuery := psql.Insert(
+//	    im.Into("users"),
+//	    im.Values(psql.Arg("Alice")),
+//	    im.Returning("id", "name", "created_at"),
+//	)
+//	pgx.QueueInsertReturning(qb, ctx, insertQuery, scan.StructMapper[User](), &insertedUsers)
+func QueueInsertReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *[]T) error {
+	return QueueSelectAll(qb, ctx, q, m, result)
+}
+
+// QueueInsertRowReturning queues an INSERT query with RETURNING that returns exactly one row.
+// The returned row will be scanned into the result pointer during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	insertQuery := psql.Insert(
+//	    im.Into("users"),
+//	    im.Values(psql.Arg("Alice")),
+//	    im.Returning("id", "name", "created_at"),
+//	)
+//	pgx.QueueInsertRowReturning(qb, ctx, insertQuery, scan.StructMapper[User](), &user)
+func QueueInsertRowReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *T) error {
+	return QueueSelectRow(qb, ctx, q, m, result)
+}
+
+// QueueUpdateReturning queues an UPDATE query with RETURNING clause.
+// The returned rows will be scanned into the result slice during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var updatedUsers []User
+//	updateQuery := psql.Update(
+//	    um.Table("users"),
+//	    um.SetCol("active").ToArg(true),
+//	    um.Where(...),
+//	    um.Returning("*"),
+//	)
+//	pgx.QueueUpdateReturning(qb, ctx, updateQuery, scan.StructMapper[User](), &updatedUsers)
+func QueueUpdateReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *[]T) error {
+	return QueueSelectAll(qb, ctx, q, m, result)
+}
+
+// QueueUpdateRowReturning queues an UPDATE query with RETURNING that returns exactly one row.
+// The returned row will be scanned into the result pointer during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	updateQuery := psql.Update(
+//	    um.Table("users"),
+//	    um.SetCol("name").ToArg("Bob"),
+//	    um.Where(psql.Quote("id").EQ(psql.Arg(1))),
+//	    um.Returning("*"),
+//	)
+//	pgx.QueueUpdateRowReturning(qb, ctx, updateQuery, scan.StructMapper[User](), &user)
+func QueueUpdateRowReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *T) error {
+	return QueueSelectRow(qb, ctx, q, m, result)
+}
+
+// QueueDeleteReturning queues a DELETE query with RETURNING clause.
+// The returned rows will be scanned into the result slice during Execute.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var deletedUsers []User
+//	deleteQuery := psql.Delete(
+//	    dm.From("users"),
+//	    dm.Where(psql.Quote("active").EQ(psql.Arg(false))),
+//	    dm.Returning("*"),
+//	)
+//	pgx.QueueDeleteReturning(qb, ctx, deleteQuery, scan.StructMapper[User](), &deletedUsers)
+func QueueDeleteReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *[]T) error {
+	return QueueSelectAll(qb, ctx, q, m, result)
+}
+
+// QueueDeleteRowReturning queues a DELETE query with RETURNING that returns exactly one row.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	deleteQuery := psql.Delete(
+//	    dm.From("users"),
+//	    dm.Where(psql.Quote("id").EQ(psql.Arg(1))),
+//	    dm.Returning("*"),
+//	)
+//	pgx.QueueDeleteRowReturning(qb, ctx, deleteQuery, scan.StructMapper[User](), &user)
+func QueueDeleteRowReturning[T any](qb *QueuedBatch, ctx context.Context, q bob.Query, m scan.Mapper[T], result *T) error {
+	return QueueSelectRow(qb, ctx, q, m, result)
+}
+
+// Len returns the number of queries queued in the batch.
+func (qb *QueuedBatch) Len() int {
+	return qb.batch.Len()
+}
+
+// Execute sends the batch to the database and processes all queued actions.
+// All result pointers passed to Queue* helper functions will be populated.
+//
+// Example:
+//
+//	qb := pgx.NewQueuedBatch()
+//	var user User
+//	var count int64
+//	pgx.QueueSelectRow(qb, ctx, userQuery, scan.StructMapper[User](), &user)
+//	pgx.QueueSelectRow(qb, ctx, countQuery, scan.SingleColumnMapper[int64], &count)
+//
+//	err := qb.Execute(ctx, tx)
+//	if err != nil {
+//		return err
+//	}
+//	// user and count are now populated
+func (qb *QueuedBatch) Execute(ctx context.Context, exec Executor) error {
+	if qb.batch.Len() == 0 {
+		return nil
+	}
+
+	br := NewBatchResults(exec.SendBatch(ctx, qb.batch))
+	defer br.Close()
+
+	for i, action := range qb.actions {
+		if err := action(ctx, br); err != nil {
+			return fmt.Errorf("batch action %d failed: %w", i, err)
+		}
+	}
+
+	return nil
 }

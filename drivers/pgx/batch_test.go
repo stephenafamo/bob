@@ -2,6 +2,7 @@ package pgx_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -328,6 +329,452 @@ func TestBatchHelper(t *testing.T) {
 		}
 	})
 
+}
+
+func TestQueuedBatch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	ctx := context.Background()
+
+	pool, err := pgxpool.New(ctx, getTestDSN())
+	if err != nil {
+		t.Skipf("skipping test: cannot connect to database: %v", err)
+	}
+	defer pool.Close()
+
+	db := pgx.NewPool(pool)
+
+	setupTestTable(t, db)
+	defer cleanupTestTable(t, db)
+
+	t.Run("QueueSelectRow and Execute", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		// Insert test data
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Laura", 28)),
+		)
+		_, err = insertQuery.Exec(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Use QueuedBatch
+		qb := pgx.NewQueuedBatch()
+
+		type User struct {
+			Name string `db:"name"`
+			Age  int    `db:"age"`
+		}
+		var user User
+		var count int64
+
+		selectQuery := psql.Select(
+			sm.Columns("name", "age"),
+			sm.From("test_users"),
+			sm.Where(psql.Quote("name").EQ(psql.Arg("Laura"))),
+		)
+		countQuery := psql.Select(
+			sm.Columns(psql.Quote("count(*)")),
+			sm.From("test_users"),
+		)
+
+		err = pgx.QueueSelectRow(qb, ctx, selectQuery, scan.StructMapper[User](), &user)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = pgx.QueueSelectRow(qb, ctx, countQuery, scan.SingleColumnMapper[int64], &count)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Execute batch
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Verify results
+		if user.Name != "Laura" || user.Age != 28 {
+			t.Fatalf("unexpected user: %+v", user)
+		}
+		if count != 1 {
+			t.Fatalf("expected count 1, got %d", count)
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("QueueSelectAll", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		// Insert test data
+		for _, name := range []string{"Mike", "Nancy", "Oscar"} {
+			insertQuery := psql.Insert(
+				im.Into("test_users"),
+				im.Values(psql.Arg(name, 30)),
+			)
+			_, err = insertQuery.Exec(ctx, tx)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		qb := pgx.NewQueuedBatch()
+
+		type User struct {
+			Name string `db:"name"`
+			Age  int    `db:"age"`
+		}
+		var users []User
+
+		selectQuery := psql.Select(
+			sm.Columns("name", "age"),
+			sm.From("test_users"),
+			sm.OrderBy("name"),
+		)
+
+		err = pgx.QueueSelectAll(qb, ctx, selectQuery, scan.StructMapper[User](), &users)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(users) != 3 {
+			t.Fatalf("expected 3 users, got %d", len(users))
+		}
+		if users[0].Name != "Mike" {
+			t.Fatalf("unexpected first user: %+v", users[0])
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("QueueInsertRowReturning", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		qb := pgx.NewQueuedBatch()
+
+		type User struct {
+			ID   int    `db:"id"`
+			Name string `db:"name"`
+			Age  int    `db:"age"`
+		}
+		var user User
+
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Paula", 35)),
+			im.Returning("id", "name", "age"),
+		)
+
+		err = pgx.QueueInsertRowReturning(qb, ctx, insertQuery, scan.StructMapper[User](), &user)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if user.Name != "Paula" || user.Age != 35 || user.ID == 0 {
+			t.Fatalf("unexpected user: %+v", user)
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("QueueUpdateRowReturning", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		// Insert test data
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Quinn", 40)),
+		)
+		_, err = insertQuery.Exec(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		qb := pgx.NewQueuedBatch()
+
+		type User struct {
+			Name string `db:"name"`
+			Age  int    `db:"age"`
+		}
+		var user User
+
+		updateQuery := psql.Update(
+			um.Table("test_users"),
+			um.SetCol("age").ToArg(41),
+			um.Where(psql.Quote("name").EQ(psql.Arg("Quinn"))),
+			um.Returning("name", "age"),
+		)
+
+		err = pgx.QueueUpdateRowReturning(qb, ctx, updateQuery, scan.StructMapper[User](), &user)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if user.Name != "Quinn" || user.Age != 41 {
+			t.Fatalf("unexpected user: %+v", user)
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("QueueExecRow validates one row", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		// Insert test data
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Rachel", 45)),
+		)
+		_, err = insertQuery.Exec(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		qb := pgx.NewQueuedBatch()
+
+		updateQuery := psql.Update(
+			um.Table("test_users"),
+			um.SetCol("age").ToArg(46),
+			um.Where(psql.Quote("name").EQ(psql.Arg("Rachel"))),
+		)
+
+		err = qb.QueueExecRow(updateQuery)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("QueueExecRow fails on no rows", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		qb := pgx.NewQueuedBatch()
+
+		updateQuery := psql.Update(
+			um.Table("test_users"),
+			um.SetCol("age").ToArg(50),
+			um.Where(psql.Quote("name").EQ(psql.Arg("NonExistent"))),
+		)
+
+		err = qb.QueueExecRow(updateQuery)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qb.Execute(ctx, tx)
+		if err == nil {
+			t.Fatal("expected error for zero rows affected")
+		}
+		if !errors.Is(err, pgx.ErrNoRowsAffected) {
+			t.Fatalf("expected ErrNoRowsAffected, got: %v", err)
+		}
+
+		tx.Rollback(ctx)
+	})
+
+	t.Run("Mixed QueuedBatch operations", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		qb := pgx.NewQueuedBatch()
+
+		type User struct {
+			Name string `db:"name"`
+			Age  int    `db:"age"`
+		}
+		var insertedUser User
+		var selectedUsers []User
+		var count int64
+
+		// Insert with RETURNING
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Sam", 50)),
+			im.Returning("name", "age"),
+		)
+		err = pgx.QueueInsertRowReturning(qb, ctx, insertQuery, scan.StructMapper[User](), &insertedUser)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Select all
+		selectQuery := psql.Select(
+			sm.Columns("name", "age"),
+			sm.From("test_users"),
+		)
+		err = pgx.QueueSelectAll(qb, ctx, selectQuery, scan.StructMapper[User](), &selectedUsers)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Count
+		countQuery := psql.Select(
+			sm.Columns(psql.Quote("count(*)")),
+			sm.From("test_users"),
+		)
+		err = pgx.QueueSelectRow(qb, ctx, countQuery, scan.SingleColumnMapper[int64], &count)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Execute all
+		err = qb.Execute(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Verify
+		if insertedUser.Name != "Sam" {
+			t.Fatalf("unexpected inserted user: %+v", insertedUser)
+		}
+		if len(selectedUsers) < 1 {
+			t.Fatalf("expected at least 1 user, got %d", len(selectedUsers))
+		}
+		if count < 1 {
+			t.Fatalf("expected count >= 1, got %d", count)
+		}
+
+		tx.Commit(ctx)
+	})
+}
+
+func TestExecRow(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	ctx := context.Background()
+
+	pool, err := pgxpool.New(ctx, getTestDSN())
+	if err != nil {
+		t.Skipf("skipping test: cannot connect to database: %v", err)
+	}
+	defer pool.Close()
+
+	db := pgx.NewPool(pool)
+
+	setupTestTable(t, db)
+	defer cleanupTestTable(t, db)
+
+	t.Run("ExecRow with one row", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		// Insert
+		insertQuery := psql.Insert(
+			im.Into("test_users"),
+			im.Values(psql.Arg("Tom", 25)),
+		)
+		_, err = insertQuery.Exec(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Update via batch with ExecRow validation
+		batch := pgx.NewBatchBuilder()
+		updateQuery := psql.Update(
+			um.Table("test_users"),
+			um.SetCol("age").ToArg(26),
+			um.Where(psql.Quote("name").EQ(psql.Arg("Tom"))),
+		)
+		batch.AddQuery(updateQuery)
+
+		results := batch.Execute(ctx, tx)
+		defer results.Close()
+
+		err = pgx.ExecRow(results)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tx.Commit(ctx)
+	})
+
+	t.Run("ExecRow fails on no rows", func(t *testing.T) {
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(ctx)
+
+		batch := pgx.NewBatchBuilder()
+		updateQuery := psql.Update(
+			um.Table("test_users"),
+			um.SetCol("age").ToArg(99),
+			um.Where(psql.Quote("name").EQ(psql.Arg("DoesNotExist"))),
+		)
+		batch.AddQuery(updateQuery)
+
+		results := batch.Execute(ctx, tx)
+		defer results.Close()
+
+		err = pgx.ExecRow(results)
+		if err == nil {
+			t.Fatal("expected error for zero rows affected")
+		}
+		if !errors.Is(err, pgx.ErrNoRowsAffected) {
+			t.Fatalf("expected ErrNoRowsAffected, got: %v", err)
+		}
+
+		tx.Rollback(ctx)
+	})
 }
 
 // Helper functions for test setup
