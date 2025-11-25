@@ -58,6 +58,8 @@ func hQuote(s any) string {
 //
 // Note h is reallocated before the scan to clear existing values. If the
 // hstore column's database value is NULL, then h is set to nil instead.
+//
+//nolint:gosec
 func (h *HStore) Scan(value any) error {
 	if value == nil {
 		h = nil //nolint:ineffassign
