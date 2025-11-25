@@ -313,7 +313,7 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 		return queryMods, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
 			before, after := scan.StructMapper[T](
 				scan.WithStructTagPrefix(prefix),
-				scan.WithTypeConverter(typeConverter{}),
+				scan.WithTypeConverter(NullTypeConverter{}),
 				scan.WithRowValidator(rowValidator),
 				scan.WithMapperMods(mapperMods...),
 			)(ctx, cols)
@@ -375,9 +375,43 @@ func (v *wrapper) Scan(value any) error {
 	return opt.ConvertAssign(v.V, value)
 }
 
-type typeConverter struct{}
+// NullTypeConverter is a TypeConverter that skips NULL values during scanning even if the destination type does not support NULLs.
+// This is useful when scanning complex queries with optional relationships while still wanting to re-use some generated structs.
+//
 
-func (typeConverter) TypeToDestination(typ reflect.Type) reflect.Value {
+// Example usage:
+
+// Assuming the following generated type in the package "gen":
+//   type Thing struct {
+//     ID        string              `db:"id,pk" `
+//     Name      string              `db:"name" `
+//     Country   sql.Null[string]    `db:"country" `
+//   }
+//
+// And the following custom struct that includes the generated type as a field:
+//
+// type myRow struct {
+//     ... so many other cols
+//     OptionalThing gen.Thing `db:"thing"` // will be populated by selecting thing.id, thing.name, thing.country
+// }
+//
+// The "thing" table columns are loaded via a LEFT JOIN, so they could be all NULL: NullTypeConverter will make sure that the scan won't fail, leaving the struct empty (like Preload would do).
+//
+// bob.All(ctx, db,
+//   psql.Select(
+//      sm.Columns(
+//         ...
+//         gen.Things.Columns.WithPrefix("thing.")),
+//      sm.From(...),
+//		sm.LeftJoin(gen.Things.Name()).As("thing").On(
+//			gen.Things.Columns.AliasedAs("thing").ID.EQ(...),
+//		),
+// 	), scan.StructMapper[myRow](scan.WithTypeConverter(orm.NullTypeConverter{})))
+
+type NullTypeConverter struct{}
+
+// TypeToDestination implements the TypeConverter interface and returns a reflect.Value that wraps the destination type in a wrapper struct able to handle NULL values.
+func (NullTypeConverter) TypeToDestination(typ reflect.Type) reflect.Value {
 	val := reflect.ValueOf(&wrapper{
 		V: reflect.New(typ).Interface(),
 	})
@@ -385,6 +419,7 @@ func (typeConverter) TypeToDestination(typ reflect.Type) reflect.Value {
 	return val
 }
 
-func (typeConverter) ValueFromDestination(val reflect.Value) reflect.Value {
+// ValueFromDestination implements the TypeConverter interface and extracts the actual value from the wrapper struct.
+func (NullTypeConverter) ValueFromDestination(val reflect.Value) reflect.Value {
 	return val.Elem().FieldByName("V").Elem().Elem()
 }
