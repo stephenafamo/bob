@@ -22,7 +22,7 @@ func Quote(aa ...string) bob.Expression {
 // quoted and joined... something like "users"."id"
 type quoted []string
 
-func (q quoted) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (q quoted) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(q) == 0 {
 		return nil, nil
 	}
@@ -35,7 +35,7 @@ func (q quoted) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start 
 		}
 
 		if k != 0 {
-			w.Write([]byte("."))
+			w.WriteString(".")
 		}
 		k++
 

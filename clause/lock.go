@@ -37,14 +37,14 @@ type Lock struct {
 	Wait     string
 }
 
-func (f Lock) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (f Lock) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if f.Strength == "" {
 		return nil, nil
 	}
 
-	w.Write([]byte("FOR "))
+	w.WriteString("FOR ")
 	if f.Strength != "" {
-		fmt.Fprintf(w, "%s ", f.Strength)
+		w.WriteString(fmt.Sprintf("%s ", f.Strength))
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, f.Tables, "OF ", ", ", "")
@@ -53,8 +53,8 @@ func (f Lock) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 	}
 
 	if f.Wait != "" {
-		w.Write([]byte(" "))
-		w.Write([]byte(f.Wait))
+		w.WriteString(" ")
+		w.WriteString(f.Wait)
 	}
 
 	return args, nil

@@ -73,7 +73,7 @@ type into struct {
 	lineOptions  lineOptions
 }
 
-func (i into) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i into) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	// If it has vars, use INTO var_name, var_name ...
 	if len(i.vars) > 0 {
 		return bob.ExpressSlice(ctx, w, d, start, i.vars, "INTO @", ", @", "")
@@ -81,7 +81,7 @@ func (i into) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 
 	// If dumpfile is present, use INTO DUMPFILE 'file_name'
 	if i.dumpfile != "" {
-		_, err := fmt.Fprintf(w, "INTO DUMPFILE '%s'", i.dumpfile)
+		_, err := w.WriteString(fmt.Sprintf("INTO DUMPFILE '%s'", i.dumpfile))
 		return nil, err
 	}
 
@@ -90,7 +90,7 @@ func (i into) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start in
 		return nil, nil
 	}
 
-	_, err := fmt.Fprintf(w, "INTO OUTFILE '%s'", i.dumpfile)
+	_, err := w.WriteString(fmt.Sprintf("INTO OUTFILE '%s'", i.dumpfile))
 	if err != nil {
 		return nil, err
 	}
@@ -116,22 +116,22 @@ type fieldOptions struct {
 	enclosedByOptional bool
 }
 
-func (f fieldOptions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte("FIELDS"))
+func (f fieldOptions) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("FIELDS")
 
 	if f.terminatedBy != "" {
-		fmt.Fprintf(w, " TERMINATED BY '%s'", f.terminatedBy)
+		w.WriteString(fmt.Sprintf(" TERMINATED BY '%s'", f.terminatedBy))
 	}
 
 	if f.enclosedBy != "" {
 		if f.enclosedByOptional {
-			w.Write([]byte(" OPTIONALLY"))
+			w.WriteString(" OPTIONALLY")
 		}
-		fmt.Fprintf(w, " ENCLOSED BY '%s'", f.enclosedBy)
+		w.WriteString(fmt.Sprintf(" ENCLOSED BY '%s'", f.enclosedBy))
 	}
 
 	if f.escapedBy != "" {
-		fmt.Fprintf(w, " ESCAPED BY '%s'", f.escapedBy)
+		w.WriteString(fmt.Sprintf(" ESCAPED BY '%s'", f.escapedBy))
 	}
 
 	return nil, nil
@@ -142,15 +142,15 @@ type lineOptions struct {
 	terminatedBy string
 }
 
-func (l lineOptions) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-	w.Write([]byte("LINES"))
+func (l lineOptions) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("LINES")
 
 	if l.startingBy != "" {
-		fmt.Fprintf(w, "  STARTINGBY '%s'", l.terminatedBy)
+		w.WriteString(fmt.Sprintf("  STARTINGBY '%s'", l.terminatedBy))
 	}
 
 	if l.terminatedBy != "" {
-		fmt.Fprintf(w, " TERMINATED BY '%s'", l.terminatedBy)
+		w.WriteString(fmt.Sprintf(" TERMINATED BY '%s'", l.terminatedBy))
 	}
 
 	return nil, nil

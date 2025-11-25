@@ -15,6 +15,6 @@ func (s *Set) AppendSet(exprs ...any) {
 	s.Set = append(s.Set, exprs...)
 }
 
-func (s Set) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (s Set) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressSlice(ctx, w, d, start, s.Set, "", ",\n", "")
 }

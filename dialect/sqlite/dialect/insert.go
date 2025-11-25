@@ -23,7 +23,7 @@ type InsertQuery struct {
 	bob.ContextualModdable[*InsertQuery]
 }
 
-func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
@@ -38,7 +38,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, withArgs...)
 
-	w.Write([]byte("INSERT"))
+	w.WriteString("INSERT")
 
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.or, true, " ", "")
 	if err != nil {
@@ -71,6 +71,6 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	}
 	args = append(args, retArgs...)
 
-	w.Write([]byte("\n"))
+	w.WriteString("\n")
 	return args, nil
 }

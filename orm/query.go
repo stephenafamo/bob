@@ -92,12 +92,12 @@ func (q ModQuery[Q, E, T, Ts, Tr]) Apply(e Q) {
 }
 
 func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {
-	return bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 		args := []any{}
 
 		for queryArg := range argIter {
 			if to < queryArg.Start {
-				w.Write([]byte(querySQL[from:to]))
+				w.WriteString(querySQL[from:to])
 				return args, nil
 			}
 
@@ -112,7 +112,7 @@ func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPos
 				return nil, fmt.Errorf("arg %q end(%d) is greater than to(%d)", queryArg.Name, queryArg.Stop, to)
 			}
 
-			w.Write([]byte(querySQL[from:queryArg.Start]))
+			w.WriteString(querySQL[from:queryArg.Start])
 
 			arg, err := bob.Express(ctx, w, d, start, queryArg.Expression)
 			if err != nil {
@@ -124,7 +124,7 @@ func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPos
 			from = queryArg.Stop
 		}
 
-		w.Write([]byte(querySQL[from:to]))
+		w.WriteString(querySQL[from:to])
 		return args, nil
 	})
 }

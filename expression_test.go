@@ -14,21 +14,21 @@ var d dialect
 
 type dialect struct{}
 
-func (d dialect) WriteArg(w io.Writer, position int) {
-	w.Write([]byte("$"))
-	w.Write([]byte(strconv.Itoa(position)))
+func (d dialect) WriteArg(w io.StringWriter, position int) {
+	w.WriteString("$")
+	w.WriteString(strconv.Itoa(position))
 }
 
-func (d dialect) WriteQuoted(w io.Writer, s string) {
-	w.Write([]byte(`"`))
-	w.Write([]byte(s))
-	w.Write([]byte(`"`))
+func (d dialect) WriteQuoted(w io.StringWriter, s string) {
+	w.WriteString(`"`)
+	w.WriteString(s)
+	w.WriteString(`"`)
 }
 
-var expression = ExpressionFunc(func(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
-	w.Write([]byte("Hello "))
+var expression = ExpressionFunc(func(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
+	w.WriteString("Hello ")
 	d.WriteArg(w, start)
-	w.Write([]byte(" "))
+	w.WriteString(" ")
 	d.WriteArg(w, start+1)
 	return nil, nil
 })
@@ -163,9 +163,9 @@ func TestExpressSlice(t *testing.T) {
 
 type dialectWithNamed struct{ dialect }
 
-func (d dialectWithNamed) WriteNamedArg(w io.Writer, name string) {
-	w.Write([]byte(":"))
-	w.Write([]byte(name))
+func (d dialectWithNamed) WriteNamedArg(w io.StringWriter, name string) {
+	w.WriteString(":")
+	w.WriteString(name)
 }
 
 func TestNamedArgs(t *testing.T) {

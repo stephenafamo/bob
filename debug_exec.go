@@ -17,19 +17,19 @@ type DebugPrinter interface {
 }
 
 // an implementtion of the [DebugPrinter]
-type writerPrinter struct{ io.Writer }
+type writerPrinter struct{ io.StringWriter }
 
 // implements [DebugPrinter]
 func (w writerPrinter) PrintQuery(query string, args ...any) {
-	fmt.Fprintln(w.Writer, query)
+	w.WriteString(query)
 	for i, arg := range args {
 		val := arg
 		if valuer, ok := val.(driver.Valuer); ok {
 			val, _ = valuer.Value()
 		}
-		fmt.Fprintf(w.Writer, "%d: %T: %v\n", i, arg, val)
+		w.WriteString(fmt.Sprintf("\n%d: %T: %v", i, arg, val))
 	}
-	fmt.Fprintf(w.Writer, "\n")
+	w.WriteString("\n")
 }
 
 // Debug wraps an [Executor] and prints the queries and args to os.Stdout
@@ -38,9 +38,9 @@ func Debug(exec Executor) Executor {
 }
 
 // DebugToWriter wraps an existing [Executor] and writes all
-// queries and args to the given [io.Writer]
+// queries and args to the given [io.StringWriter]
 // if w is nil, it fallsback to [os.Stdout]
-func DebugToWriter(exec Executor, w io.Writer) Executor {
+func DebugToWriter(exec Executor, w io.StringWriter) Executor {
 	if w == nil {
 		w = os.Stdout
 	}

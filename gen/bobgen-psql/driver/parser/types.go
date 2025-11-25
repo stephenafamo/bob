@@ -25,8 +25,8 @@ func (i position) String() string {
 	return fmt.Sprintf("%d:%d", i[0], i[1])
 }
 
-func (i position) LitterDump(w io.Writer) {
-	_, _ = fmt.Fprintf(w, "(%d, %d)", i[0], i[1])
+func (i position) LitterDump(w io.StringWriter) {
+	_, _ = w.WriteString(fmt.Sprintf("(%d, %d))", i[0], i[1]))
 }
 
 type joinedInfo struct {
@@ -35,8 +35,8 @@ type joinedInfo struct {
 	joinType pg.JoinType
 }
 
-func (j joinedInfo) LitterDump(w io.Writer) {
-	_, _ = fmt.Fprintf(w, "(%T, %v)", j.node.Node, j.info.children)
+func (j joinedInfo) LitterDump(w io.StringWriter) {
+	_, _ = w.WriteString(fmt.Sprintf("(%T, %v))", j.node.Node, j.info.children))
 }
 
 type nullable interface {
@@ -65,8 +65,8 @@ func (a alwaysNullable) IsNull(map[position]string, map[position]nullable, []que
 	return true
 }
 
-func (i alwaysNullable) LitterDump(w io.Writer) {
-	_, _ = fmt.Fprintf(w, "(TRUE)")
+func (i alwaysNullable) LitterDump(w io.StringWriter) {
+	_, _ = w.WriteString("(TRUE)")
 }
 
 type columnNullable struct {
@@ -74,8 +74,8 @@ type columnNullable struct {
 	info nodeInfo
 }
 
-func (i columnNullable) LitterDump(w io.Writer) {
-	fmt.Fprintf(w, "(%v)", i.info)
+func (i columnNullable) LitterDump(w io.StringWriter) {
+	w.WriteString(fmt.Sprintf("(%v)", i.info))
 }
 
 func (c columnNullable) IsNull(names map[position]string, index map[position]nullable, sources []queryResult) bool {
@@ -129,6 +129,6 @@ type argPos struct {
 	edited [2]int
 }
 
-func (a argPos) LitterDump(w io.Writer) {
-	fmt.Fprintf(w, "(%v, %v)", a.original, a.edited)
+func (a argPos) LitterDump(w io.StringWriter) {
+	w.WriteString(fmt.Sprintf("(%v, %v))", a.original, a.edited))
 }

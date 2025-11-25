@@ -73,7 +73,7 @@ func (c ColumnsExpr) Except(cols ...string) ColumnsExpr {
 	return c
 }
 
-func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(c.names) == 0 {
 		return nil, nil
 	}
@@ -81,23 +81,23 @@ func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, s
 	// wrap in parenthesis and join with comma
 	for k, col := range c.names {
 		if k != 0 {
-			w.Write([]byte(", "))
+			w.WriteString(", ")
 		}
 
-		w.Write([]byte(c.aggFunc[0]))
+		w.WriteString(c.aggFunc[0])
 		for _, part := range c.parent {
 			if part == "" {
 				continue
 			}
 			d.WriteQuoted(w, part)
-			w.Write([]byte("."))
+			w.WriteString(".")
 		}
 
 		d.WriteQuoted(w, col)
-		w.Write([]byte(c.aggFunc[1]))
+		w.WriteString(c.aggFunc[1])
 
 		if !c.aliasDisabled {
-			w.Write([]byte(" AS "))
+			w.WriteString(" AS ")
 			d.WriteQuoted(w, c.aliasPrefix+col)
 		}
 	}

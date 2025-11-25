@@ -39,7 +39,7 @@ type named struct {
 	grouped bool
 }
 
-func (a named) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) ([]any, error) {
+func (a named) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
 	if len(a.names) == 0 {
 		return nil, nil
 	}
@@ -47,12 +47,12 @@ func (a named) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) 
 	args := make([]any, len(a.names))
 
 	if a.grouped {
-		w.Write([]byte(openPar))
+		w.WriteString(openPar)
 	}
 
 	for k, name := range a.names {
 		if k > 0 {
-			w.Write([]byte(commaSpace))
+			w.WriteString(commaSpace)
 		}
 
 		d.WriteArg(w, start+k)
@@ -60,7 +60,7 @@ func (a named) WriteSQL(ctx context.Context, w io.Writer, d Dialect, start int) 
 	}
 
 	if a.grouped {
-		w.Write([]byte(closePar))
+		w.WriteString(closePar)
 	}
 
 	return args, nil

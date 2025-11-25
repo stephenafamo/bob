@@ -14,12 +14,12 @@ type Query interface {
 	// start is the index of the args, usually 1.
 	// it is present to allow re-indexing in cases of a subquery
 	// The method returns the value of any args placed
-	// An `io.Writer` is used for efficiency when building the query.
-	WriteQuery(ctx context.Context, w io.Writer, start int) (args []any, err error)
+	// An `io.StringWriter` is used for efficiency when building the query.
+	WriteQuery(ctx context.Context, w io.StringWriter, start int) (args []any, err error)
 }
 ```
 
-The `WriteQuery` method is useful when we want to write to an existing `io.Writer`. However, we often just want the query string and arguments. So the Query objects have the following methods:
+The `WriteQuery` method is useful when we want to write to an existing `io.StringWriter`. However, we often just want the query string and arguments. So the Query objects have the following methods:
 
 - `Build(ctx context.Context) (query string, args []any, err error)`
 - `BuildN(ctx context.Context, start int) (query string, args []any, err error)`

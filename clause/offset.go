@@ -17,6 +17,6 @@ func (o *Offset) SetOffset(offset any) {
 	o.Count = offset
 }
 
-func (o Offset) WriteSQL(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
+func (o Offset) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	return bob.ExpressIf(ctx, w, d, start, o.Count, o.Count != nil, "OFFSET ", "")
 }
