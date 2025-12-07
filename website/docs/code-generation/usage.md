@@ -84,13 +84,28 @@ var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
 
 ### Update
 
-Update values in the database based on the values set in the `Setter`.
+Update values in the database based on the values set in the `Setter`. You can call `Update` on a `*models.Jet`:
 
 ```go
 err := jet.Update(ctx, db, &models.JetSetter{
     AirportID: omit.From(100),
     Name:      omit.From("new name"),
 })
+```
+
+Alternatively, you can use `models.Jets.Update` to do the update:
+
+
+```go
+jetID := 123
+setter := &models.JetSetter{
+    AirportID: omit.From(100),
+    Name:      omit.From("new name"),
+}
+jet, err := models.Jets.Update(
+    models.UpdateWhere.Jets.ID.EQ(jetID),
+    setter.UpdateMod(),
+).One(ctx, db)
 ```
 
 ### UpdateAll
@@ -100,7 +115,7 @@ UpdateAll is a method on the collection type `JetSlice`.
 All rows matching the primary keys of the members of the slice are updated with the given values.
 
 ```go
-err := jets.UpdateAll(ctx, db, JetSetter{
+err := jets.UpdateAll(ctx, db, models.JetSetter{
     AirportID: omit.From(100),
 })
 ```
@@ -147,11 +162,11 @@ The following helper methods are also generated.
 
 ### Find
 
-A function for finding by primary key is also generated.
+Shorthand for finding by primary key
 
 ```go
 // SELECT * FROM "jets" WHERE "jets"."id" = 10
-models.FindJet(ctx, db, 10).All()
+models.FindJet(ctx, db, 10)
 ```
 
 We can decide to only select a few columns
@@ -166,7 +181,7 @@ jet, err := models.FindJet(ctx, db, 10, "id", "cargo")
 Use exists to quickly check if a model with a given PK exists.
 
 ```go
-hasJet, err := models.JetExists(ctx, db, 10).All()
+hasJet, err := models.JetExists(ctx, db, 10)
 ```
 
 ## Generated Error Constants
