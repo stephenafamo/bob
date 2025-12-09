@@ -22,13 +22,13 @@ type (
 	ormDeleteQuery[T any, Tslice ~[]T] = orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 )
 
-func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, []T, Tset, C] {
-	return NewTablex[T, []T, Tset](schema, tableName, columns)
+func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columnNames, columns C) *Table[T, []T, Tset, C] {
+	return NewTablex[T, []T, Tset](schema, tableName, columnNames, columns)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](schema, table string, columns C) *Table[T, Tslice, Tset, C] {
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](schema, table string, columnNames, columns C) *Table[T, Tslice, Tset, C] {
 	setMapping := mappings.GetMappings(reflect.TypeOf((*new(Tset))))
-	view, mappings := newView[T, Tslice](schema, table, columns)
+	view, mappings := newView[T, Tslice](schema, table, columnNames, columns)
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
 		pkCols:           expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
