@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
+
 ## [v0.42.0] - 2025-11-25
 
 ### Fixed
@@ -625,6 +631,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
 - Add `AliasedAs()` method to `tableColumns` and `tableWhere` types to use a custom alias.
 - Add `AliasedAs()` method to generated relationship join mods. This is avaible in two places:
+
   - one to change the alias of the table being queried
 
     ```go
