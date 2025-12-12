@@ -239,6 +239,9 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 	// Change query type to Insert so that the correct hooks are run
 	query.QueryType = bob.QueryTypeInsert
 
+	// Transfer loaders from insert query to select query
+	query.Expression.SetLoaders(t.Expression.GetLoaders()...)
+
 	var autoIncrArgs []bob.Expression
 	idArgs := make([][]bob.Expression, len(t.table.uniqueIdx))
 
