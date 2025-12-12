@@ -59,6 +59,28 @@ func TestThenLoadCount{{$tAlias.UpSingular}}(t *testing.T) {
 	_ = ThenLoadCount.{{$tAlias.UpSingular}}.{{$relAlias}}
 	{{end}}
 }
+
+// Test that PreloadCount has {{$tAlias.UpSingular}} with methods for to-many relationships
+func TestPreloadCount{{$tAlias.UpSingular}}(t *testing.T) {
+	_ = PreloadCount.{{$tAlias.UpSingular}}
+
+	{{range $rel := $rels -}}
+	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
+	{{- $relAlias := $tAlias.Relationship $rel.Name}}
+	// Verify {{$relAlias}} preloader exists and returns a Preloader
+	_ = PreloadCount.{{$tAlias.UpSingular}}.{{$relAlias}}()
+	{{end}}
+}
+
+// Test that {{$tAlias.UpSingular}} has PreloadCount method
+func Test{{$tAlias.UpSingular}}PreloadCountMethod(t *testing.T) {
+	var m *{{$tAlias.UpSingular}}
+	{{range $rel := $rels -}}
+	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
+	{{- $relAlias := $tAlias.Relationship $rel.Name}}
+	_ = m.PreloadCount("{{$relAlias}}", 0)
+	{{end}}
+}
 {{end}}
 {{end}}
 {{end}}
