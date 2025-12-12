@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
 
+### Fixed
+
+- Fixed MySQL insert queries not executing loaders (e.g., `ThenLoad`, `ThenLoadCount`) because loaders were not transferred to the internal SELECT query used to retrieve inserted rows.
+
 ## [v0.42.0] - 2025-11-25
 
 ### Fixed
