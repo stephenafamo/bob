@@ -10,8 +10,6 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 // {{$tAlias.DownSingular}}C is where relationship counts are stored.
@@ -65,18 +63,7 @@ func (o *{{$tAlias.UpSingular}}) LoadCount{{$relAlias}}(ctx context.Context, exe
 		return nil
 	}
 
-	{{- $lastSide := index $rel.Sides (sub (len $rel.Sides) 1) -}}
-	{{- $fromAlias := $.Aliases.Table $lastSide.From }}
-
-	count, err := {{$fAlias.UpPlural}}.Query(
-		append(mods,
-			{{- range $index, $fromCol := $lastSide.FromColumns -}}
-			{{- $toCol := index $lastSide.ToColumns $index -}}
-			{{- $fromColAlias := index $fromAlias.Columns $fromCol }}
-			sm.Where({{$fAlias.UpPlural}}.Columns.{{index $fAlias.Columns $toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromColAlias}}))),
-			{{- end}}
-		)...,
-	).Count(ctx, exec)
+	count, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).Count(ctx, exec)
 	if err != nil {
 		return err
 	}
