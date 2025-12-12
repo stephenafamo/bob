@@ -21,6 +21,7 @@ type {{$tAlias.UpSingular}} struct {
 
 	R {{$tAlias.DownSingular}}R `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
 	{{end -}}
+	{{- block "model/fields/counts" $}}{{end}}
 }
 
 // {{$tAlias.UpSingular}}Slice is an alias for a slice of pointers to {{$tAlias.UpSingular}}.

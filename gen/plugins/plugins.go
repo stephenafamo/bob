@@ -18,6 +18,7 @@ func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 		Where[C](config.Where, templates.Where),
 		Loaders[C](config.Loaders, templates.Loaders),
 		Joins[C](config.Joins, templates.Joins),
+		Counts[C](config.Counts, templates.Counts),
 		Queries[T, C, I](templates.Queries),
 	}
 }
@@ -31,6 +32,7 @@ type Config struct {
 	Where    OnOffConfig  `yaml:"where"`
 	Loaders  OnOffConfig  `yaml:"loaders"`
 	Joins    OnOffConfig  `yaml:"joins"`
+	Counts   OnOffConfig  `yaml:"counts"`
 }
 
 func (c Config) Merge(c2 Config) Config {
@@ -43,6 +45,7 @@ func (c Config) Merge(c2 Config) Config {
 		Where:    mergeOnOffConfig(c.Where, c2.Where),
 		Loaders:  mergeOnOffConfig(c.Loaders, c2.Loaders),
 		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
+		Counts:   mergeOnOffConfig(c.Counts, c2.Counts),
 	}
 }
 
