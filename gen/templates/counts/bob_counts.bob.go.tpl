@@ -8,7 +8,7 @@
 
 {{block "helpers/count_variables" . -}}
 var (
-	PreloadCount = preloadCounts{}
+	PreloadCount = getPreloadCount()
 	ThenLoadCount = getThenLoadCount[*dialect.SelectQuery]()
 	InsertThenLoadCount = getThenLoadCount[*dialect.InsertQuery]()
 	UpdateThenLoadCount = getThenLoadCount[*dialect.UpdateQuery]()
@@ -28,17 +28,19 @@ type preloadCounts struct {
 	{{end}}{{end}}
 }
 
-func init() {
-	{{range $table := .Tables -}}
-	{{- $rels := $.Relationships.Get $table.Key -}}
-	{{- $hasToMany := false -}}
-	{{- range $rel := $rels -}}
-		{{- if $rel.IsToMany -}}{{- $hasToMany = true -}}{{- end -}}
-	{{- end -}}
-	{{- if $hasToMany -}}
-	{{$tAlias := $.Aliases.Table $table.Key -}}
-	PreloadCount.{{$tAlias.UpSingular}} = build{{$tAlias.UpSingular}}CountPreloader()
-	{{end}}{{end}}
+func getPreloadCount() preloadCounts {
+	return preloadCounts{
+		{{range $table := .Tables -}}
+		{{- $rels := $.Relationships.Get $table.Key -}}
+		{{- $hasToMany := false -}}
+		{{- range $rel := $rels -}}
+			{{- if $rel.IsToMany -}}{{- $hasToMany = true -}}{{- end -}}
+		{{- end -}}
+		{{- if $hasToMany -}}
+		{{$tAlias := $.Aliases.Table $table.Key -}}
+		{{$tAlias.UpSingular}}: build{{$tAlias.UpSingular}}CountPreloader(),
+		{{end}}{{end}}
+	}
 }
 
 type thenLoadCounts[Q orm.Loadable] struct {
