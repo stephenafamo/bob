@@ -199,6 +199,11 @@ func (t *insertQuery[T, Ts, Tset, C]) insertAll(ctx context.Context, exec bob.Ex
 	// Save the existing values
 	oldVals := t.Expression.Values.Vals
 
+	// Save and clear loaders - they will be transferred to the SELECT query
+	// This prevents bob.Exec from calling them with nil
+	loaders := t.Expression.GetLoaders()
+	t.Expression.SetLoaders()
+
 	// Run hooks
 	ctx, err = t.RunHooks(ctx, exec)
 	if err != nil {
@@ -224,10 +229,10 @@ func (t *insertQuery[T, Ts, Tset, C]) insertAll(ctx context.Context, exec bob.Ex
 	// Restore the values
 	t.Expression.Values.Vals = oldVals
 
-	return t.getInserted(oldVals, results)
+	return t.getInserted(oldVals, results, loaders)
 }
 
-func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, results []sql.Result) (bob.Query, error) {
+func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, results []sql.Result, loaders []bob.Loader) (bob.Query, error) {
 	w := &bytes.Buffer{}
 
 	if retrievalErr := t.retrievable(); retrievalErr != nil {
@@ -239,8 +244,8 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 	// Change query type to Insert so that the correct hooks are run
 	query.QueryType = bob.QueryTypeInsert
 
-	// Transfer loaders from insert query to select query
-	query.Expression.SetLoaders(t.Expression.GetLoaders()...)
+	// Transfer loaders to select query
+	query.Expression.SetLoaders(loaders...)
 
 	var autoIncrArgs []bob.Expression
 	idArgs := make([][]bob.Expression, len(t.table.uniqueIdx))
