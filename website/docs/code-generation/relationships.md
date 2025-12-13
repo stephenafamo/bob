@@ -112,9 +112,10 @@ jets, err := models.Jets(
 ```go
 models.SelectThenLoad.Pilots.Jets(...mods)
 models.InsertThenLoad.Pilots.Jets(...mods)
+models.UpdateThenLoad.Pilots.Jets(...mods) // not supported for mysql
 ```
 
-These will accept **ANY** `Select` or `Insert` mods.
+These will accept **ANY** `Select/Insert/UpdateQuery` mods.
 
 ```go
 // get the first 2 pilots
