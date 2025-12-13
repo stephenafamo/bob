@@ -166,6 +166,7 @@ With filtering:
 
 ```go
 // Count only active jets
+// SQL: SELECT *, (SELECT count(*) FROM jets WHERE jets.pilot_id = pilots.id AND jets.active = true) AS "__count_Jets" FROM pilots
 pilots, err := models.Pilots(
     models.PreloadCount.Pilot.Jets(
         models.SelectWhere.Jet.Active.EQ(true),
@@ -179,7 +180,6 @@ pilots, err := models.Pilots(
 
 ```go
 models.ThenLoadCount.Pilot.Jets(...mods)
-models.InsertThenLoadCount.Pilot.Jets(...mods)
 ```
 
 ```go
@@ -194,6 +194,24 @@ for _, pilot := range pilots {
     if pilot.C.Jets != nil {
         fmt.Printf("Pilot %s has %d jets\n", pilot.Name, *pilot.C.Jets)
     }
+}
+```
+
+### InsertThenLoadCount
+
+`InsertThenLoadCount` loads the count in a separate query after the main query completes. This is similar to `ThenLoad` but only retrieves the count.
+
+```go
+pilot,err := models.Pilots.Insert(
+    &models.PilotSetter{
+        Name: omit.From("John Doe"),
+    },
+    models.InsertThenLoadCount.Pilot.Jets(...mods),
+).One(ctx, db)
+
+// Access the count
+if pilot.C.Jets != nil {
+    fmt.Printf("Pilot has %d jets\n", *pilot.C.Jets)
 }
 ```
 
