@@ -112,10 +112,9 @@ jets, err := models.Jets(
 ```go
 models.SelectThenLoad.Pilots.Jets(...mods)
 models.InsertThenLoad.Pilots.Jets(...mods)
-models.UpdateThenLoad.Pilots.Jets(...mods)
 ```
 
-These will accept **ANY** `Select/Insert/UpdateQuery` mods.
+These will accept **ANY** `Select` or `Insert` mods.
 
 ```go
 // get the first 2 pilots
@@ -181,7 +180,6 @@ pilots, err := models.Pilots(
 ```go
 models.ThenLoadCount.Pilot.Jets(...mods)
 models.InsertThenLoadCount.Pilot.Jets(...mods)
-models.UpdateThenLoadCount.Pilot.Jets(...mods)
 ```
 
 ```go

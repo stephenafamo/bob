@@ -11,7 +11,6 @@ var (
 	PreloadCount = getPreloadCount()
 	ThenLoadCount = getThenLoadCount[*dialect.SelectQuery]()
 	InsertThenLoadCount = getThenLoadCount[*dialect.InsertQuery]()
-	UpdateThenLoadCount = getThenLoadCount[*dialect.UpdateQuery]()
 )
 {{- end}}
 
