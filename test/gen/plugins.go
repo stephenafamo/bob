@@ -22,7 +22,9 @@ var (
 	_ gen.TemplateDataPlugin[any, any, any] = (*aliasPlugin[any, any, any])(nil)
 )
 
-type templatePlugin[C any] struct{}
+type templatePlugin[C any] struct {
+	dialect string // "mysql", "psql", "sqlite"
+}
 
 func (q templatePlugin[C]) Name() string {
 	return "template"
@@ -34,12 +36,37 @@ func (t templatePlugin[C]) PlugState(s *gen.State[C]) error {
 		return fmt.Errorf("failed to load templates: %w", err)
 	}
 
+	// Load shared factory templates (includes database.bob_test.go.tpl)
+	sharedFactoryTemplates, err := fs.Sub(TestTemplates, "templates/factory")
+	if err != nil {
+		return fmt.Errorf("failed to load shared factory templates: %w", err)
+	}
+
+	// Load dialect-specific factory templates if they exist
+	var dialectFactoryTemplates fs.FS
+	if t.dialect != "" {
+		dialectFactoryTemplates, err = fs.Sub(TestTemplates, "templates/factory/"+t.dialect)
+		if err != nil {
+			// Dialect-specific templates are optional
+			dialectFactoryTemplates = nil
+		}
+	}
+
 	for i := range s.Outputs {
 		if slices.Contains([]string{"dbinfo", "enums"}, s.Outputs[i].Key) {
 			// Skip the enums output, since there is no testDB defined
 			continue
 		}
-		s.Outputs[i].Templates = append(s.Outputs[i].Templates, templates)
+
+		// Factory output gets its own templates, not the root templates
+		if s.Outputs[i].Key == "factory" {
+			s.Outputs[i].Templates = append(s.Outputs[i].Templates, sharedFactoryTemplates)
+			if dialectFactoryTemplates != nil {
+				s.Outputs[i].Templates = append(s.Outputs[i].Templates, dialectFactoryTemplates)
+			}
+		} else {
+			s.Outputs[i].Templates = append(s.Outputs[i].Templates, templates)
+		}
 	}
 
 	return nil

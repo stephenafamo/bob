@@ -129,6 +129,7 @@ func testPostgresDriver(t *testing.T, dsn string) {
 					))
 				},
 				OverwriteGolden: overwriteGolden,
+				Dialect:         "psql",
 			})
 		})
 	}
@@ -243,6 +244,7 @@ func testPostgresAssemble(t *testing.T, dsn string) {
 				},
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
+				Dialect:         "psql",
 			})
 		})
 	}

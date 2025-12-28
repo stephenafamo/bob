@@ -92,6 +92,7 @@ type DriverTestConfig[T, C, I any] struct {
 	GoldenFile      string
 	GoldenFileMod   func([]byte) []byte
 	GetDriver       func() drivers.Interface[T, C, I]
+	Dialect         string // "mysql", "psql", "sqlite" - for dialect-specific test templates
 }
 
 type AssembleTestConfig[T, C, I any] struct {
@@ -172,7 +173,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 				outputPath:   defaultFolder,
 				trimPrefixes: []string{defaultFolder, aliasesFolder},
 			},
-			templatePlugin[C]{},
+			templatePlugin[C]{dialect: config.Dialect},
 		)
 	})
 
@@ -190,7 +191,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 				outputPath:   aliasesFolder,
 				trimPrefixes: []string{defaultFolder, aliasesFolder},
 			},
-			templatePlugin[C]{},
+			templatePlugin[C]{dialect: config.Dialect},
 		)
 	})
 }
