@@ -34,6 +34,31 @@ func TestGetTableMissing(t *testing.T) {
 	tables.Get("missing")
 }
 
+func TestHasTable(t *testing.T) {
+	t.Parallel()
+
+	tables := Tables[any, any]{
+		{Key: "one"},
+		{Key: "two"},
+	}
+
+	if !tables.Has("one") {
+		t.Error("expected to find table 'one'")
+	}
+
+	if !tables.Has("two") {
+		t.Error("expected to find table 'two'")
+	}
+
+	if tables.Has("missing") {
+		t.Error("expected not to find table 'missing'")
+	}
+
+	if tables.Has("") {
+		t.Error("expected not to find empty table name")
+	}
+}
+
 func TestGetColumn(t *testing.T) {
 	t.Parallel()
 
