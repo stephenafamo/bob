@@ -28,10 +28,7 @@ func TestUserReload(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 	originalID := user.ID
 
 	// Reload and verify the ID is still correct
@@ -57,23 +54,14 @@ func TestVideoUpdateAndReload(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user and video
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	video, err := New().NewVideoWithContext(ctx,
+	video := New().NewVideoWithContext(ctx,
 		VideoMods.WithExistingUser(user),
-	).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	).CreateOrFail(ctx, t, tx)
 
 	// Create another user to update the video's user_id
-	user2, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating second User: %v", err)
-	}
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Update the video to point to user2
 	{{$.Importer.Import "github.com/aarondl/opt/omit"}}
@@ -112,10 +100,7 @@ func TestVideoDelete(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a video
-	video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 	videoID := video.ID
 
 	// Delete the video
@@ -150,10 +135,7 @@ func TestUserSliceReloadAll(t *testing.T) {
 	// Create multiple users
 	var users models.UserSlice
 	for i := 0; i < 3; i++ {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		users = append(users, user)
 	}
 
@@ -190,19 +172,13 @@ func TestVideoSliceDeleteAll(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user and multiple videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	var videos models.VideoSlice
 	for i := 0; i < 3; i++ {
-		video, err := New().NewVideoWithContext(ctx,
+		video := New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 		videos = append(videos, video)
 	}
 
@@ -238,17 +214,11 @@ func TestLoadUserFromVideo(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user and video
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	video, err := New().NewVideoWithContext(ctx,
+	video := New().NewVideoWithContext(ctx,
 		VideoMods.WithExistingUser(user),
-	).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	).CreateOrFail(ctx, t, tx)
 
 	// Load the user relationship
 	if err := video.LoadUser(ctx, tx); err != nil {
@@ -278,19 +248,13 @@ func TestLoadVideosFromUser(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create videos for the user
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Load the videos relationship
@@ -321,17 +285,11 @@ func TestLoadVideosFromUserSlice(t *testing.T) {
 	var users models.UserSlice
 	expectedCounts := []int{1, 2, 3}
 	for _, count := range expectedCounts {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		for j := 0; j < count; j++ {
-			_, err := New().NewVideoWithContext(ctx,
+			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
-			).Create(ctx, tx)
-			if err != nil {
-				t.Fatalf("Error creating Video: %v", err)
-			}
+			).CreateOrFail(ctx, t, tx)
 		}
 		users = append(users, user)
 	}
@@ -367,10 +325,7 @@ func TestInsertVideosForUser(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Insert videos using InsertVideos
 	err = user.InsertVideos(ctx, tx, &models.VideoSetter{}, &models.VideoSetter{})
@@ -401,24 +356,15 @@ func TestAttachVideosToUser(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create two users
-	user1, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User1: %v", err)
-	}
-	user2, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User2: %v", err)
-	}
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create videos for user1
 	var videos []*models.Video
 	for i := 0; i < 2; i++ {
-		video, err := New().NewVideoWithContext(ctx,
+		video := New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user1),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 		videos = append(videos, video)
 	}
 
@@ -462,10 +408,7 @@ func TestLoadCountUserVideos(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Verify initial count is 0
 	if err := user.LoadCountVideos(ctx, tx); err != nil {
@@ -480,12 +423,9 @@ func TestLoadCountUserVideos(t *testing.T) {
 
 	// Create 3 videos for this user
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Verify count is now 3
@@ -513,10 +453,7 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 	// Create 2 users
 	var users models.UserSlice
 	for i := 0; i < 2; i++ {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		users = append(users, user)
 	}
 
@@ -524,12 +461,9 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 	for i, user := range users {
 		numVideos := i + 1 // First user gets 1, second gets 2
 		for j := 0; j < numVideos; j++ {
-			_, err := New().NewVideoWithContext(ctx,
+			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
-			).Create(ctx, tx)
-			if err != nil {
-				t.Fatalf("Error creating Video: %v", err)
-			}
+			).CreateOrFail(ctx, t, tx)
 		}
 	}
 
@@ -570,18 +504,12 @@ func TestManyToManyVideoTags(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a video
-	video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create tags and attach them
 	var tags []*models.Tag
 	for i := 0; i < 3; i++ {
-		tag, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Tag: %v", err)
-		}
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 		tags = append(tags, tag)
 	}
 
@@ -621,17 +549,11 @@ func TestSharedTagsAcrossVideos(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a shared tag
-	sharedTag, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Tag: %v", err)
-	}
+	sharedTag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create multiple videos and attach the shared tag to each
 	for i := 0; i < 3; i++ {
-		video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 		if err := video.AttachTags(ctx, tx, sharedTag); err != nil {
 			t.Fatalf("Error attaching Tag: %v", err)
 		}
@@ -668,10 +590,7 @@ func TestLoadCountVideoTags(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a video
-	video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Verify initial count is 0
 	if err := video.LoadCountTags(ctx, tx); err != nil {
@@ -686,10 +605,7 @@ func TestLoadCountVideoTags(t *testing.T) {
 
 	// Create 3 tags and attach them to the video
 	for i := 0; i < 3; i++ {
-		tag, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Tag: %v", err)
-		}
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 		if err := video.AttachTags(ctx, tx, tag); err != nil {
 			t.Fatalf("Error attaching Tag to Video: %v", err)
 		}
@@ -718,10 +634,7 @@ func TestLoadCountTagVideos(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a tag
-	tag, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Tag: %v", err)
-	}
+	tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Verify initial count is 0
 	if err := tag.LoadCountVideos(ctx, tx); err != nil {
@@ -736,10 +649,7 @@ func TestLoadCountTagVideos(t *testing.T) {
 
 	// Create 3 videos and attach them to the tag
 	for i := 0; i < 3; i++ {
-		video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 		if err := tag.AttachVideos(ctx, tx, video); err != nil {
 			t.Fatalf("Error attaching Video to Tag: %v", err)
 		}
@@ -774,10 +684,7 @@ func TestOptionalSponsorRelationship(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a video without a sponsor
-	video, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video: %v", err)
-	}
+	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Verify video has no sponsor_id set
 	if _, ok := video.SponsorID.Get(); ok {
@@ -785,10 +692,7 @@ func TestOptionalSponsorRelationship(t *testing.T) {
 	}
 
 	// Create a sponsor and attach it to the video
-	sponsor, err := New().NewSponsorWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Sponsor: %v", err)
-	}
+	sponsor := New().NewSponsorWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	if err := video.AttachSponsor(ctx, tx, sponsor); err != nil {
 		t.Fatalf("Error attaching Sponsor: %v", err)
@@ -834,19 +738,13 @@ func TestQueryWithWhere(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user and multiple videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	var videoIDs []int32
 	for i := 0; i < 5; i++ {
-		video, err := New().NewVideoWithContext(ctx,
+		video := New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 		videoIDs = append(videoIDs, video.ID)
 	}
 
@@ -894,10 +792,7 @@ func TestQueryWithOrderBy(t *testing.T) {
 	// Create users
 	var userIDs []int32
 	for i := 0; i < 3; i++ {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		userIDs = append(userIDs, user.ID)
 	}
 
@@ -948,10 +843,7 @@ func TestQueryWithLimitOffset(t *testing.T) {
 
 	// Create 10 users
 	for i := 0; i < 10; i++ {
-		_, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 	}
 
 	// Query with limit
@@ -1008,10 +900,7 @@ func TestQueryWithIN(t *testing.T) {
 	// Create users
 	var targetIDs []int32
 	for i := 0; i < 5; i++ {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		if i%2 == 0 {
 			targetIDs = append(targetIDs, user.ID)
 		}
@@ -1058,18 +947,12 @@ func TestQueryWithJoin(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create user and videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Query videos with join to users
@@ -1103,19 +986,13 @@ func TestQueryCount(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create user and videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	expectedCount := 7
 	for i := 0; i < expectedCount; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Count videos for user
@@ -1145,10 +1022,7 @@ func TestQueryExists(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create a user
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Check if user exists
 	exists, err := models.Users.Query(
@@ -1189,24 +1063,15 @@ func TestUpdateWithMods(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create users and videos
-	user1, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User1: %v", err)
-	}
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	user2, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User2: %v", err)
-	}
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create videos for user1
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user1),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Update all videos to belong to user2
@@ -1262,19 +1127,13 @@ func TestDeleteWithMods(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create user and videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	var videoIDs []int32
 	for i := 0; i < 5; i++ {
-		video, err := New().NewVideoWithContext(ctx,
+		video := New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 		videoIDs = append(videoIDs, video.ID)
 	}
 
@@ -1317,33 +1176,21 @@ func TestSelectJoins(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create two users
-	user1, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User1: %v", err)
-	}
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	user2, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User2: %v", err)
-	}
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create videos for both users
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user1),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video for user1: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	for i := 0; i < 2; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user2),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video for user2: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Query videos using SelectJoins with InnerJoin on User
@@ -1383,18 +1230,12 @@ func TestPreloadToOne(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create user and videos
-	user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating User: %v", err)
-	}
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	for i := 0; i < 3; i++ {
-		_, err := New().NewVideoWithContext(ctx,
+		New().NewVideoWithContext(ctx,
 			VideoMods.WithExistingUser(user),
-		).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating Video: %v", err)
-		}
+		).CreateOrFail(ctx, t, tx)
 	}
 
 	// Query videos with Preload to eager load User (to-one relationship)
@@ -1438,17 +1279,11 @@ func TestThenLoadToMany(t *testing.T) {
 	var users models.UserSlice
 	expectedCounts := []int{2, 3, 1}
 	for _, count := range expectedCounts {
-		user, err := New().NewUserWithContext(ctx).Create(ctx, tx)
-		if err != nil {
-			t.Fatalf("Error creating User: %v", err)
-		}
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 		for j := 0; j < count; j++ {
-			_, err := New().NewVideoWithContext(ctx,
+			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
-			).Create(ctx, tx)
-			if err != nil {
-				t.Fatalf("Error creating Video: %v", err)
-			}
+			).CreateOrFail(ctx, t, tx)
 		}
 		users = append(users, user)
 	}
@@ -1492,31 +1327,16 @@ func TestThenLoadManyToMany(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create videos with tags
-	video1, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video1: %v", err)
-	}
+	video1 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	video2, err := New().NewVideoWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Video2: %v", err)
-	}
+	video2 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create tags and attach to videos
-	tag1, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Tag1: %v", err)
-	}
+	tag1 := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	tag2, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Tag2: %v", err)
-	}
+	tag2 := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	tag3, err := New().NewTagWithContext(ctx).Create(ctx, tx)
-	if err != nil {
-		t.Fatalf("Error creating Tag3: %v", err)
-	}
+	tag3 := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Attach tags to video1
 	if err := video1.AttachTags(ctx, tx, tag1, tag2); err != nil {
