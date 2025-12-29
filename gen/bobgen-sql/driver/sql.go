@@ -41,6 +41,9 @@ type Config struct {
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
 	fs      fs.FS
+	// Migration engine to use
+	// goose | unset (direct SQL)
+	Migrator string `yaml:"migrator"`
 }
 
 func RunPostgres(ctx context.Context, state *gen.State[any], config Config, pluginsConfig plugins.Config) error {
@@ -80,7 +83,12 @@ func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, er
 	}
 	defer db.Close()
 
-	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
+	if err = helpers.MigrateAuto(ctx, db, helpers.MigrationConfig{
+		Migrator: config.Migrator,
+		Dialect:  "postgres",
+		FS:       config.fs,
+		Dir:      config.Pattern,
+	}); err != nil {
 		return nil, fmt.Errorf("migrating: %w", err)
 	}
 	db.Close() // close early
@@ -135,7 +143,12 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 	}
 	defer db.Close()
 
-	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
+	if err = helpers.MigrateAuto(ctx, db, helpers.MigrationConfig{
+		Migrator: config.Migrator,
+		Dialect:  "mysql",
+		FS:       config.fs,
+		Dir:      config.Pattern,
+	}); err != nil {
 		return nil, fmt.Errorf("migrating: %w", err)
 	}
 	db.Close() // close early
@@ -190,7 +203,12 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 		}
 	}
 
-	if err := helpers.Migrate(ctx, db, config.fs, config.Pattern); err != nil {
+	if err = helpers.MigrateAuto(ctx, db, helpers.MigrationConfig{
+		Migrator: config.Migrator,
+		Dialect:  "sqlite",
+		FS:       config.fs,
+		Dir:      config.Pattern,
+	}); err != nil {
 		return nil, fmt.Errorf("migrating: %w", err)
 	}
 	db.Close() // close early

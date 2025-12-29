@@ -15,6 +15,7 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
+	"github.com/pressly/goose/v3"
 	"github.com/stephenafamo/bob/gen"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/plugins"
@@ -41,6 +42,13 @@ type Config struct {
 	Queries []string `yaml:"queries"`
 	// List of tables that will be should be ignored. Others are included
 	Except map[string][]string
+}
+
+type MigrationConfig struct {
+	Migrator string
+	Dialect  string
+	FS       fs.FS
+	Dir      string
 }
 
 func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, plugins.Config, error) {
@@ -159,4 +167,27 @@ func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {
 
 	fmt.Printf("migrations finished\n")
 	return nil
+}
+
+func MigrateGoose(ctx context.Context, db *sql.DB, dialect string, migrationsFS fs.FS, dir string) error {
+	if err := goose.SetDialect(dialect); err != nil {
+		return fmt.Errorf("setting goose dialect %q: %w", dialect, err)
+	}
+
+	goose.SetBaseFS(migrationsFS)
+
+	if err := goose.UpContext(ctx, db, dir); err != nil {
+		return fmt.Errorf("running goose migrations: %w", err)
+	}
+
+	return nil
+}
+
+func MigrateAuto(ctx context.Context, db *sql.DB, cfg MigrationConfig) error {
+	switch cfg.Migrator {
+	case "goose":
+		return MigrateGoose(ctx, db, cfg.Dialect, cfg.FS, cfg.Dir)
+	default:
+		return Migrate(ctx, db, cfg.FS, cfg.Dir)
+	}
 }
