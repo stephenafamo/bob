@@ -133,11 +133,7 @@ func TestUserSliceReloadAll(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create multiple users
-	var users models.UserSlice
-	for i := 0; i < 3; i++ {
-		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
-		users = append(users, user)
-	}
+	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 3)
 
 	// Store original IDs
 	originalIDs := make([]int32, len(users))
@@ -451,11 +447,7 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create 2 users
-	var users models.UserSlice
-	for i := 0; i < 2; i++ {
-		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
-		users = append(users, user)
-	}
+	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 2)
 
 	// Create different number of videos for each user
 	for i, user := range users {
@@ -507,11 +499,7 @@ func TestManyToManyVideoTags(t *testing.T) {
 	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
 
 	// Create tags and attach them
-	var tags []*models.Tag
-	for i := 0; i < 3; i++ {
-		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
-		tags = append(tags, tag)
-	}
+	tags := New().NewTagWithContext(ctx).CreateManyOrFail(ctx, t, tx, 3)
 
 	// Attach all tags to video
 	if err := video.AttachTags(ctx, tx, tags...); err != nil {
@@ -790,9 +778,9 @@ func TestQueryWithOrderBy(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create users
+	createdUsers := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 3)
 	var userIDs []int32
-	for i := 0; i < 3; i++ {
-		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	for _, user := range createdUsers {
 		userIDs = append(userIDs, user.ID)
 	}
 
@@ -842,9 +830,7 @@ func TestQueryWithLimitOffset(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create 10 users
-	for i := 0; i < 10; i++ {
-		New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
-	}
+	New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 10)
 
 	// Query with limit
 	{{$.Importer.Import "sm" "github.com/stephenafamo/bob/dialect/mysql/sm"}}
