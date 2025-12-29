@@ -475,6 +475,202 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 		}
 	}
 }
+
+// TestPreloadCountUserVideos tests using PreloadCount to load counts in the same query
+func TestPreloadCountUserVideos(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create users with different numbers of videos
+	expectedCounts := []int{2, 3, 1}
+	for _, count := range expectedCounts {
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+		for j := 0; j < count; j++ {
+			New().NewVideoWithContext(ctx,
+				VideoMods.WithExistingUser(user),
+			).CreateOrFail(ctx, t, tx)
+		}
+	}
+
+	// Query users with PreloadCount to load video counts in the same query
+	users, err := models.Users.Query(
+		models.PreloadCount.User.Videos(),
+	).All(ctx, tx)
+	if err != nil {
+		t.Fatalf("Error querying users with PreloadCount: %v", err)
+	}
+
+	if len(users) != 3 {
+		t.Fatalf("Expected 3 users, got %d", len(users))
+	}
+
+	// Verify counts are loaded
+	for i, user := range users {
+		if user.C.Videos == nil {
+			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
+		}
+		expectedCount := int64(expectedCounts[i])
+		if *user.C.Videos != expectedCount {
+			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
+		}
+	}
+}
+
+// TestThenLoadCountUserVideos tests using ThenLoadCount to load counts in a separate query
+func TestThenLoadCountUserVideos(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create users with different numbers of videos
+	expectedCounts := []int{2, 3, 1}
+	for _, count := range expectedCounts {
+		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+		for j := 0; j < count; j++ {
+			New().NewVideoWithContext(ctx,
+				VideoMods.WithExistingUser(user),
+			).CreateOrFail(ctx, t, tx)
+		}
+	}
+
+	// Query users with ThenLoadCount to load video counts in a separate query
+	users, err := models.Users.Query(
+		models.ThenLoadCount.User.Videos(),
+	).All(ctx, tx)
+	if err != nil {
+		t.Fatalf("Error querying users with ThenLoadCount: %v", err)
+	}
+
+	if len(users) != 3 {
+		t.Fatalf("Expected 3 users, got %d", len(users))
+	}
+
+	// Verify counts are loaded
+	for i, user := range users {
+		if user.C.Videos == nil {
+			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
+		}
+		expectedCount := int64(expectedCounts[i])
+		if *user.C.Videos != expectedCount {
+			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
+		}
+	}
+}
+
+// TestPreloadCountWithFilter tests PreloadCount with filtering mods
+func TestPreloadCountWithFilter(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create a user with multiple videos
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	
+	// Create 5 videos with different IDs
+	var videoIDs []int32
+	for i := 0; i < 5; i++ {
+		video := New().NewVideoWithContext(ctx,
+			VideoMods.WithExistingUser(user),
+		).CreateOrFail(ctx, t, tx)
+		videoIDs = append(videoIDs, video.ID)
+	}
+
+	// Query user with PreloadCount filtering for videos with ID > first video ID
+	// This should count only 4 videos
+	users, err := models.Users.Query(
+		models.SelectWhere.Users.ID.EQ(user.ID),
+		models.PreloadCount.User.Videos(
+			models.SelectWhere.Videos.ID.GT(videoIDs[0]),
+		),
+	).All(ctx, tx)
+	if err != nil {
+		t.Fatalf("Error querying users with filtered PreloadCount: %v", err)
+	}
+
+	if len(users) != 1 {
+		t.Fatalf("Expected 1 user, got %d", len(users))
+	}
+
+	// Verify filtered count
+	if users[0].C.Videos == nil {
+		t.Fatal("Expected Videos count to be set, got nil")
+	}
+	if *users[0].C.Videos != 4 {
+		t.Fatalf("Expected filtered Videos count to be 4, got %d", *users[0].C.Videos)
+	}
+}
+
+// TestThenLoadCountWithFilter tests ThenLoadCount with filtering mods
+func TestThenLoadCountWithFilter(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create a user with multiple videos
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	
+	// Create 5 videos with different IDs
+	var videoIDs []int32
+	for i := 0; i < 5; i++ {
+		video := New().NewVideoWithContext(ctx,
+			VideoMods.WithExistingUser(user),
+		).CreateOrFail(ctx, t, tx)
+		videoIDs = append(videoIDs, video.ID)
+	}
+
+	// Query user with ThenLoadCount filtering for videos with ID > first video ID
+	// This should count only 4 videos
+	users, err := models.Users.Query(
+		models.SelectWhere.Users.ID.EQ(user.ID),
+		models.ThenLoadCount.User.Videos(
+			models.SelectWhere.Videos.ID.GT(videoIDs[0]),
+		),
+	).All(ctx, tx)
+	if err != nil {
+		t.Fatalf("Error querying users with filtered ThenLoadCount: %v", err)
+	}
+
+	if len(users) != 1 {
+		t.Fatalf("Expected 1 user, got %d", len(users))
+	}
+
+	// Verify filtered count
+	if users[0].C.Videos == nil {
+		t.Fatal("Expected Videos count to be set, got nil")
+	}
+	if *users[0].C.Videos != 4 {
+		t.Fatalf("Expected filtered Videos count to be 4, got %d", *users[0].C.Videos)
+	}
+}
 {{- end }}
 
 {{- if and $hasVideos $hasTags $hasVideoTags }}
