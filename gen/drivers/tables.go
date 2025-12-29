@@ -22,16 +22,6 @@ func (tables Tables[C, I]) Get(name string) Table[C, I] {
 	panic(fmt.Sprintf("could not find table name: %s", name))
 }
 
-// Has checks if a table with the given name exists.
-func (tables Tables[C, I]) Has(name string) bool {
-	for _, table := range tables {
-		if table.Key == name {
-			return true
-		}
-	}
-	return false
-}
-
 func (tables Tables[C, I]) GetColumn(table, column string) Column {
 	for _, t := range tables {
 		if t.Key != table {

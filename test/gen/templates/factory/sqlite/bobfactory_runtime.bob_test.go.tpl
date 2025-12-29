@@ -1,8 +1,8 @@
-{{- $hasUsers := $.Tables.Has "users" -}}
-{{- $hasVideos := $.Tables.Has "videos" -}}
-{{- $hasTags := $.Tables.Has "tags" -}}
-{{- $hasVideoTags := $.Tables.Has "video_tags" -}}
-{{- $hasSponsors := $.Tables.Has "sponsors" -}}
+{{- $hasUsers := has "users" $.TableNames -}}
+{{- $hasVideos := has "videos" $.TableNames -}}
+{{- $hasTags := has "tags" $.TableNames -}}
+{{- $hasVideoTags := has "video_tags" $.TableNames -}}
+{{- $hasSponsors := has "sponsors" $.TableNames -}}
 
 {{- /* Only generate tests if we have the required tables */}}
 {{- if and $hasUsers $hasVideos -}}

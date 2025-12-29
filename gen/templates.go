@@ -84,6 +84,7 @@ type TemplateData[T, C, I any] struct {
 
 	Table         drivers.Table[C, I]
 	Tables        drivers.Tables[C, I]
+	TableNames    []string
 	QueryFile     drivers.QueryFile
 	QueryFolder   drivers.QueryFolder
 	QueryFolders  []drivers.QueryFolder

@@ -119,6 +119,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	data := &TemplateData[T, C, I]{
 		Dialect:           driver.Dialect(),
 		Tables:            dbInfo.Tables,
+		TableNames:        tableNames(dbInfo.Tables),
 		QueryFolders:      dbInfo.QueryFolders,
 		Enums:             dbInfo.Enums,
 		ExtraInfo:         dbInfo.ExtraInfo,
@@ -258,4 +259,14 @@ func buildPkgMap(outputs []*Output) (map[string]string, error) {
 	}
 
 	return pkgMap, nil
+}
+
+func tableNames[C, I any](tables drivers.Tables[C, I]) []string {
+	result := make([]string, 0, len(tables))
+
+	for _, table := range tables {
+		result = append(result, table.Key)
+	}
+
+	return result
 }
