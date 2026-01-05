@@ -457,10 +457,25 @@ func (d *driver) loadEnums(ctx context.Context) error {
 	return nil
 }
 
+func (d *driver) containsField(ctx context.Context, table, field string) (bool, error) {
+	query := `select exists(select 1 from information_schema.columns where table_name = $1 and column_name = $2)`
+	exists, err := stdscan.One(ctx, d.conn, scan.StructMapper[struct{ Exists bool }](), query, table, field)
+	if err != nil {
+		return false, err
+	}
+	return exists.Exists, err
+}
+
 func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], error) {
 	ret := drivers.DBIndexes[IndexExtra]{}
+	nullsField := "false"
+	if hasIndNullsField, err := d.containsField(ctx, "pg_index", "indnullsnotdistinct"); err != nil {
+		return nil, err
+	} else if hasIndNullsField {
+		nullsField = "x.indnullsnotdistinct"
+	}
 
-	query := `SELECT	
+	query := fmt.Sprintf(`SELECT	
           n.nspname AS schema_name,
           t.relname AS table_name,
           i.relname AS index_name,
@@ -469,7 +484,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], er
           ARRAY(SELECT unnest(x.indoption) & 1 = 1 ) AS descending,
           ARRAY(SELECT unnest(x.indoption) & 2 = 2 ) AS nulls_first,
           x.indisunique as unique,
-          x.indnullsnotdistinct as nulls_not_distinct,
+		  %s as nulls_not_distinct,
           pg_get_expr(x.indpred, x.indrelid) AS where_clause,
           cols.cols[x.indnkeyatts+1:] AS included_cols,
           obj_description(x.indexrelid, 'pg_class') AS comment
@@ -488,7 +503,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], er
     ) cols ON cols.indexrelid = x.indexrelid
 	WHERE n.nspname = ANY($1)
 	    AND x.indisvalid AND x.indislive AND x.indisvalid
-	ORDER BY n.nspname, t.relname, x.indisprimary DESC, i.relname;`
+	ORDER BY n.nspname, t.relname, x.indisprimary DESC, i.relname;`, nullsField)
 
 	type indexColumns struct {
 		SchemaName       string
