@@ -25,38 +25,41 @@ When using the CLI, Bob loads several built-in plugins.
 - `where`: Adds templates to the `models` package to generate code for where clauses e.g `models.SelectWhere.Table.Where.Rel()`.
 - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
 - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
+- `counts`: Adds templates to the `models` package to generate code for counting relationships e.g `models.PreloadCount.Table.Rel()` and `models.ThenLoadCount.Table.Rel()`.
 - `queries`: Generates code for queries.
 
 They can be configured in the `plugins` section of the configuration file.
 
 ```yaml
-plugins_preset: "all" # Valid values are "default", "all" or "none".
+plugins_preset: 'all' # Valid values are "default", "all" or "none".
 plugins:
   dbinfo:
     disabled: false
-    pkgname: "dbinfo"
-    destination: "dbinfo"
+    pkgname: 'dbinfo'
+    destination: 'dbinfo'
   enums:
     disabled: false
-    pkgname: "enums"
-    destination: "enums"
+    pkgname: 'enums'
+    destination: 'enums'
   models:
     disabled: false
-    pkgname: "models"
-    destination: "models"
+    pkgname: 'models'
+    destination: 'models'
   factory:
     disabled: false
-    pkgname: "factory"
-    destination: "factory"
+    pkgname: 'factory'
+    destination: 'factory'
   dberrors:
     disabled: false
-    pkgname: "dberrors"
-    destination: "dberrors"
+    pkgname: 'dberrors'
+    destination: 'dberrors'
   where:
     disabled: false
   loaders:
     disabled: false
   joins:
+    disabled: false
+  counts:
     disabled: false
 ```
 
@@ -165,14 +168,14 @@ It is not required to provide all parts of all names. Anything left out will be 
 # Although team_names works fine without configuration, we use it here for illustrative purposes
 aliases:
   team_names:
-    up_plural: "TeamNames"
-    up_singular: "TeamName"
-    down_plural: "teamNames"
-    down_singular: "teamName"
+    up_plural: 'TeamNames'
+    up_singular: 'TeamName'
+    down_plural: 'teamNames'
+    down_singular: 'teamName'
     columns: # Columns can be aliased by name
-      uuid: "ID"
+      uuid: 'ID'
     relationships: # Relationships can be aliased by name
-      team_id_fkey: "Owner"
+      team_id_fkey: 'Owner'
 ```
 
 :::tip
@@ -194,7 +197,7 @@ type videoR struct {
 aliases:
   team:
     relationships:
-      "video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey": "MyCustomAlias"
+      'video_tags.video_tags_tag_id_fkeyvideo_tags.video_tags_video_id_fkey': 'MyCustomAlias'
 ```
 
 :::
@@ -209,17 +212,17 @@ This can also be used to create relationships since those are derived from forei
 constraints:
   pilots:
     primary: # This will overwirte any existing primary key on the table
-      name: "pilots_pkey"
+      name: 'pilots_pkey'
       columns: [id]
     uniques: # These will be added to existing unique constraints
-      - name: "pilot_name_unique"
+      - name: 'pilot_name_unique'
         columns: [name]
-      - name: "pilot_nickname_unique"
+      - name: 'pilot_nickname_unique'
         columns: [nickname]
     foreign: # These will be added to existing foreign constraints
-      - name: "pilot_to_jets"
+      - name: 'pilot_to_jets'
         columns: [id]
-        foreign_table: "jets"
+        foreign_table: 'jets'
         foreign_columns: [pilot_id]
 ```
 
@@ -263,10 +266,10 @@ types:
   xml:
     # OPTIONAL: If this type is an alias of another type
     # this is useful to have custom randomization for a type e.g. xml
-    alias_of: "string"
+    alias_of: 'string'
     # If this depends on another type, you can specify the type here
     depends_on:
-      - "string"
+      - 'string'
     # To be used in factory.random_type
     # Use BASETYPE as a placeholder for the type
     # * a variable `f` of type `faker.Faker` is available
@@ -327,7 +330,7 @@ There exists the ability to override types that the driver has inferred. The way
 
 ```yaml
 replacements:
-  - tables: ["table_name"] # What tables to look inside. Matches all tables if empty
+  - tables: ['table_name'] # What tables to look inside. Matches all tables if empty
 
     # The match is a `gen.ColumnFilter` struct, and specifies which column to match.
     # Matches are done using "logical AND" meaning all the specified conditions must be met.
@@ -335,19 +338,19 @@ replacements:
     # All string fields can be specified as a regular expression by enclosing them with /.../.
     # Values are matched in a case-insensitive manner.
     match:
-      name: "username" # Matches the column name
+      name: 'username' # Matches the column name
       # name: "/id$/" # Regex is also supported (case-insensitive)
-      db_type: "varchar(255)" # Matches the database type
-      type: "string" # Matches the inferred column type
-      default: "NULL" # Matches the default value (case-insensitive)
-      comment: "The username" # Matches the column comment
+      db_type: 'varchar(255)' # Matches the database type
+      type: 'string' # Matches the inferred column type
+      default: 'NULL' # Matches the default value (case-insensitive)
+      comment: 'The username' # Matches the column comment
       nullable: true # Matches the nullable value. Defaults to false.
       generated: false # Matches the generated value. Defaults to false.
       autoincr: false # Matches the autoincr value. Defaults to false.
 
     # The replace directive should either reference a pre-configured type, or a type
     # defined in the `types` configuration.
-    replace: "mynull.String"
+    replace: 'mynull.String'
 ```
 
 ### Relationships
@@ -387,13 +390,13 @@ In this example configuration, we add a relationship of users to videos through 
 ```yaml
 relationships:
   users:
-    - name: "users_to_videos_through_teams"
+    - name: 'users_to_videos_through_teams'
       sides:
-        - from: "users"
-          to: "teams"
+        - from: 'users'
+          to: 'teams'
           columns: [[team_id, id]]
-        - from: "teams"
-          to: "videos"
+        - from: 'teams'
+          to: 'videos'
           columns: [[id, team_id]]
 ```
 
@@ -404,15 +407,15 @@ The configuration also allows us to describe relationships that are not only bas
 ```yaml
 relationships:
   users:
-    - name: "users_to_videos_through_teams"
+    - name: 'users_to_videos_through_teams'
       sides:
-        - from: "teams"
-          to: "users"
+        - from: 'teams'
+          to: 'users'
           columns: [[id, team_id]]
           to_where:
-            - column: "verified"
-              sql_value: "true"
-              go_value: "true"
+            - column: 'verified'
+              sql_value: 'true'
+              go_value: 'true'
 ```
 
 ### Inflections

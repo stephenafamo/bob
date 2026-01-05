@@ -105,6 +105,7 @@ func TestLibSQL(t *testing.T) {
 		},
 		OverwriteGolden: *flagOverwriteGolden,
 		Templates:       gen.SQLiteTemplates,
+		Dialect:         "sqlite",
 	})
 }
 
@@ -215,6 +216,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 				},
 				OverwriteGolden: overwriteGolden,
 				Templates:       gen.SQLiteTemplates,
+				Dialect:         "sqlite",
 			})
 		})
 	}

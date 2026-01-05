@@ -112,7 +112,7 @@ jets, err := models.Jets(
 ```go
 models.SelectThenLoad.Pilots.Jets(...mods)
 models.InsertThenLoad.Pilots.Jets(...mods)
-models.UpdateThenLoad.Pilots.Jets(...mods)
+models.UpdateThenLoad.Pilots.Jets(...mods) // not supported for mysql
 ```
 
 These will accept **ANY** `Select/Insert/UpdateQuery` mods.
@@ -126,4 +126,122 @@ pilots, err := models.Pilots(
     ),
     sm.Limit(2),
 ).All(ctx, db)
+```
+
+## Counting Relationships
+
+Bob can also count related models without loading them. This is useful when you need to display counts (e.g., "5 comments") without fetching all the related data. Counts are stored in the `C` field of the generated structs as `*int64` pointers.
+
+:::note
+
+Relationship counts are only available for `to-many` relationships.
+
+:::
+
+### PreloadCount
+
+`PreloadCount` adds a correlated subquery to the main SELECT query. This is efficient when you need both the parent model and the count in a single database round-trip.
+
+```go
+models.PreloadCount.Pilot.Jets(...mods)
+```
+
+The mod function accepts **ANY** `SelectQuery` mods to filter which related models are counted.
+
+```go
+// Get all pilots with their jet counts in a single query
+// SQL: SELECT *, (SELECT count(*) FROM jets WHERE jets.pilot_id = pilots.id) AS "__count_Jets" FROM pilots
+pilots, err := models.Pilots(
+    models.PreloadCount.Pilot.Jets(),
+).All(ctx, db)
+
+// Access the count
+for _, pilot := range pilots {
+    if pilot.C.Jets != nil {
+        fmt.Printf("Pilot %s has %d jets\n", pilot.Name, *pilot.C.Jets)
+    }
+}
+```
+
+With filtering:
+
+```go
+// Count only active jets
+// SQL: SELECT *, (SELECT count(*) FROM jets WHERE jets.pilot_id = pilots.id AND jets.active = true) AS "__count_Jets" FROM pilots
+pilots, err := models.Pilots(
+    models.PreloadCount.Pilot.Jets(
+        models.SelectWhere.Jet.Active.EQ(true),
+    ),
+).All(ctx, db)
+```
+
+### ThenLoadCount
+
+`ThenLoadCount` loads the count in a separate query after the main query completes. This is similar to `ThenLoad` but only retrieves the count.
+
+```go
+models.ThenLoadCount.Pilot.Jets(...mods)
+```
+
+```go
+// Get pilots, then load jet counts in a separate query
+pilots, err := models.Pilots(
+    models.ThenLoadCount.Pilot.Jets(),
+    sm.Limit(10),
+).All(ctx, db)
+
+// Access the count
+for _, pilot := range pilots {
+    if pilot.C.Jets != nil {
+        fmt.Printf("Pilot %s has %d jets\n", pilot.Name, *pilot.C.Jets)
+    }
+}
+```
+
+### InsertThenLoadCount
+
+`InsertThenLoadCount` loads the count in a separate query after the main query completes. This is similar to `ThenLoad` but only retrieves the count.
+
+```go
+pilot,err := models.Pilots.Insert(
+    &models.PilotSetter{
+        Name: omit.From("John Doe"),
+    },
+    models.InsertThenLoadCount.Pilot.Jets(...mods),
+).One(ctx, db)
+
+// Access the count
+if pilot.C.Jets != nil {
+    fmt.Printf("Pilot has %d jets\n", *pilot.C.Jets)
+}
+```
+
+### Direct Count Loading
+
+You can also load counts directly on existing model instances:
+
+```go
+pilot, err := models.FindPilot(ctx, db, pilotID)
+
+// Load the count of jets for this pilot
+err = pilot.LoadCountJets(ctx, db)
+
+// With filtering
+err = pilot.LoadCountJets(ctx, db,
+    models.SelectWhere.Jet.Active.EQ(true),
+)
+
+// Access the count
+if pilot.C.Jets != nil {
+    fmt.Printf("Pilot has %d jets\n", *pilot.C.Jets)
+}
+```
+
+This also works on slices:
+
+```go
+pilots, err := models.Pilots().All(ctx, db)
+
+// Load jet counts for all pilots
+err = pilots.LoadCountJets(ctx, db)
 ```

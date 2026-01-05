@@ -179,6 +179,7 @@ func TestDriver(t *testing.T) {
 				GoldenFile:      tt.goldenJson,
 				OverwriteGolden: *flagOverwriteGolden,
 				Templates:       gen.MySQLTemplates,
+				Dialect:         "mysql",
 			})
 		})
 	}
