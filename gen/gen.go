@@ -262,10 +262,10 @@ func buildPkgMap(outputs []*Output) (map[string]string, error) {
 }
 
 func tableNames[C, I any](tables drivers.Tables[C, I]) []string {
-	result := make([]string, 0, len(tables))
+	result := make([]string, len(tables))
 
-	for _, table := range tables {
-		result = append(result, table.Key)
+	for i, table := range tables {
+		result[i] = table.Key
 	}
 
 	return result
