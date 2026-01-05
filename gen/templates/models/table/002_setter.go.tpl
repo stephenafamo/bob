@@ -10,11 +10,12 @@ type {{$tAlias.UpSingular}}Setter struct {
     {{- $colAlias := $tAlias.Column $column.Name -}}
     {{- $orig_col_name := $column.Name -}}
     {{- $colTyp := $.Types.GetOptional $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+	  {{$commentTag := generateCommentTag $.CommentTag $column.Comment}}
 		{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-      {{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
+      {{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}{{if $commentTag}} {{$commentTag}}{{end}}`
 		{{- else -}}
       {{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
-			{{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
+			{{$colAlias}} {{$colTyp.Name}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}{{if $commentTag}} {{$commentTag}}{{end}}`
 		{{- end -}}		
 	{{end -}}
 }

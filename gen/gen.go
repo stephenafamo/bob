@@ -134,6 +134,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		RelationTag:       s.Config.RelationTag,
 		OutputPackages:    pkgMap,
 		Driver:            dbInfo.Driver,
+		CommentTag:        s.Config.CommentTag,
 	}
 
 	for _, v := range s.Config.TagIgnore {

@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"regexp"
 	"strings"
 	"text/template"
 	"unicode"
@@ -119,6 +120,8 @@ type TemplateData[T, C, I any] struct {
 	// Driver is the module name of the underlying `database/sql` driver
 	Driver   string
 	Language language.Language
+
+	CommentTag string
 }
 
 func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {
@@ -176,6 +179,7 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
+	"generateCommentTag": generateCommentTag,
 }
 
 func enumValToIdentifier(val string) string {
@@ -209,4 +213,20 @@ func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
 
 func NormalizeType(val string) string {
 	return internal.TypesReplacer.Replace(val)
+}
+
+var whitespaceRegex = regexp.MustCompile(`[\n\t\r\v]`)
+
+func generateCommentTag(tag, val string) string {
+	if tag == "" || val == "" {
+		return ""
+	}
+	fmtVal := strings.ReplaceAll(val, "`", `'`)
+	fmtVal = strings.ReplaceAll(fmtVal, `"`, `\"`)
+	fmtVal = whitespaceRegex.ReplaceAllString(fmtVal, " ")
+	fmtVal = strings.TrimSpace(fmtVal)
+	if fmtVal == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s:\"%s\"", tag, fmtVal)
 }

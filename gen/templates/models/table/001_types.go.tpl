@@ -10,10 +10,11 @@ type {{$tAlias.UpSingular}} struct {
 	{{- if trim $column.Comment}}{{range $column.Comment | splitList "\n"}}
 		// {{ . }}
 	{{- end}}{{end -}}
+	{{$commentTag := generateCommentTag $.CommentTag $column.Comment}}
 	{{- if ignore $table.Key $orig_col_name $.TagIgnore}}
-	{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}`
+	{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateIgnoreTags $.Tags | trim}}{{if $commentTag}} {{$commentTag}}{{end}}`
 	{{- else}}{{$tagName := columnTagName $.StructTagCasing $column.Name $colAlias}}
-		{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}`
+		{{$colAlias}} {{$colTyp}} `db:"{{$table.DBTag $column}}" {{generateTags $.Tags $tagName | trim}}{{if $commentTag}} {{$commentTag}}{{end}}`
 	{{- end -}}
 	{{- end -}}
 	{{block "model/fields/additional" $}}{{end}}
