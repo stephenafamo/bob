@@ -107,7 +107,12 @@ func Test{{$upperName}} (t *testing.T) {
       }
     }()
 
-    query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $randomArgs}}))
+    {{$argNames}} beforeHookErr := beforeTesting{{$upperName}}(ctxTx, tx)
+    if beforeHookErr != nil {
+      t.Fatalf("Error in beforeTesting: %v", beforeHookErr)
+    }
+
+    query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $argNames}}))
     if _, err := bob.Exec(ctxTx, tx, query); err != nil {
       t.Fatal(err)
     }
