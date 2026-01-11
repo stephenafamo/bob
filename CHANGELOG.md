@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
 - MySQL support for insert queries executing loaders (e.g., `InsertThenLoad`, `InsertThenLoadCount`). (thanks @jacobmolby)
+- Added overwritable hooks that are run before the scanning test of generated queries. This allows seeding data before the test runs.
 
 ## [v0.42.0] - 2025-11-25
 
@@ -632,7 +633,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
 - Add `AliasedAs()` method to `tableColumns` and `tableWhere` types to use a custom alias.
 - Add `AliasedAs()` method to generated relationship join mods. This is avaible in two places:
-
   - one to change the alias of the table being queried
 
     ```go
