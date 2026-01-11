@@ -101,7 +101,7 @@ func testDebugExecutor(t *testing.T, f func(Executor, string, ...any) error) {
 		t.Fatalf("wrong debug sql.\nExpected: %s\nGot: %s", sql, strings.TrimSpace(debugsql))
 	}
 
-	var debugArgs []string //nolint:prealloc
+	var debugArgs []string
 	for _, s := range reArgs.Split("\n0:"+debugArgsStr, -1) {
 		s := strings.TrimSpace(s)
 		if s == "" {

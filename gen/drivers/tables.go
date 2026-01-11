@@ -196,11 +196,11 @@ func (tables Tables[C, I]) NeededBridgeRels(r orm.Relationship) []struct {
 }
 
 func (tables Tables[C, I]) RelArgs(aliases Aliases, r orm.Relationship) string {
-	ma := []string{}
-	for _, need := range tables.NeededBridgeRels(r) {
-		ma = append(ma, fmt.Sprintf(
+	ma := make([]string, len(tables.NeededBridgeRels(r)))
+	for i, need := range tables.NeededBridgeRels(r) {
+		ma[i] = fmt.Sprintf(
 			"%s%d,", aliases[need.Table].DownSingular, need.Position,
-		))
+		)
 	}
 
 	return strings.Join(ma, "")
@@ -214,12 +214,12 @@ func (tables Tables[C, I]) RelDependencies(aliases Aliases, r orm.Relationship, 
 	if len(preSuf) > 1 {
 		suffix = preSuf[1]
 	}
-	ma := []string{}
-	for _, need := range tables.NeededBridgeRels(r) {
+	ma := make([]string, len(tables.NeededBridgeRels(r)))
+	for i, need := range tables.NeededBridgeRels(r) {
 		alias := aliases[need.Table]
-		ma = append(ma, fmt.Sprintf(
+		ma[i] = fmt.Sprintf(
 			"%s *%s%s%s,", alias.DownSingular, alias.UpSingular, prefix, suffix,
-		))
+		)
 	}
 
 	return strings.Join(ma, "")
@@ -246,22 +246,22 @@ func (tables Tables[C, I]) RelDependenciesPos(aliases Aliases, r orm.Relationshi
 }
 
 func (tables Tables[C, I]) RelDependenciesTyp(aliases Aliases, r orm.Relationship) string {
-	ma := []string{}
+	ma := make([]string, len(tables.NeededBridgeRels(r)))
 
-	for _, need := range tables.NeededBridgeRels(r) {
+	for i, need := range tables.NeededBridgeRels(r) {
 		alias := aliases[need.Table]
-		ma = append(ma, fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular))
+		ma[i] = fmt.Sprintf("%s *%sTemplate", alias.DownSingular, alias.UpSingular)
 	}
 
 	return strings.Join(ma, "\n")
 }
 
 func (tables Tables[C, I]) RelDependenciesTypSet(aliases Aliases, r orm.Relationship) string {
-	ma := []string{}
+	ma := make([]string, len(tables.NeededBridgeRels(r)))
 
-	for _, need := range tables.NeededBridgeRels(r) {
+	for i, need := range tables.NeededBridgeRels(r) {
 		alias := aliases[need.Table]
-		ma = append(ma, fmt.Sprintf("%s: %s,", alias.DownSingular, alias.DownSingular))
+		ma[i] = fmt.Sprintf("%s: %s,", alias.DownSingular, alias.DownSingular)
 	}
 
 	return strings.Join(ma, "\n")

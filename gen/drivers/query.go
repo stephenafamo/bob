@@ -24,7 +24,7 @@ type QueryFolder struct {
 }
 
 func (q QueryFolder) Types() []string {
-	types := []string{}
+	types := []string{} //nolint:prealloc
 	for _, file := range q.Files {
 		for _, query := range file.Queries {
 			for _, col := range query.Columns {
@@ -109,7 +109,7 @@ type Query struct {
 }
 
 func (q Query) ArgsByPosition() []orm.ArgWithPosition {
-	var args []orm.ArgWithPosition
+	var args []orm.ArgWithPosition //nolint:prealloc
 
 	for _, arg := range q.Args {
 		for _, pos := range arg.Positions {
@@ -396,14 +396,14 @@ func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName 
 
 	groupExpression := a.groupExpression(i, dialect, queryName, "child")
 	sb := strings.Builder{}
-	sb.WriteString(fmt.Sprintf(`func() bob.Expression {
+	fmt.Fprintf(&sb, `func() bob.Expression {
             expressions := make([]bob.Expression, len(%s))
             for i, child := range %s {
                 expressions[i] = %s
             }
             return expr.Join{Exprs: expressions, Sep: ", "}
         }()
-        `, varName, varName, groupExpression))
+        `, varName, varName, groupExpression)
 
 	return sb.String()
 }
@@ -411,14 +411,14 @@ func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName 
 func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varName string) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(`bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-                  args := make([]any, 0, %d)`, len(a.Children)))
+	fmt.Fprintf(&sb, `bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+                  args := make([]any, 0, %d)`, len(a.Children))
 
 	start := a.Positions[0][0]
 	for _, child := range a.Children {
 		childName := strmangle.TitleCase(child.Col.Name)
 		childExpression := child.ToExpression(i, dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
-		sb.WriteString(fmt.Sprintf(`
+		fmt.Fprintf(&sb, `
             w.WriteString(%sSQL[%d:%d])
             %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)
             if err != nil {
@@ -429,16 +429,15 @@ func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varNa
 			queryName, start, child.Positions[0][0],
 			childName,
 			strings.TrimSpace(childExpression),
-			childName,
-		))
+			childName)
 		start = child.Positions[0][1]
 	}
 
-	sb.WriteString(fmt.Sprintf(`
+	fmt.Fprintf(&sb, `
             w.WriteString(%sSQL[%d:%d])
             return args, nil
         })
-    `, queryName, start, a.Positions[0][1]))
+    `, queryName, start, a.Positions[0][1])
 
 	return sb.String()
 }

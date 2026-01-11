@@ -330,7 +330,7 @@ func (g goOutputLanguage) formatGoImports(l []string, current string, inTest boo
 
 func (g goOutputLanguage) sortGoImports(l []string, current string, inTest bool) ([]string, []string) {
 	quotedCurrent := fmt.Sprintf("%q", current)
-	var std, third []string //nolint:prealloc
+	var std, third []string
 	for _, pkg := range l {
 		if pkg == "" {
 			continue

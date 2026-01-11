@@ -362,7 +362,7 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (d driver) columns(ctx context.Context, schema, tableName string, tinfo []info, colFilter drivers.ColumnFilter) ([]drivers.Column, error) {
-	var columns []drivers.Column //nolint:prealloc
+	var columns []drivers.Column
 
 	//nolint:gosec
 	query := fmt.Sprintf("SELECT 1 FROM '%s'.sqlite_master WHERE type = 'table' AND name = ? AND sql LIKE '%%AUTOINCREMENT%%'", schema)
@@ -649,7 +649,7 @@ func (d *driver) getIndexInformation(ctx context.Context, schema, tableName, ind
             ORDER BY seqno ASC`,
 		indexName, schema)
 
-	var columns []drivers.IndexColumn //nolint:prealloc
+	var columns []drivers.IndexColumn
 	for column, err := range stdscan.Each(ctx, d.conn, scan.StructMapper[struct {
 		Seqno int
 		Name  sql.NullString
