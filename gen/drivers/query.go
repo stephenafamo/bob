@@ -326,7 +326,7 @@ func (c QueryArg) RandomExpr(currPkg string, i language.Importer, types Types) s
 			colTyp, _ := types.GetNameAndDef(currPkg, c.Col.TypeName)
 			nullTyp := types.GetNullType(currPkg, c.Col.TypeName)
 			i.ImportList(nullTyp.CreateExprImports)
-			normalized := internal.TypesReplacer.Replace(colTyp)
+			normalized := internal.TypesReplacer.Replace(c.Col.TypeName)
 			return strings.NewReplacer(
 				"SRC", fmt.Sprintf("random_%s(nil)", normalized),
 				"BASETYPE", colTyp,
@@ -334,7 +334,7 @@ func (c QueryArg) RandomExpr(currPkg string, i language.Importer, types Types) s
 				"NULLVAL", "true",
 			).Replace(nullTyp.CreateExpr)
 		} else {
-			normalized := internal.TypesReplacer.Replace(typ)
+			normalized := internal.TypesReplacer.Replace(c.Col.TypeName)
 			fmt.Fprintf(&sb, "random_%s(nil)", normalized)
 		}
 	} else {

@@ -164,9 +164,13 @@ func (t Types) GetNameAndDef(curr, namedType string) (string, Type) {
 
 	for typedef.AliasOf != "" {
 		namedType = typedef.AliasOf
+		oldRand := typedef.RandomExpr
 		typedef, ok = t.registered[namedType]
 		if !ok {
 			return namedType, Type{}
+		}
+		if oldRand != "" {
+			typedef.RandomExpr = oldRand
 		}
 	}
 

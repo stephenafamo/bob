@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MySQL support for insert queries executing loaders (e.g., `InsertThenLoad`, `InsertThenLoadCount`). (thanks @jacobmolby)
 - Added overwritable hooks that are run before the scanning test of generated queries. This allows seeding data before the test runs.
 
+### Fixed
+
+- Fix an issue where the random function of aliased custom types were not being used in generated query tests.
+
 ## [v0.42.0] - 2025-11-25
 
 ### Fixed
