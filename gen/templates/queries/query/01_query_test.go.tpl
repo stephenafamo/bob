@@ -9,21 +9,54 @@
 {{$.Importer.Import "testutils" "github.com/stephenafamo/bob/test/utils"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 
+
+{{$txType := "bob.Tx"}}
+{{if eq $.Driver "github.com/jackc/pgx/v5" -}}
+{{$txType = "bobpgx.Tx"}}
+{{- end}}
+
 {{range $query := $.QueryFile.Queries}}
 {{$upperName := title $query.Name}}
 {{$lowerName := untitle $query.Name}}
 {{$queryType := (lower $query.Type.String | titleCase)}}
-{{$args := list }}
-{{range $arg := $query.Args -}}
-  {{$args = append $args ($arg.RandomExpr $.CurrentPackage $.Importer $.Types) }}
+
+{{$argNames := "" }}
+{{$randomArgs := list }}
+{{range $index, $arg := $query.Args -}}
+  {{$argNames = printf "%s arg%d," $argNames $index }}
+  {{$randomArgs = append $randomArgs ($arg.RandomExpr $.CurrentPackage $.Importer $.Types) }}
 {{end}}
 
+{{$args := list }}
+{{range $arg := $query.Args -}}
+  {{ $argName := titleCase $arg.Col.Name }}
+  {{ $argType := ($arg.Type $.CurrentPackage $.Importer $.Types) }}
+
+  {{if gt (len $arg.Children) 0}}
+    {{ $argType = printf "%s_%s" $upperName $argName }}
+    {{if $arg.CanBeMultiple}}
+      {{ $argType = printf "[]%s" $argType }}
+    {{end}}
+  {{end}}
+
+  {{$args = append $args $argType }}
+{{end}}
+{{$args = append $args "error" }}
+
+
+var beforeTesting{{$upperName}} = func (tx {{$txType}}) ({{join ", " $args}}) {
+  {{if eq (len $query.Args) 0 -}}
+  return nil
+  {{- else -}}
+  return {{join ", " $randomArgs}}, nil
+  {{- end}}
+}
 
 func Test{{$upperName}} (t *testing.T) {
   t.Run("Base", func(t *testing.T) {
     var sb strings.Builder
 
-    query := {{$upperName}}({{join ", " $args}})
+    query := {{$upperName}}({{join ", " $randomArgs}})
 
     if _, err := query.WriteQuery(t.Context(), &sb, 1); err != nil {
       t.Fatal(err)
@@ -38,7 +71,7 @@ func Test{{$upperName}} (t *testing.T) {
   t.Run("Mod", func(t *testing.T) {
     var sb strings.Builder
 
-    query := {{$upperName}}({{join ", " $args}})
+    query := {{$upperName}}({{join ", " $randomArgs}})
 
     if _, err := {{$.Dialect}}.{{$queryType}}(query).WriteQuery(t.Context(), &sb, 1); err != nil {
       t.Fatal(err)
@@ -74,7 +107,7 @@ func Test{{$upperName}} (t *testing.T) {
       }
     }()
 
-    query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}}))
+    query := {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $randomArgs}}))
     if _, err := bob.Exec(ctxTx, tx, query); err != nil {
       t.Fatal(err)
     }
@@ -120,7 +153,12 @@ func Test{{$upperName}} (t *testing.T) {
       }
     }()
 
-    query, args, err := bob.Build(ctxTx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $args}})))
+    {{$argNames}} beforeHookErr := beforeTesting{{$upperName}}(tx)
+    if beforeHookErr != nil {
+      t.Fatalf("Error in beforeTesting: %v", beforeHookErr)
+    }
+
+    query, args, err := bob.Build(ctxTx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $argNames}})))
     if err != nil {
       t.Fatal(err)
     }
@@ -129,7 +167,11 @@ func Test{{$upperName}} (t *testing.T) {
     if err != nil {
       t.Fatal(err)
     }
-    defer rows.Close()
+    defer func() {
+      if err := rows.Close(); err != nil {
+        t.Fatalf("Error closing rows: %v", err)
+      }
+    }()
 
     columns, err := rows.Columns()
     if err != nil {
