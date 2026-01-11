@@ -153,7 +153,7 @@ func Test{{$upperName}} (t *testing.T) {
       }
     }()
 
-    {{$argNames}} beforeHookErr := beforeTesting{{$upperName}}(tx)
+    {{$argNames}} beforeHookErr := beforeTesting{{$upperName}}(ctxTx, tx)
     if beforeHookErr != nil {
       t.Fatalf("Error in beforeTesting: %v", beforeHookErr)
     }
