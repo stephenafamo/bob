@@ -202,25 +202,39 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if limitInfo, ok := info.children["LimitCount"]; ok {
-		w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/dialect/psql"})
-		rawLimit := w.input[limitInfo.start:limitInfo.end]
-		switch stmt.SelectStmt.LimitOption {
-		case pg.LimitOption_LIMIT_OPTION_COUNT:
-			fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(psql.Raw(%q))\n", rawLimit)
-		case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
-			w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
-			fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
-					Count: psql.Raw(%q),
-					WithTies: true,
-				})
-			`, rawLimit)
-		}
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(limitInfo.start),
+				int(limitInfo.end)-1,
+				func(start, end int) error {
+					switch stmt.SelectStmt.LimitOption {
+					case pg.LimitOption_LIMIT_OPTION_COUNT:
+						fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
+					case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
+						w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
+						fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
+								Count: EXPR.subExpr(%d, %d),
+								WithTies: true,
+							})
+						`, start, end)
+					}
+					return nil
+				},
+			)...,
+		)
 	}
 
-	if offsetInfo, ok := info.children["LimitOffset"]; ok {
-		w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/dialect/psql"})
-		rawOffset := w.input[offsetInfo.start:offsetInfo.end]
-		fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(psql.Raw(%q))\n", rawOffset)
+	if offsetInfo, ok := mainInfo.children["LimitOffset"]; ok {
+		w.editRules = append(w.editRules,
+			internal.RecordPoints(
+				int(offsetInfo.start),
+				int(offsetInfo.end)-1,
+				func(start, end int) error {
+					fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
+					return nil
+				},
+			)...,
+		)
 	}
 
 	if orderInfo, ok := info.children["SortClause"]; ok {
