@@ -12,6 +12,7 @@ var PresetAll = Config{
 	Where:    OnOffConfig{},
 	Loaders:  OnOffConfig{},
 	Joins:    OnOffConfig{},
+	Counts:   OnOffConfig{},
 }
 
 //nolint:gochecknoglobals
@@ -24,6 +25,7 @@ var PresetDefault = Config{
 	Where:    OnOffConfig{},
 	Loaders:  OnOffConfig{},
 	Joins:    OnOffConfig{},
+	Counts:   OnOffConfig{},
 }
 
 //nolint:gochecknoglobals
@@ -36,4 +38,5 @@ var PresetNone = Config{
 	Where:    OnOffConfig{Disabled: internal.Pointer(true)},
 	Loaders:  OnOffConfig{Disabled: internal.Pointer(true)},
 	Joins:    OnOffConfig{Disabled: internal.Pointer(true)},
+	Counts:   OnOffConfig{Disabled: internal.Pointer(true)},
 }
