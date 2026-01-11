@@ -44,7 +44,7 @@
 {{$args = append $args "error" }}
 
 
-var beforeTesting{{$upperName}} = func (tx {{$txType}}) ({{join ", " $args}}) {
+var beforeTesting{{$upperName}} = func (context.Context, {{$txType}}) ({{join ", " $args}}) {
   {{if eq (len $query.Args) 0 -}}
   return nil
   {{- else -}}
