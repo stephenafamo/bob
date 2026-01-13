@@ -73,6 +73,11 @@ func (q Query[Q, T, Ts, Tr]) Cursor(ctx context.Context, exec bob.Executor) (sca
 	return bob.Cursor(ctx, exec, q, q.Scanner)
 }
 
+// Each to scan through the results
+func (q Query[Q, T, Ts, Tr]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
+	return bob.Each(ctx, exec, q, q.Scanner)
+}
+
 type ModExecQuery[Q any, E bob.Expression] struct {
 	ExecQuery[E]
 	Mod bob.Mod[Q]
