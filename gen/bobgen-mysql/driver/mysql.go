@@ -338,18 +338,36 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 	ret := drivers.DBIndexes[any]{}
 
-	query := `SELECT
+	// Check if expression column exists (MySQL 8.0.13+, not in MariaDB)
+	var hasExpression bool
+	checkQuery := `SELECT COUNT(*)
+		FROM information_schema.columns
+		WHERE table_schema = 'information_schema'
+		AND table_name = 'STATISTICS'
+		AND column_name = 'EXPRESSION'`
+	var count int
+	if err := d.conn.QueryRowContext(ctx, checkQuery).Scan(&count); err == nil {
+		hasExpression = count > 0
+	}
+
+	// Build query with conditional expression column
+	expressionColumn := "NULL"
+	if hasExpression {
+		expressionColumn = "s.expression"
+	}
+	
+	query := fmt.Sprintf(`SELECT
         s.table_name AS table_name,
         s.index_name AS index_name,
         s.column_name AS column_name,
-        s.expression AS expression,
+        %s AS expression,
         NOT s.non_unique AS is_unique,
         s.collation = 'D' AS descending,
         s.index_type as type,
         s.index_comment as comment
     FROM information_schema.statistics s
     WHERE s.table_schema = ?
-    ORDER BY s.table_name, s.index_name, s.seq_in_index`
+    ORDER BY s.table_name, s.index_name, s.seq_in_index`, expressionColumn)
 
 	type indexColumn struct {
 		TableName  string
