@@ -7,7 +7,7 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func ValueRow(clauses ...bob.Expression) bob.Mod[*dialect.ValuesQuery] {
+func RowValue(clauses ...bob.Expression) bob.Mod[*dialect.ValuesQuery] {
 	return mods.Values[*dialect.ValuesQuery](clauses)
 }
 

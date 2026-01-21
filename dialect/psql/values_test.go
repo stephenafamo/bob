@@ -16,8 +16,8 @@ func TestValues(t *testing.T) {
 			ExpectedSQL:  "VALUES ($1,$2,$3), ($4, $5, $6)",
 			ExpectedArgs: []any{1, 2, 3, 5, 6, 7},
 			Query: psql.Values(
-				vm.ValueRow(psql.Arg(1, 2, 3)),
-				vm.ValueRow(psql.Arg(5, 6, 7)),
+				vm.RowValue(psql.Arg(1, 2, 3)),
+				vm.RowValue(psql.Arg(5, 6, 7)),
 			),
 		},
 		"simple limit offset arg": {
@@ -25,8 +25,8 @@ func TestValues(t *testing.T) {
 			ExpectedSQL:  "VALUES ($1,$2,$3), ($4,$5,$6) LIMIT $7 OFFSET $8",
 			ExpectedArgs: []any{1, 2, 3, 5, 6, 7, 10, 15},
 			Query: psql.Values(
-				vm.ValueRow(psql.Arg(1, 2, 3)),
-				vm.ValueRow(psql.Arg(5, 6, 7)),
+				vm.RowValue(psql.Arg(1, 2, 3)),
+				vm.RowValue(psql.Arg(5, 6, 7)),
 				vm.Offset(psql.Arg(15)),
 				vm.Limit(psql.Arg(10)),
 			),
@@ -36,8 +36,8 @@ func TestValues(t *testing.T) {
 			ExpectedSQL:  "VALUES ($1,$2,$3), ($4,$5,$6) ORDER BY column1 DESC",
 			ExpectedArgs: []any{"one", 2, 3, "five", 6, 7},
 			Query: psql.Values(
-				vm.ValueRow(psql.Arg("one", 2, 3)),
-				vm.ValueRow(psql.Arg("five", 6, 7)),
+				vm.RowValue(psql.Arg("one", 2, 3)),
+				vm.RowValue(psql.Arg("five", 6, 7)),
 				vm.OrderBy("column1").Desc(),
 			),
 		},
@@ -46,8 +46,8 @@ func TestValues(t *testing.T) {
 			ExpectedSQL:  "VALUES ($1,$2,$3), ($4,$5,$6) OFFSET $7 FETCH FIRST $8 ROWS ONLY",
 			ExpectedArgs: []any{1, 2, 3, 5, 6, 7, 15, 10},
 			Query: psql.Values(
-				vm.ValueRow(psql.Arg(1, 2, 3)),
-				vm.ValueRow(psql.Arg(5, 6, 7)),
+				vm.RowValue(psql.Arg(1, 2, 3)),
+				vm.RowValue(psql.Arg(5, 6, 7)),
 				vm.Offset(psql.Arg(15)),
 				vm.Fetch(psql.Arg(10)),
 			),
@@ -57,7 +57,7 @@ func TestValues(t *testing.T) {
 			ExpectedSQL:  "VALUES ((SELECT id FROM users LIMIT $1), $2), ($3, $4)",
 			ExpectedArgs: []any{1, 2, 98, 99},
 			Query: psql.Values(
-				vm.ValueRow(
+				vm.RowValue(
 					psql.Select(
 						sm.Columns("id"),
 						sm.From("users"),
@@ -65,7 +65,7 @@ func TestValues(t *testing.T) {
 					),
 					psql.Arg(2),
 				),
-				vm.ValueRow(psql.Arg(98), psql.Arg(99)),
+				vm.RowValue(psql.Arg(98), psql.Arg(99)),
 			),
 		},
 	}
