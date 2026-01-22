@@ -246,3 +246,58 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 
 	return scan.Cursor(ctx, exec, m2, sql, args...)
 }
+
+// Each returns a range-over-func that can be used to iterate over the rows of a query
+func Each[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (func(func(T, error) bool), error) {
+	var err error
+
+	if h, ok := q.(HookableQuery); ok {
+		ctx, err = h.RunHooks(ctx, exec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	sql, args, err := Build(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if l, ok := q.(MapperModder); ok {
+		if loaders := l.GetMapperMods(); len(loaders) > 0 {
+			m = scan.Mod(m, loaders...)
+		}
+	}
+
+	l, isLoadable := q.(Loadable)
+	_, isHookable := any(*new(T)).(HookableType)
+
+	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
+		before, after := m(ctx, c)
+		return before, func(link any) (T, error) {
+			t, err := after(link)
+			if err != nil {
+				return t, err
+			}
+
+			if isLoadable {
+				for _, loader := range l.GetLoaders() {
+					err = loader.Load(ctx, exec, t)
+					if err != nil {
+						return t, err
+					}
+				}
+			}
+
+			if isHookable {
+				if err = any(t).(HookableType).AfterQueryHook(ctx, exec, q.Type()); err != nil {
+					return t, err
+				}
+			}
+
+			return t, err
+		}
+	})
+
+	return scan.Each(ctx, exec, m2, sql, args...), nil
+}
