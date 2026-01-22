@@ -38,11 +38,10 @@ func (v ValuesQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if len(v.RowVals) == 0 {
 		return nil, fmt.Errorf("VALUES query must have at least one value expression")
 	}
-	valuesArgs, err := bob.ExpressSlice(ctx, w, d, start, v.RowVals, "", ", ", "")
+	args, err = bob.ExpressSlice(ctx, w, d, start, v.RowVals, "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, valuesArgs...)
 
 	w.WriteString("\n")
 	return args, nil

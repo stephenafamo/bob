@@ -3883,3 +3883,8 @@ func (v *visitor) VisitKeywordsCanBeId(ctx *mysqlparser.KeywordsCanBeIdContext) 
 func (v *visitor) VisitFunctionNameBase(ctx *mysqlparser.FunctionNameBaseContext) any {
 	return v.VisitChildren(ctx)
 }
+
+// Visit a parse tree produced by MySqlParser#RowConstructor.
+func (v *visitor) VisitRowConstructor(ctx *mysqlparser.RowConstructorContext) any {
+	return v.VisitChildren(ctx)
+}
