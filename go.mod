@@ -20,7 +20,7 @@ require (
 	github.com/pganalyze/pg_query_go/v6 v6.1.0
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
 	github.com/stephenafamo/scan v0.7.0
-	github.com/stephenafamo/sqlparser v0.0.0-20250521201114-5cfed001272d
+	github.com/stephenafamo/sqlparser v0.0.0-20260122161205-e324475bd1fc
 	github.com/testcontainers/testcontainers-go v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.37.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.38.0
