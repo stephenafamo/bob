@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `bob.Each` function to iterate over query results (range-over-func). (thanks @toqueteos)
 - Added support for the `VALUES` statement in MySQL, PostgreSQL, and SQLite. (thanks @manhrev)
 - Added MariaDB compatibility check in gen/bobgen-mysql (thanks @dumdev25)
+- Added `BeforeUpdateSetterHooks`. (thanks @toqueteos)
 
 ### Fixed
 
