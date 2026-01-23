@@ -62,11 +62,11 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo
 	var err error
 
-	if d.config.Dsn == "" {
+	if d.config.Config.Dsn == "" {
 		return nil, fmt.Errorf("database dsn is not set")
 	}
 
-	config, err := mysql.ParseDSN(d.config.Dsn)
+	config, err := mysql.ParseDSN(d.config.Config.Dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 	d.dbName = config.DBName
 
-	d.conn, err = sql.Open("mysql", d.config.Dsn)
+	d.conn, err = sql.Open("mysql", d.config.Config.Dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -84,7 +84,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	dbinfo = &DBInfo{Driver: "github.com/go-sql-driver/mysql"}
 
-	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
+	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Config.Only, d.config.Config.Except)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return dbinfo.Enums[i].Type < dbinfo.Enums[j].Type
 	})
 
-	dbinfo.QueryFolders, err = parser.New(dbinfo.Tables).ParseFolders(ctx, d.config.Queries...)
+	dbinfo.QueryFolders, err = parser.New(dbinfo.Tables).ParseFolders(ctx, d.config.Config.Queries...)
 	if err != nil {
 		return nil, fmt.Errorf("parse query folders: %w", err)
 	}
@@ -268,9 +268,9 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
     referenced_table_name AS foreign_table,
     referenced_column_name AS foreign_column
     FROM information_schema.table_constraints AS tc
-    LEFT JOIN information_schema.key_column_usage AS kcu 
-        ON kcu.table_name = tc.table_name 
-        AND kcu.table_schema = tc.table_schema 
+    LEFT JOIN information_schema.key_column_usage AS kcu
+        ON kcu.table_name = tc.table_name
+        AND kcu.table_schema = tc.table_schema
         AND kcu.constraint_name = tc.constraint_name
     WHERE tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY') AND tc.table_schema = ?
     ORDER BY tc.table_name, tc.constraint_name, tc.constraint_type, kcu.ordinal_position`
@@ -338,18 +338,36 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 	ret := drivers.DBIndexes[any]{}
 
-	query := `SELECT
+	// Check if expression column exists (MySQL 8.0.13+, not in MariaDB)
+	var hasExpression bool
+	checkQuery := `SELECT COUNT(*)
+		FROM information_schema.columns
+		WHERE table_schema = 'information_schema'
+		AND table_name = 'STATISTICS'
+		AND column_name = 'EXPRESSION'`
+	var count int
+	if err := d.conn.QueryRowContext(ctx, checkQuery).Scan(&count); err == nil {
+		hasExpression = count > 0
+	}
+
+	// Build query with conditional expression column
+	expressionColumn := "NULL"
+	if hasExpression {
+		expressionColumn = "s.expression"
+	}
+
+	query := fmt.Sprintf(`SELECT
         s.table_name AS table_name,
         s.index_name AS index_name,
         s.column_name AS column_name,
-        s.expression AS expression,
+        %s AS expression,
         NOT s.non_unique AS is_unique,
         s.collation = 'D' AS descending,
         s.index_type as type,
         s.index_comment as comment
     FROM information_schema.statistics s
     WHERE s.table_schema = ?
-    ORDER BY s.table_name, s.index_name, s.seq_in_index`
+    ORDER BY s.table_name, s.index_name, s.seq_in_index`, expressionColumn)
 
 	type indexColumn struct {
 		TableName  string
