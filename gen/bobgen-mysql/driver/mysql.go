@@ -355,7 +355,7 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 	if hasExpression {
 		expressionColumn = "s.expression"
 	}
-	
+
 	query := fmt.Sprintf(`SELECT
         s.table_name AS table_name,
         s.index_name AS index_name,
