@@ -8,7 +8,7 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-var ErrUpdateHasNoSetExpressions = errors.New("SET clause must have at least one assignment expression")
+var ErrEmptySetExpression = errors.New("SET clause must have at least one assignment expression")
 
 type Set struct {
 	Set []any
@@ -20,7 +20,7 @@ func (s *Set) AppendSet(exprs ...any) {
 
 func (s Set) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(s.Set) == 0 {
-		return nil, ErrUpdateHasNoSetExpressions
+		return nil, ErrEmptySetExpression
 	}
 	return bob.ExpressSlice(ctx, w, d, start, s.Set, "", ",\n", "")
 }
