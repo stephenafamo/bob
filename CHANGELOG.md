@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MySQL support for insert queries executing loaders (e.g., `InsertThenLoad`, `InsertThenLoadCount`). (thanks @jacobmolby)
 - Added overwritable hooks that are run before the exec or scanning test of generated queries. This allows seeding data before the test runs.
 - Added `bob.Each` function to iterate over query results (range-over-func). (thanks @toqueteos)
+- Added support for the `VALUES` statement in MySQL, PostgreSQL, and SQLite. (thanks @manhrev)
 
 ### Fixed
 
