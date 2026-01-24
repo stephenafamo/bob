@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix an issue where the random function of aliased custom types were not being used in generated query tests.
 - Properly recognize placeholders in LIMIT and OFFSET when generating queries for PostgreSQL.
+- Throw an error on an empty SET clause during SQL generation rather than sending invalid syntax to database. (thanks @Xaeroxe)
 
 ## [v0.42.0] - 2025-11-25
 
