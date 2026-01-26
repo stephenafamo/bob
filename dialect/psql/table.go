@@ -50,8 +50,9 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
 	AfterInsertHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	BeforeUpdateHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
-	AfterUpdateHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	BeforeUpdateHooks       bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	BeforeUpdateSetterHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
+	AfterUpdateHooks        bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
 	BeforeDeleteHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	AfterDeleteHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]

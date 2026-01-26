@@ -20,6 +20,7 @@ In **addition**, TableModels have:
 * `BeforeUpsertHooks`
 * `AfterUpsertHooks`
 * `BeforeUpdateHooks`
+* `BeforeUpdateSetterHooks`
 * `AfterUpdateHooks`
 * `BeforeDeleteHooks`
 * `AfterDeleteHooks`
