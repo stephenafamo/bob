@@ -107,8 +107,8 @@ func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
 }
 
-// SQL: EXISTS (VALUES (1))
-// Go: sqlite.Exists(sqlite.Values(sqlite.Arg(1)))
+// SQL: EXISTS ((SELECT 1))
+// Go: sqlite.Exists(sqlite.Select(sm.Columns("1")))
 func Exists(exp bob.Expression) Expression {
 	return bmod.Exists(exp)
 }

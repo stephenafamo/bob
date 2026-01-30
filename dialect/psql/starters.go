@@ -107,8 +107,8 @@ func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
 }
 
-// SQL: EXISTS (VALUES (1))
-// Go: psql.Exists(psql.Values(psql.Arg(1)))
+// SQL: EXISTS ((SELECT 1))
+// Go: psql.Exists(psql.Select(sm.Columns("1")))
 func Exists(exp bob.Expression) Expression {
 	return bmod.Exists(exp)
 }
