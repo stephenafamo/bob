@@ -96,7 +96,7 @@ func Raw(query string, args ...any) Expression {
 }
 
 // SQL: CAST(a AS int)
-// Go: psql.Cast("a", "int")
+// Go: sqlite.Cast("a", "int")
 func Cast(exp bob.Expression, typname string) Expression {
 	return bmod.Cast(exp, typname)
 }
@@ -105,4 +105,16 @@ func Cast(exp bob.Expression, typname string) Expression {
 // Go: sqlite.Case().When("a", "b").Else("c")
 func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
+}
+
+// SQL: EXISTS (VALUES (1))
+// Go: sqlite.Exists(sqlite.Values(sqlite.Arg(1)))
+func Exists(exp bob.Expression) Expression {
+	return bmod.Exists(exp)
+}
+
+// SQL: - 1 - 2
+// Go: sqlite.Minus(sqlite.Arg(1)).Minus(sqlite.Arg(2))
+func Minus(exp bob.Expression) Expression {
+	return bmod.Minus(exp)
 }

@@ -96,7 +96,7 @@ func Raw(query string, args ...any) Expression {
 }
 
 // SQL: CAST(a AS int)
-// Go: psql.Cast("a", "int")
+// Go: mysql.Cast("a", "int")
 func Cast(exp bob.Expression, typname string) Expression {
 	return bmod.Cast(exp, typname)
 }
@@ -105,4 +105,16 @@ func Cast(exp bob.Expression, typname string) Expression {
 // Go: mysql.Case().When("a", "b").Else("c")
 func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
+}
+
+// SQL: EXISTS (VALUES (1))
+// Go: mysql.Exists(mysql.Values(mysql.Arg(1)))
+func Exists(exp bob.Expression) Expression {
+	return bmod.Exists(exp)
+}
+
+// SQL: - 1 - 2
+// Go: mysql.Minus(mysql.Arg(1)).Minus(mysql.Arg(2))
+func Minus(exp bob.Expression) Expression {
+	return bmod.Minus(exp)
 }

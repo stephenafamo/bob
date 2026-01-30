@@ -106,3 +106,15 @@ func Cast(exp bob.Expression, typname string) Expression {
 func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
 }
+
+// SQL: EXISTS (VALUES (1))
+// Go: psql.Exists(psql.Values(psql.Arg(1)))
+func Exists(exp bob.Expression) Expression {
+	return bmod.Exists(exp)
+}
+
+// SQL: - 1 - 2
+// Go: psql.Minus(psql.Arg(1)).Minus(psql.Arg(2))
+func Minus(exp bob.Expression) Expression {
+	return bmod.Minus(exp)
+}
