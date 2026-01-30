@@ -137,18 +137,18 @@ func (u MergeUsing) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Diale
 		w.WriteString("ONLY ")
 	}
 
-	// If source is a Query, wrap it in parentheses
-	var args []any
+	// Write source (table or subquery)
+	var sourceArgs []any
 	var err error
 	if _, isQuery := u.Source.(bob.Query); isQuery {
 		w.WriteString("(")
-		args, err = bob.Express(ctx, w, d, start, u.Source)
+		sourceArgs, err = bob.Express(ctx, w, d, start, u.Source)
 		if err != nil {
 			return nil, err
 		}
 		w.WriteString(")")
 	} else {
-		args, err = bob.Express(ctx, w, d, start, u.Source)
+		sourceArgs, err = bob.Express(ctx, w, d, start, u.Source)
 		if err != nil {
 			return nil, err
 		}
@@ -159,14 +159,13 @@ func (u MergeUsing) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Diale
 		d.WriteQuoted(w, u.Alias)
 	}
 
-	onArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Condition,
+	onArgs, err := bob.ExpressIf(ctx, w, d, start+len(sourceArgs), u.Condition,
 		u.Condition != nil, " ON ", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, onArgs...)
 
-	return args, nil
+	return append(sourceArgs, onArgs...), nil
 }
 
 // MergeWhen represents a WHEN clause in a MERGE statement
