@@ -57,6 +57,24 @@ func Minus[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	return b.New(Join{Exprs: []bob.Expression{minus, X[T, B](exp)}})
 }
 
+// ANY expression
+func Any[T bob.Expression, B builder[T]](exp bob.Expression) T {
+	var b B
+	return b.New(Join{Exprs: []bob.Expression{anyOp, group{exp}}})
+}
+
+// SOME expression
+func Some[T bob.Expression, B builder[T]](exp bob.Expression) T {
+	var b B
+	return b.New(Join{Exprs: []bob.Expression{some, group{exp}}})
+}
+
+// ALL expression
+func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
+	var b B
+	return b.New(Join{Exprs: []bob.Expression{all, group{exp}}})
+}
+
 // To be embedded in query mods
 // T is the chain type, this allows dialects to have custom chain methods
 // F is function type, so that the dialect can change where it
@@ -128,4 +146,19 @@ func (e Builder[T, B]) Exists(exp bob.Expression) T {
 // prefix the expression with a - (minus)
 func (e Builder[T, B]) Minus(exp bob.Expression) T {
 	return Minus[T, B](exp)
+}
+
+// ANY expression
+func (e Builder[T, B]) Any(exp bob.Expression) T {
+	return Any[T, B](exp)
+}
+
+// SOME expression
+func (e Builder[T, B]) Some(exp bob.Expression) T {
+	return Some[T, B](exp)
+}
+
+// ALL expression
+func (e Builder[T, B]) All(exp bob.Expression) T {
+	return All[T, B](exp)
 }
