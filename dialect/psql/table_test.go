@@ -189,7 +189,7 @@ func TestMerge(t *testing.T) {
 		t.Fatalf("could not begin transaction: %v", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Create users table
 	_, err = tx.ExecContext(ctx, `CREATE TABLE users (

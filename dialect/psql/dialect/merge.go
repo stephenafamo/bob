@@ -40,7 +40,7 @@ const (
 	MergeOverridingUser   MergeOverridingType = "USER"
 )
 
-// Trying to represent the merge query structure as documented in
+// MergeQuery Trying to represent the merge query structure as documented in
 // https://www.postgresql.org/docs/current/sql-merge.html
 type MergeQuery struct {
 	clause.With
