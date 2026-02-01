@@ -146,8 +146,9 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 
 // Starts a Merge query for this table
 // The caller must provide USING and WHEN clauses via queryMods
-// Note: RETURNING clause is NOT added automatically because it requires PostgreSQL 17+
-// Use mm.Returning() explicitly if needed and you are on PostgreSQL 17+
+// RETURNING clause is automatically added if version >= 17 is set in context.
+// Use psql.SetVersion(ctx, 17) to enable automatic RETURNING for MERGE.
+// For older versions, use mm.Returning() explicitly if needed.
 func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQuery]) *ormMergeQuery[T, Tslice] {
 	q := &ormMergeQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.MergeQuery]{
@@ -156,6 +157,16 @@ func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQue
 		},
 		Scanner: t.scanner,
 	}
+
+	q.Expression.AppendContextualModFunc(
+		func(ctx context.Context, q *dialect.MergeQuery) (context.Context, error) {
+			// RETURNING in MERGE requires version 17+
+			if VersionAtLeast(ctx, 17) && !q.HasReturning() {
+				q.AppendReturning(t.Columns)
+			}
+			return ctx, nil
+		},
+	)
 
 	q.Apply(queryMods...)
 
