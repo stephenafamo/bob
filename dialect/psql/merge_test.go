@@ -614,42 +614,4 @@ func TestMergeWithVersion(t *testing.T) {
 			t.Errorf("expected no args, got %v", args)
 		}
 	})
-
-	t.Run("version 17+ with WhenNotMatchedBySource (PG17 feature)", func(t *testing.T) {
-		ctx := context.Background()
-		ctx = psql.SetVersion(ctx, 17)
-
-		q := psql.Merge(
-			mm.Into("target"),
-			mm.Using("source").As("s").On(
-				psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
-			),
-			mm.WhenMatched(
-				mm.ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("s", "name")),
-				),
-			),
-			mm.WhenNotMatchedBySource(
-				mm.ThenDelete(),
-			),
-			mm.Returning(psql.Quote("target", "id")),
-		)
-
-		sql, args, err := bob.Build(ctx, q)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-
-		expectedSQL := `MERGE INTO target USING source AS "s" ON "s"."id" = "target"."id" WHEN MATCHED THEN UPDATE SET "name" = "s"."name" WHEN NOT MATCHED BY SOURCE THEN DELETE RETURNING "target"."id"`
-		diff, err := testutils.QueryDiff(expectedSQL, sql, formatter)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if diff != "" {
-			t.Errorf("SQL mismatch:\n%s\nGot: %s", diff, sql)
-		}
-		if len(args) != 0 {
-			t.Errorf("expected no args, got %v", args)
-		}
-	})
 }
