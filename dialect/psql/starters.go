@@ -121,18 +121,18 @@ func Minus(exp bob.Expression) Expression {
 
 // SQL: a = ANY((SELECT name FROM users))
 // Go: psql.Quote("a").EQ(psql.Any(psql.Select(sm.Columns("name"), sm.From("users"))))
-func Any(exp bob.Expression) Expression {
+func Any(exp bob.Expression) bob.Expression {
 	return bmod.Any(exp)
 }
 
 // SQL: a = SOME((SELECT name FROM users))
 // Go: psql.Quote("a").EQ(psql.Some(psql.Select(sm.Columns("name"), sm.From("users"))))
-func Some(exp bob.Expression) Expression {
+func Some(exp bob.Expression) bob.Expression {
 	return bmod.Some(exp)
 }
 
 // SQL: a = ALL((SELECT name FROM users))
 // Go: psql.Quote("a").EQ(psql.All(psql.Select(sm.Columns("name"), sm.From("users"))))
-func All(exp bob.Expression) Expression {
+func All(exp bob.Expression) bob.Expression {
 	return bmod.All(exp)
 }
