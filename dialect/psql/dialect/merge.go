@@ -55,21 +55,6 @@ type MergeQuery struct {
 	bob.ContextualModdable[*MergeQuery]
 }
 
-// AppendCTE adds a CTE to the query (implements interface for CTEChain)
-func (m *MergeQuery) AppendCTE(cte bob.Expression) {
-	m.With.CTEs = append(m.With.CTEs, cte)
-}
-
-// SetRecursive sets the recursive flag for CTEs (implements interface for mods.Recursive)
-func (m *MergeQuery) SetRecursive(r bool) {
-	m.With.Recursive = r
-}
-
-// AppendReturning adds expressions to the RETURNING clause (implements interface for mods.Returning)
-func (m *MergeQuery) AppendReturning(vals ...any) {
-	m.Returning.Expressions = append(m.Returning.Expressions, vals...)
-}
-
 func (m MergeQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
