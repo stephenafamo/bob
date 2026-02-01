@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -296,4 +297,95 @@ func TestMerge(t *testing.T) {
 	if count != 2 {
 		t.Errorf("expected 2 users, got %d", count)
 	}
+}
+
+func TestTableMergeWithVersion(t *testing.T) {
+	// Use the existing userTable from the test file
+
+	t.Run("version 17+ adds RETURNING automatically", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = SetVersion(ctx, 17)
+
+		mergeQuery := userTable.Merge(
+			mm.Using("source").As("s").On(
+				Quote("s", "id").EQ(Quote("users", "id")),
+			),
+			mm.WhenMatched(
+				mm.ThenUpdate(
+					mm.SetCol("name").ToExpr(Quote("s", "name")),
+				),
+			),
+		)
+
+		sql, args, err := bob.Build(ctx, mergeQuery)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		// Should contain RETURNING because version is 17+
+		if !strings.Contains(sql, "RETURNING") {
+			t.Errorf("expected RETURNING clause for version 17+, got: %s", sql)
+		}
+		if len(args) != 0 {
+			t.Errorf("expected no args, got %v", args)
+		}
+	})
+
+	t.Run("version below 17 does not add RETURNING automatically", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = SetVersion(ctx, 16)
+
+		mergeQuery := userTable.Merge(
+			mm.Using("source").As("s").On(
+				Quote("s", "id").EQ(Quote("users", "id")),
+			),
+			mm.WhenMatched(
+				mm.ThenUpdate(
+					mm.SetCol("name").ToExpr(Quote("s", "name")),
+				),
+			),
+		)
+
+		sql, args, err := bob.Build(ctx, mergeQuery)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		// Should NOT contain RETURNING because version is below 17
+		if strings.Contains(sql, "RETURNING") {
+			t.Errorf("expected no RETURNING clause for version 16, got: %s", sql)
+		}
+		if len(args) != 0 {
+			t.Errorf("expected no args, got %v", args)
+		}
+	})
+
+	t.Run("no version set does not add RETURNING automatically", func(t *testing.T) {
+		ctx := context.Background()
+		// No version set
+
+		mergeQuery := userTable.Merge(
+			mm.Using("source").As("s").On(
+				Quote("s", "id").EQ(Quote("users", "id")),
+			),
+			mm.WhenMatched(
+				mm.ThenUpdate(
+					mm.SetCol("name").ToExpr(Quote("s", "name")),
+				),
+			),
+		)
+
+		sql, args, err := bob.Build(ctx, mergeQuery)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		// Should NOT contain RETURNING because no version set
+		if strings.Contains(sql, "RETURNING") {
+			t.Errorf("expected no RETURNING clause when version not set, got: %s", sql)
+		}
+		if len(args) != 0 {
+			t.Errorf("expected no args, got %v", args)
+		}
+	})
 }

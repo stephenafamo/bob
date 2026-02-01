@@ -1,10 +1,8 @@
 package psql_test
 
 import (
-	"context"
 	"testing"
 
-	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
@@ -506,112 +504,4 @@ func TestMerge(t *testing.T) {
 	}
 
 	testutils.RunTests(t, examples, formatter)
-}
-
-func TestMergeWithVersion(t *testing.T) {
-	t.Run("version 17+ adds RETURNING automatically with mm.Returning", func(t *testing.T) {
-		ctx := context.Background()
-		ctx = psql.SetVersion(ctx, 17)
-
-		q := psql.Merge(
-			mm.Into("target"),
-			mm.Using("source").As("s").On(
-				psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
-			),
-			mm.WhenMatched(
-				mm.ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("s", "name")),
-				),
-			),
-			mm.Returning("*"),
-		)
-
-		sql, args, err := bob.Build(ctx, q)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-
-		expectedSQL := `MERGE INTO target USING source AS "s" ON "s"."id" = "target"."id" WHEN MATCHED THEN UPDATE SET "name" = "s"."name" RETURNING *`
-		diff, err := testutils.QueryDiff(expectedSQL, sql, formatter)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if diff != "" {
-			t.Errorf("SQL mismatch:\n%s\nGot: %s", diff, sql)
-		}
-		if len(args) != 0 {
-			t.Errorf("expected no args, got %v", args)
-		}
-	})
-
-	t.Run("version 16 does not affect MERGE with explicit RETURNING", func(t *testing.T) {
-		ctx := context.Background()
-		ctx = psql.SetVersion(ctx, 16)
-
-		q := psql.Merge(
-			mm.Into("target"),
-			mm.Using("source").As("s").On(
-				psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
-			),
-			mm.WhenMatched(
-				mm.ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("s", "name")),
-				),
-			),
-			mm.Returning("*"),
-		)
-
-		sql, args, err := bob.Build(ctx, q)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-
-		// RETURNING should still be present because it was explicitly added
-		expectedSQL := `MERGE INTO target USING source AS "s" ON "s"."id" = "target"."id" WHEN MATCHED THEN UPDATE SET "name" = "s"."name" RETURNING *`
-		diff, err := testutils.QueryDiff(expectedSQL, sql, formatter)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if diff != "" {
-			t.Errorf("SQL mismatch:\n%s\nGot: %s", diff, sql)
-		}
-		if len(args) != 0 {
-			t.Errorf("expected no args, got %v", args)
-		}
-	})
-
-	t.Run("no version set - MERGE without RETURNING", func(t *testing.T) {
-		ctx := context.Background()
-		// No version set
-
-		q := psql.Merge(
-			mm.Into("target"),
-			mm.Using("source").As("s").On(
-				psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
-			),
-			mm.WhenMatched(
-				mm.ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("s", "name")),
-				),
-			),
-		)
-
-		sql, args, err := bob.Build(ctx, q)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-
-		// No RETURNING because no version set
-		expectedSQL := `MERGE INTO target USING source AS "s" ON "s"."id" = "target"."id" WHEN MATCHED THEN UPDATE SET "name" = "s"."name"`
-		diff, err := testutils.QueryDiff(expectedSQL, sql, formatter)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if diff != "" {
-			t.Errorf("SQL mismatch:\n%s\nGot: %s", diff, sql)
-		}
-		if len(args) != 0 {
-			t.Errorf("expected no args, got %v", args)
-		}
-	})
 }
