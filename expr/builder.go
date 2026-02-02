@@ -63,12 +63,6 @@ func Any[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	return b.New(Join{Exprs: []bob.Expression{anyOp, group{exp}}})
 }
 
-// SOME expression
-func Some[T bob.Expression, B builder[T]](exp bob.Expression) T {
-	var b B
-	return b.New(Join{Exprs: []bob.Expression{some, group{exp}}})
-}
-
 // ALL expression
 func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
@@ -151,11 +145,6 @@ func (e Builder[T, B]) Minus(exp bob.Expression) T {
 // ANY expression
 func (e Builder[T, B]) Any(exp bob.Expression) T {
 	return Any[T, B](exp)
-}
-
-// SOME expression
-func (e Builder[T, B]) Some(exp bob.Expression) T {
-	return Some[T, B](exp)
 }
 
 // ALL expression

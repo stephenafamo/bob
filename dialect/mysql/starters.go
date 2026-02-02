@@ -125,12 +125,6 @@ func Any(exp bob.Expression) bob.Expression {
 	return bmod.Any(exp)
 }
 
-// SQL: a = SOME((SELECT name FROM users))
-// Go: mysql.Quote("a").EQ(mysql.Some(mysql.Select(sm.Columns("name"), sm.From("users"))))
-func Some(exp bob.Expression) bob.Expression {
-	return bmod.Some(exp)
-}
-
 // SQL: a = ALL((SELECT name FROM users))
 // Go: mysql.Quote("a").EQ(mysql.All(mysql.Select(sm.Columns("name"), sm.From("users"))))
 func All(exp bob.Expression) bob.Expression {

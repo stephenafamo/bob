@@ -21,6 +21,5 @@ var (
 	exists            = Raw("EXISTS")
 	minus             = Raw("-")
 	anyOp             = Raw("ANY")
-	some              = Raw("SOME")
 	all               = Raw("ALL")
 )
