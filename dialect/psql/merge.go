@@ -14,5 +14,6 @@ func Merge(queryMods ...bob.Mod[*dialect.MergeQuery]) bob.BaseQuery[*dialect.Mer
 	return bob.BaseQuery[*dialect.MergeQuery]{
 		Expression: q,
 		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeMerge,
 	}
 }
