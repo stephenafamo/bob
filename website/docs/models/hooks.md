@@ -23,6 +23,8 @@ In **addition**, TableModels have:
 * `AfterUpdateHooks`
 * `BeforeDeleteHooks`
 * `AfterDeleteHooks`
+* `BeforeMergeHooks`
+* `AfterMergeHooks`
 
 These hooks run at the point one would expect from their naming.
 
