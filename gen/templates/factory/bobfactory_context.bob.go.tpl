@@ -17,6 +17,8 @@ var (
       {{- end}}
 
     {{end}}
+
+    modelsInCreationCtx = newContextual[map[string]any]("modelsInCreation")
 )
 
 // Contextual is a convienience wrapper around context.WithValue and context.Value
