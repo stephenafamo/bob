@@ -110,26 +110,41 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	opt := o.BuildSetter()
 	ensureCreatable{{$tAlias.UpSingular}}(opt)
 
+	// Retrieve ancestor models from context to avoid duplicate parent creation.
+	// Parents are keyed by "parent_table:child_table:child_rel_name".
+	// This works regardless of NoBackReferencing since it only uses child-side metadata.
+	mInCreation, _ := modelsInCreationCtx.Value(ctx)
+
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		if o.r.{{$relAlias}} == nil {
-      {{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
-		}
 
 		var rel{{$index}} *models.{{$ftable.UpSingular}}
 
-		if o.r.{{$relAlias}}.o.alreadyPersisted {
-			rel{{$index}} = o.r.{{$relAlias}}.o.Build()
-		} else {
-			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
-			if err != nil {
-				return nil, err
+		if o.r.{{$relAlias}} == nil {
+      if parentModel, found := mInCreation["{{$rel.Foreign}}:{{$table.Key}}:{{$rel.Name}}"]; found {
+        if pModel, ok := parentModel.(*models.{{$ftable.UpSingular}}); ok {
+          rel{{$index}} = pModel
+        }
+      }
+		}
+
+		if rel{{$index}} == nil {
+			if o.r.{{$relAlias}} == nil {
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
+			}
+
+			if o.r.{{$relAlias}}.o.alreadyPersisted {
+				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+			} else {
+				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	
-
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
@@ -145,6 +160,23 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	if err != nil {
 	  return nil, err
 	}
+
+  // Store this model in context for child creates.
+  // Key format: "parent_table:child_table:child_rel_name" where child_rel_name is the FK name.
+  // We store an entry for every relationship pointing TO this table (where this table is the parent).
+  // This works regardless of NoBackReferencing since keys use child-side metadata.
+  newMInCreation := make(map[string]any, len(mInCreation)+1)
+  for k, v := range mInCreation {
+    newMInCreation[k] = v
+  }
+  {{range $childTable := $.Tables -}}
+    {{- range $childRel := $.Relationships.Get $childTable.Key -}}
+      {{- if $childRel.IsToMany -}}{{continue}}{{end -}}
+      {{- if ne $childRel.Foreign $table.Key -}}{{continue}}{{end -}}
+      newMInCreation["{{$table.Key}}:{{$childTable.Key}}:{{$childRel.Name}}"] = m
+    {{end -}}
+  {{end}}
+  ctx = modelsInCreationCtx.WithValue(ctx, newMInCreation)
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel) -}}{{continue}}{{end -}}
