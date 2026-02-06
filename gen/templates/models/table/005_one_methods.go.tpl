@@ -18,6 +18,8 @@ func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Ex
       ctx, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
     case bob.QueryTypeDelete:
       ctx, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+    case bob.QueryTypeMerge:
+      ctx, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
   {{- end}}
   }
 

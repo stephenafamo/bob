@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added PostgreSQL `MERGE` statement support with full syntax including:
+    - `MERGE INTO ... USING ... ON ...` with table aliases and `ONLY` modifier
+    - `WHEN MATCHED`, `WHEN NOT MATCHED`, `WHEN NOT MATCHED BY SOURCE` clauses
+    - `UPDATE`, `INSERT`, `DELETE`, `DO NOTHING` actions
+    - Support for `AND condition` in WHEN clauses
+    - `OVERRIDING SYSTEM VALUE` and `OVERRIDING USER VALUE` for INSERT actions
+    - `RETURNING` clause support (PostgreSQL 17+) (thanks @atzedus)
+- Added `psql.SetVersion`, `psql.GetVersion`, and `psql.VersionAtLeast` functions for context-based PostgreSQL version management (thanks @atzedus)
+- Added `Table.Merge()` method for ORM-style MERGE operations with automatic `RETURNING *` for PostgreSQL 17+ (thanks @atzedus)
+- Added `mm` package with modifiers for building MERGE queries (`mm.Into`, `mm.Using`, `mm.WhenMatched`, `mm.WhenNotMatched`, `mm.WhenNotMatchedBySource`, etc.) (thanks @atzedus)
 - Added `Unqualified()` method to generated column structures that returns columns without table alias/prefix. (thanks @atzedus)
 - Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
 - MySQL support for insert queries executing loaders (e.g., `InsertThenLoad`, `InsertThenLoadCount`). (thanks @jacobmolby)

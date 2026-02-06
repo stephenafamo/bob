@@ -18,6 +18,8 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
       ctx, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
     case bob.QueryTypeDelete:
       ctx, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
+    case bob.QueryTypeMerge:
+      ctx, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
   {{- end}}
   }
 
@@ -130,6 +132,33 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteMod() bob.Mod[*dialect.DeleteQuery] {
   })
 }
 
+// MergeMod modifies a merge query to run BeforeMergeHooks and AfterMergeHooks
+// and updates the slice with the returned rows.
+func (o {{$tAlias.UpSingular}}Slice) MergeMod() bob.Mod[*dialect.MergeQuery] {
+  return bob.ModFunc[*dialect.MergeQuery](func(q *dialect.MergeQuery) {
+    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
+      return {{$tAlias.UpPlural}}.BeforeMergeHooks.RunHooks(ctx, exec, o)
+    })
+
+    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
+      var err error
+      switch retrieved := retrieved.(type) {
+      case *{{$tAlias.UpSingular}}:
+        o.copyMatchingRows(retrieved)
+      case []*{{$tAlias.UpSingular}}:
+        o.copyMatchingRows(retrieved...)
+      case {{$tAlias.UpSingular}}Slice:
+        o.copyMatchingRows(retrieved...)
+      default:
+        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
+        // then run the AfterMergeHooks on the slice
+        _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
+      }
+
+      return err
+    }))
+  })
+}
 
 {{block "slice_update" . -}}
 {{$table := .Table}}
