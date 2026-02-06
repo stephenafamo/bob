@@ -61,15 +61,19 @@ type {{$tAlias.DownSingular}}R struct {
 
 {{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Columns {
+func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular}}Columns {
+  columnsExpr := expr.NewColumnsExpr(
+    {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
+  )
+  if tableName != "" {
+    columnsExpr = columnsExpr.WithParent(tableName)
+  }
   return {{$tAlias.DownSingular}}Columns{
-    ColumnsExpr: expr.NewColumnsExpr(
-      {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
-    ).WithParent({{quote $table.Key}}),
-    tableAlias: alias,
+    ColumnsExpr: columnsExpr,
+    tableAlias: tableName,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: {{$.Dialect}}.Quote(alias, {{quote $column.Name}}),
+    {{$colAlias}}: {{$.Dialect}}.Quote(tableName, {{quote $column.Name}}),
     {{end -}}
   }
 }
@@ -87,6 +91,10 @@ func (c {{$tAlias.DownSingular}}Columns) Alias() string {
   return c.tableAlias
 }
 
-func ({{$tAlias.DownSingular}}Columns) AliasedAs(alias string) {{$tAlias.DownSingular}}Columns {
-  return build{{$tAlias.UpSingular}}Columns(alias)
+func ({{$tAlias.DownSingular}}Columns) AliasedAs(tableName string) {{$tAlias.DownSingular}}Columns {
+  return build{{$tAlias.UpSingular}}Columns(tableName)
+}
+
+func (c {{$tAlias.DownSingular}}Columns) Unqualified() {{$tAlias.DownSingular}}Columns {
+  return build{{$tAlias.UpSingular}}Columns("")
 }

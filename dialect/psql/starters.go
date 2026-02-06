@@ -106,3 +106,27 @@ func Cast(exp bob.Expression, typname string) Expression {
 func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
 }
+
+// SQL: EXISTS ((SELECT 1))
+// Go: psql.Exists(psql.Select(sm.Columns("1")))
+func Exists(exp bob.Expression) Expression {
+	return bmod.Exists(exp)
+}
+
+// SQL: - 1 - 2
+// Go: psql.Minus(psql.Arg(1)).Minus(psql.Arg(2))
+func Minus(exp bob.Expression) Expression {
+	return bmod.Minus(exp)
+}
+
+// SQL: a = ANY((SELECT name FROM users))
+// Go: psql.Quote("a").EQ(psql.Any(psql.Select(sm.Columns("name"), sm.From("users"))))
+func Any(exp bob.Expression) bob.Expression {
+	return bmod.Any(exp)
+}
+
+// SQL: a = ALL((SELECT name FROM users))
+// Go: psql.Quote("a").EQ(psql.All(psql.Select(sm.Columns("name"), sm.From("users"))))
+func All(exp bob.Expression) bob.Expression {
+	return bmod.All(exp)
+}

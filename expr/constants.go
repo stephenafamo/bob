@@ -18,4 +18,8 @@ var (
 	notBetween        = Raw("NOT BETWEEN")
 	isDistinctFrom    = Raw("IS DISTINCT FROM")
 	isNotDistinctFrom = Raw("IS NOT DISTINCT FROM")
+	exists            = Raw("EXISTS")
+	minus             = Raw("-")
+	anyOp             = Raw("ANY")
+	all               = Raw("ALL")
 )
