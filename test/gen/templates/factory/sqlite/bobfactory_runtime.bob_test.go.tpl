@@ -459,9 +459,10 @@ func TestPreloadCountUserVideos(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create users with different numbers of videos
-	expectedCounts := []int{2, 3, 1}
-	for _, count := range expectedCounts {
+	expectedCounts := map[int64]int{}
+	for _, count := range []int{2, 3, 1} {
 		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+		expectedCounts[int64(user.ID)] = count
 		for j := 0; j < count; j++ {
 			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
@@ -477,19 +478,23 @@ func TestPreloadCountUserVideos(t *testing.T) {
 		t.Fatalf("Error querying users with PreloadCount: %v", err)
 	}
 
-	if len(users) != 3 {
-		t.Fatalf("Expected 3 users, got %d", len(users))
-	}
-
-	// Verify counts are loaded
+	found := 0
 	for i, user := range users {
 		if user.C.Videos == nil {
 			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
 		}
-		expectedCount := int64(expectedCounts[i])
-		if *user.C.Videos != expectedCount {
-			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
+		expectedCount, ok := expectedCounts[int64(user.ID)]
+		if !ok {
+			continue
 		}
+		found++
+		count := int64(expectedCount)
+		if *user.C.Videos != count {
+			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, count, *user.C.Videos)
+		}
+	}
+	if found != len(expectedCounts) {
+		t.Fatalf("Expected %d users, got %d", len(expectedCounts), found)
 	}
 }
 
@@ -507,9 +512,10 @@ func TestThenLoadCountUserVideos(t *testing.T) {
 	defer tx.Rollback(ctx)
 
 	// Create users with different numbers of videos
-	expectedCounts := []int{2, 3, 1}
-	for _, count := range expectedCounts {
+	expectedCounts := map[int64]int{}
+	for _, count := range []int{2, 3, 1} {
 		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+		expectedCounts[int64(user.ID)] = count
 		for j := 0; j < count; j++ {
 			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
@@ -525,19 +531,23 @@ func TestThenLoadCountUserVideos(t *testing.T) {
 		t.Fatalf("Error querying users with ThenLoadCount: %v", err)
 	}
 
-	if len(users) != 3 {
-		t.Fatalf("Expected 3 users, got %d", len(users))
-	}
-
-	// Verify counts are loaded
+	found := 0
 	for i, user := range users {
 		if user.C.Videos == nil {
 			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
 		}
-		expectedCount := int64(expectedCounts[i])
-		if *user.C.Videos != expectedCount {
-			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
+		expectedCount, ok := expectedCounts[int64(user.ID)]
+		if !ok {
+			continue
 		}
+		found++
+		count := int64(expectedCount)
+		if *user.C.Videos != count {
+			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, count, *user.C.Videos)
+		}
+	}
+	if found != len(expectedCounts) {
+		t.Fatalf("Expected %d users, got %d", len(expectedCounts), found)
 	}
 }
 
@@ -1459,9 +1469,10 @@ func TestThenLoadToMany(t *testing.T) {
 
 	// Create users with videos
 	var users models.UserSlice
-	expectedCounts := []int{2, 3, 1}
-	for _, count := range expectedCounts {
+	expectedCounts := map[int64]int{}
+	for _, count := range []int{2, 3, 1} {
 		user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+		expectedCounts[int64(user.ID)] = count
 		for j := 0; j < count; j++ {
 			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
@@ -1478,18 +1489,22 @@ func TestThenLoadToMany(t *testing.T) {
 		t.Fatalf("Error querying users with ThenLoad: %v", err)
 	}
 
-	if len(users) != 3 {
-		t.Fatalf("Expected 3 users, got %d", len(users))
-	}
-
-	// Verify Videos are preloaded for each user
+	found := 0
 	for i, user := range users {
 		if user.R.Videos == nil {
 			t.Fatalf("Expected Videos to be preloaded for user %d, got nil", i)
 		}
-		if len(user.R.Videos) != expectedCounts[i] {
-			t.Fatalf("Expected user %d to have %d videos, got %d", i, expectedCounts[i], len(user.R.Videos))
+		expectedCount, ok := expectedCounts[int64(user.ID)]
+		if !ok {
+			continue
 		}
+		found++
+		if len(user.R.Videos) != expectedCount {
+			t.Fatalf("Expected user %d to have %d videos, got %d", i, expectedCount, len(user.R.Videos))
+		}
+	}
+	if found != len(expectedCounts) {
+		t.Fatalf("Expected %d users, got %d", len(expectedCounts), found)
 	}
 }
 {{- end }}

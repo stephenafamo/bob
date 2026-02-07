@@ -12,6 +12,8 @@ var (
       {{- end}}
 
     {{end}}
+
+    modelsInCreationCtx = newContextual[map[string]any]("modelsInCreation")
 )
 
 // Contextual is a convienience wrapper around context.WithValue and context.Value
@@ -31,4 +33,3 @@ func (k contextual[V]) Value(ctx context.Context) (V, bool) {
   v, ok := ctx.Value(k.key).(V)
   return v, ok
 }
-
