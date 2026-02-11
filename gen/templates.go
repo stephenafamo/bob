@@ -181,7 +181,7 @@ var templateFunctions = template.FuncMap{
 	"relQueryMethodName": relQueryMethodName,
 }
 
-func enumValToIdentifier(val string) string {
+func enumValNormalize(val string) string {
 	val = strings.ToLower(val)
 	val = strings.ReplaceAll(val, "-", "_")
 	val = strings.ReplaceAll(val, " ", "_")
@@ -195,25 +195,18 @@ func enumValToIdentifier(val string) string {
 		newval.WriteString(fmt.Sprintf("U%x", r))
 	}
 
-	// Title case after doing unicode replacements or they will be stripped
-	return strmangle.TitleCase(newval.String())
+	return newval.String()
+}
+
+func enumValToIdentifier(val string) string {
+	return enumValNormalize(val)
 }
 
 func enumValToScreamingSnakeCase(val string) string {
-	val = strings.ToUpper(val)
-	val = strings.ReplaceAll(val, "-", "_")
-	val = strings.ReplaceAll(val, " ", "_")
+	enumVal := enumValNormalize(val)
 
-	var newval strings.Builder
-	for _, r := range val {
-		if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
-			newval.WriteRune(r)
-			continue
-		}
-		newval.WriteString(fmt.Sprintf("U%x", r))
-	}
-
-	return newval.String()
+	// Title case after doing unicode replacements or they will be stripped
+	return strmangle.TitleCase(enumVal)
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
