@@ -108,6 +108,8 @@ type TemplateData[T, C, I any] struct {
 	StructTagCasing string
 	// Contains field names that should have tags values set to '-'
 	TagIgnore map[string]struct{}
+	// Format for enum value identifiers: "title_case" or "screaming_snake_case"
+	EnumFormat string
 
 	// Supplied by the driver
 	ExtraInfo T
@@ -147,6 +149,7 @@ var templateFunctions = template.FuncMap{
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 	"normalizeType":      NormalizeType,
 	"enumVal":            enumValToIdentifier,
+	"enumValScreaming":   enumValToScreamingSnakeCase,
 	"columnTagName": func(casing, name, alias string) string {
 		switch casing {
 		case "camel":
@@ -178,7 +181,7 @@ var templateFunctions = template.FuncMap{
 	"relQueryMethodName": relQueryMethodName,
 }
 
-func enumValToIdentifier(val string) string {
+func enumValNormalize(val string) string {
 	val = strings.ToLower(val)
 	val = strings.ReplaceAll(val, "-", "_")
 	val = strings.ReplaceAll(val, " ", "_")
@@ -192,8 +195,18 @@ func enumValToIdentifier(val string) string {
 		newval.WriteString(fmt.Sprintf("U%x", r))
 	}
 
+	return newval.String()
+}
+
+func enumValToIdentifier(val string) string {
+	return enumValNormalize(val)
+}
+
+func enumValToScreamingSnakeCase(val string) string {
+	enumVal := enumValNormalize(val)
+
 	// Title case after doing unicode replacements or they will be stripped
-	return strmangle.TitleCase(newval.String())
+	return strmangle.TitleCase(enumVal)
 }
 
 func relQueryMethodName(tAlias drivers.TableAlias, relAlias string) string {
