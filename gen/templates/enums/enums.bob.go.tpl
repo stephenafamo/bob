@@ -9,7 +9,12 @@
 	// Enum values for {{$enum.Type}}
 	const (
 	{{range $val := $enum.Values -}}
-		{{- $enumValue := enumVal $val -}}
+		{{- $enumValue := "" -}}
+		{{- if eq $.EnumFormat "screaming_snake_case" -}}
+			{{- $enumValue = enumValScreaming $val -}}
+		{{- else -}}
+			{{- $enumValue = enumVal $val -}}
+		{{- end -}}
 		{{$enum.Type}}{{$enumValue}} {{$enum.Type}} = {{quote $val}}
 		{{$allvals = append $allvals (printf "%s%s" $enum.Type $enumValue) -}}
 	{{end -}}
