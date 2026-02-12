@@ -181,7 +181,7 @@ var templateFunctions = template.FuncMap{
 	"relQueryMethodName": relQueryMethodName,
 }
 
-func enumValNormolize(val string) string {
+func enumValNormalize(val string) string {
 	val = strings.ReplaceAll(val, "-", "_")
 	val = strings.ReplaceAll(val, " ", "_")
 
@@ -199,7 +199,7 @@ func enumValNormolize(val string) string {
 
 func enumValToIdentifier(val string) string {
 	val = strings.ToLower(val)
-	val = enumValNormolize(val)
+	val = enumValNormalize(val)
 
 	// Title case after doing unicode replacements or they will be stripped
 	return strmangle.TitleCase(val)
@@ -207,7 +207,7 @@ func enumValToIdentifier(val string) string {
 
 func enumValToScreamingSnakeCase(val string) string {
 	val = strings.ToUpper(val)
-	val = enumValNormolize(val)
+	val = enumValNormalize(val)
 
 	return val
 }
