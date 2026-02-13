@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `enum_format` configuration option to control enum value identifier formatting. Options: `"title_case"` (default, e.g., `InProgress`) or `"screaming_snake_case"` (e.g., `IN_PROGRESS`).
 - Added `Unqualified()` method to generated column structures that returns columns without table alias/prefix. (thanks @atzedus)
 - Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
 - MySQL support for insert queries executing loaders (e.g., `InsertThenLoad`, `InsertThenLoadCount`). (thanks @jacobmolby)

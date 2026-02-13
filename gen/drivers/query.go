@@ -24,7 +24,7 @@ type QueryFolder struct {
 }
 
 func (q QueryFolder) Types() []string {
-	types := []string{} //nolint:prealloc
+	var types []string
 	for _, file := range q.Files {
 		for _, query := range file.Queries {
 			for _, col := range query.Columns {
@@ -109,7 +109,7 @@ type Query struct {
 }
 
 func (q Query) ArgsByPosition() []orm.ArgWithPosition {
-	var args []orm.ArgWithPosition //nolint:prealloc
+	var args []orm.ArgWithPosition
 
 	for _, arg := range q.Args {
 		for _, pos := range arg.Positions {
