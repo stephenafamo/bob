@@ -24,7 +24,7 @@ type QueryFolder struct {
 }
 
 func (q QueryFolder) Types() []string {
-	types := []string{}
+	var types []string
 	for _, file := range q.Files {
 		for _, query := range file.Queries {
 			for _, col := range query.Columns {
