@@ -134,7 +134,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 // Relations objects are also inserted and placed in the .R field
 func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Executor) (*models.{{$tAlias.UpSingular}}, error) {
 	var err error
-	opt := o.BuildSetter()
+	opt := o.BuildSetter();
 
 	{{- $hasRequiredRels := false -}}
 	{{- range $rel := $.Relationships.Get $table.Key -}}
