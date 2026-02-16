@@ -142,13 +142,30 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		{{- $hasRequiredRels = true -}}
 	{{- end}}
 
+	{{- /* Step 1: Compute FK-set flags for each required relationship */ -}}
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}
+		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+	rel{{$index}}FKsSet := true
+		{{range $rel.ValuedSides -}}
+			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
+			{{range .Mapped}}
+				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+				{{- $fromColA := index $tAlias.Columns .Column -}}
+	if o.{{$fromColA}} == nil {
+		rel{{$index}}FKsSet = false
+	}
+			{{end}}
+		{{- end}}
+	{{end}}
+
+	{{- /* Step 2: RequireAll pre-check (relationship is missing only if both rel AND FKs are unset) */ -}}
 	{{if $hasRequiredRels -}}
 	if o.requireAll {
 		var missingRels []string
-		{{range $rel := $.Relationships.Get $table.Key -}}
+		{{range $index, $rel := $.Relationships.Get $table.Key -}}
 			{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 			{{- $relAlias := $tAlias.Relationship .Name -}}
-			if o.r.{{$relAlias}} == nil {
+			if o.r.{{$relAlias}} == nil && !rel{{$index}}FKsSet {
 				missingRels = append(missingRels, "{{$relAlias}}")
 			}
 		{{end -}}
@@ -161,35 +178,37 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	}
 	{{end -}}
 
+	{{- /* Step 3: Process required relationships (skip if FK columns already set) */ -}}
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		if o.r.{{$relAlias}} == nil {
-      {{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
-		}
-
 		var rel{{$index}} *models.{{$ftable.UpSingular}}
 
-		if o.r.{{$relAlias}}.o.alreadyPersisted {
-			rel{{$index}} = o.r.{{$relAlias}}.o.Build()
-		} else {
-			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
-			if err != nil {
-				return nil, err
+		if !rel{{$index}}FKsSet {
+			if o.r.{{$relAlias}} == nil {
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
 			}
+
+			if o.r.{{$relAlias}}.o.alreadyPersisted {
+				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+			} else {
+				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			{{range $rel.ValuedSides -}}
+				{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
+				{{range .Mapped}}
+					{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+					{{- $fromColA := index $tAlias.Columns .Column -}}
+					{{- $relIndex := printf "rel%d" $index -}}
+					opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
+				{{end}}
+			{{- end}}
 		}
-
-
-		{{range $rel.ValuedSides -}}
-			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
-			{{range .Mapped}}
-				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
-				{{- $fromColA := index $tAlias.Columns .Column -}}
-				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
-			{{end}}
-		{{- end}}
 	{{end}}
 
 	if err = ensureCreatable{{$tAlias.UpSingular}}(opt, o.requireAll); err != nil {
@@ -205,7 +224,9 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		{{- if not ($table.RelIsRequired $rel) -}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		m.R.{{$relAlias}} = rel{{$index}}
+		if rel{{$index}} != nil {
+			m.R.{{$relAlias}} = rel{{$index}}
+		}
 	{{end}}
 
   if err := o.insertOptRels(ctx, exec, m); err != nil {
