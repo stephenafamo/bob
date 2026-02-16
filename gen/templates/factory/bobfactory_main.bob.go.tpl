@@ -1,5 +1,22 @@
 {{$.Importer.Import "context"}}
+{{$.Importer.Import "fmt"}}
+{{$.Importer.Import "strings"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
+
+// MissingRequiredFieldsError is returned by Create() when RequireAll() is active
+// and required fields are not explicitly set.
+type MissingRequiredFieldsError struct {
+	TableName string
+	Missing   []string
+}
+
+func (e *MissingRequiredFieldsError) Error() string {
+	return fmt.Sprintf(
+		"factory: table %q is missing required fields: %s",
+		e.TableName,
+		strings.Join(e.Missing, ", "),
+	)
+}
 
 type Factory struct {
     {{range $table := .Tables}}

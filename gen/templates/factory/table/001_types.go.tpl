@@ -38,6 +38,7 @@ type {{$tAlias.UpSingular}}Template struct {
     f *Factory
 
     alreadyPersisted bool
+    requireAll       bool
 }
 
 {{if $.Relationships.Get $table.Key -}}

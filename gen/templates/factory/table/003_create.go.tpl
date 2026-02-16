@@ -5,7 +5,19 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 
-func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
+func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter, requireAll bool) error {
+  {{- $hasRequiredCols := false -}}
+  {{- range $column := $table.Columns -}}
+    {{- if $column.Default}}{{continue}}{{end -}}
+    {{- if $column.Nullable}}{{continue}}{{end -}}
+    {{- if $column.Generated}}{{continue}}{{end -}}
+    {{- $hasRequiredCols = true -}}
+  {{- end -}}
+
+  {{if $hasRequiredCols -}}
+  var missing []string
+  {{end -}}
+
   {{range $column := $table.Columns -}}
     {{- if $column.Default}}{{continue}}{{end -}}
     {{- if $column.Nullable}}{{continue}}{{end -}}
@@ -15,10 +27,25 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
     {{- $typDef :=  $.Types.Index $column.Type -}}
     {{- $colTyp := or $typDef.AliasOf $column.Type -}}
     if !({{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "m." $colAlias)}}) {
-      val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
-      m.{{$colAlias}} = {{$colGetter}}
+      if requireAll {
+        missing = append(missing, "{{$colAlias}}")
+      } else {
+        val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
+        m.{{$colAlias}} = {{$colGetter}}
+      }
     }
   {{end -}}
+
+  {{if $hasRequiredCols -}}
+  if len(missing) > 0 {
+    return &MissingRequiredFieldsError{
+      TableName: "{{$tAlias.UpSingular}}",
+      Missing:   missing,
+    }
+  }
+  {{end -}}
+
+  return nil
 }
 
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
@@ -107,39 +134,86 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 // Relations objects are also inserted and placed in the .R field
 func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Executor) (*models.{{$tAlias.UpSingular}}, error) {
 	var err error
-	opt := o.BuildSetter()
-	ensureCreatable{{$tAlias.UpSingular}}(opt)
+	opt := o.BuildSetter();
 
+	{{- $hasRequiredRels := false -}}
+	{{- range $rel := $.Relationships.Get $table.Key -}}
+		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+		{{- $hasRequiredRels = true -}}
+	{{- end}}
+
+	{{- /* Step 1: Compute FK-set flags for each required relationship */ -}}
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
-		{{- $relAlias := $tAlias.Relationship .Name -}}
-		if o.r.{{$relAlias}} == nil {
-      {{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
-		}
-
-		var rel{{$index}} *models.{{$ftable.UpSingular}}
-
-		if o.r.{{$relAlias}}.o.alreadyPersisted {
-			rel{{$index}} = o.r.{{$relAlias}}.o.Build()
-		} else {
-			rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
-			if err != nil {
-				return nil, err
-			}
-		}
-	
-
+	rel{{$index}}FKsSet := true
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
 				{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
 				{{- $fromColA := index $tAlias.Columns .Column -}}
-				{{- $relIndex := printf "rel%d" $index -}}
-				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
+	if o.{{$fromColA}} == nil {
+		rel{{$index}}FKsSet = false
+	}
 			{{end}}
 		{{- end}}
 	{{end}}
+
+	{{- /* Step 2: RequireAll pre-check (relationship is missing only if both rel AND FKs are unset) */ -}}
+	{{if $hasRequiredRels -}}
+	if o.requireAll {
+		var missingRels []string
+		{{range $index, $rel := $.Relationships.Get $table.Key -}}
+			{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+			{{- $relAlias := $tAlias.Relationship .Name -}}
+			if o.r.{{$relAlias}} == nil && !rel{{$index}}FKsSet {
+				missingRels = append(missingRels, "{{$relAlias}}")
+			}
+		{{end -}}
+		if len(missingRels) > 0 {
+			return nil, &MissingRequiredFieldsError{
+				TableName: "{{$tAlias.UpSingular}}",
+				Missing:   missingRels,
+			}
+		}
+	}
+	{{end -}}
+
+	{{- /* Step 3: Process required relationships (skip if FK columns already set) */ -}}
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}
+		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+		{{- $ftable := $.Aliases.Table .Foreign -}}
+		{{- $relAlias := $tAlias.Relationship .Name -}}
+		var rel{{$index}} *models.{{$ftable.UpSingular}}
+
+		if !rel{{$index}}FKsSet {
+			if o.r.{{$relAlias}} == nil {
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
+			}
+
+			if o.r.{{$relAlias}}.o.alreadyPersisted {
+				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+			} else {
+				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			{{range $rel.ValuedSides -}}
+				{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
+				{{range .Mapped}}
+					{{- if ne .ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+					{{- $fromColA := index $tAlias.Columns .Column -}}
+					{{- $relIndex := printf "rel%d" $index -}}
+					opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
+				{{end}}
+			{{- end}}
+		}
+	{{end}}
+
+	if err = ensureCreatable{{$tAlias.UpSingular}}(opt, o.requireAll); err != nil {
+		return nil, err
+	}
 
 	m, err := models.{{$tAlias.UpPlural}}.Insert(opt).One(ctx, exec)
 	if err != nil {
@@ -150,7 +224,9 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		{{- if not ($table.RelIsRequired $rel) -}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		m.R.{{$relAlias}} = rel{{$index}}
+		if rel{{$index}} != nil {
+			m.R.{{$relAlias}} = rel{{$index}}
+		}
 	{{end}}
 
   if err := o.insertOptRels(ctx, exec, m); err != nil {

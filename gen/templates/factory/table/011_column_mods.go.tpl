@@ -6,6 +6,14 @@
 var {{$tAlias.UpSingular}}Mods {{$tAlias.DownSingular}}Mods
 type {{$tAlias.DownSingular}}Mods struct {}
 
+// RequireAll enables strict validation mode where Create() returns an error
+// if any required fields (non-nullable, no default, not generated) are not explicitly set.
+func (m {{$tAlias.DownSingular}}Mods) RequireAll() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
+		o.requireAll = true
+	})
+}
+
 func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModSlice{
 		{{range $column := $table.Columns -}}
