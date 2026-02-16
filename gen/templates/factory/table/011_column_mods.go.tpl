@@ -6,6 +6,12 @@
 var {{$tAlias.UpSingular}}Mods {{$tAlias.DownSingular}}Mods
 type {{$tAlias.DownSingular}}Mods struct {}
 
+func (m {{$tAlias.DownSingular}}Mods) RequireAll() {{$tAlias.UpSingular}}Mod {
+	return {{$tAlias.UpSingular}}ModFunc(func(_ context.Context, o *{{$tAlias.UpSingular}}Template) {
+		o.requireAll = true
+	})
+}
+
 func (m {{$tAlias.DownSingular}}Mods) RandomizeAllColumns(f *faker.Faker) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModSlice{
 		{{range $column := $table.Columns -}}

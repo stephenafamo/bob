@@ -5,7 +5,19 @@
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key}}
 
-func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter) {
+func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Setter, requireAll bool) error {
+  {{- $hasRequiredCols := false -}}
+  {{- range $column := $table.Columns -}}
+    {{- if $column.Default}}{{continue}}{{end -}}
+    {{- if $column.Nullable}}{{continue}}{{end -}}
+    {{- if $column.Generated}}{{continue}}{{end -}}
+    {{- $hasRequiredCols = true -}}
+  {{- end -}}
+
+  {{if $hasRequiredCols -}}
+  var missing []string
+  {{end -}}
+
   {{range $column := $table.Columns -}}
     {{- if $column.Default}}{{continue}}{{end -}}
     {{- if $column.Nullable}}{{continue}}{{end -}}
@@ -15,10 +27,25 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
     {{- $typDef :=  $.Types.Index $column.Type -}}
     {{- $colTyp := or $typDef.AliasOf $column.Type -}}
     if !({{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "m." $colAlias)}}) {
-      val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
-      m.{{$colAlias}} = {{$colGetter}}
+      if requireAll {
+        missing = append(missing, "{{$colAlias}}")
+      } else {
+        val := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
+        m.{{$colAlias}} = {{$colGetter}}
+      }
     }
   {{end -}}
+
+  {{if $hasRequiredCols -}}
+  if len(missing) > 0 {
+    return &MissingRequiredFieldsError{
+      TableName: "{{$tAlias.UpSingular}}",
+      Missing:   missing,
+    }
+  }
+  {{end -}}
+
+  return nil
 }
 
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
@@ -108,7 +135,6 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Executor) (*models.{{$tAlias.UpSingular}}, error) {
 	var err error
 	opt := o.BuildSetter()
-	ensureCreatable{{$tAlias.UpSingular}}(opt)
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
@@ -128,7 +154,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 				return nil, err
 			}
 		}
-	
+
 
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
@@ -140,6 +166,10 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 			{{end}}
 		{{- end}}
 	{{end}}
+
+	if err = ensureCreatable{{$tAlias.UpSingular}}(opt, o.requireAll); err != nil {
+		return nil, err
+	}
 
 	m, err := models.{{$tAlias.UpPlural}}.Insert(opt).One(ctx, exec)
 	if err != nil {
