@@ -136,6 +136,31 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	var err error
 	opt := o.BuildSetter()
 
+	{{- $hasRequiredRels := false -}}
+	{{- range $rel := $.Relationships.Get $table.Key -}}
+		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+		{{- $hasRequiredRels = true -}}
+	{{- end}}
+
+	{{if $hasRequiredRels -}}
+	if o.requireAll {
+		var missingRels []string
+		{{range $rel := $.Relationships.Get $table.Key -}}
+			{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+			{{- $relAlias := $tAlias.Relationship .Name -}}
+			if o.r.{{$relAlias}} == nil {
+				missingRels = append(missingRels, "{{$relAlias}}")
+			}
+		{{end -}}
+		if len(missingRels) > 0 {
+			return nil, &MissingRequiredFieldsError{
+				TableName: "{{$tAlias.UpSingular}}",
+				Missing:   missingRels,
+			}
+		}
+	}
+	{{end -}}
+
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
