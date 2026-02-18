@@ -121,6 +121,8 @@ type Config struct {
 	RelationTag string `yaml:"relation_tag"`
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
+	// Format for enum value identifiers: "title_case" or "screaming_snake_case"
+	EnumFormat string `yaml:"enum_format"`
 
 	Types         drivers.Types `yaml:"types"`         // register custom types
 	Aliases       Aliases       `yaml:"aliases"`       // customize aliases
@@ -146,6 +148,7 @@ type Config struct {
 | struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake"                  |
 | relation_tag        | Struct tag for the relationship object                                                                          | "-"                      |
 | tag_ignore          | List of column names that should have tags values set to '-'                                                    | []                       |
+| enum_format         | Format for enum value identifiers. "title_case" (e.g., InProgress) or "screaming_snake_case" (e.g., IN_PROGRESS) | "title_case"             |
 | constraints         | Define additional constraints. [See more](#constraints)                                                         | {}                       |
 | aliases             | Customize aliases. [See more](#aliases)                                                                         | {}                       |
 | types               | Register custom types. [See more](#types)                                                                       | {}                       |

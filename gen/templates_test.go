@@ -25,3 +25,26 @@ func Test_enumValToIdentifier(t *testing.T) {
 		})
 	}
 }
+
+func Test_enumValToScreamingSnakeCase(t *testing.T) {
+	tests := []struct {
+		val      string
+		expected string
+	}{
+		{"in_progress", "IN_PROGRESS"},
+		{"in-progress", "IN_PROGRESS"},
+		{"in progress", "IN_PROGRESS"},
+		{"IN_PROGRESS", "IN_PROGRESS"},
+		{"in___-__progress", "IN______PROGRESS"},
+		{" in progress ", "_IN_PROGRESS_"},
+		{"1-in-progress", "1_IN_PROGRESS"},
+		{"start < end", "START_U3c_END"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.val, func(t *testing.T) {
+			if actual := enumValToScreamingSnakeCase(tt.val); actual != tt.expected {
+				t.Errorf("enumValToScreamingSnakeCase(%q) = %q; want %q", tt.val, actual, tt.expected)
+			}
+		})
+	}
+}
