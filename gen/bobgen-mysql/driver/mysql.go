@@ -169,6 +169,7 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
     from information_schema.columns as c
     where table_name = ? and table_schema = ?`
 
+	//nolint:gosec
 	if len(filter.Only) > 0 {
 		query += fmt.Sprintf(" and c.column_name in (%s)", strings.Repeat(",?", len(filter.Only))[1:])
 		for _, w := range filter.Only {

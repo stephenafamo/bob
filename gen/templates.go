@@ -191,7 +191,7 @@ func enumValNormalize(val string) string {
 			newval.WriteRune(r)
 			continue
 		}
-		newval.WriteString(fmt.Sprintf("U%x", r))
+		fmt.Fprintf(&newval, "U%x", r)
 	}
 
 	return newval.String()

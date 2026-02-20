@@ -47,7 +47,7 @@ func (t TSVector) String() string {
 			if j > 0 {
 				s.WriteString(",")
 			}
-			s.WriteString(fmt.Sprintf("%d", pos.pos))
+			fmt.Fprintf(&s, "%d", pos.pos)
 			if pos.rank != 0 {
 				s.WriteString(string(pos.rank))
 			}
