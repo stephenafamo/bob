@@ -13,7 +13,7 @@ func TestHooks(t *testing.T) {
 	var H Hooks[*string, skipKey]
 
 	// Test Adding Hooks
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		initial := len(H.hooks)
 		f := func(ctx context.Context, _ Executor, s *string) (context.Context, error) {
 			*s = *s + fmt.Sprintf("%d", initial+1)
