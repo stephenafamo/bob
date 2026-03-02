@@ -18,8 +18,10 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
       ctx, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
     case bob.QueryTypeDelete:
       ctx, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
+    {{if eq $.Dialect "psql" -}}
     case bob.QueryTypeMerge:
       ctx, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
+    {{- end}}
   {{- end}}
   }
 
@@ -132,6 +134,7 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteMod() bob.Mod[*dialect.DeleteQuery] {
   })
 }
 
+{{if eq $.Dialect "psql" -}}
 // MergeMod modifies a merge query to run BeforeMergeHooks and AfterMergeHooks
 // and updates the slice with the returned rows.
 func (o {{$tAlias.UpSingular}}Slice) MergeMod() bob.Mod[*dialect.MergeQuery] {
@@ -159,6 +162,7 @@ func (o {{$tAlias.UpSingular}}Slice) MergeMod() bob.Mod[*dialect.MergeQuery] {
     }))
   })
 }
+{{- end}}
 
 {{block "slice_update" . -}}
 {{$table := .Table}}
