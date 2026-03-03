@@ -318,7 +318,6 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 	WHERE c.table_name = $2 and c.table_schema = $1
 	ORDER BY c.ordinal_position`
 
-	//nolint:gosec
 	query := fmt.Sprintf(`SELECT 
 		column_name,
 		column_type,

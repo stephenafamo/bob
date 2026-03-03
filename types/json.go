@@ -13,8 +13,8 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	encodingTextMarshalerIntf   = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-	encodingTextUnmarshalerIntf = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
+	encodingTextMarshalerIntf   = reflect.TypeFor[encoding.TextMarshaler]()
+	encodingTextUnmarshalerIntf = reflect.TypeFor[encoding.TextUnmarshaler]()
 )
 
 func NewJSON[T any](val T) JSON[T] {

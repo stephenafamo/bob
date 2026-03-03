@@ -27,6 +27,8 @@ type Config[ConstraintExtra any] struct {
 	RelationTag string `yaml:"relation_tag"`
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
+	// Format for enum value identifiers: "title_case" or "screaming_snake_case"
+	EnumFormat string `yaml:"enum_format"`
 
 	Types         map[string]drivers.Type      `yaml:"types"`         // register custom types
 	Aliases       drivers.Aliases              `yaml:"aliases"`       // customize aliases

@@ -132,6 +132,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,
+		EnumFormat:        s.Config.EnumFormat,
 		OutputPackages:    pkgMap,
 		Driver:            dbInfo.Driver,
 	}

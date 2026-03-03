@@ -22,21 +22,22 @@ type Table[ConstraintExtra, IndexExtra any] struct {
 }
 
 func (t Table[C, I]) DBTag(c Column) string {
-	tag := c.Name
+	var tag strings.Builder
+	tag.WriteString(c.Name)
 	if t.Constraints.Primary != nil {
 		for _, pkc := range t.Constraints.Primary.Columns {
 			if pkc == c.Name {
-				tag += ",pk"
+				tag.WriteString(",pk")
 			}
 		}
 	}
 	if c.Generated {
-		tag += ",generated"
+		tag.WriteString(",generated")
 	}
 	if c.AutoIncr {
-		tag += ",autoincr"
+		tag.WriteString(",autoincr")
 	}
-	return tag
+	return tag.String()
 }
 
 func (t Table[C, I]) NonGeneratedColumns() []Column {

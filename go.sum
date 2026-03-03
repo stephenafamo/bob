@@ -189,8 +189,6 @@ github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97 h1:XItoZNmhOih
 github.com/stephenafamo/fakedb v0.0.0-20221230081958-0b86f816ed97/go.mod h1:bM3Vmw1IakoaXocHmMIGgJFYob0vuK+CFWiJHQvz0jQ=
 github.com/stephenafamo/scan v0.7.0 h1:lfFiD9H5+n4AdK3qNzXQjj2M3NfTOpmWBIA39NwB94c=
 github.com/stephenafamo/scan v0.7.0/go.mod h1:FhIUJ8pLNyex36xGFiazDJJ5Xry0UkAi+RkWRrEcRMg=
-github.com/stephenafamo/sqlparser v0.0.0-20250521201114-5cfed001272d h1:YmPQh4pYOjqGWllnvJ2EoMZe1a8RgAyBrw4cH2FfabY=
-github.com/stephenafamo/sqlparser v0.0.0-20250521201114-5cfed001272d/go.mod h1:2ATW++wFz7Mvc/N+nUtQnU+9VIGAxrn8m9JCLDSWMsQ=
 github.com/stephenafamo/sqlparser v0.0.0-20260122161205-e324475bd1fc h1:D/IjFvgl7MXcuKnXzGCOAMKTfzopgxdLYIy0HZx+CI4=
 github.com/stephenafamo/sqlparser v0.0.0-20260122161205-e324475bd1fc/go.mod h1:2ATW++wFz7Mvc/N+nUtQnU+9VIGAxrn8m9JCLDSWMsQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
