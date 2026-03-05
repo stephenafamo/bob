@@ -239,7 +239,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		return nil, retrievalErr
 	}
 
-	query := Select(sm.From(t.table.NameAs()))
+	query := Select(sm.Columns(t.table.ColumnsExpr()), sm.From(t.table.NameAs()))
 
 	// Change query type to Insert so that the correct hooks are run
 	query.QueryType = bob.QueryTypeInsert
