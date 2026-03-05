@@ -9,10 +9,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
+	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
 type WithAutoIncr struct {
@@ -180,6 +182,37 @@ func compareArg(a, b bob.Expression) bool {
 	}
 
 	return true
+}
+
+func TestGetInsertedUsesExplicitColumns(t *testing.T) {
+	q := table2.Insert()
+	// Columns defines the positional mapping for vals passed to getInserted
+	q.Expression.Columns = []string{"id", "title", "author_id"}
+
+	idVal := internal.Pointer(10)
+	query, err := q.getInserted(
+		[]clause.Value{{Arg(idVal), Arg(internal.Pointer("test")), Arg(internal.Pointer(1))}},
+		nil,
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("getInserted: %v", err)
+	}
+
+	gotSQL, args, err := bob.Build(t.Context(), query)
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+
+	expectedSQL := "SELECT `id` AS `id`, `title` AS `title`, `author_id` AS `author_id` FROM AS WHERE ((`id` IN ((?))))"
+	if diff, err := testutils.QueryDiff(expectedSQL, gotSQL, nil); err != nil {
+		t.Fatalf("QueryDiff: %v", err)
+	} else if diff != "" {
+		t.Fatalf("sql diff: %s", diff)
+	}
+	if diff := cmp.Diff([]any{idVal}, args); diff != "" {
+		t.Fatalf("args diff: %s", diff)
+	}
 }
 
 func TestIsDefaultOrNull(t *testing.T) {
