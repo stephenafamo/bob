@@ -52,6 +52,7 @@ func FilterNonZero[T comparable](s []T) []T {
 	return filtered
 }
 
+//nolint:gochecknoglobals
 var uniqueCounter int64
 
 func NextUniqueInt() int64 {
