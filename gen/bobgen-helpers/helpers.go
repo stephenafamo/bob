@@ -135,7 +135,24 @@ func EnumType(types drivers.Types, enum string) string {
 	return fullTyp
 }
 
-func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {
+type MigrateOption func(*migrateConfig)
+
+type migrateConfig struct {
+	noTxPattern string
+}
+
+func WithNoTransactionPattern(pattern string) MigrateOption {
+	return func(c *migrateConfig) {
+		c.noTxPattern = pattern
+	}
+}
+
+func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string, opts ...MigrateOption) error {
+	var cfg migrateConfig
+	for _, o := range opts {
+		o(&cfg)
+	}
+
 	if dir == nil {
 		dir = os.DirFS(".")
 	}
@@ -152,11 +169,116 @@ func Migrate(ctx context.Context, db *sql.DB, dir fs.FS, pattern string) error {
 		}
 
 		fmt.Printf("migrating %s...\n", filePath)
-		if _, err = db.ExecContext(ctx, string(content)); err != nil {
+
+		if cfg.noTxPattern != "" && strings.Contains(string(content), cfg.noTxPattern) {
+			for _, stmt := range splitStatements(string(content)) {
+				if _, err = db.ExecContext(ctx, stmt); err != nil {
+					return fmt.Errorf("migrating %s: %w", filePath, err)
+				}
+			}
+			continue
+		}
+
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("beginning transaction for %s: %w", filePath, err)
+		}
+
+		if _, err = tx.ExecContext(ctx, string(content)); err != nil {
+			tx.Rollback() //nolint:errcheck
 			return fmt.Errorf("migrating %s: %w", filePath, err)
+		}
+
+		if err = tx.Commit(); err != nil {
+			return fmt.Errorf("committing transaction for %s: %w", filePath, err)
 		}
 	}
 
 	fmt.Printf("migrations finished\n")
 	return nil
+}
+
+// splitStatements splits SQL content into individual statements by splitting
+// on top-level semicolons. It correctly handles dollar-quoted strings
+// (e.g. $$ ... $$ or $tag$ ... $tag$), single-quoted strings, line comments
+// (--), and block comments (/* */).
+func splitStatements(sql string) []string {
+	var stmts []string
+	start := 0
+	i := 0
+
+	for i < len(sql) {
+		switch {
+		// Line comment: skip to end of line
+		case sql[i] == '-' && i+1 < len(sql) && sql[i+1] == '-':
+			i += 2
+			for i < len(sql) && sql[i] != '\n' {
+				i++
+			}
+
+		// Block comment: skip to closing */
+		case sql[i] == '/' && i+1 < len(sql) && sql[i+1] == '*':
+			i += 2
+			for i+1 < len(sql) && !(sql[i] == '*' && sql[i+1] == '/') {
+				i++
+			}
+			if i+1 < len(sql) {
+				i += 2 // skip */
+			}
+
+		// Single-quoted string: skip to closing quote, handling '' escapes
+		case sql[i] == '\'':
+			i++
+			for i < len(sql) {
+				if sql[i] == '\'' {
+					if i+1 < len(sql) && sql[i+1] == '\'' {
+						i += 2 // escaped quote
+						continue
+					}
+					break
+				}
+				i++
+			}
+			if i < len(sql) {
+				i++ // skip closing quote
+			}
+
+		// Dollar-quoted string: find the tag and skip to matching close tag
+		case sql[i] == '$':
+			tagStart := i
+			i++
+			// Read the tag name (alphanumeric/underscore between the two $)
+			for i < len(sql) && sql[i] != '$' && sql[i] != ' ' && sql[i] != '\n' && sql[i] != ';' {
+				i++
+			}
+			if i < len(sql) && sql[i] == '$' {
+				tag := sql[tagStart : i+1] // e.g. "$$" or "$tag$"
+				i++                         // move past closing $ of open tag
+				// Find the matching close tag
+				closeIdx := strings.Index(sql[i:], tag)
+				if closeIdx >= 0 {
+					i += closeIdx + len(tag)
+				}
+			}
+
+		// Semicolon: end of statement
+		case sql[i] == ';':
+			stmt := strings.TrimSpace(sql[start : i+1])
+			if stmt != "" && stmt != ";" {
+				stmts = append(stmts, stmt)
+			}
+			i++
+			start = i
+
+		default:
+			i++
+		}
+	}
+
+	// Handle any trailing content without a final semicolon
+	if remaining := strings.TrimSpace(sql[start:]); remaining != "" {
+		stmts = append(stmts, remaining)
+	}
+
+	return stmts
 }
