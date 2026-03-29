@@ -11,6 +11,7 @@ import (
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-select.html
 type SelectQuery struct {
+	hints
 	clause.With
 	clause.SelectList
 	Distinct
@@ -41,6 +42,13 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	var args []any
 
 	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
+		return nil, err
+	}
+
+	// no optimizer hint args
+	_, err = bob.ExpressIf(ctx, w, d, start+len(args), s.hints,
+		len(s.hints.hints) > 0, "", "")
+	if err != nil {
 		return nil, err
 	}
 

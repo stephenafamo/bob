@@ -290,6 +290,56 @@ ORDER BY id LIMIT 1000`,
 	testutils.RunTests(t, examples, formatter)
 }
 
+func TestSelectHints(t *testing.T) {
+	examples := testutils.Testcases{
+		"with optimizer hints": {
+			Query: psql.Select(
+				sm.SeqScan("t1"),
+				sm.Columns("id", "name"),
+				sm.From("t1"),
+			),
+			ExpectedSQL: `/*+ SeqScan(t1) */ SELECT id, name FROM t1`,
+		},
+		"with multiple optimizer hints": {
+			Query: psql.Select(
+				sm.SeqScan("t1"),
+				sm.NestLoop("t1", "t2"),
+				sm.Columns("id", "name"),
+				sm.From("t1"),
+				sm.InnerJoin("t2").On(psql.Quote("t1", "id").EQ(psql.Quote("t2", "id"))),
+			),
+			ExpectedSQL: `/*+ SeqScan(t1) NestLoop(t1 t2) */ SELECT id, name FROM t1 INNER JOIN t2 ON ("t1"."id" = "t2"."id")`,
+		},
+		"with index scan hint": {
+			Query: psql.Select(
+				sm.IndexScan("t1", "idx_t1_id", "idx_t2_id"),
+				sm.Columns("id"),
+				sm.From("t1"),
+			),
+			ExpectedSQL: `/*+ IndexScan(t1 idx_t1_id idx_t2_id) */ SELECT id FROM t1`,
+		},
+		"with leading hint": {
+			Query: psql.Select(
+				sm.Leading("t1 t2 t3"),
+				sm.Columns("*"),
+				sm.From("t1"),
+			),
+			ExpectedSQL: `/*+ Leading(t1 t2 t3) */ SELECT * FROM t1`,
+		},
+		"with set hint": {
+			Query: psql.Select(
+				sm.Set("random_page_cost", "2.0"),
+				sm.Columns("*"),
+				sm.From("t1"),
+			),
+			ExpectedSQL: `/*+ Set(random_page_cost 2.0) */ SELECT * FROM t1`,
+		},
+	}
+
+	// pgparse strips comments, so we bypass the formatter
+	testutils.RunTests(t, examples, nil)
+}
+
 func formatter(s string) (string, error) {
 	aTree, err := pgparse.Parse(s)
 	if err != nil {
