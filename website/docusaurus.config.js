@@ -117,6 +117,11 @@ const config = {
             ],
           },
           {
+            label: "Plugins",
+            to: "docs/plugins/intro",
+            position: "left",
+          },
+          {
             type: "dropdown",
             label: "VS Others",
             position: "left",
