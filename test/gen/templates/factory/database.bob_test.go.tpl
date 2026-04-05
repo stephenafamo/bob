@@ -28,7 +28,6 @@
 {{ else if eq $.Driver "github.com/ncruces/go-sqlite3" }}
 	{{$.Importer.Import $.Driver }}
   {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/driver" }}
-  {{$.Importer.Import "_" "github.com/ncruces/go-sqlite3/embed" }}
 	{{$sqlDriver = "sqlite3"}}
 	{{$dsnEnvVarName = "SQLITE_TEST_DSN"}}
 {{ else if eq $.Driver  "github.com/tursodatabase/libsql-client-go/libsql" }}
