@@ -10,6 +10,7 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/stephenafamo/scan"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
@@ -153,17 +154,180 @@ func (o *{{$tAlias.UpSingular}}) LoadCount{{$relAlias}}(ctx context.Context, exe
 	return nil
 }
 
-// LoadCount{{$relAlias}} loads the count of {{$relAlias}} for a slice
+// LoadCount{{$relAlias}} loads the count of {{$relAlias}} for a slice in a single batch query
 func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	if len(os) == 0 {
 		return nil
 	}
 
+	{{$firstSide := index $rel.Sides 0 -}}
+	{{$firstFrom := $.Aliases.Table $firstSide.From -}}
+	{{$firstTo := $.Aliases.Table $firstSide.To -}}
+
+	// Build the IN arg expression from parent PKs
+	{{- if ne $.Dialect "psql"}}
+	PKArgSlice := make([]bob.Expression, 0, len(os))
 	for _, o := range os {
-		if err := o.LoadCount{{$relAlias}}(ctx, exec, mods...); err != nil {
-			return err
+		if o == nil {
+			continue
 		}
+		PKArgSlice = append(PKArgSlice, {{$.Dialect}}.ArgGroup(
+			{{- range $index, $local := $firstSide.FromColumns -}}
+			{{- $fromCol := index $firstFrom.Columns $local -}}
+			o.{{$fromCol}},
+			{{- end -}}
+		))
 	}
+	PKArgExpr := {{$.Dialect}}.Group(PKArgSlice...)
+	{{- else}}
+	{{$.Importer.Import "github.com/stephenafamo/bob/types/pgtypes" -}}
+	{{- range $index, $local := $firstSide.FromColumns -}}
+	{{- $column := $.Table.GetColumn $local -}}
+	{{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+	{{- $fromCol := index $firstFrom.Columns $local}}
+	pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], 0, len(os))
+	{{- end}}
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		{{- range $index, $local := $firstSide.FromColumns -}}
+		{{- $fromCol := index $firstFrom.Columns $local}}
+		pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
+		{{- end}}
+	}
+	PKArgExpr := {{$.Dialect}}.Select(sm.Columns(
+		{{- range $index, $local := $firstSide.FromColumns -}}
+		{{- $column := $.Table.GetColumn $local -}}
+		{{- $fromCol := index $firstFrom.Columns $local}}
+		{{$.Dialect}}.F("unnest", {{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
+		{{- end}}
+	))
+	{{- end}}
+
+	// countResult holds one scanned row from the batch count query.
+	// FK columns are aliased to the parent PK column names for direct map lookup.
+	type countResult struct {
+		{{range $index, $local := $firstSide.FromColumns -}}
+		{{- $column := $.Table.GetColumn $local -}}
+		{{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+		{{- $fromCol := index $firstFrom.Columns $local}}
+		{{$fromCol}} {{$colTyp}}
+		{{end -}}
+		Count int64
+	}
+
+	batchMods := []bob.Mod[*dialect.SelectQuery]{
+		// SELECT fk AS parent_pk, count(*)
+		sm.Columns(
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{$toLocal := index $firstSide.ToColumns $index -}}
+			{{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}}).As({{quote $local}}),
+			{{end -}}
+			{{$.Dialect}}.Raw("count(*) as count"),
+		),
+		{{if eq (len $rel.Sides) 1 -}}
+		// Single-hop: FROM related table directly
+		sm.From({{$fAlias.UpPlural}}.NameAs()),
+		{{range $where := $firstSide.ToWhere -}}
+		sm.Where({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		{{end -}}
+		{{- else -}}
+		// Multi-hop: FROM first join table, JOIN through to final related table
+		sm.From({{$firstTo.UpPlural}}.NameAs()),
+		{{range $where := $firstSide.ToWhere -}}
+		sm.Where({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		{{end -}}
+		{{range $sideIndex, $side := $rel.Sides -}}
+		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
+		{{$sideFrom := $.Aliases.Table $side.From -}}
+		{{$sideTo := $.Aliases.Table $side.To -}}
+		sm.InnerJoin({{$sideTo.UpPlural}}.NameAs()).On(
+			{{range $i, $fromColKey := $side.FromColumns -}}
+			{{$toColKey := index $side.ToColumns $i -}}
+			{{$.Dialect}}.Quote({{$sideTo.UpPlural}}.Alias(), {{quote $toColKey}}).EQ({{$.Dialect}}.Quote({{$sideFrom.UpPlural}}.Alias(), {{quote $fromColKey}})),
+			{{end -}}
+			{{range $where := $side.FromWhere -}}
+			{{$.Dialect}}.Quote({{$sideFrom.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{end -}}
+			{{range $where := $side.ToWhere -}}
+			{{$.Dialect}}.Quote({{$sideTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{end -}}
+		),
+		{{end -}}
+		{{- end}}
+		// WHERE fk IN (parent PKs)
+		sm.Where({{$.Dialect}}.Group(
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{$toLocal := index $firstSide.ToColumns $index -}}
+			{{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}}),
+			{{end -}}
+		).OP("IN", PKArgExpr)),
+		// GROUP BY fk columns
+		{{range $index, $local := $firstSide.FromColumns -}}
+		{{$toLocal := index $firstSide.ToColumns $index -}}
+		sm.GroupBy({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}})),
+		{{end -}}
+	}
+	batchMods = append(batchMods, mods...)
+
+	results, err := bob.All(ctx, exec,
+		{{$.Dialect}}.Select(batchMods...),
+		scan.StructMapper[countResult](),
+	)
+	if err != nil {
+		return err
+	}
+
+	{{if eq (len $firstSide.FromColumns) 1 -}}
+	{{$local := index $firstSide.FromColumns 0 -}}
+	{{$column := $.Table.GetColumn $local -}}
+	{{$colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+	{{$fromCol := index $firstFrom.Columns $local -}}
+	// Single-column FK: direct map lookup
+	countMap := make(map[{{$colTyp}}]int64, len(results))
+	for _, r := range results {
+		countMap[r.{{$fromCol}}] = r.Count
+	}
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		count := countMap[o.{{$fromCol}}]
+		o.C.{{$relAlias}} = &count
+	}
+	{{- else -}}
+	// Composite FK: use a key struct
+	type countKey struct {
+		{{range $index, $local := $firstSide.FromColumns -}}
+		{{- $column := $.Table.GetColumn $local -}}
+		{{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+		{{- $fromCol := index $firstFrom.Columns $local}}
+		{{$fromCol}} {{$colTyp}}
+		{{end -}}
+	}
+	countMap := make(map[countKey]int64, len(results))
+	for _, r := range results {
+		countMap[countKey{
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{- $fromCol := index $firstFrom.Columns $local}}
+			{{$fromCol}}: r.{{$fromCol}},
+			{{end -}}
+		}] = r.Count
+	}
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		count := countMap[countKey{
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{- $fromCol := index $firstFrom.Columns $local}}
+			{{$fromCol}}: o.{{$fromCol}},
+			{{end -}}
+		}]
+		o.C.{{$relAlias}} = &count
+	}
+	{{- end}}
 
 	return nil
 }
