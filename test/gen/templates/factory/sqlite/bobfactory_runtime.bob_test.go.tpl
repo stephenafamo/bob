@@ -822,6 +822,65 @@ func TestLoadCountTagVideos(t *testing.T) {
 		t.Fatalf("Expected Videos count to be 3, got %d", *tag.C.Videos)
 	}
 }
+
+// TestLoadCountVideoTagsSlice tests that LoadCountTags works correctly for VideoSlice (multi-hop/many-to-many)
+func TestLoadCountVideoTagsSlice(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create 3 videos: first gets 0 tags, second gets 1, third gets 3
+	video0 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video1 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video3 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+
+	for i := 0; i < 1; i++ {
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
+		if err := video1.AttachTags(ctx, tx, tag); err != nil {
+			t.Fatalf("Error attaching Tag to video1: %v", err)
+		}
+	}
+	for i := 0; i < 3; i++ {
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
+		if err := video3.AttachTags(ctx, tx, tag); err != nil {
+			t.Fatalf("Error attaching Tag to video3: %v", err)
+		}
+	}
+
+	videos := models.VideoSlice{video0, video1, video3}
+	if err := videos.LoadCountTags(ctx, tx); err != nil {
+		t.Fatalf("Error loading count for Tags on VideoSlice: %v", err)
+	}
+
+	// video0 has no tags — batch must set count to 0, not nil
+	if videos[0].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set (0) for video0, got nil")
+	}
+	if *videos[0].C.Tags != 0 {
+		t.Fatalf("Expected Tags count for video0 to be 0, got %d", *videos[0].C.Tags)
+	}
+
+	if videos[1].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set for video1, got nil")
+	}
+	if *videos[1].C.Tags != 1 {
+		t.Fatalf("Expected Tags count for video1 to be 1, got %d", *videos[1].C.Tags)
+	}
+
+	if videos[2].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set for video3, got nil")
+	}
+	if *videos[2].C.Tags != 3 {
+		t.Fatalf("Expected Tags count for video3 to be 3, got %d", *videos[2].C.Tags)
+	}
+}
 {{- end }}
 
 {{- if and $hasVideos $hasSponsors }}
