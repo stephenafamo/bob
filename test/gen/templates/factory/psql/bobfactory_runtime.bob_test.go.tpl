@@ -446,12 +446,12 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 
-	// Create 2 users
-	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 2)
+	// Create 3 users
+	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 3)
 
-	// Create different number of videos for each user
+	// Create different number of videos for each user (0, 1, 2)
 	for i, user := range users {
-		numVideos := i + 1 // First user gets 1, second gets 2
+		numVideos := i // First user gets 0, second gets 1, third gets 2
 		for j := 0; j < numVideos; j++ {
 			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
@@ -464,15 +464,62 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 		t.Fatalf("Error loading count for Videos: %v", err)
 	}
 
-	// Verify counts
+	// Verify counts, including the zero-count case
 	for i, user := range users {
-		expectedCount := int64(i + 1)
+		expectedCount := int64(i)
 		if user.C.Videos == nil {
 			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
 		}
 		if *user.C.Videos != expectedCount {
 			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
 		}
+	}
+}
+
+// TestLoadCountUserVideosSliceWithMods tests that user-provided mods are applied to the batch count query
+func TestLoadCountUserVideosSliceWithMods(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+
+	// Create 3 videos for user1, capturing the first one's ID for filtering
+	firstVideo := New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
+	for i := 0; i < 2; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
+	}
+	// Create 3 videos for user2 (all with IDs greater than user1's videos)
+	for i := 0; i < 3; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user2)).CreateOrFail(ctx, t, tx)
+	}
+
+	users := models.UserSlice{user1, user2}
+	// Filter: only count videos with ID > firstVideo.ID
+	// user1: 2 (the first video is excluded), user2: 3 (all IDs are greater)
+	if err := users.LoadCountVideos(ctx, tx, models.SelectWhere.Videos.ID.GT(firstVideo.ID)); err != nil {
+		t.Fatalf("Error loading count for Videos with mod: %v", err)
+	}
+
+	if user1.C.Videos == nil {
+		t.Fatal("Expected Videos count to be set for user1, got nil")
+	}
+	if *user1.C.Videos != 2 {
+		t.Fatalf("Expected filtered Videos count for user1 to be 2, got %d", *user1.C.Videos)
+	}
+	if user2.C.Videos == nil {
+		t.Fatal("Expected Videos count to be set for user2, got nil")
+	}
+	if *user2.C.Videos != 3 {
+		t.Fatalf("Expected filtered Videos count for user2 to be 3, got %d", *user2.C.Videos)
 	}
 }
 

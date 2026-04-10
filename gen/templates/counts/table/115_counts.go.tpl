@@ -171,12 +171,18 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		if o == nil {
 			continue
 		}
+		{{if eq (len $firstSide.FromColumns) 1 -}}
+		{{$local := index $firstSide.FromColumns 0 -}}
+		{{$fromCol := index $firstFrom.Columns $local -}}
+		PKArgSlice = append(PKArgSlice, {{$.Dialect}}.Arg(o.{{$fromCol}}))
+		{{- else -}}
 		PKArgSlice = append(PKArgSlice, {{$.Dialect}}.ArgGroup(
 			{{- range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
 			o.{{$fromCol}},
 			{{- end -}}
 		))
+		{{- end}}
 	}
 	PKArgExpr := {{$.Dialect}}.Group(PKArgSlice...)
 	{{- else}}
@@ -264,6 +270,12 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{end -}}
 		{{- end}}
 		// WHERE fk IN (parent PKs)
+		{{if eq (len $firstSide.FromColumns) 1 -}}
+		{{$local := index $firstSide.FromColumns 0 -}}
+		{{$toLocal := index $firstSide.ToColumns 0 -}}
+		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.In(PKArgExpr)),
+		{{- else -}}
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{$toLocal := index $firstSide.ToColumns $index -}}
@@ -271,6 +283,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}},
 			{{end -}}
 		).In(PKArgExpr)),
+		{{- end}}
 		// GROUP BY fk columns
 		{{range $index, $local := $firstSide.FromColumns -}}
 		{{$toLocal := index $firstSide.ToColumns $index -}}
