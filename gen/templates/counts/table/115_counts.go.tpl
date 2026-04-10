@@ -222,7 +222,8 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		sm.Columns(
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{$toLocal := index $firstSide.ToColumns $index -}}
-			{{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}}).As({{quote $local}}),
+			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.As({{quote $local}}),
 			{{end -}}
 			{{$.Dialect}}.Raw("count(*) as count"),
 		),
@@ -230,13 +231,15 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		// Single-hop: FROM related table directly
 		sm.From({{$fAlias.UpPlural}}.NameAs()),
 		{{range $where := $firstSide.ToWhere -}}
-		sm.Where({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
 		{{end -}}
 		{{- else -}}
 		// Multi-hop: FROM first join table, JOIN through to final related table
 		sm.From({{$firstTo.UpPlural}}.NameAs()),
 		{{range $where := $firstSide.ToWhere -}}
-		sm.Where({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
 		{{end -}}
 		{{range $sideIndex, $side := $rel.Sides -}}
 		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
@@ -245,13 +248,17 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		sm.InnerJoin({{$sideTo.UpPlural}}.NameAs()).On(
 			{{range $i, $fromColKey := $side.FromColumns -}}
 			{{$toColKey := index $side.ToColumns $i -}}
-			{{$.Dialect}}.Quote({{$sideTo.UpPlural}}.Alias(), {{quote $toColKey}}).EQ({{$.Dialect}}.Quote({{$sideFrom.UpPlural}}.Alias(), {{quote $fromColKey}})),
+			{{$sideToColAlias := index $sideTo.Columns $toColKey -}}
+			{{$sideFromColAlias := index $sideFrom.Columns $fromColKey -}}
+			{{$sideTo.UpPlural}}.Columns.{{$sideToColAlias}}.EQ({{$sideFrom.UpPlural}}.Columns.{{$sideFromColAlias}}),
 			{{end -}}
 			{{range $where := $side.FromWhere -}}
-			{{$.Dialect}}.Quote({{$sideFrom.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{$fromWhereColAlias := index $sideFrom.Columns $where.Column -}}
+			{{$sideFrom.UpPlural}}.Columns.{{$fromWhereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
 			{{end -}}
 			{{range $where := $side.ToWhere -}}
-			{{$.Dialect}}.Quote({{$sideTo.UpPlural}}.Alias(), {{quote $where.Column}}).EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{$toWhereColAlias := index $sideTo.Columns $where.Column -}}
+			{{$sideTo.UpPlural}}.Columns.{{$toWhereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
 			{{end -}}
 		),
 		{{end -}}
@@ -260,13 +267,15 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{$toLocal := index $firstSide.ToColumns $index -}}
-			{{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}}),
+			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}},
 			{{end -}}
-		).OP("IN", PKArgExpr)),
+		).In(PKArgExpr)),
 		// GROUP BY fk columns
 		{{range $index, $local := $firstSide.FromColumns -}}
 		{{$toLocal := index $firstSide.ToColumns $index -}}
-		sm.GroupBy({{$.Dialect}}.Quote({{$firstTo.UpPlural}}.Alias(), {{quote $toLocal}})),
+		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+		sm.GroupBy({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}),
 		{{end -}}
 	}
 	batchMods = append(batchMods, mods...)
