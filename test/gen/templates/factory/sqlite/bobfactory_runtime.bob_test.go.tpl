@@ -461,34 +461,30 @@ func TestLoadCountUserVideosSliceWithMods(t *testing.T) {
 	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
 
-	// Create 3 videos for user1, capturing the first one's ID for filtering
-	firstVideo := New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
-	for i := 0; i < 2; i++ {
-		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
-	}
-	// Create 3 videos for user2 (all with IDs greater than user1's videos)
+	// Create 3 videos for each user
 	for i := 0; i < 3; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
 		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user2)).CreateOrFail(ctx, t, tx)
 	}
 
 	users := models.UserSlice{user1, user2}
-	// Filter: only count videos with ID > firstVideo.ID
-	// user1: 2 (the first video is excluded), user2: 3 (all IDs are greater)
-	if err := users.LoadCountVideos(ctx, tx, models.SelectWhere.Videos.ID.GT(firstVideo.ID)); err != nil {
+	// Filter: only count videos belonging to user1.
+	// user1: 3 (all their videos match), user2: 0 (none of their videos match)
+	if err := users.LoadCountVideos(ctx, tx, models.SelectWhere.Videos.UserID.EQ(user1.ID)); err != nil {
 		t.Fatalf("Error loading count for Videos with mod: %v", err)
 	}
 
 	if user1.C.Videos == nil {
 		t.Fatal("Expected Videos count to be set for user1, got nil")
 	}
-	if *user1.C.Videos != 2 {
-		t.Fatalf("Expected filtered Videos count for user1 to be 2, got %d", *user1.C.Videos)
+	if *user1.C.Videos != 3 {
+		t.Fatalf("Expected filtered Videos count for user1 to be 3, got %d", *user1.C.Videos)
 	}
 	if user2.C.Videos == nil {
 		t.Fatal("Expected Videos count to be set for user2, got nil")
 	}
-	if *user2.C.Videos != 3 {
-		t.Fatalf("Expected filtered Videos count for user2 to be 3, got %d", *user2.C.Videos)
+	if *user2.C.Videos != 0 {
+		t.Fatalf("Expected filtered Videos count for user2 to be 0, got %d", *user2.C.Videos)
 	}
 }
 
