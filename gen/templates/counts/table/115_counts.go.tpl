@@ -274,7 +274,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{$local := index $firstSide.FromColumns 0 -}}
 		{{$toLocal := index $firstSide.ToColumns 0 -}}
 		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
-		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.In(PKArgExpr)),
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.OP("IN", PKArgExpr)),
 		{{- else -}}
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}
@@ -282,7 +282,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
 			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}},
 			{{end -}}
-		).In(PKArgExpr)),
+		).OP("IN", PKArgExpr)),
 		{{- end}}
 		// GROUP BY fk columns
 		{{range $index, $local := $firstSide.FromColumns -}}
