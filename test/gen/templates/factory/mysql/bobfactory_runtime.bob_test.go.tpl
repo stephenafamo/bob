@@ -446,12 +446,12 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 
-	// Create 2 users
-	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 2)
+	// Create 3 users
+	users := New().NewUserWithContext(ctx).CreateManyOrFail(ctx, t, tx, 3)
 
-	// Create different number of videos for each user
+	// Create different number of videos for each user (0, 1, 2)
 	for i, user := range users {
-		numVideos := i + 1 // First user gets 1, second gets 2
+		numVideos := i // First user gets 0, second gets 1, third gets 2
 		for j := 0; j < numVideos; j++ {
 			New().NewVideoWithContext(ctx,
 				VideoMods.WithExistingUser(user),
@@ -464,15 +464,58 @@ func TestLoadCountUserVideosSlice(t *testing.T) {
 		t.Fatalf("Error loading count for Videos: %v", err)
 	}
 
-	// Verify counts
+	// Verify counts, including the zero-count case
 	for i, user := range users {
-		expectedCount := int64(i + 1)
+		expectedCount := int64(i)
 		if user.C.Videos == nil {
 			t.Fatalf("Expected Videos count to be set for user %d, got nil", i)
 		}
 		if *user.C.Videos != expectedCount {
 			t.Fatalf("Expected Videos count for user %d to be %d, got %d", i, expectedCount, *user.C.Videos)
 		}
+	}
+}
+
+// TestLoadCountUserVideosSliceWithMods tests that user-provided mods are applied to the batch count query
+func TestLoadCountUserVideosSliceWithMods(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+
+	// Create 3 videos for each user
+	for i := 0; i < 3; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user2)).CreateOrFail(ctx, t, tx)
+	}
+
+	users := models.UserSlice{user1, user2}
+	// Filter: only count videos belonging to user1.
+	// user1: 3 (all their videos match), user2: 0 (none of their videos match)
+	if err := users.LoadCountVideos(ctx, tx, models.SelectWhere.Videos.UserID.EQ(user1.ID)); err != nil {
+		t.Fatalf("Error loading count for Videos with mod: %v", err)
+	}
+
+	if user1.C.Videos == nil {
+		t.Fatal("Expected Videos count to be set for user1, got nil")
+	}
+	if *user1.C.Videos != 3 {
+		t.Fatalf("Expected filtered Videos count for user1 to be 3, got %d", *user1.C.Videos)
+	}
+	if user2.C.Videos == nil {
+		t.Fatal("Expected Videos count to be set for user2, got nil")
+	}
+	if *user2.C.Videos != 0 {
+		t.Fatalf("Expected filtered Videos count for user2 to be 0, got %d", *user2.C.Videos)
 	}
 }
 
@@ -845,6 +888,65 @@ func TestLoadCountTagVideos(t *testing.T) {
 	}
 	if *tag.C.Videos != 3 {
 		t.Fatalf("Expected Videos count to be 3, got %d", *tag.C.Videos)
+	}
+}
+
+// TestLoadCountVideoTagsSlice tests that LoadCountTags works correctly for VideoSlice (multi-hop/many-to-many)
+func TestLoadCountVideoTagsSlice(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create 3 videos: first gets 0 tags, second gets 1, third gets 3
+	video0 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video1 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video3 := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+
+	for i := 0; i < 1; i++ {
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
+		if err := video1.AttachTags(ctx, tx, tag); err != nil {
+			t.Fatalf("Error attaching Tag to video1: %v", err)
+		}
+	}
+	for i := 0; i < 3; i++ {
+		tag := New().NewTagWithContext(ctx).CreateOrFail(ctx, t, tx)
+		if err := video3.AttachTags(ctx, tx, tag); err != nil {
+			t.Fatalf("Error attaching Tag to video3: %v", err)
+		}
+	}
+
+	videos := models.VideoSlice{video0, video1, video3}
+	if err := videos.LoadCountTags(ctx, tx); err != nil {
+		t.Fatalf("Error loading count for Tags on VideoSlice: %v", err)
+	}
+
+	// video0 has no tags — batch must set count to 0, not nil
+	if videos[0].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set (0) for video0, got nil")
+	}
+	if *videos[0].C.Tags != 0 {
+		t.Fatalf("Expected Tags count for video0 to be 0, got %d", *videos[0].C.Tags)
+	}
+
+	if videos[1].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set for video1, got nil")
+	}
+	if *videos[1].C.Tags != 1 {
+		t.Fatalf("Expected Tags count for video1 to be 1, got %d", *videos[1].C.Tags)
+	}
+
+	if videos[2].C.Tags == nil {
+		t.Fatal("Expected Tags count to be set for video3, got nil")
+	}
+	if *videos[2].C.Tags != 3 {
+		t.Fatalf("Expected Tags count for video3 to be 3, got %d", *videos[2].C.Tags)
 	}
 }
 {{- end }}
