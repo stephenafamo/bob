@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"hash/maphash"
 	"strings"
+	"sync/atomic"
 )
 
 func Pointer[T any](val T) *T {
@@ -52,14 +52,11 @@ func FilterNonZero[T comparable](s []T) []T {
 	return filtered
 }
 
-func RandInt() int64 {
-	out := int64(new(maphash.Hash).Sum64())
+//nolint:gochecknoglobals
+var uniqueCounter int64
 
-	if out < 0 {
-		return -out % 10000
-	}
-
-	return out % 10000
+func NextUniqueInt() int64 {
+	return atomic.AddInt64(&uniqueCounter, 1) + 10000
 }
 
 func SliceMatch[T comparable, Ts ~[]T](a, b Ts) bool {

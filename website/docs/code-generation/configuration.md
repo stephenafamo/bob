@@ -290,7 +290,7 @@ types:
     # IMPORTANT: If the type is in the models package, you should specify the import alias
     imports:
       - 'models "github.com/path/to/models"'
-  type.JSON[json.RawMessage]:
+  types.JSON[json.RawMessage]:
     # If true, a test for the random expression will not be generated
     no_randomization_test: false
     # Any imports that are needed for the type

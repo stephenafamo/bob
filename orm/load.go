@@ -230,12 +230,12 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		}
 
 		var alias string
-		var queryMods mods.QueryMods[Q]
+		queryMods := make(mods.QueryMods[Q], 0, len(rel.Sides)+1)
 
 		for i, side := range rel.Sides {
 			alias = settings.Alias
 			if settings.Alias == "" {
-				alias = fmt.Sprintf("%s_%d", side.To.Alias(), internal.RandInt())
+				alias = fmt.Sprintf("%s_%d", side.To.Alias(), internal.NextUniqueInt())
 			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
