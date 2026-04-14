@@ -123,20 +123,18 @@ func (u MergeUsing) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Diale
 	}
 
 	// Write source (table or subquery)
-	var sourceArgs []any
-	var err error
-	if _, isQuery := u.Source.(bob.Query); isQuery {
+	_, isQuery := u.Source.(bob.Query)
+	if isQuery {
 		w.WriteString("(")
-		sourceArgs, err = bob.Express(ctx, w, d, start, u.Source)
-		if err != nil {
-			return nil, err
-		}
+	}
+
+	sourceArgs, err := bob.Express(ctx, w, d, start, u.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	if isQuery {
 		w.WriteString(")")
-	} else {
-		sourceArgs, err = bob.Express(ctx, w, d, start, u.Source)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if u.Alias != "" {
