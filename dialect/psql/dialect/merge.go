@@ -32,15 +32,6 @@ const (
 	MergeActionUpdate    MergeActionType = "UPDATE"
 )
 
-// MergeOverridingType represents the OVERRIDING type in INSERT action
-type MergeOverridingType string
-
-// MergeOverridingType constants for OVERRIDING clause in INSERT
-const (
-	MergeOverridingSystem MergeOverridingType = "SYSTEM"
-	MergeOverridingUser   MergeOverridingType = "USER"
-)
-
 // MergeQuery Trying to represent the merge query structure as documented in
 // https://www.postgresql.org/docs/current/sql-merge.html
 type MergeQuery struct {
@@ -184,7 +175,7 @@ func (w MergeWhen) WriteSQL(ctx context.Context, wr io.StringWriter, d bob.Diale
 type MergeAction struct {
 	Type       MergeActionType
 	Columns    []string
-	Overriding MergeOverridingType // MergeOverridingType for INSERT
+	Overriding OverridingType
 	Values     []bob.Expression
 	Set        []any
 }
@@ -200,46 +191,50 @@ func (a MergeAction) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		return nil, nil
 
 	case MergeActionInsert:
-		w.WriteString("INSERT")
-
-		if len(a.Columns) > 0 {
-			w.WriteString(" (")
-			for i, col := range a.Columns {
-				if i > 0 {
-					w.WriteString(", ")
-				}
-				d.WriteQuoted(w, col)
-			}
-			w.WriteString(")")
-		}
-
-		if a.Overriding != "" {
-			w.WriteString(" OVERRIDING ")
-			w.WriteString(string(a.Overriding))
-			w.WriteString(" VALUE")
-		}
-
-		if len(a.Values) > 0 {
-			w.WriteString(" VALUES (")
-			args, err := bob.ExpressSlice(ctx, w, d, start, a.Values, "", ", ", "")
-			if err != nil {
-				return nil, err
-			}
-			w.WriteString(")")
-			return args, nil
-		}
-
-		w.WriteString(" DEFAULT VALUES")
-		return nil, nil
+		return a.writeInsert(ctx, w, d, start)
 
 	case MergeActionUpdate:
-		w.WriteString("UPDATE SET ")
-		args, err := bob.ExpressSlice(ctx, w, d, start, internal.ToAnySlice(a.Set), "", ", ", "")
-		if err != nil {
-			return nil, err
-		}
-		return args, nil
+		return a.writeUpdate(ctx, w, d, start)
 	}
 
 	return nil, fmt.Errorf("unknown merge action type: %q", a.Type)
+}
+
+func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("INSERT")
+
+	if len(a.Columns) > 0 {
+		w.WriteString(" (")
+		for i, col := range a.Columns {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			d.WriteQuoted(w, col)
+		}
+		w.WriteString(")")
+	}
+
+	if a.Overriding != "" {
+		w.WriteString(" OVERRIDING ")
+		w.WriteString(string(a.Overriding))
+		w.WriteString(" VALUE")
+	}
+
+	if len(a.Values) > 0 {
+		w.WriteString(" VALUES (")
+		args, err := bob.ExpressSlice(ctx, w, d, start, a.Values, "", ", ", "")
+		if err != nil {
+			return nil, err
+		}
+		w.WriteString(")")
+		return args, nil
+	}
+
+	w.WriteString(" DEFAULT VALUES")
+	return nil, nil
+}
+
+func (a MergeAction) writeUpdate(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	w.WriteString("UPDATE SET ")
+	return bob.ExpressSlice(ctx, w, d, start, internal.ToAnySlice(a.Set), "", ", ", "")
 }
