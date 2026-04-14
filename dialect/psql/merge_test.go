@@ -138,7 +138,7 @@ func TestMerge(t *testing.T) {
 		"merge with subquery as source": {
 			Query: psql.Merge(
 				mm.Into("target_table"),
-				mm.UsingQuery(psql.Select()).As("src").On(
+				mm.Using(psql.Select()).As("src").On(
 					psql.Quote("src", "id").EQ(psql.Quote("target_table", "id")),
 				),
 				mm.WhenMatched(

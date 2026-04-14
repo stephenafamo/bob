@@ -2,6 +2,7 @@ package dialect
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -240,5 +241,5 @@ func (a MergeAction) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		return args, nil
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("unknown merge action type: %q", a.Type)
 }
