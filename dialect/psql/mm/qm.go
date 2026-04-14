@@ -104,14 +104,10 @@ func Only() bob.Mod[*dialect.MergeQuery] {
 	})
 }
 
-// Using specifies the data source for the MERGE statement
+// Using specifies the data source for the MERGE statement.
+// Accepts a table name or a bob.Query (subquery).
 func Using(source any) UsingChain {
 	return UsingChain{source: source}
-}
-
-// UsingQuery specifies a subquery as the data source for the MERGE statement
-func UsingQuery(q bob.Query) UsingChain {
-	return UsingChain{source: q}
 }
 
 // UsingChain is a chain for building the USING clause
@@ -148,52 +144,26 @@ func (u UsingChain) OnEQ(left, right bob.Expression) bob.Mod[*dialect.MergeQuery
 
 // WhenMatched creates a WHEN MATCHED clause
 func WhenMatched(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	wc := &WhenClause{Type: dialect.MergeWhenMatched}
-	for _, mod := range mods {
-		mod.Apply(wc)
-	}
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
-			Type:      wc.Type,
-			Condition: wc.Condition,
-			Action:    wc.Action,
-		})
-	})
+	return whenClause(dialect.MergeWhenMatched, mods...)
 }
 
 // WhenNotMatched creates a WHEN NOT MATCHED (BY TARGET) clause
 func WhenNotMatched(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	wc := &WhenClause{Type: dialect.MergeWhenNotMatched}
-	for _, mod := range mods {
-		mod.Apply(wc)
-	}
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
-			Type:      wc.Type,
-			Condition: wc.Condition,
-			Action:    wc.Action,
-		})
-	})
+	return whenClause(dialect.MergeWhenNotMatched, mods...)
 }
 
 // WhenNotMatchedByTarget is an alias for WhenNotMatched with explicit BY TARGET
 func WhenNotMatchedByTarget(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	wc := &WhenClause{Type: dialect.MergeWhenNotMatchedByTarget}
-	for _, mod := range mods {
-		mod.Apply(wc)
-	}
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
-			Type:      wc.Type,
-			Condition: wc.Condition,
-			Action:    wc.Action,
-		})
-	})
+	return whenClause(dialect.MergeWhenNotMatchedByTarget, mods...)
 }
 
 // WhenNotMatchedBySource creates a WHEN NOT MATCHED BY SOURCE clause
 func WhenNotMatchedBySource(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	wc := &WhenClause{Type: dialect.MergeWhenNotMatchedBySource}
+	return whenClause(dialect.MergeWhenNotMatchedBySource, mods...)
+}
+
+func whenClause(t dialect.MergeWhenType, mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
+	wc := &WhenClause{Type: t}
 	for _, mod := range mods {
 		mod.Apply(wc)
 	}
@@ -319,37 +289,32 @@ type SetColsChain struct {
 	columns []string
 }
 
+func (s SetColsChain) colExprs() []bob.Expression {
+	cols := make([]bob.Expression, len(s.columns))
+	for i, c := range s.columns {
+		cols[i] = expr.Quote(c)
+	}
+	return cols
+}
+
 // ToRow sets columns to ROW of expressions: (columns...) = ROW (expressions...)
 func (s SetColsChain) ToRow(values ...bob.Expression) bob.Mod[*UpdateAction] {
 	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		// Build (col1, col2, ...) = ROW (val1, val2, ...)
-		cols := make([]bob.Expression, len(s.columns))
-		for i, c := range s.columns {
-			cols[i] = expr.Quote(c)
-		}
-		u.Set = append(u.Set, rowAssignment{cols: cols, values: values, isRow: true})
+		u.Set = append(u.Set, rowAssignment{cols: s.colExprs(), values: values, isRow: true})
 	})
 }
 
 // ToExprs sets columns to expressions without ROW: (columns...) = (expressions...)
 func (s SetColsChain) ToExprs(values ...bob.Expression) bob.Mod[*UpdateAction] {
 	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		cols := make([]bob.Expression, len(s.columns))
-		for i, c := range s.columns {
-			cols[i] = expr.Quote(c)
-		}
-		u.Set = append(u.Set, rowAssignment{cols: cols, values: values, isRow: false})
+		u.Set = append(u.Set, rowAssignment{cols: s.colExprs(), values: values, isRow: false})
 	})
 }
 
 // ToQuery sets columns from a subquery: (columns...) = (subquery)
 func (s SetColsChain) ToQuery(q bob.Query) bob.Mod[*UpdateAction] {
 	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		cols := make([]bob.Expression, len(s.columns))
-		for i, c := range s.columns {
-			cols[i] = expr.Quote(c)
-		}
-		u.Set = append(u.Set, queryAssignment{cols: cols, query: q})
+		u.Set = append(u.Set, queryAssignment{cols: s.colExprs(), query: q})
 	})
 }
 
