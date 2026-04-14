@@ -7,7 +7,6 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
-	"github.com/stephenafamo/bob/internal"
 )
 
 // MergeWhenType represents the type of WHEN clause in MERGE statement
@@ -236,5 +235,5 @@ func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.D
 
 func (a MergeAction) writeUpdate(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString("UPDATE SET ")
-	return bob.ExpressSlice(ctx, w, d, start, internal.ToAnySlice(a.Set), "", ", ", "")
+	return bob.ExpressSlice(ctx, w, d, start, a.Set, "", ", ", "")
 }
