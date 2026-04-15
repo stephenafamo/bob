@@ -315,10 +315,72 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		ON c.data_type = 'USER-DEFINED'
 		AND udtnamespace.oid = udttype.typnamespace
 		AND c.udt_name = udttype.typname
-	WHERE c.table_name = $2 and c.table_schema = $1
-	ORDER BY c.ordinal_position`
+	WHERE c.table_name = $2 and c.table_schema = $1`
 
-	query := fmt.Sprintf(`SELECT 
+	matviewQuery := `
+	SELECT
+		a.attnum AS ordinal_position,
+		a.attname AS column_name,
+		(
+			CASE WHEN udttype.typtype = 'd' THEN
+				CASE WHEN bt.typelem <> 0 AND bt.typlen = -1 THEN 'ARRAY'
+					 WHEN bt_namespace.nspname = 'pg_catalog' THEN format_type(bt.oid, null)
+					 ELSE 'USER-DEFINED' END
+			ELSE
+				CASE WHEN udttype.typtype = 'e' THEN 'ENUM'
+					 WHEN udttype.typelem <> 0 AND udttype.typlen = -1 THEN 'ARRAY'
+					 WHEN udtnamespace.nspname = 'pg_catalog' THEN format_type(a.atttypid, null)
+					 ELSE 'USER-DEFINED' END
+			END
+		) AS column_type,
+		substring(format_type(a.atttypid, a.atttypmod), '\((\d+(,\d+)?)\)') AS type_limits,
+		udtnamespace.nspname AS udt_schema,
+		udttype.typname AS udt_name,
+		(
+			SELECT
+				CASE WHEN e_type.typtype = 'e' THEN
+					'ENUM'
+				WHEN e_namespace.nspname = 'pg_catalog' THEN
+					format_type(e_type.oid, null)
+				ELSE
+					'USER-DEFINED'
+				END
+			FROM pg_type e_type
+			JOIN pg_namespace e_namespace ON e_namespace.oid = e_type.typnamespace
+			WHERE e_type.oid = (
+				CASE WHEN udttype.typtype = 'd' THEN bt.typelem
+					 ELSE udttype.typelem
+				END
+			) AND (
+				CASE WHEN udttype.typtype = 'd' THEN bt.typelem <> 0 AND bt.typlen = -1
+					 ELSE udttype.typelem <> 0 AND udttype.typlen = -1
+				END
+			)
+		) AS array_type,
+		(
+			CASE WHEN udttype.typtype = 'd' THEN
+				udttype.typname
+			ELSE
+				NULL
+			END
+		) AS domain_name,
+		pg_get_expr(ad.adbin, ad.adrelid) AS column_default,
+		coalesce(col_description(c.oid, a.attnum), '') AS column_comment,
+		NOT a.attnotnull AS is_nullable,
+		FALSE AS is_generated,
+		FALSE AS is_identity
+	FROM pg_attribute a
+	JOIN pg_class c ON c.oid = a.attrelid
+	JOIN pg_namespace n ON n.oid = c.relnamespace
+	JOIN pg_type udttype ON udttype.oid = a.atttypid
+	JOIN pg_namespace udtnamespace ON udtnamespace.oid = udttype.typnamespace
+	LEFT JOIN pg_type bt ON bt.oid = udttype.typbasetype
+	LEFT JOIN pg_namespace bt_namespace ON bt_namespace.oid = bt.typnamespace
+	LEFT JOIN pg_attrdef ad ON ad.adrelid = c.oid AND ad.adnum = a.attnum
+	WHERE c.relkind = 'm' AND a.attnum > 0 AND NOT a.attisdropped
+	AND c.relname = $2 AND n.nspname = $1`
+
+	query := fmt.Sprintf(`SELECT
 		column_name,
 		column_type,
 		type_limits,
@@ -333,7 +395,9 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		is_identity
 	FROM (
 		%s
-	) AS c`, tableQuery) // matviewQuery, tableQuery)
+		UNION
+		%s
+	) AS c`, tableQuery, matviewQuery)
 
 	filter := colFilter[info.Key]
 	only := filter.Only
@@ -459,7 +523,7 @@ func (d *driver) loadEnums(ctx context.Context) error {
 func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[IndexExtra], error) {
 	ret := drivers.DBIndexes[IndexExtra]{}
 
-	query := `SELECT	
+	query := `SELECT
           n.nspname AS schema_name,
           t.relname AS table_name,
           i.relname AS index_name,
