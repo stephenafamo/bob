@@ -8688,7 +8688,7 @@
 			"path": "./queries",
 			"files": [
 				{
-					"path": "queries\\users.sql",
+					"path": "queries/users.sql",
 					"queries": [
 						{
 							"type": 1,
@@ -9104,7 +9104,7 @@
 					]
 				},
 				{
-					"path": "queries\\videos.sql",
+					"path": "queries/videos.sql",
 					"queries": [
 						{
 							"type": 1,

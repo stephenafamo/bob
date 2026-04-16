@@ -3030,7 +3030,7 @@
 			"path": "./queries",
 			"files": [
 				{
-					"path": "queries\\users.sql",
+					"path": "queries/users.sql",
 					"queries": [
 						{
 							"type": 1,
