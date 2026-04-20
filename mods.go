@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"slices"
 )
 
 // Mod is a generic interface for modifying a query
@@ -51,6 +52,12 @@ func (c ContextualModFunc[T]) Apply(ctx context.Context, o T) (context.Context, 
 
 type ContextualModdable[T any] struct {
 	Mods []ContextualMod[T]
+}
+
+func (h ContextualModdable[T]) Clone() ContextualModdable[T] {
+	h.Mods = slices.Clone(h.Mods)
+
+	return h
 }
 
 // AppendContextualMod a hook to the set

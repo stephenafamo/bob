@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"slices"
 	"sync"
 )
 
@@ -84,6 +85,12 @@ func (h *Hooks[T, K]) RunHooks(ctx context.Context, exec Executor, o T) (context
 
 type EmbeddedHook struct {
 	Hooks []func(context.Context, Executor) (context.Context, error)
+}
+
+func (h EmbeddedHook) Clone() EmbeddedHook {
+	h.Hooks = slices.Clone(h.Hooks)
+
+	return h
 }
 
 func (h *EmbeddedHook) SetHooks(hooks ...func(context.Context, Executor) (context.Context, error)) {
