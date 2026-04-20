@@ -43,11 +43,6 @@ type immutableSelectState struct {
 	CombinedOffset clause.Offset
 }
 
-func newImmutableSelect(queryMods ...bob.Mod[*psqldialect.SelectQuery]) ImmutableSelectQuery {
-	mutable := Select(queryMods...)
-	return ImmutableSelectQuery{state: immutableStateFromMutable(mutable.Expression)}
-}
-
 func asImmutable(q bob.BaseQuery[*psqldialect.SelectQuery]) ImmutableSelectQuery {
 	return ImmutableSelectQuery{state: immutableStateFromMutable(q.Expression)}
 }

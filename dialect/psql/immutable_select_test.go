@@ -9,10 +9,10 @@ import (
 )
 
 func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
-	base := newImmutableSelect(
+	base := Select(
 		sm.Columns("id"),
 		sm.From("users"),
-	)
+	).With()
 
 	derived := base.With(
 		sm.OrderBy("id").Desc(),
@@ -100,11 +100,11 @@ func BenchmarkBaseQueryImmutableNativeHotPath(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		q := asImmutable(Select(
+		q := Select(
 			sm.Columns("id", "name"),
 			sm.From("users"),
 			sm.Where(Quote("tenant_id").EQ(Arg(42))),
-		))
+		)
 		derived := q.With(
 			sm.OrderBy("id").Desc(),
 			sm.Limit(10),

@@ -7,7 +7,6 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 )
@@ -56,7 +55,7 @@ func TestSomeViewQuery(t *testing.T) {
 	}
 }
 
-func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], argsLen int) string {
+func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 	t.Helper()
 	ctx := context.Background()
 	buf := new(bytes.Buffer)
