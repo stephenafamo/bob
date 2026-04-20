@@ -2,7 +2,6 @@ package psql
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -57,7 +56,7 @@ func TestSomeViewQuery(t *testing.T) {
 
 func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	buf := new(bytes.Buffer)
 	args, err := query.WriteQuery(ctx, buf, 0)
 	if err != nil {

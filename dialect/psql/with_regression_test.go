@@ -1,7 +1,6 @@
 package psql_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stephenafamo/bob"
@@ -203,12 +202,12 @@ func TestInsertWithRegression(t *testing.T) {
 func assertQueriesEqual(t *testing.T, got bob.Query, want bob.Query) {
 	t.Helper()
 
-	gotSQL, gotArgs, err := bob.Build(context.Background(), got)
+	gotSQL, gotArgs, err := bob.Build(t.Context(), got)
 	if err != nil {
 		t.Fatalf("build got: %v", err)
 	}
 
-	wantSQL, wantArgs, err := bob.Build(context.Background(), want)
+	wantSQL, wantArgs, err := bob.Build(t.Context(), want)
 	if err != nil {
 		t.Fatalf("build want: %v", err)
 	}
