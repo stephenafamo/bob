@@ -83,7 +83,7 @@ func BenchmarkBaseQueryApplyMain(b *testing.B) {
 	}
 }
 
-func BenchmarkBaseQueryWithImmutableAppendStyleWriters(b *testing.B) {
+func BenchmarkBaseQueryWithImmutableSpecializedSelectBuilders(b *testing.B) {
 	ctx := context.Background()
 
 	b.ReportAllocs()
@@ -130,7 +130,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 	}
 }
 
-func BenchmarkViewQueryCountThenPaginateImmutableAppendStyleWriters(b *testing.B) {
+func BenchmarkViewQueryCountThenPaginateImmutableSpecializedSelectBuilders(b *testing.B) {
 	ctx := context.Background()
 
 	b.ReportAllocs()

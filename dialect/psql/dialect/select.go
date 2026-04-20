@@ -2,6 +2,7 @@ package dialect
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -39,19 +40,26 @@ type SelectQuery struct {
 }
 
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	var err error
 	var args []any
+	err := s.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (s SelectQuery) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
+	var err error
+	baseLen := len(*args)
+	nextStart := func() int {
+		return start + len(*args) - baseLen
+	}
 
 	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
-		return nil, err
+		return err
 	}
 
-	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,
-		len(s.With.CTEs) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.With,
+		len(s.With.CTEs) > 0, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, withArgs...)
 
 	needsParens := false
 	if len(s.Combines.Queries) > 0 &&
@@ -66,127 +74,345 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 	w.WriteString("SELECT ")
 
-	distinctArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Distinct,
-		s.Distinct.On != nil, "", " ")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.Distinct,
+		s.Distinct.On != nil, "", " ", args); err != nil {
+		return err
 	}
-	args = append(args, distinctArgs...)
 
-	selArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.SelectList, true, "\n", "")
-	if err != nil {
-		return nil, err
+	w.WriteString("\n")
+	if err := writeSelectListTo(ctx, w, d, nextStart(), s.SelectList, args); err != nil {
+		return err
 	}
-	args = append(args, selArgs...)
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.TableRef, s.TableRef.Expression != nil, "\nFROM ", "")
-	if err != nil {
-		return nil, err
+	if s.TableRef.Expression != nil {
+		w.WriteString("\nFROM ")
+		if err := writeTableRefTo(ctx, w, d, nextStart(), s.TableRef, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, fromArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Where,
-		len(s.Where.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.Where.Conditions) > 0 {
+		w.WriteString("\n")
+		if err := writeWhereTo(ctx, w, d, nextStart(), s.Where, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, whereArgs...)
 
-	groupByArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.GroupBy,
-		len(s.GroupBy.Groups) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.GroupBy,
+		len(s.GroupBy.Groups) > 0, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, groupByArgs...)
 
-	havingArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Having,
-		len(s.Having.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.Having,
+		len(s.Having.Conditions) > 0, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, havingArgs...)
 
-	windowArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Windows,
-		len(s.Windows.Windows) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.Windows,
+		len(s.Windows.Windows) > 0, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, windowArgs...)
 
-	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.OrderBy,
-		len(s.OrderBy.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.OrderBy.Expressions) > 0 {
+		w.WriteString("\n")
+		if err := writeOrderByTo(ctx, w, d, nextStart(), s.OrderBy, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, orderArgs...)
 
-	limitArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Limit,
-		s.Limit.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.Limit.Count != nil {
+		w.WriteString("\n")
+		if err := writeLimitTo(ctx, w, d, nextStart(), s.Limit, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, limitArgs...)
 
-	offsetArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Offset,
-		s.Offset.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.Offset.Count != nil {
+		w.WriteString("\n")
+		if err := writeOffsetTo(ctx, w, d, nextStart(), s.Offset, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, offsetArgs...)
 
-	fetchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Fetch,
-		s.Fetch.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.Fetch,
+		s.Fetch.Count != nil, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, fetchArgs...)
 
-	lockArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), s.Locks.Locks,
-		"\n", "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), s.Locks.Locks,
+		"\n", "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, lockArgs...)
 
 	if needsParens {
 		w.WriteString(")")
 	}
 
-	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
-		s.Combines.Queries, "\n", "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressSliceTo(ctx, w, d, nextStart(),
+		s.Combines.Queries, "\n", "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, combineArgs...)
 
-	combinedOrderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedOrder,
-		len(s.CombinedOrder.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.CombinedOrder.Expressions) > 0 {
+		w.WriteString("\n")
+		if err := writeOrderByTo(ctx, w, d, nextStart(), s.CombinedOrder, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, combinedOrderArgs...)
 
-	combinedLimitArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedLimit,
-		s.CombinedLimit.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.CombinedLimit.Count != nil {
+		w.WriteString("\n")
+		if err := writeLimitTo(ctx, w, d, nextStart(), s.CombinedLimit, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, combinedLimitArgs...)
 
-	combinedOffsetArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedOffset,
-		s.CombinedOffset.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.CombinedOffset.Count != nil {
+		w.WriteString("\n")
+		if err := writeOffsetTo(ctx, w, d, nextStart(), s.CombinedOffset, args); err != nil {
+			return err
+		}
 	}
-	args = append(args, combinedOffsetArgs...)
 
-	combinedFetchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedFetch,
-		s.CombinedFetch.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), s.CombinedFetch,
+		s.CombinedFetch.Count != nil, "\n", "", args); err != nil {
+		return err
 	}
-	args = append(args, combinedFetchArgs...)
 
 	w.WriteString("\n")
-	return args, nil
+	return nil
+}
+
+func writeSelectListTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, s clause.SelectList, args *[]any) error {
+	baseLen := len(*args)
+	nextStart := func() int {
+		return start + len(*args) - baseLen
+	}
+
+	wrote := false
+	if len(s.Columns) > 0 {
+		if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), s.Columns, "", ", ", "", args); err != nil {
+			return err
+		}
+		wrote = true
+	}
+
+	if len(s.PreloadColumns) > 0 {
+		if wrote {
+			w.WriteString(", ")
+		}
+		if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), s.PreloadColumns, "", ", ", "", args); err != nil {
+			return err
+		}
+		wrote = true
+	}
+
+	if !wrote {
+		w.WriteString("*")
+	}
+
+	return nil
+}
+
+func writeWhereTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, wh clause.Where, args *[]any) error {
+	return bob.ExpressSliceTo(ctx, w, d, start, wh.Conditions, "WHERE ", " AND ", "", args)
+}
+
+func writeOrderByTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, order clause.OrderBy, args *[]any) error {
+	baseLen := len(*args)
+	nextStart := func() int {
+		return start + len(*args) - baseLen
+	}
+
+	w.WriteString("ORDER BY ")
+	for i, expression := range order.Expressions {
+		if i != 0 {
+			w.WriteString(", ")
+		}
+
+		switch o := any(expression).(type) {
+		case clause.OrderDef:
+			if err := writeOrderDefTo(ctx, w, d, nextStart(), o, args); err != nil {
+				return err
+			}
+		case *clause.OrderDef:
+			if err := writeOrderDefTo(ctx, w, d, nextStart(), *o, args); err != nil {
+				return err
+			}
+		default:
+			if err := bob.ExpressTo(ctx, w, d, nextStart(), expression, args); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func writeOrderDefTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, order clause.OrderDef, args *[]any) error {
+	if err := bob.ExpressTo(ctx, w, d, start, order.Expression, args); err != nil {
+		return err
+	}
+
+	if order.Collation != "" {
+		w.WriteString(" COLLATE ")
+		d.WriteQuoted(w, order.Collation)
+	}
+
+	if order.Direction != "" {
+		w.WriteString(" ")
+		w.WriteString(order.Direction)
+	}
+
+	if order.Nulls != "" {
+		w.WriteString(" NULLS ")
+		w.WriteString(order.Nulls)
+	}
+
+	return nil
+}
+
+func writeLimitTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, limit clause.Limit, args *[]any) error {
+	w.WriteString("LIMIT ")
+	return bob.ExpressTo(ctx, w, d, start, limit.Count, args)
+}
+
+func writeOffsetTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, offset clause.Offset, args *[]any) error {
+	w.WriteString("OFFSET ")
+	return bob.ExpressTo(ctx, w, d, start, offset.Count, args)
+}
+
+func writeTableRefTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, table clause.TableRef, args *[]any) error {
+	baseLen := len(*args)
+	nextStart := func() int {
+		return start + len(*args) - baseLen
+	}
+
+	if table.Only {
+		w.WriteString("ONLY ")
+	}
+
+	if table.Lateral {
+		w.WriteString("LATERAL ")
+	}
+
+	if err := bob.ExpressTo(ctx, w, d, nextStart(), table.Expression, args); err != nil {
+		return err
+	}
+
+	if table.WithOrdinality {
+		w.WriteString(" WITH ORDINALITY")
+	}
+
+	if len(table.Partitions) > 0 {
+		if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), table.Partitions, " PARTITION (", ", ", ")", args); err != nil {
+			return err
+		}
+	}
+
+	if table.Alias != "" {
+		w.WriteString(" AS ")
+		d.WriteQuoted(w, table.Alias)
+	}
+
+	if len(table.Columns) > 0 {
+		w.WriteString("(")
+		for i, alias := range table.Columns {
+			if i != 0 {
+				w.WriteString(", ")
+			}
+			d.WriteQuoted(w, alias)
+		}
+		w.WriteString(")")
+	}
+
+	if len(table.IndexHints) > 0 {
+		for i, hint := range table.IndexHints {
+			if i == 0 {
+				w.WriteString("\n")
+			} else {
+				w.WriteString(" ")
+			}
+			writeIndexHint(w, d, hint)
+		}
+	}
+
+	switch {
+	case table.IndexedBy == nil:
+	case *table.IndexedBy == "":
+		w.WriteString(" NOT INDEXED")
+	default:
+		w.WriteString(fmt.Sprintf(" INDEXED BY %q", *table.IndexedBy))
+	}
+
+	for _, join := range table.Joins {
+		w.WriteString("\n")
+		if err := writeJoinTo(ctx, w, d, nextStart(), join, args); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writeJoinTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, join clause.Join, args *[]any) error {
+	baseLen := len(*args)
+	nextStart := func() int {
+		return start + len(*args) - baseLen
+	}
+
+	if join.Natural {
+		w.WriteString("NATURAL ")
+	}
+
+	w.WriteString(join.Type)
+	w.WriteString(" ")
+
+	if err := writeTableRefTo(ctx, w, d, nextStart(), join.To, args); err != nil {
+		return err
+	}
+
+	if len(join.On) > 0 {
+		if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), join.On, " ON ", " AND ", "", args); err != nil {
+			return err
+		}
+	}
+
+	for i, col := range join.Using {
+		if i == 0 {
+			w.WriteString(" USING(")
+		} else {
+			w.WriteString(", ")
+		}
+
+		d.WriteQuoted(w, col)
+
+		if i == len(join.Using)-1 {
+			w.WriteString(") ")
+		}
+	}
+
+	return nil
+}
+
+func writeIndexHint(w io.StringWriter, d bob.Dialect, hint clause.IndexHint) {
+	if hint.Type == "" {
+		return
+	}
+
+	w.WriteString(hint.Type)
+	w.WriteString(" INDEX ")
+	if hint.For != "" {
+		w.WriteString(" FOR ")
+		w.WriteString(hint.For)
+	}
+
+	w.WriteString(" (")
+	for i, index := range hint.Indexes {
+		if i != 0 {
+			w.WriteString(", ")
+		}
+		w.WriteString(index)
+	}
+	w.WriteString(")")
 }

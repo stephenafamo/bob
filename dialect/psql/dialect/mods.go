@@ -37,15 +37,15 @@ type fromable interface {
 }
 
 func From[Q fromable](table any) FromChain[Q] {
-	return FromChain[Q](func() clause.TableRef {
-		return clause.TableRef{Expression: table}
-	})
+	return FromChain[Q]{ref: clause.TableRef{Expression: table}}
 }
 
-type FromChain[Q fromable] func() clause.TableRef
+type FromChain[Q fromable] struct {
+	ref clause.TableRef
+}
 
 func (f FromChain[Q]) Apply(q Q) {
-	from := f()
+	from := f.ref
 
 	q.SetTable(from.Expression)
 	if from.Alias != "" {
@@ -58,51 +58,41 @@ func (f FromChain[Q]) Apply(q Q) {
 }
 
 func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
-	fr := f()
+	fr := f.ref
 	fr.Alias = alias
 	fr.Columns = columns
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{ref: fr}
 }
 
 func (f FromChain[Q]) Only() FromChain[Q] {
-	fr := f()
+	fr := f.ref
 	fr.Only = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{ref: fr}
 }
 
 func (f FromChain[Q]) Lateral() FromChain[Q] {
-	fr := f()
+	fr := f.ref
 	fr.Lateral = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{ref: fr}
 }
 
 func (f FromChain[Q]) WithOrdinality() FromChain[Q] {
-	fr := f()
+	fr := f.ref
 	fr.WithOrdinality = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{ref: fr}
 }
 
 type Joinable interface{ AppendJoin(clause.Join) }
 
 func Join[Q Joinable](typ string, e any) JoinChain[Q] {
-	return JoinChain[Q](func() clause.Join {
-		return clause.Join{
-			Type: typ,
-			To:   clause.TableRef{Expression: e},
-		}
-	})
+	return JoinChain[Q]{join: clause.Join{
+		Type: typ,
+		To:   clause.TableRef{Expression: e},
+	}}
 }
 
 func InnerJoin[Q Joinable](e any) JoinChain[Q] {
@@ -122,165 +112,139 @@ func FullJoin[Q Joinable](e any) JoinChain[Q] {
 }
 
 func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
-	return CrossJoinChain[Q](func() clause.Join {
-		return clause.Join{
-			Type: clause.CrossJoin,
-			To:   clause.TableRef{Expression: e},
-		}
-	})
+	return CrossJoinChain[Q]{join: clause.Join{
+		Type: clause.CrossJoin,
+		To:   clause.TableRef{Expression: e},
+	}}
 }
 
-type JoinChain[Q Joinable] func() clause.Join
+type JoinChain[Q Joinable] struct {
+	join clause.Join
+}
 
 func (j JoinChain[Q]) Apply(q Q) {
-	q.AppendJoin(j())
+	q.AppendJoin(j.join)
 }
 
 func (j JoinChain[Q]) As(alias string, columns ...string) JoinChain[Q] {
-	jo := j()
+	jo := j.join
 	jo.To.Alias = alias
 	jo.To.Columns = columns
 
-	return JoinChain[Q](func() clause.Join {
-		return jo
-	})
+	return JoinChain[Q]{join: jo}
 }
 
 func (f JoinChain[Q]) Only() JoinChain[Q] {
-	jo := f()
+	jo := f.join
 	jo.To.Only = true
 
-	return JoinChain[Q](func() clause.Join {
-		return jo
-	})
+	return JoinChain[Q]{join: jo}
 }
 
 func (f JoinChain[Q]) Lateral() JoinChain[Q] {
-	jo := f()
+	jo := f.join
 	jo.To.Lateral = true
 
-	return JoinChain[Q](func() clause.Join {
-		return jo
-	})
+	return JoinChain[Q]{join: jo}
 }
 
 func (f JoinChain[Q]) WithOrdinality() JoinChain[Q] {
-	jo := f()
+	jo := f.join
 	jo.To.WithOrdinality = true
 
-	return JoinChain[Q](func() clause.Join {
-		return jo
-	})
+	return JoinChain[Q]{join: jo}
 }
 
 func (j JoinChain[Q]) Natural() bob.Mod[Q] {
-	jo := j()
+	jo := j.join
 	jo.Natural = true
 
 	return mods.Join[Q](jo)
 }
 
 func (j JoinChain[Q]) On(on ...bob.Expression) bob.Mod[Q] {
-	jo := j()
+	jo := j.join
 	jo.On = append(jo.On, on...)
 
 	return mods.Join[Q](jo)
 }
 
 func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
-	jo := j()
+	jo := j.join
 	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
 
 	return mods.Join[Q](jo)
 }
 
 func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
-	jo := j()
+	jo := j.join
 	jo.Using = using
 
 	return mods.Join[Q](jo)
 }
 
-type CrossJoinChain[Q Joinable] func() clause.Join
+type CrossJoinChain[Q Joinable] struct {
+	join clause.Join
+}
 
 func (j CrossJoinChain[Q]) Apply(q Q) {
-	q.AppendJoin(j())
+	q.AppendJoin(j.join)
 }
 
 func (j CrossJoinChain[Q]) As(alias string, columns ...string) bob.Mod[Q] {
-	jo := j()
+	jo := j.join
 	jo.To.Alias = alias
 	jo.To.Columns = columns
 
-	return CrossJoinChain[Q](func() clause.Join {
-		return jo
-	})
+	return CrossJoinChain[Q]{join: jo}
 }
 
 type OrderCombined OrderBy[*SelectQuery]
 
 func (o OrderCombined) Apply(q *SelectQuery) {
-	q.AppendCombinedOrder(o())
+	q.AppendCombinedOrder(clause.OrderDef(o))
 }
 
-type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
+type OrderBy[Q interface{ AppendOrder(bob.Expression) }] clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
-	q.AppendOrder(s())
+	q.AppendOrder(clause.OrderDef(s))
 }
 
 func (o OrderBy[Q]) Asc() OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Direction = "ASC"
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 func (o OrderBy[Q]) Desc() OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Direction = "DESC"
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 func (o OrderBy[Q]) Using(operator string) OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Direction = "USING " + operator
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 func (o OrderBy[Q]) NullsFirst() OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Nulls = "FIRST"
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 func (o OrderBy[Q]) NullsLast() OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Nulls = "LAST"
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 func (o OrderBy[Q]) Collate(collationName string) OrderBy[Q] {
-	order := o()
+	order := clause.OrderDef(o)
 	order.Collation = collationName
-
-	return OrderBy[Q](func() clause.OrderDef {
-		return order
-	})
+	return OrderBy[Q](order)
 }
 
 type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
