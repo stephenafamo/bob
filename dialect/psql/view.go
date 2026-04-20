@@ -82,7 +82,7 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAs())),
+				BaseQuery: Select(sm.From(v.NameAs())).BaseQuery,
 				Hooks:     &v.SelectQueryHooks,
 			},
 			Scanner: v.scanner,
