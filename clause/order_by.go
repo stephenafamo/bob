@@ -2,7 +2,6 @@ package clause
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -32,9 +31,14 @@ type OrderDef struct {
 }
 
 func (o OrderDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	args, err := bob.Express(ctx, w, d, start, o.Expression)
-	if err != nil {
-		return nil, err
+	var args []any
+	err := o.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (o OrderDef) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
+	if err := bob.ExpressTo(ctx, w, d, start, o.Expression, args); err != nil {
+		return err
 	}
 
 	if o.Collation != "" {
@@ -48,8 +52,9 @@ func (o OrderDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	}
 
 	if o.Nulls != "" {
-		w.WriteString(fmt.Sprintf(" NULLS %s", o.Nulls))
+		w.WriteString(" NULLS ")
+		w.WriteString(o.Nulls)
 	}
 
-	return args, nil
+	return nil
 }

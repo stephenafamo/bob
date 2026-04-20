@@ -230,43 +230,9 @@ func writeOrderByTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start
 			w.WriteString(", ")
 		}
 
-		switch o := any(expression).(type) {
-		case clause.OrderDef:
-			if err := writeOrderDefTo(ctx, w, d, nextStart(), o, args); err != nil {
-				return err
-			}
-		case *clause.OrderDef:
-			if err := writeOrderDefTo(ctx, w, d, nextStart(), *o, args); err != nil {
-				return err
-			}
-		default:
-			if err := bob.ExpressTo(ctx, w, d, nextStart(), expression, args); err != nil {
-				return err
-			}
+		if err := bob.ExpressTo(ctx, w, d, nextStart(), expression, args); err != nil {
+			return err
 		}
-	}
-
-	return nil
-}
-
-func writeOrderDefTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, order clause.OrderDef, args *[]any) error {
-	if err := bob.ExpressTo(ctx, w, d, start, order.Expression, args); err != nil {
-		return err
-	}
-
-	if order.Collation != "" {
-		w.WriteString(" COLLATE ")
-		d.WriteQuoted(w, order.Collation)
-	}
-
-	if order.Direction != "" {
-		w.WriteString(" ")
-		w.WriteString(order.Direction)
-	}
-
-	if order.Nulls != "" {
-		w.WriteString(" NULLS ")
-		w.WriteString(order.Nulls)
 	}
 
 	return nil
