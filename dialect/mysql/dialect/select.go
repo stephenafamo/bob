@@ -35,6 +35,8 @@ type SelectQuery struct {
 	CombinedOrder  clause.OrderBy
 	CombinedLimit  clause.Limit
 	CombinedOffset clause.Offset
+
+	shared selectShared
 }
 
 func (s *SelectQuery) SetInto(i any) {

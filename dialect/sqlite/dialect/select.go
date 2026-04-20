@@ -27,6 +27,8 @@ type SelectQuery struct {
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*SelectQuery]
+
+	shared selectShared
 }
 
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

@@ -34,6 +34,8 @@ type SelectQuery struct {
 	CombinedLimit  clause.Limit
 	CombinedFetch  clause.Fetch
 	CombinedOffset clause.Offset
+
+	shared selectShared
 }
 
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

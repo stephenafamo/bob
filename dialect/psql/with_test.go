@@ -83,7 +83,7 @@ func BenchmarkBaseQueryApplyMain(b *testing.B) {
 	}
 }
 
-func BenchmarkBaseQueryWithImmutableWithHelpers(b *testing.B) {
+func BenchmarkBaseQueryWithImmutableCopyOnWrite(b *testing.B) {
 	ctx := context.Background()
 
 	b.ReportAllocs()
@@ -130,7 +130,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 	}
 }
 
-func BenchmarkViewQueryCountThenPaginateImmutableWithHelpers(b *testing.B) {
+func BenchmarkViewQueryCountThenPaginateImmutableCopyOnWrite(b *testing.B) {
 	ctx := context.Background()
 
 	b.ReportAllocs()
