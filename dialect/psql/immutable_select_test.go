@@ -1,7 +1,6 @@
 package psql
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stephenafamo/bob"
@@ -24,7 +23,7 @@ func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("expected derived query type %q, got %q", bob.QueryTypeSelect, derived.Type())
 	}
 
-	baseSQL, _, err := base.Build(context.Background())
+	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +31,7 @@ func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("base query changed unexpectedly: %#v", baseSQL)
 	}
 
-	derivedSQL, _, err := derived.Build(context.Background())
+	derivedSQL, _, err := derived.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +55,7 @@ func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatal("expected derived view query to preserve scanner")
 	}
 
-	baseSQL, _, err := base.Build(context.Background())
+	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +63,7 @@ func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("base view query changed unexpectedly: %#v", baseSQL)
 	}
 
-	derivedSQL, _, err := derived.Build(context.Background())
+	derivedSQL, _, err := derived.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +73,7 @@ func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
 }
 
 func BenchmarkBaseQueryApplyMain(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -96,7 +95,7 @@ func BenchmarkBaseQueryApplyMain(b *testing.B) {
 }
 
 func BenchmarkBaseQueryImmutableNativeHotPath(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -118,7 +117,7 @@ func BenchmarkBaseQueryImmutableNativeHotPath(b *testing.B) {
 }
 
 func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -143,7 +142,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 }
 
 func BenchmarkViewQueryCountThenPaginateImmutableNativeHotPath(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {

@@ -1,7 +1,6 @@
 package psql
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stephenafamo/bob/dialect/psql/dm"
@@ -20,7 +19,7 @@ func TestUpdateWithDoesNotMutateOriginal(t *testing.T) {
 		um.Returning("id"),
 	)
 
-	baseSQL, _, err := base.Build(context.Background())
+	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +27,7 @@ func TestUpdateWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("base update changed unexpectedly: %#v", baseSQL)
 	}
 
-	derivedSQL, _, err := derived.Build(context.Background())
+	derivedSQL, _, err := derived.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +46,7 @@ func TestDeleteWithDoesNotMutateOriginal(t *testing.T) {
 		dm.Returning("id"),
 	)
 
-	baseSQL, _, err := base.Build(context.Background())
+	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +54,7 @@ func TestDeleteWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("base delete changed unexpectedly: %#v", baseSQL)
 	}
 
-	derivedSQL, _, err := derived.Build(context.Background())
+	derivedSQL, _, err := derived.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +73,7 @@ func TestInsertWithDoesNotMutateOriginal(t *testing.T) {
 		im.Returning("id"),
 	)
 
-	baseSQL, _, err := base.Build(context.Background())
+	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +81,7 @@ func TestInsertWithDoesNotMutateOriginal(t *testing.T) {
 		t.Fatalf("base insert changed unexpectedly: %#v", baseSQL)
 	}
 
-	derivedSQL, _, err := derived.Build(context.Background())
+	derivedSQL, _, err := derived.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +91,7 @@ func TestInsertWithDoesNotMutateOriginal(t *testing.T) {
 }
 
 func BenchmarkUpdateQueryApplyMain(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -112,7 +111,7 @@ func BenchmarkUpdateQueryApplyMain(b *testing.B) {
 }
 
 func BenchmarkUpdateQueryImmutableNativeHotPath(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -132,7 +131,7 @@ func BenchmarkUpdateQueryImmutableNativeHotPath(b *testing.B) {
 }
 
 func BenchmarkDeleteQueryApplyMain(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -151,7 +150,7 @@ func BenchmarkDeleteQueryApplyMain(b *testing.B) {
 }
 
 func BenchmarkDeleteQueryImmutableNativeHotPath(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -170,7 +169,7 @@ func BenchmarkDeleteQueryImmutableNativeHotPath(b *testing.B) {
 }
 
 func BenchmarkInsertQueryApplyMain(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -189,7 +188,7 @@ func BenchmarkInsertQueryApplyMain(b *testing.B) {
 }
 
 func BenchmarkInsertQueryImmutableNativeHotPath(b *testing.B) {
-	ctx := context.Background()
+	ctx := b.Context()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
