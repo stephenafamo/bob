@@ -36,7 +36,6 @@ func (s *SelectList) AppendPreloadSelect(columns ...any) {
 
 func (s SelectList) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
-
 	all := append(s.Columns, s.PreloadColumns...)
 	if len(all) > 0 {
 		colArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), all, "", ", ", "")

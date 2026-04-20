@@ -13,8 +13,12 @@ import (
 type Raw string
 
 func (r Raw) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return nil, r.WriteSQLTo(ctx, w, d, start, nil)
+}
+
+func (r Raw) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
 	w.WriteString(string(r))
-	return nil, nil
+	return nil
 }
 
 func RawQuery(d bob.Dialect, q string, args ...any) bob.BaseQuery[Clause] {
@@ -31,30 +35,53 @@ type Clause struct {
 }
 
 func (r Clause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	// replace the args with positional args appropriately
-	total, args, err := r.convertQuestionMarks(ctx, w, d, start)
+	var args []any
+	total, err := r.writeSQLTo(ctx, w, d, start, &args)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(r.args) != total {
-		return r.args, &rawError{args: len(r.args), placeholders: total, clause: r.query}
+		return nil, &rawError{args: len(r.args), placeholders: total, clause: r.query}
 	}
 
 	return args, nil
 }
 
-// convertQuestionMarks converts each occurrence of ? with $<number>
-// where <number> is an incrementing digit starting at startAt.
-// If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func (r Clause) convertQuestionMarks(ctx context.Context, w io.StringWriter, d bob.Dialect, startAt int) (int, []any, error) {
-	if startAt == 0 {
+func (r Clause) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
+	origLen := len(*args)
+	origNil := *args == nil
+	total, err := r.writeSQLTo(ctx, w, d, start, args)
+	if err != nil {
+		if origNil && origLen == 0 {
+			*args = nil
+		} else {
+			*args = (*args)[:origLen]
+		}
+		return err
+	}
+
+	if len(r.args) != total {
+		if origNil && origLen == 0 {
+			*args = nil
+		} else {
+			*args = (*args)[:origLen]
+		}
+		return &rawError{args: len(r.args), placeholders: total, clause: r.query}
+	}
+
+	return nil
+}
+
+func (r Clause) writeSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) (int, error) {
+	// replace the args with positional args appropriately
+	if start == 0 {
 		panic("Not a valid start number.")
 	}
 
+	baseLen := len(*args)
 	paramIndex := 0
 	total := 0
-	var args []any
 
 	clause := r.query
 	for paramIndex < len(clause) {
@@ -79,24 +106,21 @@ func (r Clause) convertQuestionMarks(ctx context.Context, w io.StringWriter, d b
 		if total < len(r.args) {
 			arg = r.args[total]
 		}
+
 		if ex, ok := arg.(bob.Expression); ok {
-			eargs, err := ex.WriteSQL(ctx, w, d, startAt)
-			if err != nil {
-				return total, nil, err
+			if err := bob.ExpressTo(ctx, w, d, start+len(*args)-baseLen, ex, args); err != nil {
+				return total, err
 			}
-			args = append(args, eargs...)
-			startAt += len(eargs)
 		} else {
-			d.WriteArg(w, startAt)
-			args = append(args, arg)
-			startAt++
+			d.WriteArg(w, start+len(*args)-baseLen)
+			*args = append(*args, arg)
 		}
 
 		total++
 		paramIndex++
 	}
 
-	return total, args, nil
+	return total, nil
 }
 
 type rawError struct {

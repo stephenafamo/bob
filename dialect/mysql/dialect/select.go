@@ -56,7 +56,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, withArgs...)
+	args = bob.MergeArgs(args, withArgs)
 
 	needsParens := false
 	if len(s.Combines.Queries) > 0 &&
@@ -88,48 +88,48 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, selArgs...)
+	args = bob.MergeArgs(args, selArgs)
 
 	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.TableRef, s.TableRef.Expression != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, fromArgs...)
+	args = bob.MergeArgs(args, fromArgs)
 
 	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Where,
 		len(s.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, whereArgs...)
+	args = bob.MergeArgs(args, whereArgs)
 
 	groupByArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.GroupBy,
 		len(s.GroupBy.Groups) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, groupByArgs...)
+	args = bob.MergeArgs(args, groupByArgs)
 
 	havingArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Having,
 		len(s.Having.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, havingArgs...)
+	args = bob.MergeArgs(args, havingArgs)
 
 	windowArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Windows,
 		len(s.Windows.Windows) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, windowArgs...)
+	args = bob.MergeArgs(args, windowArgs)
 
 	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.OrderBy,
 		len(s.OrderBy.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, orderArgs...)
+	args = bob.MergeArgs(args, orderArgs)
 
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), s.Limit,
 		s.Limit.Count != nil, "\n", "")
@@ -148,7 +148,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, lockArgs...)
+	args = bob.MergeArgs(args, lockArgs)
 
 	if needsParens {
 		w.WriteString(")")
@@ -159,14 +159,14 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, combineArgs...)
+	args = bob.MergeArgs(args, combineArgs)
 
 	combinedOrderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedOrder,
 		len(s.CombinedOrder.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, combinedOrderArgs...)
+	args = bob.MergeArgs(args, combinedOrderArgs)
 
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedLimit,
 		s.CombinedLimit.Count != nil, "\n", "")
@@ -185,7 +185,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, intoArgs...)
+	args = bob.MergeArgs(args, intoArgs)
 
 	w.WriteString("\n")
 	return args, nil

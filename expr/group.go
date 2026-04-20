@@ -11,9 +11,15 @@ import (
 type group []bob.Expression
 
 func (g group) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	var args []any
+	err := g.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (g group) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
 	if len(g) == 0 {
-		return bob.ExpressIf(ctx, w, d, start, null, true, openPar, closePar)
+		return bob.ExpressIfTo(ctx, w, d, start, null, true, openPar, closePar, args)
 	}
 
-	return bob.ExpressSlice(ctx, w, d, start, g, openPar, commaSpace, closePar)
+	return bob.ExpressSliceTo(ctx, w, d, start, g, openPar, commaSpace, closePar, args)
 }

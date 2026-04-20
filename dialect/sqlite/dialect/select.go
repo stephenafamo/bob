@@ -44,7 +44,7 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, withArgs...)
+	args = bob.MergeArgs(args, withArgs)
 
 	w.WriteString("SELECT ")
 
@@ -56,69 +56,69 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, selArgs...)
+	args = bob.MergeArgs(args, selArgs)
 
 	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.TableRef, s.TableRef.Expression != nil, "\nFROM ", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, fromArgs...)
+	args = bob.MergeArgs(args, fromArgs)
 
 	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Where,
 		len(s.Where.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, whereArgs...)
+	args = bob.MergeArgs(args, whereArgs)
 
 	groupByArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.GroupBy,
 		len(s.GroupBy.Groups) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, groupByArgs...)
+	args = bob.MergeArgs(args, groupByArgs)
 
 	havingArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Having,
 		len(s.Having.Conditions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, havingArgs...)
+	args = bob.MergeArgs(args, havingArgs)
 
 	windowArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Windows,
 		len(s.Windows.Windows) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, windowArgs...)
+	args = bob.MergeArgs(args, windowArgs)
 
 	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
 		s.Combines.Queries, "\n", "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, combineArgs...)
+	args = bob.MergeArgs(args, combineArgs)
 
 	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.OrderBy,
 		len(s.OrderBy.Expressions) > 0, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, orderArgs...)
+	args = bob.MergeArgs(args, orderArgs)
 
 	limitArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Limit,
 		s.Limit.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, limitArgs...)
+	args = bob.MergeArgs(args, limitArgs)
 
 	offsetArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Offset,
 		s.Offset.Count != nil, "\n", "")
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, offsetArgs...)
+	args = bob.MergeArgs(args, offsetArgs)
 
 	w.WriteString("\n")
 	return args, nil

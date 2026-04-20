@@ -135,6 +135,14 @@ func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.StringWriter, start i
 		return e.WriteQuery(ctx, w, start)
 	}
 
+	if e, ok := any(b.Expression).(interface {
+		WriteSQLTo(context.Context, io.StringWriter, Dialect, int, *[]any) error
+	}); ok {
+		var args []any
+		err := e.WriteSQLTo(ctx, w, b.Dialect, start, &args)
+		return args, err
+	}
+
 	return b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 }
 

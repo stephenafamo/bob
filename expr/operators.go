@@ -2,7 +2,6 @@ package expr
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -16,19 +15,22 @@ type leftRight struct {
 }
 
 func (lr leftRight) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	largs, err := bob.Express(ctx, w, d, start, lr.left)
-	if err != nil {
-		return nil, err
+	var args []any
+	err := lr.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (lr leftRight) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
+	baseLen := len(*args)
+	if err := bob.ExpressTo(ctx, w, d, start, lr.left, args); err != nil {
+		return err
 	}
 
-	w.WriteString(fmt.Sprintf(" %s ", lr.operator))
+	w.WriteString(" ")
+	w.WriteString(lr.operator)
+	w.WriteString(" ")
 
-	rargs, err := bob.Express(ctx, w, d, start+len(largs), lr.right)
-	if err != nil {
-		return nil, err
-	}
-
-	return append(largs, rargs...), nil
+	return bob.ExpressTo(ctx, w, d, start+len(*args)-baseLen, lr.right, args)
 }
 
 // Generic operator between a left and right val
@@ -47,10 +49,16 @@ type Join struct {
 }
 
 func (s Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	var args []any
+	err := s.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (s Join) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
 	sep := s.Sep
 	if sep == "" {
 		sep = " "
 	}
 
-	return bob.ExpressSlice(ctx, w, d, start, s.Exprs, "", sep, "")
+	return bob.ExpressSliceTo(ctx, w, d, start, s.Exprs, "", sep, "", args)
 }
