@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"slices"
 
 	"github.com/stephenafamo/scan"
 )
@@ -35,6 +36,13 @@ func (l LoaderFunc) Load(ctx context.Context, exec Executor, retrieved any) erro
 type Load struct {
 	loadFuncs         []Loader
 	preloadMapperMods []scan.MapperMod
+}
+
+func (l Load) Clone() Load {
+	l.loadFuncs = slices.Clone(l.loadFuncs)
+	l.preloadMapperMods = slices.Clone(l.preloadMapperMods)
+
+	return l
 }
 
 func (l *Load) SetMapperMods(mods ...scan.MapperMod) {

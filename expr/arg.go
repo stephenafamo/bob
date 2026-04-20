@@ -23,6 +23,12 @@ type args struct {
 }
 
 func (a args) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	var args []any
+	err := a.WriteSQLTo(ctx, w, d, start, &args)
+	return args, err
+}
+
+func (a args) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start int, args *[]any) error {
 	if a.grouped {
 		w.WriteString(openPar)
 	}
@@ -43,7 +49,8 @@ func (a args) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, st
 		w.WriteString(closePar)
 	}
 
-	return a.vals, nil
+	*args = bob.MergeArgs(*args, a.vals)
+	return nil
 }
 
 func ToArgs[T any](vals ...T) bob.Expression {

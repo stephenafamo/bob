@@ -117,6 +117,23 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
 }
 
+func (v *ViewQuery[T, Ts]) Clone() *ViewQuery[T, Ts] {
+	if v == nil {
+		return nil
+	}
+
+	return &ViewQuery[T, Ts]{
+		Query: v.Query.Clone(),
+	}
+}
+
+func (v *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
+	clone := v.Clone()
+	clone.Apply(queryMods...)
+
+	return clone
+}
+
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
 	ctx, err := v.RunHooks(ctx, exec)

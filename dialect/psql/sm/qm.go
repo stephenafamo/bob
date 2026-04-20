@@ -98,11 +98,9 @@ func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.Se
 }
 
 func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
-	return dialect.OrderBy[*dialect.SelectQuery](func() clause.OrderDef {
-		return clause.OrderDef{
-			Expression: e,
-		}
-	})
+	return dialect.OrderBy[*dialect.SelectQuery]{
+		Expression: e,
+	}
 }
 
 func Limit(count any) bob.Mod[*dialect.SelectQuery] {
@@ -210,11 +208,9 @@ func ForKeyShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 
 // To apply order to the result of a UNION, INTERSECT, or EXCEPT query
 func OrderCombined(e any) dialect.OrderCombined {
-	return dialect.OrderCombined(func() clause.OrderDef {
-		return clause.OrderDef{
-			Expression: e,
-		}
-	})
+	return dialect.OrderCombined{
+		Expression: e,
+	}
 }
 
 // To apply limit to the result of a UNION, INTERSECT, or EXCEPT query

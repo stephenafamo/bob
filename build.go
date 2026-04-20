@@ -1,8 +1,8 @@
 package bob
 
 import (
-	"bytes"
 	"context"
+	"strings"
 )
 
 // MustBuild builds a query and panics on error
@@ -27,8 +27,8 @@ func Build(ctx context.Context, q Query) (string, []any, error) {
 
 // Convinient function to build query from a point
 func BuildN(ctx context.Context, q Query, start int) (string, []any, error) {
-	b := &bytes.Buffer{}
-	args, err := q.WriteQuery(ctx, b, start)
+	var b strings.Builder
+	args, err := q.WriteQuery(ctx, &b, start)
 
 	return b.String(), args, err
 }
