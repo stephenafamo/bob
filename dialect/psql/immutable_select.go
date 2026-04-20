@@ -16,7 +16,7 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type ImmutableSelectQuery struct {
+type derivedSelectQuery struct {
 	state immutableSelectState
 }
 
@@ -43,18 +43,18 @@ type immutableSelectState struct {
 	CombinedOffset clause.Offset
 }
 
-func asImmutable(q bob.BaseQuery[*psqldialect.SelectQuery]) ImmutableSelectQuery {
-	return ImmutableSelectQuery{state: immutableStateFromMutable(q.Expression)}
+func asImmutable(q bob.BaseQuery[*psqldialect.SelectQuery]) derivedSelectQuery {
+	return derivedSelectQuery{state: immutableStateFromMutable(q.Expression)}
 }
 
-func (q ImmutableSelectQuery) Type() bob.QueryType {
+func (q derivedSelectQuery) Type() bob.QueryType {
 	return bob.QueryTypeSelect
 }
 
-func (q ImmutableSelectQuery) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) ImmutableSelectQuery {
+func (q derivedSelectQuery) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedSelectQuery {
 	next, ok := q.state.withMods(queryMods...)
 	if ok {
-		return ImmutableSelectQuery{state: next}
+		return derivedSelectQuery{state: next}
 	}
 
 	mutable := q.state.toMutable()
@@ -62,10 +62,10 @@ func (q ImmutableSelectQuery) With(queryMods ...bob.Mod[*psqldialect.SelectQuery
 		mod.Apply(&mutable)
 	}
 
-	return ImmutableSelectQuery{state: immutableStateFromMutable(&mutable)}
+	return derivedSelectQuery{state: immutableStateFromMutable(&mutable)}
 }
 
-func (q ImmutableSelectQuery) AsCount() ImmutableSelectQuery {
+func (q derivedSelectQuery) AsCount() derivedSelectQuery {
 	next := q.state
 	next.SelectColumns = []any{"count(1)"}
 	next.PreloadColumns = nil
@@ -76,14 +76,14 @@ func (q ImmutableSelectQuery) AsCount() ImmutableSelectQuery {
 	next.Offset.Count = nil
 	next.Limit.Count = 1
 
-	return ImmutableSelectQuery{state: next}
+	return derivedSelectQuery{state: next}
 }
 
-func (q ImmutableSelectQuery) Build(ctx context.Context) (string, []any, error) {
+func (q derivedSelectQuery) Build(ctx context.Context) (string, []any, error) {
 	return q.BuildN(ctx, 1)
 }
 
-func (q ImmutableSelectQuery) BuildN(ctx context.Context, start int) (string, []any, error) {
+func (q derivedSelectQuery) BuildN(ctx context.Context, start int) (string, []any, error) {
 	var sb strings.Builder
 	args, err := q.WriteQuery(ctx, &sb, start)
 	if err != nil {
@@ -93,7 +93,7 @@ func (q ImmutableSelectQuery) BuildN(ctx context.Context, start int) (string, []
 	return sb.String(), args, nil
 }
 
-func (q ImmutableSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
+func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
 	writer := immutableSelectWriter{
 		ctx:   ctx,
 		w:     w,
@@ -107,7 +107,7 @@ func (q ImmutableSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter,
 	return writer.args, nil
 }
 
-func (q ImmutableSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
+func (q derivedSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
 	w.WriteString("(")
 	args, err := q.WriteQuery(ctx, w, start)
 	if err != nil {
@@ -117,47 +117,47 @@ func (q ImmutableSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _
 	return args, nil
 }
 
-type ImmutableViewQuery[T any, Ts ~[]T] struct {
-	Query   ImmutableSelectQuery
+type derivedViewQuery[T any, Ts ~[]T] struct {
+	Query   derivedSelectQuery
 	Scanner scan.Mapper[T]
 	Hooks   *bob.Hooks[*psqldialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
-func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) ImmutableViewQuery[T, Ts] {
+func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedViewQuery[T, Ts] {
 	state := immutableStateFromMutable(q.BaseQuery.Expression)
 	if len(state.SelectColumns) == 0 && q.defaultSelect != nil {
 		state.SelectColumns = append(state.SelectColumns, q.defaultSelect)
 	}
 
-	return ImmutableViewQuery[T, Ts]{
-		Query:   ImmutableSelectQuery{state: state}.With(queryMods...),
+	return derivedViewQuery[T, Ts]{
+		Query:   derivedSelectQuery{state: state}.With(queryMods...),
 		Scanner: q.Scanner,
 		Hooks:   q.Hooks,
 	}
 }
 
-func (q ImmutableViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) ImmutableViewQuery[T, Ts] {
+func (q derivedViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedViewQuery[T, Ts] {
 	q.Query = q.Query.With(queryMods...)
 	return q
 }
 
-func (q ImmutableViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
+func (q derivedViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
 	return q.mutable().One(ctx, exec)
 }
 
-func (q ImmutableViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
+func (q derivedViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
 	return q.mutable().All(ctx, exec)
 }
 
-func (q ImmutableViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
+func (q derivedViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
 	return q.mutable().Cursor(ctx, exec)
 }
 
-func (q ImmutableViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
+func (q derivedViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
 	return q.mutable().Each(ctx, exec)
 }
 
-func (q ImmutableViewQuery[T, Ts]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
+func (q derivedViewQuery[T, Ts]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
 	mq := q.mutable()
 	ctx, err := mq.RunHooks(ctx, exec)
 	if err != nil {
@@ -166,20 +166,16 @@ func (q ImmutableViewQuery[T, Ts]) Count(ctx context.Context, exec bob.Executor)
 	return bob.One(ctx, exec, asCountQuery(mq.BaseQuery), scan.SingleColumnMapper[int64])
 }
 
-func (q ImmutableViewQuery[T, Ts]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
+func (q derivedViewQuery[T, Ts]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
 	count, err := q.Count(ctx, exec)
 	return count > 0, err
 }
 
-func (q ImmutableViewQuery[T, Ts]) CountQuery() ImmutableSelectQuery {
-	return q.Query.AsCount()
-}
-
-func (q ImmutableViewQuery[T, Ts]) Build(ctx context.Context) (string, []any, error) {
+func (q derivedViewQuery[T, Ts]) Build(ctx context.Context) (string, []any, error) {
 	return q.Query.Build(ctx)
 }
 
-func (q ImmutableViewQuery[T, Ts]) mutable() orm.Query[*psqldialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]] {
+func (q derivedViewQuery[T, Ts]) mutable() orm.Query[*psqldialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]] {
 	mutable := q.Query.state.toMutable()
 	return orm.Query[*psqldialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]{
 		ExecQuery: orm.ExecQuery[*psqldialect.SelectQuery]{

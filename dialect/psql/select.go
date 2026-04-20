@@ -9,7 +9,7 @@ type SelectQuery struct {
 	bob.BaseQuery[*dialect.SelectQuery]
 }
 
-func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) ImmutableSelectQuery {
+func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) derivedSelectQuery {
 	return asImmutable(q.BaseQuery).With(queryMods...)
 }
 
