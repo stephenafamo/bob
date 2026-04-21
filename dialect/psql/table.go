@@ -5,11 +5,9 @@ import (
 	"reflect"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
-	"github.com/stephenafamo/bob/dialect/psql/dm"
-	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
-	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/internal/mappings"
@@ -142,7 +140,16 @@ func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQue
 }
 
 func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Expression, queryMods []bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.InsertQuery] {
-	base := Insert(im.Into(name, nonGeneratedCols...)).derivedInsertQuery.mutableBase()
+	base := bob.BaseQuery[*dialect.InsertQuery]{
+		Expression: &dialect.InsertQuery{
+			TableRef: clause.TableRef{
+				Expression: name,
+				Columns:    nonGeneratedCols,
+			},
+		},
+		Dialect:   dialect.Dialect,
+		QueryType: bob.QueryTypeInsert,
+	}
 	if !hasInsertReturning(queryMods) {
 		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
@@ -150,7 +157,15 @@ func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Exp
 }
 
 func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.UpdateQuery]) bob.BaseQuery[*dialect.UpdateQuery] {
-	base := Update(um.Table(name)).derivedUpdateQuery.mutableBase()
+	base := bob.BaseQuery[*dialect.UpdateQuery]{
+		Expression: &dialect.UpdateQuery{
+			Table: clause.TableRef{
+				Expression: name,
+			},
+		},
+		Dialect:   dialect.Dialect,
+		QueryType: bob.QueryTypeUpdate,
+	}
 	if !hasUpdateReturning(queryMods) {
 		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
@@ -158,7 +173,15 @@ func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mo
 }
 
 func deleteTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {
-	base := Delete(dm.From(name)).derivedDeleteQuery.mutableBase()
+	base := bob.BaseQuery[*dialect.DeleteQuery]{
+		Expression: &dialect.DeleteQuery{
+			Table: clause.TableRef{
+				Expression: name,
+			},
+		},
+		Dialect:   dialect.Dialect,
+		QueryType: bob.QueryTypeDelete,
+	}
 	if !hasDeleteReturning(queryMods) {
 		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
