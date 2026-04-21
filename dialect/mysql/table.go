@@ -295,7 +295,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		filters = append(filters, Group(t.table.uniqueColNames(i)...).In(args...))
 	}
 
-	query.Apply(sm.Where(Or(filters...)))
+	query = query.Apply(sm.Where(Or(filters...)))
 	return query, nil
 }
 

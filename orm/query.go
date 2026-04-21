@@ -28,7 +28,7 @@ func (q *ExecQuery[Q]) With(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
 	}
 
 	next := q.Clone()
-	next.BaseQuery.Apply(queryMods...)
+	next.BaseQuery = next.BaseQuery.Apply(queryMods...)
 	return &next
 }
 
@@ -79,7 +79,7 @@ func (q *Query[Q, T, Ts, Tr]) With(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr]
 	}
 
 	next := q.Clone()
-	next.BaseQuery.Apply(queryMods...)
+	next.BaseQuery = next.BaseQuery.Apply(queryMods...)
 	return &next
 }
 
