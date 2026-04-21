@@ -171,10 +171,6 @@ func TestImmutableSelectQueryApplyCombinedDoesNotMutateOriginal(t *testing.T) {
 		sm.LimitCombined(1000),
 	)
 
-	if derived.derivedSelectQuery.requiresMutableWrite() {
-		t.Fatal("expected combined select shape to use native immutable writer")
-	}
-
 	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {
 		t.Fatal(err)
@@ -329,7 +325,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 			sm.Where(Quote("id").GT(Arg(0))),
 		)
 
-		if _, _, err := asCountQuery(q.Query.derivedSelectQuery.mutableBase()).Build(ctx); err != nil {
+		if _, _, err := q.Query.derivedSelectQuery.AsCount().Build(ctx); err != nil {
 			b.Fatal(err)
 		}
 

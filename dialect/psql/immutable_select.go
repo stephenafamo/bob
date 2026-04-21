@@ -104,10 +104,6 @@ func (q derivedSelectQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	if q.requiresMutableWrite() {
-		return q.mutableBase().WriteQuery(ctx, w, start)
-	}
-
 	writer := immutableSelectWriter{
 		ctx:   ctx,
 		w:     w,
@@ -119,10 +115,6 @@ func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, s
 	}
 
 	return writer.args, nil
-}
-
-func (q derivedSelectQuery) requiresMutableWrite() bool {
-	return !q.state.supportsNativeWrite()
 }
 
 func (q derivedSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
@@ -234,10 +226,6 @@ func immutableStateFromMutable(q *psqldialect.SelectQuery) immutableSelectState 
 		},
 		CombinedOffset: clause.Offset{Count: q.CombinedOffset.Count},
 	}
-}
-
-func (s immutableSelectState) supportsNativeWrite() bool {
-	return true
 }
 
 func (s immutableSelectState) selectColumns() []any {
