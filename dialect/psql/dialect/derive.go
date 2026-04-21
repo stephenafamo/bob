@@ -97,6 +97,7 @@ func (base *DeleteQuery) Derive(queryMods ...bob.Mod[*DeleteQuery]) (*DeleteQuer
 			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
 		case mods.TargetOnly[*DeleteQuery]:
 			next.Only = bool(m)
+			next.Table.Only = false
 		case mods.TargetTable[*DeleteQuery]:
 			next.Table = cloneTableRef(clause.TableRef(m))
 		case mods.Where[*DeleteQuery]:

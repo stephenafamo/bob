@@ -147,6 +147,41 @@ func TestDeleteApplyDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
+func TestUpdateApplyDoesNotDuplicateOnly(t *testing.T) {
+	base := Update(
+		um.Table("films"),
+		um.SetCol("kind").ToArg("Drama"),
+		um.Only(),
+	)
+
+	derived := base.Apply(um.Only())
+
+	sql, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sql != "UPDATE ONLY films SET\n\"kind\" = $1" {
+		t.Fatalf("unexpected update SQL: %#v", sql)
+	}
+}
+
+func TestDeleteApplyDoesNotDuplicateOnly(t *testing.T) {
+	base := Delete(
+		dm.From("films"),
+		dm.Only(),
+	)
+
+	derived := base.Apply(dm.Only())
+
+	sql, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sql != "DELETE FROM ONLY films" {
+		t.Fatalf("unexpected delete SQL: %#v", sql)
+	}
+}
+
 func TestInsertApplyDoesNotMutateOriginal(t *testing.T) {
 	base := Insert(
 		im.Into("films"),

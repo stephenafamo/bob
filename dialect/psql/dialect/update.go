@@ -25,7 +25,8 @@ type UpdateQuery struct {
 }
 
 func (u *UpdateQuery) SetTargetOnly(only bool) {
-	u.Table.SetOnly(only)
+	u.Only = only
+	u.Table.SetOnly(false)
 }
 
 func (u *UpdateQuery) SetTargetTable(table any) {

@@ -24,7 +24,8 @@ type DeleteQuery struct {
 }
 
 func (d *DeleteQuery) SetTargetOnly(only bool) {
-	d.Table.SetOnly(only)
+	d.Only = only
+	d.Table.SetOnly(false)
 }
 
 func (d *DeleteQuery) SetTargetTable(table any) {

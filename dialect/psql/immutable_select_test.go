@@ -2,9 +2,12 @@ package psql
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"testing"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 )
@@ -71,6 +74,14 @@ func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
 	}
 	if derivedSQL != "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" > $1)\nORDER BY id DESC\nLIMIT 10\nOFFSET 20\n" {
 		t.Fatalf("derived view query mismatch: %#v", derivedSQL)
+	}
+}
+
+func TestViewQueryWithNilReceiver(t *testing.T) {
+	var q *ViewQuery[*someStruct, []*someStruct]
+
+	if got := q.With(sm.Where(Quote("id").EQ(Arg(1)))); got != nil {
+		t.Fatalf("expected nil view query, got %#v", got)
 	}
 }
 
@@ -243,8 +254,12 @@ func TestViewSelectQueryHooksUseImmutableSelectQuery(t *testing.T) {
 	view := NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
 
 	var hookSQL string
-	view.SelectQueryHooks.AppendHooks(func(ctx context.Context, exec bob.Executor, q *SelectQuery) (context.Context, error) {
-		sql, _, err := q.Build(ctx)
+	view.SelectQueryHooks.AppendHooks(func(ctx context.Context, exec bob.Executor, q *dialect.SelectQuery) (context.Context, error) {
+		sql, _, err := bob.BaseQuery[*dialect.SelectQuery]{
+			Expression: q,
+			Dialect:    dialect.Dialect,
+			QueryType:  bob.QueryTypeSelect,
+		}.Build(ctx)
 		if err != nil {
 			return ctx, err
 		}
@@ -269,6 +284,19 @@ func TestViewSelectQueryHooksUseImmutableSelectQuery(t *testing.T) {
 	expected := "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" = $1)\nORDER BY name\n"
 	if hookSQL != expected {
 		t.Fatalf("unexpected hook SQL: %#v", hookSQL)
+	}
+}
+
+func TestImmutableSelectQueryBuildReturnsErrNoNamedArgs(t *testing.T) {
+	_, _, err := Select(
+		sm.Columns(sql.Named("id", 1)),
+		sm.From("users"),
+	).Build(t.Context())
+	if err == nil {
+		t.Fatal("expected named arg error")
+	}
+	if !errors.Is(err, bob.ErrNoNamedArgs) {
+		t.Fatalf("expected ErrNoNamedArgs, got %v", err)
 	}
 }
 

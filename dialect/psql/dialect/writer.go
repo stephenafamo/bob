@@ -77,7 +77,7 @@ func (w *queryWriter) writeAny(value any) error {
 	case uint64:
 		_, _ = w.w.WriteString(strconv.FormatUint(v, 10))
 	case sql.NamedArg:
-		return fmt.Errorf("named args are not supported by psql dialect")
+		return bob.ErrNoNamedArgs
 	case bob.Expression:
 		return w.writeExpression(v)
 	default:
