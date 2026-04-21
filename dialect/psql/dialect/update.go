@@ -24,6 +24,18 @@ type UpdateQuery struct {
 	bob.ContextualModdable[*UpdateQuery]
 }
 
+func (u *UpdateQuery) SetTargetOnly(only bool) {
+	u.Table.SetOnly(only)
+}
+
+func (u *UpdateQuery) SetTargetTable(table any) {
+	u.Table.SetTable(table)
+}
+
+func (u *UpdateQuery) SetTargetTableAlias(alias string, columns ...string) {
+	u.Table.SetTableAlias(alias, columns...)
+}
+
 func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 

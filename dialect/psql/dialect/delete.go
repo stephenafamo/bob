@@ -23,6 +23,18 @@ type DeleteQuery struct {
 	bob.ContextualModdable[*DeleteQuery]
 }
 
+func (d *DeleteQuery) SetTargetOnly(only bool) {
+	d.Table.SetOnly(only)
+}
+
+func (d *DeleteQuery) SetTargetTable(table any) {
+	d.Table.SetTable(table)
+}
+
+func (d *DeleteQuery) SetTargetTableAlias(alias string, columns ...string) {
+	d.Table.SetTableAlias(alias, columns...)
+}
+
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
 	var err error
 

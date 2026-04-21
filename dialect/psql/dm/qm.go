@@ -15,17 +15,17 @@ func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func Only() bob.Mod[*dialect.DeleteQuery] {
-	return dialect.DeleteOnly(true)
+	return mods.TargetOnly[*dialect.DeleteQuery](true)
 }
 
 func From(name any) bob.Mod[*dialect.DeleteQuery] {
-	return dialect.DeleteTable{
+	return mods.TargetTable[*dialect.DeleteQuery]{
 		Expression: name,
 	}
 }
 
 func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
-	return dialect.DeleteTable{
+	return mods.TargetTable[*dialect.DeleteQuery]{
 		Expression: name,
 		Alias:      alias,
 	}

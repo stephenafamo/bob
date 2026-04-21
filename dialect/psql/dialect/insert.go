@@ -32,6 +32,14 @@ type InsertQuery struct {
 	bob.ContextualModdable[*InsertQuery]
 }
 
+func (i *InsertQuery) SetTargetTable(table any) {
+	i.TableRef.SetTable(table)
+}
+
+func (i *InsertQuery) SetTargetTableAlias(alias string, columns ...string) {
+	i.TableRef.SetTableAlias(alias, columns...)
+}
+
 func (i *InsertQuery) SetOverriding(overriding string) {
 	i.Overriding = overriding
 }

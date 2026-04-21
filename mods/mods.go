@@ -37,6 +37,24 @@ func (r Recursive[Q]) Apply(q Q) {
 	q.SetRecursive(bool(r))
 }
 
+type TargetOnly[Q interface{ SetTargetOnly(bool) }] bool
+
+func (o TargetOnly[Q]) Apply(q Q) {
+	q.SetTargetOnly(bool(o))
+}
+
+type TargetTable[Q interface {
+	SetTargetTable(any)
+	SetTargetTableAlias(alias string, columns ...string)
+}] clause.TableRef
+
+func (t TargetTable[Q]) Apply(q Q) {
+	q.SetTargetTable(t.Expression)
+	if t.Alias != "" {
+		q.SetTargetTableAlias(t.Alias, t.Columns...)
+	}
+}
+
 type Select[Q interface{ AppendSelect(columns ...any) }] []any
 
 func (s Select[Q]) Apply(q Q) {

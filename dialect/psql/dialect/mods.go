@@ -19,36 +19,6 @@ func (di Distinct) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
 }
 
-type UpdateOnly bool
-
-func (o UpdateOnly) Apply(q *UpdateQuery) {
-	q.Only = bool(o)
-}
-
-type DeleteOnly bool
-
-func (o DeleteOnly) Apply(q *DeleteQuery) {
-	q.Only = bool(o)
-}
-
-type UpdateTable clause.TableRef
-
-func (t UpdateTable) Apply(q *UpdateQuery) {
-	q.Table = clause.TableRef(t)
-}
-
-type DeleteTable clause.TableRef
-
-func (t DeleteTable) Apply(q *DeleteQuery) {
-	q.Table = clause.TableRef(t)
-}
-
-type InsertTable clause.TableRef
-
-func (t InsertTable) Apply(q *InsertQuery) {
-	q.TableRef = clause.TableRef(t)
-}
-
 func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {
 	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{

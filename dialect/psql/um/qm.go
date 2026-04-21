@@ -16,17 +16,17 @@ func Recursive(r bool) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func Only() bob.Mod[*dialect.UpdateQuery] {
-	return dialect.UpdateOnly(true)
+	return mods.TargetOnly[*dialect.UpdateQuery](true)
 }
 
 func Table(name any) bob.Mod[*dialect.UpdateQuery] {
-	return dialect.UpdateTable{
+	return mods.TargetTable[*dialect.UpdateQuery]{
 		Expression: name,
 	}
 }
 
 func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
-	return dialect.UpdateTable{
+	return mods.TargetTable[*dialect.UpdateQuery]{
 		Expression: name,
 		Alias:      alias,
 	}

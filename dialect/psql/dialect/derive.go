@@ -6,6 +6,22 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
+func cloneSlice[T any](values []T) []T {
+	if values == nil {
+		return nil
+	}
+	return append([]T(nil), values...)
+}
+
+func appendDerived[T any](target *[]T, base []T, cloned *bool, values ...T) {
+	if !*cloned {
+		*target = cloneSlice(base)
+		*cloned = true
+	}
+
+	*target = append(*target, values...)
+}
+
 func (base *SelectQuery) Derive(queryMods ...bob.Mod[*SelectQuery]) (*SelectQuery, bool) {
 	next := *base
 	var cloneWith, cloneSelect, clonePreload, cloneWhere, cloneGroup, cloneHaving, cloneOrder, cloneWindows, cloneLocks, cloneJoins, cloneCombines, cloneCombinedOrder bool
@@ -15,47 +31,23 @@ func (base *SelectQuery) Derive(queryMods ...bob.Mod[*SelectQuery]) (*SelectQuer
 		case mods.Recursive[*SelectQuery]:
 			next.With.Recursive = bool(m)
 		case CTEChain[*SelectQuery]:
-			if !cloneWith {
-				next.With.CTEs = cloneExpressionSlice(base.With.CTEs)
-				cloneWith = true
-			}
-			next.With.CTEs = append(next.With.CTEs, m())
+			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
 		case mods.Distinct[*SelectQuery]:
 			next.SetDistinctValues([]any(m))
 		case mods.Select[*SelectQuery]:
-			if !cloneSelect {
-				next.SelectList.Columns = cloneAnySlice(base.SelectList.Columns)
-				cloneSelect = true
-			}
-			next.SelectList.Columns = append(next.SelectList.Columns, []any(m)...)
+			appendDerived(&next.SelectList.Columns, base.SelectList.Columns, &cloneSelect, []any(m)...)
 		case mods.Preload[*SelectQuery]:
-			if !clonePreload {
-				next.SelectList.PreloadColumns = cloneAnySlice(base.SelectList.PreloadColumns)
-				clonePreload = true
-			}
-			next.SelectList.PreloadColumns = append(next.SelectList.PreloadColumns, []any(m)...)
+			appendDerived(&next.SelectList.PreloadColumns, base.SelectList.PreloadColumns, &clonePreload, []any(m)...)
 		case mods.Where[*SelectQuery]:
-			if !cloneWhere {
-				next.Where.Conditions = cloneAnySlice(base.Where.Conditions)
-				cloneWhere = true
-			}
-			next.Where.Conditions = append(next.Where.Conditions, m.E)
+			appendDerived[any](&next.Where.Conditions, base.Where.Conditions, &cloneWhere, m.E)
 		case mods.GroupBy[*SelectQuery]:
-			if !cloneGroup {
-				next.GroupBy.Groups = cloneAnySlice(base.GroupBy.Groups)
-				cloneGroup = true
-			}
-			next.GroupBy.Groups = append(next.GroupBy.Groups, m.E)
+			appendDerived(&next.GroupBy.Groups, base.GroupBy.Groups, &cloneGroup, m.E)
 		case mods.GroupByDistinct[*SelectQuery]:
 			next.GroupBy.Distinct = bool(m)
 		case mods.GroupWith[*SelectQuery]:
 			next.GroupBy.With = string(m)
 		case mods.Having[*SelectQuery]:
-			if !cloneHaving {
-				next.Having.Conditions = cloneAnySlice(base.Having.Conditions)
-				cloneHaving = true
-			}
-			next.Having.Conditions = append(next.Having.Conditions, []any(m)...)
+			appendDerived(&next.Having.Conditions, base.Having.Conditions, &cloneHaving, []any(m)...)
 		case mods.Limit[*SelectQuery]:
 			next.Limit.Count = m.Count
 		case mods.Offset[*SelectQuery]:
@@ -63,47 +55,19 @@ func (base *SelectQuery) Derive(queryMods ...bob.Mod[*SelectQuery]) (*SelectQuer
 		case mods.Fetch[*SelectQuery]:
 			next.Fetch = clause.Fetch(m)
 		case OrderBy[*SelectQuery]:
-			if !cloneOrder {
-				next.OrderBy.Expressions = cloneExpressionSlice(base.OrderBy.Expressions)
-				cloneOrder = true
-			}
-			next.OrderBy.Expressions = append(next.OrderBy.Expressions, m())
+			appendDerived[bob.Expression](&next.OrderBy.Expressions, base.OrderBy.Expressions, &cloneOrder, m())
 		case mods.Join[*SelectQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, clause.Join(m))
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, clause.Join(m))
 		case CrossJoinChain[*SelectQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, m())
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, m())
 		case mods.NamedWindow[*SelectQuery]:
-			if !cloneWindows {
-				next.Windows.Windows = cloneExpressionSlice(base.Windows.Windows)
-				cloneWindows = true
-			}
-			next.Windows.Windows = append(next.Windows.Windows, clause.NamedWindow(m))
+			appendDerived[bob.Expression](&next.Windows.Windows, base.Windows.Windows, &cloneWindows, clause.NamedWindow(m))
 		case LockChain[*SelectQuery]:
-			if !cloneLocks {
-				next.Locks.Locks = cloneExpressionSlice(base.Locks.Locks)
-				cloneLocks = true
-			}
-			next.Locks.Locks = append(next.Locks.Locks, m())
+			appendDerived[bob.Expression](&next.Locks.Locks, base.Locks.Locks, &cloneLocks, m())
 		case mods.Combine[*SelectQuery]:
-			if !cloneCombines {
-				next.Combines.Queries = append([]clause.Combine(nil), base.Combines.Queries...)
-				cloneCombines = true
-			}
-			next.Combines.Queries = append(next.Combines.Queries, clause.Combine(m))
+			appendDerived(&next.Combines.Queries, base.Combines.Queries, &cloneCombines, clause.Combine(m))
 		case OrderCombined:
-			if !cloneCombinedOrder {
-				next.CombinedOrder.Expressions = cloneExpressionSlice(base.CombinedOrder.Expressions)
-				cloneCombinedOrder = true
-			}
-			next.CombinedOrder.Expressions = append(next.CombinedOrder.Expressions, m())
+			appendDerived[bob.Expression](&next.CombinedOrder.Expressions, base.CombinedOrder.Expressions, &cloneCombinedOrder, m())
 		case LimitCombined:
 			next.CombinedLimit.Count = m.Count
 		case OffsetCombined:
@@ -130,47 +94,23 @@ func (base *UpdateQuery) Derive(queryMods ...bob.Mod[*UpdateQuery]) (*UpdateQuer
 		case mods.Recursive[*UpdateQuery]:
 			next.With.Recursive = bool(m)
 		case CTEChain[*UpdateQuery]:
-			if !cloneWith {
-				next.With.CTEs = cloneExpressionSlice(base.With.CTEs)
-				cloneWith = true
-			}
-			next.With.CTEs = append(next.With.CTEs, m())
-		case UpdateOnly:
+			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
+		case mods.TargetOnly[*UpdateQuery]:
 			next.Only = bool(m)
-		case UpdateTable:
+		case mods.TargetTable[*UpdateQuery]:
 			next.Table = cloneTableRef(clause.TableRef(m))
 		case mods.SetExprs[*UpdateQuery]:
-			if !cloneSet {
-				next.Set.Set = cloneAnySlice(base.Set.Set)
-				cloneSet = true
-			}
-			next.Set.Set = append(next.Set.Set, []any(m)...)
+			appendDerived(&next.Set.Set, base.Set.Set, &cloneSet, []any(m)...)
 		case mods.Where[*UpdateQuery]:
-			if !cloneWhere {
-				next.Where.Conditions = cloneAnySlice(base.Where.Conditions)
-				cloneWhere = true
-			}
-			next.Where.Conditions = append(next.Where.Conditions, m.E)
+			appendDerived[any](&next.Where.Conditions, base.Where.Conditions, &cloneWhere, m.E)
 		case mods.Returning[*UpdateQuery]:
-			if !cloneReturning {
-				next.Returning.Expressions = cloneAnySlice(base.Returning.Expressions)
-				cloneReturning = true
-			}
-			next.Returning.Expressions = append(next.Returning.Expressions, []any(m)...)
+			appendDerived(&next.Returning.Expressions, base.Returning.Expressions, &cloneReturning, []any(m)...)
 		case FromChain[*UpdateQuery]:
 			next.TableRef = cloneTableRef(m())
 		case mods.Join[*UpdateQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, clause.Join(m))
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, clause.Join(m))
 		case CrossJoinChain[*UpdateQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, m())
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, m())
 		default:
 			return nil, false
 		}
@@ -188,41 +128,21 @@ func (base *DeleteQuery) Derive(queryMods ...bob.Mod[*DeleteQuery]) (*DeleteQuer
 		case mods.Recursive[*DeleteQuery]:
 			next.With.Recursive = bool(m)
 		case CTEChain[*DeleteQuery]:
-			if !cloneWith {
-				next.With.CTEs = cloneExpressionSlice(base.With.CTEs)
-				cloneWith = true
-			}
-			next.With.CTEs = append(next.With.CTEs, m())
-		case DeleteOnly:
+			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
+		case mods.TargetOnly[*DeleteQuery]:
 			next.Only = bool(m)
-		case DeleteTable:
+		case mods.TargetTable[*DeleteQuery]:
 			next.Table = cloneTableRef(clause.TableRef(m))
 		case mods.Where[*DeleteQuery]:
-			if !cloneWhere {
-				next.Where.Conditions = cloneAnySlice(base.Where.Conditions)
-				cloneWhere = true
-			}
-			next.Where.Conditions = append(next.Where.Conditions, m.E)
+			appendDerived[any](&next.Where.Conditions, base.Where.Conditions, &cloneWhere, m.E)
 		case mods.Returning[*DeleteQuery]:
-			if !cloneReturning {
-				next.Returning.Expressions = cloneAnySlice(base.Returning.Expressions)
-				cloneReturning = true
-			}
-			next.Returning.Expressions = append(next.Returning.Expressions, []any(m)...)
+			appendDerived(&next.Returning.Expressions, base.Returning.Expressions, &cloneReturning, []any(m)...)
 		case FromChain[*DeleteQuery]:
 			next.TableRef = cloneTableRef(m())
 		case mods.Join[*DeleteQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, clause.Join(m))
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, clause.Join(m))
 		case CrossJoinChain[*DeleteQuery]:
-			if !cloneJoins {
-				next.TableRef.Joins = append([]clause.Join(nil), base.TableRef.Joins...)
-				cloneJoins = true
-			}
-			next.TableRef.Joins = append(next.TableRef.Joins, m())
+			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, m())
 		default:
 			return nil, false
 		}
@@ -240,32 +160,20 @@ func (base *InsertQuery) Derive(queryMods ...bob.Mod[*InsertQuery]) (*InsertQuer
 		case mods.Recursive[*InsertQuery]:
 			next.With.Recursive = bool(m)
 		case CTEChain[*InsertQuery]:
-			if !cloneWith {
-				next.With.CTEs = cloneExpressionSlice(base.With.CTEs)
-				cloneWith = true
-			}
-			next.With.CTEs = append(next.With.CTEs, m())
-		case InsertTable:
+			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
+		case mods.TargetTable[*InsertQuery]:
 			next.TableRef = cloneTableRef(clause.TableRef(m))
 		case mods.Overriding[*InsertQuery]:
 			next.Overriding = string(m)
 		case mods.QuerySource[*InsertQuery]:
 			next.Values.Query = m.Query
 		case mods.Returning[*InsertQuery]:
-			if !cloneReturning {
-				next.Returning.Expressions = cloneAnySlice(base.Returning.Expressions)
-				cloneReturning = true
-			}
-			next.Returning.Expressions = append(next.Returning.Expressions, []any(m)...)
+			appendDerived(&next.Returning.Expressions, base.Returning.Expressions, &cloneReturning, []any(m)...)
 		case mods.Values[*InsertQuery]:
-			if !cloneVals {
-				next.Values.Vals = append([]clause.Value(nil), base.Values.Vals...)
-				cloneVals = true
-			}
-			next.Values.Vals = append(next.Values.Vals, clause.Value(m))
+			appendDerived(&next.Values.Vals, base.Values.Vals, &cloneVals, clause.Value(m))
 		case mods.Rows[*InsertQuery]:
 			if !cloneVals {
-				next.Values.Vals = append([]clause.Value(nil), base.Values.Vals...)
+				next.Values.Vals = cloneSlice(base.Values.Vals)
 				cloneVals = true
 			}
 			for _, row := range m {

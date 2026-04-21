@@ -18,14 +18,14 @@ func Recursive(r bool) bob.Mod[*dialect.InsertQuery] {
 }
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return dialect.InsertTable{
+	return mods.TargetTable[*dialect.InsertQuery]{
 		Expression: name,
 		Columns:    columns,
 	}
 }
 
 func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return dialect.InsertTable{
+	return mods.TargetTable[*dialect.InsertQuery]{
 		Expression: name,
 		Alias:      alias,
 		Columns:    columns,
