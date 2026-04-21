@@ -50,7 +50,7 @@ type TargetTable[Q interface {
 
 func (t TargetTable[Q]) Apply(q Q) {
 	q.SetTargetTable(t.Expression)
-	if t.Alias != "" {
+	if t.Alias != "" || len(t.Columns) > 0 {
 		q.SetTargetTableAlias(t.Alias, t.Columns...)
 	}
 }
