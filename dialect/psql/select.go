@@ -6,11 +6,25 @@ import (
 )
 
 type SelectQuery struct {
-	bob.BaseQuery[*dialect.SelectQuery]
+	derivedSelectQuery
+	materialized *bob.BaseQuery[*dialect.SelectQuery]
 }
 
-func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) derivedSelectQuery {
-	return asImmutable(q.BaseQuery).With(queryMods...)
+func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
+	q.derivedSelectQuery = q.derivedSelectQuery.With(queryMods...)
+	q.materialized = nil
+	return q
+}
+
+func (q SelectQuery) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
+	return q.With(queryMods...)
+}
+
+func (q SelectQuery) baseQuery() bob.BaseQuery[*dialect.SelectQuery] {
+	if q.materialized != nil {
+		return *q.materialized
+	}
+	return q.derivedSelectQuery.mutableBase()
 }
 
 func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
@@ -19,11 +33,14 @@ func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
 		mod.Apply(q)
 	}
 
+	base := bob.BaseQuery[*dialect.SelectQuery]{
+		Expression: q,
+		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeSelect,
+	}
+
 	return SelectQuery{
-		BaseQuery: bob.BaseQuery[*dialect.SelectQuery]{
-			Expression: q,
-			Dialect:    dialect.Dialect,
-			QueryType:  bob.QueryTypeSelect,
-		},
+		derivedSelectQuery: asImmutable(base),
+		materialized:       &base,
 	}
 }

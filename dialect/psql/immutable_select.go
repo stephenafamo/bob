@@ -12,12 +12,14 @@ import (
 	"github.com/stephenafamo/bob/clause"
 	psqldialect "github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/mods"
-	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
 type derivedSelectQuery struct {
-	state immutableSelectState
+	state          immutableSelectState
+	load           bob.Load
+	hooks          bob.EmbeddedHook
+	contextualMods []bob.ContextualMod[*psqldialect.SelectQuery]
 }
 
 type immutableSelectState struct {
@@ -44,7 +46,13 @@ type immutableSelectState struct {
 }
 
 func asImmutable(q bob.BaseQuery[*psqldialect.SelectQuery]) derivedSelectQuery {
-	return derivedSelectQuery{state: immutableStateFromMutable(q.Expression)}
+	return derivedSelectQuery{
+		state: immutableStateFromMutable(q.Expression),
+		load:  q.Expression.Load,
+		hooks: q.Expression.EmbeddedHook,
+		contextualMods: append([]bob.ContextualMod[*psqldialect.SelectQuery](nil),
+			q.Expression.ContextualModdable.Mods...),
+	}
 }
 
 func (q derivedSelectQuery) Type() bob.QueryType {
@@ -54,15 +62,17 @@ func (q derivedSelectQuery) Type() bob.QueryType {
 func (q derivedSelectQuery) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedSelectQuery {
 	next, ok := q.state.withMods(queryMods...)
 	if ok {
-		return derivedSelectQuery{state: next}
+		q.state = next
+		return q
 	}
 
-	mutable := q.state.toMutable()
+	base := q.mutableBase()
+	mutable := base.Expression
 	for _, mod := range queryMods {
-		mod.Apply(&mutable)
+		mod.Apply(mutable)
 	}
 
-	return derivedSelectQuery{state: immutableStateFromMutable(&mutable)}
+	return asImmutable(base)
 }
 
 func (q derivedSelectQuery) AsCount() derivedSelectQuery {
@@ -94,6 +104,10 @@ func (q derivedSelectQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
+	if len(q.contextualMods) > 0 || !q.state.supportsNativeWrite() {
+		return q.mutableBase().WriteQuery(ctx, w, start)
+	}
+
 	writer := immutableSelectWriter{
 		ctx:   ctx,
 		w:     w,
@@ -117,76 +131,55 @@ func (q derivedSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ b
 	return args, nil
 }
 
-type derivedViewQuery[T any, Ts ~[]T] struct {
-	Query   derivedSelectQuery
-	Scanner scan.Mapper[T]
-	Hooks   *bob.Hooks[*psqldialect.SelectQuery, bob.SkipQueryHooksKey]
+func (q derivedSelectQuery) Exec(ctx context.Context, exec bob.Executor) (sql.Result, error) {
+	return bob.Exec(ctx, exec, q)
 }
 
-func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedViewQuery[T, Ts] {
-	state := immutableStateFromMutable(q.BaseQuery.Expression)
-	if len(state.SelectColumns) == 0 && q.defaultSelect != nil {
-		state.SelectColumns = append(state.SelectColumns, q.defaultSelect)
-	}
-
-	return derivedViewQuery[T, Ts]{
-		Query:   derivedSelectQuery{state: state}.With(queryMods...),
-		Scanner: q.Scanner,
-		Hooks:   q.Hooks,
-	}
+func (q derivedSelectQuery) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
+	return q.hooks.RunHooks(ctx, exec)
 }
 
-func (q derivedViewQuery[T, Ts]) With(queryMods ...bob.Mod[*psqldialect.SelectQuery]) derivedViewQuery[T, Ts] {
-	q.Query = q.Query.With(queryMods...)
-	return q
+func (q derivedSelectQuery) GetLoaders() []bob.Loader {
+	return q.load.GetLoaders()
 }
 
-func (q derivedViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
-	return q.mutable().One(ctx, exec)
+func (q derivedSelectQuery) GetMapperMods() []scan.MapperMod {
+	return q.load.GetMapperMods()
 }
 
-func (q derivedViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
-	return q.mutable().All(ctx, exec)
-}
+func (q derivedSelectQuery) mutableBase() bob.BaseQuery[*psqldialect.SelectQuery] {
+	mutable := &psqldialect.SelectQuery{
+		With:       q.state.With,
+		SelectList: clause.SelectList{Columns: q.state.SelectColumns, PreloadColumns: q.state.PreloadColumns},
+		Distinct:   q.state.Distinct,
+		TableRef:   q.state.TableRef,
+		Where:      q.state.Where,
+		GroupBy:    q.state.GroupBy,
+		Having:     q.state.Having,
+		Windows:    q.state.Windows,
+		Combines:   q.state.Combines,
+		OrderBy:    q.state.OrderBy,
+		Limit:      q.state.Limit,
+		Offset:     q.state.Offset,
+		Fetch:      q.state.Fetch,
+		Locks:      q.state.Locks,
 
-func (q derivedViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
-	return q.mutable().Cursor(ctx, exec)
-}
-
-func (q derivedViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
-	return q.mutable().Each(ctx, exec)
-}
-
-func (q derivedViewQuery[T, Ts]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	mq := q.mutable()
-	ctx, err := mq.RunHooks(ctx, exec)
-	if err != nil {
-		return 0, err
-	}
-	return bob.One(ctx, exec, asCountQuery(mq.BaseQuery), scan.SingleColumnMapper[int64])
-}
-
-func (q derivedViewQuery[T, Ts]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	count, err := q.Count(ctx, exec)
-	return count > 0, err
-}
-
-func (q derivedViewQuery[T, Ts]) Build(ctx context.Context) (string, []any, error) {
-	return q.Query.Build(ctx)
-}
-
-func (q derivedViewQuery[T, Ts]) mutable() orm.Query[*psqldialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]] {
-	mutable := q.Query.state.toMutable()
-	return orm.Query[*psqldialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]{
-		ExecQuery: orm.ExecQuery[*psqldialect.SelectQuery]{
-			BaseQuery: bob.BaseQuery[*psqldialect.SelectQuery]{
-				Expression: &mutable,
-				Dialect:    psqldialect.Dialect,
-				QueryType:  bob.QueryTypeSelect,
-			},
-			Hooks: q.Hooks,
+		Load:         q.load,
+		EmbeddedHook: q.hooks,
+		ContextualModdable: bob.ContextualModdable[*psqldialect.SelectQuery]{
+			Mods: append([]bob.ContextualMod[*psqldialect.SelectQuery](nil), q.contextualMods...),
 		},
-		Scanner: q.Scanner,
+
+		CombinedOrder:  q.state.CombinedOrder,
+		CombinedLimit:  q.state.CombinedLimit,
+		CombinedFetch:  q.state.CombinedFetch,
+		CombinedOffset: q.state.CombinedOffset,
+	}
+
+	return bob.BaseQuery[*psqldialect.SelectQuery]{
+		Expression: mutable,
+		Dialect:    psqldialect.Dialect,
+		QueryType:  bob.QueryTypeSelect,
 	}
 }
 
@@ -198,7 +191,7 @@ func immutableStateFromMutable(q *psqldialect.SelectQuery) immutableSelectState 
 		},
 		SelectColumns:  append([]any(nil), q.SelectList.Columns...),
 		PreloadColumns: append([]any(nil), q.SelectList.PreloadColumns...),
-		Distinct:       psqldialect.Distinct{On: append([]any(nil), q.Distinct.On...)},
+		Distinct:       psqldialect.Distinct{On: cloneAnySlice(q.Distinct.On)},
 		TableRef:       cloneTableRef(q.TableRef),
 		Where:          clause.Where{Conditions: append([]any(nil), q.Where.Conditions...)},
 		GroupBy: clause.GroupBy{
@@ -239,6 +232,21 @@ func immutableStateFromMutable(q *psqldialect.SelectQuery) immutableSelectState 
 		},
 		CombinedOffset: clause.Offset{Count: q.CombinedOffset.Count},
 	}
+}
+
+func (s immutableSelectState) supportsNativeWrite() bool {
+	return len(s.Combines.Queries) == 0 &&
+		len(s.CombinedOrder.Expressions) == 0 &&
+		s.CombinedLimit.Count == nil &&
+		s.CombinedOffset.Count == nil &&
+		s.CombinedFetch.Count == nil
+}
+
+func cloneAnySlice(values []any) []any {
+	if values == nil {
+		return nil
+	}
+	return append(make([]any, 0, len(values)), values...)
 }
 
 func (s immutableSelectState) toMutable() psqldialect.SelectQuery {

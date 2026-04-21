@@ -90,6 +90,88 @@ func TestInsertWithDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
+func TestUpdateApplyDoesNotMutateOriginal(t *testing.T) {
+	base := Update(
+		um.Table("films"),
+		um.SetCol("kind").ToArg("Dramatic"),
+	)
+
+	derived := base.Apply(
+		um.Where(Quote("kind").EQ(Arg("Drama"))),
+		um.Returning("id"),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseSQL != "UPDATE films SET\n\"kind\" = $1" {
+		t.Fatalf("base update changed unexpectedly: %#v", baseSQL)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if derivedSQL != "UPDATE films SET\n\"kind\" = $1\nWHERE (\"kind\" = $2)\nRETURNING id" {
+		t.Fatalf("derived update mismatch: %#v", derivedSQL)
+	}
+}
+
+func TestDeleteApplyDoesNotMutateOriginal(t *testing.T) {
+	base := Delete(
+		dm.From("films"),
+	)
+
+	derived := base.Apply(
+		dm.Where(Quote("kind").EQ(Arg("Drama"))),
+		dm.Returning("id"),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseSQL != "DELETE FROM films" {
+		t.Fatalf("base delete changed unexpectedly: %#v", baseSQL)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if derivedSQL != "DELETE FROM films\nWHERE (\"kind\" = $1)\nRETURNING id" {
+		t.Fatalf("derived delete mismatch: %#v", derivedSQL)
+	}
+}
+
+func TestInsertApplyDoesNotMutateOriginal(t *testing.T) {
+	base := Insert(
+		im.Into("films"),
+		im.Values(Arg("UA502", "Bananas")),
+	)
+
+	derived := base.Apply(
+		im.Returning("id"),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseSQL != "INSERT INTO films\nVALUES ($1, $2)\n" {
+		t.Fatalf("base insert changed unexpectedly: %#v", baseSQL)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if derivedSQL != "INSERT INTO films\nVALUES ($1, $2)\nRETURNING id\n" {
+		t.Fatalf("derived insert mismatch: %#v", derivedSQL)
+	}
+}
+
 func BenchmarkUpdateQueryApplyMain(b *testing.B) {
 	ctx := b.Context()
 
@@ -99,7 +181,7 @@ func BenchmarkUpdateQueryApplyMain(b *testing.B) {
 			um.Table("films"),
 			um.SetCol("kind").ToArg("Dramatic"),
 		)
-		q.Apply(
+		q = q.Apply(
 			um.Where(Quote("kind").EQ(Arg("Drama"))),
 			um.Returning("id"),
 		)
@@ -138,7 +220,7 @@ func BenchmarkDeleteQueryApplyMain(b *testing.B) {
 		q := Delete(
 			dm.From("films"),
 		)
-		q.Apply(
+		q = q.Apply(
 			dm.Where(Quote("kind").EQ(Arg("Drama"))),
 			dm.Returning("id"),
 		)
@@ -177,7 +259,7 @@ func BenchmarkInsertQueryApplyMain(b *testing.B) {
 			im.Into("films"),
 			im.Values(Arg("UA502", "Bananas")),
 		)
-		q.Apply(
+		q = q.Apply(
 			im.Returning("id"),
 		)
 

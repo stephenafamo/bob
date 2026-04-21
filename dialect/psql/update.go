@@ -6,11 +6,25 @@ import (
 )
 
 type UpdateQuery struct {
-	bob.BaseQuery[*dialect.UpdateQuery]
+	derivedUpdateQuery
+	materialized *bob.BaseQuery[*dialect.UpdateQuery]
 }
 
-func (q UpdateQuery) With(queryMods ...bob.Mod[*dialect.UpdateQuery]) derivedUpdateQuery {
-	return asImmutableUpdate(q.BaseQuery).With(queryMods...)
+func (q UpdateQuery) With(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
+	q.derivedUpdateQuery = q.derivedUpdateQuery.With(queryMods...)
+	q.materialized = nil
+	return q
+}
+
+func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
+	return q.With(queryMods...)
+}
+
+func (q UpdateQuery) baseQuery() bob.BaseQuery[*dialect.UpdateQuery] {
+	if q.materialized != nil {
+		return *q.materialized
+	}
+	return q.derivedUpdateQuery.mutableBase()
 }
 
 func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
@@ -19,11 +33,14 @@ func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
 		mod.Apply(q)
 	}
 
+	base := bob.BaseQuery[*dialect.UpdateQuery]{
+		Expression: q,
+		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeUpdate,
+	}
+
 	return UpdateQuery{
-		BaseQuery: bob.BaseQuery[*dialect.UpdateQuery]{
-			Expression: q,
-			Dialect:    dialect.Dialect,
-			QueryType:  bob.QueryTypeUpdate,
-		},
+		derivedUpdateQuery: asImmutableUpdate(base),
+		materialized:       &base,
 	}
 }

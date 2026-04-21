@@ -6,11 +6,25 @@ import (
 )
 
 type DeleteQuery struct {
-	bob.BaseQuery[*dialect.DeleteQuery]
+	derivedDeleteQuery
+	materialized *bob.BaseQuery[*dialect.DeleteQuery]
 }
 
-func (q DeleteQuery) With(queryMods ...bob.Mod[*dialect.DeleteQuery]) derivedDeleteQuery {
-	return asImmutableDelete(q.BaseQuery).With(queryMods...)
+func (q DeleteQuery) With(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
+	q.derivedDeleteQuery = q.derivedDeleteQuery.With(queryMods...)
+	q.materialized = nil
+	return q
+}
+
+func (q DeleteQuery) Apply(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
+	return q.With(queryMods...)
+}
+
+func (q DeleteQuery) baseQuery() bob.BaseQuery[*dialect.DeleteQuery] {
+	if q.materialized != nil {
+		return *q.materialized
+	}
+	return q.derivedDeleteQuery.mutableBase()
 }
 
 func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
@@ -19,11 +33,14 @@ func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
 		mod.Apply(q)
 	}
 
+	base := bob.BaseQuery[*dialect.DeleteQuery]{
+		Expression: q,
+		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeDelete,
+	}
+
 	return DeleteQuery{
-		BaseQuery: bob.BaseQuery[*dialect.DeleteQuery]{
-			Expression: q,
-			Dialect:    dialect.Dialect,
-			QueryType:  bob.QueryTypeDelete,
-		},
+		derivedDeleteQuery: asImmutableDelete(base),
+		materialized:       &base,
 	}
 }

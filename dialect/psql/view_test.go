@@ -72,5 +72,5 @@ func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 
 func viewToString(t *testing.T, query *ViewQuery[*someStruct, []*someStruct]) string {
 	t.Helper()
-	return selectToString(t, query.BaseQuery, 3)
+	return selectToString(t, query, 3)
 }

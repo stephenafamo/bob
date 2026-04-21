@@ -3,6 +3,7 @@ package psql
 import (
 	"context"
 	"fmt"
+	"io"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -10,6 +11,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
+	bobmods "github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -80,48 +82,113 @@ func (v *View[T, Tslice, C]) Alias() string {
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
-			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAs())).BaseQuery,
-				Hooks:     &v.SelectQueryHooks,
-			},
-			Scanner: v.scanner,
-		},
+		Query:         Select(sm.Columns(v.Columns), sm.From(v.NameAs())),
+		Scanner:       v.scanner,
+		Hooks:         &v.SelectQueryHooks,
 		defaultSelect: v.Columns,
+		defaulted:     true,
 	}
-
-	q.Expression.AppendContextualModFunc(
-		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
-			if len(q.SelectList.Columns) == 0 {
-				q.AppendSelect(v.Columns)
-			}
-			return ctx, nil
-		},
-	)
-
-	q.Apply(queryMods...)
-
-	return q
+	if len(queryMods) == 0 {
+		return q
+	}
+	return q.Apply(queryMods...)
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
+	Query         SelectQuery
+	Scanner       scan.Mapper[T]
+	Hooks         *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 	defaultSelect bob.Expression
+	defaulted     bool
+}
+
+func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
+	next := *q
+	if hasSelectMod(queryMods) && next.defaulted {
+		next.Query.derivedSelectQuery.state.SelectColumns = nil
+		next.defaulted = false
+	}
+	next.Query = next.Query.Apply(queryMods...)
+	return &next
+}
+
+func (q *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
+	return q.With(queryMods...)
+}
+
+func (q *ViewQuery[T, Ts]) Type() bob.QueryType {
+	return q.Query.Type()
+}
+
+func (q *ViewQuery[T, Ts]) Build(ctx context.Context) (string, []any, error) {
+	return q.Query.Build(ctx)
+}
+
+func (q *ViewQuery[T, Ts]) BuildN(ctx context.Context, start int) (string, []any, error) {
+	return q.Query.BuildN(ctx, start)
+}
+
+func (q *ViewQuery[T, Ts]) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
+	return q.Query.WriteQuery(ctx, w, start)
+}
+
+func (q *ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return q.Query.WriteSQL(ctx, w, d, start)
 }
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	ctx, err := v.RunHooks(ctx, exec)
+	mq := v.mutable()
+	ctx, err := mq.RunHooks(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
-	return bob.One(ctx, exec, asCountQuery(v.BaseQuery), scan.SingleColumnMapper[int64])
+	return bob.One(ctx, exec, asCountQuery(mq.BaseQuery), scan.SingleColumnMapper[int64])
 }
 
 // Exists checks if there is any matching row
 func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
 	count, err := v.Count(ctx, exec)
 	return count > 0, err
+}
+
+func (q *ViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
+	return q.mutable().One(ctx, exec)
+}
+
+func (q *ViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
+	return q.mutable().All(ctx, exec)
+}
+
+func (q *ViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
+	return q.mutable().Cursor(ctx, exec)
+}
+
+func (q *ViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
+	return q.mutable().Each(ctx, exec)
+}
+
+func hasSelectMod(mods []bob.Mod[*dialect.SelectQuery]) bool {
+	for _, mod := range mods {
+		if _, ok := mod.(bobmods.Select[*dialect.SelectQuery]); ok {
+			return true
+		}
+	}
+	return false
+}
+
+func (q *ViewQuery[T, Ts]) baseQuery() bob.BaseQuery[*dialect.SelectQuery] {
+	return q.Query.baseQuery()
+}
+
+func (q *ViewQuery[T, Ts]) mutable() orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]] {
+	return orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]{
+		ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
+			BaseQuery: q.baseQuery(),
+			Hooks:     q.Hooks,
+		},
+		Scanner: q.Scanner,
+	}
 }
 
 // asCountQuery clones and rewrites an existing query to a count query

@@ -6,11 +6,25 @@ import (
 )
 
 type InsertQuery struct {
-	bob.BaseQuery[*dialect.InsertQuery]
+	derivedInsertQuery
+	materialized *bob.BaseQuery[*dialect.InsertQuery]
 }
 
-func (q InsertQuery) With(queryMods ...bob.Mod[*dialect.InsertQuery]) derivedInsertQuery {
-	return asImmutableInsert(q.BaseQuery).With(queryMods...)
+func (q InsertQuery) With(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
+	q.derivedInsertQuery = q.derivedInsertQuery.With(queryMods...)
+	q.materialized = nil
+	return q
+}
+
+func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
+	return q.With(queryMods...)
+}
+
+func (q InsertQuery) baseQuery() bob.BaseQuery[*dialect.InsertQuery] {
+	if q.materialized != nil {
+		return *q.materialized
+	}
+	return q.derivedInsertQuery.mutableBase()
 }
 
 func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
@@ -19,11 +33,14 @@ func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
 		mod.Apply(q)
 	}
 
+	base := bob.BaseQuery[*dialect.InsertQuery]{
+		Expression: q,
+		Dialect:    dialect.Dialect,
+		QueryType:  bob.QueryTypeInsert,
+	}
+
 	return InsertQuery{
-		BaseQuery: bob.BaseQuery[*dialect.InsertQuery]{
-			Expression: q,
-			Dialect:    dialect.Dialect,
-			QueryType:  bob.QueryTypeInsert,
-		},
+		derivedInsertQuery: asImmutableInsert(base),
+		materialized:       &base,
 	}
 }
