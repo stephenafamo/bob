@@ -1,10 +1,12 @@
 package psql
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/expr"
 )
 
 func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
@@ -238,6 +240,39 @@ func TestImmutableViewQueryApplyDoesNotMutateOriginal(t *testing.T) {
 	}
 	if derivedSQL != "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" > $1)\nORDER BY id DESC\nLIMIT 10\nOFFSET 20\n" {
 		t.Fatalf("derived view query mismatch: %#v", derivedSQL)
+	}
+}
+
+func TestViewSelectQueryHooksUseImmutableSelectQuery(t *testing.T) {
+	view := NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
+
+	var hookSQL string
+	view.SelectQueryHooks.AppendHooks(func(ctx context.Context, exec bob.Executor, q *SelectQuery) (context.Context, error) {
+		sql, _, err := q.Build(ctx)
+		if err != nil {
+			return ctx, err
+		}
+		hookSQL = sql
+		return context.WithValue(ctx, "view-hook-ran", true), nil
+	})
+
+	query := view.Query(
+		sm.Where(Quote("id").EQ(Arg(1))),
+		sm.OrderBy("name"),
+	)
+
+	ctx, err := query.RunHooks(t.Context(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got := ctx.Value("view-hook-ran"); got != true {
+		t.Fatalf("expected hook marker in context, got %#v", got)
+	}
+
+	expected := "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" = $1)\nORDER BY name\n"
+	if hookSQL != expected {
+		t.Fatalf("unexpected hook SQL: %#v", hookSQL)
 	}
 }
 

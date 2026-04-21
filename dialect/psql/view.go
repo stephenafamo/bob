@@ -58,7 +58,7 @@ type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	Columns C
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
-	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
+	SelectQueryHooks bob.Hooks[*SelectQuery, bob.SkipQueryHooksKey]
 }
 
 func (v *View[T, Tslice, C]) Name() Expression {
@@ -95,7 +95,7 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 type ViewQuery[T any, Ts ~[]T] struct {
 	Query   SelectQuery
 	Scanner scan.Mapper[T]
-	Hooks   *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
+	Hooks   *bob.Hooks[*SelectQuery, bob.SkipQueryHooksKey]
 }
 
 func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
@@ -173,7 +173,7 @@ func (q *ViewQuery[T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (con
 		return ctx, nil
 	}
 
-	return q.Hooks.RunHooks(ctx, exec, q.Query.derivedSelectQuery.mutableBase().Expression)
+	return q.Hooks.RunHooks(ctx, exec, &q.Query)
 }
 
 func (q *ViewQuery[T, Ts]) GetLoaders() []bob.Loader {
