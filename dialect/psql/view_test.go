@@ -54,6 +54,20 @@ func TestSomeViewQuery(t *testing.T) {
 	}
 }
 
+func TestSomeViewQueryExplicitSelectReplacesDefaultColumns(t *testing.T) {
+	q := someStructView.Query().Apply(
+		sm.Columns("id"),
+		sm.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	query := selectToString(t, q, 1)
+	expected := "SELECT \nid\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" = $0)\n"
+
+	if query != expected {
+		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
+	}
+}
+
 func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 	t.Helper()
 	ctx := t.Context()

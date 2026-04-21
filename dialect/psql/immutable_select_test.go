@@ -231,7 +231,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 			sm.Where(Quote("id").GT(Arg(0))),
 		)
 
-		if _, _, err := asCountQuery(q.baseQuery()).Build(ctx); err != nil {
+		if _, _, err := asCountQuery(q.Query.baseQuery()).Build(ctx); err != nil {
 			b.Fatal(err)
 		}
 

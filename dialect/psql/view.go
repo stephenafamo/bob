@@ -11,7 +11,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
-	bobmods "github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -82,11 +81,11 @@ func (v *View[T, Tslice, C]) Alias() string {
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query:             Select(sm.Columns(v.Columns), sm.From(v.NameAs())),
-		Scanner:           v.scanner,
-		Hooks:             &v.SelectQueryHooks,
-		usesDefaultSelect: true,
+		Query:   Select(sm.From(v.NameAs())),
+		Scanner: v.scanner,
+		Hooks:   &v.SelectQueryHooks,
 	}
+	q.Query.derivedSelectQuery.state.DefaultSelectColumns = []any{v.Columns}
 	if len(queryMods) == 0 {
 		return q
 	}
@@ -94,18 +93,13 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	Query             SelectQuery
-	Scanner           scan.Mapper[T]
-	Hooks             *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
-	usesDefaultSelect bool
+	Query   SelectQuery
+	Scanner scan.Mapper[T]
+	Hooks   *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
 func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
 	next := *q
-	if next.usesDefaultSelect && overridesDefaultSelect(queryMods) {
-		next.Query.derivedSelectQuery.state.SelectColumns = nil
-		next.usesDefaultSelect = false
-	}
 	next.Query = next.Query.Apply(queryMods...)
 	return &next
 }
@@ -136,12 +130,15 @@ func (q *ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 
 // Count the number of matching rows
 func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	mq := v.mutable()
-	ctx, err := mq.RunHooks(ctx, exec)
+	ctx, err := v.RunHooks(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
-	return bob.One(ctx, exec, asCountQuery(mq.BaseQuery), scan.SingleColumnMapper[int64])
+	sql, args, err := v.Query.AsCount().Build(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return scan.One(ctx, exec, scan.SingleColumnMapper[int64], sql, args...)
 }
 
 // Exists checks if there is any matching row
@@ -151,42 +148,40 @@ func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (b
 }
 
 func (q *ViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
-	return q.mutable().One(ctx, exec)
+	return bob.One(ctx, exec, q, q.Scanner)
 }
 
 func (q *ViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
-	return q.mutable().All(ctx, exec)
+	return bob.Allx[bob.SliceTransformer[T, Ts]](ctx, exec, q, q.Scanner)
 }
 
 func (q *ViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
-	return q.mutable().Cursor(ctx, exec)
+	return bob.Cursor(ctx, exec, q, q.Scanner)
 }
 
 func (q *ViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
-	return q.mutable().Each(ctx, exec)
+	return bob.Each(ctx, exec, q, q.Scanner)
 }
 
-func overridesDefaultSelect(mods []bob.Mod[*dialect.SelectQuery]) bool {
-	for _, mod := range mods {
-		if _, ok := mod.(bobmods.Select[*dialect.SelectQuery]); ok {
-			return true
-		}
+func (q *ViewQuery[T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
+	ctx, err := q.Query.RunHooks(ctx, exec)
+	if err != nil {
+		return ctx, err
 	}
-	return false
-}
 
-func (q *ViewQuery[T, Ts]) baseQuery() bob.BaseQuery[*dialect.SelectQuery] {
-	return q.Query.baseQuery()
-}
-
-func (q *ViewQuery[T, Ts]) mutable() orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]] {
-	return orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]{
-		ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-			BaseQuery: q.baseQuery(),
-			Hooks:     q.Hooks,
-		},
-		Scanner: q.Scanner,
+	if q.Hooks == nil {
+		return ctx, nil
 	}
+
+	return q.Hooks.RunHooks(ctx, exec, q.Query.baseQuery().Expression)
+}
+
+func (q *ViewQuery[T, Ts]) GetLoaders() []bob.Loader {
+	return q.Query.GetLoaders()
+}
+
+func (q *ViewQuery[T, Ts]) GetMapperMods() []scan.MapperMod {
+	return q.Query.GetMapperMods()
 }
 
 // asCountQuery clones and rewrites an existing query to a count query

@@ -23,21 +23,22 @@ type derivedSelectQuery struct {
 }
 
 type immutableSelectState struct {
-	With           clause.With
-	SelectColumns  []any
-	PreloadColumns []any
-	Distinct       psqldialect.Distinct
-	TableRef       clause.TableRef
-	Where          clause.Where
-	GroupBy        clause.GroupBy
-	Having         clause.Having
-	Windows        clause.Windows
-	Combines       clause.Combines
-	OrderBy        clause.OrderBy
-	Limit          clause.Limit
-	Offset         clause.Offset
-	Fetch          clause.Fetch
-	Locks          clause.Locks
+	DefaultSelectColumns []any
+	With                 clause.With
+	SelectColumns        []any
+	PreloadColumns       []any
+	Distinct             psqldialect.Distinct
+	TableRef             clause.TableRef
+	Where                clause.Where
+	GroupBy              clause.GroupBy
+	Having               clause.Having
+	Windows              clause.Windows
+	Combines             clause.Combines
+	OrderBy              clause.OrderBy
+	Limit                clause.Limit
+	Offset               clause.Offset
+	Fetch                clause.Fetch
+	Locks                clause.Locks
 
 	CombinedOrder  clause.OrderBy
 	CombinedLimit  clause.Limit
@@ -78,6 +79,7 @@ func (q derivedSelectQuery) With(queryMods ...bob.Mod[*psqldialect.SelectQuery])
 func (q derivedSelectQuery) AsCount() derivedSelectQuery {
 	next := q.state
 	next.SelectColumns = []any{"count(1)"}
+	next.DefaultSelectColumns = nil
 	next.PreloadColumns = nil
 	next.OrderBy.Expressions = nil
 	next.GroupBy.Groups = nil
@@ -86,7 +88,8 @@ func (q derivedSelectQuery) AsCount() derivedSelectQuery {
 	next.Offset.Count = nil
 	next.Limit.Count = 1
 
-	return derivedSelectQuery{state: next}
+	q.state = next
+	return q
 }
 
 func (q derivedSelectQuery) Build(ctx context.Context) (string, []any, error) {
@@ -154,7 +157,7 @@ func (q derivedSelectQuery) GetMapperMods() []scan.MapperMod {
 func (q derivedSelectQuery) mutableBase() bob.BaseQuery[*psqldialect.SelectQuery] {
 	mutable := &psqldialect.SelectQuery{
 		With:       q.state.With,
-		SelectList: clause.SelectList{Columns: q.state.SelectColumns, PreloadColumns: q.state.PreloadColumns},
+		SelectList: clause.SelectList{Columns: q.state.selectColumns(), PreloadColumns: q.state.PreloadColumns},
 		Distinct:   q.state.Distinct,
 		TableRef:   q.state.TableRef,
 		Where:      q.state.Where,
@@ -189,6 +192,7 @@ func (q derivedSelectQuery) mutableBase() bob.BaseQuery[*psqldialect.SelectQuery
 
 func immutableStateFromMutable(q *psqldialect.SelectQuery) immutableSelectState {
 	return immutableSelectState{
+		DefaultSelectColumns: nil,
 		With: clause.With{
 			Recursive: q.With.Recursive,
 			CTEs:      append([]bob.Expression(nil), q.With.CTEs...),
@@ -246,6 +250,13 @@ func (s immutableSelectState) supportsNativeWrite() bool {
 		s.CombinedFetch.Count == nil
 }
 
+func (s immutableSelectState) selectColumns() []any {
+	if len(s.SelectColumns) > 0 {
+		return s.SelectColumns
+	}
+	return s.DefaultSelectColumns
+}
+
 func cloneAnySlice(values []any) []any {
 	if values == nil {
 		return nil
@@ -256,7 +267,7 @@ func cloneAnySlice(values []any) []any {
 func (s immutableSelectState) toMutable() psqldialect.SelectQuery {
 	return psqldialect.SelectQuery{
 		With:           s.With,
-		SelectList:     clause.SelectList{Columns: s.SelectColumns, PreloadColumns: s.PreloadColumns},
+		SelectList:     clause.SelectList{Columns: s.selectColumns(), PreloadColumns: s.PreloadColumns},
 		Distinct:       s.Distinct,
 		TableRef:       s.TableRef,
 		Where:          s.Where,
@@ -383,10 +394,11 @@ func (w *immutableSelectWriter) writeQuery(q immutableSelectState) error {
 	}
 
 	w.w.WriteString("\n")
-	if len(q.SelectColumns) == 0 && len(q.PreloadColumns) == 0 {
+	selectColumns := q.selectColumns()
+	if len(selectColumns) == 0 && len(q.PreloadColumns) == 0 {
 		w.w.WriteString("*")
 	} else {
-		allCols := append([]any(nil), q.SelectColumns...)
+		allCols := append([]any(nil), selectColumns...)
 		allCols = append(allCols, q.PreloadColumns...)
 		if err := w.writeSliceAny(allCols, ", "); err != nil {
 			return err
