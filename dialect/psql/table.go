@@ -76,7 +76,7 @@ func (t *Table[T, Tslice, Tset, C]) PrimaryKey() expr.ColumnsExpr {
 func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *ormInsertQuery[T, Tslice] {
 	q := &ormInsertQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
-			BaseQuery: Insert(im.Into(t.NameAs(), t.nonGeneratedCols...)).baseQuery(),
+			BaseQuery: Insert(im.Into(t.NameAs(), t.nonGeneratedCols...)).derivedInsertQuery.mutableBase(),
 			Hooks:     &t.InsertQueryHooks,
 		},
 		Scanner: t.scanner,
@@ -100,7 +100,7 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *ormUpdateQuery[T, Tslice] {
 	q := &ormUpdateQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.UpdateQuery]{
-			BaseQuery: Update(um.Table(t.NameAs())).baseQuery(),
+			BaseQuery: Update(um.Table(t.NameAs())).derivedUpdateQuery.mutableBase(),
 			Hooks:     &t.UpdateQueryHooks,
 		},
 		Scanner: t.scanner,
@@ -124,7 +124,7 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *ormDeleteQuery[T, Tslice] {
 	q := &ormDeleteQuery[T, Tslice]{
 		ExecQuery: orm.ExecQuery[*dialect.DeleteQuery]{
-			BaseQuery: Delete(dm.From(t.NameAs())).baseQuery(),
+			BaseQuery: Delete(dm.From(t.NameAs())).derivedDeleteQuery.mutableBase(),
 			Hooks:     &t.DeleteQueryHooks,
 		},
 		Scanner: t.scanner,

@@ -18,10 +18,6 @@ func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQue
 	return q.With(queryMods...)
 }
 
-func (q InsertQuery) baseQuery() bob.BaseQuery[*dialect.InsertQuery] {
-	return q.derivedInsertQuery.mutableBase()
-}
-
 func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
 	q := &dialect.InsertQuery{}
 	for _, mod := range queryMods {

@@ -18,10 +18,6 @@ func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQue
 	return q.With(queryMods...)
 }
 
-func (q UpdateQuery) baseQuery() bob.BaseQuery[*dialect.UpdateQuery] {
-	return q.derivedUpdateQuery.mutableBase()
-}
-
 func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
 	q := &dialect.UpdateQuery{}
 	for _, mod := range queryMods {

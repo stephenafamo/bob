@@ -18,10 +18,6 @@ func (q SelectQuery) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQue
 	return q.With(queryMods...)
 }
 
-func (q SelectQuery) baseQuery() bob.BaseQuery[*dialect.SelectQuery] {
-	return q.derivedSelectQuery.mutableBase()
-}
-
 func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
 	q := &dialect.SelectQuery{}
 	for _, mod := range queryMods {
