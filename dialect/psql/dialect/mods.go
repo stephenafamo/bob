@@ -19,14 +19,6 @@ func (di Distinct) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
 }
 
-type DistinctMod struct {
-	On []any
-}
-
-func (d DistinctMod) Apply(q *SelectQuery) {
-	q.Distinct.On = d.On
-}
-
 type UpdateOnly bool
 
 func (o UpdateOnly) Apply(q *UpdateQuery) {
@@ -55,26 +47,6 @@ type InsertTable clause.TableRef
 
 func (t InsertTable) Apply(q *InsertQuery) {
 	q.TableRef = clause.TableRef(t)
-}
-
-type UpdateSet []any
-
-func (s UpdateSet) Apply(q *UpdateQuery) {
-	q.Set.Set = append(q.Set.Set, []any(s)...)
-}
-
-type InsertOverriding string
-
-func (o InsertOverriding) Apply(q *InsertQuery) {
-	q.Overriding = string(o)
-}
-
-type InsertQuerySource struct {
-	Query bob.Query
-}
-
-func (s InsertQuerySource) Apply(q *InsertQuery) {
-	q.Query = s.Query
 }
 
 func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {

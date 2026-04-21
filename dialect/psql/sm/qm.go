@@ -20,7 +20,7 @@ func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
 		on = []any{} // nil means no distinct
 	}
 
-	return dialect.DistinctMod{On: on}
+	return mods.Distinct[*dialect.SelectQuery](on)
 }
 
 func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {

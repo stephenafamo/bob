@@ -33,7 +33,7 @@ func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
-	return dialect.UpdateSet(internal.ToAnySlice(sets))
+	return mods.SetExprs[*dialect.UpdateQuery](internal.ToAnySlice(sets))
 }
 
 func SetCol(from string) mods.Set[*dialect.UpdateQuery] {

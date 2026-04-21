@@ -33,11 +33,11 @@ func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQu
 }
 
 func OverridingSystem() bob.Mod[*dialect.InsertQuery] {
-	return dialect.InsertOverriding("SYSTEM")
+	return mods.Overriding[*dialect.InsertQuery]("SYSTEM")
 }
 
 func OverridingUser() bob.Mod[*dialect.InsertQuery] {
-	return dialect.InsertOverriding("USER")
+	return mods.Overriding[*dialect.InsertQuery]("USER")
 }
 
 func Values(clauses ...bob.Expression) bob.Mod[*dialect.InsertQuery] {
@@ -50,7 +50,7 @@ func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
 
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
-	return dialect.InsertQuerySource{Query: q}
+	return mods.QuerySource[*dialect.InsertQuery]{Query: q}
 }
 
 // The column to target. Will auto add brackets

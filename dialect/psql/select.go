@@ -10,7 +10,7 @@ type SelectQuery struct {
 }
 
 func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
-	if next, ok := deriveSelect(q.Expression, queryMods...); ok {
+	if next, ok := q.Expression.Derive(queryMods...); ok {
 		q.Expression = next
 		return q
 	}

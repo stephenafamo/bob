@@ -36,6 +36,15 @@ type SelectQuery struct {
 	CombinedOffset clause.Offset
 }
 
+func (s *SelectQuery) SetDistinctValues(on []any) {
+	if on == nil {
+		s.Distinct.On = nil
+		return
+	}
+
+	s.Distinct.On = append(make([]any, 0, len(on)), on...)
+}
+
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 

@@ -43,6 +43,12 @@ func (s Select[Q]) Apply(q Q) {
 	q.AppendSelect(s...)
 }
 
+type Distinct[Q interface{ SetDistinctValues([]any) }] []any
+
+func (d Distinct[Q]) Apply(q Q) {
+	q.SetDistinctValues([]any(d))
+}
+
 type Preload[Q interface{ AppendPreloadSelect(columns ...any) }] []any
 
 func (s Preload[Q]) Apply(q Q) {
@@ -155,6 +161,20 @@ func (r Rows[Q]) Apply(q Q) {
 	}
 }
 
+type QuerySource[Q interface{ SetQuery(bob.Query) }] struct {
+	Query bob.Query
+}
+
+func (s QuerySource[Q]) Apply(q Q) {
+	q.SetQuery(s.Query)
+}
+
+type Overriding[Q interface{ SetOverriding(string) }] string
+
+func (o Overriding[Q]) Apply(q Q) {
+	q.SetOverriding(string(o))
+}
+
 type Returning[Q interface{ AppendReturning(vals ...any) }] []any
 
 func (s Returning[Q]) Apply(q Q) {
@@ -169,6 +189,12 @@ func (s Set[Q]) To(to any) bob.Mod[Q] {
 
 func (s Set[Q]) ToArg(to any) bob.Mod[Q] {
 	return set[Q]{expr.OP("=", expr.Quote(s...), expr.Arg(to))}
+}
+
+type SetExprs[Q interface{ AppendSet(clauses ...any) }] []any
+
+func (s SetExprs[Q]) Apply(q Q) {
+	q.AppendSet(s...)
 }
 
 type set[Q interface{ AppendSet(clauses ...any) }] []any

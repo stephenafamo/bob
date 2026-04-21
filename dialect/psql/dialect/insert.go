@@ -32,6 +32,14 @@ type InsertQuery struct {
 	bob.ContextualModdable[*InsertQuery]
 }
 
+func (i *InsertQuery) SetOverriding(overriding string) {
+	i.Overriding = overriding
+}
+
+func (i *InsertQuery) SetQuery(q bob.Query) {
+	i.Values.Query = q
+}
+
 func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 

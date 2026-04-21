@@ -10,7 +10,7 @@ type DeleteQuery struct {
 }
 
 func (q DeleteQuery) With(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
-	if next, ok := deriveDelete(q.Expression, queryMods...); ok {
+	if next, ok := q.Expression.Derive(queryMods...); ok {
 		q.Expression = next
 		return q
 	}

@@ -10,7 +10,7 @@ type InsertQuery struct {
 }
 
 func (q InsertQuery) With(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
-	if next, ok := deriveInsert(q.Expression, queryMods...); ok {
+	if next, ok := q.Expression.Derive(queryMods...); ok {
 		q.Expression = next
 		return q
 	}
