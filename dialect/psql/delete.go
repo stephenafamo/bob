@@ -19,6 +19,15 @@ func (q DeleteQuery) Apply(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQue
 }
 
 func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
+	state, ok := (immutableDeleteState{}).withMods(queryMods...)
+	if ok {
+		return DeleteQuery{
+			derivedDeleteQuery: derivedDeleteQuery{
+				state: state,
+			},
+		}
+	}
+
 	q := &dialect.DeleteQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)

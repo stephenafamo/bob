@@ -19,6 +19,15 @@ func (q SelectQuery) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQue
 }
 
 func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
+	state, ok := (immutableSelectState{}).withMods(queryMods...)
+	if ok {
+		return SelectQuery{
+			derivedSelectQuery: derivedSelectQuery{
+				state: state,
+			},
+		}
+	}
+
 	q := &dialect.SelectQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)

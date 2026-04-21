@@ -19,6 +19,15 @@ func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQue
 }
 
 func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
+	state, ok := (immutableInsertState{}).withMods(queryMods...)
+	if ok {
+		return InsertQuery{
+			derivedInsertQuery: derivedInsertQuery{
+				state: state,
+			},
+		}
+	}
+
 	q := &dialect.InsertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)

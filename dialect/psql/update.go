@@ -19,6 +19,15 @@ func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQue
 }
 
 func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
+	state, ok := (immutableUpdateState{}).withMods(queryMods...)
+	if ok {
+		return UpdateQuery{
+			derivedUpdateQuery: derivedUpdateQuery{
+				state: state,
+			},
+		}
+	}
+
 	q := &dialect.UpdateQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
