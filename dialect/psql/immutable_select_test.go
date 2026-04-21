@@ -150,6 +150,69 @@ func TestImmutableSelectQueryApplyFallbackDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
+func TestImmutableSelectQueryApplyCombinedDoesNotMutateOriginal(t *testing.T) {
+	base := Select(
+		sm.Columns("id", "name"),
+		sm.From("users"),
+		sm.Limit(100),
+		sm.OrderBy("id"),
+	)
+
+	derived := base.Apply(
+		sm.Union(Select(
+			sm.Columns("id", "name"),
+			sm.From("admins"),
+			sm.Limit(10),
+			sm.OrderBy("id"),
+		)),
+		sm.OrderCombined("id"),
+		sm.LimitCombined(1000),
+	)
+
+	if derived.derivedSelectQuery.requiresMutableWrite() {
+		t.Fatal("expected combined select shape to use native immutable writer")
+	}
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseSQL != "SELECT \nid, name\nFROM users\nORDER BY id\nLIMIT 100\n" {
+		t.Fatalf("base query changed unexpectedly: %#v", baseSQL)
+	}
+
+	derivedSQL, derivedArgs, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := Select(
+		sm.Columns("id", "name"),
+		sm.From("users"),
+		sm.Limit(100),
+		sm.OrderBy("id"),
+		sm.Union(Select(
+			sm.Columns("id", "name"),
+			sm.From("admins"),
+			sm.Limit(10),
+			sm.OrderBy("id"),
+		)),
+		sm.OrderCombined("id"),
+		sm.LimitCombined(1000),
+	)
+
+	expectedSQL, expectedArgs, err := expected.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if derivedSQL != expectedSQL {
+		t.Fatalf("derived combined query mismatch: got %#v want %#v", derivedSQL, expectedSQL)
+	}
+	if len(derivedArgs) != len(expectedArgs) {
+		t.Fatalf("derived combined args mismatch: got %d want %d", len(derivedArgs), len(expectedArgs))
+	}
+}
+
 func TestImmutableViewQueryApplyDoesNotMutateOriginal(t *testing.T) {
 	base := someStructView.Query(
 		sm.Where(Quote("id").GT(Arg(0))),

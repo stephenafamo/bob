@@ -243,11 +243,7 @@ func immutableStateFromMutable(q *psqldialect.SelectQuery) immutableSelectState 
 }
 
 func (s immutableSelectState) supportsNativeWrite() bool {
-	return len(s.Combines.Queries) == 0 &&
-		len(s.CombinedOrder.Expressions) == 0 &&
-		s.CombinedLimit.Count == nil &&
-		s.CombinedOffset.Count == nil &&
-		s.CombinedFetch.Count == nil
+	return true
 }
 
 func (s immutableSelectState) selectColumns() []any {
@@ -379,6 +375,17 @@ func (w *immutableSelectWriter) writeQuery(q immutableSelectState) error {
 		w.w.WriteString("\n")
 	}
 
+	needsParens := len(q.Combines.Queries) > 0 &&
+		(len(q.OrderBy.Expressions) > 0 ||
+			q.Limit.Count != nil ||
+			q.Offset.Count != nil ||
+			q.Fetch.Count != nil ||
+			len(q.Locks.Locks) > 0)
+
+	if needsParens {
+		w.w.WriteString("(")
+	}
+
 	w.w.WriteString("SELECT ")
 
 	if q.Distinct.On != nil {
@@ -486,6 +493,52 @@ func (w *immutableSelectWriter) writeQuery(q immutableSelectState) error {
 		w.w.WriteString("\n")
 		if err := w.writeAny(lock); err != nil {
 			return err
+		}
+	}
+
+	if needsParens {
+		w.w.WriteString(")")
+	}
+
+	for _, combine := range q.Combines.Queries {
+		w.w.WriteString("\n")
+		args, err := combine.WriteSQL(w.ctx, w.w, psqldialect.Dialect, w.argPos())
+		if err != nil {
+			return err
+		}
+		w.args = append(w.args, args...)
+	}
+
+	if len(q.CombinedOrder.Expressions) > 0 {
+		w.w.WriteString("\nORDER BY ")
+		if err := w.writeOrderExprs(q.CombinedOrder.Expressions); err != nil {
+			return err
+		}
+	}
+
+	if q.CombinedLimit.Count != nil {
+		w.w.WriteString("\nLIMIT ")
+		if err := w.writeAny(q.CombinedLimit.Count); err != nil {
+			return err
+		}
+	}
+
+	if q.CombinedOffset.Count != nil {
+		w.w.WriteString("\nOFFSET ")
+		if err := w.writeAny(q.CombinedOffset.Count); err != nil {
+			return err
+		}
+	}
+
+	if q.CombinedFetch.Count != nil {
+		w.w.WriteString("\nFETCH NEXT ")
+		if err := w.writeAny(q.CombinedFetch.Count); err != nil {
+			return err
+		}
+		if q.CombinedFetch.WithTies {
+			w.w.WriteString(" ROWS WITH TIES")
+		} else {
+			w.w.WriteString(" ROWS ONLY")
 		}
 	}
 
