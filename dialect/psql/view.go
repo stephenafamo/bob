@@ -82,11 +82,10 @@ func (v *View[T, Tslice, C]) Alias() string {
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query:         Select(sm.Columns(v.Columns), sm.From(v.NameAs())),
-		Scanner:       v.scanner,
-		Hooks:         &v.SelectQueryHooks,
-		defaultSelect: v.Columns,
-		defaulted:     true,
+		Query:             Select(sm.Columns(v.Columns), sm.From(v.NameAs())),
+		Scanner:           v.scanner,
+		Hooks:             &v.SelectQueryHooks,
+		usesDefaultSelect: true,
 	}
 	if len(queryMods) == 0 {
 		return q
@@ -95,18 +94,17 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	Query         SelectQuery
-	Scanner       scan.Mapper[T]
-	Hooks         *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
-	defaultSelect bob.Expression
-	defaulted     bool
+	Query             SelectQuery
+	Scanner           scan.Mapper[T]
+	Hooks             *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
+	usesDefaultSelect bool
 }
 
 func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
 	next := *q
-	if hasSelectMod(queryMods) && next.defaulted {
+	if next.usesDefaultSelect && overridesDefaultSelect(queryMods) {
 		next.Query.derivedSelectQuery.state.SelectColumns = nil
-		next.defaulted = false
+		next.usesDefaultSelect = false
 	}
 	next.Query = next.Query.Apply(queryMods...)
 	return &next
@@ -168,7 +166,7 @@ func (q *ViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(fu
 	return q.mutable().Each(ctx, exec)
 }
 
-func hasSelectMod(mods []bob.Mod[*dialect.SelectQuery]) bool {
+func overridesDefaultSelect(mods []bob.Mod[*dialect.SelectQuery]) bool {
 	for _, mod := range mods {
 		if _, ok := mod.(bobmods.Select[*dialect.SelectQuery]); ok {
 			return true

@@ -104,7 +104,7 @@ func (q derivedSelectQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	if len(q.contextualMods) > 0 || !q.state.supportsNativeWrite() {
+	if q.requiresMutableWrite() {
 		return q.mutableBase().WriteQuery(ctx, w, start)
 	}
 
@@ -119,6 +119,10 @@ func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, s
 	}
 
 	return writer.args, nil
+}
+
+func (q derivedSelectQuery) requiresMutableWrite() bool {
+	return len(q.contextualMods) > 0 || !q.state.supportsNativeWrite()
 }
 
 func (q derivedSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
