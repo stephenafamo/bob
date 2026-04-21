@@ -14,6 +14,8 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/dialect/psql/dm"
+	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
@@ -130,6 +132,125 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 }
 
 var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"))
+
+func TestTableUpdateDefaultsReturningAllColumns(t *testing.T) {
+	q := userTable.Update(
+		um.SetCol("name").ToArg("Stephen"),
+		um.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "UPDATE \"users\" AS \"users\" SET\n\"name\" = $1\nWHERE (\"id\" = $2)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\""
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 2 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableUpdateExplicitReturningOverridesDefault(t *testing.T) {
+	q := userTable.Update(
+		um.SetCol("name").ToArg("Stephen"),
+		um.Where(Quote("id").EQ(Arg(1))),
+		um.Returning("id"),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "UPDATE \"users\" AS \"users\" SET\n\"name\" = $1\nWHERE (\"id\" = $2)\nRETURNING id"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 2 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableInsertDefaultsReturningAllColumns(t *testing.T) {
+	q := userTable.Insert(
+		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "INSERT INTO \"users\" AS \"users\"(\"id\", \"name\", \"email\")\nVALUES ($1, $2, $3)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\"\n"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 3 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableInsertExplicitReturningOverridesDefault(t *testing.T) {
+	q := userTable.Insert(
+		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
+		im.Returning("id"),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "INSERT INTO \"users\" AS \"users\"(\"id\", \"name\", \"email\")\nVALUES ($1, $2, $3)\nRETURNING id\n"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 3 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableDeleteDefaultsReturningAllColumns(t *testing.T) {
+	q := userTable.Delete(
+		dm.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"id\" = $1)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\""
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 1 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableDeleteExplicitReturningOverridesDefault(t *testing.T) {
+	q := userTable.Delete(
+		dm.Where(Quote("id").EQ(Arg(1))),
+		dm.Returning("id"),
+	)
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"id\" = $1)\nRETURNING id"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 1 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
 
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()
