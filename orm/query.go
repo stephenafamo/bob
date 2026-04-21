@@ -10,11 +10,6 @@ import (
 	"github.com/stephenafamo/scan"
 )
 
-type returningAware interface {
-	ReturningExpressions() []any
-	SetReturning(...any)
-}
-
 type ExecQuery[Q bob.Expression] struct {
 	bob.BaseQuery[Q]
 	Hooks *bob.Hooks[Q, bob.SkipQueryHooksKey]
@@ -33,7 +28,7 @@ func (q *ExecQuery[Q]) With(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
 	}
 
 	next := q.Clone()
-	applyQueryMods(next.BaseQuery.Expression, queryMods...)
+	next.BaseQuery.Apply(queryMods...)
 	return &next
 }
 
@@ -84,7 +79,7 @@ func (q *Query[Q, T, Ts, Tr]) With(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr]
 	}
 
 	next := q.Clone()
-	applyQueryMods(next.BaseQuery.Expression, queryMods...)
+	next.BaseQuery.Apply(queryMods...)
 	return &next
 }
 
@@ -128,37 +123,6 @@ type ModQuery[Q any, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] str
 
 func (q ModQuery[Q, E, T, Ts, Tr]) Apply(e Q) {
 	q.Mod.Apply(e)
-}
-
-func applyQueryMods[Q any](query Q, queryMods ...bob.Mod[Q]) {
-	replacedDefaultReturning := false
-
-	for _, mod := range queryMods {
-		if returning, ok := any(mod).(interface{ ReturningValues() []any }); ok && !replacedDefaultReturning {
-			if returningClause, ok := any(query).(returningAware); ok && hasOnlyDefaultReturning(returningClause.ReturningExpressions()) {
-				returningClause.SetReturning(returning.ReturningValues()...)
-				replacedDefaultReturning = true
-				continue
-			}
-		}
-
-		mod.Apply(query)
-	}
-}
-
-func hasOnlyDefaultReturning(expressions []any) bool {
-	if len(expressions) == 0 {
-		return false
-	}
-
-	for _, expression := range expressions {
-		marker, ok := expression.(interface{ IsDefaultReturning() bool })
-		if !ok || !marker.IsDefaultReturning() {
-			return false
-		}
-	}
-
-	return true
 }
 
 func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {
