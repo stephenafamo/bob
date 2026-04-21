@@ -267,16 +267,32 @@ func (s immutableSelectState) toMutable() psqldialect.SelectQuery {
 
 func (s immutableSelectState) withMods(queryMods ...bob.Mod[*psqldialect.SelectQuery]) (immutableSelectState, bool) {
 	next := s
-	var cloneSelect, cloneWhere, cloneGroup, cloneHaving, cloneOrder, cloneWindows, cloneLocks bool
+	var cloneWith, cloneSelect, cloneWhere, cloneGroup, cloneHaving, cloneOrder, cloneWindows, cloneLocks, cloneJoins, cloneCombines, cloneCombinedOrder, clonePreload bool
 
 	for _, mod := range queryMods {
 		switch m := mod.(type) {
+		case mods.Recursive[*psqldialect.SelectQuery]:
+			next.With.Recursive = bool(m)
+		case psqldialect.CTEChain[*psqldialect.SelectQuery]:
+			if !cloneWith {
+				next.With.CTEs = append([]bob.Expression(nil), s.With.CTEs...)
+				cloneWith = true
+			}
+			next.With.CTEs = append(next.With.CTEs, m())
+		case psqldialect.DistinctMod:
+			next.Distinct.On = cloneAnySlice(m.On)
 		case mods.Select[*psqldialect.SelectQuery]:
 			if !cloneSelect {
 				next.SelectColumns = append([]any(nil), s.SelectColumns...)
 				cloneSelect = true
 			}
 			next.SelectColumns = append(next.SelectColumns, []any(m)...)
+		case mods.Preload[*psqldialect.SelectQuery]:
+			if !clonePreload {
+				next.PreloadColumns = append([]any(nil), s.PreloadColumns...)
+				clonePreload = true
+			}
+			next.PreloadColumns = append(next.PreloadColumns, []any(m)...)
 		case mods.Where[*psqldialect.SelectQuery]:
 			if !cloneWhere {
 				next.Where.Conditions = append([]any(nil), s.Where.Conditions...)
@@ -289,6 +305,10 @@ func (s immutableSelectState) withMods(queryMods ...bob.Mod[*psqldialect.SelectQ
 				cloneGroup = true
 			}
 			next.GroupBy.Groups = append(next.GroupBy.Groups, m.E)
+		case mods.GroupByDistinct[*psqldialect.SelectQuery]:
+			next.GroupBy.Distinct = bool(m)
+		case mods.GroupWith[*psqldialect.SelectQuery]:
+			next.GroupBy.With = string(m)
 		case mods.Having[*psqldialect.SelectQuery]:
 			if !cloneHaving {
 				next.Having.Conditions = append([]any(nil), s.Having.Conditions...)
@@ -307,6 +327,18 @@ func (s immutableSelectState) withMods(queryMods ...bob.Mod[*psqldialect.SelectQ
 				cloneOrder = true
 			}
 			next.OrderBy.Expressions = append(next.OrderBy.Expressions, m())
+		case mods.Join[*psqldialect.SelectQuery]:
+			if !cloneJoins {
+				next.TableRef.Joins = append([]clause.Join(nil), s.TableRef.Joins...)
+				cloneJoins = true
+			}
+			next.TableRef.Joins = append(next.TableRef.Joins, clause.Join(m))
+		case psqldialect.CrossJoinChain[*psqldialect.SelectQuery]:
+			if !cloneJoins {
+				next.TableRef.Joins = append([]clause.Join(nil), s.TableRef.Joins...)
+				cloneJoins = true
+			}
+			next.TableRef.Joins = append(next.TableRef.Joins, m())
 		case mods.NamedWindow[*psqldialect.SelectQuery]:
 			if !cloneWindows {
 				next.Windows.Windows = append([]bob.Expression(nil), s.Windows.Windows...)
@@ -319,6 +351,25 @@ func (s immutableSelectState) withMods(queryMods ...bob.Mod[*psqldialect.SelectQ
 				cloneLocks = true
 			}
 			next.Locks.Locks = append(next.Locks.Locks, m())
+		case mods.Combine[*psqldialect.SelectQuery]:
+			if !cloneCombines {
+				next.Combines.Queries = append([]clause.Combine(nil), s.Combines.Queries...)
+				cloneCombines = true
+			}
+			next.Combines.Queries = append(next.Combines.Queries, clause.Combine(m))
+		case psqldialect.OrderCombined:
+			if !cloneCombinedOrder {
+				next.CombinedOrder.Expressions = append([]bob.Expression(nil), s.CombinedOrder.Expressions...)
+				cloneCombinedOrder = true
+			}
+			next.CombinedOrder.Expressions = append(next.CombinedOrder.Expressions, m())
+		case psqldialect.LimitCombined:
+			next.CombinedLimit.Count = m.Count
+		case psqldialect.OffsetCombined:
+			next.CombinedOffset.Count = m.Count
+		case psqldialect.FetchCombined:
+			next.CombinedFetch.Count = m.Count
+			next.CombinedFetch.WithTies = m.WithTies
 		case psqldialect.FromChain[*psqldialect.SelectQuery]:
 			next.TableRef = cloneTableRef(m())
 		default:

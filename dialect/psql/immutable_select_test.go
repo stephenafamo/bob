@@ -272,6 +272,82 @@ func TestViewSelectQueryHooksUseImmutableSelectQuery(t *testing.T) {
 	}
 }
 
+func TestImmutableSelectQueryApplySupportsCommonDerivedMods(t *testing.T) {
+	base := Select(
+		sm.Columns("users.id", "users.name"),
+		sm.From("users"),
+		sm.Where(Quote("users", "active").EQ(Arg(true))),
+	)
+
+	derived := base.Apply(
+		sm.With("admins", "id").As(Select(
+			sm.Columns("id"),
+			sm.From("admins"),
+		)),
+		sm.Recursive(true),
+		sm.Distinct("users.id"),
+		sm.LeftJoin("admins").As("a").OnEQ(Quote("a", "id"), Quote("users", "id")),
+		sm.GroupBy("users.id"),
+		sm.GroupByDistinct(true),
+		sm.UnionAll(Select(
+			sm.Columns("users.id", "users.name"),
+			sm.From("archived_users"),
+		)),
+		sm.OrderCombined("users.id"),
+		sm.LimitCombined(10),
+		sm.OffsetCombined(5),
+		sm.FetchCombined(3, false),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseSQL != "SELECT \nusers.id, users.name\nFROM users\nWHERE (\"users\".\"active\" = $1)\n" {
+		t.Fatalf("base query changed unexpectedly: %#v", baseSQL)
+	}
+
+	derivedSQL, derivedArgs, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := Select(
+		sm.Columns("users.id", "users.name"),
+		sm.From("users"),
+		sm.Where(Quote("users", "active").EQ(Arg(true))),
+		sm.With("admins", "id").As(Select(
+			sm.Columns("id"),
+			sm.From("admins"),
+		)),
+		sm.Recursive(true),
+		sm.Distinct("users.id"),
+		sm.LeftJoin("admins").As("a").OnEQ(Quote("a", "id"), Quote("users", "id")),
+		sm.GroupBy("users.id"),
+		sm.GroupByDistinct(true),
+		sm.UnionAll(Select(
+			sm.Columns("users.id", "users.name"),
+			sm.From("archived_users"),
+		)),
+		sm.OrderCombined("users.id"),
+		sm.LimitCombined(10),
+		sm.OffsetCombined(5),
+		sm.FetchCombined(3, false),
+	)
+
+	expectedSQL, expectedArgs, err := expected.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if derivedSQL != expectedSQL {
+		t.Fatalf("derived query mismatch: got %#v want %#v", derivedSQL, expectedSQL)
+	}
+	if len(derivedArgs) != len(expectedArgs) {
+		t.Fatalf("derived args mismatch: got %d want %d", len(derivedArgs), len(expectedArgs))
+	}
+}
+
 func BenchmarkBaseQueryApplyMain(b *testing.B) {
 	ctx := b.Context()
 

@@ -19,6 +19,14 @@ func (di Distinct) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
 }
 
+type DistinctMod struct {
+	On []any
+}
+
+func (d DistinctMod) Apply(q *SelectQuery) {
+	q.Distinct.On = d.On
+}
+
 func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {
 	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{
@@ -221,6 +229,32 @@ type OrderCombined OrderBy[*SelectQuery]
 
 func (o OrderCombined) Apply(q *SelectQuery) {
 	q.CombinedOrder.AppendOrder(o())
+}
+
+type LimitCombined struct {
+	Count any
+}
+
+func (l LimitCombined) Apply(q *SelectQuery) {
+	q.CombinedLimit.SetLimit(l.Count)
+}
+
+type OffsetCombined struct {
+	Count any
+}
+
+func (o OffsetCombined) Apply(q *SelectQuery) {
+	q.CombinedOffset.SetOffset(o.Count)
+}
+
+type FetchCombined struct {
+	Count    any
+	WithTies bool
+}
+
+func (f FetchCombined) Apply(q *SelectQuery) {
+	q.CombinedFetch.Count = f.Count
+	q.CombinedFetch.WithTies = f.WithTies
 }
 
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef

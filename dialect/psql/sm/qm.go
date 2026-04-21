@@ -20,9 +20,7 @@ func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
 		on = []any{} // nil means no distinct
 	}
 
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.Distinct.On = on
-	})
+	return dialect.DistinctMod{On: on}
 }
 
 func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
@@ -219,22 +217,15 @@ func OrderCombined(e any) dialect.OrderCombined {
 
 // To apply limit to the result of a UNION, INTERSECT, or EXCEPT query
 func LimitCombined(count any) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedLimit.SetLimit(count)
-	})
+	return dialect.LimitCombined{Count: count}
 }
 
 // To apply offset to the result of a UNION, INTERSECT, or EXCEPT query
 func OffsetCombined(count any) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedOffset.SetOffset(count)
-	})
+	return dialect.OffsetCombined{Count: count}
 }
 
 // To apply fetch to the result of a UNION, INTERSECT, or EXCEPT query
 func FetchCombined(count any, withTies bool) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedFetch.Count = count
-		q.CombinedFetch.WithTies = withTies
-	})
+	return dialect.FetchCombined{Count: count, WithTies: withTies}
 }
