@@ -85,40 +85,6 @@ func (base *SelectQuery) Derive(queryMods ...bob.Mod[*SelectQuery]) (*SelectQuer
 	return &next, true
 }
 
-func (base *UpdateQuery) Derive(queryMods ...bob.Mod[*UpdateQuery]) (*UpdateQuery, bool) {
-	next := *base
-	var cloneWith, cloneSet, cloneWhere, cloneReturning, cloneJoins bool
-
-	for _, mod := range queryMods {
-		switch m := mod.(type) {
-		case mods.Recursive[*UpdateQuery]:
-			next.With.Recursive = bool(m)
-		case CTEChain[*UpdateQuery]:
-			appendDerived[bob.Expression](&next.With.CTEs, base.With.CTEs, &cloneWith, m())
-		case mods.TargetOnly[*UpdateQuery]:
-			next.Only = bool(m)
-		case mods.TargetTable[*UpdateQuery]:
-			next.Table = cloneTableRef(clause.TableRef(m))
-		case mods.SetExprs[*UpdateQuery]:
-			appendDerived(&next.Set.Set, base.Set.Set, &cloneSet, []any(m)...)
-		case mods.Where[*UpdateQuery]:
-			appendDerived[any](&next.Where.Conditions, base.Where.Conditions, &cloneWhere, m.E)
-		case mods.Returning[*UpdateQuery]:
-			appendDerived(&next.Returning.Expressions, base.Returning.Expressions, &cloneReturning, []any(m)...)
-		case FromChain[*UpdateQuery]:
-			next.TableRef = cloneTableRef(m())
-		case mods.Join[*UpdateQuery]:
-			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, clause.Join(m))
-		case CrossJoinChain[*UpdateQuery]:
-			appendDerived(&next.TableRef.Joins, base.TableRef.Joins, &cloneJoins, m())
-		default:
-			return nil, false
-		}
-	}
-
-	return &next, true
-}
-
 func (base *DeleteQuery) Derive(queryMods ...bob.Mod[*DeleteQuery]) (*DeleteQuery, bool) {
 	next := *base
 	var cloneWith, cloneWhere, cloneReturning, cloneJoins bool

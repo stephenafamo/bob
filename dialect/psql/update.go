@@ -10,10 +10,6 @@ type UpdateQuery struct {
 }
 
 func (q UpdateQuery) With(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
-	if next, ok := q.Expression.Derive(queryMods...); ok {
-		q.Expression = next
-		return q
-	}
 	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
 }
