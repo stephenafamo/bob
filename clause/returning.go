@@ -15,10 +15,6 @@ func (r *Returning) HasReturning() bool {
 	return len(r.Expressions) > 0
 }
 
-func (r *Returning) SetReturning(columns ...any) {
-	r.Expressions = append(r.Expressions[:0], columns...)
-}
-
 func (r *Returning) AppendReturning(columns ...any) {
 	r.Expressions = append(r.Expressions, columns...)
 }

@@ -22,23 +22,23 @@ type (
 
 type ormInsertQuery[T any, Tslice ~[]T] struct {
 	orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-	hasDefaultReturning bool
+	defaultReturning bob.Expression
 }
 
 type ormUpdateQuery[T any, Tslice ~[]T] struct {
 	orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-	hasDefaultReturning bool
+	defaultReturning bob.Expression
 }
 
 type ormDeleteQuery[T any, Tslice ~[]T] struct {
 	orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
-	hasDefaultReturning bool
+	defaultReturning bob.Expression
 }
 
 func (q ormInsertQuery[T, Tslice]) clone() ormInsertQuery[T, Tslice] {
 	return ormInsertQuery[T, Tslice]{
-		Query:               q.Query.Clone(),
-		hasDefaultReturning: q.hasDefaultReturning,
+		Query:            q.Query.Clone(),
+		defaultReturning: q.defaultReturning,
 	}
 }
 
@@ -48,7 +48,9 @@ func (q *ormInsertQuery[T, Tslice]) With(queryMods ...bob.Mod[*dialect.InsertQue
 	}
 
 	next := q.clone()
-	applyTableQueryMods(next.Expression, &next.hasDefaultReturning, queryMods...)
+	applyTableQueryMods(next.Expression, next.defaultReturning, func(query *dialect.InsertQuery) *clause.Returning {
+		return &query.Returning
+	}, queryMods...)
 	return &next
 }
 
@@ -58,8 +60,8 @@ func (q *ormInsertQuery[T, Tslice]) Apply(queryMods ...bob.Mod[*dialect.InsertQu
 
 func (q ormUpdateQuery[T, Tslice]) clone() ormUpdateQuery[T, Tslice] {
 	return ormUpdateQuery[T, Tslice]{
-		Query:               q.Query.Clone(),
-		hasDefaultReturning: q.hasDefaultReturning,
+		Query:            q.Query.Clone(),
+		defaultReturning: q.defaultReturning,
 	}
 }
 
@@ -69,7 +71,9 @@ func (q *ormUpdateQuery[T, Tslice]) With(queryMods ...bob.Mod[*dialect.UpdateQue
 	}
 
 	next := q.clone()
-	applyTableQueryMods(next.Expression, &next.hasDefaultReturning, queryMods...)
+	applyTableQueryMods(next.Expression, next.defaultReturning, func(query *dialect.UpdateQuery) *clause.Returning {
+		return &query.Returning
+	}, queryMods...)
 	return &next
 }
 
@@ -79,8 +83,8 @@ func (q *ormUpdateQuery[T, Tslice]) Apply(queryMods ...bob.Mod[*dialect.UpdateQu
 
 func (q ormDeleteQuery[T, Tslice]) clone() ormDeleteQuery[T, Tslice] {
 	return ormDeleteQuery[T, Tslice]{
-		Query:               q.Query.Clone(),
-		hasDefaultReturning: q.hasDefaultReturning,
+		Query:            q.Query.Clone(),
+		defaultReturning: q.defaultReturning,
 	}
 }
 
@@ -90,7 +94,9 @@ func (q *ormDeleteQuery[T, Tslice]) With(queryMods ...bob.Mod[*dialect.DeleteQue
 	}
 
 	next := q.clone()
-	applyTableQueryMods(next.Expression, &next.hasDefaultReturning, queryMods...)
+	applyTableQueryMods(next.Expression, next.defaultReturning, func(query *dialect.DeleteQuery) *clause.Returning {
+		return &query.Returning
+	}, queryMods...)
 	return &next
 }
 
@@ -98,16 +104,28 @@ func (q *ormDeleteQuery[T, Tslice]) Apply(queryMods ...bob.Mod[*dialect.DeleteQu
 	return q.With(queryMods...)
 }
 
-func applyTableQueryMods[Q interface{ SetReturning(...any) }](query Q, hasDefaultReturning *bool, queryMods ...bob.Mod[Q]) {
-	for _, mod := range queryMods {
-		if returning, ok := any(mod).(interface{ ReturningValues() []any }); ok && *hasDefaultReturning {
-			query.SetReturning(returning.ReturningValues()...)
-			*hasDefaultReturning = false
-			continue
-		}
+func applyTableQueryMods[Q interface{ AppendReturning(...any) }](query Q, defaultReturning bob.Expression, getReturning func(Q) *clause.Returning, queryMods ...bob.Mod[Q]) {
+	if hasExplicitReturning(queryMods...) && hasOnlyDefaultReturning(getReturning(query).Expressions, defaultReturning) {
+		getReturning(query).Expressions = nil
+	}
 
+	for _, mod := range queryMods {
 		mod.Apply(query)
 	}
+}
+
+func hasExplicitReturning[Q interface{ AppendReturning(...any) }](queryMods ...bob.Mod[Q]) bool {
+	for _, mod := range queryMods {
+		if _, ok := mod.(bobmods.Returning[Q]); ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hasOnlyDefaultReturning(expressions []any, defaultReturning bob.Expression) bool {
+	return len(expressions) == 1 && reflect.DeepEqual(expressions[0], defaultReturning)
 }
 
 func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, []T, Tset, C] {
@@ -163,12 +181,12 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 	q := &ormInsertQuery[T, Tslice]{
 		Query: orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
-				BaseQuery: insertTableBaseQuery(t.NameAs(), t.nonGeneratedCols, t.Columns, queryMods),
+				BaseQuery: insertTableBaseQuery(t.NameAs(), t.nonGeneratedCols, t.Columns),
 				Hooks:     &t.InsertQueryHooks,
 			},
 			Scanner: t.scanner,
 		},
-		hasDefaultReturning: !hasInsertReturning(queryMods),
+		defaultReturning: t.Columns,
 	}
 
 	return q.Apply(queryMods...)
@@ -179,12 +197,12 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 	q := &ormUpdateQuery[T, Tslice]{
 		Query: orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.UpdateQuery]{
-				BaseQuery: updateTableBaseQuery(t.NameAs(), t.Columns, queryMods),
+				BaseQuery: updateTableBaseQuery(t.NameAs(), t.Columns),
 				Hooks:     &t.UpdateQueryHooks,
 			},
 			Scanner: t.scanner,
 		},
-		hasDefaultReturning: !hasUpdateReturning(queryMods),
+		defaultReturning: t.Columns,
 	}
 
 	return q.Apply(queryMods...)
@@ -195,12 +213,12 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 	q := &ormDeleteQuery[T, Tslice]{
 		Query: orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.DeleteQuery]{
-				BaseQuery: deleteTableBaseQuery(t.NameAs(), t.Columns, queryMods),
+				BaseQuery: deleteTableBaseQuery(t.NameAs(), t.Columns),
 				Hooks:     &t.DeleteQueryHooks,
 			},
 			Scanner: t.scanner,
 		},
-		hasDefaultReturning: !hasDeleteReturning(queryMods),
+		defaultReturning: t.Columns,
 	}
 
 	return q.Apply(queryMods...)
@@ -235,7 +253,7 @@ func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQue
 	return q
 }
 
-func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Expression, queryMods []bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.InsertQuery] {
+func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Expression) bob.BaseQuery[*dialect.InsertQuery] {
 	base := bob.BaseQuery[*dialect.InsertQuery]{
 		Expression: &dialect.InsertQuery{
 			TableRef: clause.TableRef{
@@ -246,13 +264,11 @@ func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Exp
 		Dialect:   dialect.Dialect,
 		QueryType: bob.QueryTypeInsert,
 	}
-	if !hasInsertReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
-	}
+	base.Expression.AppendReturning(returning)
 	return base
 }
 
-func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.UpdateQuery]) bob.BaseQuery[*dialect.UpdateQuery] {
+func updateTableBaseQuery(name any, returning bob.Expression) bob.BaseQuery[*dialect.UpdateQuery] {
 	base := bob.BaseQuery[*dialect.UpdateQuery]{
 		Expression: &dialect.UpdateQuery{
 			Table: clause.TableRef{
@@ -262,13 +278,11 @@ func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mo
 		Dialect:   dialect.Dialect,
 		QueryType: bob.QueryTypeUpdate,
 	}
-	if !hasUpdateReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
-	}
+	base.Expression.AppendReturning(returning)
 	return base
 }
 
-func deleteTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {
+func deleteTableBaseQuery(name any, returning bob.Expression) bob.BaseQuery[*dialect.DeleteQuery] {
 	base := bob.BaseQuery[*dialect.DeleteQuery]{
 		Expression: &dialect.DeleteQuery{
 			Table: clause.TableRef{
@@ -278,35 +292,6 @@ func deleteTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mo
 		Dialect:   dialect.Dialect,
 		QueryType: bob.QueryTypeDelete,
 	}
-	if !hasDeleteReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
-	}
+	base.Expression.AppendReturning(returning)
 	return base
-}
-
-func hasInsertReturning(mods []bob.Mod[*dialect.InsertQuery]) bool {
-	for _, mod := range mods {
-		if _, ok := mod.(bobmods.Returning[*dialect.InsertQuery]); ok {
-			return true
-		}
-	}
-	return false
-}
-
-func hasUpdateReturning(mods []bob.Mod[*dialect.UpdateQuery]) bool {
-	for _, mod := range mods {
-		if _, ok := mod.(bobmods.Returning[*dialect.UpdateQuery]); ok {
-			return true
-		}
-	}
-	return false
-}
-
-func hasDeleteReturning(mods []bob.Mod[*dialect.DeleteQuery]) bool {
-	for _, mod := range mods {
-		if _, ok := mod.(bobmods.Returning[*dialect.DeleteQuery]); ok {
-			return true
-		}
-	}
-	return false
 }

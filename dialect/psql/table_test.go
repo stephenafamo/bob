@@ -174,6 +174,28 @@ func TestTableUpdateExplicitReturningOverridesDefault(t *testing.T) {
 	}
 }
 
+func TestTableUpdateAdditionalExplicitReturningAppends(t *testing.T) {
+	base := userTable.Update(
+		um.SetCol("name").ToArg("Stephen"),
+		um.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	q := base.With(um.Returning("id")).With(um.Returning("email"))
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "UPDATE \"users\" AS \"users\" SET\n\"name\" = $1\nWHERE (\"id\" = $2)\nRETURNING id, email"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 2 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
 func TestTableInsertDefaultsReturningAllColumns(t *testing.T) {
 	q := userTable.Insert(
 		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
@@ -213,6 +235,27 @@ func TestTableInsertExplicitReturningOverridesDefault(t *testing.T) {
 	}
 }
 
+func TestTableInsertAdditionalExplicitReturningAppends(t *testing.T) {
+	base := userTable.Insert(
+		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
+	)
+
+	q := base.With(im.Returning("id")).With(im.Returning("email"))
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "INSERT INTO \"users\" AS \"users\"(\"id\", \"name\", \"email\")\nVALUES ($1, $2, $3)\nRETURNING id, email\n"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 3 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
 func TestTableDeleteDefaultsReturningAllColumns(t *testing.T) {
 	q := userTable.Delete(
 		dm.Where(Quote("id").EQ(Arg(1))),
@@ -244,6 +287,27 @@ func TestTableDeleteExplicitReturningOverridesDefault(t *testing.T) {
 	}
 
 	expectedSQL := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"id\" = $1)\nRETURNING id"
+	if sql != expectedSQL {
+		t.Fatalf("unexpected SQL: %#v", sql)
+	}
+	if len(args) != 1 {
+		t.Fatalf("unexpected arg count: %d", len(args))
+	}
+}
+
+func TestTableDeleteAdditionalExplicitReturningAppends(t *testing.T) {
+	base := userTable.Delete(
+		dm.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	q := base.With(dm.Returning("id")).With(dm.Returning("email"))
+
+	sql, args, err := q.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedSQL := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"id\" = $1)\nRETURNING id, email"
 	if sql != expectedSQL {
 		t.Fatalf("unexpected SQL: %#v", sql)
 	}
