@@ -161,6 +161,10 @@ func (s Returning[Q]) Apply(q Q) {
 	q.AppendReturning(s...)
 }
 
+func (s Returning[Q]) ReturningValues() []any {
+	return []any(s)
+}
+
 type Set[Q interface{ AppendSet(clauses ...any) }] []string
 
 func (s Set[Q]) To(to any) bob.Mod[Q] {

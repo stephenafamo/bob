@@ -252,6 +252,94 @@ func TestTableDeleteExplicitReturningOverridesDefault(t *testing.T) {
 	}
 }
 
+func TestTableUpdateApplyDoesNotMutateOriginal(t *testing.T) {
+	base := userTable.Update(
+		um.SetCol("name").ToArg("Stephen"),
+	)
+
+	derived := base.Apply(
+		um.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedBase := "UPDATE \"users\" AS \"users\" SET\n\"name\" = $1\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\""
+	if baseSQL != expectedBase {
+		t.Fatalf("unexpected base SQL: %#v", baseSQL)
+	}
+
+	expectedDerived := "UPDATE \"users\" AS \"users\" SET\n\"name\" = $1\nWHERE (\"id\" = $2)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\""
+	if derivedSQL != expectedDerived {
+		t.Fatalf("unexpected derived SQL: %#v", derivedSQL)
+	}
+}
+
+func TestTableInsertWithDoesNotMutateOriginal(t *testing.T) {
+	base := userTable.Insert(
+		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
+	)
+
+	derived := base.With(im.Returning("id"))
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedBase := "INSERT INTO \"users\" AS \"users\"(\"id\", \"name\", \"email\")\nVALUES ($1, $2, $3)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\"\n"
+	if baseSQL != expectedBase {
+		t.Fatalf("unexpected base SQL: %#v", baseSQL)
+	}
+
+	expectedDerived := "INSERT INTO \"users\" AS \"users\"(\"id\", \"name\", \"email\")\nVALUES ($1, $2, $3)\nRETURNING id\n"
+	if derivedSQL != expectedDerived {
+		t.Fatalf("unexpected derived SQL: %#v", derivedSQL)
+	}
+}
+
+func TestTableDeleteApplyDoesNotMutateOriginal(t *testing.T) {
+	base := userTable.Delete(
+		dm.Where(Quote("email").EQ(Arg("stephen@example.com"))),
+	)
+
+	derived := base.Apply(
+		dm.Returning("id"),
+	)
+
+	baseSQL, _, err := base.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	derivedSQL, _, err := derived.Build(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedBase := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"email\" = $1)\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"name\" AS \"name\", \"users\".\"email\" AS \"email\""
+	if baseSQL != expectedBase {
+		t.Fatalf("unexpected base SQL: %#v", baseSQL)
+	}
+
+	expectedDerived := "DELETE FROM \"users\" AS \"users\"\nWHERE (\"email\" = $1)\nRETURNING id"
+	if derivedSQL != expectedDerived {
+		t.Fatalf("unexpected derived SQL: %#v", derivedSQL)
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()
 

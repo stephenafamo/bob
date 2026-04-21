@@ -74,12 +74,14 @@ func (b BaseQuery[E]) Clone() BaseQuery[E] {
 		return BaseQuery[E]{
 			Expression: c.Clone(),
 			Dialect:    b.Dialect,
+			QueryType:  b.QueryType,
 		}
 	}
 
 	return BaseQuery[E]{
 		Expression: reprint.This(b.Expression).(E),
 		Dialect:    b.Dialect,
+		QueryType:  b.QueryType,
 	}
 }
 

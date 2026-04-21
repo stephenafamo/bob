@@ -83,9 +83,7 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 		Scanner: t.scanner,
 	}
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts an Update query for this table
@@ -98,9 +96,7 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 		Scanner: t.scanner,
 	}
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts a Delete query for this table
@@ -113,9 +109,7 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 		Scanner: t.scanner,
 	}
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts a Merge query for this table
@@ -150,7 +144,7 @@ func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQue
 func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Expression, queryMods []bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.InsertQuery] {
 	base := Insert(im.Into(name, nonGeneratedCols...)).derivedInsertQuery.mutableBase()
 	if !hasInsertReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
+		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
 	return base
 }
@@ -158,7 +152,7 @@ func insertTableBaseQuery(name any, nonGeneratedCols []string, returning bob.Exp
 func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.UpdateQuery]) bob.BaseQuery[*dialect.UpdateQuery] {
 	base := Update(um.Table(name)).derivedUpdateQuery.mutableBase()
 	if !hasUpdateReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
+		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
 	return base
 }
@@ -166,7 +160,7 @@ func updateTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mo
 func deleteTableBaseQuery(name any, returning bob.Expression, queryMods []bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {
 	base := Delete(dm.From(name)).derivedDeleteQuery.mutableBase()
 	if !hasDeleteReturning(queryMods) {
-		base.Expression.AppendReturning(returning)
+		base.Expression.AppendReturning(orm.DefaultReturning(returning))
 	}
 	return base
 }
