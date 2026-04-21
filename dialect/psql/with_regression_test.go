@@ -92,7 +92,7 @@ func TestViewQueryWithRegression(t *testing.T) {
 	assertQueriesEqual(t, base, withTestStructView.Query(
 		sm.Where(psql.Quote("id").GT(psql.Arg(0))),
 	))
-	assertQueriesEqual(t, derived.Query, withTestStructView.Query(
+	assertQueriesEqual(t, derived, withTestStructView.Query(
 		sm.Where(psql.Quote("id").GT(psql.Arg(0))),
 		sm.OrderBy("id").Desc(),
 		sm.Limit(10),

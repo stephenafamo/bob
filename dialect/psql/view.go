@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"fmt"
-	"io"
 	"reflect"
 
 	"github.com/stephenafamo/bob"
@@ -81,12 +80,12 @@ func (v *View[T, Tslice, C]) Alias() string {
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query:   Select(sm.From(v.NameAs())),
-		Scanner: v.scanner,
-		Hooks:   &v.SelectQueryHooks,
+		SelectQuery: Select(sm.From(v.NameAs())),
+		Scanner:     v.scanner,
+		Hooks:       &v.SelectQueryHooks,
 	}
 
-	q.Query.Expression.AppendContextualModFunc(
+	q.SelectQuery.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
 				q.AppendSelect(v.Columns)
@@ -99,39 +98,19 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	Query   SelectQuery
+	SelectQuery
 	Scanner scan.Mapper[T]
 	Hooks   *bob.Hooks[*SelectQuery, bob.SkipQueryHooksKey]
 }
 
 func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
 	next := *q
-	next.Query = next.Query.Apply(queryMods...)
+	next.SelectQuery = next.SelectQuery.Apply(queryMods...)
 	return &next
 }
 
 func (q *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
 	return q.With(queryMods...)
-}
-
-func (q *ViewQuery[T, Ts]) Type() bob.QueryType {
-	return q.Query.Type()
-}
-
-func (q *ViewQuery[T, Ts]) Build(ctx context.Context) (string, []any, error) {
-	return q.Query.Build(ctx)
-}
-
-func (q *ViewQuery[T, Ts]) BuildN(ctx context.Context, start int) (string, []any, error) {
-	return q.Query.BuildN(ctx, start)
-}
-
-func (q *ViewQuery[T, Ts]) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	return q.Query.WriteQuery(ctx, w, start)
-}
-
-func (q *ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	return q.Query.WriteSQL(ctx, w, d, start)
 }
 
 // Count the number of matching rows
@@ -140,7 +119,7 @@ func (q *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (in
 	if err != nil {
 		return 0, err
 	}
-	sql, args, err := q.Query.AsCount().Build(ctx)
+	sql, args, err := q.AsCount().Build(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -170,7 +149,7 @@ func (q *ViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(fu
 }
 
 func (q *ViewQuery[T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
-	ctx, err := q.Query.RunHooks(ctx, exec)
+	ctx, err := q.SelectQuery.RunHooks(ctx, exec)
 	if err != nil {
 		return ctx, err
 	}
@@ -179,13 +158,5 @@ func (q *ViewQuery[T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (con
 		return ctx, nil
 	}
 
-	return q.Hooks.RunHooks(ctx, exec, &q.Query)
-}
-
-func (q *ViewQuery[T, Ts]) GetLoaders() []bob.Loader {
-	return q.Query.GetLoaders()
-}
-
-func (q *ViewQuery[T, Ts]) GetMapperMods() []scan.MapperMod {
-	return q.Query.GetMapperMods()
+	return q.Hooks.RunHooks(ctx, exec, &q.SelectQuery)
 }
