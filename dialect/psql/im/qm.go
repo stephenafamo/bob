@@ -18,34 +18,26 @@ func Recursive(r bool) bob.Mod[*dialect.InsertQuery] {
 }
 
 func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.TableRef = clause.TableRef{
-			Expression: name,
-			Columns:    columns,
-		}
-	})
+	return dialect.InsertTable{
+		Expression: name,
+		Columns:    columns,
+	}
 }
 
 func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.TableRef = clause.TableRef{
-			Expression: name,
-			Alias:      alias,
-			Columns:    columns,
-		}
-	})
+	return dialect.InsertTable{
+		Expression: name,
+		Alias:      alias,
+		Columns:    columns,
+	}
 }
 
 func OverridingSystem() bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = dialect.OverridingSystem
-	})
+	return dialect.InsertOverriding("SYSTEM")
 }
 
 func OverridingUser() bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = dialect.OverridingUser
-	})
+	return dialect.InsertOverriding("USER")
 }
 
 func Values(clauses ...bob.Expression) bob.Mod[*dialect.InsertQuery] {
@@ -58,9 +50,7 @@ func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
 
 // Insert from a query
 func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Query = q
-	})
+	return dialect.InsertQuerySource{Query: q}
 }
 
 // The column to target. Will auto add brackets

@@ -187,10 +187,28 @@ func (q derivedUpdateQuery) mutableBase() bob.BaseQuery[*psqldialect.UpdateQuery
 
 func (s immutableUpdateState) withMods(queryMods ...bob.Mod[*psqldialect.UpdateQuery]) (immutableUpdateState, bool) {
 	next := s
-	var cloneWhere, cloneReturning bool
+	var cloneWith, cloneSet, cloneWhere, cloneReturning, cloneJoins bool
 
 	for _, mod := range queryMods {
 		switch m := mod.(type) {
+		case mods.Recursive[*psqldialect.UpdateQuery]:
+			next.With.Recursive = bool(m)
+		case psqldialect.CTEChain[*psqldialect.UpdateQuery]:
+			if !cloneWith {
+				next.With.CTEs = append([]bob.Expression(nil), s.With.CTEs...)
+				cloneWith = true
+			}
+			next.With.CTEs = append(next.With.CTEs, m())
+		case psqldialect.UpdateOnly:
+			next.Only = bool(m)
+		case psqldialect.UpdateTable:
+			next.Table = cloneTableRef(clause.TableRef(m))
+		case psqldialect.UpdateSet:
+			if !cloneSet {
+				next.Set.Set = append([]any(nil), s.Set.Set...)
+				cloneSet = true
+			}
+			next.Set.Set = append(next.Set.Set, []any(m)...)
 		case mods.Where[*psqldialect.UpdateQuery]:
 			if !cloneWhere {
 				next.Where.Conditions = append([]any(nil), s.Where.Conditions...)
@@ -205,6 +223,18 @@ func (s immutableUpdateState) withMods(queryMods ...bob.Mod[*psqldialect.UpdateQ
 			next.Returning.Expressions = append(next.Returning.Expressions, []any(m)...)
 		case psqldialect.FromChain[*psqldialect.UpdateQuery]:
 			next.From = cloneTableRef(m())
+		case mods.Join[*psqldialect.UpdateQuery]:
+			if !cloneJoins {
+				next.From.Joins = append([]clause.Join(nil), s.From.Joins...)
+				cloneJoins = true
+			}
+			next.From.Joins = append(next.From.Joins, clause.Join(m))
+		case psqldialect.CrossJoinChain[*psqldialect.UpdateQuery]:
+			if !cloneJoins {
+				next.From.Joins = append([]clause.Join(nil), s.From.Joins...)
+				cloneJoins = true
+			}
+			next.From.Joins = append(next.From.Joins, m())
 		default:
 			return next, false
 		}
@@ -368,10 +398,22 @@ func (q derivedDeleteQuery) mutableBase() bob.BaseQuery[*psqldialect.DeleteQuery
 
 func (s immutableDeleteState) withMods(queryMods ...bob.Mod[*psqldialect.DeleteQuery]) (immutableDeleteState, bool) {
 	next := s
-	var cloneWhere, cloneReturning bool
+	var cloneWith, cloneWhere, cloneReturning, cloneJoins bool
 
 	for _, mod := range queryMods {
 		switch m := mod.(type) {
+		case mods.Recursive[*psqldialect.DeleteQuery]:
+			next.With.Recursive = bool(m)
+		case psqldialect.CTEChain[*psqldialect.DeleteQuery]:
+			if !cloneWith {
+				next.With.CTEs = append([]bob.Expression(nil), s.With.CTEs...)
+				cloneWith = true
+			}
+			next.With.CTEs = append(next.With.CTEs, m())
+		case psqldialect.DeleteOnly:
+			next.Only = bool(m)
+		case psqldialect.DeleteTable:
+			next.Table = cloneTableRef(clause.TableRef(m))
 		case mods.Where[*psqldialect.DeleteQuery]:
 			if !cloneWhere {
 				next.Where.Conditions = append([]any(nil), s.Where.Conditions...)
@@ -386,6 +428,18 @@ func (s immutableDeleteState) withMods(queryMods ...bob.Mod[*psqldialect.DeleteQ
 			next.Returning.Expressions = append(next.Returning.Expressions, []any(m)...)
 		case psqldialect.FromChain[*psqldialect.DeleteQuery]:
 			next.Using = cloneTableRef(m())
+		case mods.Join[*psqldialect.DeleteQuery]:
+			if !cloneJoins {
+				next.Using.Joins = append([]clause.Join(nil), s.Using.Joins...)
+				cloneJoins = true
+			}
+			next.Using.Joins = append(next.Using.Joins, clause.Join(m))
+		case psqldialect.CrossJoinChain[*psqldialect.DeleteQuery]:
+			if !cloneJoins {
+				next.Using.Joins = append([]clause.Join(nil), s.Using.Joins...)
+				cloneJoins = true
+			}
+			next.Using.Joins = append(next.Using.Joins, m())
 		default:
 			return next, false
 		}
@@ -558,10 +612,24 @@ func (q derivedInsertQuery) mutableBase() bob.BaseQuery[*psqldialect.InsertQuery
 
 func (s immutableInsertState) withMods(queryMods ...bob.Mod[*psqldialect.InsertQuery]) (immutableInsertState, bool) {
 	next := s
-	var cloneReturning, cloneVals bool
+	var cloneWith, cloneReturning, cloneVals bool
 
 	for _, mod := range queryMods {
 		switch m := mod.(type) {
+		case mods.Recursive[*psqldialect.InsertQuery]:
+			next.With.Recursive = bool(m)
+		case psqldialect.CTEChain[*psqldialect.InsertQuery]:
+			if !cloneWith {
+				next.With.CTEs = append([]bob.Expression(nil), s.With.CTEs...)
+				cloneWith = true
+			}
+			next.With.CTEs = append(next.With.CTEs, m())
+		case psqldialect.InsertTable:
+			next.Table = cloneTableRef(clause.TableRef(m))
+		case psqldialect.InsertOverriding:
+			next.Overriding = string(m)
+		case psqldialect.InsertQuerySource:
+			next.Values.Query = m.Query
 		case mods.Returning[*psqldialect.InsertQuery]:
 			if !cloneReturning {
 				next.Returning.Expressions = append([]any(nil), s.Returning.Expressions...)
@@ -582,6 +650,8 @@ func (s immutableInsertState) withMods(queryMods ...bob.Mod[*psqldialect.InsertQ
 			for _, row := range m {
 				next.Values.Vals = append(next.Values.Vals, clause.Value(row))
 			}
+		case mods.Conflict[*psqldialect.InsertQuery]:
+			next.Conflict.Expression = m()
 		default:
 			return next, false
 		}

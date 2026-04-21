@@ -27,6 +27,56 @@ func (d DistinctMod) Apply(q *SelectQuery) {
 	q.Distinct.On = d.On
 }
 
+type UpdateOnly bool
+
+func (o UpdateOnly) Apply(q *UpdateQuery) {
+	q.Only = bool(o)
+}
+
+type DeleteOnly bool
+
+func (o DeleteOnly) Apply(q *DeleteQuery) {
+	q.Only = bool(o)
+}
+
+type UpdateTable clause.TableRef
+
+func (t UpdateTable) Apply(q *UpdateQuery) {
+	q.Table = clause.TableRef(t)
+}
+
+type DeleteTable clause.TableRef
+
+func (t DeleteTable) Apply(q *DeleteQuery) {
+	q.Table = clause.TableRef(t)
+}
+
+type InsertTable clause.TableRef
+
+func (t InsertTable) Apply(q *InsertQuery) {
+	q.TableRef = clause.TableRef(t)
+}
+
+type UpdateSet []any
+
+func (s UpdateSet) Apply(q *UpdateQuery) {
+	q.Set.Set = append(q.Set.Set, []any(s)...)
+}
+
+type InsertOverriding string
+
+func (o InsertOverriding) Apply(q *InsertQuery) {
+	q.Overriding = string(o)
+}
+
+type InsertQuerySource struct {
+	Query bob.Query
+}
+
+func (s InsertQuerySource) Apply(q *InsertQuery) {
+	q.Query = s.Query
+}
+
 func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...string) CTEChain[Q] {
 	return CTEChain[Q](func() clause.CTE {
 		return clause.CTE{
