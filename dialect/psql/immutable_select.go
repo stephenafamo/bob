@@ -16,10 +16,9 @@ import (
 )
 
 type derivedSelectQuery struct {
-	state          immutableSelectState
-	load           bob.Load
-	hooks          bob.EmbeddedHook
-	contextualMods []bob.ContextualMod[*psqldialect.SelectQuery]
+	state immutableSelectState
+	load  bob.Load
+	hooks bob.EmbeddedHook
 }
 
 type immutableSelectState struct {
@@ -51,8 +50,6 @@ func asImmutable(q bob.BaseQuery[*psqldialect.SelectQuery]) derivedSelectQuery {
 		state: immutableStateFromMutable(q.Expression),
 		load:  q.Expression.Load,
 		hooks: q.Expression.EmbeddedHook,
-		contextualMods: append([]bob.ContextualMod[*psqldialect.SelectQuery](nil),
-			q.Expression.ContextualModdable.Mods...),
 	}
 }
 
@@ -125,7 +122,7 @@ func (q derivedSelectQuery) WriteQuery(ctx context.Context, w io.StringWriter, s
 }
 
 func (q derivedSelectQuery) requiresMutableWrite() bool {
-	return len(q.contextualMods) > 0 || !q.state.supportsNativeWrite()
+	return !q.state.supportsNativeWrite()
 }
 
 func (q derivedSelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
@@ -173,9 +170,6 @@ func (q derivedSelectQuery) mutableBase() bob.BaseQuery[*psqldialect.SelectQuery
 
 		Load:         q.load,
 		EmbeddedHook: q.hooks,
-		ContextualModdable: bob.ContextualModdable[*psqldialect.SelectQuery]{
-			Mods: append([]bob.ContextualMod[*psqldialect.SelectQuery](nil), q.contextualMods...),
-		},
 
 		CombinedOrder:  q.state.CombinedOrder,
 		CombinedLimit:  q.state.CombinedLimit,

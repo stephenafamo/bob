@@ -14,10 +14,9 @@ import (
 )
 
 type derivedUpdateQuery struct {
-	state          immutableUpdateState
-	load           bob.Load
-	hooks          bob.EmbeddedHook
-	contextualMods []bob.ContextualMod[*psqldialect.UpdateQuery]
+	state immutableUpdateState
+	load  bob.Load
+	hooks bob.EmbeddedHook
 }
 
 type immutableUpdateState struct {
@@ -50,9 +49,8 @@ func asImmutableUpdate(q bob.BaseQuery[*psqldialect.UpdateQuery]) derivedUpdateQ
 				Expressions: append([]any(nil), q.Expression.Returning.Expressions...),
 			},
 		},
-		load:           q.Expression.Load,
-		hooks:          q.Expression.EmbeddedHook,
-		contextualMods: append([]bob.ContextualMod[*psqldialect.UpdateQuery](nil), q.Expression.ContextualModdable.Mods...),
+		load:  q.Expression.Load,
+		hooks: q.Expression.EmbeddedHook,
 	}
 }
 
@@ -104,10 +102,6 @@ func (q derivedUpdateQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedUpdateQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	if len(q.contextualMods) > 0 {
-		return q.mutableBase().WriteQuery(ctx, w, start)
-	}
-
 	var args []any
 
 	if len(q.state.With.CTEs) > 0 {
@@ -182,9 +176,6 @@ func (q derivedUpdateQuery) mutableBase() bob.BaseQuery[*psqldialect.UpdateQuery
 		Returning:    q.state.Returning,
 		Load:         q.load,
 		EmbeddedHook: q.hooks,
-		ContextualModdable: bob.ContextualModdable[*psqldialect.UpdateQuery]{
-			Mods: append([]bob.ContextualMod[*psqldialect.UpdateQuery](nil), q.contextualMods...),
-		},
 	}
 
 	return bob.BaseQuery[*psqldialect.UpdateQuery]{
@@ -223,10 +214,9 @@ func (s immutableUpdateState) withMods(queryMods ...bob.Mod[*psqldialect.UpdateQ
 }
 
 type derivedDeleteQuery struct {
-	state          immutableDeleteState
-	load           bob.Load
-	hooks          bob.EmbeddedHook
-	contextualMods []bob.ContextualMod[*psqldialect.DeleteQuery]
+	state immutableDeleteState
+	load  bob.Load
+	hooks bob.EmbeddedHook
 }
 
 type immutableDeleteState struct {
@@ -253,9 +243,8 @@ func asImmutableDelete(q bob.BaseQuery[*psqldialect.DeleteQuery]) derivedDeleteQ
 				Expressions: append([]any(nil), q.Expression.Returning.Expressions...),
 			},
 		},
-		load:           q.Expression.Load,
-		hooks:          q.Expression.EmbeddedHook,
-		contextualMods: append([]bob.ContextualMod[*psqldialect.DeleteQuery](nil), q.Expression.ContextualModdable.Mods...),
+		load:  q.Expression.Load,
+		hooks: q.Expression.EmbeddedHook,
 	}
 }
 
@@ -303,10 +292,6 @@ func (q derivedDeleteQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedDeleteQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	if len(q.contextualMods) > 0 {
-		return q.mutableBase().WriteQuery(ctx, w, start)
-	}
-
 	var args []any
 	if len(q.state.With.CTEs) > 0 {
 		withArgs, err := q.state.With.WriteSQL(ctx, w, psqldialect.Dialect, start+len(args))
@@ -372,9 +357,6 @@ func (q derivedDeleteQuery) mutableBase() bob.BaseQuery[*psqldialect.DeleteQuery
 		Returning:    q.state.Returning,
 		Load:         q.load,
 		EmbeddedHook: q.hooks,
-		ContextualModdable: bob.ContextualModdable[*psqldialect.DeleteQuery]{
-			Mods: append([]bob.ContextualMod[*psqldialect.DeleteQuery](nil), q.contextualMods...),
-		},
 	}
 
 	return bob.BaseQuery[*psqldialect.DeleteQuery]{
@@ -413,10 +395,9 @@ func (s immutableDeleteState) withMods(queryMods ...bob.Mod[*psqldialect.DeleteQ
 }
 
 type derivedInsertQuery struct {
-	state          immutableInsertState
-	load           bob.Load
-	hooks          bob.EmbeddedHook
-	contextualMods []bob.ContextualMod[*psqldialect.InsertQuery]
+	state immutableInsertState
+	load  bob.Load
+	hooks bob.EmbeddedHook
 }
 
 type immutableInsertState struct {
@@ -446,9 +427,8 @@ func asImmutableInsert(q bob.BaseQuery[*psqldialect.InsertQuery]) derivedInsertQ
 				Expressions: append([]any(nil), q.Expression.Returning.Expressions...),
 			},
 		},
-		load:           q.Expression.Load,
-		hooks:          q.Expression.EmbeddedHook,
-		contextualMods: append([]bob.ContextualMod[*psqldialect.InsertQuery](nil), q.Expression.ContextualModdable.Mods...),
+		load:  q.Expression.Load,
+		hooks: q.Expression.EmbeddedHook,
 	}
 }
 
@@ -496,10 +476,6 @@ func (q derivedInsertQuery) BuildN(ctx context.Context, start int) (string, []an
 }
 
 func (q derivedInsertQuery) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {
-	if len(q.contextualMods) > 0 {
-		return q.mutableBase().WriteQuery(ctx, w, start)
-	}
-
 	var args []any
 	if len(q.state.With.CTEs) > 0 {
 		withArgs, err := q.state.With.WriteSQL(ctx, w, psqldialect.Dialect, start+len(args))
@@ -571,9 +547,6 @@ func (q derivedInsertQuery) mutableBase() bob.BaseQuery[*psqldialect.InsertQuery
 		Returning:    q.state.Returning,
 		Load:         q.load,
 		EmbeddedHook: q.hooks,
-		ContextualModdable: bob.ContextualModdable[*psqldialect.InsertQuery]{
-			Mods: append([]bob.ContextualMod[*psqldialect.InsertQuery](nil), q.contextualMods...),
-		},
 	}
 
 	return bob.BaseQuery[*psqldialect.InsertQuery]{
