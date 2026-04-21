@@ -85,10 +85,16 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 		Scanner: v.scanner,
 		Hooks:   &v.SelectQueryHooks,
 	}
-	q.Query.derivedSelectQuery.state.DefaultSelectColumns = []any{v.Columns}
-	if len(queryMods) == 0 {
-		return q
-	}
+
+	q.Query.Expression.AppendContextualModFunc(
+		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
+			if len(q.SelectList.Columns) == 0 {
+				q.AppendSelect(v.Columns)
+			}
+			return ctx, nil
+		},
+	)
+
 	return q.Apply(queryMods...)
 }
 
@@ -129,12 +135,12 @@ func (q *ViewQuery[T, Ts]) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 }
 
 // Count the number of matching rows
-func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	ctx, err := v.RunHooks(ctx, exec)
+func (q *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
+	ctx, err := q.RunHooks(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
-	sql, args, err := v.Query.AsCount().Build(ctx)
+	sql, args, err := q.Query.AsCount().Build(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -142,8 +148,8 @@ func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (in
 }
 
 // Exists checks if there is any matching row
-func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	count, err := v.Count(ctx, exec)
+func (q *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
+	count, err := q.Count(ctx, exec)
 	return count > 0, err
 }
 
@@ -182,28 +188,4 @@ func (q *ViewQuery[T, Ts]) GetLoaders() []bob.Loader {
 
 func (q *ViewQuery[T, Ts]) GetMapperMods() []scan.MapperMod {
 	return q.Query.GetMapperMods()
-}
-
-// asCountQuery clones and rewrites an existing query to a count query
-func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
-	// clone the original query, so it's not being modified silently
-	countQuery := query.Clone()
-	// only select the count
-	countQuery.Expression.SetSelect("count(1)")
-	// don't select any preload columns
-	countQuery.Expression.SetPreloadSelect()
-	// disable mapper mods
-	countQuery.Expression.SetMapperMods()
-	// disable loaders
-	countQuery.Expression.SetLoaders()
-	// set the limit to 1
-	countQuery.Expression.SetLimit(1)
-	// remove ordering
-	countQuery.Expression.ClearOrderBy()
-	// remove group by
-	countQuery.Expression.SetGroups()
-	// remove offset
-	countQuery.Expression.SetOffset(0)
-
-	return countQuery
 }

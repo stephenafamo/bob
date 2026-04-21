@@ -6,11 +6,15 @@ import (
 )
 
 type DeleteQuery struct {
-	derivedDeleteQuery
+	bob.BaseQuery[*dialect.DeleteQuery]
 }
 
 func (q DeleteQuery) With(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
-	q.derivedDeleteQuery = q.derivedDeleteQuery.With(queryMods...)
+	if next, ok := deriveDelete(q.Expression, queryMods...); ok {
+		q.Expression = next
+		return q
+	}
+	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
 }
 
@@ -19,25 +23,16 @@ func (q DeleteQuery) Apply(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQue
 }
 
 func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
-	state, ok := (immutableDeleteState{}).withMods(queryMods...)
-	if ok {
-		return DeleteQuery{
-			derivedDeleteQuery: derivedDeleteQuery{
-				state: state,
-			},
-		}
-	}
-
 	q := &dialect.DeleteQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
 	return DeleteQuery{
-		derivedDeleteQuery: asImmutableDelete(bob.BaseQuery[*dialect.DeleteQuery]{
+		BaseQuery: bob.BaseQuery[*dialect.DeleteQuery]{
 			Expression: q,
 			Dialect:    dialect.Dialect,
 			QueryType:  bob.QueryTypeDelete,
-		}),
+		},
 	}
 }

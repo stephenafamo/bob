@@ -6,11 +6,15 @@ import (
 )
 
 type UpdateQuery struct {
-	derivedUpdateQuery
+	bob.BaseQuery[*dialect.UpdateQuery]
 }
 
 func (q UpdateQuery) With(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
-	q.derivedUpdateQuery = q.derivedUpdateQuery.With(queryMods...)
+	if next, ok := deriveUpdate(q.Expression, queryMods...); ok {
+		q.Expression = next
+		return q
+	}
+	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
 }
 
@@ -19,25 +23,16 @@ func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQue
 }
 
 func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
-	state, ok := (immutableUpdateState{}).withMods(queryMods...)
-	if ok {
-		return UpdateQuery{
-			derivedUpdateQuery: derivedUpdateQuery{
-				state: state,
-			},
-		}
-	}
-
 	q := &dialect.UpdateQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
 	return UpdateQuery{
-		derivedUpdateQuery: asImmutableUpdate(bob.BaseQuery[*dialect.UpdateQuery]{
+		BaseQuery: bob.BaseQuery[*dialect.UpdateQuery]{
 			Expression: q,
 			Dialect:    dialect.Dialect,
 			QueryType:  bob.QueryTypeUpdate,
-		}),
+		},
 	}
 }

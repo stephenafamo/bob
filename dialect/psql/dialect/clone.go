@@ -11,7 +11,7 @@ func cloneAnySlice(values []any) []any {
 	if values == nil {
 		return nil
 	}
-	return append([]any(nil), values...)
+	return append(make([]any, 0, len(values)), values...)
 }
 
 func cloneStringSlice(values []string) []string {

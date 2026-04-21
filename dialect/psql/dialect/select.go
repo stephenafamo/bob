@@ -38,18 +38,25 @@ type SelectQuery struct {
 
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
-	var args []any
 
 	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
 		return nil, err
 	}
 
-	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,
-		len(s.With.CTEs) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	writer := queryWriter{
+		ctx:   ctx,
+		w:     w,
+		start: start,
 	}
-	args = append(args, withArgs...)
+
+	if len(s.With.CTEs) > 0 {
+		args, err := s.With.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(args)
+		_, _ = w.WriteString("\n")
+	}
 
 	needsParens := false
 	if len(s.Combines.Queries) > 0 &&
@@ -58,133 +65,163 @@ func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 			s.Offset.Count != nil ||
 			s.Fetch.Count != nil ||
 			len(s.Locks.Locks) > 0) {
-		w.WriteString("(")
+		_, _ = w.WriteString("(")
 		needsParens = true
 	}
 
-	w.WriteString("SELECT ")
+	_, _ = w.WriteString("SELECT ")
 
-	distinctArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Distinct,
-		s.Distinct.On != nil, "", " ")
-	if err != nil {
+	if s.Distinct.On != nil {
+		_, _ = w.WriteString("DISTINCT")
+		if len(s.Distinct.On) > 0 {
+			_, _ = w.WriteString(" ON (")
+			if err := writer.writeSliceAny(s.Distinct.On, ", "); err != nil {
+				return nil, err
+			}
+			_, _ = w.WriteString(")")
+		}
+		_, _ = w.WriteString(" ")
+	}
+
+	_, _ = w.WriteString("\n")
+	allCols := append([]any(nil), s.SelectList.Columns...)
+	allCols = append(allCols, s.SelectList.PreloadColumns...)
+	if len(allCols) == 0 {
+		_, _ = w.WriteString("*")
+	} else if err := writer.writeSliceAny(allCols, ", "); err != nil {
 		return nil, err
 	}
-	args = append(args, distinctArgs...)
 
-	selArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.SelectList, true, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.TableRef.Expression != nil {
+		_, _ = w.WriteString("\nFROM ")
+		args, err := s.TableRef.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(args)
 	}
-	args = append(args, selArgs...)
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.TableRef, s.TableRef.Expression != nil, "\nFROM ", "")
-	if err != nil {
-		return nil, err
+	if len(s.Where.Conditions) > 0 {
+		_, _ = w.WriteString("\nWHERE ")
+		if err := writer.writeSliceAny(s.Where.Conditions, " AND "); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, fromArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Where,
-		len(s.Where.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.GroupBy.Groups) > 0 {
+		_, _ = w.WriteString("\nGROUP BY ")
+		if s.GroupBy.Distinct {
+			_, _ = w.WriteString("DISTINCT ")
+		}
+		if err := writer.writeSliceAny(s.GroupBy.Groups, ", "); err != nil {
+			return nil, err
+		}
+		if s.GroupBy.With != "" {
+			_, _ = w.WriteString(" WITH ")
+			_, _ = w.WriteString(s.GroupBy.With)
+		}
 	}
-	args = append(args, whereArgs...)
 
-	groupByArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.GroupBy,
-		len(s.GroupBy.Groups) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.Having.Conditions) > 0 {
+		_, _ = w.WriteString("\nHAVING ")
+		if err := writer.writeSliceAny(s.Having.Conditions, " AND "); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, groupByArgs...)
 
-	havingArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Having,
-		len(s.Having.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.Windows.Windows) > 0 {
+		_, _ = w.WriteString("\nWINDOW ")
+		if err := writer.writeSliceExpr(s.Windows.Windows, ", "); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, havingArgs...)
 
-	windowArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Windows,
-		len(s.Windows.Windows) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.OrderBy.Expressions) > 0 {
+		_, _ = w.WriteString("\nORDER BY ")
+		if err := writer.writeOrderExprs(s.OrderBy.Expressions); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, windowArgs...)
 
-	orderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.OrderBy,
-		len(s.OrderBy.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.Limit.Count != nil {
+		_, _ = w.WriteString("\nLIMIT ")
+		if err := writer.writeAny(s.Limit.Count); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, orderArgs...)
 
-	limitArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Limit,
-		s.Limit.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.Offset.Count != nil {
+		_, _ = w.WriteString("\nOFFSET ")
+		if err := writer.writeAny(s.Offset.Count); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, limitArgs...)
 
-	offsetArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Offset,
-		s.Offset.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.Fetch.Count != nil {
+		_, _ = w.WriteString("\nFETCH NEXT ")
+		if err := writer.writeAny(s.Fetch.Count); err != nil {
+			return nil, err
+		}
+		if s.Fetch.WithTies {
+			_, _ = w.WriteString(" ROWS WITH TIES")
+		} else {
+			_, _ = w.WriteString(" ROWS ONLY")
+		}
 	}
-	args = append(args, offsetArgs...)
 
-	fetchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.Fetch,
-		s.Fetch.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	for _, lock := range s.Locks.Locks {
+		_, _ = w.WriteString("\n")
+		if err := writer.writeExpression(lock); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, fetchArgs...)
-
-	lockArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), s.Locks.Locks,
-		"\n", "\n", "")
-	if err != nil {
-		return nil, err
-	}
-	args = append(args, lockArgs...)
 
 	if needsParens {
-		w.WriteString(")")
+		_, _ = w.WriteString(")")
 	}
 
-	combineArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args),
-		s.Combines.Queries, "\n", "\n", "")
-	if err != nil {
-		return nil, err
+	for _, combine := range s.Combines.Queries {
+		_, _ = w.WriteString("\n")
+		args, err := combine.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(args)
 	}
-	args = append(args, combineArgs...)
 
-	combinedOrderArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedOrder,
-		len(s.CombinedOrder.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(s.CombinedOrder.Expressions) > 0 {
+		_, _ = w.WriteString("\nORDER BY ")
+		if err := writer.writeOrderExprs(s.CombinedOrder.Expressions); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, combinedOrderArgs...)
 
-	combinedLimitArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedLimit,
-		s.CombinedLimit.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.CombinedLimit.Count != nil {
+		_, _ = w.WriteString("\nLIMIT ")
+		if err := writer.writeAny(s.CombinedLimit.Count); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, combinedLimitArgs...)
 
-	combinedOffsetArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedOffset,
-		s.CombinedOffset.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.CombinedOffset.Count != nil {
+		_, _ = w.WriteString("\nOFFSET ")
+		if err := writer.writeAny(s.CombinedOffset.Count); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, combinedOffsetArgs...)
 
-	combinedFetchArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.CombinedFetch,
-		s.CombinedFetch.Count != nil, "\n", "")
-	if err != nil {
-		return nil, err
+	if s.CombinedFetch.Count != nil {
+		_, _ = w.WriteString("\nFETCH NEXT ")
+		if err := writer.writeAny(s.CombinedFetch.Count); err != nil {
+			return nil, err
+		}
+		if s.CombinedFetch.WithTies {
+			_, _ = w.WriteString(" ROWS WITH TIES")
+		} else {
+			_, _ = w.WriteString(" ROWS ONLY")
+		}
 	}
-	args = append(args, combinedFetchArgs...)
 
-	w.WriteString("\n")
-	return args, nil
+	_, _ = w.WriteString("\n")
+	return writer.args, nil
 }

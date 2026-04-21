@@ -401,7 +401,7 @@ func BenchmarkViewQueryCountThenPaginateApplyMain(b *testing.B) {
 			sm.Where(Quote("id").GT(Arg(0))),
 		)
 
-		if _, _, err := q.Query.derivedSelectQuery.AsCount().Build(ctx); err != nil {
+		if _, _, err := q.Query.AsCount().Build(ctx); err != nil {
 			b.Fatal(err)
 		}
 
@@ -426,7 +426,7 @@ func BenchmarkViewQueryCountThenPaginateImmutableNativeHotPath(b *testing.B) {
 			sm.Where(Quote("id").GT(Arg(0))),
 		)
 
-		if _, _, err := q.Query.derivedSelectQuery.AsCount().Build(ctx); err != nil {
+		if _, _, err := q.Query.AsCount().Build(ctx); err != nil {
 			b.Fatal(err)
 		}
 

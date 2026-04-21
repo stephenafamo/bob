@@ -26,57 +26,71 @@ type UpdateQuery struct {
 
 func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
-	var args []any
 
 	if ctx, err = u.RunContextualMods(ctx, &u); err != nil {
 		return nil, err
 	}
 
-	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,
-		len(u.With.CTEs) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	writer := queryWriter{
+		ctx:   ctx,
+		w:     w,
+		start: start,
 	}
-	args = append(args, withArgs...)
 
-	w.WriteString("UPDATE ")
+	if len(u.With.CTEs) > 0 {
+		args, err := u.With.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(args)
+		_, _ = w.WriteString("\n")
+	}
+
+	_, _ = w.WriteString("UPDATE ")
 
 	if u.Only {
-		w.WriteString("ONLY ")
+		_, _ = w.WriteString("ONLY ")
 	}
 
-	tableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Table, true, "", "")
+	tableArgs, err := u.Table.WriteSQL(ctx, w, d, writer.argPos())
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, tableArgs...)
+	writer.appendArgs(tableArgs)
 
-	setArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Set, true, " SET\n", "")
+	_, _ = w.WriteString(" SET\n")
+	setArgs, err := u.Set.WriteSQL(ctx, w, d, writer.argPos())
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, setArgs...)
+	writer.appendArgs(setArgs)
 
-	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.TableRef,
-		u.TableRef.Expression != nil, "\nFROM ", "")
-	if err != nil {
-		return nil, err
+	if u.TableRef.Expression != nil {
+		_, _ = w.WriteString("\nFROM ")
+		fromArgs, err := u.TableRef.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(fromArgs)
 	}
-	args = append(args, fromArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Where,
-		len(u.Where.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(u.Where.Conditions) > 0 {
+		_, _ = w.WriteString("\n")
+		whereArgs, err := u.Where.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(whereArgs)
 	}
-	args = append(args, whereArgs...)
 
-	retArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Returning,
-		len(u.Returning.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(u.Returning.Expressions) > 0 {
+		_, _ = w.WriteString("\n")
+		retArgs, err := u.Returning.WriteSQL(ctx, w, d, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(retArgs)
 	}
-	args = append(args, retArgs...)
 
-	return args, nil
+	return writer.args, nil
 }
