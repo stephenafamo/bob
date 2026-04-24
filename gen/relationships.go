@@ -80,10 +80,13 @@ func (rs Relationships) GetInverse(r orm.Relationship) orm.Relationship {
 
 	toMatch := r.Name
 	if r.Local() == r.Foreign() {
-		hadSuffix := strings.HasSuffix(r.Name, selfJoinSuffix)
-		toMatch = strings.TrimSuffix(r.Name, selfJoinSuffix)
-		if hadSuffix {
-			toMatch += selfJoinSuffix
+		// For a self-referencing relationship, the inverse is the side with
+		// the toggled self-join suffix: the forward relation (no suffix)
+		// pairs with the reverse relation (suffixed) and vice-versa.
+		if strings.HasSuffix(r.Name, selfJoinSuffix) {
+			toMatch = strings.TrimSuffix(r.Name, selfJoinSuffix)
+		} else {
+			toMatch = r.Name + selfJoinSuffix
 		}
 	}
 

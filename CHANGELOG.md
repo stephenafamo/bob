@@ -28,9 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for the `VALUES` statement in MySQL, PostgreSQL, and SQLite. (thanks @manhrev)
 - Added MariaDB compatibility check in gen/bobgen-mysql (thanks @dumdev25)
 - Added `ALL`, `SOME`, `ANY` expressions for MySQL and PostgreSQL dialects. Added `EXISTS` expression for all dialects. (thanks @manhrev)
+- Added a customizable MySQL and PostgreSQL driver image setting for `bobgen-sql`. (thanks @manhrev)
 
 ### Fixed
 
+- Fix self-referencing relationship back-references so generated preload/load helpers no longer create cyclic parent links. (thanks @atzedus)
 - Fix collisions for preloader alias generation. Replaced `RandInt` with `NextUniqueInt` (thanks @atzedus)
 - Fix an issue where the random function of aliased custom types were not being used in generated query tests.
 - Properly recognize placeholders in LIMIT and OFFSET when generating queries for PostgreSQL.

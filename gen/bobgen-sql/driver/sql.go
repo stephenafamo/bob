@@ -22,6 +22,11 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
+const (
+	defaultPostgresDriverImage = "pgvector/pgvector:0.8.0-pg16"
+	defaultMySQLDriverImage    = "mysql:8.0.35"
+)
+
 type Config struct {
 	helpers.Config `yaml:",squash"`
 
@@ -40,7 +45,9 @@ type Config struct {
 	Concurrency int
 	// Which UUID package to use (gofrs or google)
 	UUIDPkg string `yaml:"uuid_pkg"`
-	fs      fs.FS
+	// Driver image for running migrations
+	DriverImage string `yaml:"driver_image"`
+	fs          fs.FS
 }
 
 func RunPostgres(ctx context.Context, state *gen.State[any], config Config, pluginsConfig plugins.Config) error {
@@ -55,8 +62,12 @@ func RunPostgres(ctx context.Context, state *gen.State[any], config Config, plug
 }
 
 func getPsqlDriver(ctx context.Context, config Config) (psqlDriver.Interface, error) {
+	if config.DriverImage == "" {
+		config.DriverImage = defaultPostgresDriverImage
+	}
+
 	postgresContainer, err := postgres.Run(
-		ctx, "pgvector/pgvector:0.8.0-pg16",
+		ctx, config.DriverImage,
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
@@ -109,8 +120,12 @@ func RunMySQL(ctx context.Context, state *gen.State[any], config Config, plugins
 }
 
 func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, error) {
+	if config.DriverImage == "" {
+		config.DriverImage = defaultMySQLDriverImage
+	}
+
 	mysqlContainer, err := mysqltest.Run(ctx,
-		"mysql:8.0.35",
+		config.DriverImage,
 		mysqltest.WithDatabase("bobgen"),
 		mysqltest.WithUsername("root"),
 		mysqltest.WithPassword("password"),
