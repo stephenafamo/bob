@@ -8,6 +8,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/dm"
 	"github.com/stephenafamo/bob/dialect/psql/im"
+	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
@@ -20,6 +21,7 @@ type (
 	ormInsertQuery[T any, Tslice ~[]T] = orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 	ormUpdateQuery[T any, Tslice ~[]T] = orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 	ormDeleteQuery[T any, Tslice ~[]T] = orm.Query[*dialect.DeleteQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
+	ormMergeQuery[T any, Tslice ~[]T]  = orm.Query[*dialect.MergeQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 )
 
 func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, []T, Tset, C] {
@@ -56,9 +58,13 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	BeforeDeleteHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	AfterDeleteHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
+	BeforeMergeHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
+	AfterMergeHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
+
 	InsertQueryHooks bob.Hooks[*dialect.InsertQuery, bob.SkipQueryHooksKey]
 	UpdateQueryHooks bob.Hooks[*dialect.UpdateQuery, bob.SkipQueryHooksKey]
 	DeleteQueryHooks bob.Hooks[*dialect.DeleteQuery, bob.SkipQueryHooksKey]
+	MergeQueryHooks  bob.Hooks[*dialect.MergeQuery, bob.SkipQueryHooksKey]
 }
 
 // Returns the primary key columns for this table.
@@ -127,6 +133,35 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 	q.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.DeleteQuery) (context.Context, error) {
 			if !q.HasReturning() {
+				q.AppendReturning(t.Columns)
+			}
+			return ctx, nil
+		},
+	)
+
+	q.Apply(queryMods...)
+
+	return q
+}
+
+// Starts a Merge query for this table
+// The caller must provide USING and WHEN clauses via queryMods
+// RETURNING clause is automatically added if version >= 17 is set in context.
+// Use psql.SetVersion(ctx, 17) to enable automatic RETURNING for MERGE.
+// For older versions, use mm.Returning() explicitly if needed.
+func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQuery]) *ormMergeQuery[T, Tslice] {
+	q := &ormMergeQuery[T, Tslice]{
+		ExecQuery: orm.ExecQuery[*dialect.MergeQuery]{
+			BaseQuery: Merge(mm.Into(t.NameAs())),
+			Hooks:     &t.MergeQueryHooks,
+		},
+		Scanner: t.scanner,
+	}
+
+	q.Expression.AppendContextualModFunc(
+		func(ctx context.Context, q *dialect.MergeQuery) (context.Context, error) {
+			// RETURNING in MERGE requires version 17+
+			if VersionAtLeast(ctx, 17) && !q.HasReturning() {
 				q.AppendReturning(t.Columns)
 			}
 			return ctx, nil

@@ -38,13 +38,13 @@ func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQu
 
 func OverridingSystem() bob.Mod[*dialect.InsertQuery] {
 	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = "SYSTEM"
+		i.Overriding = dialect.OverridingSystem
 	})
 }
 
 func OverridingUser() bob.Mod[*dialect.InsertQuery] {
 	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = "USER"
+		i.Overriding = dialect.OverridingUser
 	})
 }
 

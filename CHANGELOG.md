@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added PostgreSQL `MERGE` statement support with full syntax including:
+    - `MERGE INTO ... USING ... ON ...` with table aliases and `ONLY` modifier
+    - `WHEN MATCHED`, `WHEN NOT MATCHED`, `WHEN NOT MATCHED BY SOURCE` clauses
+    - `UPDATE`, `INSERT`, `DELETE`, `DO NOTHING` actions
+    - Support for `AND condition` in WHEN clauses
+    - `OVERRIDING SYSTEM VALUE` and `OVERRIDING USER VALUE` for INSERT actions
+    - `RETURNING` clause support (PostgreSQL 17+) (thanks @atzedus)
+    - Note: the SQL parser used for sql-to-code generation does not yet support `MERGE` statements
+- Added `psql.SetVersion`, `psql.GetVersion`, and `psql.VersionAtLeast` functions for context-based PostgreSQL version management (thanks @atzedus)
+- Added `Table.Merge()` method for ORM-style MERGE operations with automatic `RETURNING *` for PostgreSQL 17+ (thanks @atzedus)
+- Added `mm` package with modifiers for building MERGE queries (`mm.Into`, `mm.Using`, `mm.WhenMatched`, `mm.WhenNotMatched`, `mm.WhenNotMatchedBySource`, etc.) (thanks @atzedus)
 - Added `enum_format` configuration option to control enum value identifier formatting. Options: `"title_case"` (default, e.g., `InProgress`) or `"screaming_snake_case"` (e.g., `IN_PROGRESS`).
 - Added `Unqualified()` method to generated column structures that returns columns without table alias/prefix. (thanks @atzedus)
 - Added `PreloadCount` and `ThenLoadCount` to generate code for preloading and then loading counts for relationships. (thanks @jacobmolby)
@@ -96,20 +107,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Made code generation modular by relying on built-in plugins that can be enabled or disabled in the configuration.
-  - `dbinfo`: Generates code for information about each database. Schemas, tables, columns, indexes, primary keys, foreign keys, unique constraints, and check constraints.
-  - `enums`: Generates code for enums in a separate package, if there are any present.
-  - `models`: Generates code for models. Depends on `enums`.
-  - `factory`: Generates code for factories. Depends on `models`.
-  - `dberrors`: Generates code for unique constraint errors. Depends on `models`.
-  - `where`: Generates type-safe code for `WHERE` clauses in queries. Depends on `models`.
-  - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
-  - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
-  - `queries`: Generates code for queries.
+    - `dbinfo`: Generates code for information about each database. Schemas, tables, columns, indexes, primary keys, foreign keys, unique constraints, and check constraints.
+    - `enums`: Generates code for enums in a separate package, if there are any present.
+    - `models`: Generates code for models. Depends on `enums`.
+    - `factory`: Generates code for factories. Depends on `models`.
+    - `dberrors`: Generates code for unique constraint errors. Depends on `models`.
+    - `where`: Generates type-safe code for `WHERE` clauses in queries. Depends on `models`.
+    - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
+    - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
+    - `queries`: Generates code for queries.
 - Added new `types.Uint64` type that sends values to the database as strings. This is necessary because using `uint64` directly can cause an overflow if the value exceeds the maximum value of an `int64`. This is a limitation imposed by `database/sql/driver.Valuer` interface.
 - Added support for `pgvector` types during code generation.
-  - `pgvector.Vector`
-  - `pgvector.HalfVector`
-  - `pgvector.SparseVector`
+    - `pgvector.Vector`
+    - `pgvector.HalfVector`
+    - `pgvector.SparseVector`
 
 ### Changed
 
@@ -149,8 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the `type_system` configuration option to determine how to generate null and optional values in the generated code.
   Possible options: `github.com/aarondl/opt`, `github.com/aarondl/opt/null` or `database/sql`. The default value is `github.com/aarondl/opt`.
 - When generating code for queries, The `All` method of the generated query will return a struct with nested fields instead of a flat struct.
-  - columns with dots (`.`) are assumed to be a `to-many` nested field.
-  - columns with double underscores (`__`) are assumed to be a `to-one` nested field.
+    - columns with dots (`.`) are assumed to be a `to-many` nested field.
+    - columns with double underscores (`__`) are assumed to be a `to-one` nested field.
 - Implement `--prefix` annotation in queries for `bobgen-psql`.
 - Add FromExisting**Rel** method to factories to create a template from an existing model. (thanks @dutow)
 - Add WithExisting**Rel** to factory mods to attach an existing model as a relationship. (thanks @dutow)
@@ -224,8 +235,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the `StdInterface` interface as it is unnecessary.
 - Remove redundant `orm.Model` interface.
 - Remove dependence on `github.com/aarondl/opt` in generated code.
-  - Nullable values are now wrapped `database/sql.Null` with instead of `github.com/aarondl/opt/null.Val`.
-  - Optional values are now represented as pointers instead of `github.com/aarondl/opt/omit.Val[T]`.
+    - Nullable values are now wrapped `database/sql.Null` with instead of `github.com/aarondl/opt/null.Val`.
+    - Optional values are now represented as pointers instead of `github.com/aarondl/opt/omit.Val[T]`.
 - Removed `in_generated_package` type configuration option. This was limited and could only indicate that the type is in the models package.
   Instead the full import path can now be used in the `imports` configuration option, and if it is in the same package as the generated code, the prefix will be automatically removed.
 
@@ -247,15 +258,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Loaders are now generated as singular instead of plural. This feels more natural when using them in code.
 
-  ```go
-  // Before
-  models.Preload.Users.Pilots()
-  models.SelectThenLoad.Users.Pilots()
+    ```go
+    // Before
+    models.Preload.Users.Pilots()
+    models.SelectThenLoad.Users.Pilots()
 
-  // After
-  models.Preload.User.Pilots()
-  models.SelectThenLoad.User.Pilot()
-  ```
+    // After
+    models.Preload.User.Pilots()
+    models.SelectThenLoad.User.Pilot()
+    ```
 
 ## [v0.35.1] - 2025-05-27
 
@@ -296,13 +307,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated tests that required a database connection no longer create a new connection for each test. Instead it depends on a `testDB` connection that the user has to provide.
 - In the generated models, relationships for `ModelSlice` are now loaded using arrays to reduce the number of parameter in the query.
 
-  ```sql
-  -- Before
-  SELECT * FROM pilots WHERE jet_id IN ($1, $2, $3, ...); -- Parameters increase with the number of pilots
+    ```sql
+    -- Before
+    SELECT * FROM pilots WHERE jet_id IN ($1, $2, $3, ...); -- Parameters increase with the number of pilots
 
-  -- After
-  SELECT * FROM pilots WHERE jet_id IN (SELECT unnest(CAST($1 AS integer[])); -- Parameters are always 1
-  ```
+    -- After
+    SELECT * FROM pilots WHERE jet_id IN (SELECT unnest(CAST($1 AS integer[])); -- Parameters are always 1
+    ```
 
 - In the generated model code, `Preload` is now a struct instead of multiple standaalone functions.  
    It is now used like `Preload.User.Pilots()`, instead of `PreloadUserPilots()`.
@@ -473,9 +484,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UNION`, `INTERSECT` and `EXCEPT` mods now append to the query instead of replacing it.
 - Generated files now end with `.bob.go` instead of `.go` and are always cleaned up before generating new files. Singleton templates are now required to have a `.bob.go.tpl` extension.
 - The expected structure for templates have been changed:
-  - Previously, singleton templates should be kept in a `singleton` folder. Now, any template not inside a folder is considered a singleton template.
-  - Previoulsy, templates in the root folder are merged and run for each table. Now, this will happen to templates in the `table/` folder.
-  - Previoulsy, the entire file tree and every subdirectory is walked to find templates. Now only templates in the root folder and the `table/` folder are considered.
+    - Previously, singleton templates should be kept in a `singleton` folder. Now, any template not inside a folder is considered a singleton template.
+    - Previoulsy, templates in the root folder are merged and run for each table. Now, this will happen to templates in the `table/` folder.
+    - Previoulsy, the entire file tree and every subdirectory is walked to find templates. Now only templates in the root folder and the `table/` folder are considered.
 - Change `From` in `clause.Window` to `BasedOn` to avoid confusion with `FromPreceding` and `FromFollowing`. Also change `SetFrom` to `SetBasedOn`.
 - Embed `clause.OrderBy` in `clause.Window` to make it possible to reuse `OrderBy` mods in window definitions.
 - Change the `Definition` field in `clause.NamedWindow` from `any` to `clause.Window` for extra type safety.
@@ -530,9 +541,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `context.Context` is now passed to `Query.WriteQuery()` and `Expression.WriteSQL()` methods. This allows for more control over how the query is built and executed.  
   This change made is possible to delete some hacks and simplify the codebase.
-  - The `Name()` and `NameAs()` methods of Views/Tables no longer need the context argument since the context will be passed when writing the expression. The API then becomes cleaner.
-  - Preloading mods no longer need to store a context internally. `SetLoadContext()` and `GetLoadContext()` have removed.
-  - The `ToExpr` field in `orm.RelSide` which was used for preloading is no longer needed and has been removed.
+    - The `Name()` and `NameAs()` methods of Views/Tables no longer need the context argument since the context will be passed when writing the expression. The API then becomes cleaner.
+    - Preloading mods no longer need to store a context internally. `SetLoadContext()` and `GetLoadContext()` have removed.
+    - The `ToExpr` field in `orm.RelSide` which was used for preloading is no longer needed and has been removed.
 - Moved `orm.Hooks` to `bob.Hooks` since it should not be limited to only ORM queries.
 - Moved `mods.QueryModFunc` to `bob.ModFunc` since it should be available to all packages.
 - The mod capability for `orm.Setter` is now reversed. It should now be a mod for Insert and have a method that returns a mod for Update.  
@@ -540,22 +551,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `table.InsertQ` has been renamed to `table.Insert`. The old implementation of `Insert` has been removed.  
    The same functionality can be achieved in the following way:
 
-  ```go
-  //----------------------------------------------
-  // OLD WAY
-  //----------------------------------------------
-  user, err := models.Users.Insert(ctx, db, setter) // insert one
-  users, err := models.Users.InsertMany(ctx, db, setters...) // insert many
+    ```go
+    //----------------------------------------------
+    // OLD WAY
+    //----------------------------------------------
+    user, err := models.Users.Insert(ctx, db, setter) // insert one
+    users, err := models.Users.InsertMany(ctx, db, setters...) // insert many
 
-  //----------------------------------------------
-  // NEW WAY
-  //----------------------------------------------
-  user, err := models.Users.Insert(setter).One(ctx, db) // insert one
-  users, err := models.Users.Insert(setters[0], setters[1]).All(ctx, db) // insert many
+    //----------------------------------------------
+    // NEW WAY
+    //----------------------------------------------
+    user, err := models.Users.Insert(setter).One(ctx, db) // insert one
+    users, err := models.Users.Insert(setters[0], setters[1]).All(ctx, db) // insert many
 
-  // For cases where you already have a slice of setters and you want to pass them all, you can use `bob.ToMods`
-  users, err := models.Users.Insert(bob.ToMods(setters)).All(ctx, db) // insert many
-  ```
+    // For cases where you already have a slice of setters and you want to pass them all, you can use `bob.ToMods`
+    users, err := models.Users.Insert(bob.ToMods(setters)).All(ctx, db) // insert many
+    ```
 
 - `table.UpdateQ` has been renamed to `table.Update`. The old implementation of `Update` has been removed.  
    The same functionality can be achieved by using `model.Update()` or `modelSlice.UpdateAll()`.
@@ -565,12 +576,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    This is because it is not possible to know before executing the queries exactly how many setters are being used since additional rows can be inserted by applying another setter as a mod.
 - `bob.Cache()` now requires an `Executor`. This is used to run any query hooks.
 - `bob.Prepare()` now requires a type parameter to be used to bind named arguments. The type can either be:
-  - A struct with fields that match the named arguments in the query
-  - A map with string keys. When supplied, the values in the map will be used to bind the named arguments in the query.
-  - When there is only a single named argument, one of the following can be used:
-    - A primitive type (int, bool, string, etc)
-    - `time.Time`
-    - Any type that implements `driver.Valuer`.
+    - A struct with fields that match the named arguments in the query
+    - A map with string keys. When supplied, the values in the map will be used to bind the named arguments in the query.
+    - When there is only a single named argument, one of the following can be used:
+        - A primitive type (int, bool, string, etc)
+        - `time.Time`
+        - Any type that implements `driver.Valuer`.
 - `Index` columns are no longer just strings, but are a struct to include more information such as the sort order.
 
 ### Removed
@@ -649,24 +660,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add PreloadAs PreloadOption to override the join alias when preloading a relationship with a left join. (thanks @daddz)
 - Add `AliasedAs()` method to `tableColumns` and `tableWhere` types to use a custom alias.
 - Add `AliasedAs()` method to generated relationship join mods. This is avaible in two places:
-  - one to change the alias of the table being queried
+    - one to change the alias of the table being queried
 
-    ```go
-    models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Pilots(ctx)
-    ```
+        ```go
+        models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Pilots(ctx)
+        ```
 
-  - and the other to change the alias of the relationship.
+    - and the other to change the alias of the relationship.
 
-    ```go
-    models.SelectJoins.Jets.InnerJoin.Pilots(ctx).AliasedAs("p")
-    ```
+        ```go
+        models.SelectJoins.Jets.InnerJoin.Pilots(ctx).AliasedAs("p")
+        ```
 
 - Add `fm` mods to all supported dialects (psql, mysql and sqlite). These are mods for functions and are used to modify the function call. For example:
 
-  ```go
-  // import "github.com/stephenafamo/bob/dialect/psql/fm"
-  psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done"))))
-  ```
+    ```go
+    // import "github.com/stephenafamo/bob/dialect/psql/fm"
+    psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done"))))
+    ```
 
 - Add `MustCreate`, `MustCreateMany`, `CreateOrFail` and `CreateManyOrFail` methods to generated factory Templates
 
@@ -674,33 +685,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Change the function call point for generated relationship join mods. This reduces the amount of allocations and only does the work for the relationship being used.
 
-  ```go
-  // Before
-  models.SelectJoins(ctx).Jets.InnerJoin.Pilots
-  // After
-  models.SelectJoins.Jets.InnerJoin.Pilots(ctx)
-  ```
+    ```go
+    // Before
+    models.SelectJoins(ctx).Jets.InnerJoin.Pilots
+    // After
+    models.SelectJoins.Jets.InnerJoin.Pilots(ctx)
+    ```
 
 - Changed the `Count()` function on `Views` to clone the query instead of changing the existing one. This makes queries reusable and the `Count()` function to behave as one would expect.
 
-  ```go
-  // This now works as expected
-  query := models.Jets.Query(ctx, db, /** list of various mods **/)
-  count, err := query.Count()
-  items, err := query.All()
-  ```
+    ```go
+    // This now works as expected
+    query := models.Jets.Query(ctx, db, /** list of various mods **/)
+    count, err := query.Count()
+    items, err := query.All()
+    ```
 
 - Changed how functions are modified. Instead of chained methods, the `F()` starter now returns a function which can be called with mods:
 
-  ```go
-  // Before
-  psql.F( "count", "*",).FilterWhere(psql.Quote("status").EQ(psql.S("done"))),
-  // After
-  // import "github.com/stephenafamo/bob/dialect/psql/fm"
-  psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done")))),
-  ```
+    ```go
+    // Before
+    psql.F( "count", "*",).FilterWhere(psql.Quote("status").EQ(psql.S("done"))),
+    // After
+    // import "github.com/stephenafamo/bob/dialect/psql/fm"
+    psql.F( "count", "*",)(fm.Filter(psql.Quote("status").EQ(psql.S("done")))),
+    ```
 
-  This makes it possible to support more queries.
+    This makes it possible to support more queries.
 
 - Use `netip.Addr` instead of `netip.Prefix` for Postgres `cidr` type.
 - Use `decimal.Decimal` instead of `string` for Postgres `money` type.
@@ -920,9 +931,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Make `View.Name()` return a dialect-specific expression
 - Improve `Debug` helpers.
-  - `Debug` writes query output to stdout
-  - `DebugToWriter` writes the query output to any `io.Writer` with a fallback to stdout.
-  - `DebugToPrinter` prints the query with a given `bob.DebugPrinter`. Also falls back to stdout.
+    - `Debug` writes query output to stdout
+    - `DebugToWriter` writes the query output to any `io.Writer` with a fallback to stdout.
+    - `DebugToPrinter` prints the query with a given `bob.DebugPrinter`. Also falls back to stdout.
 - Rename `OnlyColumns` to `PreloadOnly` and `ExceptColumns` to `PreloadExcept` to be more consistent with the newly added `PreloadWhere`.
 - `JoinChain.On` now takes Expressions instead of `any`.
 - `JoinChain.Using` now takes strings instead of `any`.

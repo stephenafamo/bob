@@ -8,11 +8,20 @@ import (
 	"github.com/stephenafamo/bob/clause"
 )
 
+// OverridingType represents the OVERRIDING type for INSERT actions (used in both INSERT and MERGE)
+type OverridingType string
+
+// OverridingType constants for OVERRIDING clause
+const (
+	OverridingSystem OverridingType = "SYSTEM"
+	OverridingUser   OverridingType = "USER"
+)
+
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-insert.html
 type InsertQuery struct {
 	clause.With
-	Overriding string
+	Overriding OverridingType
 	clause.TableRef
 	clause.Values
 	clause.Conflict
