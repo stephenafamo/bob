@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix self-referencing relationship back-references so generated preload/load helpers no longer create cyclic parent links. (thanks @atzedus)
 - Fix collisions for preloader alias generation. Replaced `RandInt` with `NextUniqueInt` (thanks @atzedus)
 - Fix an issue where the random function of aliased custom types were not being used in generated query tests.
 - Properly recognize placeholders in LIMIT and OFFSET when generating queries for PostgreSQL.
