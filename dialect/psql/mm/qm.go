@@ -142,89 +142,138 @@ func (u UsingChain) OnEQ(left, right bob.Expression) bob.Mod[*dialect.MergeQuery
 	return u.On(expr.X[dialect.Expression, dialect.Expression](left).EQ(right))
 }
 
-// WhenMatched creates a WHEN MATCHED clause
-func WhenMatched(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	return whenClause(dialect.MergeWhenMatched, mods...)
+// WhenMatchedChain is a chain for building WHEN MATCHED and WHEN NOT MATCHED BY SOURCE clauses
+type WhenMatchedChain struct {
+	whenType  dialect.MergeWhenType
+	condition bob.Expression
 }
 
-// WhenNotMatched creates a WHEN NOT MATCHED (BY TARGET) clause
-func WhenNotMatched(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	return whenClause(dialect.MergeWhenNotMatched, mods...)
-}
-
-// WhenNotMatchedByTarget is an alias for WhenNotMatched with explicit BY TARGET
-func WhenNotMatchedByTarget(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	return whenClause(dialect.MergeWhenNotMatchedByTarget, mods...)
-}
-
-// WhenNotMatchedBySource creates a WHEN NOT MATCHED BY SOURCE clause
-func WhenNotMatchedBySource(mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	return whenClause(dialect.MergeWhenNotMatchedBySource, mods...)
-}
-
-func whenClause(t dialect.MergeWhenType, mods ...bob.Mod[*WhenClause]) bob.Mod[*dialect.MergeQuery] {
-	wc := &WhenClause{Type: t}
-	for _, mod := range mods {
-		mod.Apply(wc)
+// And adds a condition to the WHEN clause
+func (c WhenMatchedChain) And(condition bob.Expression) WhenMatchedChain {
+	if c.condition == nil {
+		c.condition = condition
+	} else {
+		c.condition = expr.X[dialect.Expression, dialect.Expression](c.condition).And(condition)
 	}
+	return c
+}
+
+// ThenDoNothing sets the action to DO NOTHING
+func (c WhenMatchedChain) ThenDoNothing() bob.Mod[*dialect.MergeQuery] {
 	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
 		m.When = append(m.When, dialect.MergeWhen{
-			Type:      wc.Type,
-			Condition: wc.Condition,
-			Action:    wc.Action,
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action:    dialect.MergeAction{Type: dialect.MergeActionDoNothing},
 		})
 	})
 }
 
-// WhenClause is a builder for WHEN clauses
-type WhenClause struct {
-	Type      dialect.MergeWhenType
-	Condition bob.Expression
-	Action    dialect.MergeAction
-}
-
-// And adds a condition to the WHEN clause
-func And(condition bob.Expression) bob.Mod[*WhenClause] {
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		if w.Condition == nil {
-			w.Condition = condition
-		} else {
-			w.Condition = expr.X[dialect.Expression, dialect.Expression](w.Condition).And(condition)
-		}
-	})
-}
-
-// ThenDoNothing sets the action to DO NOTHING
-func ThenDoNothing() bob.Mod[*WhenClause] {
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		w.Action = dialect.MergeAction{Type: dialect.MergeActionDoNothing}
-	})
-}
-
 // ThenDelete sets the action to DELETE
-func ThenDelete() bob.Mod[*WhenClause] {
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		w.Action = dialect.MergeAction{Type: dialect.MergeActionDelete}
+func (c WhenMatchedChain) ThenDelete() bob.Mod[*dialect.MergeQuery] {
+	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
+		m.When = append(m.When, dialect.MergeWhen{
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action:    dialect.MergeAction{Type: dialect.MergeActionDelete},
+		})
 	})
 }
 
 // ThenUpdate sets the action to UPDATE with SET clauses
-// Supports MERGE UPDATE syntax:
-//   - column = expression
-//   - column = DEFAULT
-//   - (columns...) = ROW (expressions...)
-//   - (columns...) = (subquery)
-func ThenUpdate(sets ...bob.Mod[*UpdateAction]) bob.Mod[*WhenClause] {
+func (c WhenMatchedChain) ThenUpdate(sets ...bob.Mod[*UpdateAction]) bob.Mod[*dialect.MergeQuery] {
 	ua := &UpdateAction{}
 	for _, s := range sets {
 		s.Apply(ua)
 	}
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		w.Action = dialect.MergeAction{
-			Type: dialect.MergeActionUpdate,
-			Set:  ua.Set,
-		}
+	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
+		m.When = append(m.When, dialect.MergeWhen{
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action: dialect.MergeAction{
+				Type: dialect.MergeActionUpdate,
+				Set:  ua.Set,
+			},
+		})
 	})
+}
+
+// WhenNotMatchedChain is a chain for building WHEN NOT MATCHED [BY TARGET] clauses
+type WhenNotMatchedChain struct {
+	whenType  dialect.MergeWhenType
+	condition bob.Expression
+}
+
+// And adds a condition to the WHEN clause
+func (c WhenNotMatchedChain) And(condition bob.Expression) WhenNotMatchedChain {
+	if c.condition == nil {
+		c.condition = condition
+	} else {
+		c.condition = expr.X[dialect.Expression, dialect.Expression](c.condition).And(condition)
+	}
+	return c
+}
+
+// ThenDoNothing sets the action to DO NOTHING
+func (c WhenNotMatchedChain) ThenDoNothing() bob.Mod[*dialect.MergeQuery] {
+	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
+		m.When = append(m.When, dialect.MergeWhen{
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action:    dialect.MergeAction{Type: dialect.MergeActionDoNothing},
+		})
+	})
+}
+
+// ThenInsert sets the action to INSERT
+func (c WhenNotMatchedChain) ThenInsert(mods ...bob.Mod[*InsertAction]) bob.Mod[*dialect.MergeQuery] {
+	ia := &InsertAction{}
+	for _, mod := range mods {
+		mod.Apply(ia)
+	}
+	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
+		m.When = append(m.When, dialect.MergeWhen{
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action: dialect.MergeAction{
+				Type:       dialect.MergeActionInsert,
+				Columns:    ia.Columns,
+				Values:     ia.Values,
+				Overriding: ia.Overriding,
+			},
+		})
+	})
+}
+
+// ThenInsertDefaultValues sets the action to INSERT DEFAULT VALUES
+func (c WhenNotMatchedChain) ThenInsertDefaultValues() bob.Mod[*dialect.MergeQuery] {
+	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
+		m.When = append(m.When, dialect.MergeWhen{
+			Type:      c.whenType,
+			Condition: c.condition,
+			Action:    dialect.MergeAction{Type: dialect.MergeActionInsert},
+		})
+	})
+}
+
+// WhenMatched creates a WHEN MATCHED clause chain
+func WhenMatched() WhenMatchedChain {
+	return WhenMatchedChain{whenType: dialect.MergeWhenMatched}
+}
+
+// WhenNotMatched creates a WHEN NOT MATCHED (BY TARGET) clause chain
+func WhenNotMatched() WhenNotMatchedChain {
+	return WhenNotMatchedChain{whenType: dialect.MergeWhenNotMatched}
+}
+
+// WhenNotMatchedByTarget is an alias for WhenNotMatched with explicit BY TARGET
+func WhenNotMatchedByTarget() WhenNotMatchedChain {
+	return WhenNotMatchedChain{whenType: dialect.MergeWhenNotMatchedByTarget}
+}
+
+// WhenNotMatchedBySource creates a WHEN NOT MATCHED BY SOURCE clause chain
+func WhenNotMatchedBySource() WhenMatchedChain {
+	return WhenMatchedChain{whenType: dialect.MergeWhenNotMatchedBySource}
 }
 
 // UpdateAction is a builder for UPDATE action in MERGE
@@ -315,34 +364,6 @@ func (s SetColsChain) ToExprs(values ...bob.Expression) bob.Mod[*UpdateAction] {
 func (s SetColsChain) ToQuery(q bob.Query) bob.Mod[*UpdateAction] {
 	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
 		u.Set = append(u.Set, queryAssignment{cols: s.colExprs(), query: q})
-	})
-}
-
-// ThenInsert sets the action to INSERT
-// Use with Columns(), Values(), OverridingSystem(), OverridingUser() modifiers
-// If no Values() is specified, DEFAULT VALUES will be used
-func ThenInsert(mods ...bob.Mod[*InsertAction]) bob.Mod[*WhenClause] {
-	ia := &InsertAction{}
-	for _, mod := range mods {
-		mod.Apply(ia)
-	}
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		w.Action = dialect.MergeAction{
-			Type:       dialect.MergeActionInsert,
-			Columns:    ia.Columns,
-			Values:     ia.Values,
-			Overriding: ia.Overriding,
-		}
-	})
-}
-
-// ThenInsertDefaultValues sets the action to INSERT DEFAULT VALUES (shortcut)
-func ThenInsertDefaultValues() bob.Mod[*WhenClause] {
-	return bob.ModFunc[*WhenClause](func(w *WhenClause) {
-		w.Action = dialect.MergeAction{
-			Type: dialect.MergeActionInsert,
-			// Empty Values signals DEFAULT VALUES
-		}
 	})
 }
 
