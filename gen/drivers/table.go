@@ -109,12 +109,12 @@ func (t Table[C, I]) RelIsRequired(rel orm.Relationship) bool {
 	}
 
 	for _, colName := range firstSide.FromColumns {
-		if !t.GetColumn(colName).Nullable {
-			return true
+		if t.GetColumn(colName).Nullable {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 // Used in templates to know if the given table is a join table for this relationship

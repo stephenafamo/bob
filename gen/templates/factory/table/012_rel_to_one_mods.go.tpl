@@ -9,6 +9,7 @@ func (m {{$tAlias.DownSingular}}Mods) WithParentsCascading() {{$tAlias.UpSingula
     ctx = {{$tAlias.DownSingular}}WithParentsCascadingCtx.WithValue(ctx, true)
     {{range $.Relationships.Get $table.Key -}}
     {{- if .IsToMany -}}{{continue}}{{end -}}
+    {{- if not ($table.RelIsRequired .) -}}{{continue}}{{end -}}
     {{- $ftable := $.Aliases.Table .Foreign -}}
     {{- $relAlias := $tAlias.Relationship .Name -}}
     {
