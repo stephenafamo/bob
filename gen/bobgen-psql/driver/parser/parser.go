@@ -124,6 +124,10 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	case *pg.Node_DeleteStmt:
 		info = info.children["DeleteStmt"]
 		w.modDeleteStatement(node, info)
+
+	case *pg.Node_MergeStmt:
+		info = info.children["MergeStmt"]
+		w.modMergeStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
@@ -196,6 +200,8 @@ func getQueryType(stmt *pg.Node) bob.QueryType {
 		return bob.QueryTypeUpdate
 	case *pg.Node_DeleteStmt:
 		return bob.QueryTypeDelete
+	case *pg.Node_MergeStmt:
+		return bob.QueryTypeMerge
 	default:
 		return bob.QueryTypeUnknown
 	}

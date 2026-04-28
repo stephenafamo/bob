@@ -27,6 +27,9 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 	case *pg.Node_DeleteStmt:
 		return w.getDeleteSource(stmt.DeleteStmt, info, cloned...)
 
+	case *pg.Node_MergeStmt:
+		return w.getMergeSource(stmt.MergeStmt, info, cloned...)
+
 	case *pg.Node_RangeVar:
 		if rangeInfo, ok := info.children["RangeVar"]; ok {
 			info = rangeInfo
@@ -203,6 +206,24 @@ func (w *walker) getDeleteSource(stmt *pg.DeleteStmt, info nodeInfo, sources ...
 	from := stmt.UsingClause[0]
 	fromInfo := info.children["UsingClause"].children["0"]
 	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+
+	return w.getSourceFromTargets(
+		stmt.ReturningList,
+		info.children["ReturningList"].children,
+		sources...,
+	)
+}
+
+func (w *walker) getMergeSource(stmt *pg.MergeStmt, info nodeInfo, sources ...queryResult) queryResult {
+	sources = w.addSourcesOfWithClause(stmt.WithClause, info.children["WithClause"], sources...)
+
+	table := w.getTableSource(stmt.Relation, info.children["Relation"])
+	sources = append(sources, table)
+
+	if stmt.SourceRelation != nil {
+		usingSource := w.getSource(stmt.SourceRelation, info.children["SourceRelation"], sources...)
+		sources = append(sources, usingSource)
+	}
 
 	return w.getSourceFromTargets(
 		stmt.ReturningList,

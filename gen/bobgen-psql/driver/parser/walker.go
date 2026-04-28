@@ -195,6 +195,9 @@ func (w *walker) walk(a any) nodeInfo {
 	case *pg.DeleteStmt:
 		info = w.walkDeleteStmt(a)
 
+	case *pg.MergeStmt:
+		info = w.walkMergeStmt(a)
+
 	case *pg.ParamRef:
 		info = w.walkParamRef(a)
 
@@ -428,6 +431,17 @@ func (w *walker) walkDeleteStmt(a *pg.DeleteStmt) nodeInfo {
 	info.start = w.getStartOfTokenBefore(info.start, pg.Token_DELETE_P)
 
 	if err := verifyDeleteStatement(a, info); err != nil {
+		w.errors = append(w.errors, err)
+	}
+
+	return info
+}
+
+func (w *walker) walkMergeStmt(a *pg.MergeStmt) nodeInfo {
+	info := w.reflectWalk(reflect.ValueOf(a))
+	info.start = w.getStartOfTokenBefore(info.start, pg.Token_MERGE)
+
+	if err := verifyMergeStatement(a, info); err != nil {
 		w.errors = append(w.errors, err)
 	}
 
