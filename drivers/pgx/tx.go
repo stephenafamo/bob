@@ -108,7 +108,7 @@ func (t Tx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
 // Commit implements bob.Transaction.
 func (t Tx) Commit(ctx context.Context) error {
 	err := t.tx.Commit(ctx)
-	if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+	if err != nil {
 		return err
 	}
 
