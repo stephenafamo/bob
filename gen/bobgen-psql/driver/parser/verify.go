@@ -41,3 +41,11 @@ func verifyDeleteStatement(stmt *pg.DeleteStmt, _ nodeInfo) error {
 
 	return nil
 }
+
+func verifyMergeStatement(stmt *pg.MergeStmt, _ nodeInfo) error {
+	if stmt == nil {
+		return fmt.Errorf("nil statement")
+	}
+
+	return nil
+}

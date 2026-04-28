@@ -25,3 +25,12 @@ RETURNING users.*
 
 -- DeleteUser
 DELETE FROM users WHERE id = $1;
+
+
+-- MergeUser
+MERGE INTO users AS target
+USING (VALUES ($1::int, $2::varchar)) AS source (id, primary_email)
+ON target.id = source.id
+WHEN MATCHED THEN UPDATE SET primary_email = source.primary_email
+WHEN NOT MATCHED THEN INSERT (id, primary_email) VALUES (source.id, source.primary_email)
+;
