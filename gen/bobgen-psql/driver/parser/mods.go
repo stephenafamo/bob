@@ -524,6 +524,11 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 				int(sourceInfo.start),
 				int(sourceInfo.end)-1,
 				func(start, end int) error {
+					if src := stmt.MergeStmt.GetSourceRelation(); src != nil {
+						if rangeVar, ok := src.Node.(*pg.Node_RangeVar); ok && rangeVar.RangeVar != nil && !rangeVar.RangeVar.GetInh() {
+							fmt.Fprintln(w.mods, "q.Using.Only = true")
+						}
+					}
 					fmt.Fprintf(w.mods, "q.Using.Source = EXPR.subExpr(%d, %d)\n", start, end)
 					return nil
 				},
