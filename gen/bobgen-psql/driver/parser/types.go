@@ -65,7 +65,7 @@ func (a alwaysNullable) IsNull(map[position]string, map[position]nullable, []que
 	return true
 }
 
-func (i alwaysNullable) LitterDump(w io.StringWriter) {
+func (a alwaysNullable) LitterDump(w io.StringWriter) {
 	_, _ = w.WriteString("(TRUE)")
 }
 
@@ -74,8 +74,8 @@ type columnNullable struct {
 	info nodeInfo
 }
 
-func (i columnNullable) LitterDump(w io.StringWriter) {
-	w.WriteString(fmt.Sprintf("(%v)", i.info))
+func (c columnNullable) LitterDump(w io.StringWriter) {
+	w.WriteString(fmt.Sprintf("(%v)", c.info))
 }
 
 func (c columnNullable) IsNull(names map[position]string, index map[position]nullable, sources []queryResult) bool {
