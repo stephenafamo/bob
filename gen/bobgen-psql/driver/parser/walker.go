@@ -35,19 +35,19 @@ func (n nodeInfo) isValid() bool {
 	return n.start >= 0 && n.end >= 0
 }
 
-func (info nodeInfo) addChild(name string, childInfo nodeInfo) nodeInfo {
+func (n nodeInfo) addChild(name string, childInfo nodeInfo) nodeInfo {
 	if !childInfo.isValid() {
-		return info
+		return n
 	}
-	if childInfo.start != -1 && (info.start == -1 || childInfo.start < info.start) {
-		info.start = childInfo.start
+	if childInfo.start != -1 && (n.start == -1 || childInfo.start < n.start) {
+		n.start = childInfo.start
 	}
-	if childInfo.end != -1 && (info.end == -1 || childInfo.end > info.end) {
-		info.end = childInfo.end
+	if childInfo.end != -1 && (n.end == -1 || childInfo.end > n.end) {
+		n.end = childInfo.end
 	}
-	info.children[name] = childInfo
+	n.children[name] = childInfo
 
-	return info
+	return n
 }
 
 func (n nodeInfo) String() string {
