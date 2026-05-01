@@ -170,7 +170,10 @@ func mergeMatchKindToDialectWhenType(kind pg.MergeMatchKind) (string, bool) {
 	case pg.MergeMatchKind_MERGE_WHEN_NOT_MATCHED_BY_SOURCE:
 		return "dialect.MergeWhenNotMatchedBySource", true
 	case pg.MergeMatchKind_MERGE_WHEN_NOT_MATCHED_BY_TARGET:
-		return "dialect.MergeWhenNotMatchedByTarget", true
+		// pg_query parses both "NOT MATCHED" and "NOT MATCHED BY TARGET" as
+		// MERGE_WHEN_NOT_MATCHED_BY_TARGET. We use MergeWhenNotMatched which
+		// writes "NOT MATCHED" for backward compatibility with PG 15-16.
+		return "dialect.MergeWhenNotMatched", true
 	default:
 		return "", false
 	}
