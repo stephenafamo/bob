@@ -1,7 +1,11 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
+{{$.Importer.Import "sync"}}
+{{range $table := .Tables}}{{if $.Relationships.Get $table.Key}}{{$.Importer.Import "unsafe"}}{{end}}{{end}}
 
 type Factory struct {
+    // visited tracks model pointers during FromExisting calls to prevent circular reference stack overflow
+    visited sync.Map
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Key -}}
 		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
@@ -40,17 +44,23 @@ func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingu
   {{end}}
 
   {{if $.Relationships.Get $table.Key -}}
-  ctx := context.Background()
+  // Check for circular references using Factory-level visited map to prevent stack overflow
+  // See https://github.com/stephenafamo/bob/issues/584
+  ptr := uintptr(unsafe.Pointer(m))
+  if _, loaded := f.visited.LoadOrStore(ptr, struct{}{}); loaded {
+    return o // Already processing this model, skip to prevent infinite recursion
+  }
+  defer f.visited.Delete(ptr) // Clean up after processing
   {{- end}}
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}
       if len(m.R.{{$relAlias}}) > 0 {
-      {{$tAlias.UpSingular}}Mods.AddExisting{{$relAlias}}(m.R.{{$relAlias}}...).Apply(ctx, o)
+      {{$tAlias.UpSingular}}Mods.AddExisting{{$relAlias}}(m.R.{{$relAlias}}...).Apply(context.Background(), o)
       }
     {{- else -}}
       if m.R.{{$relAlias}} != nil {
-      {{$tAlias.UpSingular}}Mods.WithExisting{{$relAlias}}(m.R.{{$relAlias}}).Apply(ctx, o)
+      {{$tAlias.UpSingular}}Mods.WithExisting{{$relAlias}}(m.R.{{$relAlias}}).Apply(context.Background(), o)
       }
     {{- end}}
   {{end}}
