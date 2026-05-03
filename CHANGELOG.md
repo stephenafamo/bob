@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
+- **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
+
 ## [v0.43.0] - 2026-04-29
 
 ### Added
