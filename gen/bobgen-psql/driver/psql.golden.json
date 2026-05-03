@@ -6619,6 +6619,72 @@
 								}
 							],
 							"mods": "q.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendWhere(EXPR.subExpr(24, 31))\n"
+						},
+						{
+							"type": 6,
+							"name": "MergeUser",
+							"raw": "MERGE INTO users AS target\nUSING (VALUES ($1::int, $2::varchar)) AS source (id, primary_email)\nON target.id = source.id\nWHEN MATCHED THEN UPDATE SET primary_email = source.primary_email\nWHEN NOT MATCHED THEN INSERT (id, primary_email) VALUES (source.id, source.primary_email)",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [],
+							"args": [
+								{
+									"col": {
+										"name": "group41",
+										"db_name": "",
+										"nullable": false,
+										"type": "",
+										"type_limits": null
+									},
+									"children": [
+										{
+											"col": {
+												"name": "arg1",
+												"db_name": "",
+												"nullable": false,
+												"type": "int32",
+												"type_limits": null
+											},
+											"children": null,
+											"positions": [
+												[
+													42,
+													44
+												]
+											],
+											"can_be_multiple": false
+										},
+										{
+											"col": {
+												"name": "arg2",
+												"db_name": "",
+												"nullable": false,
+												"type": "string",
+												"type_limits": null
+											},
+											"children": null,
+											"positions": [
+												[
+													51,
+													53
+												]
+											],
+											"can_be_multiple": false
+										}
+									],
+									"positions": [
+										[
+											41,
+											63
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenMatched, Action: dialect.MergeAction{Type: dialect.MergeActionUpdate}})\nq.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenNotMatched, Action: dialect.MergeAction{Type: dialect.MergeActionInsert}})\nq.When[1].Action.Columns = []string{\"id\", \"primary_email\"}\nq.Table.Expression = EXPR.subExpr(11, 26)\nq.Using.Source = EXPR.subExpr(33, 94)\nq.Using.Condition = EXPR.subExpr(98, 119)\nq.When[0].Action.Set = append(q.When[0].Action.Set, EXPR.subExpr(149, 185))\nq.When[1].Action.Values = append(q.When[1].Action.Values, EXPR.subExpr(243, 274))\n"
 						}
 					]
 				},
