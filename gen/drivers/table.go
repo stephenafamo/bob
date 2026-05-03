@@ -104,7 +104,7 @@ func (t Table[C, I]) RelIsRequired(rel orm.Relationship) bool {
 	}
 
 	firstSide := rel.Sides[0]
-	if firstSide.Modify == "to" {
+	if firstSide.Modify == "to" || len(firstSide.FromColumns) == 0 {
 		return false
 	}
 
