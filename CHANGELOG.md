@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
 
+### Fixed
+
+- Fix generated factory requiredness for relationships with mixed nullable composite foreign key columns.
+
 ## [v0.43.0] - 2026-04-29
 
 ### Added
