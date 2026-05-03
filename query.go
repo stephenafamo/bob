@@ -117,16 +117,12 @@ func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
 	return nil
 }
 
-func (b BaseQuery[E]) With(mods ...Mod[E]) BaseQuery[E] {
+func (b BaseQuery[E]) Apply(mods ...Mod[E]) BaseQuery[E] {
 	next := b.Clone()
 	for _, mod := range mods {
 		mod.Apply(next.Expression)
 	}
 	return next
-}
-
-func (b BaseQuery[E]) Apply(mods ...Mod[E]) BaseQuery[E] {
-	return b.With(mods...)
 }
 
 func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.StringWriter, start int) ([]any, error) {

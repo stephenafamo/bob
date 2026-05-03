@@ -10,13 +10,13 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/um"
 )
 
-func TestUpdateWithDoesNotMutateOriginal(t *testing.T) {
+func TestUpdateApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := Update(
 		um.Table("films"),
 		um.SetCol("kind").ToArg("Dramatic"),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		um.Where(Quote("kind").EQ(Arg("Drama"))),
 		um.Returning("id"),
 	)
@@ -38,12 +38,12 @@ func TestUpdateWithDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
-func TestDeleteWithDoesNotMutateOriginal(t *testing.T) {
+func TestDeleteApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := Delete(
 		dm.From("films"),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		dm.Where(Quote("kind").EQ(Arg("Drama"))),
 		dm.Returning("id"),
 	)
@@ -65,13 +65,13 @@ func TestDeleteWithDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
-func TestInsertWithDoesNotMutateOriginal(t *testing.T) {
+func TestInsertApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := Insert(
 		im.Into("films"),
 		im.Values(Arg("UA502", "Bananas")),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		im.Returning("id"),
 	)
 
@@ -427,7 +427,7 @@ func BenchmarkUpdateQueryImmutableNativeHotPath(b *testing.B) {
 			um.Table("films"),
 			um.SetCol("kind").ToArg("Dramatic"),
 		)
-		derived := q.With(
+		derived := q.Apply(
 			um.Where(Quote("kind").EQ(Arg("Drama"))),
 			um.Returning("id"),
 		)
@@ -465,7 +465,7 @@ func BenchmarkDeleteQueryImmutableNativeHotPath(b *testing.B) {
 		q := Delete(
 			dm.From("films"),
 		)
-		derived := q.With(
+		derived := q.Apply(
 			dm.Where(Quote("kind").EQ(Arg("Drama"))),
 			dm.Returning("id"),
 		)
@@ -504,7 +504,7 @@ func BenchmarkInsertQueryImmutableNativeHotPath(b *testing.B) {
 			im.Into("films"),
 			im.Values(Arg("UA502", "Bananas")),
 		)
-		derived := q.With(
+		derived := q.Apply(
 			im.Returning("id"),
 		)
 

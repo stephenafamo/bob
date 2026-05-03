@@ -25,7 +25,7 @@ var withTestStructView = psql.NewView[*withTestStruct, bob.Expression](
 	expr.ColsForStruct[withTestStruct]("with_test_struct"),
 )
 
-func TestSelectWithRegression(t *testing.T) {
+func TestSelectApplyRegression(t *testing.T) {
 	t.Run("native path matches direct construction", func(t *testing.T) {
 		base := psql.Select(
 			sm.Columns("id", "name"),
@@ -33,7 +33,7 @@ func TestSelectWithRegression(t *testing.T) {
 			sm.Where(psql.Quote("tenant_id").EQ(psql.Arg(42))),
 		)
 
-		derived := base.With(
+		derived := base.Apply(
 			sm.OrderBy("id").Desc(),
 			sm.Limit(10),
 			sm.Offset(20),
@@ -60,7 +60,7 @@ func TestSelectWithRegression(t *testing.T) {
 			sm.From("users"),
 		)
 
-		derived := base.With(
+		derived := base.Apply(
 			sm.LeftJoin("teams").Using("id"),
 			sm.ForUpdate("users").SkipLocked(),
 		)
@@ -78,12 +78,12 @@ func TestSelectWithRegression(t *testing.T) {
 	})
 }
 
-func TestViewQueryWithRegression(t *testing.T) {
+func TestViewQueryApplyRegression(t *testing.T) {
 	base := withTestStructView.Query(
 		sm.Where(psql.Quote("id").GT(psql.Arg(0))),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		sm.OrderBy("id").Desc(),
 		sm.Limit(10),
 		sm.Offset(20),
@@ -100,13 +100,13 @@ func TestViewQueryWithRegression(t *testing.T) {
 	))
 }
 
-func TestUpdateWithRegression(t *testing.T) {
+func TestUpdateApplyRegression(t *testing.T) {
 	base := psql.Update(
 		um.Table("films"),
 		um.SetCol("kind").ToArg("Dramatic"),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		um.SetCol("updated_at").To("NOW()"),
 		um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
 		um.Returning("id"),
@@ -125,12 +125,12 @@ func TestUpdateWithRegression(t *testing.T) {
 	))
 }
 
-func TestDeleteWithRegression(t *testing.T) {
+func TestDeleteApplyRegression(t *testing.T) {
 	base := psql.Delete(
 		dm.From("employees"),
 	)
 
-	derived := base.With(
+	derived := base.Apply(
 		dm.Using("accounts"),
 		dm.Where(psql.Quote("accounts", "name").EQ(psql.Arg("Acme Corporation"))),
 		dm.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
@@ -149,14 +149,14 @@ func TestDeleteWithRegression(t *testing.T) {
 	))
 }
 
-func TestInsertWithRegression(t *testing.T) {
+func TestInsertApplyRegression(t *testing.T) {
 	t.Run("native path matches direct construction", func(t *testing.T) {
 		base := psql.Insert(
 			im.Into("films"),
 			im.Values(psql.Arg("UA502", "Bananas")),
 		)
 
-		derived := base.With(
+		derived := base.Apply(
 			im.Returning("id"),
 		)
 
@@ -177,7 +177,7 @@ func TestInsertWithRegression(t *testing.T) {
 			im.Values(psql.Arg(8, "Anvil Distribution")),
 		)
 
-		derived := base.With(
+		derived := base.Apply(
 			im.OnConflict("did").DoUpdate(
 				im.SetExcluded("dname"),
 				im.Where(psql.Quote("d", "zipcode").NE(psql.S("21201"))),

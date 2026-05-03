@@ -131,7 +131,7 @@ func (base *InsertQuery) Derive(queryMods ...bob.Mod[*InsertQuery]) (*InsertQuer
 		case mods.TargetTable[*InsertQuery]:
 			next.TableRef = cloneTableRef(clause.TableRef(m))
 		case mods.Overriding[*InsertQuery]:
-			next.Overriding = string(m)
+			next.Overriding = OverridingType(m)
 		case mods.QuerySource[*InsertQuery]:
 			next.Values.Query = m.Query
 		case mods.Returning[*InsertQuery]:

@@ -27,13 +27,13 @@ func (m appendExprMod) Apply(e *cloneableExpr) {
 	e.parts = append(e.parts, string(m))
 }
 
-func TestBaseQueryWithDoesNotMutateOriginal(t *testing.T) {
+func TestBaseQueryApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := BaseQuery[*cloneableExpr]{
 		Expression: &cloneableExpr{parts: []string{"base"}},
 		QueryType:  QueryTypeSelect,
 	}
 
-	derived := base.With(appendExprMod("derived"))
+	derived := base.Apply(appendExprMod("derived"))
 
 	if !slices.Equal(base.Expression.parts, []string{"base"}) {
 		t.Fatalf("base query changed unexpectedly: %#v", base.Expression.parts)

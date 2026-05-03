@@ -162,7 +162,5 @@ func (t *Table[T, Tslice, Tset, C]) Merge(queryMods ...bob.Mod[*dialect.MergeQue
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }

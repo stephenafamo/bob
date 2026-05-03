@@ -9,17 +9,13 @@ type SelectQuery struct {
 	bob.BaseQuery[*dialect.SelectQuery]
 }
 
-func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
+func (q SelectQuery) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
 	if next, ok := q.Expression.Derive(queryMods...); ok {
 		q.Expression = next
 		return q
 	}
 	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
-}
-
-func (q SelectQuery) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
-	return q.With(queryMods...)
 }
 
 func (q SelectQuery) AsCount() SelectQuery {

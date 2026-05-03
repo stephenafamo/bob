@@ -9,17 +9,13 @@ type InsertQuery struct {
 	bob.BaseQuery[*dialect.InsertQuery]
 }
 
-func (q InsertQuery) With(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
+func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
 	if next, ok := q.Expression.Derive(queryMods...); ok {
 		q.Expression = next
 		return q
 	}
 	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
-}
-
-func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
-	return q.With(queryMods...)
 }
 
 func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {

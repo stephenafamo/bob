@@ -12,13 +12,13 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
+func TestImmutableSelectQueryApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := Select(
 		sm.Columns("id"),
 		sm.From("users"),
-	).With()
+	).Apply()
 
-	derived := base.With(
+	derived := base.Apply(
 		sm.OrderBy("id").Desc(),
 		sm.Limit(10),
 		sm.Offset(20),
@@ -45,12 +45,12 @@ func TestImmutableSelectQueryWithDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
-func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
+func TestImmutableViewQueryApplyDoesNotMutateOriginalFromLegacyWithCase(t *testing.T) {
 	base := someStructView.Query(
 		sm.Where(Quote("id").GT(Arg(0))),
-	).With()
+	).Apply()
 
-	derived := base.With(
+	derived := base.Apply(
 		sm.OrderBy("id").Desc(),
 		sm.Limit(10),
 		sm.Offset(20),
@@ -77,10 +77,10 @@ func TestImmutableViewQueryWithDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
-func TestViewQueryWithNilReceiver(t *testing.T) {
+func TestViewQueryApplyNilReceiver(t *testing.T) {
 	var q *ViewQuery[*someStruct, []*someStruct]
 
-	if got := q.With(sm.Where(Quote("id").EQ(Arg(1)))); got != nil {
+	if got := q.Apply(sm.Where(Quote("id").EQ(Arg(1)))); got != nil {
 		t.Fatalf("expected nil view query, got %#v", got)
 	}
 }
@@ -408,7 +408,7 @@ func BenchmarkBaseQueryImmutableNativeHotPath(b *testing.B) {
 			sm.From("users"),
 			sm.Where(Quote("tenant_id").EQ(Arg(42))),
 		)
-		derived := q.With(
+		derived := q.Apply(
 			sm.OrderBy("id").Desc(),
 			sm.Limit(10),
 			sm.Offset(20),
@@ -458,7 +458,7 @@ func BenchmarkViewQueryCountThenPaginateImmutableNativeHotPath(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		derived := q.With(
+		derived := q.Apply(
 			sm.OrderBy("id").Desc(),
 			sm.Limit(10),
 			sm.Offset(20),

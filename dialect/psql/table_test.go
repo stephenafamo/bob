@@ -180,7 +180,7 @@ func TestTableUpdateAdditionalExplicitReturningAppends(t *testing.T) {
 		um.Where(Quote("id").EQ(Arg(1))),
 	)
 
-	q := base.With(um.Returning("id")).With(um.Returning("email"))
+	q := base.Apply(um.Returning("id")).Apply(um.Returning("email"))
 
 	sql, args, err := q.Build(t.Context())
 	if err != nil {
@@ -240,7 +240,7 @@ func TestTableInsertAdditionalExplicitReturningAppends(t *testing.T) {
 		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
 	)
 
-	q := base.With(im.Returning("id")).With(im.Returning("email"))
+	q := base.Apply(im.Returning("id")).Apply(im.Returning("email"))
 
 	sql, args, err := q.Build(t.Context())
 	if err != nil {
@@ -300,7 +300,7 @@ func TestTableDeleteAdditionalExplicitReturningAppends(t *testing.T) {
 		dm.Where(Quote("id").EQ(Arg(1))),
 	)
 
-	q := base.With(dm.Returning("id")).With(dm.Returning("email"))
+	q := base.Apply(dm.Returning("id")).Apply(dm.Returning("email"))
 
 	sql, args, err := q.Build(t.Context())
 	if err != nil {
@@ -346,12 +346,12 @@ func TestTableUpdateApplyDoesNotMutateOriginal(t *testing.T) {
 	}
 }
 
-func TestTableInsertWithDoesNotMutateOriginal(t *testing.T) {
+func TestTableInsertApplyDoesNotMutateOriginal(t *testing.T) {
 	base := userTable.Insert(
 		im.Rows([]bob.Expression{Arg(int64(1)), Arg("Stephen"), Arg("stephen@example.com")}),
 	)
 
-	derived := base.With(im.Returning("id"))
+	derived := base.Apply(im.Returning("id"))
 
 	baseSQL, _, err := base.Build(t.Context())
 	if err != nil {

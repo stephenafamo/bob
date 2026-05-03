@@ -22,7 +22,7 @@ func (q ExecQuery[Q]) Clone() ExecQuery[Q] {
 	}
 }
 
-func (q *ExecQuery[Q]) With(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
+func (q *ExecQuery[Q]) Apply(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
 	if q == nil {
 		return nil
 	}
@@ -32,10 +32,6 @@ func (q *ExecQuery[Q]) With(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
 		mod.Apply(next.BaseQuery.Expression)
 	}
 	return &next
-}
-
-func (q *ExecQuery[Q]) Apply(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
-	return q.With(queryMods...)
 }
 
 func (q ExecQuery[Q]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
@@ -75,7 +71,7 @@ func (q Query[Q, T, Ts, Tr]) Clone() Query[Q, T, Ts, Tr] {
 	}
 }
 
-func (q *Query[Q, T, Ts, Tr]) With(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
+func (q *Query[Q, T, Ts, Tr]) Apply(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
 	if q == nil {
 		return nil
 	}
@@ -85,10 +81,6 @@ func (q *Query[Q, T, Ts, Tr]) With(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr]
 		mod.Apply(next.BaseQuery.Expression)
 	}
 	return &next
-}
-
-func (q *Query[Q, T, Ts, Tr]) Apply(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
-	return q.With(queryMods...)
 }
 
 // First matching row

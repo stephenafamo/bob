@@ -103,7 +103,7 @@ type ViewQuery[T any, Ts ~[]T] struct {
 	Hooks   *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
-func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
+func (q *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
 	if q == nil {
 		return nil
 	}
@@ -111,10 +111,6 @@ func (q *ViewQuery[T, Ts]) With(queryMods ...bob.Mod[*dialect.SelectQuery]) *Vie
 	next := *q
 	next.SelectQuery = next.SelectQuery.Apply(queryMods...)
 	return &next
-}
-
-func (q *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
-	return q.With(queryMods...)
 }
 
 // Count the number of matching rows

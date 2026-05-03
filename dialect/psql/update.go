@@ -9,13 +9,9 @@ type UpdateQuery struct {
 	bob.BaseQuery[*dialect.UpdateQuery]
 }
 
-func (q UpdateQuery) With(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
+func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
 	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
 	return q
-}
-
-func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
-	return q.With(queryMods...)
 }
 
 func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {

@@ -41,7 +41,7 @@ func (i *InsertQuery) SetTargetTableAlias(alias string, columns ...string) {
 }
 
 func (i *InsertQuery) SetOverriding(overriding string) {
-	i.Overriding = overriding
+	i.Overriding = OverridingType(overriding)
 }
 
 func (i *InsertQuery) SetQuery(q bob.Query) {
@@ -85,7 +85,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 	if i.Overriding != "" {
 		_, _ = w.WriteString("\nOVERRIDING ")
-		_, _ = w.WriteString(i.Overriding)
+		_, _ = w.WriteString(string(i.Overriding))
 		_, _ = w.WriteString(" VALUE")
 	}
 

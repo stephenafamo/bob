@@ -120,18 +120,14 @@ type insertQuery[T any, Ts ~[]T, Tset setter[T], C bob.Expression] struct {
 	table *Table[T, Ts, Tset, C]
 }
 
-func (t *insertQuery[T, Ts, Tset, C]) With(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Ts, Tset, C] {
+func (t *insertQuery[T, Ts, Tset, C]) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Ts, Tset, C] {
 	if t == nil {
 		return nil
 	}
 
 	next := *t
-	next.ExecQuery = *t.ExecQuery.With(queryMods...)
+	next.ExecQuery = *t.ExecQuery.Apply(queryMods...)
 	return &next
-}
-
-func (t *insertQuery[T, Ts, Tset, C]) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Ts, Tset, C] {
-	return t.With(queryMods...)
 }
 
 // Insert One Row
