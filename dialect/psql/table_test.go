@@ -232,8 +232,8 @@ func TestMerge(t *testing.T) {
 			Quote("u", "id").EQ(Quote("users", "id")),
 		),
 		mm.WhenMatched().ThenUpdate(
-			mm.SetCol("name").ToExpr(Quote("u", "name")),
-			mm.SetCol("email").ToExpr(Quote("u", "email")),
+			mm.SetCol("name").To(Quote("u", "name")),
+			mm.SetCol("email").To(Quote("u", "email")),
 		),
 		mm.WhenNotMatched().ThenInsert(
 			mm.Columns("id", "name", "email"),
@@ -307,7 +307,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 				Quote("s", "id").EQ(Quote("users", "id")),
 			),
 			mm.WhenMatched().ThenUpdate(
-				mm.SetCol("name").ToExpr(Quote("s", "name")),
+				mm.SetCol("name").To(Quote("s", "name")),
 			),
 		)
 
@@ -334,7 +334,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 				Quote("s", "id").EQ(Quote("users", "id")),
 			),
 			mm.WhenMatched().ThenUpdate(
-				mm.SetCol("name").ToExpr(Quote("s", "name")),
+				mm.SetCol("name").To(Quote("s", "name")),
 			),
 		)
 
@@ -361,7 +361,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 				Quote("s", "id").EQ(Quote("users", "id")),
 			),
 			mm.WhenMatched().ThenUpdate(
-				mm.SetCol("name").ToExpr(Quote("s", "name")),
+				mm.SetCol("name").To(Quote("s", "name")),
 			),
 		)
 

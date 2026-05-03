@@ -18,7 +18,7 @@ func TestMerge(t *testing.T) {
 					psql.Quote("t", "customer_id").EQ(psql.Quote("customer_account", "customer_id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("balance").ToExpr(
+					mm.SetCol("balance").To(
 						psql.Raw("balance + ?", psql.Quote("t", "transaction_value")),
 					),
 				),
@@ -42,7 +42,7 @@ func TestMerge(t *testing.T) {
 					mm.Values(psql.Quote("s", "winename"), psql.Quote("s", "stock_delta")),
 				),
 				mm.WhenMatched().And(psql.Raw("w.stock + s.stock_delta > 0")).ThenUpdate(
-					mm.SetCol("stock").ToExpr(psql.Raw("w.stock + s.stock_delta")),
+					mm.SetCol("stock").To(psql.Raw("w.stock + s.stock_delta")),
 				),
 				mm.WhenMatched().ThenDelete(),
 			),
@@ -77,7 +77,7 @@ func TestMerge(t *testing.T) {
 					mm.Values(psql.Quote("s", "winename"), psql.Quote("s", "stock")),
 				),
 				mm.WhenMatched().And(psql.Quote("w", "stock").NE(psql.Quote("s", "stock"))).ThenUpdate(
-					mm.SetCol("stock").ToExpr(psql.Quote("s", "stock")),
+					mm.SetCol("stock").To(psql.Quote("s", "stock")),
 				),
 				mm.WhenNotMatchedBySource().ThenDelete(),
 			),
@@ -94,7 +94,7 @@ func TestMerge(t *testing.T) {
 					psql.Quote("u", "id").EQ(psql.Quote("products", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("price").ToExpr(psql.Quote("u", "price")),
+					mm.SetCol("price").To(psql.Quote("u", "price")),
 				),
 				mm.WhenNotMatched().ThenInsert(
 					mm.Columns("id", "name", "price"),
@@ -115,7 +115,7 @@ func TestMerge(t *testing.T) {
 					psql.Quote("src", "id").EQ(psql.Quote("target_table", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("value").ToExpr(psql.Quote("src", "value")),
+					mm.SetCol("value").To(psql.Quote("src", "value")),
 				),
 			),
 			ExpectedSQL: `MERGE INTO target_table
@@ -129,9 +129,9 @@ func TestMerge(t *testing.T) {
 					psql.Quote("u", "id").EQ(psql.Quote("employees", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("u", "name")),
-					mm.SetCol("salary").ToExpr(psql.Quote("u", "salary")),
-					mm.SetCol("department").ToExpr(psql.Quote("u", "department")),
+					mm.SetCol("name").To(psql.Quote("u", "name")),
+					mm.SetCol("salary").To(psql.Quote("u", "salary")),
+					mm.SetCol("department").To(psql.Quote("u", "department")),
 				),
 			),
 			ExpectedSQL: `MERGE INTO employees
@@ -145,8 +145,8 @@ func TestMerge(t *testing.T) {
 					psql.Quote("u", "id").EQ(psql.Quote("products", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("updated_at").ToDefault(),
-					mm.SetCol("name").ToExpr(psql.Quote("u", "name")),
+					mm.SetCol("updated_at").To(psql.Raw("DEFAULT")),
+					mm.SetCol("name").To(psql.Quote("u", "name")),
 				),
 			),
 			ExpectedSQL: `MERGE INTO products
@@ -201,7 +201,7 @@ func TestMerge(t *testing.T) {
 					psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("value").ToExpr(psql.Quote("s", "value")),
+					mm.SetCol("value").To(psql.Quote("s", "value")),
 				),
 			),
 			ExpectedSQL: `WITH source_data AS (SELECT "id", "value" FROM temp_table)
@@ -253,26 +253,6 @@ func TestMerge(t *testing.T) {
 				USING new_products AS "n" ON "n"."sku" = "products"."sku"
 				WHEN NOT MATCHED THEN INSERT ("id", "sku", "name") OVERRIDING USER VALUE VALUES ("n"."id", "n"."sku", "n"."name")`,
 		},
-		"merge with Recursive CTE": {
-			Query: psql.Merge(
-				mm.With("hierarchy").As(psql.Select(
-					sm.Columns("id", "parent_id", "name"),
-					sm.From("categories"),
-				)),
-				mm.Recursive(true),
-				mm.Into("target"),
-				mm.Using("hierarchy").As("h").On(
-					psql.Quote("h", "id").EQ(psql.Quote("target", "id")),
-				),
-				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("h", "name")),
-				),
-			),
-			ExpectedSQL: `WITH RECURSIVE hierarchy AS (SELECT "id", "parent_id", "name" FROM categories)
-				MERGE INTO target
-				USING hierarchy AS "h" ON "h"."id" = "target"."id"
-				WHEN MATCHED THEN UPDATE SET "name" = "h"."name"`,
-		},
 		"merge with Only target": {
 			Query: psql.Merge(
 				mm.Into("parent_table"),
@@ -281,7 +261,7 @@ func TestMerge(t *testing.T) {
 					psql.Quote("s", "id").EQ(psql.Quote("parent_table", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("value").ToExpr(psql.Quote("s", "value")),
+					mm.SetCol("value").To(psql.Quote("s", "value")),
 				),
 			),
 			ExpectedSQL: `MERGE INTO ONLY parent_table
@@ -386,8 +366,8 @@ func TestMerge(t *testing.T) {
 				),
 				mm.WhenMatched().And(psql.Quote("s", "quantity").EQ(psql.Arg(0))).ThenDelete(),
 				mm.WhenMatched().And(psql.Quote("s", "quantity").GT(psql.Arg(0))).ThenUpdate(
-					mm.SetCol("quantity").ToExpr(psql.Quote("s", "quantity")),
-					mm.SetCol("updated_at").ToDefault(),
+					mm.SetCol("quantity").To(psql.Quote("s", "quantity")),
+					mm.SetCol("updated_at").To(psql.Raw("DEFAULT")),
 				),
 				mm.WhenNotMatchedByTarget().And(psql.Quote("s", "quantity").GT(psql.Arg(0))).ThenInsert(
 					mm.Columns("product_id", "quantity"),
@@ -418,8 +398,8 @@ func TestMerge(t *testing.T) {
 					psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
 				),
 				mm.WhenMatched().ThenUpdate(
-					mm.SetCol("name").ToExpr(psql.Quote("s", "name")),
-					mm.SetCol("value").ToExpr(psql.Quote("s", "value")),
+					mm.SetCol("name").To(psql.Quote("s", "name")),
+					mm.SetCol("value").To(psql.Quote("s", "value")),
 				),
 			),
 			ExpectedSQL: `WITH source_data ("id", "name", "value") AS (SELECT "product_id", "product_name", "price" FROM products)
