@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Avoid unnecessary imports in generated random factory code when a type has no random expression.
+- Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
 
 ## [v0.43.0] - 2026-04-29
 
