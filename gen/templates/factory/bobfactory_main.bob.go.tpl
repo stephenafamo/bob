@@ -1,11 +1,8 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
-{{$.Importer.Import "sync"}}
 {{range $table := .Tables}}{{if $.Relationships.Get $table.Key}}{{$.Importer.Import "unsafe"}}{{end}}{{end}}
 
 type Factory struct {
-    // visited tracks model pointers during FromExisting calls to prevent circular reference stack overflow
-    visited sync.Map
     {{range $table := .Tables}}
     {{ $tAlias := $.Aliases.Table $table.Key -}}
 		base{{$tAlias.UpSingular}}Mods {{$tAlias.UpSingular}}ModSlice
@@ -15,6 +12,8 @@ type Factory struct {
 func New() *Factory {
   return &Factory{}
 }
+
+type visitedCtxKey struct{}
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
@@ -35,6 +34,16 @@ func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods
 }
 
 func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+  {{if $.Relationships.Get $table.Key -}}
+  visited := make(map[uintptr]struct{})
+  ctx := context.WithValue(context.Background(), visitedCtxKey{}, visited)
+  {{- else -}}
+  ctx := context.Background()
+  {{- end}}
+  return f.fromExisting{{$tAlias.UpSingular}}(ctx, m)
+}
+
+func (f *Factory) fromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f, alreadyPersisted: true}
 
   {{range $column := $table.Columns -}}
@@ -44,26 +53,26 @@ func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingu
   {{end}}
 
   {{if $.Relationships.Get $table.Key -}}
-  // Check for circular references using Factory-level visited map to prevent stack overflow
-  // See https://github.com/stephenafamo/bob/issues/584
-  ptr := uintptr(unsafe.Pointer(m))
-  if _, loaded := f.visited.LoadOrStore(ptr, struct{}{}); loaded {
-    return o // Already processing this model, skip to prevent infinite recursion
+  if visited, ok := ctx.Value(visitedCtxKey{}).(map[uintptr]struct{}); ok {
+    ptr := uintptr(unsafe.Pointer(m))
+    if _, seen := visited[ptr]; seen {
+      return o
+    }
+    visited[ptr] = struct{}{}
   }
-  defer f.visited.Delete(ptr) // Clean up after processing
-  {{- end}}
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}
       if len(m.R.{{$relAlias}}) > 0 {
-      {{$tAlias.UpSingular}}Mods.AddExisting{{$relAlias}}(m.R.{{$relAlias}}...).Apply(context.Background(), o)
+      {{$tAlias.UpSingular}}Mods.AddExisting{{$relAlias}}(m.R.{{$relAlias}}...).Apply(ctx, o)
       }
     {{- else -}}
       if m.R.{{$relAlias}} != nil {
-      {{$tAlias.UpSingular}}Mods.WithExisting{{$relAlias}}(m.R.{{$relAlias}}).Apply(context.Background(), o)
+      {{$tAlias.UpSingular}}Mods.WithExisting{{$relAlias}}(m.R.{{$relAlias}}).Apply(ctx, o)
       }
     {{- end}}
   {{end}}
+  {{- end}}
 
   return o
 }
@@ -81,4 +90,3 @@ f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods
 }
 
 {{end}}
-

@@ -56,7 +56,7 @@ func (m {{$tAlias.DownSingular}}Mods) AddExisting{{$relAlias}}(existingModels ..
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
     for _, em := range existingModels {
       o.r.{{$relAlias}} = append(o.r.{{$relAlias}}, &{{$tAlias.DownSingular}}R{{$relAlias}}R{
-        o: o.f.FromExisting{{$ftable.UpSingular}}(em),
+        o: o.f.fromExisting{{$ftable.UpSingular}}(ctx, em),
       })
     }
 	})
