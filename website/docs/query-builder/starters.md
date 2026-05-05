@@ -88,11 +88,4 @@ There are a number of common starter functions shared by all supported dialects:
   psql.Raw("WHERE a = ?", "something")
   ```
 
-- `As(e Expression, alias string)`: For aliasing expressions.
-
-  ```go
-  // SQL: pilots as "p"
-  psql.As("pilots", "p")
-  ```
-
 See dialect documentation for extra starters
