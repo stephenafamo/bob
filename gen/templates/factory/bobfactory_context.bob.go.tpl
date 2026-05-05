@@ -2,6 +2,8 @@
 
 type contextKey string
 var (
+    factoryVisitedCtx = newContextual[map[uintptr]struct{}]("factoryVisited")
+
     {{range $table := .Tables -}}
       {{ $tAlias := $.Aliases.Table $table.Key -}}
       // Relationship Contexts for {{$table.Key}}

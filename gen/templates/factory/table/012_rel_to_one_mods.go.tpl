@@ -52,7 +52,7 @@ func (m {{$tAlias.DownSingular}}Mods) WithNew{{$relAlias}}(mods ...{{$ftable.UpS
 func (m {{$tAlias.DownSingular}}Mods) WithExisting{{$relAlias}}(em *models.{{$ftable.UpSingular}}) {{$tAlias.UpSingular}}Mod {
 	return {{$tAlias.UpSingular}}ModFunc(func (ctx context.Context, o *{{$tAlias.UpSingular}}Template) {
 		o.r.{{$relAlias}} = &{{$tAlias.DownSingular}}R{{$relAlias}}R{
-			o: o.f.FromExisting{{$ftable.UpSingular}}(em),
+			o: o.f.fromExisting{{$ftable.UpSingular}}(ctx, em),
 		}
 	})
 }
