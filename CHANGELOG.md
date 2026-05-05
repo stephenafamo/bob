@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `pgx` driver `Commit()` returning `nil` instead of `pgx.ErrTxClosed` when the transaction is already closed (e.g., rolled back by context expiry). This prevented silent data loss by correctly propagating the error to the caller. (thanks @wucm667)
+- Fix factory `FromExisting` methods causing stack overflow when models have bidirectional relationships populated (thanks @wucm667)
 - Fix self-referencing relationship back-references so generated preload/load helpers no longer create cyclic parent links. (thanks @atzedus)
 - Fix collisions for preloader alias generation. Replaced `RandInt` with `NextUniqueInt` (thanks @atzedus)
 - Fix an issue where the random function of aliased custom types were not being used in generated query tests.
