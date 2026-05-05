@@ -207,9 +207,9 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 	return arrTyp
 }
 
-func (d *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string) string {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (t *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string) string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 
 	singleTypDef := types.Index(singleTyp)
 	singleComparer := strings.ReplaceAll(singleTypDef.CompareExpr, "AAA", "a")

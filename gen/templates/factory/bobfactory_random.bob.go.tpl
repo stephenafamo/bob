@@ -19,12 +19,12 @@ var defaultFaker = faker.New()
 
 {{range $colTyp := keys $doneTypes | sortAlpha -}}
     {{- $typDef := $.Types.Index $colTyp -}}
-    {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- if not $typDef.RandomExpr -}}{{continue}}{{/*
       Ensures that compilation fails.
       Users of custom types can decide to use a non-random expression
       but this would be a conscious decision.
     */}}{{- end -}}
+    {{- $typ := $.Types.Get $.CurrentPackage $.Importer $colTyp -}}
     {{- $.Importer.ImportList $typDef.RandomExprImports -}}
     func random_{{normalizeType $colTyp}}(f *faker.Faker, limits ...string) {{$typ}} {
       if f == nil {

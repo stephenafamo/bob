@@ -41,3 +41,19 @@ func verifyDeleteStatement(stmt *pg.DeleteStmt, _ nodeInfo) error {
 
 	return nil
 }
+
+func verifyMergeStatement(stmt *pg.MergeStmt, _ nodeInfo) error {
+	if stmt == nil {
+		return fmt.Errorf("nil statement")
+	}
+
+	if stmt.GetWithClause().GetRecursive() {
+		return fmt.Errorf("MERGE does not support WITH RECURSIVE")
+	}
+
+	if len(stmt.MergeWhenClauses) == 0 {
+		return fmt.Errorf("MERGE requires at least one WHEN clause")
+	}
+
+	return nil
+}
