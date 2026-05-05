@@ -314,8 +314,9 @@ func (t Types) IsOptionalValid(currentPkg, forType string, null bool, varName st
 
 func (t Types) FromOptional(currentPkg string, i language.Importer, forType, varName string, isNull, fromOrToNull bool) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
-	optTyp, _ := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
+	optTyp, imports := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)
+	i.ImportList(imports)
 	i.ImportList(optTyp.UseExprImports)
 	return strings.NewReplacer(
 		"SRC", varName,
@@ -327,8 +328,9 @@ func (t Types) FromOptional(currentPkg string, i language.Importer, forType, var
 
 func (t Types) ToOptional(currentPkg string, i language.Importer, forType, varName string, isNull, fromOrToNull bool) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
-	optTyp, _ := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
+	optTyp, imports := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)
+	i.ImportList(imports)
 	i.ImportList(optTyp.CreateExprImports)
 	return strings.NewReplacer(
 		"SRC", varName,
