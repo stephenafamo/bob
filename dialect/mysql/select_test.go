@@ -98,6 +98,21 @@ func TestSelect(t *testing.T) {
 				sm.GroupBy("status"),
 			),
 		},
+		"select with aliased subquery in columns": {
+			ExpectedSQL: "SELECT COUNT(*) AS `all`, (SELECT COUNT(*) AS `c` FROM teams WHERE (active = ?)) AS `active_count` FROM teams",
+			Query: mysql.Select(
+				sm.Columns(
+					mysql.Raw("COUNT(*)").As("all"),
+					mysql.Select(
+						sm.Columns(mysql.Raw("COUNT(*)").As("c")),
+						sm.From("teams"),
+						sm.Where(mysql.Raw("active").EQ(mysql.Arg(true))),
+					).As("active_count"),
+				),
+				sm.From("teams"),
+			),
+			ExpectedArgs: []any{true},
+		},
 		"select with grouped IN": {
 			Query: mysql.Select(
 				sm.Columns("id", "name"),
