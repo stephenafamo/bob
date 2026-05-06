@@ -9,7 +9,7 @@
 {{block "helpers/count_variables" . -}}
 var (
 	PreloadCount = getPreloadCount()
-	ThenLoadCount = getThenLoadCount[*dialect.SelectQuery]()
+	SelectThenLoadCount = getThenLoadCount[*dialect.SelectQuery]()
 	InsertThenLoadCount = getThenLoadCount[*dialect.InsertQuery]()
 )
 {{- end}}
