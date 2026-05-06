@@ -2,12 +2,10 @@ package psql
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 )
@@ -56,9 +54,9 @@ func TestSomeViewQuery(t *testing.T) {
 	}
 }
 
-func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], argsLen int) string {
+func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	buf := new(bytes.Buffer)
 	args, err := query.WriteQuery(ctx, buf, 0)
 	if err != nil {
