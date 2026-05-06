@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** Renamed the generated `ThenLoadCount` variable to `SelectThenLoadCount` for naming consistency with `SelectThenLoad`/`InsertThenLoad`/`UpdateThenLoad`. Update call sites from `models.ThenLoadCount.X.Y` to `models.SelectThenLoadCount.X.Y`. (thanks @jacobmolby)
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
 

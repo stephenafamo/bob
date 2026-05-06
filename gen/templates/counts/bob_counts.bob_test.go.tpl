@@ -48,15 +48,15 @@ func Test{{$tAlias.UpSingular}}LoadCountMethods(t *testing.T) {
 	{{end}}
 }
 
-// Test that ThenLoadCount has {{$tAlias.UpSingular}} with methods for to-many relationships
-func TestThenLoadCount{{$tAlias.UpSingular}}(t *testing.T) {
-	_ = ThenLoadCount.{{$tAlias.UpSingular}}
+// Test that SelectThenLoadCount has {{$tAlias.UpSingular}} with methods for to-many relationships
+func TestSelectThenLoadCount{{$tAlias.UpSingular}}(t *testing.T) {
+	_ = SelectThenLoadCount.{{$tAlias.UpSingular}}
 
 	{{range $rel := $rels -}}
 	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 	{{- $relAlias := $tAlias.Relationship $rel.Name}}
 	// Verify {{$relAlias}} loader exists
-	_ = ThenLoadCount.{{$tAlias.UpSingular}}.{{$relAlias}}
+	_ = SelectThenLoadCount.{{$tAlias.UpSingular}}.{{$relAlias}}
 	{{end}}
 }
 
