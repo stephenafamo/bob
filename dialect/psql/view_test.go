@@ -2,12 +2,10 @@ package psql
 
 import (
 	"bytes"
-	"context"
 	"testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/expr"
 )
@@ -56,9 +54,23 @@ func TestSomeViewQuery(t *testing.T) {
 	}
 }
 
-func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], argsLen int) string {
+func TestSomeViewQueryExplicitSelectReplacesDefaultColumns(t *testing.T) {
+	q := someStructView.Query().Apply(
+		sm.Columns("id"),
+		sm.Where(Quote("id").EQ(Arg(1))),
+	)
+
+	query := selectToString(t, q, 1)
+	expected := "SELECT \nid\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" = $0)\n"
+
+	if query != expected {
+		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
+	}
+}
+
+func selectToString(t *testing.T, query bob.Query, argsLen int) string {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	buf := new(bytes.Buffer)
 	args, err := query.WriteQuery(ctx, buf, 0)
 	if err != nil {
@@ -74,5 +86,5 @@ func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], arg
 
 func viewToString(t *testing.T, query *ViewQuery[*someStruct, []*someStruct]) string {
 	t.Helper()
-	return selectToString(t, query.BaseQuery, 3)
+	return selectToString(t, query, 3)
 }

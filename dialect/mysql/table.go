@@ -93,9 +93,7 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 		table: t,
 	}
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts an update query for this table
@@ -104,9 +102,7 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 		BaseQuery: Update(um.Table(t.NameAs())),
 		Hooks:     &t.UpdateQueryHooks,
 	}
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts a delete query for this table
@@ -116,14 +112,22 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 		Hooks:     &t.DeleteQueryHooks,
 	}
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 type insertQuery[T any, Ts ~[]T, Tset setter[T], C bob.Expression] struct {
 	orm.ExecQuery[*dialect.InsertQuery]
 	table *Table[T, Ts, Tset, C]
+}
+
+func (t *insertQuery[T, Ts, Tset, C]) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Ts, Tset, C] {
+	if t == nil {
+		return nil
+	}
+
+	next := *t
+	next.ExecQuery = *t.ExecQuery.Apply(queryMods...)
+	return &next
 }
 
 // Insert One Row
@@ -287,8 +291,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		filters = append(filters, Group(t.table.uniqueColNames(i)...).In(args...))
 	}
 
-	query.Apply(sm.Where(Or(filters...)))
-
+	query = query.Apply(sm.Where(Or(filters...)))
 	return query, nil
 }
 

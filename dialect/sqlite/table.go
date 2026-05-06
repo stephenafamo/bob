@@ -82,9 +82,7 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts an Update query for this table
@@ -106,9 +104,7 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 // Starts a Delete query for this table
@@ -130,7 +126,5 @@ func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQ
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
