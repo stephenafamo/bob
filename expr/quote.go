@@ -13,6 +13,7 @@ func Quote(aa ...string) bob.Expression {
 		if v == "" {
 			continue
 		}
+
 		ss = append(ss, v)
 	}
 
@@ -21,6 +22,24 @@ func Quote(aa ...string) bob.Expression {
 
 // quoted and joined... something like "users"."id"
 type quoted []string
+
+// Unqualified returns a quoted expression containing only the last identifier part.
+func (q quoted) Unqualified() quoted {
+	if len(q) == 0 {
+		return quoted{}
+	}
+
+	return quoted{q[len(q)-1]}
+}
+
+// UnquotedLast returns the last element of the quoted slice, or empty string if empty.
+func (q quoted) UnquotedLast() string {
+	if len(q) == 0 {
+		return ""
+	}
+
+	return q[len(q)-1]
+}
 
 func (q quoted) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(q) == 0 {

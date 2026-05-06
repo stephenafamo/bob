@@ -16,6 +16,23 @@ func (x Chain[T, B]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	return bob.Express(ctx, w, d, start, x.Base)
 }
 
+// Unqualified returns a new expression containing only the last qualified part.
+// If the base expression doesn't support Unqualified, returns the base expression unchanged.
+func (x Chain[T, B]) Unqualified() T {
+	if u, ok := x.Base.(interface{ Unqualified() bob.Expression }); ok {
+		return X[T, B](u.Unqualified())
+	}
+	return X[T, B](x.Base)
+}
+
+// UnquotedLast returns the last element as a raw unquoted string, or empty string if not supported.
+func (x Chain[T, B]) UnquotedLast() string {
+	if u, ok := x.Base.(interface{ UnquotedLast() string }); ok {
+		return u.UnquotedLast()
+	}
+	return ""
+}
+
 // IS DISTINCT FROM
 func (x Chain[T, B]) IsDistinctFrom(exp bob.Expression) T {
 	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isDistinctFrom, exp}})

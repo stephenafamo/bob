@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
+- Added `Unqualified()` method to quoted expressions returned by `Quote()` across all dialects. Returns a new expression containing only the last identifier part. (thanks @atzedus)
+- Added `UnquotedLast()` method to quoted expressions for extracting the last identifier as a string. (thanks @atzedus)
 
 ### Changed
 
