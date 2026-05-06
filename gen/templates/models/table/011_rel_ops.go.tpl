@@ -251,6 +251,7 @@
 
 
     {{$from}}.R.{{$relAlias}} = {{$to}}
+    {{$from}}.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 
     {{if and (not $.NoBackReferencing) $invRel.Name -}}
     {{- $invAlias := $ftable.Relationship $invRel.Name -}}
@@ -258,6 +259,7 @@
         {{$to}}.R.{{$invAlias}} = append({{$to}}.R.{{$invAlias}}, {{$from}})
       {{- else -}}
         {{$to}}.R.{{$invAlias}} = {{$from}}
+        {{$to}}.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
       {{- end}}
     {{- end}}
 
@@ -345,6 +347,7 @@
           rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, {{$from}})
         {{- else -}}
           rel.R.{{$invAlias}} = {{$from}}
+          rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
         {{- end}}
       }
     {{- end}}

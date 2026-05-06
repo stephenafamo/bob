@@ -102,6 +102,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		{{- else -}}
       if o.r.{{$relAlias}}.o.AlreadyPersisted() {
         m.R.{{$relAlias}} = o.r.{{$relAlias}}.o.Build()
+        m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
       } else {
         {{- range $.AllTables.NeededBridgeRels . -}}
           {{$alias := $.Aliases.Table .Table -}}
@@ -144,16 +145,30 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	var err error
 	opt := o.BuildSetter();
 
+	// Retrieve ancestor models from context to avoid duplicate parent creation.
+	// Parents are keyed by "parent_table:child_table:child_rel_name".
+	mInCreation, _ := modelsInCreationCtx.Value(ctx)
+
 	{{- $hasRequiredRels := false -}}
 	{{- range $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 		{{- $hasRequiredRels = true -}}
 	{{- end}}
 
-	{{- /* Step 1: Compute FK-set flags for each required relationship */ -}}
+	{{/* Step 1: Compute FK-set flags and reusable parent models for each required relationship */}}
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
+		{{- $ftable := $.Aliases.Table .Foreign -}}
+		{{- $relAlias := $tAlias.Relationship .Name -}}
+	var rel{{$index}} *models.{{$ftable.UpSingular}}
 	rel{{$index}}FKsSet := true
+	if o.r.{{$relAlias}} == nil {
+		if parentModel, found := mInCreation["{{$rel.Foreign}}:{{$table.Key}}:{{$rel.Name}}"]; found {
+			if pModel, ok := parentModel.(*models.{{$ftable.UpSingular}}); ok {
+				rel{{$index}} = pModel
+			}
+		}
+	}
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
@@ -166,14 +181,14 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		{{- end}}
 	{{end}}
 
-	{{- /* Step 2: RequireAll pre-check (relationship is missing only if both rel AND FKs are unset) */ -}}
+	{{- /* Step 2: RequireAll pre-check (relationship is missing only if rel, ancestor model, and FKs are unset) */ -}}
 	{{if $hasRequiredRels -}}
 	if o.requireAll {
 		var missingRels []string
 		{{range $index, $rel := $.Relationships.Get $table.Key -}}
 			{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 			{{- $relAlias := $tAlias.Relationship .Name -}}
-			if o.r.{{$relAlias}} == nil && !rel{{$index}}FKsSet {
+			if o.r.{{$relAlias}} == nil && rel{{$index}} == nil && !rel{{$index}}FKsSet {
 				missingRels = append(missingRels, "{{$relAlias}}")
 			}
 		{{end -}}
@@ -189,21 +204,20 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	{{- /* Step 3: Process required relationships (skip if FK columns already set) */ -}}
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		var rel{{$index}} *models.{{$ftable.UpSingular}}
-
 		if !rel{{$index}}FKsSet {
-			if o.r.{{$relAlias}} == nil {
-				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
-			}
+			if rel{{$index}} == nil {
+				if o.r.{{$relAlias}} == nil {
+					{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
+				}
 
-			if o.r.{{$relAlias}}.o.AlreadyPersisted() {
-				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
-			} else {
-				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
-				if err != nil {
-					return nil, err
+				if o.r.{{$relAlias}}.o.AlreadyPersisted() {
+					rel{{$index}} = o.r.{{$relAlias}}.o.Build()
+				} else {
+					rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 
@@ -228,12 +242,27 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	  return nil, err
 	}
 
+  // Store this model in context for child creates.
+  // Key format: "parent_table:child_table:child_rel_name" where child_rel_name is the FK name.
+  newMInCreation := make(map[string]any, len(mInCreation)+1)
+  for k, v := range mInCreation {
+    newMInCreation[k] = v
+  }
+  {{range $childTable := $.Tables -}}
+    {{- range $childRel := $.Relationships.Get $childTable.Key -}}
+      {{- if $childRel.IsToMany -}}{{continue}}{{end -}}
+      {{- if ne $childRel.Foreign $table.Key -}}{{continue}}{{end -}}
+      newMInCreation["{{$table.Key}}:{{$childTable.Key}}:{{$childRel.Name}}"] = m
+    {{end -}}
+  {{end}}
+  ctx = modelsInCreationCtx.WithValue(ctx, newMInCreation)
+
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- if not ($table.RelIsRequired $rel) -}}{{continue}}{{end -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 		if rel{{$index}} != nil {
 			m.R.{{$relAlias}} = rel{{$index}}
+			m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 		}
 	{{end}}
 
@@ -266,7 +295,6 @@ func (o *{{$tAlias.UpSingular}}Template) CreateOrFail(ctx context.Context, tb te
   }
 	return m
 }
-
 
 // CreateMany builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field

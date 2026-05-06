@@ -218,6 +218,16 @@ func validateAliases(a drivers.Aliases) error {
 		// Check relationship aliases for duplicates
 		relReverse := make(map[string]string)
 		for relName, relAlias := range tableAlias.Relationships {
+			if relAlias == "Loaded" {
+				tableErrors = append(tableErrors, tableAliasError{
+					Type:      "relationship",
+					Value:     relAlias,
+					Table:     tableKey,
+					Conflict1: relName,
+					Conflict2: "reserved name (used by R.Loaded tracking)",
+				})
+				continue
+			}
 			if other, ok := relReverse[relAlias]; ok {
 				tableErrors = append(tableErrors, tableAliasError{
 					Type:      "relationship",
