@@ -56,6 +56,19 @@ type {{$tAlias.DownSingular}}R struct {
 	{{else -}}
 		{{$relAlias}} *{{$ftable.UpSingular}} {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
 	{{end}}{{end -}}
+
+	// Loaded reports whether each relationship has been loaded.
+	// A relationship's Loaded bool is set by Load*, Preload, ThenLoad, factory builds,
+	// and to-one Attach/Insert operations. To-many Attach/Insert operations leave it unchanged.
+	Loaded {{$tAlias.DownSingular}}RLoaded `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
+}
+
+// {{$tAlias.DownSingular}}RLoaded tracks which relationships on {{$tAlias.UpSingular}} have been loaded.
+type {{$tAlias.DownSingular}}RLoaded struct {
+	{{range $.Relationships.Get $table.Key -}}
+	{{- $relAlias := $tAlias.Relationship .Name -}}
+	{{$relAlias}} bool {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
+	{{end -}}
 }
 {{- end}}
 

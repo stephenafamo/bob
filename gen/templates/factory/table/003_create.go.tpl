@@ -71,6 +71,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		{{- else -}}
       if o.r.{{$relAlias}}.o.alreadyPersisted {
         m.R.{{$relAlias}} = o.r.{{$relAlias}}.o.Build()
+        m.R.Loaded.{{$relAlias}} = true
       } else {
         {{- range $.Tables.NeededBridgeRels . -}}
           {{$alias := $.Aliases.Table .Table -}}
@@ -151,6 +152,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 		m.R.{{$relAlias}} = rel{{$index}}
+		m.R.Loaded.{{$relAlias}} = true
 	{{end}}
 
   if err := o.insertOptRels(ctx, exec, m); err != nil {
