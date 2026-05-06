@@ -36,6 +36,20 @@ type SelectQuery struct {
 	CombinedOffset clause.Offset
 }
 
+// SetLimitIfUnset sets a default LIMIT only when no limit is currently configured.
+// PostgreSQL accepts either LIMIT or FETCH FIRST, so both are inspected.
+func (s *SelectQuery) SetLimitIfUnset(limit any) {
+	if len(s.Combines.Queries) > 0 {
+		if s.CombinedLimit.Count == nil && s.CombinedFetch.Count == nil {
+			s.CombinedLimit.SetLimit(limit)
+		}
+		return
+	}
+	if s.Limit.Count == nil && s.Fetch.Count == nil {
+		s.Limit.SetLimit(limit)
+	}
+}
+
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any

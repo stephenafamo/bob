@@ -41,6 +41,19 @@ func (s *SelectQuery) SetInto(i any) {
 	s.into = i
 }
 
+// SetLimitIfUnset sets a default LIMIT only when no limit is currently configured.
+func (s *SelectQuery) SetLimitIfUnset(limit any) {
+	if len(s.Combines.Queries) > 0 {
+		if s.CombinedLimit.Count == nil {
+			s.CombinedLimit.SetLimit(limit)
+		}
+		return
+	}
+	if s.Limit.Count == nil {
+		s.Limit.SetLimit(limit)
+	}
+}
+
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error

@@ -107,6 +107,16 @@ func (b BaseQuery[E]) GetLoaders() []Loader {
 	return nil
 }
 
+// SetLimitIfUnset forwards to the embedded expression if it implements the
+// same method, so [BaseQuery] satisfies [Limiter] for any underlying
+// expression that does. Non-SELECT expressions don't implement it and the
+// call is a no-op.
+func (b BaseQuery[E]) SetLimitIfUnset(limit any) {
+	if l, ok := any(b.Expression).(Limiter); ok {
+		l.SetLimitIfUnset(limit)
+	}
+}
+
 func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
 	if l, ok := any(b.Expression).(MapperModder); ok {
 		return l.GetMapperMods()
