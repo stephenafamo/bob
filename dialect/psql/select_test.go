@@ -139,6 +139,21 @@ func TestSelect(t *testing.T) {
 				sm.GroupBy("status"),
 			),
 		},
+		"select with aliased subquery in columns": {
+			ExpectedSQL: `SELECT COUNT(*) AS "all", (SELECT COUNT(*) AS "c" FROM teams WHERE (active = $1)) AS "active_count" FROM teams`,
+			Query: psql.Select(
+				sm.Columns(
+					psql.Raw("COUNT(*)").As("all"),
+					psql.Select(
+						sm.Columns(psql.Raw("COUNT(*)").As("c")),
+						sm.From("teams"),
+						sm.Where(psql.Raw("active").EQ(psql.Arg(true))),
+					).As("active_count"),
+				),
+				sm.From("teams"),
+			),
+			ExpectedArgs: []any{true},
+		},
 		"select with grouped IN": {
 			Query: psql.Select(
 				sm.Columns("id", "name"),
