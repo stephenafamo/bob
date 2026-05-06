@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
+- Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
 
 ### Changed
 

@@ -105,6 +105,21 @@ func TestSelect(t *testing.T) {
 				sm.GroupBy("status"),
 			),
 		},
+		"select with aliased subquery in columns": {
+			ExpectedSQL: `SELECT COUNT(*) AS "all", (SELECT COUNT(*) AS "c" FROM teams WHERE (active = ?1)) AS "active_count" FROM teams`,
+			Query: sqlite.Select(
+				sm.Columns(
+					sqlite.Raw("COUNT(*)").As("all"),
+					sqlite.Select(
+						sm.Columns(sqlite.Raw("COUNT(*)").As("c")),
+						sm.From("teams"),
+						sm.Where(sqlite.Raw("active").EQ(sqlite.Arg(true))),
+					).As("active_count"),
+				),
+				sm.From("teams"),
+			),
+			ExpectedArgs: []any{true},
+		},
 		"select with grouped IN": {
 			Query: sqlite.Select(
 				sm.Columns("id", "name"),
