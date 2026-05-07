@@ -1,5 +1,6 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
+{{range $table := .Tables}}{{if $.Relationships.Get $table.Key}}{{$.Importer.Import "unsafe"}}{{end}}{{end}}
 
 type Factory struct {
     {{range $table := .Tables}}
@@ -11,6 +12,7 @@ type Factory struct {
 func New() *Factory {
   return &Factory{}
 }
+
 
 {{range $table := .Tables}}
 {{ $tAlias := $.Aliases.Table $table.Key -}}
@@ -30,7 +32,15 @@ func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods
 	return o
 }
 
-func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+func (f *Factory) FromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+  {{if $.Relationships.Get $table.Key -}}
+  visited := make(map[uintptr]struct{})
+  ctx = factoryVisitedCtx.WithValue(ctx, visited)
+  {{- end}}
+  return f.fromExisting{{$tAlias.UpSingular}}(ctx, m)
+}
+
+func (f *Factory) fromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f, alreadyPersisted: true}
 
   {{range $column := $table.Columns -}}
@@ -40,8 +50,13 @@ func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingu
   {{end}}
 
   {{if $.Relationships.Get $table.Key -}}
-  ctx := context.Background()
-  {{- end}}
+  if visited, ok := factoryVisitedCtx.Value(ctx); ok {
+    ptr := uintptr(unsafe.Pointer(m))
+    if _, seen := visited[ptr]; seen {
+      return o
+    }
+    visited[ptr] = struct{}{}
+  }
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}
@@ -54,6 +69,7 @@ func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingu
       }
     {{- end}}
   {{end}}
+  {{- end}}
 
   return o
 }
@@ -71,4 +87,3 @@ f.base{{$tAlias.UpSingular}}Mods = append(f.base{{$tAlias.UpSingular}}Mods, mods
 }
 
 {{end}}
-

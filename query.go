@@ -138,6 +138,27 @@ func (b BaseQuery[E]) WriteQuery(ctx context.Context, w io.StringWriter, start i
 	return b.Expression.WriteSQL(ctx, w, b.Dialect, start)
 }
 
+// As wraps the query in parentheses and aliases it: (<query>) AS "alias".
+// Useful when using a query as a correlated subquery in a column list.
+func (b BaseQuery[E]) As(alias string) Expression {
+	return aliasedQuery{inner: b, alias: alias}
+}
+
+type aliasedQuery struct {
+	inner Expression
+	alias string
+}
+
+func (a aliasedQuery) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
+	args, err := a.inner.WriteSQL(ctx, w, d, start)
+	if err != nil {
+		return args, err
+	}
+	w.WriteString(" AS ")
+	d.WriteQuoted(w, a.alias)
+	return args, nil
+}
+
 // Satisfies the Expression interface, but uses its own dialect instead
 // of the dialect passed to it
 func (b BaseQuery[E]) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
