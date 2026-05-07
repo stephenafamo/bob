@@ -113,6 +113,14 @@ type {{$tAlias.DownSingular}}Column struct {
 	name  string
 }
 
+func (c {{$tAlias.DownSingular}}Column) Alias() string {
+	return c.alias
+}
+
+func (c {{$tAlias.DownSingular}}Column) Name() string {
+	return c.name
+}
+
 func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
 	return {{$tAlias.DownSingular}}Column{
 		Expression: {{$.Dialect}}.Quote(alias, c.name),
@@ -121,10 +129,6 @@ func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSi
 	}
 }
 
-func (c {{$tAlias.DownSingular}}Column) Alias() string {
-	return c.alias
-}
-
-func (c {{$tAlias.DownSingular}}Column) Name() string {
-	return c.name
+func (c {{$tAlias.DownSingular}}Column) Unqualified() {{$tAlias.DownSingular}}Column {
+  return build{{$tAlias.UpSingular}}Column("", c.name)
 }
