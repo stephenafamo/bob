@@ -73,7 +73,7 @@ func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular
     tableAlias: tableName,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: {{$.Dialect}}.Quote(tableName, {{quote $column.Name}}),
+    {{$colAlias}}: build{{$tAlias.UpSingular}}Column(tableName, {{quote $column.Name}}),
     {{end -}}
   }
 }
@@ -83,7 +83,7 @@ type {{$tAlias.DownSingular}}Columns struct {
   tableAlias string
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{$colAlias}} {{$.Dialect}}.Expression
+	{{$colAlias}} {{$tAlias.DownSingular}}Column
 	{{end -}}
 }
 
@@ -97,4 +97,34 @@ func ({{$tAlias.DownSingular}}Columns) AliasedAs(tableName string) {{$tAlias.Dow
 
 func (c {{$tAlias.DownSingular}}Columns) Unqualified() {{$tAlias.DownSingular}}Columns {
   return build{{$tAlias.UpSingular}}Columns("")
+}
+
+func build{{$tAlias.UpSingular}}Column(alias, name string) {{$tAlias.DownSingular}}Column {
+	return {{$tAlias.DownSingular}}Column{
+		Expression: {{$.Dialect}}.Quote(alias, name),
+		alias:      alias,
+		name:       name,
+	}
+}
+
+type {{$tAlias.DownSingular}}Column struct {
+	{{$.Dialect}}.Expression
+	alias string
+	name  string
+}
+
+func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
+	return {{$tAlias.DownSingular}}Column{
+		Expression: {{$.Dialect}}.Quote(alias, c.name),
+		alias:      alias,
+		name:       c.name,
+	}
+}
+
+func (c {{$tAlias.DownSingular}}Column) Alias() string {
+	return c.alias
+}
+
+func (c {{$tAlias.DownSingular}}Column) Name() string {
+	return c.name
 }
