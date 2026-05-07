@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
+- Added `bob.First`. It is identical to how `bob.One` used to work, as it does not inject a `LIMIT 1` clause. (thanks @jacobmolby)
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
 
 ### Changed
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** Renamed the generated `ThenLoadCount` variable to `SelectThenLoadCount` for naming consistency with `SelectThenLoad`/`InsertThenLoad`/`UpdateThenLoad`. Update call sites from `models.ThenLoadCount.X.Y` to `models.SelectThenLoadCount.X.Y`. (thanks @jacobmolby)
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
+- `bob.One` (and the generated `.One()` methods that delegate to it) now automatically adds `LIMIT 1` to SELECT queries when no row-limit is explicitly set. (thanks @jacobmolby)
 
 ### Fixed
 

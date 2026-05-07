@@ -107,6 +107,12 @@ func (b BaseQuery[E]) GetLoaders() []Loader {
 	return nil
 }
 
+func (b BaseQuery[E]) SetLimitIfUnset(limit any) {
+	if l, ok := any(b.Expression).(Limiter); ok {
+		l.SetLimitIfUnset(limit)
+	}
+}
+
 func (b BaseQuery[E]) GetMapperMods() []scan.MapperMod {
 	if l, ok := any(b.Expression).(MapperModder); ok {
 		return l.GetMapperMods()

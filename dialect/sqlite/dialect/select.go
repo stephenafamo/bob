@@ -29,6 +29,13 @@ type SelectQuery struct {
 	bob.ContextualModdable[*SelectQuery]
 }
 
+// SetLimitIfUnset sets a default LIMIT only when no limit is currently configured.
+func (s *SelectQuery) SetLimitIfUnset(limit any) {
+	if s.Limit.Count == nil {
+		s.Limit.SetLimit(limit)
+	}
+}
+
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error

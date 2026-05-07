@@ -24,6 +24,12 @@ type (
 	HookableType interface {
 		AfterQueryHook(context.Context, Executor, QueryType) error
 	}
+
+	// Limiter is implemented by queries that can have a row-output limit.
+	// The limit is only set if no limit is currently configured.
+	Limiter interface {
+		SetLimitIfUnset(limit any)
+	}
 )
 
 type Executor interface {
@@ -73,7 +79,19 @@ func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 	return result, nil
 }
 
+// One executes the query and scans a single row into T.
+//
+// If the query satisfies Limiter and no row-limit is currently set on it,
+// One adds LIMIT 1 to the underlying SQL.
 func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (T, error) {
+	if l, ok := q.(Limiter); ok {
+		l.SetLimitIfUnset(1)
+	}
+	return First(ctx, exec, q, m)
+}
+
+// First executes the query and scans the first row into T.
+func First[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (T, error) {
 	var t T
 	var err error
 
