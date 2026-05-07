@@ -10,11 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
-<<<<<<< apply-limit-in-bob.one
 - Added `bob.First`. It is identical to how `bob.One` used to work, as it does not inject a `LIMIT 1` clause. (thanks @jacobmolby)
-=======
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
->>>>>>> main
 
 ### Changed
 
