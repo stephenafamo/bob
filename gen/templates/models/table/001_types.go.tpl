@@ -126,6 +126,11 @@ func (c {{$tAlias.DownSingular}}Column) Name() string {
 	return c.name
 }
 
+// ShouldOmitParens prevents automatic parenthesis wrapping in expression builders.
+func (c {{$tAlias.DownSingular}}Column) ShouldOmitParens() bool {
+	return true
+}
+
 // AliasedAs returns a copy of the column qualified by alias.
 func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
 	return {{$tAlias.DownSingular}}Column{
