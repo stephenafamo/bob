@@ -365,6 +365,6 @@ func OverridingUser() bob.Mod[*InsertAction] {
 }
 
 // Returning adds a RETURNING clause
-func Returning(clauses ...any) bob.Mod[*dialect.MergeQuery] {
+func Returning(clauses ...any) mods.Returning[*dialect.MergeQuery] {
 	return mods.Returning[*dialect.MergeQuery](clauses)
 }

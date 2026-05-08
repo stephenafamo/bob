@@ -84,7 +84,7 @@ func OnConflictOnConstraint(constraint string) mods.Conflict[*dialect.InsertQuer
 	})
 }
 
-func Returning(clauses ...any) bob.Mod[*dialect.InsertQuery] {
+func Returning(clauses ...any) mods.Returning[*dialect.InsertQuery] {
 	return mods.Returning[*dialect.InsertQuery](clauses)
 }
 
