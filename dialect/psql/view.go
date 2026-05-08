@@ -82,11 +82,12 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAs())),
+				BaseQuery: Select(sm.From(v.NameAs())).BaseQuery,
 				Hooks:     &v.SelectQueryHooks,
 			},
 			Scanner: v.scanner,
 		},
+		defaultSelect: v.Columns,
 	}
 
 	q.Expression.AppendContextualModFunc(
@@ -105,6 +106,7 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 
 type ViewQuery[T any, Ts ~[]T] struct {
 	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
+	defaultSelect bob.Expression
 }
 
 // Count the number of matching rows

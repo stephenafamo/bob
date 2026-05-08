@@ -5,15 +5,25 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
-func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
+type SelectQuery struct {
+	bob.BaseQuery[*dialect.SelectQuery]
+}
+
+func (q SelectQuery) With(queryMods ...bob.Mod[*dialect.SelectQuery]) derivedSelectQuery {
+	return asImmutable(q.BaseQuery).With(queryMods...)
+}
+
+func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) SelectQuery {
 	q := &dialect.SelectQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*dialect.SelectQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeSelect,
+	return SelectQuery{
+		BaseQuery: bob.BaseQuery[*dialect.SelectQuery]{
+			Expression: q,
+			Dialect:    dialect.Dialect,
+			QueryType:  bob.QueryTypeSelect,
+		},
 	}
 }
