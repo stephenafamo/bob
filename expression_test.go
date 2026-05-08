@@ -187,3 +187,32 @@ func TestErrNoNamedArgs(t *testing.T) {
 		t.Fatalf("Expected to get ErrNoNamedArgs but got %v", err)
 	}
 }
+
+type wrappedExpr struct {
+	Expression
+}
+
+func (wrappedExpr) ShouldOmitParens() bool { return true }
+
+func TestParensOmitter(t *testing.T) {
+	var _ ParensOmitter = wrappedExpr{}
+
+	wrapped := wrappedExpr{Expression: ExpressionFunc(func(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {
+		d.WriteQuoted(w, "s")
+		w.WriteString(".")
+		d.WriteQuoted(w, "id")
+		return nil, nil
+	})}
+
+	if !wrapped.ShouldOmitParens() {
+		t.Fatalf("expected wrapped expression to opt out of auto parenthesis wrapping")
+	}
+
+	w := bytes.NewBuffer(nil)
+	args, err := Express(context.Background(), w, d, 1, wrapped)
+	if err != nil {
+		t.Fatalf("err while expressing wrapped expression: %v", err)
+	}
+
+	compare(t, `"s"."id"`, w.String(), nil, args)
+}

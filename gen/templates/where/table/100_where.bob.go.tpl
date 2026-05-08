@@ -25,9 +25,9 @@ func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias
       {{- $colAlias := $tAlias.Column $column.Name -}}
       {{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 				{{- if $column.Nullable -}}
-					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$colTyp}}](cols.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.WhereNull[Q, {{$colTyp}}](cols.{{$colAlias}}.Expression),
 				{{- else -}}
-					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$colTyp}}](cols.{{$colAlias}}),
+					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$colTyp}}](cols.{{$colAlias}}.Expression),
 				{{- end}}
 			{{end -}}
 	}

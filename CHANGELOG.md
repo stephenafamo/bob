@@ -11,12 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
+- Added unqualified columns API: generated column structures now provide Alias(), Name(), AliasedAs(alias) and Unqualified() methods for easier column metadata access and aliasing. (thanks @atzedus)
+- Added `bob.ParensOmitter` interface with `ShouldOmitParens() bool` to let expressions opt out of automatic parenthesis wrapping in expression builders. (thanks @atzedus)
 
 ### Changed
 
 - **BREAKING:** Renamed the generated `ThenLoadCount` variable to `SelectThenLoadCount` for naming consistency with `SelectThenLoad`/`InsertThenLoad`/`UpdateThenLoad`. Update call sites from `models.ThenLoadCount.X.Y` to `models.SelectThenLoadCount.X.Y`. (thanks @jacobmolby)
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
+- **BREAKING:** Generated `*Columns` accessor fields now return a dialect-specific wrapper type (e.g., `userColumn`) instead of plain `dialect.Expression`. The wrapper still implements `dialect.Expression` and avoids extra auto-parentheses in expression builders. Use `.Expression` only when you explicitly need the embedded expression value. (thanks @atzedus)
 
 ### Fixed
 
