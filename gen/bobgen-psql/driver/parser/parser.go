@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync/atomic"
 
@@ -16,6 +17,8 @@ import (
 	"github.com/stephenafamo/bob/internal"
 	pgparse "github.com/wasilibs/go-pgquery"
 )
+
+var returningWithClauseRegex = regexp.MustCompile(`(?is)\breturning\s+with\s*\(`)
 
 func New(db *sql.DB, t tables, sharedSchema string, translator *Translator) *Parser {
 	return &Parser{
@@ -40,7 +43,7 @@ func (p *Parser) ParseFolders(ctx context.Context, paths ...string) ([]drivers.Q
 func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, error) {
 	stmts, err := pgparse.Parse(s)
 	if err != nil {
-		return nil, fmt.Errorf("parse formatted: %w", err)
+		return nil, wrapParseErrorWithReturningWithHint("parse formatted", s, err)
 	}
 
 	if len(stmts.Stmts) == 0 {
@@ -82,7 +85,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 
 	parseResult, err := pgparse.Parse(input)
 	if err != nil {
-		return drivers.Query{}, fmt.Errorf("parse single: %w", err)
+		return drivers.Query{}, wrapParseErrorWithReturningWithHint("parse single", input, err)
 	}
 
 	if len(parseResult.Stmts) != 1 {
@@ -188,6 +191,29 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	}
 
 	return query, nil
+}
+
+func wrapParseErrorWithReturningWithHint(stage, sql string, err error) error {
+	wrapped := fmt.Errorf("%s: %w", stage, err)
+
+	if !isReturningWithParseError(sql, err) {
+		return wrapped
+	}
+
+	return fmt.Errorf("%w: RETURNING WITH (OLD|NEW AS ...) is not yet supported by the current sql parser dependency (github.com/wasilibs/go-pgquery)", wrapped)
+}
+
+func isReturningWithParseError(sql string, err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if !returningWithClauseRegex.MatchString(sql) {
+		return false
+	}
+
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "syntax error at or near \"with\"")
 }
 
 func getQueryType(stmt *pg.Node) bob.QueryType {

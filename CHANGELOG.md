@@ -10,16 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
-- Added `R.Loaded` to generated models, a nested struct with one `bool` per relationship that records whether each relationship has been loaded. This disambiguates "not loaded yet" from "loaded, but no related rows" for both to-one and to-many relations. Maintained automatically by `Load*`, `Preload`, `ThenLoad`, factory builds, and to-one `Attach`/`Insert` ops. The relationship alias `Loaded` is now reserved. (thanks @jacobmolby)
+- Added `R.Loaded` to generated models, a nested struct with one `bool` per relationship that records whether each relationship has been loaded. This disambiguates "not loaded yet" from "loaded, but no related rows" for both to-one and to-many relations. Maintained automatically by `Load*`, `Preload`, `ThenLoad`, factory builds, and to-one `Attach`/`Insert` ops. The `Loaded` alias can be changed in the bob config. (thanks @jacobmolby)
+- Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
+- Added unqualified columns API: generated column structures now provide Alias(), Name(), AliasedAs(alias) and Unqualified() methods for easier column metadata access and aliasing. (thanks @atzedus)
+- Added `bob.ParensOmitter` interface with `ShouldOmitParens() bool` to let expressions opt out of automatic parenthesis wrapping in expression builders. (thanks @atzedus)
+- Added PostgreSQL `RETURNING WITH (OLD AS ..., NEW AS ...)` support for `INSERT`, `UPDATE`, `DELETE`, and `MERGE` query builders, including fluent modifiers: `im/um/dm/mm.Returning(...).WithOldAs(...).WithNewAs(...)`. (thanks @atzedus)
+  - Note: `bobgen-psql` sql-to-code parsing for this syntax is currently blocked by upstream PostgreSQL parser dependency support.
 
 ### Changed
 
+- **BREAKING:** Renamed the generated `ThenLoadCount` variable to `SelectThenLoadCount` for naming consistency with `SelectThenLoad`/`InsertThenLoad`/`UpdateThenLoad`. Update call sites from `models.ThenLoadCount.X.Y` to `models.SelectThenLoadCount.X.Y`. (thanks @jacobmolby)
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
+- **BREAKING:** Generated `*Columns` accessor fields now return a dialect-specific wrapper type (e.g., `userColumn`) instead of plain `dialect.Expression`. The wrapper still implements `dialect.Expression` and avoids extra auto-parentheses in expression builders. Use `.Expression` only when you explicitly need the embedded expression value. (thanks @atzedus)
 
 ### Fixed
 
 - Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
+- Fix missing base type imports (e.g. `github.com/google/uuid`) in generated models when using `type_system: "database/sql"` and `uuid_pkg: google`, which could cause compile errors in generated many-to-many relation helpers. (thanks @atzedus)
 
 ## [v0.43.0] - 2026-04-29
 
@@ -50,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `pgx` driver `Commit()` returning `nil` instead of `pgx.ErrTxClosed` when the transaction is already closed (e.g., rolled back by context expiry). This prevented silent data loss by correctly propagating the error to the caller. (thanks @wucm667)
+- Fix factory `FromExisting` methods causing stack overflow when models have bidirectional relationships populated (thanks @wucm667)
 - Fix self-referencing relationship back-references so generated preload/load helpers no longer create cyclic parent links. (thanks @atzedus)
 - Fix collisions for preloader alias generation. Replaced `RandInt` with `NextUniqueInt` (thanks @atzedus)
 - Fix an issue where the random function of aliased custom types were not being used in generated query tests.

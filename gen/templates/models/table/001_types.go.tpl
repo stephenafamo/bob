@@ -86,7 +86,7 @@ func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular
     tableAlias: tableName,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: {{$.Dialect}}.Quote(tableName, {{quote $column.Name}}),
+    {{$colAlias}}: build{{$tAlias.UpSingular}}Column(tableName, {{quote $column.Name}}),
     {{end -}}
   }
 }
@@ -96,18 +96,64 @@ type {{$tAlias.DownSingular}}Columns struct {
   tableAlias string
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name -}}
-	{{$colAlias}} {{$.Dialect}}.Expression
+	{{$colAlias}} {{$tAlias.DownSingular}}Column
 	{{end -}}
 }
 
+// Alias returns the current table alias for the columns set.
 func (c {{$tAlias.DownSingular}}Columns) Alias() string {
   return c.tableAlias
 }
 
+// AliasedAs returns a copy of the columns set qualified by tableName.
 func ({{$tAlias.DownSingular}}Columns) AliasedAs(tableName string) {{$tAlias.DownSingular}}Columns {
   return build{{$tAlias.UpSingular}}Columns(tableName)
 }
 
+// Unqualified returns a copy of the columns set without table qualification.
 func (c {{$tAlias.DownSingular}}Columns) Unqualified() {{$tAlias.DownSingular}}Columns {
   return build{{$tAlias.UpSingular}}Columns("")
+}
+
+func build{{$tAlias.UpSingular}}Column(alias, name string) {{$tAlias.DownSingular}}Column {
+	return {{$tAlias.DownSingular}}Column{
+		Expression: {{$.Dialect}}.Quote(alias, name),
+		alias:      alias,
+		name:       name,
+	}
+}
+
+type {{$tAlias.DownSingular}}Column struct {
+	{{$.Dialect}}.Expression
+	alias string
+	name  string
+}
+
+// Alias returns the current table alias for the column.
+func (c {{$tAlias.DownSingular}}Column) Alias() string {
+	return c.alias
+}
+
+// Name returns the unqualified column name.
+func (c {{$tAlias.DownSingular}}Column) Name() string {
+	return c.name
+}
+
+// ShouldOmitParens prevents automatic parenthesis wrapping in expression builders.
+func (c {{$tAlias.DownSingular}}Column) ShouldOmitParens() bool {
+	return true
+}
+
+// AliasedAs returns a copy of the column qualified by alias.
+func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
+	return {{$tAlias.DownSingular}}Column{
+		Expression: {{$.Dialect}}.Quote(alias, c.name),
+		alias:      alias,
+		name:       c.name,
+	}
+}
+
+// Unqualified returns a copy of the column without table qualification.
+func (c {{$tAlias.DownSingular}}Column) Unqualified() {{$tAlias.DownSingular}}Column {
+  return build{{$tAlias.UpSingular}}Column("", c.name)
 }

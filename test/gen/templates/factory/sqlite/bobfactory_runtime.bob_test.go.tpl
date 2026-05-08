@@ -536,8 +536,8 @@ func TestPreloadCountUserVideos(t *testing.T) {
 	}
 }
 
-// TestThenLoadCountUserVideos tests using ThenLoadCount to load counts in a separate query
-func TestThenLoadCountUserVideos(t *testing.T) {
+// TestSelectThenLoadCountUserVideos tests using SelectThenLoadCount to load counts in a separate query
+func TestSelectThenLoadCountUserVideos(t *testing.T) {
 	if testDB == nil {
 		t.Skip("skipping test, no DSN provided")
 	}
@@ -560,12 +560,12 @@ func TestThenLoadCountUserVideos(t *testing.T) {
 		}
 	}
 
-	// Query users with ThenLoadCount to load video counts in a separate query
+	// Query users with SelectThenLoadCount to load video counts in a separate query
 	users, err := models.Users.Query(
-		models.ThenLoadCount.User.Videos(),
+		models.SelectThenLoadCount.User.Videos(),
 	).All(ctx, tx)
 	if err != nil {
-		t.Fatalf("Error querying users with ThenLoadCount: %v", err)
+		t.Fatalf("Error querying users with SelectThenLoadCount: %v", err)
 	}
 
 	if len(users) != 3 {
@@ -637,8 +637,8 @@ func TestPreloadCountWithFilter(t *testing.T) {
 	}
 }
 
-// TestThenLoadCountWithFilter tests ThenLoadCount with filtering mods
-func TestThenLoadCountWithFilter(t *testing.T) {
+// TestSelectThenLoadCountWithFilter tests SelectThenLoadCount with filtering mods
+func TestSelectThenLoadCountWithFilter(t *testing.T) {
 	if testDB == nil {
 		t.Skip("skipping test, no DSN provided")
 	}
@@ -666,15 +666,15 @@ func TestThenLoadCountWithFilter(t *testing.T) {
 		).CreateOrFail(ctx, t, tx)
 	}
 
-	// Query user1 with ThenLoadCount filtering for videos belonging to user1
+	// Query user1 with SelectThenLoadCount filtering for videos belonging to user1
 	users, err := models.Users.Query(
 		models.SelectWhere.Users.ID.EQ(user1.ID),
-		models.ThenLoadCount.User.Videos(
+		models.SelectThenLoadCount.User.Videos(
 			models.SelectWhere.Videos.UserID.EQ(user1.ID),
 		),
 	).All(ctx, tx)
 	if err != nil {
-		t.Fatalf("Error querying users with filtered ThenLoadCount: %v", err)
+		t.Fatalf("Error querying users with filtered SelectThenLoadCount: %v", err)
 	}
 
 	if len(users) != 1 {

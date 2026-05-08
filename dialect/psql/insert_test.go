@@ -95,3 +95,22 @@ func TestInsert(t *testing.T) {
 
 	testutils.RunTests(t, examples, formatter)
 }
+
+func TestInsertReturningWith(t *testing.T) {
+	examples := testutils.Testcases{
+		"returning with old and new aliases": {
+			Query: psql.Insert(
+				im.Into("users"),
+				im.Values(psql.Arg(1, "neo@example.com")),
+				im.Returning(
+					psql.Quote("before", "id"),
+					psql.Quote("after", "primary_email"),
+				).WithOldAs("before").WithNewAs("after"),
+			),
+			ExpectedSQL:  `INSERT INTO users VALUES ($1, $2) RETURNING WITH (OLD AS "before", NEW AS "after") "before"."id", "after"."primary_email"`,
+			ExpectedArgs: []any{1, "neo@example.com"},
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}

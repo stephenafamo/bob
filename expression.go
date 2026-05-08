@@ -35,6 +35,14 @@ type Expression interface {
 	WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) (args []any, err error)
 }
 
+// ParensOmitter marks expressions that should not be auto-wrapped with
+// parentheses by expression builders.
+type ParensOmitter interface {
+	// ShouldOmitParens reports whether expression builders should skip
+	// automatic parenthesis wrapping for this expression.
+	ShouldOmitParens() bool
+}
+
 type ExpressionFunc func(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error)
 
 func (e ExpressionFunc) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, start int) ([]any, error) {

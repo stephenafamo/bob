@@ -51,3 +51,23 @@ func TestUpdate(t *testing.T) {
 
 	testutils.RunTests(t, examples, formatter)
 }
+
+func TestUpdateReturningWith(t *testing.T) {
+	examples := testutils.Testcases{
+		"returning with old and new aliases": {
+			Query: psql.Update(
+				um.Table("users"),
+				um.SetCol("primary_email").ToArg("new@example.com"),
+				um.Where(psql.Quote("id").EQ(psql.Arg(1))),
+				um.Returning(
+					psql.Quote("before", "primary_email"),
+					psql.Quote("after", "primary_email"),
+				).WithOldAs("before").WithNewAs("after"),
+			),
+			ExpectedSQL:  `UPDATE users SET "primary_email" = $1 WHERE ("id" = $2) RETURNING WITH (OLD AS "before", NEW AS "after") "before"."primary_email", "after"."primary_email"`,
+			ExpectedArgs: []any{"new@example.com", 1},
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}
