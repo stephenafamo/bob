@@ -91,6 +91,6 @@ func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
 	return mods.Where[*dialect.UpdateQuery]{E: e}
 }
 
-func Returning(clauses ...any) bob.Mod[*dialect.UpdateQuery] {
+func Returning(clauses ...any) mods.Returning[*dialect.UpdateQuery] {
 	return mods.Returning[*dialect.UpdateQuery](clauses)
 }

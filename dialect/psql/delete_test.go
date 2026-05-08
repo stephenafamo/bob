@@ -34,3 +34,22 @@ func TestDelete(t *testing.T) {
 
 	testutils.RunTests(t, examples, formatter)
 }
+
+func TestDeleteReturningWith(t *testing.T) {
+	examples := testutils.Testcases{
+		"returning with old alias": {
+			Query: psql.Delete(
+				dm.From("users"),
+				dm.Where(psql.Quote("id").EQ(psql.Arg(42))),
+				dm.Returning(
+					psql.Quote("before", "id"),
+					psql.Quote("before", "primary_email"),
+				).WithOldAs("before"),
+			),
+			ExpectedSQL:  `DELETE FROM users WHERE ("id" = $1) RETURNING WITH (OLD AS "before") "before"."id", "before"."primary_email"`,
+			ExpectedArgs: []any{42},
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}

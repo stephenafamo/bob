@@ -411,3 +411,29 @@ func TestMerge(t *testing.T) {
 
 	testutils.RunTests(t, examples, formatter)
 }
+
+func TestMergeReturningWith(t *testing.T) {
+	examples := testutils.Testcases{
+		"returning with new alias": {
+			Query: psql.Merge(
+				mm.Into("products"),
+				mm.Using("updates").As("u").On(
+					psql.Quote("u", "id").EQ(psql.Quote("products", "id")),
+				),
+				mm.WhenMatched().ThenUpdate(
+					mm.SetCol("price").To(psql.Quote("u", "price")),
+				),
+				mm.Returning(
+					psql.Quote("after", "id"),
+					psql.Quote("after", "price"),
+				).WithNewAs("after"),
+			),
+			ExpectedSQL: `MERGE INTO products
+				USING updates AS "u" ON ("u"."id" = "products"."id")
+				WHEN MATCHED THEN UPDATE SET "price" = "u"."price"
+				RETURNING WITH (NEW AS "after") "after"."id", "after"."price"`,
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}
