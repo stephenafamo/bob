@@ -21,7 +21,11 @@ var (
 	rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
 	// Column names must be in format column_name or table_name.column_name
 	rgxValidTableColumn = regexp.MustCompile(`^[\w]+\.[\w]+$|^[\w]+$`)
+	// RelationLoadedName must be an exported Go identifier
+	rgxValidExportedIdent = regexp.MustCompile(`^[A-Z][A-Za-z0-9_]*$`)
 )
+
+const defaultRelationLoadedName = "Loaded"
 
 // State holds the global data needed by most pieces to run
 type State[ConstraintExtra any] struct {
@@ -109,7 +113,13 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if s.Config.Aliases == nil {
 		s.Config.Aliases = make(map[string]drivers.TableAlias)
 	}
-	if err := initAliases(s.Config.Aliases, dbInfo.Tables, relationships); err != nil {
+	relationLoadedName := s.Config.RelationLoadedName
+	if relationLoadedName == "" {
+		relationLoadedName = defaultRelationLoadedName
+	} else if !rgxValidExportedIdent.MatchString(relationLoadedName) {
+		return fmt.Errorf("invalid relation_loaded_name %q: must be an exported Go identifier (matching %s)", relationLoadedName, rgxValidExportedIdent.String())
+	}
+	if err := initAliases(s.Config.Aliases, dbInfo.Tables, relationships, relationLoadedName); err != nil {
 		return fmt.Errorf("initializing aliases: %w\nSee: https://bob.stephenafamo.com/docs/code-generation/configuration#aliases", err)
 	}
 	if err = s.initTags(); err != nil {
@@ -117,24 +127,25 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	}
 
 	data := &TemplateData[T, C, I]{
-		Dialect:           driver.Dialect(),
-		Tables:            dbInfo.Tables,
-		TableNames:        tableNames(dbInfo.Tables),
-		QueryFolders:      dbInfo.QueryFolders,
-		Enums:             dbInfo.Enums,
-		ExtraInfo:         dbInfo.ExtraInfo,
-		Aliases:           s.Config.Aliases,
-		Types:             types,
-		Relationships:     relationships,
-		NoTests:           s.Config.NoTests,
-		NoBackReferencing: s.Config.NoBackReferencing,
-		StructTagCasing:   s.Config.StructTagCasing,
-		TagIgnore:         make(map[string]struct{}),
-		Tags:              s.Config.Tags,
-		RelationTag:       s.Config.RelationTag,
-		EnumFormat:        s.Config.EnumFormat,
-		OutputPackages:    pkgMap,
-		Driver:            dbInfo.Driver,
+		Dialect:            driver.Dialect(),
+		Tables:             dbInfo.Tables,
+		TableNames:         tableNames(dbInfo.Tables),
+		QueryFolders:       dbInfo.QueryFolders,
+		Enums:              dbInfo.Enums,
+		ExtraInfo:          dbInfo.ExtraInfo,
+		Aliases:            s.Config.Aliases,
+		Types:              types,
+		Relationships:      relationships,
+		NoTests:            s.Config.NoTests,
+		NoBackReferencing:  s.Config.NoBackReferencing,
+		StructTagCasing:    s.Config.StructTagCasing,
+		TagIgnore:          make(map[string]struct{}),
+		Tags:               s.Config.Tags,
+		RelationTag:        s.Config.RelationTag,
+		RelationLoadedName: relationLoadedName,
+		EnumFormat:         s.Config.EnumFormat,
+		OutputPackages:     pkgMap,
+		Driver:             dbInfo.Driver,
 	}
 
 	for _, v := range s.Config.TagIgnore {

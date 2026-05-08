@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
+- Added `R.Loaded` to generated models, a nested struct with one `bool` per relationship that records whether each relationship has been loaded. This disambiguates "not loaded yet" from "loaded, but no related rows" for both to-one and to-many relations. Maintained automatically by `Load*`, `Preload`, `ThenLoad`, factory builds, and to-one `Attach`/`Insert` ops. The `Loaded` alias can be changed in the bob config. (thanks @jacobmolby)
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
 - Added unqualified columns API: generated column structures now provide Alias(), Name(), AliasedAs(alias) and Unqualified() methods for easier column metadata access and aliasing. (thanks @atzedus)
 - Added `bob.ParensOmitter` interface with `ShouldOmitParens() bool` to let expressions opt out of automatic parenthesis wrapping in expression builders. (thanks @atzedus)

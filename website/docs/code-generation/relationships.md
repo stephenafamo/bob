@@ -128,6 +128,70 @@ pilots, err := models.Pilots(
 ).All(ctx, db)
 ```
 
+## Checking if a relationship has been loaded
+
+Each model exposes a `R.Loaded` struct with one `bool` per relationship that records whether that relationship has been populated. This lets you tell apart `nil` ("not loaded yet") from a genuine empty result ("loaded, but no related rows").
+
+```go
+jet, err := models.FindJet(ctx, db, 1)
+
+if !jet.R.Loaded.Pilot {
+    // the pilot relationship has not been loaded
+}
+
+if err := jet.LoadPilot(ctx, db); err != nil {
+    return err
+}
+
+// jet.R.Loaded.Pilot is now true. The pilot may still be nil if the
+// foreign key was null and no row matched.
+if jet.R.Loaded.Pilot && jet.R.Pilot == nil {
+    // definitively no pilot
+}
+```
+
+The same applies to `to-many` relationships:
+
+```go
+pilot, err := models.FindPilot(ctx, db, 1)
+if err := pilot.LoadJets(ctx, db); err != nil {
+    return err
+}
+
+// pilot.R.Loaded.Jets is true even if the pilot has no jets.
+if pilot.R.Loaded.Jets && len(pilot.R.Jets) == 0 {
+    // definitively zero jets
+}
+```
+
+`R.Loaded.X` is set to `true` by:
+
+- `LoadX`, `Preload.X` and `ThenLoad.X` after they populate `R.X` (including the zero-row case).
+- The inverse-side assignment performed during loading (e.g. when `pilots.LoadJets(...)` sets each `jet.R.Pilot`, the corresponding `jet.R.Loaded.Pilot` is also set).
+- `AttachX` and `InsertX` for `to-one` relationships, where the relation is fully known after the call.
+- Factory `Build` and `Create`, since the factory declares the complete world for the test fixture.
+
+`R.Loaded.X` is **not** changed by `AttachX` and `InsertX` for `to-many` relationships, since appending rows does not turn a partial slice into a complete one.
+
+:::note
+
+If you assign to `R` directly (e.g. `jet.R.Pilot = pilot`) you are also responsible for keeping `R.Loaded` in sync. The generated APIs above maintain it for you; manual mutation does not.
+
+:::
+
+:::note
+
+`Loaded` is a reserved relationship alias. Generation will fail if any relationship is aliased as `Loaded`.
+
+The field name is configurable via [`relation_loaded_name`](./configuration#configuration) in the bobgen config (default `Loaded`). The configured value is used both for the field on `R` and as the suffix of the underlying type (`<table>R<name>`), and is reserved as a relationship alias for that generation run.
+
+```yaml
+# bobgen.yaml
+relation_loaded_name: LoadInfo  # exposes model.R.LoadInfo instead of model.R.Loaded
+```
+
+:::
+
 ## Counting Relationships
 
 Bob can also count related models without loading them. This is useful when you need to display counts (e.g., "5 comments") without fetching all the related data. Counts are stored in the `C` field of the generated structs as `*int64` pointers.

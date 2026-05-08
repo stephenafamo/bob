@@ -16,7 +16,7 @@ import (
 //
 // This leaves us with a complete list of Go names for all tables,
 // columns, and relationships.
-func initAliases[C, I any](a drivers.Aliases, tables drivers.Tables[C, I], relMap Relationships) error {
+func initAliases[C, I any](a drivers.Aliases, tables drivers.Tables[C, I], relMap Relationships, reservedRelAlias string) error {
 	for _, t := range tables {
 		tableAlias := a[t.Key]
 		cleanKey := strings.ReplaceAll(t.Key, ".", "_")
@@ -91,7 +91,7 @@ func initAliases[C, I any](a drivers.Aliases, tables drivers.Tables[C, I], relMa
 		a[t.Key] = tableAlias
 	}
 
-	return validateAliases(a)
+	return validateAliases(a, reservedRelAlias)
 }
 
 // For UpSingular, DownSingular, UpPlural, DownPlural
@@ -156,7 +156,7 @@ func (e tableAliasError) Is(target error) bool {
 * Duplicates in the column aliases for each table.
 * Duplicates in the relationship aliases for each table.
  */
-func validateAliases(a drivers.Aliases) error {
+func validateAliases(a drivers.Aliases, reservedRelAlias string) error {
 	// Check for global alias uniqueness
 	singularPlural := make(map[string]string)
 	singularPluralType := make(map[string]string)
@@ -218,6 +218,16 @@ func validateAliases(a drivers.Aliases) error {
 		// Check relationship aliases for duplicates
 		relReverse := make(map[string]string)
 		for relName, relAlias := range tableAlias.Relationships {
+			if reservedRelAlias != "" && relAlias == reservedRelAlias {
+				tableErrors = append(tableErrors, tableAliasError{
+					Type:      "relationship",
+					Value:     relAlias,
+					Table:     tableKey,
+					Conflict1: relName,
+					Conflict2: fmt.Sprintf("reserved name (used by R.%s tracking)", reservedRelAlias),
+				})
+				continue
+			}
 			if other, ok := relReverse[relAlias]; ok {
 				tableErrors = append(tableErrors, tableAliasError{
 					Type:      "relationship",

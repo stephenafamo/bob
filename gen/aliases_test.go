@@ -26,7 +26,7 @@ func TestValidateAliases_NoConflicts(t *testing.T) {
 			Relationships: map[string]string{"rel2": "Rel2"},
 		},
 	}
-	if err := validateAliases(a); err != nil {
+	if err := validateAliases(a, "Loaded"); err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
 }
@@ -51,7 +51,7 @@ func TestValidateAliases_GlobalAliasConflict(t *testing.T) {
 		},
 	}
 
-	err := validateAliases(a)
+	err := validateAliases(a, "Loaded")
 
 	expectedError1 := globalAliasError{
 		Value:  "Table",
@@ -94,7 +94,7 @@ func TestValidateAliases_ColumnAliasConflict(t *testing.T) {
 		Conflict1: "id",
 		Conflict2: "other",
 	}
-	err := validateAliases(a)
+	err := validateAliases(a, "Loaded")
 	if !errors.Is(err, expectedError) {
 		t.Errorf("expected %#v, got %v", expectedError, err)
 	}
@@ -119,7 +119,62 @@ func TestValidateAliases_RelationshipAliasConflict(t *testing.T) {
 		Conflict1: "rel1",
 		Conflict2: "rel2",
 	}
-	err := validateAliases(a)
+	err := validateAliases(a, "Loaded")
+	if !errors.Is(err, expectedError) {
+		t.Errorf("expected %#v, got %v", expectedError, err)
+	}
+}
+
+func TestValidateAliases_RelationshipAliasReservedCustom(t *testing.T) {
+	a := drivers.Aliases{
+		"table1": drivers.TableAlias{
+			UpSingular:    "Table1",
+			UpPlural:      "Table1s",
+			DownSingular:  "table1",
+			DownPlural:    "table1s",
+			Columns:       map[string]string{"id": "ID"},
+			Relationships: map[string]string{"rel1": "LoadInfo"},
+		},
+	}
+
+	// With a custom reserved name, "LoadInfo" is rejected.
+	expectedError := tableAliasError{
+		Type:      "relationship",
+		Value:     "LoadInfo",
+		Table:     "table1",
+		Conflict1: "rel1",
+		Conflict2: "reserved name (used by R.LoadInfo tracking)",
+	}
+	if err := validateAliases(a, "LoadInfo"); !errors.Is(err, expectedError) {
+		t.Errorf("expected %#v, got %v", expectedError, err)
+	}
+
+	// Same alias is fine when reserved name is the default "Loaded".
+	if err := validateAliases(a, "Loaded"); err != nil {
+		t.Errorf("expected no error with default reserved name, got %v", err)
+	}
+}
+
+func TestValidateAliases_RelationshipAliasReservedLoaded(t *testing.T) {
+	a := drivers.Aliases{
+		"table1": drivers.TableAlias{
+			UpSingular:    "Table1",
+			UpPlural:      "Table1s",
+			DownSingular:  "table1",
+			DownPlural:    "table1s",
+			Columns:       map[string]string{"id": "ID"},
+			Relationships: map[string]string{"rel1": "Loaded"}, // Reserved name
+		},
+	}
+
+	expectedError := tableAliasError{
+		Type:      "relationship",
+		Value:     "Loaded",
+		Table:     "table1",
+		Conflict1: "rel1",
+		Conflict2: "reserved name (used by R.Loaded tracking)",
+	}
+	err := validateAliases(a, "Loaded")
 	if !errors.Is(err, expectedError) {
 		t.Errorf("expected %#v, got %v", expectedError, err)
 	}

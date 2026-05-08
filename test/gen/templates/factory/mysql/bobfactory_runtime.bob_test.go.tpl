@@ -1672,3 +1672,212 @@ func TestThenLoadManyToMany(t *testing.T) {
 }
 
 {{- end }}
+
+{{- if and $hasUsers $hasVideos }}
+// =============================================================================
+// Relationship Loaded Tracking Tests
+// =============================================================================
+
+// TestLoadedToOneAfterLoad checks that LoadX flips R.Loaded.X for a to-one relation.
+func TestLoadedToOneAfterLoad(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video := New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user)).CreateOrFail(ctx, t, tx)
+
+	// Reset so we can verify LoadUser does the work.
+	video.R.User = nil
+	video.R.Loaded.User = false
+
+	if err := video.LoadUser(ctx, tx); err != nil {
+		t.Fatalf("Error loading User: %v", err)
+	}
+	if !video.R.Loaded.User {
+		t.Fatal("Expected video.R.Loaded.User to be true after LoadUser")
+	}
+	if video.R.User == nil {
+		t.Fatal("Expected video.R.User to be non-nil after LoadUser")
+	}
+}
+
+// TestLoadedToManyAfterLoadEmpty checks that LoadX flips R.Loaded.X even when there are zero rows.
+func TestLoadedToManyAfterLoadEmpty(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	if user.R.Loaded.Videos {
+		t.Fatal("Expected user.R.Loaded.Videos to be false before load")
+	}
+
+	if err := user.LoadVideos(ctx, tx); err != nil {
+		t.Fatalf("Error loading Videos: %v", err)
+	}
+	if !user.R.Loaded.Videos {
+		t.Fatal("Expected user.R.Loaded.Videos to be true after LoadVideos with zero rows")
+	}
+	if len(user.R.Videos) != 0 {
+		t.Fatalf("Expected zero Videos, got %d", len(user.R.Videos))
+	}
+}
+
+// TestLoadedToManyAfterLoadNonEmpty checks R.Loaded.X after a populated to-many load.
+func TestLoadedToManyAfterLoadNonEmpty(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	for i := 0; i < 2; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user)).CreateOrFail(ctx, t, tx)
+	}
+
+	if err := user.LoadVideos(ctx, tx); err != nil {
+		t.Fatalf("Error loading Videos: %v", err)
+	}
+	if !user.R.Loaded.Videos {
+		t.Fatal("Expected user.R.Loaded.Videos to be true after LoadVideos")
+	}
+	if len(user.R.Videos) != 2 {
+		t.Fatalf("Expected 2 Videos, got %d", len(user.R.Videos))
+	}
+}
+
+// TestLoadedInverseDuringSliceLoad checks that loading a parent's to-many also flips
+// R.Loaded for the inverse to-one on each child.
+func TestLoadedInverseDuringSliceLoad(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	for i := 0; i < 2; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user)).CreateOrFail(ctx, t, tx)
+	}
+
+	if err := user.LoadVideos(ctx, tx); err != nil {
+		t.Fatalf("Error loading Videos: %v", err)
+	}
+	for i, v := range user.R.Videos {
+		if !v.R.Loaded.User {
+			t.Fatalf("Expected video[%d].R.Loaded.User to be true after parent LoadVideos", i)
+		}
+		if v.R.User == nil || v.R.User.ID != user.ID {
+			t.Fatalf("Expected video[%d].R.User to point at the parent user", i)
+		}
+	}
+}
+
+// TestLoadedToManyNotFlippedByAttach checks that AttachX on a to-many relation does NOT flip R.Loaded.X.
+func TestLoadedToManyNotFlippedByAttach(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user1 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	user2 := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video := New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user1)).CreateOrFail(ctx, t, tx)
+
+	if user2.R.Loaded.Videos {
+		t.Fatal("Expected user2.R.Loaded.Videos to be false before attach")
+	}
+	if err := user2.AttachVideos(ctx, tx, video); err != nil {
+		t.Fatalf("Error attaching Videos: %v", err)
+	}
+	if user2.R.Loaded.Videos {
+		t.Fatal("Expected user2.R.Loaded.Videos to remain false after AttachVideos (to-many appends do not complete a load)")
+	}
+}
+
+// TestLoadedFactoryBuildToOne checks that a factory-built to-one relation has Loaded.X = true.
+func TestLoadedFactoryBuildToOne(t *testing.T) {
+	video := New().NewVideo(VideoMods.WithNewUser()).Build()
+	if !video.R.Loaded.User {
+		t.Fatal("Expected video.R.Loaded.User to be true after factory Build with related User")
+	}
+	if video.R.User == nil {
+		t.Fatal("Expected video.R.User to be set after factory Build")
+	}
+}
+
+// TestLoadedFactoryBuildToMany checks that a factory-built to-many relation has Loaded.X = true.
+func TestLoadedFactoryBuildToMany(t *testing.T) {
+	user := New().NewUser(UserMods.WithNewVideos(2)).Build()
+	if !user.R.Loaded.Videos {
+		t.Fatal("Expected user.R.Loaded.Videos to be true after factory Build with related Videos")
+	}
+	if len(user.R.Videos) != 2 {
+		t.Fatalf("Expected 2 Videos, got %d", len(user.R.Videos))
+	}
+}
+{{- end }}
+
+{{- if and $hasVideos $hasSponsors }}
+// TestLoadedToOneAfterAttach checks AttachX flips Loaded.X for a to-one relation.
+func TestLoadedToOneAfterAttach(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	video := New().NewVideoWithContext(ctx).CreateOrFail(ctx, t, tx)
+	sponsor := New().NewSponsorWithContext(ctx).CreateOrFail(ctx, t, tx)
+
+	if video.R.Loaded.Sponsor {
+		t.Fatal("Expected video.R.Loaded.Sponsor to be false before attach")
+	}
+	if err := video.AttachSponsor(ctx, tx, sponsor); err != nil {
+		t.Fatalf("Error attaching Sponsor: %v", err)
+	}
+	if !video.R.Loaded.Sponsor {
+		t.Fatal("Expected video.R.Loaded.Sponsor to be true after AttachSponsor")
+	}
+	if video.R.Sponsor == nil || video.R.Sponsor.ID != sponsor.ID {
+		t.Fatal("Expected video.R.Sponsor to be set after AttachSponsor")
+	}
+}
+{{- end }}
