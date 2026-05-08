@@ -8266,7 +8266,7 @@
 					"name": "primary_email",
 					"db_type": "character varying",
 					"default": "NULL",
-					"comment": "The user's preferred email address.\r\n\r\nUse this to send emails to the user.",
+					"comment": "The user's preferred email address.\n\nUse this to send emails to the user.",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
@@ -8693,7 +8693,7 @@
 						{
 							"type": 1,
 							"name": "SelectUsers",
-							"raw": "\nSELECT \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\" FROM users WHERE id IN ($1)\r",
+							"raw": "SELECT \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\" FROM users WHERE id IN ($1)",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -8755,19 +8755,19 @@
 									"children": null,
 									"positions": [
 										[
-											249,
-											251
+											248,
+											250
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(8, 224))\nq.SetTable(EXPR.subExpr(230, 235))\nq.AppendWhere(EXPR.subExpr(242, 252))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 223))\nq.SetTable(EXPR.subExpr(229, 234))\nq.AppendWhere(EXPR.subExpr(241, 251))\n"
 						},
 						{
 							"type": 2,
 							"name": "InsertUser",
-							"raw": "\r\n\r\n\nINSERT INTO users (id, primary_email) VALUES ($1, $2)\r",
+							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2)",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -8777,7 +8777,7 @@
 							"args": [
 								{
 									"col": {
-										"name": "group50",
+										"name": "group45",
 										"db_name": "",
 										"nullable": false,
 										"type": "",
@@ -8795,8 +8795,8 @@
 											"children": null,
 											"positions": [
 												[
-													51,
-													53
+													46,
+													48
 												]
 											],
 											"can_be_multiple": false
@@ -8812,8 +8812,8 @@
 											"children": null,
 											"positions": [
 												[
-													55,
-													57
+													50,
+													52
 												]
 											],
 											"can_be_multiple": false
@@ -8821,19 +8821,19 @@
 									],
 									"positions": [
 										[
-											50,
-											58
+											45,
+											53
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(17, 22)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(43, 58),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 53),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
 							"name": "BulkInsertUsers",
-							"raw": "\r\n\r\n\r\n\nINSERT INTO users (id, primary_email) VALUES ($1, $2), ($3, $4)\r",
+							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2), ($3, $4)",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -8843,7 +8843,7 @@
 							"args": [
 								{
 									"col": {
-										"name": "group52",
+										"name": "group45",
 										"db_name": "",
 										"nullable": false,
 										"type": "",
@@ -8861,8 +8861,8 @@
 											"children": null,
 											"positions": [
 												[
-													53,
-													55
+													46,
+													48
 												]
 											],
 											"can_be_multiple": false
@@ -8878,8 +8878,8 @@
 											"children": null,
 											"positions": [
 												[
-													57,
-													59
+													50,
+													52
 												]
 											],
 											"can_be_multiple": false
@@ -8887,15 +8887,15 @@
 									],
 									"positions": [
 										[
-											52,
-											60
+											45,
+											53
 										]
 									],
 									"can_be_multiple": false
 								},
 								{
 									"col": {
-										"name": "group62",
+										"name": "group55",
 										"db_name": "",
 										"nullable": false,
 										"type": "",
@@ -8913,8 +8913,8 @@
 											"children": null,
 											"positions": [
 												[
-													63,
-													65
+													56,
+													58
 												]
 											],
 											"can_be_multiple": false
@@ -8930,8 +8930,8 @@
 											"children": null,
 											"positions": [
 												[
-													67,
-													69
+													60,
+													62
 												]
 											],
 											"can_be_multiple": false
@@ -8939,19 +8939,19 @@
 									],
 									"positions": [
 										[
-											62,
-											70
+											55,
+											63
 										]
 									],
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(19, 24)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(45, 70),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 63),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
 							"name": "InsertFromSelect",
-							"raw": "\r\n\r\n\r\n\nINSERT INTO users (id, primary_email)\r\nSELECT id, primary_email FROM users WHERE id IN ($1)\r",
+							"raw": "INSERT INTO users (id, primary_email)\nSELECT id, primary_email FROM users WHERE id IN ($1)",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -8970,19 +8970,19 @@
 									"children": null,
 									"positions": [
 										[
-											95,
-											97
+											87,
+											89
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(19, 24)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(46, 98),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 90),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
 						},
 						{
 							"type": 3,
 							"name": "UpdateUser",
-							"raw": "\r\n\r\n\r\n\nUPDATE ONLY users SET primary_email = $1 WHERE id = $2\r\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\"\r",
+							"raw": "UPDATE ONLY users SET primary_email = $1 WHERE id = $2\nRETURNING \"users\".\"id\" AS \"id\", \"users\".\"email_validated\" AS \"email_validated\", \"users\".\"primary_email\" AS \"primary_email\", \"users\".\"parent_id\" AS \"parent_id\", \"users\".\"party_id\" AS \"party_id\", \"users\".\"referrer\" AS \"referrer\"",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -9044,8 +9044,8 @@
 									"children": null,
 									"positions": [
 										[
-											45,
-											47
+											38,
+											40
 										]
 									],
 									"can_be_multiple": false
@@ -9061,19 +9061,19 @@
 									"children": null,
 									"positions": [
 										[
-											59,
-											61
+											52,
+											54
 										]
 									],
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(19, 24)\nq.AppendSet(EXPR.subExpr(29, 47))\nq.AppendWhere(EXPR.subExpr(54, 61))\nq.AppendReturning(EXPR.subExpr(73, 289))\n"
+							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 281))\n"
 						},
 						{
 							"type": 4,
 							"name": "DeleteUser",
-							"raw": "\r\n\r\n\nDELETE FROM users WHERE id = $1",
+							"raw": "DELETE FROM users WHERE id = $1",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -9092,14 +9092,14 @@
 									"children": null,
 									"positions": [
 										[
-											34,
-											36
+											29,
+											31
 										]
 									],
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Table.Expression = EXPR.subExpr(17, 22)\nq.AppendWhere(EXPR.subExpr(29, 36))\n"
+							"mods": "q.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendWhere(EXPR.subExpr(24, 31))\n"
 						}
 					]
 				},
@@ -9109,7 +9109,7 @@
 						{
 							"type": 1,
 							"name": "SelectVideos",
-							"raw": "\nSELECT \"videos\".\"id\" AS \"id\", \"videos\".\"user_id\" AS \"user_id\", \"videos\".\"sponsor_id\" AS \"sponsor_id\" FROM videos\r\nWHERE id IN ($1)\r",
+							"raw": "SELECT \"videos\".\"id\" AS \"id\", \"videos\".\"user_id\" AS \"user_id\", \"videos\".\"sponsor_id\" AS \"sponsor_id\" FROM videos\nWHERE id IN ($1)",
 							"config": {
 								"result_type_one": "",
 								"result_type_all": "",
@@ -9150,14 +9150,14 @@
 									"children": null,
 									"positions": [
 										[
-											128,
-											130
+											126,
+											128
 										]
 									],
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(8, 101))\nq.SetTable(EXPR.subExpr(107, 113))\nq.AppendWhere(EXPR.subExpr(121, 131))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 100))\nq.SetTable(EXPR.subExpr(106, 112))\nq.AppendWhere(EXPR.subExpr(119, 129))\n"
 						}
 					]
 				}

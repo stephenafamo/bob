@@ -8084,7 +8084,7 @@
 					"name": "primary_email",
 					"db_type": "character varying",
 					"default": "NULL",
-					"comment": "The user's preferred email address.\r\n\r\nUse this to send emails to the user.",
+					"comment": "The user's preferred email address.\n\nUse this to send emails to the user.",
 					"nullable": true,
 					"generated": false,
 					"autoincr": false,
