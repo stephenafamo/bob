@@ -66,6 +66,6 @@ func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
 	return mods.Where[*dialect.DeleteQuery]{E: e}
 }
 
-func Returning(clauses ...any) bob.Mod[*dialect.DeleteQuery] {
+func Returning(clauses ...any) mods.Returning[*dialect.DeleteQuery] {
 	return mods.Returning[*dialect.DeleteQuery](clauses)
 }
