@@ -33,12 +33,12 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 {{if not $table.Constraints.Primary -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} view
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}",Build{{$tAlias.UpSingular}}Columns({{quote $table.Key}}))
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewViewx[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]("{{$table.Schema}}","{{$table.Name}}",Build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper)
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} view
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",Build{{$tAlias.UpSingular}}Columns({{quote $table.Key}}))
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",Build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper)
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
@@ -57,14 +57,14 @@ type {{$tAlias.DownSingular}}R struct {
 		{{$relAlias}} *{{$.ModelType .Foreign}} {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
 	{{end}}{{end -}}
 
-	// Loaded reports whether each relationship has been loaded.
-	// A relationship's Loaded bool is set by Load*, Preload, ThenLoad, factory builds,
+	// {{$.RelationLoadedName}} reports whether each relationship has been loaded.
+	// A relationship's bool is set by Load*, Preload, ThenLoad, factory builds,
 	// and to-one Attach/Insert operations. To-many Attach/Insert operations leave it unchanged.
-	Loaded {{$tAlias.DownSingular}}RLoaded `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
+	{{$.RelationLoadedName}} {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
 }
 
-// {{$tAlias.DownSingular}}RLoaded tracks which relationships on {{$tAlias.UpSingular}} have been loaded.
-type {{$tAlias.DownSingular}}RLoaded struct {
+// {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} tracks which relationships on {{$tAlias.UpSingular}} have been loaded.
+type {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} struct {
 	{{range $.Relationships.Get $table.Key -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{$relAlias}} bool {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
@@ -78,9 +78,11 @@ func Build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.UpSingular}}
   columnsExpr := expr.NewColumnsExpr(
     {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
   )
-  if tableName != "" {
+
+	if tableName != "" {
     columnsExpr = columnsExpr.WithParent(tableName)
   }
+
   return {{$tAlias.UpSingular}}Columns{
     ColumnsExpr: columnsExpr,
     tableAlias: tableName,
@@ -129,11 +131,6 @@ type {{$tAlias.DownSingular}}Column struct {
 	name  string
 }
 
-// Alias returns the current table alias for the column.
-func (c {{$tAlias.DownSingular}}Column) Alias() string {
-	return c.alias
-}
-
 // Name returns the unqualified column name.
 func (c {{$tAlias.DownSingular}}Column) Name() string {
 	return c.name
@@ -142,18 +139,4 @@ func (c {{$tAlias.DownSingular}}Column) Name() string {
 // ShouldOmitParens prevents automatic parenthesis wrapping in expression builders.
 func (c {{$tAlias.DownSingular}}Column) ShouldOmitParens() bool {
 	return true
-}
-
-// AliasedAs returns a copy of the column qualified by alias.
-func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
-	return {{$tAlias.DownSingular}}Column{
-		Expression: {{$.Dialect}}.Quote(alias, c.name),
-		alias:      alias,
-		name:       c.name,
-	}
-}
-
-// Unqualified returns a copy of the column without table qualification.
-func (c {{$tAlias.DownSingular}}Column) Unqualified() {{$tAlias.DownSingular}}Column {
-  return build{{$tAlias.UpSingular}}Column("", c.name)
 }

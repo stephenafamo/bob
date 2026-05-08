@@ -27,6 +27,11 @@ type Config[ConstraintExtra any] struct {
 	StructTagCasing string `yaml:"struct_tag_casing"`
 	// Relationship struct tag name
 	RelationTag string `yaml:"relation_tag"`
+	// Name of the nested struct on R that tracks whether each relationship
+	// has been loaded. Must be an exported Go identifier. Defaults to "Loaded".
+	// The configured value is also used as the suffix of the underlying type
+	// (<table>R<RelationLoadedName>) and is reserved as a relationship alias.
+	RelationLoadedName string `yaml:"relation_loaded_name"`
 	// List of column names that should have tags values set to '-' (ignored during parsing)
 	TagIgnore []string `yaml:"tag_ignore"`
 	// Format for enum value identifiers: "title_case" or "screaming_snake_case"

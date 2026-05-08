@@ -20,7 +20,7 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                 {{- if and (not $.NoBackReferencing) $invRel.Name}}
                     {{- if not $invRel.IsToMany}}
                         rel.R.{{$invAlias}} = o
-                        rel.R.Loaded.{{$invAlias}} = true
+                        rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
                     {{- else}}
                         rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
                     {{- end}}
@@ -37,7 +37,7 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                     {{- if and (not $.NoBackReferencing) $invRel.Name}}
                         {{- if not $invRel.IsToMany}}
                             rel.R.{{$invAlias}} = o
-                            rel.R.Loaded.{{$invAlias}} = true
+                            rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
                         {{- else}}
                             rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
                         {{- end}}
@@ -48,7 +48,7 @@ func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingu
                 }
             {{- end}}
             o.R.{{$relAlias}} = rel
-            o.R.Loaded.{{$relAlias}} = true
+            o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
         }
 
     {{end -}}

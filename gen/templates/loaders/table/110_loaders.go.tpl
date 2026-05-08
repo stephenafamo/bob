@@ -21,7 +21,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 			}
 
 			o.R.{{$relAlias}} = rels
-			o.R.Loaded.{{$relAlias}} = true
+			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
@@ -31,7 +31,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 					{{- else -}}
 						rel.R.{{$invAlias}} =  o
-						rel.R.Loaded.{{$invAlias}} = true
+						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 					{{- end}}
 				}
 			}
@@ -44,7 +44,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 			}
 
 			o.R.{{$relAlias}} = rel
-			o.R.Loaded.{{$relAlias}} = true
+			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
@@ -53,7 +53,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 					{{- else -}}
 						rel.R.{{$invAlias}} =  o
-						rel.R.Loaded.{{$invAlias}} = true
+						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 					{{- end}}
 				}
 			{{- end}}
@@ -138,7 +138,7 @@ func Build{{$tAlias.UpSingular}}Preloader() {{$tAlias.UpSingular}}Preloader {
             },
             {{- end}}
           },
-        }, {{$.TableVar $rel.Foreign}}.Columns.Names(), opts...)
+        }, {{$.TableVar $rel.Foreign}}.Columns.Names(), {{$.ScanMapperNullableFunc $rel.Foreign}}, opts...)
     },
     {{end -}}
   }
@@ -326,7 +326,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 
 	// Reset the relationship
 	o.R.{{$relAlias}} = nil
-	o.R.Loaded.{{$relAlias}} = false
+	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = false
 
 	{{if $rel.IsToMany -}}
 	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
@@ -345,7 +345,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 				rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 			{{- else -}}
 				rel.R.{{$invAlias}} =  o
-				rel.R.Loaded.{{$invAlias}} = true
+				rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 			{{- end}}
 		}
 	{{else -}}
@@ -353,13 +353,13 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 			related.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 		{{else -}}
 			related.R.{{$invAlias}} =  o
-			related.R.Loaded.{{$invAlias}} = true
+			related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 		{{- end}}
 	{{- end}}
 	{{- end}}
 
 	o.R.{{$relAlias}} = related
-	o.R.Loaded.{{$relAlias}} = true
+	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	return nil
 }
 
@@ -384,9 +384,70 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		}
 
 		o.R.{{$relAlias}} = nil
-		o.R.Loaded.{{$relAlias}} = true
+		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
+  {{- /* Map-based stitching only for a single `==`-comparable join column;
+	       composite keys and custom compare_expr types fall back to the nested loop. */ -}}
+	{{- $useMap := eq (len $side.FromColumns) 1 -}}
+	{{- $local := index $side.FromColumns 0 -}}
+	{{- $foreign := index $side.ToColumns 0 -}}
+	{{- $fromCol := $.AllTables.GetColumn $side.From $local -}}
+	{{- $toCol := $.AllTables.GetColumn $side.To $foreign -}}
+	{{- $fromColAlias := index $fromAlias.Columns $local -}}
+	{{- $toColAlias := index $toAlias.Columns $foreign -}}
+	{{- if and $useMap (not ($.Types.CanCompareWithEquals $.CurrentPackage $fromCol.Type)) -}}{{- $useMap = false -}}{{- end -}}
+	{{if $useMap}}
+	// O(N+M) stitch via a map keyed by the join column (key -> []parent; was O(N*M)).
+	{{$tAlias.DownSingular}}ByKey := make(map[{{$.Types.Get $.CurrentPackage $.Importer $fromCol.Type}}][]*{{$tAlias.UpSingular}}, len(os))
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		{{if $fromCol.Nullable}}
+		// NULL never matches any row in SQL, so don't add it to the map
+		if !{{$.Types.GetNullTypeValid $.CurrentPackage $fromCol.Type (cat "o." $fromColAlias)}} {
+			continue
+		}
+		{{end}}
+		{{$tAlias.DownSingular}}ByKey[{{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $fromCol.Type (cat "o." $fromColAlias) $fromCol.Nullable}}] = append({{$tAlias.DownSingular}}ByKey[{{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $fromCol.Type (cat "o." $fromColAlias) $fromCol.Nullable}}], o)
+	}
+
+	for _, rel := range {{$fAlias.DownPlural}} {
+		{{if $toCol.Nullable}}
+		if !{{$.Types.GetNullTypeValid $.CurrentPackage $toCol.Type (cat "rel." $toColAlias)}} {
+			continue
+		}
+		{{end}}
+		owners, ok := {{$tAlias.DownSingular}}ByKey[{{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $toCol.Type (cat "rel." $toColAlias) $toCol.Nullable}}]
+		if !ok {
+			continue
+		}
+
+		for _, o := range owners {
+			{{if not $rel.IsToMany}}
+			// to-one: keep only the first matching child (matches the previous break)
+			if o.R.{{$relAlias}} != nil {
+				continue
+			}
+			{{end}}
+			{{if and (not $.NoBackReferencing) $invRel.Name}}
+			{{$invAlias := $fAlias.Relationship $invRel.Name}}
+				{{if $invRel.IsToMany}}
+				rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+				{{else}}
+				rel.R.{{$invAlias}} =  o
+				rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
+				{{end}}
+			{{end}}
+			{{if $rel.IsToMany}}
+			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
+			{{else}}
+			o.R.{{$relAlias}} =  rel
+			{{end}}
+		}
+	}
+	{{else}}
 	for _, o := range os {
 		if o == nil {
 			continue
@@ -432,7 +493,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
 					rel.R.{{$invAlias}} =  o
-					rel.R.Loaded.{{$invAlias}} = true
+					rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 				{{- end}}
 			{{- end}}
 
@@ -444,6 +505,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			{{end -}}
 		}
 	}
+  {{end}}
 
 	return nil
 }
@@ -484,7 +546,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
-  mapper := scan.Mod(scan.StructMapper[*{{$.ModelType $rel.Foreign}}](), func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+  mapper := scan.Mod(q.Scanner, func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}
@@ -507,11 +569,70 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	}
 
 	for _, o := range os {
+    if o == nil {
+			continue
+		}
 		o.R.{{$relAlias}} = nil
-		o.R.Loaded.{{$relAlias}} = true
+		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
+  {{- /* Same as the direct-join case, but the child key is the carried slice
+	       {{`{{$fromCol}}Slice[i]`}} instead of a field on rel. */ -}}
+	{{- $useMap := eq (len $firstSide.FromColumns) 1 -}}
+	{{- $local := index $firstSide.FromColumns 0 -}}
+	{{- $fromCol := index $firstFrom.Columns $local -}}
+	{{- $fromColDef := $.AllTables.GetColumn $firstSide.From $local -}}
+	{{- if and $useMap (not ($.Types.CanCompareWithEquals $.CurrentPackage $fromColDef.Type)) -}}{{- $useMap = false -}}{{- end -}}
+	{{if $useMap}}
+	// O(N+M) stitch via a map; child key is the carried slice {{$fromCol}}Slice[i] (was O(N*M)).
+	{{$tAlias.DownSingular}}ByKey := make(map[{{$.Types.Get $.CurrentPackage $.Importer $fromColDef.Type}}][]*{{$tAlias.UpSingular}}, len(os))
 	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		{{if $fromColDef.Nullable}}
+		// NULL never matches any row in SQL, so don't add it to the map
+		if !{{$.Types.GetNullTypeValid $.CurrentPackage $fromColDef.Type (printf "o.%s" $fromCol)}} {
+			continue
+		}
+		{{end}}
+		{{$tAlias.DownSingular}}ByKey[{{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $fromColDef.Type (printf "o.%s" $fromCol) $fromColDef.Nullable}}] = append({{$tAlias.DownSingular}}ByKey[{{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $fromColDef.Type (printf "o.%s" $fromCol) $fromColDef.Nullable}}], o)
+	}
+
+	for i, rel := range {{$fAlias.DownPlural}} {
+		owners, ok := {{$tAlias.DownSingular}}ByKey[{{$fromCol}}Slice[i]]
+		if !ok {
+			continue
+		}
+
+		for _, o := range owners {
+			{{if not $rel.IsToMany}}
+			// to-one: keep only the first matching child (matches the previous break)
+			if o.R.{{$relAlias}} != nil {
+				continue
+			}
+			{{end}}
+			{{if and (not $.NoBackReferencing) $invRel.Name}}
+			{{$invAlias := $fAlias.Relationship $invRel.Name}}
+				{{if $invRel.IsToMany}}
+				rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
+				{{else}}
+				rel.R.{{$invAlias}} =  o
+				rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
+				{{end}}
+			{{end}}
+			{{if $rel.IsToMany}}
+			o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
+			{{else}}
+			o.R.{{$relAlias}} =  rel
+			{{end}}
+		}
+	}
+	{{else}}
+	for _, o := range os {
+    if o == nil {
+			continue
+		}
 		for i, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
@@ -536,7 +657,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
 					rel.R.{{$invAlias}} =  o
-					rel.R.Loaded.{{$invAlias}} = true
+					rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 				{{- end}}
 			{{- end}}
 
@@ -549,6 +670,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			{{end -}}
 		}
 	}
+  {{end}}
 
 	return nil
 }
