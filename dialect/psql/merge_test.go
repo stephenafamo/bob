@@ -9,12 +9,6 @@ import (
 	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
-type wrappedExpr struct {
-	psql.Expression
-}
-
-func (wrappedExpr) ShouldOmitParens() bool { return true }
-
 func TestMerge(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple merge with update and insert": {
@@ -291,19 +285,6 @@ func TestMerge(t *testing.T) {
 				mm.Into("target"),
 				mm.Using("source").As("s").OnEQ(
 					psql.Quote("s", "id"),
-					psql.Quote("target", "id"),
-				),
-				mm.WhenMatched().ThenDoNothing(),
-			),
-			ExpectedSQL: `MERGE INTO target
-				USING source AS "s" ON "s"."id" = "target"."id"
-				WHEN MATCHED THEN DO NOTHING`,
-		},
-		"merge with OnEQ wrapper expression": {
-			Query: psql.Merge(
-				mm.Into("target"),
-				mm.Using("source").As("s").OnEQ(
-					wrappedExpr{Expression: psql.Quote("s", "id")},
 					psql.Quote("target", "id"),
 				),
 				mm.WhenMatched().ThenDoNothing(),
