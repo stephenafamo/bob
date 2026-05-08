@@ -104,6 +104,9 @@ type TemplateData[T, C, I any] struct {
 	Tags []string
 	// RelationTag controls the value of the tags for the Relationship struct
 	RelationTag string
+	// RelationLoadedName is the resolved name of the nested struct on R that
+	// tracks whether each relationship has been loaded (default "Loaded").
+	RelationLoadedName string
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
 	// Contains field names that should have tags values set to '-'

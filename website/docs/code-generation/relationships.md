@@ -183,6 +183,13 @@ If you assign to `R` directly (e.g. `jet.R.Pilot = pilot`) you are also responsi
 
 `Loaded` is a reserved relationship alias. Generation will fail if any relationship is aliased as `Loaded`.
 
+The field name is configurable via [`relation_loaded_name`](./configuration#configuration) in the bobgen config (default `Loaded`). The configured value is used both for the field on `R` and as the suffix of the underlying type (`<table>R<name>`), and is reserved as a relationship alias for that generation run.
+
+```yaml
+# bobgen.yaml
+relation_loaded_name: LoadInfo  # exposes model.R.LoadInfo instead of model.R.Loaded
+```
+
 :::
 
 ## Counting Relationships

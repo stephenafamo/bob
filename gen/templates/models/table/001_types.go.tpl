@@ -57,14 +57,14 @@ type {{$tAlias.DownSingular}}R struct {
 		{{$relAlias}} *{{$ftable.UpSingular}} {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}
 	{{end}}{{end -}}
 
-	// Loaded reports whether each relationship has been loaded.
-	// A relationship's Loaded bool is set by Load*, Preload, ThenLoad, factory builds,
+	// {{$.RelationLoadedName}} reports whether each relationship has been loaded.
+	// A relationship's bool is set by Load*, Preload, ThenLoad, factory builds,
 	// and to-one Attach/Insert operations. To-many Attach/Insert operations leave it unchanged.
-	Loaded {{$tAlias.DownSingular}}RLoaded `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
+	{{$.RelationLoadedName}} {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
 }
 
-// {{$tAlias.DownSingular}}RLoaded tracks which relationships on {{$tAlias.UpSingular}} have been loaded.
-type {{$tAlias.DownSingular}}RLoaded struct {
+// {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} tracks which relationships on {{$tAlias.UpSingular}} have been loaded.
+type {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} struct {
 	{{range $.Relationships.Get $table.Key -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
 	{{$relAlias}} bool {{if $.Tags}}`{{generateTags $.Tags $relAlias | trim}}`{{end}} // {{.Name}}

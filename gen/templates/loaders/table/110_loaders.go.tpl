@@ -27,7 +27,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 			}
 
 			o.R.{{$relAlias}} = rels
-			o.R.Loaded.{{$relAlias}} = true
+			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
@@ -37,7 +37,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 					{{- else -}}
 						rel.R.{{$invAlias}} =  o
-						rel.R.Loaded.{{$invAlias}} = true
+						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 					{{- end}}
 				}
 			}
@@ -50,7 +50,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 			}
 
 			o.R.{{$relAlias}} = rel
-			o.R.Loaded.{{$relAlias}} = true
+			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 
 			{{if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
@@ -59,7 +59,7 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 						rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 					{{- else -}}
 						rel.R.{{$invAlias}} =  o
-						rel.R.Loaded.{{$invAlias}} = true
+						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 					{{- end}}
 				}
 			{{- end}}
@@ -190,7 +190,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 
 	// Reset the relationship
 	o.R.{{$relAlias}} = nil
-	o.R.Loaded.{{$relAlias}} = false
+	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = false
 
 	{{if $rel.IsToMany -}}
 	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
@@ -209,7 +209,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 				rel.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 			{{- else -}}
 				rel.R.{{$invAlias}} =  o
-				rel.R.Loaded.{{$invAlias}} = true
+				rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 			{{- end}}
 		}
 	{{else -}}
@@ -217,13 +217,13 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 			related.R.{{$invAlias}} = {{$tAlias.UpSingular}}Slice{o}
 		{{else -}}
 			related.R.{{$invAlias}} =  o
-			related.R.Loaded.{{$invAlias}} = true
+			related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 		{{- end}}
 	{{- end}}
 	{{- end}}
 
 	o.R.{{$relAlias}} = related
-	o.R.Loaded.{{$relAlias}} = true
+	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	return nil
 }
 
@@ -248,7 +248,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		}
 
 		o.R.{{$relAlias}} = nil
-		o.R.Loaded.{{$relAlias}} = true
+		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
 	for _, o := range os {
@@ -295,7 +295,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
 					rel.R.{{$invAlias}} =  o
-					rel.R.Loaded.{{$invAlias}} = true
+					rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 				{{- end}}
 			{{- end}}
 
@@ -371,7 +371,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 
 	for _, o := range os {
 		o.R.{{$relAlias}} = nil
-		o.R.Loaded.{{$relAlias}} = true
+		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
 	for _, o := range os {
@@ -399,7 +399,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 					rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
 				{{else -}}
 					rel.R.{{$invAlias}} =  o
-					rel.R.Loaded.{{$invAlias}} = true
+					rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
 				{{- end}}
 			{{- end}}
 
