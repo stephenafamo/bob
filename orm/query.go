@@ -22,6 +22,18 @@ func (q ExecQuery[Q]) Clone() ExecQuery[Q] {
 	}
 }
 
+func (q *ExecQuery[Q]) Apply(queryMods ...bob.Mod[Q]) *ExecQuery[Q] {
+	if q == nil {
+		return nil
+	}
+
+	next := q.Clone()
+	for _, mod := range queryMods {
+		mod.Apply(next.BaseQuery.Expression)
+	}
+	return &next
+}
+
 func (q ExecQuery[Q]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
 	var err error
 
@@ -55,7 +67,20 @@ type Query[Q bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
 func (q Query[Q, T, Ts, Tr]) Clone() Query[Q, T, Ts, Tr] {
 	return Query[Q, T, Ts, Tr]{
 		ExecQuery: q.ExecQuery.Clone(),
+		Scanner:   q.Scanner,
 	}
+}
+
+func (q *Query[Q, T, Ts, Tr]) Apply(queryMods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
+	if q == nil {
+		return nil
+	}
+
+	next := q.Clone()
+	for _, mod := range queryMods {
+		mod.Apply(next.BaseQuery.Expression)
+	}
+	return &next
 }
 
 // First matching row

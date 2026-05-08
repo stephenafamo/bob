@@ -2,7 +2,6 @@ package dm
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/mods"
 )
@@ -16,26 +15,20 @@ func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func Only() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(d *dialect.DeleteQuery) {
-		d.Only = true
-	})
+	return mods.TargetOnly[*dialect.DeleteQuery](true)
 }
 
 func From(name any) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.TableRef{
-			Expression: name,
-		}
-	})
+	return mods.TargetTable[*dialect.DeleteQuery]{
+		Expression: name,
+	}
 }
 
 func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.TableRef{
-			Expression: name,
-			Alias:      alias,
-		}
-	})
+	return mods.TargetTable[*dialect.DeleteQuery]{
+		Expression: name,
+		Alias:      alias,
+	}
 }
 
 func Using(table any) dialect.FromChain[*dialect.DeleteQuery] {

@@ -5,15 +5,26 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
-func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) bob.BaseQuery[*dialect.UpdateQuery] {
+type UpdateQuery struct {
+	bob.BaseQuery[*dialect.UpdateQuery]
+}
+
+func (q UpdateQuery) Apply(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
+	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
+	return q
+}
+
+func Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) UpdateQuery {
 	q := &dialect.UpdateQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*dialect.UpdateQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeUpdate,
+	return UpdateQuery{
+		BaseQuery: bob.BaseQuery[*dialect.UpdateQuery]{
+			Expression: q,
+			Dialect:    dialect.Dialect,
+			QueryType:  bob.QueryTypeUpdate,
+		},
 	}
 }

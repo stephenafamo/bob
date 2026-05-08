@@ -5,15 +5,30 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
-func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {
+type DeleteQuery struct {
+	bob.BaseQuery[*dialect.DeleteQuery]
+}
+
+func (q DeleteQuery) Apply(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
+	if next, ok := q.Expression.Derive(queryMods...); ok {
+		q.Expression = next
+		return q
+	}
+	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
+	return q
+}
+
+func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) DeleteQuery {
 	q := &dialect.DeleteQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*dialect.DeleteQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeDelete,
+	return DeleteQuery{
+		BaseQuery: bob.BaseQuery[*dialect.DeleteQuery]{
+			Expression: q,
+			Dialect:    dialect.Dialect,
+			QueryType:  bob.QueryTypeDelete,
+		},
 	}
 }

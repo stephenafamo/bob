@@ -5,15 +5,30 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
-func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.InsertQuery] {
+type InsertQuery struct {
+	bob.BaseQuery[*dialect.InsertQuery]
+}
+
+func (q InsertQuery) Apply(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
+	if next, ok := q.Expression.Derive(queryMods...); ok {
+		q.Expression = next
+		return q
+	}
+	q.BaseQuery = q.BaseQuery.Apply(queryMods...)
+	return q
+}
+
+func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) InsertQuery {
 	q := &dialect.InsertQuery{}
 	for _, mod := range queryMods {
 		mod.Apply(q)
 	}
 
-	return bob.BaseQuery[*dialect.InsertQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeInsert,
+	return InsertQuery{
+		BaseQuery: bob.BaseQuery[*dialect.InsertQuery]{
+			Expression: q,
+			Dialect:    dialect.Dialect,
+			QueryType:  bob.QueryTypeInsert,
+		},
 	}
 }

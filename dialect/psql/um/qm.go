@@ -2,7 +2,6 @@ package um
 
 import (
 	"github.com/stephenafamo/bob"
-	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
@@ -17,32 +16,24 @@ func Recursive(r bool) bob.Mod[*dialect.UpdateQuery] {
 }
 
 func Only() bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.Only = true
-	})
+	return mods.TargetOnly[*dialect.UpdateQuery](true)
 }
 
 func Table(name any) bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.Table = clause.TableRef{
-			Expression: name,
-		}
-	})
+	return mods.TargetTable[*dialect.UpdateQuery]{
+		Expression: name,
+	}
 }
 
 func TableAs(name any, alias string) bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.Table = clause.TableRef{
-			Expression: name,
-			Alias:      alias,
-		}
-	})
+	return mods.TargetTable[*dialect.UpdateQuery]{
+		Expression: name,
+		Alias:      alias,
+	}
 }
 
 func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-		q.Set.Set = append(q.Set.Set, internal.ToAnySlice(sets)...)
-	})
+	return mods.SetExprs[*dialect.UpdateQuery](internal.ToAnySlice(sets))
 }
 
 func SetCol(from string) mods.Set[*dialect.UpdateQuery] {

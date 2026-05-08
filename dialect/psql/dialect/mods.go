@@ -223,6 +223,32 @@ func (o OrderCombined) Apply(q *SelectQuery) {
 	q.CombinedOrder.AppendOrder(o())
 }
 
+type LimitCombined struct {
+	Count any
+}
+
+func (l LimitCombined) Apply(q *SelectQuery) {
+	q.CombinedLimit.SetLimit(l.Count)
+}
+
+type OffsetCombined struct {
+	Count any
+}
+
+func (o OffsetCombined) Apply(q *SelectQuery) {
+	q.CombinedOffset.SetOffset(o.Count)
+}
+
+type FetchCombined struct {
+	Count    any
+	WithTies bool
+}
+
+func (f FetchCombined) Apply(q *SelectQuery) {
+	q.CombinedFetch.Count = f.Count
+	q.CombinedFetch.WithTies = f.WithTies
+}
+
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {

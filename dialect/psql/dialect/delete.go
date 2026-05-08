@@ -23,53 +23,75 @@ type DeleteQuery struct {
 	bob.ContextualModdable[*DeleteQuery]
 }
 
+func (d *DeleteQuery) SetTargetOnly(only bool) {
+	d.Only = only
+	d.Table.SetOnly(false)
+}
+
+func (d *DeleteQuery) SetTargetTable(table any) {
+	d.Table.SetTable(table)
+}
+
+func (d *DeleteQuery) SetTargetTableAlias(alias string, columns ...string) {
+	d.Table.SetTableAlias(alias, columns...)
+}
+
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
 	var err error
-	var args []any
 
 	if ctx, err = d.RunContextualMods(ctx, &d); err != nil {
 		return nil, err
 	}
 
-	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,
-		len(d.With.CTEs) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	writer := queryWriter{
+		ctx:   ctx,
+		w:     w,
+		start: start,
 	}
-	args = append(args, withArgs...)
 
-	w.WriteString("DELETE FROM ")
+	if len(d.With.CTEs) > 0 {
+		args, err := d.With.WriteSQL(ctx, w, dl, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(args)
+		_, _ = w.WriteString("\n")
+	}
+
+	_, _ = w.WriteString("DELETE FROM ")
 
 	if d.Only {
-		w.WriteString("ONLY ")
+		_, _ = w.WriteString("ONLY ")
 	}
 
-	tableArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Table, true, "", "")
+	tableArgs, err := d.Table.WriteSQL(ctx, w, dl, writer.argPos())
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, tableArgs...)
+	writer.appendArgs(tableArgs)
 
-	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef,
-		d.TableRef.Expression != nil, "\nUSING ", "")
-	if err != nil {
-		return nil, err
+	if d.TableRef.Expression != nil {
+		_, _ = w.WriteString("\nUSING ")
+		usingArgs, err := d.TableRef.WriteSQL(ctx, w, dl, writer.argPos())
+		if err != nil {
+			return nil, err
+		}
+		writer.appendArgs(usingArgs)
 	}
-	args = append(args, usingArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Where,
-		len(d.Where.Conditions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(d.Where.Conditions) > 0 {
+		_, _ = w.WriteString("\nWHERE ")
+		if err := writer.writeSliceAny(d.Where.Conditions, " AND "); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, whereArgs...)
 
-	retArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Returning,
-		len(d.Returning.Expressions) > 0, "\n", "")
-	if err != nil {
-		return nil, err
+	if len(d.Returning.Expressions) > 0 {
+		_, _ = w.WriteString("\nRETURNING ")
+		if err := writer.writeSliceAny(d.Returning.Expressions, ", "); err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, retArgs...)
 
-	return args, nil
+	return writer.args, nil
 }

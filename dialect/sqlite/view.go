@@ -108,9 +108,9 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	next := *q
+	next.Query = *q.Query.Apply(queryMods...)
+	return &next
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {

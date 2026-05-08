@@ -80,16 +80,12 @@ func (v *View[T, Tslice, C]) Alias() string {
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
-		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
-			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAs())),
-				Hooks:     &v.SelectQueryHooks,
-			},
-			Scanner: v.scanner,
-		},
+		SelectQuery: Select(sm.From(v.NameAs())),
+		Scanner:     v.scanner,
+		Hooks:       &v.SelectQueryHooks,
 	}
 
-	q.Expression.AppendContextualModFunc(
+	q.SelectQuery.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
 				q.AppendSelect(v.Columns)
@@ -98,50 +94,69 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 		},
 	)
 
-	q.Apply(queryMods...)
-
-	return q
+	return q.Apply(queryMods...)
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
+	SelectQuery
+	Scanner scan.Mapper[T]
+	Hooks   *bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
+}
+
+func (q *ViewQuery[T, Ts]) Apply(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Ts] {
+	if q == nil {
+		return nil
+	}
+
+	next := *q
+	next.SelectQuery = next.SelectQuery.Apply(queryMods...)
+	return &next
 }
 
 // Count the number of matching rows
-func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
-	ctx, err := v.RunHooks(ctx, exec)
+func (q *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
+	ctx, err := q.RunHooks(ctx, exec)
 	if err != nil {
 		return 0, err
 	}
-	return bob.One(ctx, exec, asCountQuery(v.BaseQuery), scan.SingleColumnMapper[int64])
+	sql, args, err := q.AsCount().Build(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return scan.One(ctx, exec, scan.SingleColumnMapper[int64], sql, args...)
 }
 
 // Exists checks if there is any matching row
-func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	count, err := v.Count(ctx, exec)
+func (q *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
+	count, err := q.Count(ctx, exec)
 	return count > 0, err
 }
 
-// asCountQuery clones and rewrites an existing query to a count query
-func asCountQuery(query bob.BaseQuery[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
-	// clone the original query, so it's not being modified silently
-	countQuery := query.Clone()
-	// only select the count
-	countQuery.Expression.SetSelect("count(1)")
-	// don't select any preload columns
-	countQuery.Expression.SetPreloadSelect()
-	// disable mapper mods
-	countQuery.Expression.SetMapperMods()
-	// disable loaders
-	countQuery.Expression.SetLoaders()
-	// set the limit to 1
-	countQuery.Expression.SetLimit(1)
-	// remove ordering
-	countQuery.Expression.ClearOrderBy()
-	// remove group by
-	countQuery.Expression.SetGroups()
-	// remove offset
-	countQuery.Expression.SetOffset(0)
+func (q *ViewQuery[T, Ts]) One(ctx context.Context, exec bob.Executor) (T, error) {
+	return bob.One(ctx, exec, q, q.Scanner)
+}
 
-	return countQuery
+func (q *ViewQuery[T, Ts]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
+	return bob.Allx[bob.SliceTransformer[T, Ts]](ctx, exec, q, q.Scanner)
+}
+
+func (q *ViewQuery[T, Ts]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
+	return bob.Cursor(ctx, exec, q, q.Scanner)
+}
+
+func (q *ViewQuery[T, Ts]) Each(ctx context.Context, exec bob.Executor) (func(func(T, error) bool), error) {
+	return bob.Each(ctx, exec, q, q.Scanner)
+}
+
+func (q *ViewQuery[T, Ts]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
+	ctx, err := q.SelectQuery.RunHooks(ctx, exec)
+	if err != nil {
+		return ctx, err
+	}
+
+	if q.Hooks == nil {
+		return ctx, nil
+	}
+
+	return q.Hooks.RunHooks(ctx, exec, q.SelectQuery.Expression)
 }
