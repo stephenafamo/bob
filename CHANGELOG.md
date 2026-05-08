@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added MariaDB compatibility check in gen/bobgen-mysql (thanks @dumdev25)
 - Added `ALL`, `SOME`, `ANY` expressions for MySQL and PostgreSQL dialects. Added `EXISTS` expression for all dialects. (thanks @manhrev)
 - Added a customizable MySQL and PostgreSQL driver image setting for `bobgen-sql`. (thanks @manhrev)
+- Added support for Materialized Views in PostgreSQL code generation. (thanks @PudottaPommin)
 
 ### Fixed
 
