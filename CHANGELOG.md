@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix PostgreSQL `sm.With(...).SearchBreadth(...)` rendering `SEARCH DEPTH` instead of `SEARCH BREADTH` in CTE queries. (thanks @atzedus)
 - Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
 - Fix missing base type imports (e.g. `github.com/google/uuid`) in generated models when using `type_system: "database/sql"` and `uuid_pkg: google`, which could cause compile errors in generated many-to-many relation helpers. (thanks @atzedus)
 

@@ -282,7 +282,7 @@ func (c CTEChain[Q]) Materialized() CTEChain[Q] {
 func (c CTEChain[Q]) SearchBreadth(setCol string, searchCols ...string) CTEChain[Q] {
 	cte := c()
 	cte.Search = clause.CTESearch{
-		Order:   clause.SearchDepth,
+		Order:   clause.SearchBreadth,
 		Columns: searchCols,
 		Set:     setCol,
 	}
