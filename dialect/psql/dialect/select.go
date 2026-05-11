@@ -61,6 +61,10 @@ func (s SelectQuery) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Di
 		return err
 	}
 
+	if len(s.With.CTEs) > 0 {
+		w.WriteString("\n")
+	}
+
 	needsParens := false
 	if len(s.Combines.Queries) > 0 &&
 		(len(s.OrderBy.Expressions) > 0 ||
