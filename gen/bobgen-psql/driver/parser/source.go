@@ -59,9 +59,28 @@ func (w *walker) getSource(node *pg.Node, info nodeInfo, sources ...queryResult)
 		}
 		return source
 
+	case *pg.Node_RangeTableSample:
+		if sampleInfo, ok := info.children["RangeTableSample"]; ok {
+			info = sampleInfo
+		}
+		return w.getTableSampleSource(stmt.RangeTableSample, info, cloned...)
+
 	default:
 		return queryResult{}
 	}
+}
+
+func (w *walker) getTableSampleSource(sample *pg.RangeTableSample, info nodeInfo, sources ...queryResult) queryResult {
+	if sample == nil || sample.Relation == nil {
+		return queryResult{}
+	}
+
+	relationInfo, ok := info.children["Relation"]
+	if !ok {
+		return queryResult{}
+	}
+
+	return w.getSource(sample.Relation, relationInfo, sources...)
 }
 
 func (w *walker) getTableSource(sub *pg.RangeVar, info nodeInfo, sources ...queryResult) queryResult {

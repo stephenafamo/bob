@@ -39,12 +39,15 @@ type TableRef struct {
 	Columns []string
 
 	// Dialect specific modifiers
-	Only           bool        // Postgres
-	Lateral        bool        // Postgres & MySQL
-	WithOrdinality bool        // Postgres
-	IndexedBy      *string     // SQLite
-	Partitions     []string    // MySQL
-	IndexHints     []IndexHint // MySQL
+	Only            bool        // Postgres
+	TableSample     string      // Postgres
+	TableSampleArgs []any       // Postgres
+	Repeatable      any         // Postgres
+	Lateral         bool        // Postgres & MySQL
+	WithOrdinality  bool        // Postgres
+	IndexedBy       *string     // SQLite
+	Partitions      []string    // MySQL
+	IndexHints      []IndexHint // MySQL
 
 	// Joins
 	Joins []Join
@@ -61,6 +64,15 @@ func (f *TableRef) SetTableAlias(alias string, columns ...string) {
 
 func (f *TableRef) SetOnly(only bool) {
 	f.Only = only
+}
+
+func (f *TableRef) SetTableSample(method string, args ...any) {
+	f.TableSample = method
+	f.TableSampleArgs = args
+}
+
+func (f *TableRef) SetTableSampleRepeatable(seed any) {
+	f.Repeatable = seed
 }
 
 func (f *TableRef) SetLateral(lateral bool) {
@@ -111,6 +123,20 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	if f.WithOrdinality {
 		w.WriteString(" WITH ORDINALITY")
 	}
+
+	tableSampleArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.TableSampleArgs,
+		" TABLESAMPLE "+f.TableSample+"(", ", ", ")")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, tableSampleArgs...)
+
+	repeatableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), f.Repeatable,
+		f.Repeatable != nil, " REPEATABLE (", ")")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, repeatableArgs...)
 
 	_, err = bob.ExpressSlice(ctx, w, d, start, f.Partitions, " PARTITION (", ", ", ")")
 	if err != nil {
