@@ -78,7 +78,7 @@ func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Co
   return {{$tAlias.DownSingular}}Columns{
     ColumnsExpr: expr.NewColumnsExpr(
       {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
-    ).WithParent({{quote $table.Key}}),
+    ).WithParent(alias),
     tableAlias: alias,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
