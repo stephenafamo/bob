@@ -85,6 +85,38 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  `SELECT * FROM generate_series(1, 3) AS "x" ("p", "q", "s")`,
 			ExpectedArgs: nil,
 		},
+		"select from tablesample repeatable": {
+			Query: psql.Select(
+				sm.From("users").TableSample("BERNOULLI", psql.Arg(50)).Repeatable(psql.Arg(7)),
+			),
+			ExpectedSQL:  `SELECT * FROM users TABLESAMPLE BERNOULLI($1) REPEATABLE ($2)`,
+			ExpectedArgs: []any{50, 7},
+		},
+		"select from tablesample repeatable helper": {
+			Query: psql.Select(
+				sm.From("users").TableSampleBernoulli(psql.Arg(50)).Repeatable(psql.Arg(7)),
+			),
+			ExpectedSQL:  `SELECT * FROM users TABLESAMPLE BERNOULLI($1) REPEATABLE ($2)`,
+			ExpectedArgs: []any{50, 7},
+		},
+		"select join with tablesample": {
+			Query: psql.Select(
+				sm.From("users"),
+				sm.InnerJoin("events").TableSample("SYSTEM", 10).On(
+					psql.Quote("users", "id").EQ(psql.Quote("events", "user_id")),
+				),
+			),
+			ExpectedSQL: `SELECT * FROM users INNER JOIN events TABLESAMPLE SYSTEM(10) ON ("users"."id" = "events"."user_id")`,
+		},
+		"select join with tablesample helper": {
+			Query: psql.Select(
+				sm.From("users"),
+				sm.InnerJoin("events").TableSampleSystem(10).On(
+					psql.Quote("users", "id").EQ(psql.Quote("events", "user_id")),
+				),
+			),
+			ExpectedSQL: `SELECT * FROM users INNER JOIN events TABLESAMPLE SYSTEM(10) ON ("users"."id" = "events"."user_id")`,
+		},
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(
