@@ -195,6 +195,26 @@ func TestSelect(t *testing.T) {
 				sm.From("c"),
 			),
 		},
+		"CTE with search breadth": {
+			ExpectedSQL: "WITH c(id) AS (SELECT id FROM test1) SEARCH BREADTH FIRST BY id SET order_col SELECT * FROM c",
+			Query: psql.Select(
+				sm.With("c", "id").As(psql.Select(
+					sm.Columns("id"),
+					sm.From("test1"),
+				)).SearchBreadth("order_col", "id"),
+				sm.From("c"),
+			),
+		},
+		"CTE with search depth": {
+			ExpectedSQL: "WITH c(id) AS (SELECT id FROM test1) SEARCH DEPTH FIRST BY id SET order_col SELECT * FROM c",
+			Query: psql.Select(
+				sm.With("c", "id").As(psql.Select(
+					sm.Columns("id"),
+					sm.From("test1"),
+				)).SearchDepth("order_col", "id"),
+				sm.From("c"),
+			),
+		},
 		"Window function over empty frame": {
 			ExpectedSQL: "SELECT row_number() OVER () FROM c",
 			Query: psql.Select(
