@@ -8765,6 +8765,62 @@
 							"mods": "q.AppendSelect(EXPR.subExpr(7, 223))\nq.SetTable(EXPR.subExpr(229, 234))\nq.AppendWhere(EXPR.subExpr(241, 251))\n"
 						},
 						{
+							"type": 1,
+							"name": "SelectUsersTableSample",
+							"raw": "SELECT \"u\".\"id\" AS \"id\", \"u\".\"email_validated\" AS \"email_validated\", \"u\".\"primary_email\" AS \"primary_email\", \"u\".\"parent_id\" AS \"parent_id\", \"u\".\"party_id\" AS \"party_id\", \"u\".\"referrer\" AS \"referrer\" FROM users AS u TABLESAMPLE BERNOULLI(50) REPEATABLE (7)",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": null
+								},
+								{
+									"name": "email_validated",
+									"db_name": "email_validated",
+									"nullable": true,
+									"type": "bool",
+									"type_limits": null
+								},
+								{
+									"name": "primary_email",
+									"db_name": "primary_email",
+									"nullable": true,
+									"type": "string",
+									"type_limits": null
+								},
+								{
+									"name": "parent_id",
+									"db_name": "parent_id",
+									"nullable": true,
+									"type": "int32",
+									"type_limits": null
+								},
+								{
+									"name": "party_id",
+									"db_name": "party_id",
+									"nullable": true,
+									"type": "int32",
+									"type_limits": null
+								},
+								{
+									"name": "referrer",
+									"db_name": "referrer",
+									"nullable": true,
+									"type": "int32",
+									"type_limits": null
+								}
+							],
+							"args": [],
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 199))\nq.SetTable(EXPR.subExpr(205, 256))\n"
+						},
+						{
 							"type": 2,
 							"name": "InsertUser",
 							"raw": "INSERT INTO users (id, primary_email) VALUES ($1, $2)",

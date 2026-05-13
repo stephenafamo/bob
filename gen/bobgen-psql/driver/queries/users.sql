@@ -2,6 +2,10 @@
 SELECT * FROM users WHERE id IN ($1)
 ;
 
+-- SelectUsersTableSample
+SELECT u.* FROM users AS u TABLESAMPLE BERNOULLI(50) REPEATABLE (7)
+;
+
 -- InsertUser
 INSERT INTO users (id, primary_email) VALUES ($1, $2)
 ;

@@ -14,6 +14,11 @@ type Distinct struct {
 	On []any
 }
 
+const (
+	TableSampleMethodSystem    = "SYSTEM"
+	TableSampleMethodBernoulli = "BERNOULLI"
+)
+
 func (di Distinct) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString("DISTINCT")
 	return bob.ExpressSlice(ctx, w, d, start, di.On, " ON (", ", ", ")")
@@ -32,6 +37,8 @@ type fromable interface {
 	SetTable(any)
 	SetTableAlias(alias string, columns ...string)
 	SetOnly(bool)
+	SetTableSample(method string, args ...any)
+	SetTableSampleRepeatable(seed any)
 	SetLateral(bool)
 	SetWithOrdinality(bool)
 }
@@ -53,6 +60,8 @@ func (f FromChain[Q]) Apply(q Q) {
 	}
 
 	q.SetOnly(from.Only)
+	q.SetTableSample(from.TableSample, from.TableSampleArgs...)
+	q.SetTableSampleRepeatable(from.Repeatable)
 	q.SetLateral(from.Lateral)
 	q.SetWithOrdinality(from.WithOrdinality)
 }
@@ -70,6 +79,33 @@ func (f FromChain[Q]) Only() FromChain[Q] {
 	fr.Only = true
 
 	return FromChain[Q]{ref: fr}
+}
+
+func (f FromChain[Q]) TableSample(method string, args ...any) FromChain[Q] {
+	fr := f()
+	fr.TableSample = method
+	fr.TableSampleArgs = args
+
+	return FromChain[Q](func() clause.TableRef {
+		return fr
+	})
+}
+
+func (f FromChain[Q]) TableSampleSystem(args ...any) FromChain[Q] {
+	return f.TableSample(TableSampleMethodSystem, args...)
+}
+
+func (f FromChain[Q]) TableSampleBernoulli(args ...any) FromChain[Q] {
+	return f.TableSample(TableSampleMethodBernoulli, args...)
+}
+
+func (f FromChain[Q]) Repeatable(seed any) FromChain[Q] {
+	fr := f()
+	fr.Repeatable = seed
+
+	return FromChain[Q](func() clause.TableRef {
+		return fr
+	})
 }
 
 func (f FromChain[Q]) Lateral() FromChain[Q] {
@@ -139,6 +175,33 @@ func (f JoinChain[Q]) Only() JoinChain[Q] {
 	jo.To.Only = true
 
 	return JoinChain[Q]{join: jo}
+}
+
+func (f JoinChain[Q]) TableSample(method string, args ...any) JoinChain[Q] {
+	jo := f()
+	jo.To.TableSample = method
+	jo.To.TableSampleArgs = args
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
+}
+
+func (f JoinChain[Q]) TableSampleSystem(args ...any) JoinChain[Q] {
+	return f.TableSample(TableSampleMethodSystem, args...)
+}
+
+func (f JoinChain[Q]) TableSampleBernoulli(args ...any) JoinChain[Q] {
+	return f.TableSample(TableSampleMethodBernoulli, args...)
+}
+
+func (f JoinChain[Q]) Repeatable(seed any) JoinChain[Q] {
+	jo := f()
+	jo.To.Repeatable = seed
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
 func (f JoinChain[Q]) Lateral() JoinChain[Q] {
