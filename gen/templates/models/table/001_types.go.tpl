@@ -133,11 +133,6 @@ type {{$tAlias.DownSingular}}Column struct {
 	name  string
 }
 
-// Alias returns the current table alias for the column.
-func (c {{$tAlias.DownSingular}}Column) Alias() string {
-	return c.alias
-}
-
 // Name returns the unqualified column name.
 func (c {{$tAlias.DownSingular}}Column) Name() string {
 	return c.name
@@ -146,18 +141,4 @@ func (c {{$tAlias.DownSingular}}Column) Name() string {
 // ShouldOmitParens prevents automatic parenthesis wrapping in expression builders.
 func (c {{$tAlias.DownSingular}}Column) ShouldOmitParens() bool {
 	return true
-}
-
-// AliasedAs returns a copy of the column qualified by alias.
-func (c {{$tAlias.DownSingular}}Column) AliasedAs(alias string) {{$tAlias.DownSingular}}Column {
-	return {{$tAlias.DownSingular}}Column{
-		Expression: {{$.Dialect}}.Quote(alias, c.name),
-		alias:      alias,
-		name:       c.name,
-	}
-}
-
-// Unqualified returns a copy of the column without table qualification.
-func (c {{$tAlias.DownSingular}}Column) Unqualified() {{$tAlias.DownSingular}}Column {
-  return build{{$tAlias.UpSingular}}Column("", c.name)
 }
