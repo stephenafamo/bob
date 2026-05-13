@@ -30,9 +30,11 @@ func (i position) LitterDump(w io.StringWriter) {
 }
 
 type joinedInfo struct {
-	node     *pg.Node
-	info     nodeInfo
-	joinType pg.JoinType
+	node         *pg.Node
+	info         nodeInfo
+	joinType     pg.JoinType
+	usingAlias   string
+	usingColumns []string
 }
 
 func (j joinedInfo) LitterDump(w io.StringWriter) {

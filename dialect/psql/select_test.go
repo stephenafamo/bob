@@ -216,6 +216,14 @@ func TestSelect(t *testing.T) {
 				sm.LeftJoin("test2").Using("id"),
 			),
 		},
+		"join using alias": {
+			ExpectedSQL: `SELECT id FROM test1 LEFT JOIN test2 USING (id) AS "joined_id"`,
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("test1"),
+				sm.LeftJoin("test2").UsingAs("joined_id", "id"),
+			),
+		},
 		"CTE with column aliases": {
 			ExpectedSQL: "WITH c(id, data) AS (SELECT id FROM test1 LEFT JOIN test2 USING (id)) SELECT * FROM c",
 			Query: psql.Select(

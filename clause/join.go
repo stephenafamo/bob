@@ -25,6 +25,7 @@ type Join struct {
 	Natural bool
 	On      []bob.Expression
 	Using   []string
+	UsingAs string
 }
 
 func (j Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
@@ -48,7 +49,7 @@ func (j Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, st
 
 	for k, col := range j.Using {
 		if k == 0 {
-			w.WriteString(" USING(")
+			w.WriteString(" USING (")
 		} else {
 			w.WriteString(", ")
 		}
@@ -59,9 +60,13 @@ func (j Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, st
 		}
 
 		if k == len(j.Using)-1 {
-			w.WriteString(") ")
+			w.WriteString(")")
 		}
+	}
 
+	if j.UsingAs != "" {
+		w.WriteString(" AS ")
+		d.WriteQuoted(w, j.UsingAs)
 	}
 
 	return args, nil

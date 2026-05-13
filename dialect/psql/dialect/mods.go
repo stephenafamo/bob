@@ -7,7 +7,6 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/mods"
 )
 
 type Distinct struct {
@@ -33,60 +32,53 @@ func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...stri
 	})
 }
 
-type fromable interface {
-	SetTable(any)
-	SetTableAlias(alias string, columns ...string)
-	SetOnly(bool)
-	SetTableSample(method string, args ...any)
-	SetTableSampleRepeatable(seed any)
-	SetLateral(bool)
-	SetWithOrdinality(bool)
+type FromChain[Q any] struct {
+	from  func() clause.TableRef
+	joins func(*clause.TableRef)
+	apply func(Q, clause.TableRef)
 }
 
-func From[Q fromable](table any) FromChain[Q] {
-	return FromChain[Q]{ref: clause.TableRef{Expression: table}}
-}
-
-type FromChain[Q fromable] struct {
-	ref clause.TableRef
+func (f FromChain[Q]) chain(from func() clause.TableRef) FromChain[Q] {
+	return FromChain[Q]{
+		from:  from,
+		joins: f.joins,
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) Apply(q Q) {
-	from := f.ref
-
-	q.SetTable(from.Expression)
-	if from.Alias != "" {
-		q.SetTableAlias(from.Alias, from.Columns...)
+	ref := f.from()
+	if f.joins != nil {
+		f.joins(&ref)
 	}
-
-	q.SetOnly(from.Only)
-	q.SetTableSample(from.TableSample, from.TableSampleArgs...)
-	q.SetTableSampleRepeatable(from.Repeatable)
-	q.SetLateral(from.Lateral)
-	q.SetWithOrdinality(from.WithOrdinality)
+	f.apply(q, ref)
 }
 
 func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
-	fr := f.ref
+	fr := f.from()
 	fr.Alias = alias
 	fr.Columns = columns
 
-	return FromChain[Q]{ref: fr}
+	return f.chain(func() clause.TableRef {
+		return fr
+	})
 }
 
 func (f FromChain[Q]) Only() FromChain[Q] {
-	fr := f.ref
+	fr := f.from()
 	fr.Only = true
 
-	return FromChain[Q]{ref: fr}
+	return f.chain(func() clause.TableRef {
+		return fr
+	})
 }
 
 func (f FromChain[Q]) TableSample(method string, args ...any) FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.TableSample = method
 	fr.TableSampleArgs = args
 
-	return FromChain[Q](func() clause.TableRef {
+	return f.chain(func() clause.TableRef {
 		return fr
 	})
 }
@@ -100,35 +92,67 @@ func (f FromChain[Q]) TableSampleBernoulli(args ...any) FromChain[Q] {
 }
 
 func (f FromChain[Q]) Repeatable(seed any) FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.Repeatable = seed
 
-	return FromChain[Q](func() clause.TableRef {
+	return f.chain(func() clause.TableRef {
 		return fr
 	})
 }
 
 func (f FromChain[Q]) Lateral() FromChain[Q] {
-	fr := f.ref
+	fr := f.from()
 	fr.Lateral = true
 
-	return FromChain[Q]{ref: fr}
+	return f.chain(func() clause.TableRef {
+		return fr
+	})
 }
 
 func (f FromChain[Q]) WithOrdinality() FromChain[Q] {
-	fr := f.ref
+	fr := f.from()
 	fr.WithOrdinality = true
 
-	return FromChain[Q]{ref: fr}
+	return f.chain(func() clause.TableRef {
+		return fr
+	})
 }
 
-type Joinable interface{ AppendJoin(clause.Join) }
+type fromAppendable interface {
+	Joinable
+	AppendTableRef(clause.TableRef)
+}
+
+func From[Q fromAppendable](table any, joins ...JoinChain[Q]) FromChain[Q] {
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return clause.TableRef{Expression: table}
+		},
+		joins: func(ref *clause.TableRef) {
+			for _, j := range joins {
+				ref.Joins = append(ref.Joins, j())
+			}
+		},
+		apply: func(q Q, ref clause.TableRef) {
+			q.AppendTableRef(ref)
+		},
+	}
+}
+
+// Joinable is implemented by query types that JoinChain[Q] can target.
+// *SelectQuery appends to the embedded FROM TableRef; *UpdateQuery and *DeleteQuery
+// append to the last FromItems / UsingItems entry when present.
+type Joinable interface {
+	AppendJoin(clause.Join)
+}
 
 func Join[Q Joinable](typ string, e any) JoinChain[Q] {
-	return JoinChain[Q]{join: clause.Join{
-		Type: typ,
-		To:   clause.TableRef{Expression: e},
-	}}
+	return JoinChain[Q](func() clause.Join {
+		return clause.Join{
+			Type: typ,
+			To:   clause.TableRef{Expression: e},
+		}
+	})
 }
 
 func InnerJoin[Q Joinable](e any) JoinChain[Q] {
@@ -147,34 +171,33 @@ func FullJoin[Q Joinable](e any) JoinChain[Q] {
 	return Join[Q](clause.FullJoin, e)
 }
 
-func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
-	return CrossJoinChain[Q]{join: clause.Join{
-		Type: clause.CrossJoin,
-		To:   clause.TableRef{Expression: e},
-	}}
+func CrossJoin[Q Joinable](e any) JoinChain[Q] {
+	return Join[Q](clause.CrossJoin, e)
 }
 
-type JoinChain[Q Joinable] struct {
-	join clause.Join
-}
+type JoinChain[Q Joinable] func() clause.Join
 
 func (j JoinChain[Q]) Apply(q Q) {
-	q.AppendJoin(j.join)
+	q.AppendJoin(j())
 }
 
 func (j JoinChain[Q]) As(alias string, columns ...string) JoinChain[Q] {
-	jo := j.join
+	jo := j()
 	jo.To.Alias = alias
 	jo.To.Columns = columns
 
-	return JoinChain[Q]{join: jo}
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
 func (f JoinChain[Q]) Only() JoinChain[Q] {
-	jo := f.join
+	jo := f()
 	jo.To.Only = true
 
-	return JoinChain[Q]{join: jo}
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
 func (f JoinChain[Q]) TableSample(method string, args ...any) JoinChain[Q] {
@@ -205,67 +228,109 @@ func (f JoinChain[Q]) Repeatable(seed any) JoinChain[Q] {
 }
 
 func (f JoinChain[Q]) Lateral() JoinChain[Q] {
-	jo := f.join
+	jo := f()
 	jo.To.Lateral = true
 
-	return JoinChain[Q]{join: jo}
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
 func (f JoinChain[Q]) WithOrdinality() JoinChain[Q] {
-	jo := f.join
+	jo := f()
 	jo.To.WithOrdinality = true
 
-	return JoinChain[Q]{join: jo}
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-func (j JoinChain[Q]) Natural() bob.Mod[Q] {
-	jo := j.join
+func (j JoinChain[Q]) Natural() JoinChain[Q] {
+	jo := j()
 	jo.Natural = true
 
-	return mods.Join[Q](jo)
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-func (j JoinChain[Q]) On(on ...bob.Expression) bob.Mod[Q] {
-	jo := j.join
+func (j JoinChain[Q]) On(on ...bob.Expression) JoinChain[Q] {
+	jo := j()
 	jo.On = append(jo.On, on...)
 
-	return mods.Join[Q](jo)
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
-	jo := j.join
+func (j JoinChain[Q]) OnEQ(a, b bob.Expression) JoinChain[Q] {
+	jo := j()
 	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
 
-	return mods.Join[Q](jo)
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
-	jo := j.join
+func (j JoinChain[Q]) Using(using ...string) JoinChain[Q] {
+	jo := j()
 	jo.Using = using
 
-	return mods.Join[Q](jo)
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-type CrossJoinChain[Q Joinable] struct {
-	join clause.Join
+func (j JoinChain[Q]) UsingAs(alias string, using ...string) JoinChain[Q] {
+	jo := j()
+	jo.Using = using
+	jo.UsingAs = alias
+
+	return JoinChain[Q](func() clause.Join {
+		return jo
+	})
 }
 
-func (j CrossJoinChain[Q]) Apply(q Q) {
-	q.AppendJoin(j.join)
-}
-
-func (j CrossJoinChain[Q]) As(alias string, columns ...string) bob.Mod[Q] {
-	jo := j.join
-	jo.To.Alias = alias
-	jo.To.Columns = columns
-
-	return CrossJoinChain[Q]{join: jo}
-}
-
-type OrderCombined OrderBy[*SelectQuery]
+type OrderCombined clause.OrderDef
 
 func (o OrderCombined) Apply(q *SelectQuery) {
-	q.AppendCombinedOrder(clause.OrderDef(o))
+	q.CombinedOrder.AppendOrder(clause.OrderDef(o))
+}
+
+func (o OrderCombined) Asc() OrderCombined {
+	order := clause.OrderDef(o)
+	order.Direction = "ASC"
+	return OrderCombined(order)
+}
+
+func (o OrderCombined) Desc() OrderCombined {
+	order := clause.OrderDef(o)
+	order.Direction = "DESC"
+	return OrderCombined(order)
+}
+
+func (o OrderCombined) Using(operator string) OrderCombined {
+	order := clause.OrderDef(o)
+	order.Direction = "USING " + operator
+	return OrderCombined(order)
+}
+
+func (o OrderCombined) NullsFirst() OrderCombined {
+	order := clause.OrderDef(o)
+	order.Nulls = "FIRST"
+	return OrderCombined(order)
+}
+
+func (o OrderCombined) NullsLast() OrderCombined {
+	order := clause.OrderDef(o)
+	order.Nulls = "LAST"
+	return OrderCombined(order)
+}
+
+func (o OrderCombined) Collate(collationName string) OrderCombined {
+	order := clause.OrderDef(o)
+	order.Collation = collationName
+	return OrderCombined(order)
 }
 
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] clause.OrderDef
