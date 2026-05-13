@@ -74,19 +74,15 @@ type {{$tAlias.DownSingular}}R{{$.RelationLoadedName}} struct {
 
 {{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
-func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular}}Columns {
-  columnsExpr := expr.NewColumnsExpr(
-    {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
-  )
-  if tableName != "" {
-    columnsExpr = columnsExpr.WithParent(tableName)
-  }
+func build{{$tAlias.UpSingular}}Columns(alias string) {{$tAlias.DownSingular}}Columns {
   return {{$tAlias.DownSingular}}Columns{
-    ColumnsExpr: columnsExpr,
-    tableAlias: tableName,
+    ColumnsExpr: expr.NewColumnsExpr(
+      {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
+    ).WithParent({{quote $table.Key}}),
+    tableAlias: alias,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: build{{$tAlias.UpSingular}}Column(tableName, {{quote $column.Name}}),
+    {{$colAlias}}: build{{$tAlias.UpSingular}}Column(alias, {{quote $column.Name}}),
     {{end -}}
   }
 }
@@ -105,14 +101,9 @@ func (c {{$tAlias.DownSingular}}Columns) Alias() string {
   return c.tableAlias
 }
 
-// AliasedAs returns a copy of the columns set qualified by tableName.
-func ({{$tAlias.DownSingular}}Columns) AliasedAs(tableName string) {{$tAlias.DownSingular}}Columns {
-  return build{{$tAlias.UpSingular}}Columns(tableName)
-}
-
-// Unqualified returns a copy of the columns set without table qualification.
-func (c {{$tAlias.DownSingular}}Columns) Unqualified() {{$tAlias.DownSingular}}Columns {
-  return build{{$tAlias.UpSingular}}Columns("")
+// AliasedAs returns a copy of the columns set qualified by alias.
+func ({{$tAlias.DownSingular}}Columns) AliasedAs(alias string) {{$tAlias.DownSingular}}Columns {
+  return build{{$tAlias.UpSingular}}Columns(alias)
 }
 
 func build{{$tAlias.UpSingular}}Column(alias, name string) {{$tAlias.DownSingular}}Column {
