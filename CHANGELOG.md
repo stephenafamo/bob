@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `RETURNING WITH (OLD AS ..., NEW AS ...)` support for `INSERT`, `UPDATE`, `DELETE`, and `MERGE` query builders, including fluent modifiers: `im/um/dm/mm.Returning(...).WithOldAs(...).WithNewAs(...)`. (thanks @atzedus)
   - Note: `bobgen-psql` sql-to-code parsing for this syntax is currently blocked by upstream PostgreSQL parser dependency support.
 - Added PostgreSQL `TABLESAMPLE ... REPEATABLE ...` support via fluent modifiers on `sm.From(...)` and join chains. (thanks @atzedus)
+- Added PostgreSQL `JOIN ... USING (...) AS alias` support via `UsingAs(alias, cols...)` on psql join chains. (thanks @atzedus)
 
 ### Changed
 
