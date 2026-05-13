@@ -298,6 +298,19 @@ func (w *walker) addSourcesOfFromItem(from *pg.Node, fromInfo nodeInfo, sources 
 			joinType: join.Jointype,
 		}
 
+		if join.JoinUsingAlias != nil {
+			joined.usingAlias = join.JoinUsingAlias.Aliasname
+		}
+
+		if len(join.UsingClause) > 0 {
+			joined.usingColumns = make([]string, 0, len(join.UsingClause))
+			for _, using := range join.UsingClause {
+				if node := using.GetString_(); node != nil {
+					joined.usingColumns = append(joined.usingColumns, node.Sval)
+				}
+			}
+		}
+
 		joinedNodes = append(joinedNodes, joined)
 	}
 
@@ -345,6 +358,19 @@ func (w *walker) addSourcesOfFromItem(from *pg.Node, fromInfo nodeInfo, sources 
 		}
 
 		joinSources = append(joinSources, joinSource)
+
+		if j.usingAlias != "" && len(j.usingColumns) > 0 {
+			aliasSource := queryResult{
+				name:    j.usingAlias,
+				columns: make([]col, len(j.usingColumns)),
+			}
+
+			for i, name := range j.usingColumns {
+				aliasSource.columns[i] = col{name: name, nullable: true}
+			}
+
+			joinSources = append(joinSources, aliasSource)
+		}
 	}
 
 	return append(sources, joinSources...)

@@ -201,6 +201,14 @@ func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
+func (j JoinChain[Q]) UsingAs(alias string, using ...string) bob.Mod[Q] {
+	jo := j()
+	jo.Using = using
+	jo.UsingAs = alias
+
+	return mods.Join[Q](jo)
+}
+
 type CrossJoinChain[Q Joinable] func() clause.Join
 
 func (j CrossJoinChain[Q]) Apply(q Q) {
