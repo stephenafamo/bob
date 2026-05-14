@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Note: `bobgen-psql` sql-to-code parsing for this syntax is currently blocked by upstream PostgreSQL parser dependency support.
 - Added PostgreSQL `TABLESAMPLE ... REPEATABLE ...` support via fluent modifiers on `sm.From(...)` and join chains. (thanks @atzedus)
 - Added PostgreSQL `JOIN ... USING (...) AS alias` support via `UsingAs(alias, cols...)` on psql join chains. (thanks @atzedus)
+- Added PostgreSQL GROUP BY grouping-element helpers: `sm.Grouping(...)`, `sm.Rollup(...)`, `sm.Cube(...)`, and `sm.GroupingSets(...)`. (thanks @atzedus)
 
 ### Changed
 
