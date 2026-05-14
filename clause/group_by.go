@@ -56,8 +56,8 @@ func (g GroupBy) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect,
 }
 
 type GroupingSet struct {
-	Groups []bob.Expression
-	Type   string // GROUPING SET | CUBE | ROLLUP
+	Groups []any
+	Type   string // GROUPING SETS | CUBE | ROLLUP
 }
 
 func (g GroupingSet) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
@@ -68,4 +68,12 @@ func (g GroupingSet) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 
 	return args, nil
+}
+
+type Grouping struct {
+	Groups []any
+}
+
+func (g Grouping) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return bob.ExpressSlice(ctx, w, d, start, g.Groups, "(", ", ", ")")
 }

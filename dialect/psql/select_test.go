@@ -197,6 +197,30 @@ func TestSelect(t *testing.T) {
 			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
+		"group by grouped expression list": {
+			Query: psql.Select(
+				sm.Columns("region", psql.Raw("COUNT(*)")),
+				sm.From("sales"),
+				sm.GroupBy(sm.Grouping("region", "product")),
+			),
+			ExpectedSQL: `SELECT region, COUNT(*) FROM sales GROUP BY (region, product)`,
+		},
+		"group by rollup with nested group": {
+			Query: psql.Select(
+				sm.Columns("region", "product", psql.Raw("COUNT(*)")),
+				sm.From("sales"),
+				sm.GroupBy(sm.Rollup("region", sm.Grouping("product", "segment"))),
+			),
+			ExpectedSQL: `SELECT region, product, COUNT(*) FROM sales GROUP BY ROLLUP (region, (product, segment))`,
+		},
+		"group by grouping sets": {
+			Query: psql.Select(
+				sm.Columns("region", "product", psql.Raw("COUNT(*)")),
+				sm.From("sales"),
+				sm.GroupBy(sm.GroupingSets("region", sm.Grouping("product", "segment"), "()")),
+			),
+			ExpectedSQL: `SELECT region, product, COUNT(*) FROM sales GROUP BY GROUPING SETS (region, (product, segment), ())`,
+		},
 		"simple limit offset arg": {
 			Doc:          "Simple select with limit and offset as argument",
 			ExpectedSQL:  "SELECT id, name FROM users LIMIT $1 OFFSET $2",

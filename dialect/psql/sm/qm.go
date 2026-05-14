@@ -85,6 +85,22 @@ func GroupByDistinct(distinct bool) bob.Mod[*dialect.SelectQuery] {
 	return mods.GroupByDistinct[*dialect.SelectQuery](distinct)
 }
 
+func Grouping(groups ...any) clause.Grouping {
+	return clause.Grouping{Groups: groups}
+}
+
+func Rollup(groups ...any) clause.GroupingSet {
+	return clause.GroupingSet{Type: "ROLLUP", Groups: groups}
+}
+
+func Cube(groups ...any) clause.GroupingSet {
+	return clause.GroupingSet{Type: "CUBE", Groups: groups}
+}
+
+func GroupingSets(groups ...any) clause.GroupingSet {
+	return clause.GroupingSet{Type: "GROUPING SETS", Groups: groups}
+}
+
 func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
 	w := clause.Window{}
 	for _, mod := range winMods {
