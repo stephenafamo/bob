@@ -79,9 +79,7 @@ func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular
     {{range $column := $table.Columns -}}{{quote $column.Name}},{{end}}
   )
 
-  if tableName == "" {
-    columnsExpr = columnsExpr.DisableAlias()
-  } else {
+	if tableName != "" {
     columnsExpr = columnsExpr.WithParent(tableName)
   }
 

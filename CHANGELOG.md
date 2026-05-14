@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `R.Loaded` to generated models, a nested struct with one `bool` per relationship that records whether each relationship has been loaded. This disambiguates "not loaded yet" from "loaded, but no related rows" for both to-one and to-many relations. Maintained automatically by `Load*`, `Preload`, `ThenLoad`, factory builds, and to-one `Attach`/`Insert` ops. The `Loaded` alias can be changed in the bob config. (thanks @jacobmolby)
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
 - Added columns API: generated column structures now provide `Name() string` method. (thanks @atzedus)
+- Added `expr.ColumnsExpr.Expressions() expr.Expressions` helper that returns quoted per-column expressions built from current parent/name parts (e.g. `"t"."id", "t"."name"`). The returned type implements both `bob.Expression` and `bob.ParensOmitter`, and exposes `Any() []any` for `...any` APIs. (thanks @atzedus)
 - Added `bob.ParensOmitter` interface with `ShouldOmitParens() bool` to let expressions opt out of automatic parenthesis wrapping in expression builders. (thanks @atzedus)
 - Added PostgreSQL `RETURNING WITH (OLD AS ..., NEW AS ...)` support for `INSERT`, `UPDATE`, `DELETE`, and `MERGE` query builders, including fluent modifiers: `im/um/dm/mm.Returning(...).WithOldAs(...).WithNewAs(...)`. (thanks @atzedus)
   - Note: `bobgen-psql` sql-to-code parsing for this syntax is currently blocked by upstream PostgreSQL parser dependency support.
@@ -30,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix PostgreSQL `sm.With(...).SearchBreadth(...)` rendering `SEARCH DEPTH` instead of `SEARCH BREADTH` in CTE queries. (thanks @atzedus)
-- Fix generated `*Columns.Unqualified()` to disable column aliasing in `ColumnsExpr`, preventing empty-table qualifiers when building unqualified column lists. (thanks @atzedus)
 - Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
 - Fix missing base type imports (e.g. `github.com/google/uuid`) in generated models when using `type_system: "database/sql"` and `uuid_pkg: google`, which could cause compile errors in generated many-to-many relation helpers. (thanks @atzedus)
 

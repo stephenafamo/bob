@@ -204,7 +204,7 @@ func TestGetInsertedUsesExplicitColumns(t *testing.T) {
 		t.Fatalf("Build: %v", err)
 	}
 
-	expectedSQL := "SELECT `id` AS `id`, `title` AS `title`, `author_id` AS `author_id` FROM AS WHERE ((`id` IN ((?))))"
+	expectedSQL := "SELECT `id`, `title`, `author_id` FROM AS WHERE ((`id` IN ((?))))"
 	if diff, err := testutils.QueryDiff(expectedSQL, gotSQL, nil); err != nil {
 		t.Fatalf("QueryDiff: %v", err)
 	} else if diff != "" {
