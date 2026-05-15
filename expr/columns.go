@@ -27,9 +27,29 @@ type ColumnsExpr struct {
 	aliasDisabled bool
 }
 
+// Parent returns the parent columns
+func (c ColumnsExpr) Parent() []string {
+	return slices.Clone(c.parent)
+}
+
 // Names returns the names of the columns
 func (c ColumnsExpr) Names() []string {
 	return slices.Clone(c.names)
+}
+
+// AggFunc returns the aggregation function of the columns
+func (c ColumnsExpr) AggFunc() [2]string {
+	return c.aggFunc
+}
+
+// AliasPrefix returns the alias prefix of the columns
+func (c ColumnsExpr) AliasPrefix() string {
+	return c.aliasPrefix
+}
+
+// AliasDisabled returns whether aliasing is disabled for the columns
+func (c ColumnsExpr) AliasDisabled() bool {
+	return c.aliasDisabled
 }
 
 func (c ColumnsExpr) WithAggFunc(a, b string) ColumnsExpr {
@@ -37,25 +57,25 @@ func (c ColumnsExpr) WithAggFunc(a, b string) ColumnsExpr {
 	return c
 }
 
-// WithPrefix sets the parent of the columns
+// WithParent sets the parent of the columns.
 func (c ColumnsExpr) WithParent(p ...string) ColumnsExpr {
-	c.parent = p
+	c.parent = internal.FilterNonZero(p)
 	return c
 }
 
-// WithPrefix sets the prefix of the aliases of the column set
+// WithPrefix sets the prefix of the aliases of the column set.
 func (c ColumnsExpr) WithPrefix(prefix string) ColumnsExpr {
 	c.aliasPrefix = prefix
 	return c
 }
 
-// Enables adding 'AS "prefix_column_name"' when writing SQL
+// EnableAlias enables adding 'AS "prefix_column_name"' when writing SQL.
 func (c ColumnsExpr) EnableAlias() ColumnsExpr {
 	c.aliasDisabled = false
 	return c
 }
 
-// Disables add 'AS "prefix_column_name"' when writing SQL
+// DisableAlias disables adding 'AS "prefix_column_name"' when writing SQL.
 func (c ColumnsExpr) DisableAlias() ColumnsExpr {
 	c.aliasDisabled = true
 	return c
@@ -78,6 +98,16 @@ func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		return nil, nil
 	}
 
+	hasParent := false
+	for _, part := range c.parent {
+		if part != "" {
+			hasParent = true
+			break
+		}
+	}
+
+	shouldAlias := !c.aliasDisabled && (hasParent || c.aliasPrefix != "" || c.aggFunc != [2]string{})
+
 	// wrap in parenthesis and join with comma
 	for k, col := range c.names {
 		if k != 0 {
@@ -96,7 +126,7 @@ func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		d.WriteQuoted(w, col)
 		w.WriteString(c.aggFunc[1])
 
-		if !c.aliasDisabled {
+		if shouldAlias {
 			w.WriteString(" AS ")
 			d.WriteQuoted(w, c.aliasPrefix+col)
 		}
