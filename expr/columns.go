@@ -27,42 +27,29 @@ type ColumnsExpr struct {
 	aliasDisabled bool
 }
 
-// Expressions is a list of expressions that can be rendered as a comma-separated SQL list.
-type Expressions []bob.Expression
-
-func (e Expressions) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	return bob.ExpressSlice(ctx, w, d, start, e, "", commaSpace, "")
+// Parent returns the parent columns
+func (c ColumnsExpr) Parent() []string {
+	return slices.Clone(c.parent)
 }
-
-func (e Expressions) Any() []any {
-	return internal.ToAnySlice(e)
-}
-
-func (Expressions) ShouldOmitParens() bool {
-	return true
-}
-
-var (
-	_ bob.Expression    = Expressions(nil)
-	_ bob.ParensOmitter = Expressions(nil)
-)
 
 // Names returns the names of the columns
 func (c ColumnsExpr) Names() []string {
 	return slices.Clone(c.names)
 }
 
-// Expressions returns each column as an expression using current options.
-func (c ColumnsExpr) Expressions() Expressions {
-	exprs := make(Expressions, 0, len(c.names))
+// AggFunc returns the aggregation function of the columns
+func (c ColumnsExpr) AggFunc() [2]string {
+	return c.aggFunc
+}
 
-	for _, col := range c.names {
-		colExpr := c
-		colExpr.names = []string{col}
-		exprs = append(exprs, colExpr)
-	}
+// AliasPrefix returns the alias prefix of the columns
+func (c ColumnsExpr) AliasPrefix() string {
+	return c.aliasPrefix
+}
 
-	return exprs
+// AliasDisabled returns whether aliasing is disabled for the columns
+func (c ColumnsExpr) AliasDisabled() bool {
+	return c.aliasDisabled
 }
 
 func (c ColumnsExpr) WithAggFunc(a, b string) ColumnsExpr {
@@ -72,7 +59,7 @@ func (c ColumnsExpr) WithAggFunc(a, b string) ColumnsExpr {
 
 // WithParent sets the parent of the columns.
 func (c ColumnsExpr) WithParent(p ...string) ColumnsExpr {
-	c.parent = p
+	c.parent = internal.FilterNonZero(p)
 	return c
 }
 

@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `MERGE` statement SQL parser used for sql-to-code generation (thanks @atzedus)
 - Added `As(alias)` method to `bob.BaseQuery`, allowing queries (e.g. `mysql.Select(...)`) to be aliased directly when used as subqueries in a column list. (thanks @jacobmolby)
 - Added columns API: generated column structures now provide `Name() string` method. (thanks @atzedus)
-- Added `expr.ColumnsExpr.Expressions() expr.Expressions` helper that returns quoted per-column expressions built from current parent/name parts (e.g. `"t"."id", "t"."name"`). The returned type implements both `bob.Expression` and `bob.ParensOmitter`, and exposes `Any() []any` for `...any` APIs. (thanks @atzedus)
+- Added `expr.ColumnsExpr` accessor methods: `Parent() []string`, `AggFunc() [2]string`, `AliasPrefix() string`, and `AliasDisabled() bool`. `WithParent(...)` now filters empty parts, and default rendering for plain unqualified columns no longer emits redundant self-aliases (e.g. `"name"` instead of `"name" AS "name"`). (thanks @atzedus)
 - Added `bob.ParensOmitter` interface with `ShouldOmitParens() bool` to let expressions opt out of automatic parenthesis wrapping in expression builders. (thanks @atzedus)
 - Added PostgreSQL `RETURNING WITH (OLD AS ..., NEW AS ...)` support for `INSERT`, `UPDATE`, `DELETE`, and `MERGE` query builders, including fluent modifiers: `im/um/dm/mm.Returning(...).WithOldAs(...).WithNewAs(...)`. (thanks @atzedus)
   - Note: `bobgen-psql` sql-to-code parsing for this syntax is currently blocked by upstream PostgreSQL parser dependency support.
