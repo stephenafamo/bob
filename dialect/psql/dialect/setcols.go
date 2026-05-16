@@ -46,7 +46,8 @@ type SetCols[Q interface{ AppendSet(clauses ...any) }] struct {
 }
 
 // NewSetCols creates a reusable tuple-assignment builder for SET clauses.
-// It can be used by both INSERT ... ON CONFLICT DO UPDATE and MERGE UPDATE actions.
+// It can be used by UPDATE queries, INSERT ... ON CONFLICT DO UPDATE,
+// and MERGE UPDATE actions.
 func NewSetCols[Q interface{ AppendSet(clauses ...any) }](columns ...string) SetCols[Q] {
 	return SetCols[Q]{columns: columns}
 }

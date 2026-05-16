@@ -63,6 +63,14 @@ func (w Where[Q]) Apply(q Q) {
 	q.AppendWhere(w.E)
 }
 
+type WhereCurrentOf[Q interface{ SetCurrentOf(string) }] struct {
+	Cursor string
+}
+
+func (w WhereCurrentOf[Q]) Apply(q Q) {
+	q.SetCurrentOf(w.Cursor)
+}
+
 type GroupBy[Q interface{ AppendGroup(any) }] struct {
 	E any
 }

@@ -25,6 +25,10 @@ type UpdateQuery struct {
 	bob.ContextualModdable[*UpdateQuery]
 }
 
+func (u *UpdateQuery) SetCurrentOf(cursor string) {
+	u.CurrentOf = cursor
+}
+
 func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
@@ -65,17 +69,11 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 	args = append(args, fromArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Where,
-		len(u.Where.Conditions) > 0, "\n", "")
+	whereArgs, err := writeWhereAndCurrentOf(ctx, w, d, start+len(args), u.Where, u.CurrentOf)
 	if err != nil {
 		return nil, err
 	}
 	args = append(args, whereArgs...)
-
-	if u.CurrentOf != "" {
-		w.WriteString("\nWHERE CURRENT OF ")
-		w.WriteString(u.CurrentOf)
-	}
 
 	retArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Returning,
 		len(u.Returning.Expressions) > 0, "\n", "")

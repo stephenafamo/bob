@@ -1,8 +1,10 @@
 package psql_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
@@ -104,4 +106,17 @@ func TestUpdateReturningWith(t *testing.T) {
 	}
 
 	testutils.RunTests(t, examples, nil)
+}
+
+func TestUpdateWhereCurrentOfConflict(t *testing.T) {
+	_, _, err := bob.Build(context.Background(), psql.Update(
+		um.Table("films"),
+		um.SetCol("kind").ToArg("Dramatic"),
+		um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
+		um.WhereCurrentOf("c_films"),
+	))
+
+	if err == nil {
+		t.Fatal("expected error when both WHERE and WHERE CURRENT OF are set")
+	}
 }
