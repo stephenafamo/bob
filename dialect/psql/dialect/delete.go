@@ -15,17 +15,13 @@ type DeleteQuery struct {
 	Only  bool
 	Table clause.TableRef
 	clause.TableRef
-	CurrentOf string
+	clause.WhereCurrentOf
 	clause.Where
 	clause.Returning
 
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]
-}
-
-func (d *DeleteQuery) SetCurrentOf(cursor string) {
-	d.CurrentOf = cursor
 }
 
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
@@ -62,7 +58,7 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, usingArgs...)
 
-	whereArgs, err := writeWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.CurrentOf)
+	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)
 	if err != nil {
 		return nil, err
 	}
