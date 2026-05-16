@@ -8,7 +8,7 @@ import (
 	clause "github.com/stephenafamo/bob/clause"
 )
 
-// Trying to represent the select query structure as documented in
+// UpdateQuery tries to represent the UPDATE query structure as documented in
 // https://www.postgresql.org/docs/current/sql-update.html
 type UpdateQuery struct {
 	clause.With
@@ -16,6 +16,7 @@ type UpdateQuery struct {
 	Table clause.TableRef
 	clause.Set
 	clause.TableRef
+	CurrentOf string
 	clause.Where
 	clause.Returning
 
@@ -70,6 +71,11 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		return nil, err
 	}
 	args = append(args, whereArgs...)
+
+	if u.CurrentOf != "" {
+		w.WriteString("\nWHERE CURRENT OF ")
+		w.WriteString(u.CurrentOf)
+	}
 
 	retArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Returning,
 		len(u.Returning.Expressions) > 0, "\n", "")
