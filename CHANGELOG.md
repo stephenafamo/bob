@@ -21,8 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `JOIN ... USING (...) AS alias` support via `UsingAs(alias, cols...)` on psql join chains. (thanks @atzedus)
 - Added PostgreSQL GROUP BY grouping-element helpers: `sm.Grouping(...)`, `sm.Rollup(...)`, `sm.Cube(...)`, and `sm.GroupingSets(...)`. (thanks @atzedus)
 - Added PostgreSQL `im.ConflictTarget(...)` helper for composing `ON CONFLICT` target items with optional `.Collate(...)` and `.OpClass(...)` modifiers. (thanks @atzedus)
-- Added PostgreSQL UPDATE tuple-assignment helper `um.SetCols(columns...)` with `.ToExprs(...)`, `.ToRow(...)`, and `.ToQuery(...)` support. (thanks @atzedus)
-- Added PostgreSQL UPDATE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
+- Added PostgreSQL UPDATE/MERGE tuple-assignment helper `um.SetCols(columns...)` with `.ToExprs(...)`, `.ToRow(...)`, and `.ToQuery(...)` support. (thanks @atzedus)
+- Added PostgreSQL UPDATE/DELETE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
 
 ### Changed
 

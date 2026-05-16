@@ -96,10 +96,8 @@ func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
 	return mods.Where[*dialect.UpdateQuery]{E: e}
 }
 
-func WhereCurrentOf(cursor string) bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(u *dialect.UpdateQuery) {
-		u.CurrentOf = cursor
-	})
+func WhereCurrentOf(cursor string) mods.WhereCurrentOf[*dialect.UpdateQuery] {
+	return mods.WhereCurrentOf[*dialect.UpdateQuery]{Cursor: cursor}
 }
 
 func Returning(clauses ...any) mods.Returning[*dialect.UpdateQuery] {

@@ -66,6 +66,10 @@ func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
 	return mods.Where[*dialect.DeleteQuery]{E: e}
 }
 
+func WhereCurrentOf(cursor string) mods.WhereCurrentOf[*dialect.DeleteQuery] {
+	return mods.WhereCurrentOf[*dialect.DeleteQuery]{Cursor: cursor}
+}
+
 func Returning(clauses ...any) mods.Returning[*dialect.DeleteQuery] {
 	return mods.Returning[*dialect.DeleteQuery](clauses)
 }
