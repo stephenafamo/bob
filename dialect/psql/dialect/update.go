@@ -16,17 +16,13 @@ type UpdateQuery struct {
 	Table clause.TableRef
 	clause.Set
 	clause.TableRef
-	CurrentOf string
+	clause.WhereCurrentOf
 	clause.Where
 	clause.Returning
 
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*UpdateQuery]
-}
-
-func (u *UpdateQuery) SetCurrentOf(cursor string) {
-	u.CurrentOf = cursor
 }
 
 func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
@@ -69,7 +65,7 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 	args = append(args, fromArgs...)
 
-	whereArgs, err := writeWhereAndCurrentOf(ctx, w, d, start+len(args), u.Where, u.CurrentOf)
+	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, d, start+len(args), u.Where, u.WhereCurrentOf)
 	if err != nil {
 		return nil, err
 	}
