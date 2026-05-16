@@ -1,9 +1,6 @@
 package mm
 
 import (
-	"context"
-	"io"
-
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
@@ -11,36 +8,6 @@ import (
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
-
-// columnsAssignment represents (columns...) = [ROW] (values...) or (columns...) = (subquery)
-type columnsAssignment struct {
-	cols   []bob.Expression
-	values []any // bob.Expression values or a single bob.Query for subquery
-	isRow  bool
-}
-
-func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	w.WriteString("(")
-	colArgs, err := bob.ExpressSlice(ctx, w, d, start, a.cols, "", ", ", "")
-	if err != nil {
-		return nil, err
-	}
-
-	w.WriteString(") = ")
-
-	if a.isRow {
-		w.WriteString("ROW ")
-	}
-
-	w.WriteString("(")
-	valArgs, err := bob.ExpressSlice(ctx, w, d, start+len(colArgs), a.values, "", ", ", "")
-	if err != nil {
-		return nil, err
-	}
-	w.WriteString(")")
-
-	return append(colArgs, valArgs...), nil
-}
 
 // With adds a WITH clause (CTE) to the MERGE statement.
 func With(name string, columns ...string) dialect.CTEChain[*dialect.MergeQuery] {
@@ -285,41 +252,8 @@ func SetCol(column string) mods.Set[*UpdateAction] {
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
-func SetCols(columns ...string) SetColsChain {
-	return SetColsChain{columns: columns}
-}
-
-type SetColsChain struct {
-	columns []string
-}
-
-func (s SetColsChain) colExprs() []bob.Expression {
-	cols := make([]bob.Expression, len(s.columns))
-	for i, c := range s.columns {
-		cols[i] = expr.Quote(c)
-	}
-	return cols
-}
-
-// ToRow sets columns to ROW of expressions: (columns...) = ROW (expressions...)
-func (s SetColsChain) ToRow(values ...bob.Expression) bob.Mod[*UpdateAction] {
-	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		u.Set = append(u.Set, columnsAssignment{cols: s.colExprs(), values: internal.ToAnySlice(values), isRow: true})
-	})
-}
-
-// ToExprs sets columns to expressions: (columns...) = (expressions...)
-func (s SetColsChain) ToExprs(values ...bob.Expression) bob.Mod[*UpdateAction] {
-	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		u.Set = append(u.Set, columnsAssignment{cols: s.colExprs(), values: internal.ToAnySlice(values)})
-	})
-}
-
-// ToQuery sets columns from a subquery: (columns...) = (subquery)
-func (s SetColsChain) ToQuery(q bob.Query) bob.Mod[*UpdateAction] {
-	return bob.ModFunc[*UpdateAction](func(u *UpdateAction) {
-		u.Set = append(u.Set, columnsAssignment{cols: s.colExprs(), values: []any{q}})
-	})
+func SetCols(columns ...string) dialect.SetCols[*UpdateAction] {
+	return dialect.NewSetCols[*UpdateAction](columns...)
 }
 
 // InsertAction collects options for WHEN ... THEN INSERT actions.

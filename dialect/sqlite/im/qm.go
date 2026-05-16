@@ -72,13 +72,7 @@ func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
 }
 
 func OnConflict(columns ...any) mods.Conflict[*dialect.InsertQuery] {
-	return mods.Conflict[*dialect.InsertQuery](func() clause.ConflictClause {
-		return clause.ConflictClause{
-			Target: clause.ConflictTarget{
-				Columns: columns,
-			},
-		}
-	})
+	return mods.ConflictColumns[*dialect.InsertQuery](columns...)
 }
 
 func Returning(clauses ...any) bob.Mod[*dialect.InsertQuery] {
