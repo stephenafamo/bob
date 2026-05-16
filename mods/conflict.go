@@ -7,6 +7,31 @@ import (
 
 type Conflict[Q interface{ SetConflict(bob.Expression) }] func() clause.ConflictClause
 
+// ConflictColumns creates an ON CONFLICT clause initialized with target columns.
+// Additional target details can be provided by passing richer target item values
+// to dialect-level OnConflict(...) helpers.
+func ConflictColumns[Q interface{ SetConflict(bob.Expression) }](columns ...any) Conflict[Q] {
+	return Conflict[Q](func() clause.ConflictClause {
+		return clause.ConflictClause{
+			Target: clause.ConflictTarget{
+				Columns: columns,
+			},
+		}
+	})
+}
+
+// ConflictOnConstraint creates an ON CONFLICT clause initialized with
+// ON CONSTRAINT <constraint> target selection.
+func ConflictOnConstraint[Q interface{ SetConflict(bob.Expression) }](constraint string) Conflict[Q] {
+	return Conflict[Q](func() clause.ConflictClause {
+		return clause.ConflictClause{
+			Target: clause.ConflictTarget{
+				Constraint: constraint,
+			},
+		}
+	})
+}
+
 func (s Conflict[Q]) Apply(q Q) {
 	q.SetConflict(s())
 }
