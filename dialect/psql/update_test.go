@@ -1,8 +1,10 @@
 package psql_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
@@ -32,6 +34,40 @@ func TestUpdate(t *testing.T) {
 			  WHERE (accounts.name = $1)
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
+		},
+		"set tuple columns from row": {
+			Query: psql.Update(
+				um.Table("weather"),
+				um.SetCols("temp_lo", "temp_hi", "prcp").ToRow(
+					psql.Raw("temp_lo + 1"),
+					psql.Raw("temp_lo + 15"),
+					psql.Raw("DEFAULT"),
+				),
+				um.Where(psql.Quote("city").EQ(psql.Arg("San Francisco"))),
+			),
+			ExpectedSQL:  `UPDATE weather SET (temp_lo, temp_hi, prcp) = ROW (temp_lo + 1, temp_lo + 15, DEFAULT) WHERE (city = $1)`,
+			ExpectedArgs: []any{"San Francisco"},
+		},
+		"set tuple columns from sub-select": {
+			Query: psql.Update(
+				um.Table("accounts"),
+				um.SetCols("contact_first_name", "contact_last_name").ToQuery(psql.Select(
+					sm.Columns("first_name", "last_name"),
+					sm.From("employees"),
+					sm.Where(psql.Quote("employees", "id").EQ(psql.Quote("accounts", "sales_person"))),
+				)),
+			),
+			ExpectedSQL: `UPDATE accounts SET (contact_first_name, contact_last_name) =
+			  (SELECT first_name, last_name FROM employees WHERE (employees.id = accounts.sales_person))`,
+		},
+		"where current of": {
+			Query: psql.Update(
+				um.Table("films"),
+				um.SetCol("kind").ToArg("Dramatic"),
+				um.WhereCurrentOf("c_films"),
+			),
+			ExpectedSQL:  `UPDATE films SET "kind" = $1 WHERE CURRENT OF c_films`,
+			ExpectedArgs: []any{"Dramatic"},
 		},
 		"with sub-select": {
 			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 WHERE (id =
@@ -70,4 +106,17 @@ func TestUpdateReturningWith(t *testing.T) {
 	}
 
 	testutils.RunTests(t, examples, nil)
+}
+
+func TestUpdateWhereCurrentOfConflict(t *testing.T) {
+	_, _, err := bob.Build(context.Background(), psql.Update(
+		um.Table("films"),
+		um.SetCol("kind").ToArg("Dramatic"),
+		um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
+		um.WhereCurrentOf("c_films"),
+	))
+
+	if err == nil {
+		t.Fatal("expected error when both WHERE and WHERE CURRENT OF are set")
+	}
 }

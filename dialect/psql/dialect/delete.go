@@ -8,13 +8,14 @@ import (
 	"github.com/stephenafamo/bob/clause"
 )
 
-// Trying to represent the select query structure as documented in
+// DeleteQuery tries to represent the DELETE query structure as documented in
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
 	clause.With
 	Only  bool
 	Table clause.TableRef
 	clause.TableRef
+	clause.WhereCurrentOf
 	clause.Where
 	clause.Returning
 
@@ -57,8 +58,7 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, usingArgs...)
 
-	whereArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.Where,
-		len(d.Where.Conditions) > 0, "\n", "")
+	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)
 	if err != nil {
 		return nil, err
 	}

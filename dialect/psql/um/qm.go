@@ -49,6 +49,11 @@ func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]([]string{from})
 }
 
+// SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
+func SetCols(columns ...string) dialect.SetCols[*dialect.UpdateQuery] {
+	return dialect.NewSetCols[*dialect.UpdateQuery](columns...)
+}
+
 func From(table any) dialect.FromChain[*dialect.UpdateQuery] {
 	return dialect.From[*dialect.UpdateQuery](table)
 }
@@ -89,6 +94,10 @@ func CrossJoin(e any) dialect.CrossJoinChain[*dialect.UpdateQuery] {
 
 func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
 	return mods.Where[*dialect.UpdateQuery]{E: e}
+}
+
+func WhereCurrentOf(cursor string) mods.WhereCurrentOf[*dialect.UpdateQuery] {
+	return mods.WhereCurrentOf[*dialect.UpdateQuery]{Cursor: cursor}
 }
 
 func Returning(clauses ...any) mods.Returning[*dialect.UpdateQuery] {

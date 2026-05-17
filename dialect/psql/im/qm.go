@@ -65,23 +65,11 @@ func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
 
 // The column to target. Will auto add brackets
 func OnConflict(columns ...any) mods.Conflict[*dialect.InsertQuery] {
-	return mods.Conflict[*dialect.InsertQuery](func() clause.ConflictClause {
-		return clause.ConflictClause{
-			Target: clause.ConflictTarget{
-				Columns: columns,
-			},
-		}
-	})
+	return mods.ConflictColumns[*dialect.InsertQuery](columns...)
 }
 
 func OnConflictOnConstraint(constraint string) mods.Conflict[*dialect.InsertQuery] {
-	return mods.Conflict[*dialect.InsertQuery](func() clause.ConflictClause {
-		return clause.ConflictClause{
-			Target: clause.ConflictTarget{
-				Constraint: constraint,
-			},
-		}
-	})
+	return mods.ConflictOnConstraint[*dialect.InsertQuery](constraint)
 }
 
 func Returning(clauses ...any) mods.Returning[*dialect.InsertQuery] {
@@ -100,6 +88,11 @@ func Set(sets ...bob.Expression) bob.Mod[*clause.ConflictClause] {
 
 func SetCol(from string) mods.Set[*clause.ConflictClause] {
 	return mods.Set[*clause.ConflictClause]{from}
+}
+
+// SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
+func SetCols(columns ...string) dialect.SetCols[*clause.ConflictClause] {
+	return dialect.NewSetCols[*clause.ConflictClause](columns...)
 }
 
 func SetExcluded(cols ...string) bob.Mod[*clause.ConflictClause] {
