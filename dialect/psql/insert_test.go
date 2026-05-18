@@ -260,6 +260,18 @@ func TestInsert(t *testing.T) {
 			ExpectedSQL:  `INSERT INTO users ("id", "first_name", "last_name") VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET ("first_name", "last_name") = (SELECT first_name, last_name FROM archived_users WHERE archived_users.id = EXCLUDED.id)`,
 			ExpectedArgs: []any{1, "Thomas", "Anderson"},
 		},
+		"insert with excluded in where": {
+			Query: psql.Insert(
+				im.Into("films"),
+				im.Values(psql.Arg("UA502", "Bananas")),
+				im.OnConflict("id").DoUpdate(
+					im.SetExcluded("title"),
+					im.Where(im.Excluded("id").EQ(psql.Arg(1))),
+				),
+			),
+			ExpectedSQL:  `INSERT INTO films VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title WHERE EXCLUDED.id = $3`,
+			ExpectedArgs: []any{"UA502", "Bananas", 1},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
