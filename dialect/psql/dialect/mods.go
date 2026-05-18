@@ -44,55 +44,70 @@ type fromable interface {
 }
 
 func From[Q fromable](table any) FromChain[Q] {
-	return FromChain[Q](func() clause.TableRef {
-		return clause.TableRef{Expression: table}
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return clause.TableRef{Expression: table}
+		},
+		apply: func(q Q, from clause.TableRef) {
+			q.SetTable(from.Expression)
+			if from.Alias != "" {
+				q.SetTableAlias(from.Alias, from.Columns...)
+			}
+
+			q.SetOnly(from.Only)
+			q.SetTableSample(from.TableSample, from.TableSampleArgs...)
+			q.SetTableSampleRepeatable(from.Repeatable)
+			q.SetLateral(from.Lateral)
+			q.SetWithOrdinality(from.WithOrdinality)
+		},
+	}
 }
 
-type FromChain[Q fromable] func() clause.TableRef
+type FromChain[Q any] struct {
+	from  func() clause.TableRef
+	apply func(Q, clause.TableRef)
+}
 
 func (f FromChain[Q]) Apply(q Q) {
-	from := f()
-
-	q.SetTable(from.Expression)
-	if from.Alias != "" {
-		q.SetTableAlias(from.Alias, from.Columns...)
-	}
-
-	q.SetOnly(from.Only)
-	q.SetTableSample(from.TableSample, from.TableSampleArgs...)
-	q.SetTableSampleRepeatable(from.Repeatable)
-	q.SetLateral(from.Lateral)
-	q.SetWithOrdinality(from.WithOrdinality)
+	f.apply(q, f.from())
 }
 
 func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.Alias = alias
 	fr.Columns = columns
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) Only() FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.Only = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) TableSample(method string, args ...any) FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.TableSample = method
 	fr.TableSampleArgs = args
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) TableSampleSystem(args ...any) FromChain[Q] {
@@ -104,30 +119,52 @@ func (f FromChain[Q]) TableSampleBernoulli(args ...any) FromChain[Q] {
 }
 
 func (f FromChain[Q]) Repeatable(seed any) FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.Repeatable = seed
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) Lateral() FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.Lateral = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
 }
 
 func (f FromChain[Q]) WithOrdinality() FromChain[Q] {
-	fr := f()
+	fr := f.from()
 	fr.WithOrdinality = true
 
-	return FromChain[Q](func() clause.TableRef {
-		return fr
-	})
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return fr
+		},
+		apply: f.apply,
+	}
+}
+
+type fromAppendable interface{ AppendTableRef(clause.TableRef) }
+
+func FromAppend[Q fromAppendable](table any) FromChain[Q] {
+	return FromChain[Q]{
+		from: func() clause.TableRef {
+			return clause.TableRef{Expression: table}
+		},
+		apply: func(q Q, from clause.TableRef) {
+			q.AppendTableRef(from)
+		},
+	}
 }
 
 type Joinable interface{ AppendJoin(clause.Join) }

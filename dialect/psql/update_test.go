@@ -35,6 +35,42 @@ func TestUpdate(t *testing.T) {
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
+		"with from append": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.FromAppend("accounts"),
+				um.FromAppend("departments"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts, departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with from and from append": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.FromAppend("departments"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts, departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with from append then from override": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.FromAppend("accounts"),
+				um.From("departments"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
 		"set tuple columns from row": {
 			Query: psql.Update(
 				um.Table("weather"),

@@ -42,6 +42,10 @@ func Using(table any) dialect.FromChain[*dialect.DeleteQuery] {
 	return dialect.From[*dialect.DeleteQuery](table)
 }
 
+func UsingAppend(table any) dialect.FromChain[*dialect.DeleteQuery] {
+	return dialect.FromAppend[*dialect.DeleteQuery](table)
+}
+
 func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.InnerJoin[*dialect.DeleteQuery](e)
 }

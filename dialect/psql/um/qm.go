@@ -58,6 +58,10 @@ func From(table any) dialect.FromChain[*dialect.UpdateQuery] {
 	return dialect.From[*dialect.UpdateQuery](table)
 }
 
+func FromAppend(table any) dialect.FromChain[*dialect.UpdateQuery] {
+	return dialect.FromAppend[*dialect.UpdateQuery](table)
+}
+
 func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*dialect.UpdateQuery] {
 	var table any
 
