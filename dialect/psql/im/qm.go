@@ -99,8 +99,8 @@ func SetCols(columns ...string) dialect.SetCols[*clause.ConflictClause] {
 //
 //	SQL: EXCLUDED."col"
 //	Go: im.Excluded("col")
-func Excluded(column string) bob.Expression {
-	return expr.Glue(expr.Raw("EXCLUDED."), expr.Quote(column))
+func Excluded(column string) dialect.Expression {
+	return dialect.NewExpression(expr.Glue(expr.Raw("EXCLUDED."), expr.Quote(column)))
 }
 
 func SetExcluded(cols ...string) bob.Mod[*clause.ConflictClause] {
