@@ -104,8 +104,23 @@ func TestInsert(t *testing.T) {
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT ON CONSTRAINT distributors_pkey DO UPDATE
-				SET "dname" = EXCLUDED. "dname"
+				SET dname = EXCLUDED.dname
 				WHERE (d.zipcode <> '21201')`,
+			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
+		},
+		"upsert using excluded helper in set": {
+			Query: psql.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.Values(psql.Arg(9, "Sentry Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.SetCol("dname").To(im.Excluded("dname")),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+			   VALUES ($1, $2), ($3, $4)
+			   ON CONFLICT (did) DO UPDATE
+			   SET dname = EXCLUDED.dname`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 		"insert overriding system value": {

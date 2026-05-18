@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `im.ConflictTarget(...)` helper for composing `ON CONFLICT` target items with optional `.Collate(...)` and `.OpClass(...)` modifiers. (thanks @atzedus)
 - Added PostgreSQL UPDATE/MERGE tuple-assignment helper `um.SetCols(columns...)` with `.ToExprs(...)`, `.ToRow(...)`, and `.ToQuery(...)` support. (thanks @atzedus)
 - Added PostgreSQL UPDATE/DELETE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
+- Added `expr.Glue(exprs...)` and `expr.NoSep` sentinel to join expressions without any separator. The existing `expr.Join` default (space) is unchanged. (thanks @atzedus)
+- Added `im.Excluded(column)` helper (PostgreSQL and SQLite) for `ON CONFLICT DO UPDATE` assignments — renders as `EXCLUDED."col"` with no extra space, reused internally by `im.SetExcluded(...)` and available for direct use in `im.SetCol(...).To(...)`. (thanks @atzedus)
 
 ### Changed
 
