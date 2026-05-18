@@ -61,30 +61,9 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, tableArgs...)
 
-	hasUsing := d.TableRef.Expression != nil || len(d.UsingItems) > 0
-	if hasUsing {
-		w.WriteString("\nUSING ")
-
-		if d.TableRef.Expression != nil {
-			usingArgs, err := bob.Express(ctx, w, dl, start+len(args), d.TableRef)
-			if err != nil {
-				return nil, err
-			}
-			args = append(args, usingArgs...)
-		}
-
-		if len(d.UsingItems) > 0 {
-			prefix := ""
-			if d.TableRef.Expression != nil {
-				prefix = ", "
-			}
-
-			itemArgs, err := bob.ExpressSlice(ctx, w, dl, start+len(args), d.UsingItems, prefix, ", ", "")
-			if err != nil {
-				return nil, err
-			}
-			args = append(args, itemArgs...)
-		}
+	args, err = writeDeleteUsing(ctx, w, dl, start+len(args), args, d.TableRef, d.UsingItems)
+	if err != nil {
+		return nil, err
 	}
 
 	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)
@@ -100,5 +79,37 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, retArgs...)
 
+	return args, nil
+}
+
+func writeDeleteUsing(
+	ctx context.Context, w io.StringWriter, dl bob.Dialect, start int,
+	args []any, tableRef clause.TableRef, usingItems []clause.TableRef,
+) ([]any, error) {
+	if tableRef.Expression == nil && len(usingItems) == 0 {
+		return args, nil
+	}
+	w.WriteString("\nUSING ")
+
+	if tableRef.Expression != nil {
+		usingArgs, err := bob.Express(ctx, w, dl, start, tableRef)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, usingArgs...)
+	}
+
+	if len(usingItems) > 0 {
+		prefix := ""
+		if tableRef.Expression != nil {
+			prefix = ", "
+		}
+
+		itemArgs, err := bob.ExpressSlice(ctx, w, dl, start+len(args), usingItems, prefix, ", ", "")
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, itemArgs...)
+	}
 	return args, nil
 }

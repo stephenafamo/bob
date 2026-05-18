@@ -68,30 +68,9 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 	args = append(args, setArgs...)
 
-	hasFrom := u.TableRef.Expression != nil || len(u.FromItems) > 0
-	if hasFrom {
-		w.WriteString("\nFROM ")
-
-		if u.TableRef.Expression != nil {
-			fromArgs, err := bob.Express(ctx, w, d, start+len(args), u.TableRef)
-			if err != nil {
-				return nil, err
-			}
-			args = append(args, fromArgs...)
-		}
-
-		if len(u.FromItems) > 0 {
-			prefix := ""
-			if u.TableRef.Expression != nil {
-				prefix = ", "
-			}
-
-			itemArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), u.FromItems, prefix, ", ", "")
-			if err != nil {
-				return nil, err
-			}
-			args = append(args, itemArgs...)
-		}
+	args, err = writeUpdateFrom(ctx, w, d, start+len(args), args, u.TableRef, u.FromItems)
+	if err != nil {
+		return nil, err
 	}
 
 	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, d, start+len(args), u.Where, u.WhereCurrentOf)
@@ -107,5 +86,37 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 	args = append(args, retArgs...)
 
+	return args, nil
+}
+
+func writeUpdateFrom(
+	ctx context.Context, w io.StringWriter, d bob.Dialect, start int,
+	args []any, tableRef clause.TableRef, fromItems []clause.TableRef,
+) ([]any, error) {
+	if tableRef.Expression == nil && len(fromItems) == 0 {
+		return args, nil
+	}
+	w.WriteString("\nFROM ")
+
+	if tableRef.Expression != nil {
+		fromArgs, err := bob.Express(ctx, w, d, start, tableRef)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, fromArgs...)
+	}
+
+	if len(fromItems) > 0 {
+		prefix := ""
+		if tableRef.Expression != nil {
+			prefix = ", "
+		}
+
+		itemArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), fromItems, prefix, ", ", "")
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, itemArgs...)
+	}
 	return args, nil
 }
