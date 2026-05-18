@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `im.ConflictTarget(...)` helper for composing `ON CONFLICT` target items with optional `.Collate(...)` and `.OpClass(...)` modifiers. (thanks @atzedus)
 - Added PostgreSQL UPDATE/MERGE tuple-assignment helper `um.SetCols(columns...)` with `.ToExprs(...)`, `.ToRow(...)`, and `.ToQuery(...)` support. (thanks @atzedus)
 - Added PostgreSQL UPDATE/DELETE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
+- Added PostgreSQL `UPDATE ... FROM` and `DELETE ... USING` append modifiers: `um.FromAppend(...)` and `dm.UsingAppend(...)`, enabling multiple `from_item` sources without breaking existing APIs. `From/Using` keep their original override behavior (last call wins), while `FromAppend/UsingAppend` add additional sources. Mixed usage is supported: `From/Using` after append resets to a single source; append after `From/Using` extends the list. (thanks @atzedus)
 
 ### Changed
 
