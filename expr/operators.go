@@ -69,11 +69,3 @@ func (s Join) WriteSQLTo(ctx context.Context, w io.StringWriter, d bob.Dialect, 
 
 	return bob.ExpressSliceTo(ctx, w, d, start, s.Exprs, "", sep, "", args)
 }
-
-// Glue joins expressions with no separator between them.
-//
-//	SQL: EXCLUDED."col"
-//	Go: expr.Glue(expr.Raw("EXCLUDED."), expr.Quote("col"))
-func Glue(exprs ...bob.Expression) Join {
-	return Join{Exprs: exprs, Sep: NoSep}
-}
