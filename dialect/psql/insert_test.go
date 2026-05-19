@@ -104,8 +104,23 @@ func TestInsert(t *testing.T) {
 			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
 				VALUES ($1, $2), ($3, $4)
 				ON CONFLICT ON CONSTRAINT distributors_pkey DO UPDATE
-				SET "dname" = EXCLUDED. "dname"
+				SET dname = EXCLUDED.dname
 				WHERE (d.zipcode <> '21201')`,
+			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
+		},
+		"upsert using excluded helper in set": {
+			Query: psql.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.Values(psql.Arg(9, "Sentry Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.SetCol("dname").To(im.Excluded("dname")),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+			   VALUES ($1, $2), ($3, $4)
+			   ON CONFLICT (did) DO UPDATE
+			   SET dname = EXCLUDED.dname`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 		"insert overriding system value": {
@@ -244,6 +259,18 @@ func TestInsert(t *testing.T) {
 			),
 			ExpectedSQL:  `INSERT INTO users ("id", "first_name", "last_name") VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET ("first_name", "last_name") = (SELECT first_name, last_name FROM archived_users WHERE archived_users.id = EXCLUDED.id)`,
 			ExpectedArgs: []any{1, "Thomas", "Anderson"},
+		},
+		"insert with excluded in where": {
+			Query: psql.Insert(
+				im.Into("films"),
+				im.Values(psql.Arg("UA502", "Bananas")),
+				im.OnConflict("id").DoUpdate(
+					im.SetExcluded("title"),
+					im.Where(im.Excluded("id").EQ(psql.Arg(1))),
+				),
+			),
+			ExpectedSQL:  `INSERT INTO films VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title WHERE EXCLUDED.id = $3`,
+			ExpectedArgs: []any{"UA502", "Bananas", 1},
 		},
 	}
 

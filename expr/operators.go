@@ -40,7 +40,11 @@ func OP(operator string, left, right any) bob.Expression {
 	}
 }
 
-// If no separator, a space is used
+// NoSep can be assigned to Join.Sep to join expressions with no separator at all.
+// The zero value of Sep (empty string) still defaults to a single space for backward compatibility.
+const NoSep = "\x00"
+
+// If Sep is empty, a space is used. Set Sep to NoSep to use no separator.
 type Join struct {
 	Exprs []bob.Expression
 	Sep   string
@@ -48,7 +52,10 @@ type Join struct {
 
 func (s Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	sep := s.Sep
-	if sep == "" {
+	switch sep {
+	case NoSep:
+		sep = ""
+	case "":
 		sep = " "
 	}
 
