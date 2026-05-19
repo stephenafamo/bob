@@ -95,7 +95,12 @@ func SetCol(from string) mods.Set[*clause.ConflictClause] {
 
 // Excluded references a column from the EXCLUDED pseudo-table in ON CONFLICT DO UPDATE.
 func Excluded(column string) dialect.Expression {
-	return dialect.Expression{}.New(expr.Glue(expr.Raw("EXCLUDED."), expr.Quote(column)))
+	return dialect.Expression{}.New(
+		expr.Join{
+			Exprs: []bob.Expression{expr.Raw("EXCLUDED."), expr.Quote(column)},
+			Sep:   expr.NoSep,
+		},
+	)
 }
 
 func SetExcluded(cols ...string) bob.Mod[*clause.ConflictClause] {
