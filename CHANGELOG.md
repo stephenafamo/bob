@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL `im.ConflictTarget(...)` helper for composing `ON CONFLICT` target items with optional `.Collate(...)` and `.OpClass(...)` modifiers. (thanks @atzedus)
 - Added PostgreSQL UPDATE/MERGE tuple-assignment helper `um.SetCols(columns...)` with `.ToExprs(...)`, `.ToRow(...)`, and `.ToQuery(...)` support. (thanks @atzedus)
 - Added PostgreSQL UPDATE/DELETE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
-- Added PostgreSQL `UPDATE ... FROM` and `DELETE ... USING` append modifiers: `um.FromAppend(...)` and `dm.UsingAppend(...)`, enabling multiple `from_item` sources without breaking existing APIs. `From/Using` keep their original override behavior (last call wins), while `FromAppend/UsingAppend` add additional sources. Mixed usage is supported: `From/Using` after append resets to a single source; append after `From/Using` extends the list. (thanks @atzedus)
+- Added `expr.NoSep` sentinel to join expressions without any separator. The existing `expr.Join` default (space) is unchanged. (thanks @atzedus)
+- Added `im.Excluded(column)` helper (PostgreSQL and SQLite) for `ON CONFLICT DO UPDATE` assignments — renders as `EXCLUDED."col"` with no extra space, reused internally by `im.SetExcluded(...)` and available for direct use in `im.SetCol(...).To(...)`. (thanks @atzedus)
 
 ### Changed
 
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
 - **BREAKING:** Generated `*Columns` accessor fields now return a dialect-specific wrapper type (e.g., `userColumn`) instead of plain `dialect.Expression`. The wrapper still implements `dialect.Expression` and avoids extra auto-parentheses in expression builders. Use `.Expression` only when you explicitly need the embedded expression value. (thanks @atzedus)
+- **BREAKING:** Changed PostgreSQL `UPDATE ... FROM` and `DELETE ... USING` modifiers: `um.From(...)` and `dm.Using(...)`, enabling multiple `from_item` sources. Now `From/Using` add additional sources, rather than override behavior (last call wins). (thanks @atzedus)
 
 ### Fixed
 
