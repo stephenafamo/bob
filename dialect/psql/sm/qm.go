@@ -33,18 +33,10 @@ func From(table any) dialect.FromChain[*dialect.SelectQuery] {
 	return dialect.From[*dialect.SelectQuery](table)
 }
 
-func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*dialect.SelectQuery] {
-	var table any
-
-	if len(funcs) == 1 {
-		table = funcs[0]
-	}
-
-	if len(funcs) > 1 {
-		table = dialect.Functions(funcs)
-	}
-
-	return dialect.From[*dialect.SelectQuery](table)
+// FromFunction returns an expression for sm.From when the source is one or more
+// table functions (ROWS FROM when multiple).
+func FromFunction(funcs ...*dialect.Function) bob.Expression {
+	return dialect.TableFunctions(funcs...)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
@@ -63,7 +55,7 @@ func FullJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.FullJoin[*dialect.SelectQuery](e)
 }
 
-func CrossJoin(e any) dialect.CrossJoinChain[*dialect.SelectQuery] {
+func CrossJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
 	return dialect.CrossJoin[*dialect.SelectQuery](e)
 }
 

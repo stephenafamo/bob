@@ -160,7 +160,7 @@ Code:
 
 ```go
 psql.Select(
-  sm.FromFunction(
+  sm.From(sm.FromFunction(
     psql.F(
       "json_to_recordset",
       psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
@@ -169,7 +169,7 @@ psql.Select(
       fm.Columns("b", "TEXT"),
     ),
     psql.F("generate_series", 1, 3)(),
-  ).As("x", "p", "q", "s"),
+  )).As("x", "p", "q", "s"),
   sm.OrderBy("p"),
 )
 ```

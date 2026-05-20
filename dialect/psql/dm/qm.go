@@ -38,28 +38,34 @@ func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
 	})
 }
 
-func Using(table any) dialect.FromChain[*dialect.DeleteQuery] {
-	return dialect.From[*dialect.DeleteQuery](table)
+func Using(table any, joins ...dialect.JoinChain[any]) dialect.FromChain[*dialect.DeleteQuery] {
+	return dialect.From[*dialect.DeleteQuery](table, joins...)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.InnerJoin[*dialect.DeleteQuery](e)
+// UsingFunction returns an expression for dm.Using when the source is one or more
+// table functions (ROWS FROM when multiple).
+func UsingFunction(funcs ...*dialect.Function) bob.Expression {
+	return dialect.TableFunctions(funcs...)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.LeftJoin[*dialect.DeleteQuery](e)
+func InnerJoin(e any) dialect.JoinChain[any] {
+	return dialect.InnerJoin[any](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.RightJoin[*dialect.DeleteQuery](e)
+func LeftJoin(e any) dialect.JoinChain[any] {
+	return dialect.LeftJoin[any](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.FullJoin[*dialect.DeleteQuery](e)
+func RightJoin(e any) dialect.JoinChain[any] {
+	return dialect.RightJoin[any](e)
 }
 
-func CrossJoin(e any) dialect.CrossJoinChain[*dialect.DeleteQuery] {
-	return dialect.CrossJoin[*dialect.DeleteQuery](e)
+func FullJoin(e any) dialect.JoinChain[any] {
+	return dialect.FullJoin[any](e)
+}
+
+func CrossJoin(e any) dialect.JoinChain[any] {
+	return dialect.CrossJoin[any](e)
 }
 
 func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {

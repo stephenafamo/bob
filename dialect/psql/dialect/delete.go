@@ -12,9 +12,9 @@ import (
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
 	clause.With
-	Only  bool
-	Table clause.TableRef
-	clause.TableRef
+	Only       bool
+	Table      clause.TableRef
+	UsingItems []clause.TableRef
 	clause.WhereCurrentOf
 	clause.Where
 	clause.Returning
@@ -22,6 +22,10 @@ type DeleteQuery struct {
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]
+}
+
+func (d *DeleteQuery) AppendTableRef(using clause.TableRef) {
+	d.UsingItems = append(d.UsingItems, using)
 }
 
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
@@ -51,12 +55,10 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef,
-		d.TableRef.Expression != nil, "\nUSING ", "")
+	args, err = writeDeleteUsing(ctx, w, dl, start+len(args), args, d.UsingItems)
 	if err != nil {
 		return nil, err
 	}
-	args = append(args, usingArgs...)
 
 	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)
 	if err != nil {
@@ -72,4 +74,17 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	args = append(args, retArgs...)
 
 	return args, nil
+}
+
+func writeDeleteUsing(
+	ctx context.Context, w io.StringWriter, dl bob.Dialect, start int,
+	args []any, usingItems []clause.TableRef,
+) ([]any, error) {
+	if len(usingItems) == 0 {
+		return args, nil
+	}
+
+	w.WriteString("\nUSING ")
+
+	return writeFromItemList(ctx, w, dl, start, args, usingItems)
 }

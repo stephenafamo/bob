@@ -54,42 +54,34 @@ func SetCols(columns ...string) dialect.SetCols[*dialect.UpdateQuery] {
 	return dialect.NewSetCols[*dialect.UpdateQuery](columns...)
 }
 
-func From(table any) dialect.FromChain[*dialect.UpdateQuery] {
-	return dialect.From[*dialect.UpdateQuery](table)
+func From(table any, joins ...dialect.JoinChain[any]) dialect.FromChain[*dialect.UpdateQuery] {
+	return dialect.From[*dialect.UpdateQuery](table, joins...)
 }
 
-func FromFunction(funcs ...*dialect.Function) dialect.FromChain[*dialect.UpdateQuery] {
-	var table any
-
-	if len(funcs) == 1 {
-		table = funcs[0]
-	}
-
-	if len(funcs) > 1 {
-		table = dialect.Functions(funcs)
-	}
-
-	return dialect.From[*dialect.UpdateQuery](table)
+// FromFunction returns an expression for um.From when the source is one or more
+// table functions (ROWS FROM when multiple).
+func FromFunction(funcs ...*dialect.Function) bob.Expression {
+	return dialect.TableFunctions(funcs...)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.InnerJoin[*dialect.UpdateQuery](e)
+func InnerJoin(e any) dialect.JoinChain[any] {
+	return dialect.InnerJoin[any](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.LeftJoin[*dialect.UpdateQuery](e)
+func LeftJoin(e any) dialect.JoinChain[any] {
+	return dialect.LeftJoin[any](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.RightJoin[*dialect.UpdateQuery](e)
+func RightJoin(e any) dialect.JoinChain[any] {
+	return dialect.RightJoin[any](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.FullJoin[*dialect.UpdateQuery](e)
+func FullJoin(e any) dialect.JoinChain[any] {
+	return dialect.FullJoin[any](e)
 }
 
-func CrossJoin(e any) dialect.CrossJoinChain[*dialect.UpdateQuery] {
-	return dialect.CrossJoin[*dialect.UpdateQuery](e)
+func CrossJoin(e any) dialect.JoinChain[any] {
+	return dialect.CrossJoin[any](e)
 }
 
 func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {

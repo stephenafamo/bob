@@ -30,6 +30,57 @@ func TestSelect(t *testing.T) {
 				sm.Where(psql.Quote("id").In(psql.Arg(100, 200, 300))),
 			),
 		},
+		"from replaces previous alias": {
+			Doc:         "A later From without alias replaces the whole table ref",
+			ExpectedSQL: "SELECT id FROM orders",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users").As("u"),
+				sm.From("orders"),
+			),
+		},
+		"from multiple tables cross join": {
+			Doc:         "Multiple tables in FROM via CROSS JOIN on the primary from_item",
+			ExpectedSQL: "SELECT id FROM users CROSS JOIN orders",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.CrossJoin("orders"),
+			),
+		},
+		"from function": {
+			Doc:         "FROM a single table function via TableFunctions",
+			ExpectedSQL: "SELECT p FROM generate_series(1, 3)",
+			Query: psql.Select(
+				sm.Columns("p"),
+				sm.From(sm.FromFunction(psql.F("generate_series", 1, 3)())),
+			),
+		},
+		"from with join": {
+			Doc:         "FROM with an inline INNER JOIN on the from_item",
+			ExpectedSQL: `SELECT id FROM users INNER JOIN events ON ("users"."id" = "events"."user_id")`,
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.InnerJoin("events").OnEQ(
+					psql.Quote("users", "id"),
+					psql.Quote("events", "user_id"),
+				),
+			),
+		},
+		"from rows from with cross join": {
+			Doc: "FROM ROWS FROM (...) with an additional table via CROSS JOIN",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From(sm.FromFunction(
+					psql.F("generate_series", 1, 1)(),
+					psql.F("json_to_recordset", psql.Arg(`[{"a":1}]`))(fm.Columns("a", "INTEGER")),
+				)),
+				sm.CrossJoin("orders"),
+			),
+			ExpectedSQL:  `SELECT id FROM ROWS FROM (generate_series(1, 1), json_to_recordset($1) AS (a INTEGER)) CROSS JOIN orders`,
+			ExpectedArgs: []any{`[{"a":1}]`},
+		},
 		"case with else": {
 			ExpectedSQL: `SELECT id, name, (CASE WHEN (id = '1') THEN 'A' ELSE 'B' END) AS "C" FROM users`,
 			Query: psql.Select(
@@ -120,7 +171,7 @@ func TestSelect(t *testing.T) {
 		"with rows from": {
 			Doc: "Select from group of functions. Automatically uses the `ROWS FROM` syntax",
 			Query: psql.Select(
-				sm.FromFunction(
+				sm.From(sm.FromFunction(
 					psql.F(
 						"json_to_recordset",
 						psql.Arg(`[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]`),
@@ -129,7 +180,7 @@ func TestSelect(t *testing.T) {
 						fm.Columns("b", "TEXT"),
 					),
 					psql.F("generate_series", 1, 3)(),
-				).As("x", "p", "q", "s"),
+				)).As("x", "p", "q", "s"),
 				sm.OrderBy("p"),
 			),
 			ExpectedSQL: `SELECT *
