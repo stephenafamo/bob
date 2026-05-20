@@ -32,6 +32,39 @@ func TestDelete(t *testing.T) {
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
+		"with using append": {
+			Query: psql.Delete(
+				dm.From("employees"),
+				dm.UsingAppend("accounts"),
+				dm.UsingAppend("departments"),
+				dm.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `DELETE FROM employees USING accounts, departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with using and using append": {
+			Query: psql.Delete(
+				dm.From("employees"),
+				dm.Using("accounts"),
+				dm.UsingAppend("departments"),
+				dm.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `DELETE FROM employees USING accounts, departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with using append then using override": {
+			Query: psql.Delete(
+				dm.From("employees"),
+				dm.UsingAppend("accounts"),
+				dm.Using("departments"),
+				dm.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `DELETE FROM employees USING departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
 		"where current of": {
 			Query: psql.Delete(
 				dm.From("films"),

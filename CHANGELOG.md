@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
 - **BREAKING:** Generated `*Columns` accessor fields now return a dialect-specific wrapper type (e.g., `userColumn`) instead of plain `dialect.Expression`. The wrapper still implements `dialect.Expression` and avoids extra auto-parentheses in expression builders. Use `.Expression` only when you explicitly need the embedded expression value. (thanks @atzedus)
+- **BREAKING:** Changed PostgreSQL `UPDATE ... FROM` and `DELETE ... USING` modifiers: `um.From(...)` and `dm.Using(...)`, enabling multiple `from_item` sources. Now `From/Using` add additional sources, rather than override behavior (last call wins). (thanks @atzedus)
 
 ### Fixed
 
