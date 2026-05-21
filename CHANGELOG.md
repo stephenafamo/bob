@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.44.0] - 2026-05-21
 
 ### Added
 
@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix PostgreSQL `sm.With(...).SearchBreadth(...)` rendering `SEARCH DEPTH` instead of `SEARCH BREADTH` in CTE queries. (thanks @atzedus)
 - Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
 - Fix missing base type imports (e.g. `github.com/google/uuid`) in generated models when using `type_system: "database/sql"` and `uuid_pkg: google`, which could cause compile errors in generated many-to-many relation helpers. (thanks @atzedus)
+- Reuse parents when creating children in factory (thanks @abdusco)
 
 ## [v0.43.0] - 2026-04-29
 
