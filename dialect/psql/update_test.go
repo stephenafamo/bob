@@ -6,6 +6,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	testutils "github.com/stephenafamo/bob/test/utils"
@@ -34,6 +35,176 @@ func TestUpdate(t *testing.T) {
 			  WHERE (accounts.name = $1)
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
+		},
+		"with multiple from items": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.From("departments"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts, departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"from item with inner join": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts",
+					um.InnerJoin("departments").OnEQ(
+						psql.Quote("accounts", "dept_id"),
+						psql.Quote("departments", "id"),
+					),
+				),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
+			  INNER JOIN departments ON (accounts.dept_id = departments.id)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"from then standalone inner join": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.InnerJoin("departments").OnEQ(
+					psql.Quote("accounts", "dept_id"),
+					psql.Quote("departments", "id"),
+				),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
+			  INNER JOIN departments ON (accounts.dept_id = departments.id)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"standalone inner join on last from item": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.From("departments"),
+				um.InnerJoin("regions").OnEQ(
+					psql.Quote("departments", "id"),
+					psql.Quote("regions", "dept_id"),
+				),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts, (departments
+			  INNER JOIN regions ON (departments.id = regions.dept_id))
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"interleaved from and standalone joins": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.InnerJoin("departments").OnEQ(
+					psql.Quote("accounts", "dept_id"),
+					psql.Quote("departments", "id"),
+				),
+				um.From("regions"),
+				um.LeftJoin("countries").OnEQ(
+					psql.Quote("regions", "country_id"),
+					psql.Quote("countries", "id"),
+				),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM (accounts
+			  INNER JOIN departments ON (accounts.dept_id = departments.id)), (regions
+			  LEFT JOIN countries ON (regions.country_id = countries.id))
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"from item with cross join": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts", um.CrossJoin("departments")),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
+			  CROSS JOIN departments
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"from item with left join and alias": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts",
+					um.LeftJoin("departments").OnEQ(
+						psql.Quote("accounts", "dept_id"),
+						psql.Quote("departments", "id"),
+					),
+				).As("a"),
+				um.Where(psql.Quote("a", "dept_id").IsNotNull()),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts AS "a"
+			  LEFT JOIN departments ON ("accounts"."dept_id" = "departments"."id")
+			  WHERE ("a"."dept_id" IS NOT NULL)`,
+		},
+		"multiple from items with cross join on second": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From("accounts"),
+				um.From("departments", um.CrossJoin("regions")),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts, (departments
+			  CROSS JOIN regions)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with from function": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From(um.FromFunction(psql.F("generate_series", 1, 3)())),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM generate_series(1, 3)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"with from function rows from": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.From(um.FromFunction(
+					psql.F("generate_series", 1, 1)(),
+					psql.F("json_to_recordset", psql.Arg(`[{"a":1}]`))(fm.Columns("a", "INTEGER")),
+				)),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM ROWS FROM (generate_series(1, 1), json_to_recordset($1) AS (a INTEGER))
+			  WHERE (employees.id = $2)`,
+			ExpectedArgs: []any{`[{"a":1}]`, 1},
+		},
+		"with multiple from items join rows from and table": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("n").To("1"),
+				um.From("accounts",
+					um.InnerJoin("departments").OnEQ(
+						psql.Quote("accounts", "dept_id"),
+						psql.Quote("departments", "id"),
+					),
+				),
+				um.From(um.FromFunction(
+					psql.F("generate_series", 1, 1)(),
+					psql.F("json_to_recordset", psql.Arg(`[{"a":1}]`))(fm.Columns("a", "INTEGER")),
+				)),
+				um.From("regions"),
+			),
+			ExpectedSQL: `UPDATE employees SET "n" = 1 FROM (accounts
+			  INNER JOIN departments ON ("accounts"."dept_id" = "departments"."id")), ROWS FROM (generate_series(1, 1), json_to_recordset($1) AS (a INTEGER)), regions`,
+			ExpectedArgs: []any{`[{"a":1}]`},
 		},
 		"set tuple columns from row": {
 			Query: psql.Update(

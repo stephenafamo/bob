@@ -120,7 +120,22 @@ func (c columnDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	return nil, nil
 }
 
+// Functions renders ROWS FROM (f1, f2, ...) for multiple table functions in one
+// from_item.
 type Functions []*Function
+
+// TableFunctions returns a FROM/USING expression for table functions: a single
+// function_name(...) or ROWS FROM (...) when multiple are given.
+func TableFunctions(funcs ...*Function) bob.Expression {
+	switch len(funcs) {
+	case 0:
+		return nil
+	case 1:
+		return funcs[0]
+	default:
+		return Functions(funcs)
+	}
+}
 
 func (f Functions) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(f) > 1 {

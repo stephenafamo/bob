@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PostgreSQL UPDATE/DELETE `um.WhereCurrentOf(cursor)` modifier to render `WHERE CURRENT OF <cursor>`. (thanks @atzedus)
 - Added `expr.NoSep` sentinel to join expressions without any separator. The existing `expr.Join` default (space) is unchanged. (thanks @atzedus)
 - Added `im.Excluded(column)` helper (PostgreSQL and SQLite) for `ON CONFLICT DO UPDATE` assignments — renders as `EXCLUDED."col"` with no extra space, reused internally by `im.SetExcluded(...)` and available for direct use in `im.SetCol(...).To(...)`. (thanks @atzedus)
+- Added PostgreSQL `psql.TableFunctions(funcs)` and `sm.FromFunction` / `um.FromFunction` / `dm.UsingFunction` helpers that return `bob.Expression` for table-function `from_item` sources (`ROWS FROM (...)` when multiple functions are given). (thanks @atzedus)
+- Added PostgreSQL `um.From(table, joins...)` and `dm.Using(table, joins...)` variadic join arguments so each appended `from_item` can include inline `INNER JOIN`, `LEFT JOIN`, `CROSS JOIN`, etc. (`JoinChain` builders). (thanks @atzedus)
+- Added `bobgen-psql` support for multiple `UPDATE ... FROM` / `DELETE ... USING` sources: sql-to-code emits `AppendTableRef(...)` per parsed `from_item` and resolves column sources from every item. (thanks @atzedus)
 
 ### Changed
 
@@ -32,9 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `mm.SetCol()` now returns `mods.Set[*mm.UpdateAction]` instead of a custom `SetChain` type. `.ToExpr(val)` is replaced by `.To(val)`, and `.ToDefault()` is replaced by `.To(psql.Raw("DEFAULT"))`. `.To()` and `.ToArg()` work as before. (thanks @atzedus)
 - **BREAKING:** `mm.Recursive()` has been removed. PostgreSQL does not support `WITH RECURSIVE` in MERGE statements. (thanks @atzedus)
 - **BREAKING:** Generated `*Columns` accessor fields now return a dialect-specific wrapper type (e.g., `userColumn`) instead of plain `dialect.Expression`. The wrapper still implements `dialect.Expression` and avoids extra auto-parentheses in expression builders. Use `.Expression` only when you explicitly need the embedded expression value. (thanks @atzedus)
+- **BREAKING:** PostgreSQL `UPDATE ... FROM` and `DELETE ... USING` additional sources now live in `UpdateQuery.FromItems` / `DeleteQuery.UsingItems` instead of the embedded `clause.TableRef` on the query struct. Each `um.From(...)` or `dm.Using(...)` appends one comma-separated `from_item` (last call no longer wins). Use `um.Table(...)` / `dm.From(...)` for the update/delete target table. (thanks @atzedus)
+- **BREAKING:** PostgreSQL `sm.FromFunction` and `um.FromFunction` no longer return `FromChain` or apply `FROM`/`USING` by themselves. They return `bob.Expression` and must be passed to `sm.From(...)` / `um.From(...)` / `dm.Using(...)` — e.g. `sm.From(sm.FromFunction(psql.F("generate_series", 1, 3)()))` instead of `sm.FromFunction(...)`. Aliasing and other table modifiers belong on `sm.From(...)` / `um.From(...)`. (thanks @atzedus)
+- **BREAKING:** PostgreSQL `sm.From` / `FromChain` for `SelectQuery` now set the `FROM` source via `AppendTableRef` (replace semantics) instead of `SetTable` / `SetTableAlias` on a `fromable` interface. (thanks @atzedus)
+- **BREAKING:** PostgreSQL `um` / `dm` join helpers (`InnerJoin`, `LeftJoin`, `CrossJoin`, etc.) return `JoinChain[*UpdateQuery]` / `JoinChain[*DeleteQuery]`. Use them in `um.From(table, joins...)` / `dm.Using(table, joins...)`, or as standalone mods after `um.From` / `dm.Using` — `AppendJoin` then attaches to the last `FromItems` / `UsingItems` entry. (thanks @atzedus)
+- **BREAKING:** PostgreSQL psql join chain modifiers `.Natural()`, `.On()`, `.OnEQ()`, `.Using()`, and `.UsingAs()` now return `JoinChain` for fluent chaining instead of `bob.Mod`. (thanks @atzedus)
 
 ### Fixed
 
+- Fix PostgreSQL `sm.From` replacing a previous `FROM` without clearing a stale table alias when the new source has no alias. (thanks @atzedus)
 - Fix PostgreSQL `sm.With(...).SearchBreadth(...)` rendering `SEARCH DEPTH` instead of `SEARCH BREADTH` in CTE queries. (thanks @atzedus)
 - Avoid unnecessary imports in generated random factory code when a type has no random expression. (thanks @jay-babu)
 - Fix missing base type imports (e.g. `github.com/google/uuid`) in generated models when using `type_system: "database/sql"` and `uuid_pkg: google`, which could cause compile errors in generated many-to-many relation helpers. (thanks @atzedus)

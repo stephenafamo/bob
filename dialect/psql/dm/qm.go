@@ -38,8 +38,14 @@ func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
 	})
 }
 
-func Using(table any) dialect.FromChain[*dialect.DeleteQuery] {
-	return dialect.From[*dialect.DeleteQuery](table)
+func Using(table any, joins ...dialect.JoinChain[*dialect.DeleteQuery]) dialect.FromChain[*dialect.DeleteQuery] {
+	return dialect.From[*dialect.DeleteQuery](table, joins...)
+}
+
+// UsingFunction returns an expression for dm.Using when the source is one or more
+// table functions (ROWS FROM when multiple).
+func UsingFunction(funcs ...*dialect.Function) bob.Expression {
+	return dialect.TableFunctions(funcs...)
 }
 
 func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
@@ -58,7 +64,7 @@ func FullJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.FullJoin[*dialect.DeleteQuery](e)
 }
 
-func CrossJoin(e any) dialect.CrossJoinChain[*dialect.DeleteQuery] {
+func CrossJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
 	return dialect.CrossJoin[*dialect.DeleteQuery](e)
 }
 
