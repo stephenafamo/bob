@@ -12,9 +12,9 @@ import (
 // https://www.postgresql.org/docs/current/sql-delete.html
 type DeleteQuery struct {
 	clause.With
-	Only  bool
-	Table clause.TableRef
-	clause.TableRef
+	Only       bool
+	Table      clause.TableRef
+	UsingItems []clause.TableRef
 	clause.WhereCurrentOf
 	clause.Where
 	clause.Returning
@@ -22,6 +22,20 @@ type DeleteQuery struct {
 	bob.Load
 	bob.EmbeddedHook
 	bob.ContextualModdable[*DeleteQuery]
+}
+
+func (d *DeleteQuery) AppendTableRef(using clause.TableRef) {
+	d.UsingItems = append(d.UsingItems, using)
+}
+
+// AppendJoin satisfies Joinable for JoinChain[*DeleteQuery].
+// When UsingItems is non-empty, the join is appended to the last USING item (e.g. after dm.Using).
+// Otherwise it is ignored; prefer dm.Using(table, joins...) for joins on a new from_item.
+func (d *DeleteQuery) AppendJoin(j clause.Join) {
+	if len(d.UsingItems) == 0 {
+		return
+	}
+	d.UsingItems[len(d.UsingItems)-1].AppendJoin(j)
 }
 
 func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
@@ -51,12 +65,14 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	}
 	args = append(args, tableArgs...)
 
-	usingArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.TableRef,
-		d.TableRef.Expression != nil, "\nUSING ", "")
-	if err != nil {
-		return nil, err
+	if len(d.UsingItems) > 0 {
+		w.WriteString("\nUSING ")
+
+		args, err = writeFromItemList(ctx, w, dl, start+len(args), args, d.UsingItems)
+		if err != nil {
+			return nil, err
+		}
 	}
-	args = append(args, usingArgs...)
 
 	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)
 	if err != nil {

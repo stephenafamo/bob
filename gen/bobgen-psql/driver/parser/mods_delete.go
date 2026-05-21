@@ -29,16 +29,7 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 	}
 
 	if usingInfo, ok := info.children["UsingClause"]; ok {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(usingInfo.start),
-				int(usingInfo.end)-1,
-				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...,
-		)
+		w.modAppendTableRefItems(usingInfo, stmt.DeleteStmt.UsingClause)
 	}
 
 	if whereInfo, ok := info.children["WhereClause"]; ok {

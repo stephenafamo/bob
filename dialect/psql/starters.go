@@ -28,6 +28,12 @@ func F(name string, args ...any) mods.Moddable[*dialect.Function] {
 	})
 }
 
+// TableFunctions returns a FROM/USING table-function source for sm.From, um.From,
+// or dm.Using (ROWS FROM when multiple functions are given).
+func TableFunctions(funcs ...*dialect.Function) bob.Expression {
+	return dialect.TableFunctions(funcs...)
+}
+
 // S creates a string literal
 // SQL: 'a string'
 // Go: psql.S("a string")

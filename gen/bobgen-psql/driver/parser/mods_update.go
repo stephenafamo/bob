@@ -42,16 +42,7 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 	}
 
 	if fromInfo, ok := info.children["FromClause"]; ok {
-		w.editRules = append(w.editRules,
-			internal.RecordPoints(
-				int(fromInfo.start),
-				int(fromInfo.end)-1,
-				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
-					return nil
-				},
-			)...,
-		)
+		w.modAppendTableRefItems(fromInfo, stmt.UpdateStmt.FromClause)
 	}
 
 	if whereInfo, ok := info.children["WhereClause"]; ok {

@@ -197,9 +197,10 @@ func (w *walker) getUpdateSource(stmt *pg.UpdateStmt, info nodeInfo, sources ...
 		)
 	}
 
-	from := stmt.FromClause[0]
-	fromInfo := info.children["FromClause"].children["0"]
-	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+	for i, from := range stmt.FromClause {
+		fromInfo := info.children["FromClause"].children[strconv.Itoa(i)]
+		sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+	}
 
 	return w.getSourceFromTargets(
 		stmt.ReturningList,
@@ -222,9 +223,10 @@ func (w *walker) getDeleteSource(stmt *pg.DeleteStmt, info nodeInfo, sources ...
 		)
 	}
 
-	from := stmt.UsingClause[0]
-	fromInfo := info.children["UsingClause"].children["0"]
-	sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+	for i, from := range stmt.UsingClause {
+		fromInfo := info.children["UsingClause"].children[strconv.Itoa(i)]
+		sources = w.addSourcesOfFromItem(from, fromInfo, sources...)
+	}
 
 	return w.getSourceFromTargets(
 		stmt.ReturningList,

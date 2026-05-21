@@ -23,20 +23,12 @@ func verifyUpdateStatement(stmt *pg.UpdateStmt, _ nodeInfo) error {
 		return fmt.Errorf("nil statement")
 	}
 
-	if len(stmt.FromClause) > 1 {
-		return fmt.Errorf("multiple FROM tables are not supported, convert to a CROSS JOIN")
-	}
-
 	return nil
 }
 
 func verifyDeleteStatement(stmt *pg.DeleteStmt, _ nodeInfo) error {
 	if stmt == nil {
 		return fmt.Errorf("nil statement")
-	}
-
-	if len(stmt.UsingClause) > 1 {
-		return fmt.Errorf("multiple USING tables are not supported, convert to a CROSS JOIN")
 	}
 
 	return nil
