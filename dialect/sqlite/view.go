@@ -81,7 +81,17 @@ func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
-// Returns a column list
+// Schema returns the schema name
+func (v *View[T, Tslice, C]) Schema() string {
+	return v.schema
+}
+
+// TableName returns the table name
+func (v *View[T, Tslice, C]) TableName() string {
+	return v.name
+}
+
+// ColumnsExpr returns a column list
 func (v *View[T, Tslice, C]) ColumnsExpr() expr.ColumnsExpr {
 	// get the schema
 	return v.allCols
