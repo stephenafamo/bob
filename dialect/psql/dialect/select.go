@@ -36,6 +36,10 @@ type SelectQuery struct {
 	CombinedOffset clause.Offset
 }
 
+func (s *SelectQuery) AppendTableRef(ref clause.TableRef) {
+	s.TableRef = ref
+}
+
 func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
