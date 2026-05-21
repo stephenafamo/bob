@@ -77,6 +77,17 @@ func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
+// TableName returns the table name
+func (v *View[T, Tslice, C]) TableName() string {
+	return v.name
+}
+
+// ColumnsExpr returns a column list
+func (v *View[T, Tslice, C]) ColumnsExpr() expr.ColumnsExpr {
+	// get the schema
+	return v.allCols
+}
+
 // Starts a select query
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
