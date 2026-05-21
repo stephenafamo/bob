@@ -77,6 +77,11 @@ func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
+// Schema returns the schema name
+func (v *View[T, Tslice, C]) Schema() string {
+	return v.schema
+}
+
 // TableName returns the table name
 func (v *View[T, Tslice, C]) TableName() string {
 	return v.name

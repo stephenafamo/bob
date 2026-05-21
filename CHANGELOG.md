@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `Schema()` method to dialect `View` types (PostgreSQL, SQLite). (thanks @atzedus)
 - Added `TableName()` method to dialect `View` types (MySQL, PostgreSQL, SQLite). (thanks @atzedus)
 - Added `ColumnsExpr()` method on `psql.View` for parity with MySQL and SQLite views. (thanks @atzedus)
 
