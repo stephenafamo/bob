@@ -47,35 +47,37 @@ type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
 }
 
-func (v *View[T, Tslice, C]) Name() Expression {
+// NameExpr returns the table name as an expression
+func (v *View[T, Tslice, C]) NameExpr() Expression {
 	return Quote(v.name)
 }
 
-func (v *View[T, Tslice, C]) NameAs() bob.Expression {
-	return v.Name().As(v.alias)
+// NameAsExpr returns the table name as an expression with an alias
+func (v *View[T, Tslice, C]) NameAsExpr() bob.Expression {
+	return v.NameExpr().As(v.alias)
 }
 
+// Alias returns the alias
 func (v *View[T, Tslice, C]) Alias() string {
 	return v.alias
 }
 
-// TableName returns the table name
-func (v *View[T, Tslice, C]) TableName() string {
+// Name returns the view (table/view) name
+func (v *View[T, Tslice, C]) Name() string {
 	return v.name
 }
 
-// ColumnsExpr returns a column list
+// ColumnsExpr returns a column list expression
 func (v *View[T, Tslice, C]) ColumnsExpr() expr.ColumnsExpr {
-	// get the schema
 	return v.allCols
 }
 
-// Adds table name et al
+// Query starts a select query on the view
 func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
 	q := &ViewQuery[T, Tslice]{
 		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
 			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAs())),
+				BaseQuery: Select(sm.From(v.NameAsExpr())),
 				Hooks:     &v.SelectQueryHooks,
 			},
 			Scanner: v.scanner,

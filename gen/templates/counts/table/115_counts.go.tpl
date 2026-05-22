@@ -202,6 +202,12 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
 		{{- end}}
 	}
+	{{- if eq (len $firstSide.FromColumns) 1}}
+	{{- $local := index $firstSide.FromColumns 0 -}}
+	{{- $column := $.Table.GetColumn $local -}}
+	{{- $fromCol := index $firstFrom.Columns $local}}
+	PKArgExpr := {{$.Dialect}}.Any({{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"))
+	{{- else}}
 	PKArgExpr := {{$.Dialect}}.Select(sm.Columns(
 		{{- range $index, $local := $firstSide.FromColumns -}}
 		{{- $column := $.Table.GetColumn $local -}}
@@ -209,6 +215,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{$.Dialect}}.F("unnest", {{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
 		{{- end}}
 	))
+	{{- end}}
 	{{- end}}
 
 	// countResult holds one scanned row from the batch count query.
@@ -235,14 +242,14 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		),
 		{{if eq (len $rel.Sides) 1 -}}
 		// Single-hop: FROM related table directly
-		sm.From({{$.TableVar $rel.Foreign}}.NameAs()),
+		sm.From({{$.TableVar $rel.Foreign}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
 		sm.Where({{$.TableVar $firstSide.To}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
 		{{end -}}
 		{{- else -}}
 		// Multi-hop: FROM first join table, JOIN through to final related table
-		sm.From({{$.TableVar $firstSide.To}}.NameAs()),
+		sm.From({{$.TableVar $firstSide.To}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
 		sm.Where({{$.TableVar $firstSide.To}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
@@ -251,7 +258,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
 		{{$sideFrom := $.Aliases.Table $side.From -}}
 		{{$sideTo := $.Aliases.Table $side.To -}}
-		sm.InnerJoin({{$.TableVar $side.To}}.NameAs()).On(
+		sm.InnerJoin({{$.TableVar $side.To}}.NameAsExpr()).On(
 			{{range $i, $fromColKey := $side.FromColumns -}}
 			{{$toColKey := index $side.ToColumns $i -}}
 			{{$sideToColAlias := index $sideTo.Columns $toColKey -}}
@@ -269,12 +276,16 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		),
 		{{end -}}
 		{{- end}}
-		// WHERE fk IN (parent PKs)
+		// WHERE fk IN (parent PKs) — psql single-column FK uses `= ANY(array)` (see PKArgExpr above)
 		{{if eq (len $firstSide.FromColumns) 1 -}}
 		{{$local := index $firstSide.FromColumns 0 -}}
 		{{$toLocal := index $firstSide.ToColumns 0 -}}
 		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+		{{if eq $.Dialect "psql" -}}
+		sm.Where({{$.TableVar $firstSide.To}}.Columns.{{$firstToColAlias}}.EQ(PKArgExpr)),
+		{{- else -}}
 		sm.Where({{$.TableVar $firstSide.To}}.Columns.{{$firstToColAlias}}.OP("IN", PKArgExpr)),
+		{{- end}}
 		{{- else -}}
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}

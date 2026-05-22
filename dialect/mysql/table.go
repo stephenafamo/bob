@@ -87,7 +87,7 @@ func (t *Table[T, Tslice, Tset, C]) PrimaryKey() expr.ColumnsExpr {
 func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Tslice, Tset, C] {
 	q := &insertQuery[T, Tslice, Tset, C]{
 		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
-			BaseQuery: Insert(im.Into(t.Name(), t.nonGeneratedCols...)),
+			BaseQuery: Insert(im.Into(t.NameExpr(), t.nonGeneratedCols...)),
 			Hooks:     &t.InsertQueryHooks,
 		},
 		table: t,
@@ -101,7 +101,7 @@ func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQ
 // Starts an update query for this table
 func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery] {
 	q := &orm.ExecQuery[*dialect.UpdateQuery]{
-		BaseQuery: Update(um.Table(t.NameAs())),
+		BaseQuery: Update(um.Table(t.NameAsExpr())),
 		Hooks:     &t.UpdateQueryHooks,
 	}
 	q.Apply(queryMods...)
@@ -112,7 +112,7 @@ func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQ
 // Starts a delete query for this table
 func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery] {
 	q := &orm.ExecQuery[*dialect.DeleteQuery]{
-		BaseQuery: Delete(dm.From(t.NameAs())),
+		BaseQuery: Delete(dm.From(t.NameAsExpr())),
 		Hooks:     &t.DeleteQueryHooks,
 	}
 
@@ -239,7 +239,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		return nil, retrievalErr
 	}
 
-	query := Select(sm.Columns(t.table.ColumnsExpr()), sm.From(t.table.NameAs()))
+	query := Select(sm.Columns(t.table.ColumnsExpr()), sm.From(t.table.NameAsExpr()))
 
 	// Change query type to Insert so that the correct hooks are run
 	query.QueryType = bob.QueryTypeInsert

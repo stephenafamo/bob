@@ -7,7 +7,7 @@ description: Easily query and modify a database table
 
 :::info
 
-Table models have all the capabilities of [View models](./view). This page will only focus on the additional capabilities.
+Table models have all the capabilities of [View models](./view) (`Name()`, `NameExpr()`, `NameAsExpr()`, `Alias()`, `Query()`, and columns; PostgreSQL and SQLite also have `Schema()`). This page focuses only on insert/update/delete and related APIs.
 
 :::
 

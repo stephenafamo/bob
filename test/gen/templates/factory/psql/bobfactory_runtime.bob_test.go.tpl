@@ -1252,7 +1252,7 @@ func TestQueryWithJoin(t *testing.T) {
 	// Query videos with join to users
 	{{$.Importer.Import "sm" "github.com/stephenafamo/bob/dialect/psql/sm"}}
 	videos, err := models.Videos.Query(
-		sm.InnerJoin(models.Users.Name()).On(
+		sm.InnerJoin(models.Users.NameAsExpr()).On(
 			models.Videos.Columns.UserID.EQ(models.Users.Columns.ID),
 		),
 		models.SelectWhere.Users.ID.EQ(user.ID),
