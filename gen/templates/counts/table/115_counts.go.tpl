@@ -69,7 +69,7 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 					sm.Columns({{$.Dialect}}.Raw("count(*)")),
 					{{- if eq (len $rel.Sides) 1}}
 					{{/* Simple one-hop relationship */}}
-					sm.From({{$fAlias.UpPlural}}.Name()),
+					sm.From({{$fAlias.UpPlural}}.NameAsExpr()),
 					{{- range $index, $fromCol := $firstSide.FromColumns -}}
 					{{- $toCol := index $firstSide.ToColumns $index}}
 					sm.Where({{$.Dialect}}.Quote({{$fAlias.UpPlural}}.Alias(), {{quote $toCol}}).EQ({{$.Dialect}}.Quote(parent, {{quote $fromCol}}))),
@@ -77,7 +77,7 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 					{{- else}}
 					{{/* Multi-hop relationship - need to join through intermediate tables */}}
 					{{- $firstSideToAlias := $.Aliases.Table $firstSide.To}}
-					sm.From({{$firstSideToAlias.UpPlural}}.Name()),
+					sm.From({{$firstSideToAlias.UpPlural}}.NameAsExpr()),
 					{{- range $index, $fromCol := $firstSide.FromColumns -}}
 					{{- $toCol := index $firstSide.ToColumns $index}}
 					sm.Where({{$.Dialect}}.Quote({{$firstSideToAlias.UpPlural}}.Alias(), {{quote $toCol}}).EQ({{$.Dialect}}.Quote(parent, {{quote $fromCol}}))),
@@ -86,7 +86,7 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 					{{- if eq $sideIndex 0 -}}{{continue}}{{- end}}
 					{{- $sideFromAlias := $.Aliases.Table $side.From -}}
 					{{- $sideToAlias := $.Aliases.Table $side.To}}
-					sm.InnerJoin({{$sideToAlias.UpPlural}}.Name()).On(
+					sm.InnerJoin({{$sideToAlias.UpPlural}}.NameAsExpr()).On(
 						{{- range $index, $fromCol := $side.FromColumns -}}
 						{{- $toCol := index $side.ToColumns $index}}
 						{{$.Dialect}}.Quote({{$sideToAlias.UpPlural}}.Alias(), {{quote $toCol}}).EQ({{$.Dialect}}.Quote({{$sideFromAlias.UpPlural}}.Alias(), {{quote $fromCol}})),
@@ -235,14 +235,14 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		),
 		{{if eq (len $rel.Sides) 1 -}}
 		// Single-hop: FROM related table directly
-		sm.From({{$fAlias.UpPlural}}.NameAs()),
+		sm.From({{$fAlias.UpPlural}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
 		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
 		{{end -}}
 		{{- else -}}
 		// Multi-hop: FROM first join table, JOIN through to final related table
-		sm.From({{$firstTo.UpPlural}}.NameAs()),
+		sm.From({{$firstTo.UpPlural}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
 		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
@@ -251,7 +251,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
 		{{$sideFrom := $.Aliases.Table $side.From -}}
 		{{$sideTo := $.Aliases.Table $side.To -}}
-		sm.InnerJoin({{$sideTo.UpPlural}}.NameAs()).On(
+		sm.InnerJoin({{$sideTo.UpPlural}}.NameAsExpr()).On(
 			{{range $i, $fromColKey := $side.FromColumns -}}
 			{{$toColKey := index $side.ToColumns $i -}}
 			{{$sideToColAlias := index $sideTo.Columns $toColKey -}}
