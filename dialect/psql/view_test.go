@@ -21,7 +21,7 @@ type someStruct struct {
 var someStructView = NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
 
 func TestSomeViewName(t *testing.T) {
-	name := someStructView.Name().String()
+	name := someStructView.NameExpr().String()
 	expected := "\"public\".\"some_struct\""
 	if name != expected {
 		t.Errorf("someStructView.Name() expected '%s' but got '%s'", expected, name)
@@ -29,7 +29,7 @@ func TestSomeViewName(t *testing.T) {
 }
 
 func TestSomeViewNameAs(t *testing.T) {
-	q := selectToString(t, Select(sm.From(someStructView.NameAs())), 0)
+	q := selectToString(t, Select(sm.From(someStructView.NameAsExpr())), 0)
 
 	expected := "SELECT \n*\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\n"
 	if q != expected {

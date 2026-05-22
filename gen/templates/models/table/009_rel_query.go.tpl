@@ -19,7 +19,7 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := $.Tables.Get $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAsExpr()).On(
 		{{end -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
@@ -107,7 +107,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		{{- $to := $.Aliases.Table $side.To -}}
 		{{- $fromTable := $.Tables.Get $side.From -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAs()).On(
+		sm.InnerJoin({{$from.UpPlural}}.NameAsExpr()).On(
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $foreign := index $side.ToColumns $i -}}
 				{{- $fromCol := index $from.Columns $local -}}

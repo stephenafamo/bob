@@ -182,6 +182,16 @@ var templateFunctions = template.FuncMap{
 	},
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
+	"tableColumnAlias":   tableColumnAlias,
+}
+
+// tableColumnAlias returns the column qualifier used by dialect View/Table types.
+// When schema is set it matches View.Alias() ("schema.table"); otherwise it uses the table key.
+func tableColumnAlias(schema, name, key string) string {
+	if schema != "" {
+		return fmt.Sprintf("%s.%s", schema, name)
+	}
+	return key
 }
 
 func enumValNormalize(val string) string {

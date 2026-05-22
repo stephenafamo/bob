@@ -35,19 +35,55 @@ A View model provides the following methods:
 
 ## Name()
 
-This returns a properly quoted name of the table and can be used as a bob [expression](../query-builder/building-queries#expressions). e.g. `"public"."users"`
+Returns the bare table or view name as a `string` (no schema prefix). For example, `"users"`.
 
-## NameAs()
+Use this when you need the identifier as data (logging, map keys, etc.), not when building SQL.
 
-Similar to `Name()`, but adds an alias. e.g. `"public"."users" as "public.users"`. It should be used as a modifier to a query:
+## Schema()
+
+PostgreSQL and SQLite only. Returns the schema name the model was constructed with, or `""` if none was set at codegen time.
+
+When the schema is empty, pass a schema at runtime with `psql.UseSchema` or `sqlite.UseSchema` so `NameExpr()` can qualify the table in SQL.
+
+## Alias()
+
+Returns the alias used for generated columns and for `NameAsExpr()`. When a schema is set at construction, this is usually `schema.table` (e.g. `"public.users"`). Otherwise it matches the table name.
+
+## NameExpr()
+
+Returns the table or view as a bob [expression](../query-builder/building-queries#expressions) for query builders (`sm.From`, `im.Into`, joins, etc.).
+
+- PostgreSQL/SQLite with schema at construction: qualified name, e.g. `"public"."users"`.
+- PostgreSQL/SQLite with empty schema: uses `UseSchema` from context when present; otherwise the unqualified table name.
+- MySQL: the quoted table name (MySQL models do not use schema/database qualification).
 
 ```go
 import (
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 )
-query := psql.Select(sm.From(userView.NameAs()))
+
+query := psql.Select(sm.From(userView.NameExpr()))
 ```
+
+## NameAsExpr()
+
+Like `NameExpr()`, but includes the table alias (same as `Alias()`). Use in `FROM`, `JOIN`, and other clauses that need a named range variable—for example, PostgreSQL/SQLite `INSERT INTO ... AS alias` or subqueries that reference `Alias()` in `WHERE`.
+
+```go
+import (
+	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
+)
+
+query := psql.Select(sm.From(userView.NameAsExpr()))
+```
+
+:::note
+
+MySQL does not support a table alias on the `INSERT` target (`INSERT INTO t AS alias`). Generated MySQL `Table.Insert()` uses `NameExpr()` only; use row aliases in `ON DUPLICATE KEY UPDATE` when needed.
+
+:::
 
 ## Columns
 

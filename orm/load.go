@@ -195,7 +195,7 @@ type PreloadRel[E bob.Expression] struct {
 }
 
 type nameable[E bob.Expression] interface {
-	Name() E
+	NameExpr() E
 	Alias() string
 }
 
@@ -270,7 +270,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			queryMods = append(queryMods, mods.Join[Q](clause.Join{
 				Type: clause.LeftJoin,
 				To: clause.TableRef{
-					Expression: side.To.Name(),
+					Expression: side.To.NameExpr(),
 					Alias:      alias,
 				},
 				On: on,
@@ -403,7 +403,7 @@ func (v *wrapper) Scan(value any) error {
 //         ...
 //         gen.Things.Columns.WithPrefix("thing.")),
 //      sm.From(...),
-//		sm.LeftJoin(gen.Things.Name()).As("thing").On(
+//		sm.LeftJoin(gen.Things.NameExpr()).As("thing").On(
 //			gen.Things.Columns.AliasedAs("thing").ID.EQ(...),
 //		),
 // 	), scan.StructMapper[myRow](scan.WithTypeConverter(orm.NullTypeConverter{})))
