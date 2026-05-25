@@ -252,7 +252,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 
 		if len(lock.LockingClause.LockedRels) > 0 {
 			lockInfo := info.children["LockingClause"].children[strconv.Itoa(i)]
-			bobLock.Tables = []string{w.input[lockInfo.start:lockInfo.end]}
+			bobLock.Tables = []any{w.input[lockInfo.start:lockInfo.end]}
 		}
 
 		w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
