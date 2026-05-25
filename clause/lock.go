@@ -33,7 +33,7 @@ func (f *Locks) AppendLock(lock bob.Expression) {
 
 type Lock struct {
 	Strength string
-	Tables   []string
+	Tables   []any
 	Wait     string
 }
 
@@ -43,9 +43,7 @@ func (f Lock) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, st
 	}
 
 	w.WriteString("FOR ")
-	if f.Strength != "" {
-		w.WriteString(fmt.Sprintf("%s ", f.Strength))
-	}
+	w.WriteString(fmt.Sprintf("%s ", f.Strength))
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, f.Tables, "OF ", ", ", "")
 	if err != nil {

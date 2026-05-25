@@ -264,7 +264,6 @@ type InsertAction struct {
 }
 
 // Columns specifies the target columns for INSERT action
-// Column names can include subfield names or array subscripts if needed
 func Columns(columns ...string) bob.Mod[*InsertAction] {
 	return bob.ModFunc[*InsertAction](func(i *InsertAction) {
 		i.Columns = append(i.Columns, columns...)

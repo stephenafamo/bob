@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** PostgreSQL `sm.ForUpdate`, `sm.ForNoKeyUpdate`, `sm.ForShare`, and `sm.ForKeyShare` now take `tables ...any` instead of `tables ...string`. Pass `psql.Quote(...)` (or another `Expression`) for each locked relation ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
+- **BREAKING:** MySQL `sm.ForUpdate` and `sm.ForShare` now take `tables ...any` with the same semantics as PostgreSQL (`mysql.Quote(...)` when needed). (thanks @atzedus)
+- **BREAKING:** `clause.Lock.Tables` is now `[]any` instead of `[]string` (used by `FOR UPDATE` / `FOR SHARE` rendering). (thanks @atzedus)
 - **BREAKING:** `View` / `Table` `Name()` now returns the bare table (or view) name as `string`. In v0.44.0, `Name()` returned a dialect `Expression` (qualified table reference for SQL). That role moved to new methods:
   - `NameExpr()` — what `Name()` did in v0.44.0 (on PostgreSQL and SQLite, respects `UseSchema` when schema was generated empty)
   - `NameAsExpr()` — what `NameAs()` did in v0.44.0 (name plus table alias)
@@ -22,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `FOR UPDATE` / `FOR SHARE` `OF` table lists: pass `psql.Quote(...)` / `mysql.Quote(...)` so names with spaces or qualification render correctly ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
+- Fixed PostgreSQL `MERGE` `INSERT` column lists (`mm.Columns`): names are written unquoted (not via `WriteQuoted` / `expr.Quote`), so PostgreSQL still folds unquoted identifiers to lowercase and `mm.Columns("Name")` matches a column created as `name`. Quoted identifiers are case-sensitive in PostgreSQL; auto-quoting broke that. Use `psql.Quote(...)` in value expressions when you need a delimited identifier. (thanks @atzedus)
+- Fixed `um.SetCols` / `im.SetCols` / `mm.SetCols` tuple-assignment column lists the same way (unquoted `[]string` names on the left-hand side of `(cols...) = ...`). (thanks @atzedus)
+- Fixed MySQL `sm.From(...).UseIndex` / `ForceIndex` / `IgnoreIndex` (and `*ForJoin` / `*ForOrderBy` / `*ForGroupBy` variants) not appearing in generated SQL because `FromChain.Apply` did not copy `IndexHints` onto the query. (thanks @atzedus)
 - Fixed generated models using the wrong column qualifier when a table was constructed with a non-empty schema. Codegen previously passed `table.Key` into `build*Columns` and `pkEQ` / `pkIN`, but dialect `View` / `Table` types use `schema.table` as `Alias()` whenever `schema` is set at construction. That mismatch produced SQL such as `` `users`.`id` `` in `WHERE` while `FROM` used `` `myapp`.`users` AS `myapp.users` `` (columns and primary-key expressions did not match the table alias from `NameAsExpr()`). Templates now use a `tableColumnAlias` helper: `schema.name` when `schema` is set, otherwise `table.Key`. (thanks @atzedus)
 
 ## [v0.44.0] - 2026-05-21

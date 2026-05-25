@@ -202,15 +202,8 @@ func (a MergeAction) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString("INSERT")
 
-	if len(a.Columns) > 0 {
-		w.WriteString(" (")
-		for i, col := range a.Columns {
-			if i > 0 {
-				w.WriteString(", ")
-			}
-			d.WriteQuoted(w, col)
-		}
-		w.WriteString(")")
+	if _, err := bob.ExpressSlice(ctx, w, d, start, a.Columns, " (", ", ", ")"); err != nil {
+		return nil, err
 	}
 
 	if a.Overriding != "" {
@@ -220,13 +213,7 @@ func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.D
 	}
 
 	if len(a.Values) > 0 {
-		w.WriteString(" VALUES (")
-		args, err := bob.ExpressSlice(ctx, w, d, start, a.Values, "", ", ", "")
-		if err != nil {
-			return nil, err
-		}
-		w.WriteString(")")
-		return args, nil
+		return bob.ExpressSlice(ctx, w, d, start, a.Values, " VALUES (", ", ", ")")
 	}
 
 	w.WriteString(" DEFAULT VALUES")
