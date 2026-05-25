@@ -178,7 +178,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 	}
 }
 
-func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForUpdate locks selected tables. Pass table names as psql.Quote(...) or another Expression.
+func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
@@ -187,7 +188,8 @@ func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 	})
 }
 
-func ForNoKeyUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForNoKeyUpdate locks selected tables without affecting key columns.
+func ForNoKeyUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthNoKeyUpdate,
@@ -196,7 +198,8 @@ func ForNoKeyUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 	})
 }
 
-func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForShare acquires a shared lock on selected tables.
+func ForShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthShare,
@@ -205,7 +208,8 @@ func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 	})
 }
 
-func ForKeyShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForKeyShare acquires a key-share lock on selected tables.
+func ForKeyShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthKeyShare,

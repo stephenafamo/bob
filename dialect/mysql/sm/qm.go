@@ -179,7 +179,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 	}
 }
 
-func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForUpdate locks selected tables. Pass table names as mysql.Quote(...) or another Expression.
+func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
@@ -188,7 +189,8 @@ func ForUpdate(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
 	})
 }
 
-func ForShare(tables ...string) dialect.LockChain[*dialect.SelectQuery] {
+// ForShare acquires a shared lock on selected tables.
+func ForShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthShare,

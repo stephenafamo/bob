@@ -387,6 +387,22 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 			),
 			ExpectedSQL: `SELECT id, name FROM users FOR UPDATE OF users SKIP LOCKED`,
 		},
+		"FOR UPDATE OF quoted table": {
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.ForUpdate(psql.Quote("my table")),
+			),
+			ExpectedSQL: `SELECT id FROM users FOR UPDATE OF "my table"`,
+		},
+		"FOR UPDATE OF qualified table": {
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.ForUpdate(psql.Quote("public", "users")),
+			),
+			ExpectedSQL: `SELECT id FROM users FOR UPDATE OF "public"."users"`,
+		},
 		"Multiple Unions": {
 			Query: psql.Select(
 				sm.Columns("id", "name"),

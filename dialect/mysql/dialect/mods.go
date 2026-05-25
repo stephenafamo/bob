@@ -44,6 +44,9 @@ func (f FromChain[Q]) Apply(q Q) {
 
 	q.SetLateral(from.Lateral)
 	q.AppendPartition(from.Partitions...)
+	for _, h := range from.IndexHints {
+		q.AppendIndexHint(h)
+	}
 }
 
 func (f FromChain[Q]) As(alias string, columns ...string) FromChain[Q] {
