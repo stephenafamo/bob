@@ -24,7 +24,7 @@ func (wi *Window) AddPartitionBy(condition ...any) {
 
 func (wi Window) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if wi.BasedOn != "" {
-		w.WriteString(wi.BasedOn)
+		d.WriteQuoted(w, wi.BasedOn)
 		w.WriteString(" ")
 	}
 
@@ -55,7 +55,7 @@ type NamedWindow struct {
 }
 
 func (n NamedWindow) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	w.WriteString(n.Name)
+	d.WriteQuoted(w, n.Name)
 	w.WriteString(" AS (")
 	args, err := bob.Express(ctx, w, d, start, n.Definition)
 	w.WriteString(")")

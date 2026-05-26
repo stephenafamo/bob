@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-func NewFunction(name string, args ...any) *Function {
+func NewFunction(name any, args ...any) *Function {
 	f := &Function{name: name, args: args}
 	f.Chain = expr.Chain[Expression, Expression]{Base: f}
 
@@ -17,7 +17,7 @@ func NewFunction(name string, args ...any) *Function {
 }
 
 type Function struct {
-	name string
+	name any
 	args []any
 
 	Distinct    bool
@@ -44,12 +44,13 @@ func (f *Function) AppendColumn(name, datatype string) {
 }
 
 func (f *Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	if f.name == "" {
-		return nil, nil
+	nameArgs, err := bob.Express(ctx, w, d, start, f.name)
+	if err != nil {
+		return nil, err
 	}
 
-	w.WriteString(f.name)
 	w.WriteString("(")
+	start += len(nameArgs)
 
 	if f.Distinct {
 		w.WriteString("DISTINCT ")
@@ -90,7 +91,7 @@ func (f *Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	}
 
 	if len(f.Alias) > 0 {
-		w.WriteString(f.Alias)
+		d.WriteQuoted(w, f.Alias)
 		w.WriteString(" ")
 	}
 
@@ -106,7 +107,7 @@ func (f *Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	}
 	args = append(args, winargs...)
 
-	return args, nil
+	return append(nameArgs, args...), nil
 }
 
 type columnDef struct {
@@ -115,7 +116,9 @@ type columnDef struct {
 }
 
 func (c columnDef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	w.WriteString(c.name + " " + c.dataType)
+	d.WriteQuoted(w, c.name)
+	w.WriteString(" ")
+	w.WriteString(c.dataType)
 
 	return nil, nil
 }

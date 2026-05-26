@@ -215,14 +215,18 @@ func (s returningWithAliases[Q]) WithNewAs(alias string) returningWithAliases[Q]
 	return s
 }
 
-type Set[Q interface{ AppendSet(clauses ...any) }] []string
+// Set builds a single-column assignment for SET / DO UPDATE SET clauses.
+// Col is rendered via bob.Express; use expr.Quote (or dialect.Quote) for SQL identifiers.
+type Set[Q interface{ AppendSet(clauses ...any) }] struct {
+	Col any
+}
 
 func (s Set[Q]) To(to any) bob.Mod[Q] {
-	return set[Q]{expr.OP("=", expr.Quote(s...), to)}
+	return set[Q]{expr.OP("=", s.Col, to)}
 }
 
 func (s Set[Q]) ToArg(to any) bob.Mod[Q] {
-	return set[Q]{expr.OP("=", expr.Quote(s...), expr.Arg(to))}
+	return set[Q]{expr.OP("=", s.Col, expr.Arg(to))}
 }
 
 type set[Q interface{ AppendSet(clauses ...any) }] []any

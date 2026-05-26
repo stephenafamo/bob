@@ -6,6 +6,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
+	"github.com/stephenafamo/bob/expr"
 	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
@@ -35,7 +36,7 @@ func TestUpdate(t *testing.T) {
 				um.Table(mysql.Quote("table1").As("T1")),
 				um.LeftJoin(mysql.Quote("table2").As("T2")).
 					OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
-				um.SetCol("T1", "some_value").ToArg("test"),
+				um.Set(expr.OP("=", mysql.Quote("T1", "some_value"), mysql.Arg("test"))),
 				um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
 				um.Where(mysql.Quote("T2", "other_value").EQ(mysql.Arg("something"))),
 			),

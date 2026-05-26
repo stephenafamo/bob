@@ -89,8 +89,10 @@ func Set(sets ...bob.Expression) bob.Mod[*clause.ConflictClause] {
 	})
 }
 
+// SetCol sets one column in ON CONFLICT DO UPDATE SET. The column name is quoted automatically.
+// For qualified names or other expressions on the LHS, use Set(...).
 func SetCol(from string) mods.Set[*clause.ConflictClause] {
-	return mods.Set[*clause.ConflictClause]{from}
+	return mods.Set[*clause.ConflictClause]{Col: expr.Quote(from)}
 }
 
 // Excluded references a column from the EXCLUDED pseudo-table in ON CONFLICT DO UPDATE.

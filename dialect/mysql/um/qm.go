@@ -4,6 +4,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
@@ -58,8 +59,10 @@ func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
 	})
 }
 
-func SetCol(from ...string) mods.Set[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery](from)
+// SetCol sets one column in UPDATE ... SET. The column name is quoted automatically.
+// For qualified names or other expressions on the LHS, use Set(...).
+func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery]{Col: expr.Quote(from)}
 }
 
 func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {

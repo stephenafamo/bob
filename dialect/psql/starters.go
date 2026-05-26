@@ -12,11 +12,13 @@ type Expression = dialect.Expression
 //nolint:gochecknoglobals
 var bmod = expr.Builder[Expression, Expression]{}
 
-// F creates a function expression with the given name and args
+// F creates a function expression with the given name and args.
+// Name is rendered via bob.Express: use a string for a literal name (e.g. "generate_series")
+// or psql.Quote("pg_catalog", "array_agg") for qualified identifiers.
 //
 //	SQL: generate_series(1, 3)
 //	Go: psql.F("generate_series", 1, 3)
-func F(name string, args ...any) mods.Moddable[*dialect.Function] {
+func F(name any, args ...any) mods.Moddable[*dialect.Function] {
 	f := dialect.NewFunction(name, args...)
 
 	return mods.Moddable[*dialect.Function](func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {

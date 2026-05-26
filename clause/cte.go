@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/internal"
 )
 
 type CTE struct {
@@ -18,9 +19,8 @@ type CTE struct {
 }
 
 func (c CTE) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	w.WriteString(c.Name)
-	_, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "(", ", ", ")")
-	if err != nil {
+	d.WriteQuoted(w, c.Name)
+	if _, err := bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(c.Columns), "(", ", ", ")"); err != nil {
 		return nil, err
 	}
 
@@ -29,10 +29,9 @@ func (c CTE) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, sta
 	switch {
 	case c.Materialized == nil:
 		// do nothing
-		break
 	case *c.Materialized:
 		w.WriteString("MATERIALIZED ")
-	case !*c.Materialized:
+	default:
 		w.WriteString("NOT MATERIALIZED ")
 	}
 
@@ -75,12 +74,13 @@ func (c CTESearch) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 	// [ SEARCH { BREADTH | DEPTH } FIRST BY column_name [, ...] SET search_seq_col_name ]
 	w.WriteString(fmt.Sprintf("SEARCH %s FIRST BY ", c.Order))
 
-	args, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(c.Columns), "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	w.WriteString(fmt.Sprintf(" SET %s", c.Set))
+	w.WriteString(" SET ")
+	d.WriteQuoted(w, c.Set)
 
 	return args, nil
 }
@@ -97,12 +97,13 @@ func (c CTECycle) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	//[ CYCLE column_name [, ...] SET cycle_mark_col_name [ TO cycle_mark_value DEFAULT cycle_mark_default ] USING cycle_path_col_name ]
 	w.WriteString("CYCLE ")
 
-	args, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, "", ", ", "")
+	args, err := bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(c.Columns), "", ", ", "")
 	if err != nil {
 		return nil, err
 	}
 
-	w.WriteString(fmt.Sprintf(" SET %s", c.Set))
+	w.WriteString(" SET ")
+	d.WriteQuoted(w, c.Set)
 
 	markArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), c.SetVal,
 		c.SetVal != nil, " TO ", "")
@@ -118,7 +119,8 @@ func (c CTECycle) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	}
 	args = append(args, defaultArgs...)
 
-	w.WriteString(fmt.Sprintf(" USING %s", c.Using))
+	w.WriteString(" USING ")
+	d.WriteQuoted(w, c.Using)
 
 	return args, nil
 }

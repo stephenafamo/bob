@@ -43,7 +43,7 @@ func (w WhereCurrentOf) WriteSQL(ctx context.Context, wr io.StringWriter, d bob.
 	}
 
 	wr.WriteString("WHERE CURRENT OF ")
-	wr.WriteString(w.Cursor)
+	d.WriteQuoted(wr, w.Cursor)
 
 	return nil, nil
 }

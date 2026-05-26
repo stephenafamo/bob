@@ -57,7 +57,10 @@ type ConflictTarget struct {
 
 func (c ConflictTarget) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if c.Constraint != "" {
-		return bob.ExpressIf(ctx, w, d, start, c.Constraint, true, " ON CONSTRAINT ", "")
+		w.WriteString(" ON CONSTRAINT ")
+		d.WriteQuoted(w, c.Constraint)
+
+		return nil, nil
 	}
 
 	args, err := bob.ExpressSlice(ctx, w, d, start, c.Columns, " (", ", ", ")")

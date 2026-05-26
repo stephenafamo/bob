@@ -253,6 +253,21 @@ func TestMerge(t *testing.T) {
 				USING new_products AS "n" ON "n"."sku" = "products"."sku"
 				WHEN NOT MATCHED THEN INSERT ("id", "sku", "name") OVERRIDING USER VALUE VALUES ("n"."id", "n"."sku", "n"."name")`,
 		},
+		"merge insert column list quotes spaced names": {
+			Query: psql.Merge(
+				mm.Into("target"),
+				mm.Using("source").As("s").On(
+					psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
+				),
+				mm.WhenNotMatched().ThenInsert(
+					mm.Columns("my col"),
+					mm.Values(psql.Quote("s", "my col")),
+				),
+			),
+			ExpectedSQL: `MERGE INTO target
+				USING source AS "s" ON ("s"."id" = "target"."id")
+				WHEN NOT MATCHED THEN INSERT ("my col") VALUES ("s"."my col")`,
+		},
 		"merge with Only target": {
 			Query: psql.Merge(
 				mm.Into("parent_table"),
@@ -437,3 +452,4 @@ func TestMergeReturningWith(t *testing.T) {
 
 	testutils.RunTests(t, examples, nil)
 }
+
