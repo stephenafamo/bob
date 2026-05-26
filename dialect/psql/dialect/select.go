@@ -36,7 +36,11 @@ type SelectQuery struct {
 	CombinedOffset clause.Offset
 }
 
+// AppendTableRef sets the primary FROM from_item on the query.
 func (s *SelectQuery) AppendTableRef(ref clause.TableRef) {
+	if len(s.TableRef.Joins) > 0 {
+		ref.Joins = append(s.TableRef.Joins, ref.Joins...)
+	}
 	s.TableRef = ref
 }
 

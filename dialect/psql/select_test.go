@@ -39,6 +39,16 @@ func TestSelect(t *testing.T) {
 				sm.From("orders"),
 			),
 		},
+		"from keeps existing joins": {
+			Doc:         "A later From replaces the primary table but keeps joins already on the from_item",
+			ExpectedSQL: "SELECT id FROM orders CROSS JOIN events",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.CrossJoin("events"),
+				sm.From("orders"),
+			),
+		},
 		"from multiple tables cross join": {
 			Doc:         "Multiple tables in FROM via CROSS JOIN on the primary from_item",
 			ExpectedSQL: "SELECT id FROM users CROSS JOIN orders",
@@ -46,6 +56,15 @@ func TestSelect(t *testing.T) {
 				sm.Columns("id"),
 				sm.From("users"),
 				sm.CrossJoin("orders"),
+			),
+		},
+		"from multiple tables cross join unordered calls": {
+			Doc:         "Multiple tables in FROM via CROSS JOIN on the primary from_item",
+			ExpectedSQL: "SELECT id FROM users CROSS JOIN orders",
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.CrossJoin("orders"),
+				sm.From("users"),
 			),
 		},
 		"from function": {
