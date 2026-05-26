@@ -175,7 +175,7 @@ mysql.Insert(
   im.As("new"),
   im.OnDuplicateKeyUpdate(
     im.UpdateWithAlias("new", "did"),
-    im.UpdateCol("dbname").To(mysql.Concat(
+    im.UpdateCol(mysql.Quote("dbname")).To(mysql.Concat(
       mysql.Quote("new", "dname"), mysql.S(" (formerly "),
       mysql.Quote("d", "dname"), mysql.S(")"),
     )),

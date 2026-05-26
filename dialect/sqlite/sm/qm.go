@@ -63,6 +63,7 @@ func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
 	}
 }
 
+// Window defines a named window. The name is quoted as an SQL identifier.
 func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
 	w := clause.Window{}
 	for _, mod := range winMods {

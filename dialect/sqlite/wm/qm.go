@@ -9,6 +9,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
+// BasedOn references an existing named window. The name is quoted as an SQL identifier.
 func BasedOn(name string) bob.Mod[*clause.Window] {
 	return bob.ModFunc[*clause.Window](func(w *clause.Window) {
 		w.SetBasedOn(name)

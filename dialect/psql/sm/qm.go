@@ -7,6 +7,7 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
+// With starts a CTE. The name and column list are quoted as SQL identifiers.
 func With(name string, columns ...string) dialect.CTEChain[*dialect.SelectQuery] {
 	return dialect.With[*dialect.SelectQuery](name, columns...)
 }
@@ -29,6 +30,8 @@ func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
 	return mods.Select[*dialect.SelectQuery](clauses)
 }
 
+// From sets the query source. Pass a table name as a string (unquoted literal) or use
+// psql.Quote(...) / a subquery Expression for quoted or qualified names.
 func From(table any) dialect.FromChain[*dialect.SelectQuery] {
 	return dialect.From[*dialect.SelectQuery](table)
 }
@@ -93,6 +96,7 @@ func GroupingSets(groups ...any) clause.GroupingSet {
 	return clause.GroupingSet{Type: "GROUPING SETS", Groups: groups}
 }
 
+// Window defines a named window for the query. The name is quoted as an SQL identifier.
 func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
 	w := clause.Window{}
 	for _, mod := range winMods {

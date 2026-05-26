@@ -56,6 +56,12 @@ func TestSelect(t *testing.T) {
 				sm.From(sm.FromFunction(psql.F("generate_series", 1, 3)())),
 			),
 		},
+		"function qualified name": {
+			Query: psql.Select(
+				sm.Columns(psql.F(psql.Quote("pg_catalog", "array_agg"), "x")()),
+			),
+			ExpectedSQL: `SELECT "pg_catalog"."array_agg"("x")`,
+		},
 		"from then standalone inner join": {
 			Doc:         "FROM with INNER JOIN applied as a standalone mod after From",
 			ExpectedSQL: `SELECT id FROM users INNER JOIN events ON ("users"."id" = "events"."user_id")`,
@@ -386,6 +392,24 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 				sm.ForUpdate("users").SkipLocked(),
 			),
 			ExpectedSQL: `SELECT id, name FROM users FOR UPDATE OF users SKIP LOCKED`,
+		},
+		"CTE with quoted name and columns": {
+			Query: psql.Select(
+				sm.With("my cte", "a col").As(psql.Select(
+					sm.Columns(psql.Quote("a col")),
+					sm.From("t"),
+				)),
+				sm.From(psql.Quote("my cte")),
+			),
+			ExpectedSQL: `WITH "my cte"("a col") AS (SELECT "a col" FROM t) SELECT * FROM "my cte"`,
+		},
+		"named window with quoted name": {
+			Query: psql.Select(
+				sm.Columns("x"),
+				sm.From("t"),
+				sm.Window("my win", wm.OrderBy("x")),
+			),
+			ExpectedSQL: `SELECT x FROM t WINDOW "my win" AS (ORDER BY x)`,
 		},
 		"FOR UPDATE OF quoted table": {
 			Query: psql.Select(

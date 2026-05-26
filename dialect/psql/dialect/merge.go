@@ -7,6 +7,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/internal"
 )
 
 // MergeWhenType represents the type of WHEN clause in MERGE statement
@@ -200,11 +201,16 @@ func (a MergeAction) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 }
 
 func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	var args []any
+
 	w.WriteString("INSERT")
 
-	if _, err := bob.ExpressSlice(ctx, w, d, start, a.Columns, " (", ", ", ")"); err != nil {
+	colArgs, err := bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(a.Columns), " (", ", ", ")")
+	if err != nil {
 		return nil, err
 	}
+	args = append(args, colArgs...)
+	start += len(colArgs)
 
 	if a.Overriding != "" {
 		w.WriteString(" OVERRIDING ")
@@ -212,12 +218,17 @@ func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.D
 		w.WriteString(" VALUE")
 	}
 
+	valArgs, err := bob.ExpressSlice(ctx, w, d, start, a.Values, " VALUES (", ", ", ")")
+	if err != nil {
+		return nil, err
+	}
 	if len(a.Values) > 0 {
-		return bob.ExpressSlice(ctx, w, d, start, a.Values, " VALUES (", ", ", ")")
+		return append(args, valArgs...), nil
 	}
 
 	w.WriteString(" DEFAULT VALUES")
-	return nil, nil
+
+	return args, nil
 }
 
 func (a MergeAction) writeUpdate(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

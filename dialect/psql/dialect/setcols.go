@@ -10,7 +10,7 @@ import (
 
 // columnsAssignment represents (columns...) = [ROW] (values...) or (columns...) = (subquery)
 type columnsAssignment struct {
-	cols   []string
+	cols   []bob.Expression
 	values []any // bob.Expression values or a single bob.Query for subquery
 	isRow  bool
 }
@@ -50,20 +50,20 @@ func NewSetCols[Q interface{ AppendSet(clauses ...any) }](columns ...string) Set
 // ToRow sets columns to ROW of expressions: (columns...) = ROW (expressions...)
 func (s SetCols[Q]) ToRow(values ...bob.Expression) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: s.columns, values: internal.ToAnySlice(values), isRow: true})
+		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: internal.ToAnySlice(values), isRow: true})
 	})
 }
 
 // ToExprs sets columns to expressions: (columns...) = (expressions...)
 func (s SetCols[Q]) ToExprs(values ...bob.Expression) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: s.columns, values: internal.ToAnySlice(values)})
+		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: internal.ToAnySlice(values)})
 	})
 }
 
 // ToQuery sets columns from a subquery: (columns...) = (subquery)
 func (s SetCols[Q]) ToQuery(query bob.Query) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: s.columns, values: []any{query}})
+		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: []any{query}})
 	})
 }
