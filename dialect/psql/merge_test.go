@@ -452,4 +452,3 @@ func TestMergeReturningWith(t *testing.T) {
 
 	testutils.RunTests(t, examples, nil)
 }
-
