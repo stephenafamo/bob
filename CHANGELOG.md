@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed PostgreSQL `sm.From` clearing joins already on the `FROM` from_item (e.g. `sm.CrossJoin` before `sm.From`) because `SelectQuery.AppendTableRef` replaced the entire embedded `FROM` table ref. Existing joins are merged into the new primary table ref. (thanks @atzedus)
 - Fixed `FOR UPDATE` / `FOR SHARE` `OF` table lists: pass `psql.Quote(...)` / `mysql.Quote(...)` so names with spaces or qualification render correctly ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
 - Fixed PostgreSQL `MERGE` `INSERT` column lists (`mm.Columns`): names are written unquoted (not via `WriteQuoted` / `expr.Quote`), so PostgreSQL still folds unquoted identifiers to lowercase and `mm.Columns("Name")` matches a column created as `name`. Quoted identifiers are case-sensitive in PostgreSQL; auto-quoting broke that. Use `psql.Quote(...)` in value expressions when you need a delimited identifier. (thanks @atzedus)
 - Fixed `um.SetCols` / `im.SetCols` / `mm.SetCols` tuple-assignment column lists the same way (unquoted `[]string` names on the left-hand side of `(cols...) = ...`). (thanks @atzedus)
