@@ -136,6 +136,38 @@ func TestInsert(t *testing.T) {
 				` + "`display name` = ?",
 			ExpectedArgs: []any{1, "first", "renamed"},
 		},
+		"on duplicate key updateCol as mod": {
+			Query: mysql.Insert(
+				im.Into("distributors", "did", "dname"),
+				im.Values(mysql.Arg(8, "Anvil Distribution")),
+				im.OnDuplicateKeyUpdate(
+					im.UpdateCol("dname").ToArg("updated"),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
+				VALUES (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`dname` = ?",
+			ExpectedArgs: []any{8, "Anvil Distribution", "updated"},
+		},
+		"on duplicate key updateCol via Update helper": {
+			Query: mysql.Insert(
+				im.Into("distributors", "did", "dname"),
+				im.Values(mysql.Arg(8, "Anvil Distribution")),
+				im.OnDuplicateKeyUpdate(
+					im.Update(
+						im.UpdateCol("dname").ToArg("updated"),
+						im.UpdateCol("did").ToArg(8),
+					),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
+				VALUES (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`dname` = ?," + `
+				` + "`did` = ?",
+			ExpectedArgs: []any{8, "Anvil Distribution", "updated", 8},
+		},
 	}
 
 	// Cannot use the formatter for upsert with alias

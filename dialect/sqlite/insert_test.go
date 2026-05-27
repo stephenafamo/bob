@@ -70,6 +70,38 @@ func TestInsert(t *testing.T) {
 				WHERE ("d"."zipcode" <> '21201')`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"upsert setCol as mod": {
+			Query: sqlite.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(sqlite.Arg(8, "Anvil Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.SetCol("dname").To(im.Excluded("dname")),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+				VALUES (?1, ?2)
+				ON CONFLICT (did) DO UPDATE
+				SET "dname" = EXCLUDED."dname"`,
+			ExpectedArgs: []any{8, "Anvil Distribution"},
+		},
+		"upsert setCol via Set helper": {
+			Query: sqlite.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(sqlite.Arg(8, "Anvil Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.Set(
+						im.SetCol("dname").To(im.Excluded("dname")),
+						im.SetCol("did").To(im.Excluded("did")),
+					),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+				VALUES (?1, ?2)
+				ON CONFLICT (did) DO UPDATE
+				SET "dname" = EXCLUDED."dname",
+				"did" = EXCLUDED."did"`,
+			ExpectedArgs: []any{8, "Anvil Distribution"},
+		},
 		"or replace": {
 			Query: sqlite.Insert(
 				im.OrReplace(),

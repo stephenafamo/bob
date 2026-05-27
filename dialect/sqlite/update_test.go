@@ -54,3 +54,44 @@ func TestUpdate(t *testing.T) {
 
 	testutils.RunTests(t, examples, formatter)
 }
+
+func TestUpdateSet(t *testing.T) {
+	examples := testutils.Testcases{
+		"setCol as mod": {
+			Query: sqlite.Update(
+				um.Table("films"),
+				um.SetCol("kind").ToArg("Dramatic"),
+			),
+			ExpectedSQL:  `UPDATE films SET "kind" = ?1`,
+			ExpectedArgs: []any{"Dramatic"},
+		},
+		"setExpr as mod": {
+			Query: sqlite.Update(
+				um.Table("employees"),
+				um.SetExpr(sqlite.Quote("employees", "dept_id")).To(sqlite.Quote("accounts", "dept_id")),
+				um.From("accounts"),
+				um.Where(sqlite.Quote("employees", "id").EQ(sqlite.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "employees"."dept_id" = "accounts"."dept_id" FROM accounts
+			  WHERE ("employees"."id" = ?1)`,
+			ExpectedArgs: []any{1},
+		},
+		"setCol and setExpr via Set helper": {
+			Query: sqlite.Update(
+				um.Table("employees"),
+				um.From("accounts"),
+				um.Set(
+					um.SetCol("sales_count").To("sales_count + 1"),
+					um.SetExpr(sqlite.Quote("employees", "dept_id")).To(sqlite.Quote("accounts", "dept_id")),
+				),
+				um.Where(sqlite.Quote("employees", "id").EQ(sqlite.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1,
+			  "employees"."dept_id" = "accounts"."dept_id" FROM accounts
+			  WHERE ("employees"."id" = ?1)`,
+			ExpectedArgs: []any{1},
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}

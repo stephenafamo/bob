@@ -123,6 +123,24 @@ func TestInsert(t *testing.T) {
 			   SET dname = EXCLUDED.dname`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"upsert setCol and setExpr via Set helper": {
+			Query: psql.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.Set(
+						im.SetCol("dname").To(im.Excluded("dname")),
+						im.SetExpr(psql.Quote("d", "did")).To(im.Excluded("did")),
+					),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+			   VALUES ($1, $2)
+			   ON CONFLICT (did) DO UPDATE
+			   SET dname = EXCLUDED.dname,
+			   "d"."did" = EXCLUDED.did`,
+			ExpectedArgs: []any{8, "Anvil Distribution"},
+		},
 		"insert overriding system value": {
 			Query: psql.Insert(
 				im.Into("users", "id", "name"),
