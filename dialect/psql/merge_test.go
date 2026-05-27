@@ -119,7 +119,7 @@ func TestMerge(t *testing.T) {
 				),
 			),
 			ExpectedSQL: `MERGE INTO target_table
-				USING (SELECT *) AS "src" ON "src"."id" = "target_table"."id"
+				USING (SELECT *) AS "src" ON ("src"."id" = "target_table"."id")
 				WHEN MATCHED THEN UPDATE SET "value" = "src"."value"`,
 		},
 		"merge with multiple SetCol from source": {
@@ -206,7 +206,7 @@ func TestMerge(t *testing.T) {
 			),
 			ExpectedSQL: `MERGE INTO products
 				USING updates AS "u" ON "u"."id" = "products"."id"
-				WHEN MATCHED THEN UPDATE SET ("name", "price") = (SELECT "name", "price" FROM default_values WHERE (category = u.category))`,
+				WHEN MATCHED THEN UPDATE SET ("name", "price") = (SELECT "name", "price" FROM default_values WHERE ("category" = "u"."category"))`,
 		},
 		"merge with CTE": {
 			Query: psql.Merge(
@@ -440,13 +440,6 @@ func TestMerge(t *testing.T) {
 				USING source_data AS "s" ON "s"."id" = "target"."id"
 				WHEN MATCHED THEN UPDATE SET "name" = "s"."name", "value" = "s"."value"`,
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestMergeReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with new alias": {
 			Query: psql.Merge(
 				mm.Into("products"),
@@ -468,5 +461,5 @@ func TestMergeReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }

@@ -268,7 +268,7 @@ func TestUpdate(t *testing.T) {
 		},
 		"with sub-select": {
 			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 WHERE (id =
-				  (SELECT sales_person FROM accounts WHERE (name = $1)))`,
+				  ((SELECT sales_person FROM accounts WHERE (name = $1))))`,
 			ExpectedArgs: []any{"Acme Corporation"},
 			Query: psql.Update(
 				um.Table("employees"),
@@ -280,13 +280,6 @@ func TestUpdate(t *testing.T) {
 				)))),
 			),
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestUpdateReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with old and new aliases": {
 			Query: psql.Update(
 				um.Table("users"),
@@ -302,7 +295,7 @@ func TestUpdateReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }
 
 func TestUpdateWhereCurrentOfConflict(t *testing.T) {

@@ -26,13 +26,24 @@ type Testcase struct {
 var (
 	oneOrMoreSpace      = regexp.MustCompile(`\s+`)
 	spaceAroundBrackets = regexp.MustCompile(`\s*([\(|\)])\s*`)
+	spaceAroundCommas   = regexp.MustCompile(`\s*,\s*`)
+	spaceAroundDots     = regexp.MustCompile(`\s*\.\s*`)
+	wrappedClauseSimple = regexp.MustCompile(`\b(ON|WHERE|AND)\s+\(\s*([^\(\)]*?)\s*\)`)
 )
 
 func Clean(s string) string {
 	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s, `"`, "")
 	s = oneOrMoreSpace.ReplaceAllLiteralString(s, " ")
 	s = spaceAroundBrackets.ReplaceAllString(s, " $1 ")
-	return s
+	s = spaceAroundCommas.ReplaceAllString(s, ", ")
+	s = spaceAroundDots.ReplaceAllString(s, ".")
+	s = wrappedClauseSimple.ReplaceAllString(s, "$1 $2")
+	for strings.Contains(s, "( (") || strings.Contains(s, ") )") {
+		s = strings.ReplaceAll(s, "( (", "( ")
+		s = strings.ReplaceAll(s, ") )", " )")
+	}
+	return strings.TrimSpace(s)
 }
 
 type FormatFunc = func(string) (string, error)

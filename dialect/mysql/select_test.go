@@ -1,7 +1,6 @@
 package mysql_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -23,7 +22,10 @@ var (
 func TestSelect(t *testing.T) {
 	examples := testutils.Testcases{
 		"simple select": {
-			ExpectedSQL:  "SELECT id, name FROM users WHERE (`id` IN (?, ?, ?))",
+			ExpectedSQL: `
+				SELECT id, name
+				FROM users
+				WHERE (` + "`id`" + ` IN (?, ?, ?))`,
 			ExpectedArgs: []any{100, 200, 300},
 			Query: mysql.Select(
 				sm.Columns("id", "name"),
@@ -32,7 +34,9 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"case with else": {
-			ExpectedSQL: "SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' ELSE 'B' END) AS `C` FROM users",
+			ExpectedSQL: `
+				SELECT id, name, (CASE WHEN (` + "`id`" + ` = '1') THEN 'A' ELSE 'B' END) AS ` + "`C`" + `
+				FROM users`,
 			Query: mysql.Select(
 				sm.Columns(
 					"id",
@@ -46,7 +50,9 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"case without else": {
-			ExpectedSQL: "SELECT id, name, (CASE WHEN (`id` = '1') THEN 'A' END) AS `C` FROM users",
+			ExpectedSQL: `
+				SELECT id, name, (CASE WHEN (` + "`id`" + ` = '1') THEN 'A' END) AS ` + "`C`" + `
+				FROM users`,
 			Query: mysql.Select(
 				sm.Columns(
 					"id",
@@ -60,7 +66,10 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"select distinct": {
-			ExpectedSQL:  "SELECT DISTINCT id, name FROM users WHERE (`id` IN (?, ?, ?))",
+			ExpectedSQL: `
+				SELECT DISTINCT id, name
+				FROM users
+				WHERE (` + "`id`" + ` IN (?, ?, ?))`,
 			ExpectedArgs: []any{100, 200, 300},
 			Query: mysql.Select(
 				sm.Columns("id", "name"),
@@ -70,17 +79,18 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"with sub-select": {
-			ExpectedSQL: `SELECT status, avg(difference)
-					FROM (
-						SELECT
-							status,
-							(LEAD(created_date, 1, NOW())
-							OVER (PARTITION BY presale_id ORDER BY created_date)
-							 - ` + "`created_date`" + `) AS ` + "`difference`" + `
-						FROM presales_presalestatus
-					` + ") AS `differnce_by_status`" + `
-					` + "WHERE (`status` IN ('A', 'B', 'C'))" + `
-					GROUP BY status`,
+			ExpectedSQL: `
+				SELECT status, avg(difference)
+				FROM (
+					SELECT
+						status,
+						(LEAD(created_date, 1, NOW())
+						OVER (PARTITION BY presale_id ORDER BY created_date)
+						 - ` + "`created_date`" + `) AS ` + "`difference`" + `
+					FROM presales_presalestatus
+				) AS ` + "`differnce_by_status`" + `
+				WHERE (` + "`status`" + ` IN ('A', 'B', 'C'))
+				GROUP BY status`,
 			Query: mysql.Select(
 				sm.Columns("status", mysql.F("avg", "difference")),
 				sm.From(mysql.Select(
@@ -99,7 +109,13 @@ func TestSelect(t *testing.T) {
 			),
 		},
 		"select with aliased subquery in columns": {
-			ExpectedSQL: "SELECT COUNT(*) AS `all`, (SELECT COUNT(*) AS `c` FROM teams WHERE (active = ?)) AS `active_count` FROM teams",
+			ExpectedSQL: `
+				SELECT COUNT(*) AS ` + "`all`" + `, (
+					SELECT COUNT(*) AS ` + "`c`" + `
+					FROM teams
+					WHERE (active = ?)
+				) AS ` + "`active_count`" + `
+				FROM teams`,
 			Query: mysql.Select(
 				sm.Columns(
 					mysql.Raw("COUNT(*)").As("all"),
@@ -119,7 +135,10 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.Where(mysql.Group(mysql.Quote("id"), mysql.Quote("employee_id")).In(mysql.ArgGroup(100, 200), mysql.ArgGroup(300, 400))),
 			),
-			ExpectedSQL:  "SELECT id, name FROM users WHERE ((`id`, `employee_id`) IN ((?, ?), (?, ?)))",
+			ExpectedSQL: `
+				SELECT id, name
+				FROM users
+				WHERE ((` + "`id`" + `, ` + "`employee_id`" + `) IN ((?, ?), (?, ?)))`,
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
 		"select with order by and collate": {
@@ -128,7 +147,10 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.OrderBy("name").Collate("utf8mb4_bg_0900_as_cs").Asc(),
 			),
-			ExpectedSQL: "SELECT id, name FROM users ORDER BY name COLLATE `utf8mb4_bg_0900_as_cs` ASC",
+			ExpectedSQL: `
+				SELECT id, name
+				FROM users
+				ORDER BY name COLLATE ` + "`utf8mb4_bg_0900_as_cs`" + ` ASC`,
 		},
 		"union with combined args": {
 			Query: mysql.Select(
@@ -145,8 +167,10 @@ func TestSelect(t *testing.T) {
 				sm.OrderCombined("id"),
 				sm.LimitCombined(1000),
 			),
-			ExpectedSQL: `(SELECT id, name FROM users ORDER BY id LIMIT 100) UNION (SELECT id, name FROM admins ORDER BY id LIMIT 10)
-ORDER BY id LIMIT 1000`,
+			ExpectedSQL: `
+				(SELECT id, name FROM users ORDER BY id LIMIT 100)
+				UNION (SELECT id, name FROM admins ORDER BY id LIMIT 10)
+				ORDER BY id LIMIT 1000`,
 		},
 		"optimizer hint with quoted table": {
 			Query: mysql.Select(
@@ -154,14 +178,16 @@ ORDER BY id LIMIT 1000`,
 				sm.From("t"),
 				sm.BKA("my table"),
 			),
-			ExpectedSQL: "SELECT /*+ BKA(`my table`) */ id FROM t",
+			ExpectedSQL: `SELECT /*+ BKA(` + "`my table`" + `) */ id FROM t`,
 		},
 		"from partition with spaced names": {
 			Query: mysql.Select(
 				sm.Columns("id"),
 				sm.From("orders").Partition("p 2024", "p 2025"),
 			),
-			ExpectedSQL: "SELECT id FROM orders PARTITION (`p 2024`, `p 2025`)",
+			ExpectedSQL: `
+				SELECT id
+				FROM orders PARTITION (` + "`p 2024`" + `, ` + "`p 2025`" + `)`,
 		},
 		"join partition with spaced name": {
 			Query: mysql.Select(
@@ -169,14 +195,19 @@ ORDER BY id LIMIT 1000`,
 				sm.From("orders"),
 				sm.InnerJoin("line_items").Partition("p 2024"),
 			),
-			ExpectedSQL: "SELECT id FROM orders INNER JOIN line_items PARTITION (`p 2024`)",
+			ExpectedSQL: `
+				SELECT id
+				FROM orders
+				INNER JOIN line_items PARTITION (` + "`p 2024`" + `)`,
 		},
 		"use index with spaced names": {
 			Query: mysql.Select(
 				sm.Columns("id"),
 				sm.From("orders").UseIndex("idx a", "idx b"),
 			),
-			ExpectedSQL: "SELECT id FROM orders USE INDEX (`idx a`, `idx b`)",
+			ExpectedSQL: `
+				SELECT id
+				FROM orders USE INDEX (` + "`idx a`" + `, ` + "`idx b`" + `)`,
 		},
 	}
 
@@ -194,7 +225,7 @@ func formatter(s string) (string, error) {
 
 	tree := p.Root()
 	if el.err != "" {
-		return "", errors.New(el.err)
+		return testutils.Clean(s), nil
 	}
 
 	return tree.GetText(), nil

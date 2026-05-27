@@ -50,13 +50,6 @@ func TestUpdate(t *testing.T) {
 				))),
 			),
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestUpdateSet(t *testing.T) {
-	examples := testutils.Testcases{
 		"setCol as mod": {
 			Query: sqlite.Update(
 				um.Table("films"),
@@ -93,5 +86,5 @@ func TestUpdateSet(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }

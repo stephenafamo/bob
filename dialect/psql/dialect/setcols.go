@@ -8,10 +8,12 @@ import (
 	"github.com/stephenafamo/bob/internal"
 )
 
-// columnsAssignment represents (columns...) = [ROW] (values...) or (columns...) = (subquery)
+// columnsAssignment represents (columns...) = [ROW] (values...) or (columns...) = (subquery).
+// Exactly one of query or values is set, depending on ToQuery vs ToExprs/ToRow.
 type columnsAssignment struct {
 	cols   []bob.Expression
-	values []any // bob.Expression values or a single bob.Query for subquery
+	query  bob.Query // ToQuery: subquery on the right-hand side
+	values []any     // ToExprs / ToRow: expressions on the right-hand side
 	isRow  bool
 }
 
@@ -19,6 +21,16 @@ func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 	colArgs, err := bob.ExpressSlice(ctx, w, d, start, a.cols, "(", ", ", ") = ")
 	if err != nil {
 		return nil, err
+	}
+
+	if a.query != nil {
+		w.WriteString("(")
+		valArgs, err := a.query.WriteQuery(ctx, w, start+len(colArgs))
+		if err != nil {
+			return nil, err
+		}
+		w.WriteString(")")
+		return append(colArgs, valArgs...), nil
 	}
 
 	valPrefix := "("
@@ -64,6 +76,6 @@ func (s SetCols[Q]) ToExprs(values ...bob.Expression) bob.Mod[Q] {
 // ToQuery sets columns from a subquery: (columns...) = (subquery)
 func (s SetCols[Q]) ToQuery(query bob.Query) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: []any{query}})
+		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), query: query})
 	})
 }

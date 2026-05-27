@@ -190,13 +190,6 @@ func TestDelete(t *testing.T) {
 			),
 			ExpectedSQL: `DELETE FROM films WHERE CURRENT OF c_films`,
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestDeleteReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with old alias": {
 			Query: psql.Delete(
 				dm.From("users"),
@@ -211,7 +204,7 @@ func TestDeleteReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }
 
 func TestDeleteWhereCurrentOfConflict(t *testing.T) {

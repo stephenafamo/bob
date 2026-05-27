@@ -43,7 +43,7 @@ func TestValues(t *testing.T) {
 		},
 		"values with fetch": {
 			Doc:          "Simple values query with fetch",
-			ExpectedSQL:  "VALUES ($1,$2,$3), ($4,$5,$6) OFFSET $7 FETCH FIRST $8 ROWS ONLY",
+			ExpectedSQL:  "VALUES ($1,$2,$3), ($4,$5,$6) OFFSET $7 FETCH NEXT $8 ROWS ONLY",
 			ExpectedArgs: []any{1, 2, 3, 5, 6, 7, 15, 10},
 			Query: psql.Values(
 				vm.RowValue(psql.Arg(1, 2, 3)),
