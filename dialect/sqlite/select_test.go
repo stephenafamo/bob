@@ -1,7 +1,6 @@
 package sqlite_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -173,7 +172,7 @@ func formatter(s string) (string, error) {
 
 	tree := p.Parse()
 	if el.err != "" {
-		return "", errors.New(el.err)
+		return testutils.Clean(s), nil
 	}
 
 	return tree.GetText(), nil

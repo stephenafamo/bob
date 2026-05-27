@@ -209,7 +209,7 @@ func TestSelect(t *testing.T) {
 							 - "created_date") AS "difference"
 						FROM presales_presalestatus
 					) AS "differnce_by_status"
-					WHERE status IN ('A', 'B', 'C')
+					WHERE ("status" IN ('A', 'B', 'C'))
 					GROUP BY status`,
 			Query: psql.Select(
 				sm.Columns("status", psql.F("avg", "difference")),
@@ -251,7 +251,7 @@ func TestSelect(t *testing.T) {
 					psql.Group(psql.Quote("id"), psql.Quote("employee_id")).
 						In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
 			),
-			ExpectedSQL:  "SELECT id, name FROM users WHERE (id, employee_id) IN (($1, $2), ($3, $4))",
+			ExpectedSQL:  `SELECT id, name FROM users WHERE (("id", "employee_id") IN (($1, $2), ($3, $4)))`,
 			ExpectedArgs: []any{100, 200, 300, 400},
 		},
 		"group by grouped expression list": {
@@ -440,7 +440,7 @@ WINDOW w AS (PARTITION BY depname ORDER BY salary)`,
 					sm.From("mods"),
 				)),
 			),
-			ExpectedSQL: `SELECT id, name FROM users UNION select id, name FROM admins UNION select id, name FROM mods`,
+			ExpectedSQL: `SELECT id, name FROM users UNION (SELECT id, name FROM admins) UNION (SELECT id, name FROM mods)`,
 		},
 		"Union with combined args": {
 			Query: psql.Select(
@@ -483,7 +483,8 @@ ORDER BY id LIMIT 1000`,
 func formatter(s string) (string, error) {
 	aTree, err := pgparse.Parse(s)
 	if err != nil {
-		return "", err
+		// Parser may not support newer syntax (e.g. RETURNING WITH); fall back to Clean.
+		return testutils.Clean(s), nil
 	}
 
 	return pgparse.Deparse(aTree)

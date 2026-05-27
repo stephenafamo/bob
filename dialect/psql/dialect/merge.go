@@ -114,19 +114,10 @@ func (u MergeUsing) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Diale
 		w.WriteString("ONLY ")
 	}
 
-	// Write source (table or subquery)
-	_, isQuery := u.Source.(bob.Query)
-	if isQuery {
-		w.WriteString("(")
-	}
-
+	// Write source (table or subquery). Subqueries are parenthesized by BaseQuery.WriteSQL.
 	sourceArgs, err := bob.Express(ctx, w, d, start, u.Source)
 	if err != nil {
 		return nil, err
-	}
-
-	if isQuery {
-		w.WriteString(")")
 	}
 
 	if u.Alias != "" {
