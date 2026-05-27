@@ -482,10 +482,9 @@ ORDER BY id LIMIT 1000`,
 
 func formatter(s string) (string, error) {
 	aTree, err := pgparse.Parse(s)
-	if err != nil {
-		// Parser may not support newer syntax (e.g. RETURNING WITH); fall back to Clean.
-		return testutils.Clean(s), nil
+	if err == nil {
+		return pgparse.Deparse(aTree)
 	}
-
-	return pgparse.Deparse(aTree)
+	// Parser may not support newer syntax (e.g. RETURNING WITH); fall back to Clean.
+	return testutils.Clean(s), nil
 }
