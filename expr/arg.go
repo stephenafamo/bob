@@ -22,6 +22,10 @@ type args struct {
 	grouped bool
 }
 
+// ShouldOmitParens reports that args are often initialized in a context that
+// includes its own parenthesis such as VALUES(...).
+func (args) ShouldOmitParens() bool { return true }
+
 func (a args) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if a.grouped {
 		w.WriteString(openPar)

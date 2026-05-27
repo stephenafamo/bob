@@ -22,6 +22,9 @@ func Quote(aa ...string) bob.Expression {
 // quoted and joined... something like "users"."id"
 type quoted []string
 
+// ShouldOmitParens reports that quoted is expected to be printed as it is.
+func (quoted) ShouldOmitParens() bool { return true }
+
 func (q quoted) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(q) == 0 {
 		return nil, nil
