@@ -18,23 +18,14 @@ func X[T bob.Expression, B builder[T]](exp bob.Expression, others ...bob.Express
 		exp = Join{Exprs: append([]bob.Expression{exp}, others...)}
 	}
 
-	// Wrap in parenthesis if not a raw string or string in quotes
 	switch t := exp.(type) {
-	case Clause, Raw, rawString, quoted:
-		// expected to be printed as it is
-		break
-	case args:
-		// Often initialized in a context that includes
-		// its own parenthesis such as VALUES(...)
-		break
-	case group:
-		// Already has its own parentheses
-		break
+	// exp is already a chain of type T; return it without wrapping or calling New again.
+	// For example, X[Expression, Expression](mysql.Quote("users", "id")) when the
+	// argument is already a dialect.Expression.
 	case T:
 		return t
 	case bob.ParensOmitter:
 		if t.ShouldOmitParens() {
-			// Expression handles its own wrapping rules.
 			break
 		}
 
