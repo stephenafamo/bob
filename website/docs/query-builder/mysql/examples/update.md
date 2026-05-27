@@ -67,7 +67,7 @@ mysql.Update(
   um.Table(mysql.Quote("table1").As("T1")),
   um.LeftJoin(mysql.Quote("table2").As("T2")).
     OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
-  um.Set(expr.OP("=", mysql.Quote("T1", "some_value"), mysql.Arg("test"))),
+  um.SetExpr(mysql.Quote("T1", "some_value")).ToArg("test"),
   um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
   um.Where(mysql.Quote("T2", "other_value").EQ(mysql.Arg("something"))),
 )

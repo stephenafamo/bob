@@ -12,7 +12,7 @@ Bob uses two patterns:
 1. **`string` parameters that mean a single SQL identifier** — the dialect quotes them when rendering (you pass `"kind"`, SQL gets `"kind"`).
 2. **`any` parameters** — rendered with `bob.Express`. Pass `dialect.Quote(...)` for identifiers; a bare `string` is written **verbatim** (table names without quotes, SQL fragments, function names like `generate_series`).
 
-For qualified column names in `SET` / `ON CONFLICT DO UPDATE`, use `um.Set` / `im.Set` / `mm.Set` with `expr.OP("=", ...)`, not `SetCol`.
+For qualified column names in `SET` / `ON CONFLICT DO UPDATE`, use `SetExpr` like `SetCol`, not `SetCol`.
 
 ## When the API quotes for you
 
@@ -60,8 +60,8 @@ psql.Quote("schema_name", "table_name") // "schema_name"."table_name"
 // Column in SET (quoted automatically)
 um.SetCol("kind").ToArg("Drama")
 
-// Qualified column in SET (use Set, not SetCol)
-um.Set(expr.OP("=", psql.Quote("employees", "id"), psql.Arg(1)))
+// Qualified column in SET (SetExpr = SetCol with an expression LHS)
+um.SetExpr(psql.Quote("employees", "id")).ToArg(1)
 
 // MERGE update
 mm.SetCol("price").To(psql.Quote("u", "price"))

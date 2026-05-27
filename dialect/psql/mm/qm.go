@@ -243,9 +243,14 @@ func Set(sets ...bob.Expression) bob.Mod[*UpdateAction] {
 }
 
 // SetCol sets one column in MERGE ... THEN UPDATE SET. The column name is quoted automatically.
-// For qualified names or other expressions on the LHS, use Set(...).
+// For qualified names or other expressions on the LHS, use SetExpr.
 func SetCol(column string) mods.Set[*UpdateAction] {
 	return mods.Set[*UpdateAction]{Col: expr.Quote(column)}
+}
+
+// SetExpr is like SetCol but the column LHS is any expression (e.g. psql.Quote("t", "col")).
+func SetExpr(col bob.Expression) mods.Set[*UpdateAction] {
+	return mods.Set[*UpdateAction]{Col: col}
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)

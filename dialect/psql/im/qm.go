@@ -91,9 +91,14 @@ func Set(sets ...bob.Expression) bob.Mod[*clause.ConflictClause] {
 }
 
 // SetCol sets one column in ON CONFLICT DO UPDATE SET. The column name is quoted automatically.
-// For qualified names or other expressions on the LHS, use Set(...).
+// For qualified names or other expressions on the LHS, use SetExpr.
 func SetCol(from string) mods.Set[*clause.ConflictClause] {
 	return mods.Set[*clause.ConflictClause]{Col: expr.Quote(from)}
+}
+
+// SetExpr is like SetCol but the column LHS is any expression (e.g. psql.Quote("t", "col")).
+func SetExpr(col bob.Expression) mods.Set[*clause.ConflictClause] {
+	return mods.Set[*clause.ConflictClause]{Col: col}
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)

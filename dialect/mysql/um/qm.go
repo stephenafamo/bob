@@ -60,9 +60,14 @@ func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
 }
 
 // SetCol sets one column in UPDATE ... SET. The column name is quoted automatically.
-// For qualified names or other expressions on the LHS, use Set(...).
+// For qualified names or other expressions on the LHS, use SetExpr.
 func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]{Col: expr.Quote(from)}
+}
+
+// SetExpr is like SetCol but the column LHS is any expression (e.g. mysql.Quote("t", "col")).
+func SetExpr(col bob.Expression) mods.Set[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery]{Col: col}
 }
 
 func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {

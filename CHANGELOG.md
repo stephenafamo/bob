@@ -11,11 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `Schema()` method to dialect `View` types (PostgreSQL, SQLite). (thanks @atzedus)
 - Added `ColumnsExpr()` method on `psql.View` for parity with MySQL and SQLite views. (thanks @atzedus)
+- Added `um.SetExpr` / `im.SetExpr` / `mm.SetExpr` for SET (and PostgreSQL/SQLite `im.SetExpr` for `ON CONFLICT DO UPDATE SET`) when the assignment LHS is a qualified or arbitrary expression — pass `dialect.Quote(...)` or another `bob.Expression`. `SetCol` / `UpdateCol` remain for a single column name (quoted automatically). (thanks @atzedus)
 
 ### Changed
 
 - **BREAKING:** `psql.F` / `mysql.F` / `sqlite.F` and `dialect.NewFunction` now take `name any` (was `string`). The name is rendered with `bob.Express`; use a string for a literal function name or `dialect.Quote("schema", "fn")` for qualified names. (thanks @atzedus)
-- **BREAKING:** `mods.Set` is now a struct with a `Col any` field instead of a `[]string` alias. `um.SetCol` / `im.SetCol` / `mm.SetCol` (and MySQL `im.UpdateCol`) take a `string` column name and quote it automatically; use `um.Set` / `im.Set` / `mm.Set` for qualified or arbitrary LHS expressions. (thanks @atzedus)
+- **BREAKING:** `mods.Set` is now a struct with a `Col any` field instead of a `[]string` alias. `um.SetCol` / `im.SetCol` / `mm.SetCol` (and MySQL `im.UpdateCol`) take a `string` column name and quote it automatically; use `SetExpr` for qualified or arbitrary LHS expressions. `SetCol(...).To(...)` / `SetExpr(...).To(...)` implement `bob.Expression` and can be passed to `um.Set` / `im.Set` / `mm.Set` to group several assignments in one mod (they still work as standalone query mods). (thanks @atzedus)
 - Godoc on `sm.With`, `sm.Window`, `wm.BasedOn` (PostgreSQL, MySQL, SQLite) notes that CTE/window names are quoted as SQL identifiers. (thanks @atzedus)
 - **BREAKING:** PostgreSQL `sm.ForUpdate`, `sm.ForNoKeyUpdate`, `sm.ForShare`, and `sm.ForKeyShare` now take `tables ...any` instead of `tables ...string`. Pass `psql.Quote(...)` (or another `Expression`) for each locked relation ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
 - **BREAKING:** MySQL `sm.ForUpdate` and `sm.ForShare` now take `tables ...any` with the same semantics as PostgreSQL (`mysql.Quote(...)` when needed). (thanks @atzedus)

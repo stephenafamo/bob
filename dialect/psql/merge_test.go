@@ -138,6 +138,24 @@ func TestMerge(t *testing.T) {
 				USING employee_updates AS "u" ON "u"."id" = "employees"."id"
 				WHEN MATCHED THEN UPDATE SET "name" = "u"."name", "salary" = "u"."salary", "department" = "u"."department"`,
 		},
+		"merge setCol and setExpr via Set helper": {
+			Query: psql.Merge(
+				mm.Into("employees"),
+				mm.Using("employee_updates").As("u").On(
+					psql.Quote("u", "id").EQ(psql.Quote("employees", "id")),
+				),
+				mm.WhenMatched().ThenUpdate(
+					mm.Set(
+						mm.SetCol("name").To(psql.Quote("u", "name")),
+						mm.SetExpr(psql.Quote("employees", "salary")).To(psql.Quote("u", "salary")),
+						mm.SetCol("department").To(psql.Quote("u", "department")),
+					),
+				),
+			),
+			ExpectedSQL: `MERGE INTO employees
+				USING employee_updates AS "u" ON "u"."id" = "employees"."id"
+				WHEN MATCHED THEN UPDATE SET "name" = "u"."name", "employees"."salary" = "u"."salary", "department" = "u"."department"`,
+		},
 		"merge with SetCol ToDefault": {
 			Query: psql.Merge(
 				mm.Into("products"),
