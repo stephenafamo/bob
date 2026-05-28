@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `FOR UPDATE` / `FOR SHARE` `OF` table lists: pass `psql.Quote(...)` / `mysql.Quote(...)` so names with spaces or qualification render correctly ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
 - Fixed MySQL `sm.From(...).UseIndex` / `ForceIndex` / `IgnoreIndex` (and `*ForJoin` / `*ForOrderBy` / `*ForGroupBy` variants) not appearing in generated SQL because `FromChain.Apply` did not copy `IndexHints` onto the query. (thanks @atzedus)
 - Fixed generated models using the wrong column qualifier when a table was constructed with a non-empty schema. Codegen previously passed `table.Key` into `build*Columns` and `pkEQ` / `pkIN`, but dialect `View` / `Table` types use `schema.table` as `Alias()` whenever `schema` is set at construction. That mismatch produced SQL such as `` `users`.`id` `` in `WHERE` while `FROM` used `` `myapp`.`users` AS `myapp.users` `` (columns and primary-key expressions did not match the table alias from `NameAsExpr()`). Templates now use a `tableColumnAlias` helper: `schema.name` when `schema` is set, otherwise `table.Key`. (thanks @atzedus)
-- Fix issue with overwriting unique constraints for tables beloging to other schemas. (thanks @MD-Mushfiqur123)
+- Fix issue with overwriting unique constraints for tables beloging to other schemas. (thanks @eaglehuntt and @MD-Mushfiqur123)
 
 ## [v0.44.0] - 2026-05-21
 
