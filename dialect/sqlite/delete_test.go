@@ -18,6 +18,13 @@ func TestDelete(t *testing.T) {
 			ExpectedSQL:  `DELETE FROM films WHERE ("kind" = ?1)`,
 			ExpectedArgs: []any{"Drama"},
 		},
+		"INDEXED BY quoted index": {
+			Query: sqlite.Delete(
+				dm.From("t"),
+				dm.IndexedBy("my index"),
+			),
+			ExpectedSQL: `DELETE FROM t INDEXED BY "my index"`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

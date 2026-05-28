@@ -4,10 +4,12 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/mods"
 )
 
+// With starts a CTE. The name and column list are quoted as SQL identifiers.
 func With(name string, columns ...string) dialect.CTEChain[*dialect.UpdateQuery] {
 	return dialect.With[*dialect.UpdateQuery](name, columns...)
 }
@@ -45,8 +47,15 @@ func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
 	})
 }
 
+// SetCol sets one column in UPDATE ... SET. The column name is quoted automatically.
+// For qualified names or other expressions on the LHS, use SetExpr.
 func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]([]string{from})
+	return mods.Set[*dialect.UpdateQuery]{Col: expr.Quote(from)}
+}
+
+// SetExpr is like SetCol but the column LHS is any expression (e.g. psql.Quote("t", "col")).
+func SetExpr(col bob.Expression) mods.Set[*dialect.UpdateQuery] {
+	return mods.Set[*dialect.UpdateQuery]{Col: col}
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
@@ -55,7 +64,7 @@ func SetCols(columns ...string) dialect.SetCols[*dialect.UpdateQuery] {
 }
 
 func From(table any, joins ...dialect.JoinChain[*dialect.UpdateQuery]) dialect.FromChain[*dialect.UpdateQuery] {
-	return dialect.From[*dialect.UpdateQuery](table, joins...)
+	return dialect.From(table, joins...)
 }
 
 // FromFunction returns an expression for um.From when the source is one or more

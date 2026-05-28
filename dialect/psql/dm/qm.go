@@ -7,6 +7,7 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
+// With starts a CTE. The name and column list are quoted as SQL identifiers.
 func With(name string, columns ...string) dialect.CTEChain[*dialect.DeleteQuery] {
 	return dialect.With[*dialect.DeleteQuery](name, columns...)
 }

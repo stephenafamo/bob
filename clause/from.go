@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/internal"
 )
 
 /*
@@ -138,7 +139,7 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	}
 	args = append(args, repeatableArgs...)
 
-	_, err = bob.ExpressSlice(ctx, w, d, start, f.Partitions, " PARTITION (", ", ", ")")
+	_, err = bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(f.Partitions), " PARTITION (", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,8 @@ func (f TableRef) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	case *f.IndexedBy == "":
 		w.WriteString(" NOT INDEXED")
 	default:
-		w.WriteString(fmt.Sprintf(" INDEXED BY %q", *f.IndexedBy))
+		w.WriteString(" INDEXED BY ")
+		d.WriteQuoted(w, *f.IndexedBy)
 	}
 
 	joinArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), f.Joins, "\n", "\n", "")
@@ -203,7 +205,7 @@ func (f IndexHint) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialec
 
 	// Always include the brackets
 	w.WriteString(" (")
-	_, err = bob.ExpressSlice(ctx, w, d, start, f.Indexes, "", ", ", "")
+	_, err = bob.ExpressSlice(ctx, w, d, start, internal.QuoteIdentifiers(f.Indexes), "", ", ", "")
 	if err != nil {
 		return nil, err
 	}

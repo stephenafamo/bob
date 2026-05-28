@@ -215,20 +215,31 @@ func (s returningWithAliases[Q]) WithNewAs(alias string) returningWithAliases[Q]
 	return s
 }
 
-type Set[Q interface{ AppendSet(clauses ...any) }] []string
-
-func (s Set[Q]) To(to any) bob.Mod[Q] {
-	return set[Q]{expr.OP("=", expr.Quote(s...), to)}
+// Set builds a single-column assignment for SET / DO UPDATE SET clauses.
+// Col is rendered via bob.Express; use expr.Quote (or dialect.Quote) for SQL identifiers.
+type Set[Q interface{ AppendSet(clauses ...any) }] struct {
+	Col any
 }
 
-func (s Set[Q]) ToArg(to any) bob.Mod[Q] {
-	return set[Q]{expr.OP("=", expr.Quote(s...), expr.Arg(to))}
+func (s Set[Q]) To(to any) set[Q] {
+	return set[Q]{expr: expr.OP("=", s.Col, to)}
 }
 
-type set[Q interface{ AppendSet(clauses ...any) }] []any
+func (s Set[Q]) ToArg(to any) set[Q] {
+	return set[Q]{expr: expr.OP("=", s.Col, expr.Arg(to))}
+}
+
+// set is a single SET assignment usable as bob.Mod (Apply) or bob.Expression (WriteSQL).
+type set[Q interface{ AppendSet(clauses ...any) }] struct {
+	expr bob.Expression
+}
+
+func (s set[Q]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	return bob.Express(ctx, w, d, start, s.expr)
+}
 
 func (s set[Q]) Apply(q Q) {
-	q.AppendSet(s...)
+	q.AppendSet(s.expr)
 }
 
 type Hook[Q interface{ AppendHooks(...bob.Hook[Q]) }] []bob.Hook[Q]

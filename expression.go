@@ -40,6 +40,7 @@ type Expression interface {
 type ParensOmitter interface {
 	// ShouldOmitParens reports whether expression builders should skip
 	// automatic parenthesis wrapping for this expression.
+	// When true, the expression handles its own wrapping rules.
 	ShouldOmitParens() bool
 }
 

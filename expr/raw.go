@@ -12,6 +12,9 @@ import (
 
 type Raw string
 
+// ShouldOmitParens reports that Raw is expected to be printed as it is.
+func (Raw) ShouldOmitParens() bool { return true }
+
 func (r Raw) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString(string(r))
 	return nil, nil
@@ -29,6 +32,9 @@ type Clause struct {
 	query string // The clause with ? used for placeholders
 	args  []any  // The replacements for the placeholders in order
 }
+
+// ShouldOmitParens reports that Clause is expected to be printed as it is.
+func (Clause) ShouldOmitParens() bool { return true }
 
 func (r Clause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	// replace the args with positional args appropriately

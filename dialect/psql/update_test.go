@@ -36,6 +36,32 @@ func TestUpdate(t *testing.T) {
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
+		"set qualified column as mod": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetExpr(psql.Quote("employees", "dept_id")).To(psql.Quote("accounts", "dept_id")),
+				um.From("accounts"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "employees"."dept_id" = "accounts"."dept_id" FROM accounts
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
+		"setCol and setExpr via Set helper": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.From("accounts"),
+				um.Set(
+					um.SetCol("sales_count").To("sales_count + 1"),
+					um.SetExpr(psql.Quote("employees", "dept_id")).To(psql.Quote("accounts", "dept_id")),
+				),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1,
+			  "employees"."dept_id" = "accounts"."dept_id" FROM accounts
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
 		"with multiple from items": {
 			Query: psql.Update(
 				um.Table("employees"),
@@ -242,7 +268,7 @@ func TestUpdate(t *testing.T) {
 		},
 		"with sub-select": {
 			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 WHERE (id =
-				  (SELECT sales_person FROM accounts WHERE (name = $1)))`,
+				  ((SELECT sales_person FROM accounts WHERE (name = $1))))`,
 			ExpectedArgs: []any{"Acme Corporation"},
 			Query: psql.Update(
 				um.Table("employees"),
@@ -254,13 +280,6 @@ func TestUpdate(t *testing.T) {
 				)))),
 			),
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestUpdateReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with old and new aliases": {
 			Query: psql.Update(
 				um.Table("users"),
@@ -276,7 +295,7 @@ func TestUpdateReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }
 
 func TestUpdateWhereCurrentOfConflict(t *testing.T) {

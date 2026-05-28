@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 )
 
-func NewFunction(name string, args ...any) *Function {
+func NewFunction(name any, args ...any) *Function {
 	f := &Function{name: name, args: args}
 	f.Chain = expr.Chain[Expression, Expression]{Base: f}
 
@@ -17,7 +17,7 @@ func NewFunction(name string, args ...any) *Function {
 }
 
 type Function struct {
-	name string
+	name any
 	args []any
 
 	// Used in value functions. Supported by Sqlite and Postgres
@@ -35,12 +35,13 @@ func (f *Function) SetWindow(w clause.Window) {
 }
 
 func (f Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	if f.name == "" {
-		return nil, nil
+	nameArgs, err := bob.Express(ctx, w, d, start, f.name)
+	if err != nil {
+		return nil, err
 	}
 
-	w.WriteString(f.name)
 	w.WriteString("(")
+	start += len(nameArgs)
 
 	if f.Distinct {
 		w.WriteString("DISTINCT ")
@@ -72,5 +73,5 @@ func (f Function) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	}
 	args = append(args, winargs...)
 
-	return args, nil
+	return append(nameArgs, args...), nil
 }

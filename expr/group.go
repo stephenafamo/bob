@@ -10,6 +10,9 @@ import (
 // Multiple expressions that will be group together as a single expression
 type group []bob.Expression
 
+// ShouldOmitParens reports that group already has its own parentheses.
+func (group) ShouldOmitParens() bool { return true }
+
 func (g group) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	if len(g) == 0 {
 		return bob.ExpressIf(ctx, w, d, start, null, true, openPar, closePar)

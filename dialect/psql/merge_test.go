@@ -119,7 +119,7 @@ func TestMerge(t *testing.T) {
 				),
 			),
 			ExpectedSQL: `MERGE INTO target_table
-				USING (SELECT *) AS "src" ON "src"."id" = "target_table"."id"
+				USING (SELECT *) AS "src" ON ("src"."id" = "target_table"."id")
 				WHEN MATCHED THEN UPDATE SET "value" = "src"."value"`,
 		},
 		"merge with multiple SetCol from source": {
@@ -137,6 +137,24 @@ func TestMerge(t *testing.T) {
 			ExpectedSQL: `MERGE INTO employees
 				USING employee_updates AS "u" ON "u"."id" = "employees"."id"
 				WHEN MATCHED THEN UPDATE SET "name" = "u"."name", "salary" = "u"."salary", "department" = "u"."department"`,
+		},
+		"merge setCol and setExpr via Set helper": {
+			Query: psql.Merge(
+				mm.Into("employees"),
+				mm.Using("employee_updates").As("u").On(
+					psql.Quote("u", "id").EQ(psql.Quote("employees", "id")),
+				),
+				mm.WhenMatched().ThenUpdate(
+					mm.Set(
+						mm.SetCol("name").To(psql.Quote("u", "name")),
+						mm.SetExpr(psql.Quote("employees", "salary")).To(psql.Quote("u", "salary")),
+						mm.SetCol("department").To(psql.Quote("u", "department")),
+					),
+				),
+			),
+			ExpectedSQL: `MERGE INTO employees
+				USING employee_updates AS "u" ON "u"."id" = "employees"."id"
+				WHEN MATCHED THEN UPDATE SET "name" = "u"."name", "employees"."salary" = "u"."salary", "department" = "u"."department"`,
 		},
 		"merge with SetCol ToDefault": {
 			Query: psql.Merge(
@@ -188,7 +206,7 @@ func TestMerge(t *testing.T) {
 			),
 			ExpectedSQL: `MERGE INTO products
 				USING updates AS "u" ON "u"."id" = "products"."id"
-				WHEN MATCHED THEN UPDATE SET ("name", "price") = (SELECT "name", "price" FROM default_values WHERE (category = u.category))`,
+				WHEN MATCHED THEN UPDATE SET ("name", "price") = (SELECT "name", "price" FROM default_values WHERE ("category" = "u"."category"))`,
 		},
 		"merge with CTE": {
 			Query: psql.Merge(
@@ -252,6 +270,21 @@ func TestMerge(t *testing.T) {
 			ExpectedSQL: `MERGE INTO products
 				USING new_products AS "n" ON "n"."sku" = "products"."sku"
 				WHEN NOT MATCHED THEN INSERT ("id", "sku", "name") OVERRIDING USER VALUE VALUES ("n"."id", "n"."sku", "n"."name")`,
+		},
+		"merge insert column list quotes spaced names": {
+			Query: psql.Merge(
+				mm.Into("target"),
+				mm.Using("source").As("s").On(
+					psql.Quote("s", "id").EQ(psql.Quote("target", "id")),
+				),
+				mm.WhenNotMatched().ThenInsert(
+					mm.Columns("my col"),
+					mm.Values(psql.Quote("s", "my col")),
+				),
+			),
+			ExpectedSQL: `MERGE INTO target
+				USING source AS "s" ON ("s"."id" = "target"."id")
+				WHEN NOT MATCHED THEN INSERT ("my col") VALUES ("s"."my col")`,
 		},
 		"merge with Only target": {
 			Query: psql.Merge(
@@ -407,13 +440,6 @@ func TestMerge(t *testing.T) {
 				USING source_data AS "s" ON "s"."id" = "target"."id"
 				WHEN MATCHED THEN UPDATE SET "name" = "s"."name", "value" = "s"."value"`,
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestMergeReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with new alias": {
 			Query: psql.Merge(
 				mm.Into("products"),
@@ -435,5 +461,5 @@ func TestMergeReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }

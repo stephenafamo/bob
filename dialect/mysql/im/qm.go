@@ -91,8 +91,9 @@ func Update(exprs ...bob.Expression) bob.Mod[*clause.Set] {
 	})
 }
 
+// UpdateCol sets one column in ON DUPLICATE KEY UPDATE. The column name is quoted automatically.
 func UpdateCol(col string) mods.Set[*clause.Set] {
-	return mods.Set[*clause.Set]{col}
+	return mods.Set[*clause.Set]{Col: expr.Quote(col)}
 }
 
 func UpdateWithAlias(alias string, cols ...string) bob.Mod[*clause.Set] {

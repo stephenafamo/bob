@@ -84,11 +84,29 @@ func TestInsert(t *testing.T) {
 			),
 			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
 				VALUES (?, ?), (?, ?)
-				AS new
+				AS ` + "`new`" + `
 				ON DUPLICATE KEY UPDATE
 				` + "`did` = `new`.`did`," + `
 				` + "`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')",
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
+		},
+		"insert with quoted row alias": {
+			Query: mysql.Insert(
+				im.Into("t", "c"),
+				im.Values(mysql.Arg(1)),
+				im.As("row alias"),
+			),
+			ExpectedSQL:  "INSERT INTO t(`c`) VALUES (?) AS `row alias`",
+			ExpectedArgs: []any{1},
+		},
+		"insert with partition": {
+			Query: mysql.Insert(
+				im.Into("films"),
+				im.Partition("part one"),
+				im.Values(mysql.Arg(1)),
+			),
+			ExpectedSQL:  "INSERT INTO films PARTITION (`part one`) VALUES (?)",
+			ExpectedArgs: []any{1},
 		},
 		"upsert2": {
 			Query: mysql.Insert(
@@ -104,9 +122,53 @@ func TestInsert(t *testing.T) {
 				` + "`dbname` = VALUES(`dbname`)",
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"on duplicate key update column with spaces": {
+			Doc: "UpdateCol quotes identifiers so column names may contain spaces",
+			Query: mysql.Insert(
+				im.Into("items", "id"),
+				im.Values(mysql.Arg(1, "first")),
+				im.OnDuplicateKeyUpdate(
+					im.UpdateCol("display name").ToArg("renamed"),
+				),
+			),
+			ExpectedSQL: `INSERT INTO items (` + "`id`" + `) VALUES (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`display name` = ?",
+			ExpectedArgs: []any{1, "first", "renamed"},
+		},
+		"on duplicate key updateCol as mod": {
+			Query: mysql.Insert(
+				im.Into("distributors", "did", "dname"),
+				im.Values(mysql.Arg(8, "Anvil Distribution")),
+				im.OnDuplicateKeyUpdate(
+					im.UpdateCol("dname").ToArg("updated"),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
+				VALUES (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`dname` = ?",
+			ExpectedArgs: []any{8, "Anvil Distribution", "updated"},
+		},
+		"on duplicate key updateCol via Update helper": {
+			Query: mysql.Insert(
+				im.Into("distributors", "did", "dname"),
+				im.Values(mysql.Arg(8, "Anvil Distribution")),
+				im.OnDuplicateKeyUpdate(
+					im.Update(
+						im.UpdateCol("dname").ToArg("updated"),
+						im.UpdateCol("did").ToArg(8),
+					),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors (` + "`did`" + `, ` + "`dname`" + `)
+				VALUES (?, ?)
+				ON DUPLICATE KEY UPDATE
+				` + "`dname` = ?," + `
+				` + "`did` = ?",
+			ExpectedArgs: []any{8, "Anvil Distribution", "updated", 8},
+		},
 	}
 
-	// Cannot use the formatter for upsert with alias
-	// https://github.com/pingcap/tidb/issues/29259
 	testutils.RunTests(t, examples, formatter)
 }

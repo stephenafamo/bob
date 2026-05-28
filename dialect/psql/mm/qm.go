@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-// With adds a WITH clause (CTE) to the MERGE statement.
+// With starts a CTE. The name and column list are quoted as SQL identifiers.
 func With(name string, columns ...string) dialect.CTEChain[*dialect.MergeQuery] {
 	return dialect.With[*dialect.MergeQuery](name, columns...)
 }
@@ -242,13 +242,15 @@ func Set(sets ...bob.Expression) bob.Mod[*UpdateAction] {
 	})
 }
 
-// SetCol creates a single column setter using mods.Set.
-// Usage:
-//
-//	mm.SetCol("name").To(psql.Quote("s", "name"))
-//	mm.SetCol("status").ToArg("active")
+// SetCol sets one column in MERGE ... THEN UPDATE SET. The column name is quoted automatically.
+// For qualified names or other expressions on the LHS, use SetExpr.
 func SetCol(column string) mods.Set[*UpdateAction] {
-	return mods.Set[*UpdateAction]{column}
+	return mods.Set[*UpdateAction]{Col: expr.Quote(column)}
+}
+
+// SetExpr is like SetCol but the column LHS is any expression (e.g. psql.Quote("t", "col")).
+func SetExpr(col bob.Expression) mods.Set[*UpdateAction] {
+	return mods.Set[*UpdateAction]{Col: col}
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
@@ -263,7 +265,7 @@ type InsertAction struct {
 	Overriding dialect.OverridingType
 }
 
-// Columns specifies the target columns for INSERT action
+// Columns specifies the target columns for INSERT action. Names are quoted as SQL identifiers.
 func Columns(columns ...string) bob.Mod[*InsertAction] {
 	return bob.ModFunc[*InsertAction](func(i *InsertAction) {
 		i.Columns = append(i.Columns, columns...)

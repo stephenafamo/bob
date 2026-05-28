@@ -30,17 +30,31 @@ func TestUpdate(t *testing.T) {
 			ExpectedSQL:  "UPDATE employees, accounts SET `sales_count` = sales_count + 1 WHERE (`accounts`.`name` = ?) AND (`employees`.`id` = `accounts`.`sales_person`)",
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
-		"update multiple tables 2": {
+		"setExpr as mod": {
 			Query: mysql.Update(
 				um.Table(mysql.Quote("table1").As("T1")),
 				um.LeftJoin(mysql.Quote("table2").As("T2")).
 					OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
-				um.SetCol("T1", "some_value").ToArg("test"),
+				um.SetExpr(mysql.Quote("T1", "some_value")).ToArg("test"),
 				um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
 				um.Where(mysql.Quote("T2", "other_value").EQ(mysql.Arg("something"))),
 			),
 			ExpectedSQL:  "UPDATE `table1` AS `T1` LEFT JOIN `table2` AS `T2` ON (`T1`.`some_id` = `T2`.`id`) SET `T1`.`some_value` = ? WHERE (`T1`.`id` = ?) AND (`T2`.`other_value` = ?)",
 			ExpectedArgs: []any{"test", 1, "something"},
+		},
+		"setCol and setExpr via Set helper": {
+			Query: mysql.Update(
+				um.Table(mysql.Quote("table1").As("T1")),
+				um.LeftJoin(mysql.Quote("table2").As("T2")).
+					OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
+				um.Set(
+					um.SetCol("sales_count").To("sales_count + 1"),
+					um.SetExpr(mysql.Quote("T1", "some_value")).ToArg("test"),
+				),
+				um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
+			),
+			ExpectedSQL:  "UPDATE `table1` AS `T1` LEFT JOIN `table2` AS `T2` ON (`T1`.`some_id` = `T2`.`id`) SET `sales_count` = sales_count + 1, `T1`.`some_value` = ? WHERE (`T1`.`id` = ?)",
+			ExpectedArgs: []any{"test", 1},
 		},
 		"with sub-select": {
 			ExpectedSQL:  "UPDATE employees SET `sales_count` = sales_count + 1 WHERE (`id` = (SELECT sales_person FROM accounts WHERE (`name` = ?)))",

@@ -123,6 +123,24 @@ func TestInsert(t *testing.T) {
 			   SET dname = EXCLUDED.dname`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"upsert setCol and setExpr via Set helper": {
+			Query: psql.Insert(
+				im.IntoAs("distributors", "d", "did", "dname"),
+				im.Values(psql.Arg(8, "Anvil Distribution")),
+				im.OnConflict("did").DoUpdate(
+					im.Set(
+						im.SetCol("dname").To(im.Excluded("dname")),
+						im.SetExpr(psql.Quote("d", "did")).To(im.Excluded("did")),
+					),
+				),
+			),
+			ExpectedSQL: `INSERT INTO distributors AS "d" ("did", "dname")
+			   VALUES ($1, $2)
+			   ON CONFLICT (did) DO UPDATE
+			   SET dname = EXCLUDED.dname,
+			   "d"."did" = EXCLUDED.did`,
+			ExpectedArgs: []any{8, "Anvil Distribution"},
+		},
 		"insert overriding system value": {
 			Query: psql.Insert(
 				im.Into("users", "id", "name"),
@@ -272,13 +290,6 @@ func TestInsert(t *testing.T) {
 			ExpectedSQL:  `INSERT INTO films VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title WHERE EXCLUDED.id = $3`,
 			ExpectedArgs: []any{"UA502", "Bananas", 1},
 		},
-	}
-
-	testutils.RunTests(t, examples, formatter)
-}
-
-func TestInsertReturningWith(t *testing.T) {
-	examples := testutils.Testcases{
 		"returning with old and new aliases": {
 			Query: psql.Insert(
 				im.Into("users"),
@@ -293,5 +304,5 @@ func TestInsertReturningWith(t *testing.T) {
 		},
 	}
 
-	testutils.RunTests(t, examples, nil)
+	testutils.RunTests(t, examples, formatter)
 }

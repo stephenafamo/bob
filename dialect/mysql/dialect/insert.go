@@ -2,7 +2,6 @@ package dialect
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/stephenafamo/bob"
@@ -74,10 +73,8 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 	// The aliases
 	if i.RowAlias != "" {
-		_, err = w.WriteString(fmt.Sprintf("\nAS %s", i.RowAlias))
-		if err != nil {
-			return nil, err
-		}
+		w.WriteString("\nAS ")
+		d.WriteQuoted(w, i.RowAlias)
 
 		if len(i.ColumnAlias) > 0 {
 			w.WriteString("(")
