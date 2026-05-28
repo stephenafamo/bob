@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.45.0] - 2026-05-28
 
 ### Added
 
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** `View` / `Table` `Name()` now returns the bare table (or view) name as `string`. In v0.44.0, `Name()` returned a dialect `Expression` (qualified table reference for SQL). That role moved to new methods:
   - `NameExpr()` — what `Name()` did in v0.44.0 (on PostgreSQL and SQLite, respects `UseSchema` when schema was generated empty)
   - `NameAsExpr()` — what `NameAs()` did in v0.44.0 (name plus table alias)
-  Update manual call sites, codegen templates, and generated models: `Users.Name()` in SQL builders → `Users.NameExpr()`, `Users.NameAs()` → `Users.NameAsExpr()`; use `Users.Name()` when you need the unqualified name string. On PostgreSQL and SQLite, `Schema()` still returns the schema when set.
+    Update manual call sites, codegen templates, and generated models: `Users.Name()` in SQL builders → `Users.NameExpr()`, `Users.NameAs()` → `Users.NameAsExpr()`; use `Users.Name()` when you need the unqualified name string. On PostgreSQL and SQLite, `Schema()` still returns the schema when set.
 - Codegen templates and `orm.Preload` now use `NameExpr()` / `NameAsExpr()` instead of `Name()` / `NameAs()`. (thanks @atzedus)
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
 
@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `FOR UPDATE` / `FOR SHARE` `OF` table lists: pass `psql.Quote(...)` / `mysql.Quote(...)` so names with spaces or qualification render correctly ([#693](https://github.com/stephenafamo/bob/issues/693)). (thanks @atzedus)
 - Fixed MySQL `sm.From(...).UseIndex` / `ForceIndex` / `IgnoreIndex` (and `*ForJoin` / `*ForOrderBy` / `*ForGroupBy` variants) not appearing in generated SQL because `FromChain.Apply` did not copy `IndexHints` onto the query. (thanks @atzedus)
 - Fixed generated models using the wrong column qualifier when a table was constructed with a non-empty schema. Codegen previously passed `table.Key` into `build*Columns` and `pkEQ` / `pkIN`, but dialect `View` / `Table` types use `schema.table` as `Alias()` whenever `schema` is set at construction. That mismatch produced SQL such as `` `users`.`id` `` in `WHERE` while `FROM` used `` `myapp`.`users` AS `myapp.users` `` (columns and primary-key expressions did not match the table alias from `NameAsExpr()`). Templates now use a `tableColumnAlias` helper: `schema.name` when `schema` is set, otherwise `table.Key`. (thanks @atzedus)
+- Fix issue with overwriting unique constraints for tables beloging to other schemas. (thanks @MD-Mushfiqur123)
 
 ## [v0.44.0] - 2026-05-21
 
