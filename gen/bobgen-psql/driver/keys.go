@@ -99,7 +99,7 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 			}
 
 		case "u":
-			ret.Uniques[key] = append(ret.Uniques[c.Table], drivers.Constraint[any]{
+			ret.Uniques[key] = append(ret.Uniques[key], drivers.Constraint[any]{
 				Name:    c.Name,
 				Columns: c.Columns,
 				Comment: c.Comment.String,
