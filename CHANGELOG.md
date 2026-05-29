@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `NameAsExpr()` — what `NameAs()` did in v0.44.0 (name plus table alias)
   Update manual call sites, codegen templates, and generated models: `Users.Name()` in SQL builders → `Users.NameExpr()`, `Users.NameAs()` → `Users.NameAsExpr()`; use `Users.Name()` when you need the unqualified name string. On PostgreSQL and SQLite, `Schema()` still returns the schema when set.
 - Codegen templates and `orm.Preload` now use `NameExpr()` / `NameAsExpr()` instead of `Name()` / `NameAs()`. (thanks @atzedus)
+- `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
 
 ### Fixed
 

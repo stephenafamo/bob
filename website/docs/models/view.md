@@ -68,7 +68,7 @@ query := psql.Select(sm.From(userView.NameExpr()))
 
 ## NameAsExpr()
 
-Like `NameExpr()`, but includes the table alias (same as `Alias()`). Use in `FROM`, `JOIN`, and other clauses that need a named range variable—for example, PostgreSQL/SQLite `INSERT INTO ... AS alias` or subqueries that reference `Alias()` in `WHERE`.
+Like `NameExpr()`, but adds `AS alias` when the alias differs from the table name (for example when a schema is set at construction, so the alias is `schema.table`). When schema is empty and the alias matches the table name, the redundant `FROM "users" AS "users"` form is omitted; `Alias()` is unchanged for joins and column qualification. Use in `FROM`, `JOIN`, and other clauses that need a named range variable—for example, PostgreSQL/SQLite `INSERT INTO ... AS alias` or subqueries that reference `Alias()` in `WHERE`.
 
 ```go
 import (
