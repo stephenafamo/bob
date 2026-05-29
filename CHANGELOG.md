@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `expr.Assign` and `Chain.Assign` for `SET` / `ON CONFLICT DO UPDATE SET` assignments (`col = val`) without the extra parentheses that `EQ` adds for `WHERE` comparisons. Use with `um.Set` / `im.Set` / `mm.Set`, e.g. `psql.Quote("kind").Assign(psql.Arg("Drama"))`. (thanks @atzedus)
+
 ### Changed
 
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
