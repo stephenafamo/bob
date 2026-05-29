@@ -46,6 +46,11 @@ func (x Chain[T, B]) EQ(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "="})
 }
 
+// Assign builds left = right for SET / DO UPDATE SET (no surrounding parentheses).
+func (x Chain[T, B]) Assign(target bob.Expression) T {
+	return X[T, B](assignment{left: x.Base, right: target})
+}
+
 // Not Equal
 func (x Chain[T, B]) NE(target bob.Expression) T {
 	return X[T, B](leftRight{left: x.Base, right: target, operator: "<>"})

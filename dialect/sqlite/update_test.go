@@ -84,6 +84,22 @@ func TestUpdate(t *testing.T) {
 			  WHERE ("employees"."id" = ?1)`,
 			ExpectedArgs: []any{1},
 		},
+		"assign via Set helper": {
+			Doc: "Assign via Set",
+			Query: sqlite.Update(
+				um.Table("employees"),
+				um.From("accounts"),
+				um.Set(
+					sqlite.Quote("sales_count").Assign(sqlite.Raw("sales_count + 1")),
+					sqlite.Quote("employees", "dept_id").Assign(sqlite.Quote("accounts", "dept_id")),
+				),
+				um.Where(sqlite.Quote("employees", "id").EQ(sqlite.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1,
+			  "employees"."dept_id" = "accounts"."dept_id" FROM accounts
+			  WHERE ("employees"."id" = ?1)`,
+			ExpectedArgs: []any{1},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

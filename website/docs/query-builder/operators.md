@@ -14,6 +14,7 @@ Operators are methods on the dialect's `Expression`. There are a number of commo
 - `Minus(y any)`: X - Y
 - `OP(op string, y any)`: X op Y -- for custom operators
 - `EQ(y any)`: X = Y
+- `Assign(y any)`: X = Y for `SET` assignments (no extra parentheses; use instead of `EQ` in `um.Set` / `im.Set` / `mm.Set`)
 - `NE(y any)`: X \<\> Y
 - `LT(y any)`: X \< Y
 - `LTE(y any)`: X \<= Y
