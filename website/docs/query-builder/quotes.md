@@ -63,9 +63,9 @@ um.SetCol("kind").ToArg("Drama")
 // Qualified column in SET (SetExpr = SetCol with an expression LHS)
 um.SetExpr(psql.Quote("employees", "id")).ToArg(1)
 
-// Several assignments in um.Set (do not use EQ — it wraps in parentheses)
+// Several assignments in um.Set (EQ omits comparison parentheses in SET)
 um.Set(
-  psql.Quote("employees", "dept_id").Assign(psql.Quote("accounts", "dept_id")),
+  psql.Quote("employees", "dept_id").EQ(psql.Quote("accounts", "dept_id")),
 )
 
 // MERGE update

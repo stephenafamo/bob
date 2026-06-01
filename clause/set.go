@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
 )
 
 var ErrEmptySetExpression = errors.New("SET clause must have at least one assignment expression")
@@ -22,5 +23,5 @@ func (s Set) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, sta
 	if len(s.Set) == 0 {
 		return nil, ErrEmptySetExpression
 	}
-	return bob.ExpressSlice(ctx, w, d, start, s.Set, "", ",\n", "")
+	return bob.ExpressSlice(ctx, w, d, start, expr.PrepareSetAssignments(s.Set), "", ",\n", "")
 }
