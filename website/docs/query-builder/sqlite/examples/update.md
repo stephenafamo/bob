@@ -78,7 +78,7 @@ sqlite.Update(
 )
 ```
 
-## Assign via Set
+## EQ via Set
 
 SQL:
 
@@ -99,8 +99,8 @@ sqlite.Update(
   um.Table("employees"),
   um.From("accounts"),
   um.Set(
-    sqlite.Quote("sales_count").Assign(sqlite.Raw("sales_count + 1")),
-    sqlite.Quote("employees", "dept_id").Assign(sqlite.Quote("accounts", "dept_id")),
+    sqlite.Quote("sales_count").EQ(sqlite.Raw("sales_count + 1")),
+    sqlite.Quote("employees", "dept_id").EQ(sqlite.Quote("accounts", "dept_id")),
   ),
   um.Where(sqlite.Quote("employees", "id").EQ(sqlite.Arg(1))),
 )

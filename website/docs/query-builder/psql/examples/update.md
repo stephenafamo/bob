@@ -76,7 +76,7 @@ psql.Update(
 )
 ```
 
-## Assign via Set
+## EQ via Set
 
 SQL:
 
@@ -97,8 +97,8 @@ psql.Update(
   um.Table("employees"),
   um.From("accounts"),
   um.Set(
-    psql.Quote("sales_count").Assign(psql.Raw("sales_count + 1")),
-    psql.Quote("employees", "dept_id").Assign(psql.Quote("accounts", "dept_id")),
+    psql.Quote("sales_count").EQ(psql.Raw("sales_count + 1")),
+    psql.Quote("employees", "dept_id").EQ(psql.Quote("accounts", "dept_id")),
   ),
   um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
 )

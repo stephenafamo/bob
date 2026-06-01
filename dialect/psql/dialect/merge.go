@@ -7,6 +7,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 )
 
@@ -224,5 +225,5 @@ func (a MergeAction) writeInsert(ctx context.Context, w io.StringWriter, d bob.D
 
 func (a MergeAction) writeUpdate(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString("UPDATE SET ")
-	return bob.ExpressSlice(ctx, w, d, start, a.Set, "", ", ", "")
+	return bob.ExpressSlice(ctx, w, d, start, expr.PrepareSetAssignments(a.Set), "", ", ", "")
 }

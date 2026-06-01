@@ -99,7 +99,7 @@ mysql.Update(
 )
 ```
 
-## Assign via Set
+## EQ via Set
 
 SQL:
 
@@ -120,8 +120,8 @@ mysql.Update(
   um.LeftJoin(mysql.Quote("table2").As("T2")).
     OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
   um.Set(
-    mysql.Quote("sales_count").Assign(mysql.Raw("sales_count + 1")),
-    mysql.Quote("T1", "some_value").Assign(mysql.Arg("test")),
+    mysql.Quote("sales_count").EQ(mysql.Raw("sales_count + 1")),
+    mysql.Quote("T1", "some_value").EQ(mysql.Arg("test")),
   ),
   um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
 )
