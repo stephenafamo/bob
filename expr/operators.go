@@ -22,12 +22,8 @@ func (lr leftRight) ShouldOmitParens() bool {
 }
 
 func (lr leftRight) withOmitParens(omit bool) leftRight {
-	return leftRight{
-		operator:   lr.operator,
-		left:       lr.left,
-		right:      lr.right,
-		omitParens: omit,
-	}
+	lr.omitParens = omit
+	return lr
 }
 
 func (lr leftRight) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
