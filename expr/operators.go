@@ -9,20 +9,9 @@ import (
 
 // An operator that has a left and right side
 type leftRight struct {
-	operator   string
-	right      any
-	left       any
-	omitParens bool
-}
-
-// ShouldOmitParens reports whether expr.X should skip wrapping this expression in a group.
-func (lr leftRight) ShouldOmitParens() bool {
-	return lr.omitParens
-}
-
-func (lr leftRight) withOmitParens(omit bool) leftRight {
-	lr.omitParens = omit
-	return lr
+	operator string
+	right    any
+	left     any
 }
 
 func (lr leftRight) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
