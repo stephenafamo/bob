@@ -16,6 +16,33 @@ func (x Chain[T, B]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	return bob.Express(ctx, w, d, start, x.Base)
 }
 
+// BaseExpression returns the direct Base of this chain wrapper.
+func (x Chain[T, B]) BaseExpression() bob.Expression {
+	return x.Base
+}
+
+// baseExpression is implemented by Chain wrappers (including dialect Expression via embedding).
+type baseExpression interface {
+	BaseExpression() bob.Expression
+}
+
+// findBaseExpression peels chain wrappers until a non-chain inner node.
+func findBaseExpression(e any) any {
+	inner := e
+	for {
+		b, ok := inner.(baseExpression)
+		if !ok {
+			break
+		}
+		base := b.BaseExpression()
+		if base == nil {
+			break
+		}
+		inner = base
+	}
+	return inner
+}
+
 // IS DISTINCT FROM
 func (x Chain[T, B]) IsDistinctFrom(exp bob.Expression) T {
 	return X[T, B](Join{Exprs: []bob.Expression{x.Base, isDistinctFrom, exp}})

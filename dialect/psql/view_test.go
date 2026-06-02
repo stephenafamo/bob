@@ -20,6 +20,8 @@ type someStruct struct {
 
 var someStructView = NewView[*someStruct, bob.Expression]("public", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
 
+var someStructViewNoSchema = NewView[*someStruct, bob.Expression]("", "some_struct", expr.ColsForStruct[someStruct]("some_struct"))
+
 func TestSomeViewName(t *testing.T) {
 	name := someStructView.NameExpr().String()
 	expected := "\"public\".\"some_struct\""
@@ -37,6 +39,15 @@ func TestSomeViewNameAs(t *testing.T) {
 	}
 }
 
+func TestSomeViewNameAsWithoutSchema(t *testing.T) {
+	q := selectToString(t, Select(sm.From(someStructViewNoSchema.NameAsExpr())), 0)
+
+	expected := "SELECT \n*\nFROM \"some_struct\"\n"
+	if q != expected {
+		t.Errorf("someStructViewNoSchema.NameAs() expected '%#v' but got '%#v'", expected, q)
+	}
+}
+
 func TestSomeViewColumns(t *testing.T) {
 	c := someStructView.Columns
 	query := selectToString(t, Select(sm.Columns(c)), 0)
@@ -50,6 +61,16 @@ func TestSomeViewQuery(t *testing.T) {
 	q := someStructView.Query(sm.Where(Quote("id").In(Arg(1, 2, 3))))
 	query := viewToString(t, q)
 	expected := "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"public\".\"some_struct\" AS \"public.some_struct\"\nWHERE (\"id\" IN ($0, $1, $2))\n"
+
+	if query != expected {
+		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
+	}
+}
+
+func TestSomeViewQueryWithoutSchema(t *testing.T) {
+	q := someStructViewNoSchema.Query(sm.Where(Quote("id").In(Arg(1, 2, 3))))
+	query := viewToString(t, q)
+	expected := "SELECT \n\"some_struct\".\"id\" AS \"id\", \"some_struct\".\"name\" AS \"name\", \"some_struct\".\"email\" AS \"email\"\nFROM \"some_struct\"\nWHERE (\"id\" IN ($0, $1, $2))\n"
 
 	if query != expected {
 		t.Errorf("Expected '%#v' but got '%#v'", expected, query)

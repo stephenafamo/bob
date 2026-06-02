@@ -75,3 +75,31 @@ psql.Update(
   )))),
 )
 ```
+
+## EQ via Set
+
+SQL:
+
+```sql
+UPDATE employees SET "sales_count" = sales_count + 1,
+"employees"."dept_id" = "accounts"."dept_id" FROM accounts
+WHERE (employees.id = $1)
+```
+
+Args:
+
+* `1`
+
+Code:
+
+```go
+psql.Update(
+  um.Table("employees"),
+  um.From("accounts"),
+  um.Set(
+    psql.Quote("sales_count").EQ(psql.Raw("sales_count + 1")),
+    psql.Quote("employees", "dept_id").EQ(psql.Quote("accounts", "dept_id")),
+  ),
+  um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+)
+```

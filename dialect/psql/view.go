@@ -70,9 +70,13 @@ func (v *View[T, Tslice, C]) NameExpr() Expression {
 	return Expression{}.New(orm.SchemaTable(v.name))
 }
 
-// NameAsExpr returns the table name as an expression with an alias
+// NameAsExpr returns the table name as an expression with an alias when needed.
 func (v *View[T, Tslice, C]) NameAsExpr() bob.Expression {
-	return v.NameExpr().As(v.alias)
+	expr := v.NameExpr()
+	if v.schema != "" || v.alias != v.name {
+		return expr.As(v.alias)
+	}
+	return expr
 }
 
 // Alias returns the alias

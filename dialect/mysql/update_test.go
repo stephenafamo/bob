@@ -56,6 +56,21 @@ func TestUpdate(t *testing.T) {
 			ExpectedSQL:  "UPDATE `table1` AS `T1` LEFT JOIN `table2` AS `T2` ON (`T1`.`some_id` = `T2`.`id`) SET `sales_count` = sales_count + 1, `T1`.`some_value` = ? WHERE (`T1`.`id` = ?)",
 			ExpectedArgs: []any{"test", 1},
 		},
+		"eq via Set helper": {
+			Doc: "EQ in Set renders without comparison parentheses",
+			Query: mysql.Update(
+				um.Table(mysql.Quote("table1").As("T1")),
+				um.LeftJoin(mysql.Quote("table2").As("T2")).
+					OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
+				um.Set(
+					mysql.Quote("sales_count").EQ(mysql.Raw("sales_count + 1")),
+					mysql.Quote("T1", "some_value").EQ(mysql.Arg("test")),
+				),
+				um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
+			),
+			ExpectedSQL:  "UPDATE `table1` AS `T1` LEFT JOIN `table2` AS `T2` ON (`T1`.`some_id` = `T2`.`id`) SET `sales_count` = sales_count + 1, `T1`.`some_value` = ? WHERE (`T1`.`id` = ?)",
+			ExpectedArgs: []any{"test", 1},
+		},
 		"with sub-select": {
 			ExpectedSQL:  "UPDATE employees SET `sales_count` = sales_count + 1 WHERE (`id` = (SELECT sales_person FROM accounts WHERE (`name` = ?)))",
 			ExpectedArgs: []any{"Acme Corporation"},

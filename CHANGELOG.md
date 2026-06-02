@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
+
+- `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
+
 ## [v0.45.0] - 2026-05-28
 
 ### Added

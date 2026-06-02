@@ -6,6 +6,7 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
+	"github.com/stephenafamo/bob/expr"
 )
 
 // Trying to represent the query structure as documented in
@@ -89,7 +90,7 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 		}
 	}
 
-	updateArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), i.DuplicateKeyUpdate.Set,
+	updateArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), expr.PrepareSetAssignments(i.DuplicateKeyUpdate.Set),
 		"\nON DUPLICATE KEY UPDATE\n", ",\n", "")
 	if err != nil {
 		return nil, err

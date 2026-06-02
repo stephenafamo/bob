@@ -98,3 +98,31 @@ mysql.Update(
   ))),
 )
 ```
+
+## EQ via Set
+
+SQL:
+
+```sql
+UPDATE `table1` AS `T1` LEFT JOIN `table2` AS `T2` ON (`T1`.`some_id` = `T2`.`id`) SET `sales_count` = sales_count + 1, `T1`.`some_value` = ? WHERE (`T1`.`id` = ?)
+```
+
+Args:
+
+* `"test"`
+* `1`
+
+Code:
+
+```go
+mysql.Update(
+  um.Table(mysql.Quote("table1").As("T1")),
+  um.LeftJoin(mysql.Quote("table2").As("T2")).
+    OnEQ(mysql.Quote("T1", "some_id"), mysql.Quote("T2", "id")),
+  um.Set(
+    mysql.Quote("sales_count").EQ(mysql.Raw("sales_count + 1")),
+    mysql.Quote("T1", "some_value").EQ(mysql.Arg("test")),
+  ),
+  um.Where(mysql.Quote("T1", "id").EQ(mysql.Arg(1))),
+)
+```

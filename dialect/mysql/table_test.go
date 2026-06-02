@@ -48,7 +48,7 @@ type OptionalWithUnique struct {
 var (
 	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("", expr.ColsForStruct[WithAutoIncr](""), nil)
 	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
-		"", expr.ColsForStruct[WithUnique](""), []string{"id"}, []string{"title", "author_id"},
+		"books", expr.ColsForStruct[WithUnique]("books"), []string{"id"}, []string{"title", "author_id"},
 	)
 )
 
@@ -204,7 +204,7 @@ func TestGetInsertedUsesExplicitColumns(t *testing.T) {
 		t.Fatalf("Build: %v", err)
 	}
 
-	expectedSQL := "SELECT `id`, `title`, `author_id` FROM AS WHERE ((`id` IN ((?))))"
+	expectedSQL := "SELECT `books`.`id` AS `id`, `books`.`title` AS `title`, `books`.`author_id` AS `author_id` FROM `books` WHERE ((`id` IN ((?))))"
 	if diff, err := testutils.QueryDiff(expectedSQL, gotSQL, nil); err != nil {
 		t.Fatalf("QueryDiff: %v", err)
 	} else if diff != "" {
