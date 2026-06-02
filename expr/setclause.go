@@ -1,7 +1,7 @@
 package expr
 
 // PrepareSetAssignments rewrites each expression for SET clause rendering.
-// EQ equalities are returned as leftRight with omitParens set so they render without comparison parentheses.
+// EQ equalities are unwrapped from chain/group so they render as col = val without comparison parentheses.
 func PrepareSetAssignments(items []any) []any {
 	if len(items) == 0 {
 		return items
@@ -19,7 +19,7 @@ func prepareSetAssignment(e any) any {
 		inner = g[0]
 	}
 	if lr, ok := inner.(leftRight); ok && lr.operator == "=" {
-		return lr.withOmitParens(true)
+		return lr
 	}
 	return e
 }
