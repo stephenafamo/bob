@@ -40,7 +40,7 @@ func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
 }
 
 func Using(table any, joins ...dialect.JoinChain[*dialect.DeleteQuery]) dialect.FromChain[*dialect.DeleteQuery] {
-	return dialect.From[*dialect.DeleteQuery](table, joins...)
+	return dialect.From(table, joins...)
 }
 
 // UsingFunction returns an expression for dm.Using when the source is one or more

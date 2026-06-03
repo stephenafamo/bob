@@ -32,8 +32,9 @@ func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
 
 // From sets the query source. Pass a table name as a string (unquoted literal) or use
 // psql.Quote(...) / a subquery Expression for quoted or qualified names.
-func From(table any) dialect.FromChain[*dialect.SelectQuery] {
-	return dialect.From[*dialect.SelectQuery](table)
+// Optional joins are attached to this from_item.
+func From(table any, joins ...dialect.JoinChain[*dialect.SelectQuery]) dialect.FromChain[*dialect.SelectQuery] {
+	return dialect.From(table, joins...)
 }
 
 // FromFunction returns an expression for sm.From when the source is one or more
