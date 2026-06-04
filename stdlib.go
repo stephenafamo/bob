@@ -64,11 +64,26 @@ func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
 // RunInTx runs the provided function in a transaction.
 // If the function returns an error, the transaction is rolled back.
 // Otherwise, the transaction is committed.
+// If the function panics, the transaction is rolled back and the panic is re-raised.
 func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(context.Context, Executor) error) error {
 	tx, err := d.BeginTx(ctx, txOptions)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			rbErr := tx.Rollback(ctx)
+			if rbErr != nil {
+				if pErr, ok := p.(error); ok {
+					panic(errors.Join(pErr, rbErr))
+				}
+				// p is not an error (e.g. string or int), so the rollback error
+				// cannot be surfaced without changing the panic value type.
+			}
+			panic(p)
+		}
+	}()
 
 	if err := fn(ctx, tx); err != nil {
 		err = fmt.Errorf("call: %w", err)
