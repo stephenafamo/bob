@@ -250,6 +250,34 @@ func (t Types) GetCompareExpr(currentPkg string, i language.Importer, forType st
 	}
 }
 
+// CanCompareWithEquals reports whether the type is compared with == (i.e. usable as a map key).
+func (t Types) CanCompareWithEquals(currentPkg, forType string) bool {
+	_, typDef := t.GetNameAndDef(currentPkg, forType)
+	return typDef.CompareExpr == "" || typDef.CompareExpr == "AAA == BBB"
+}
+
+// UnwrapNullExpr returns an expression for the underlying value of varName, for use as a map key.
+func (t Types) UnwrapNullExpr(currentPkg string, i language.Importer, forType, varName string, nullable bool) string {
+	if !nullable {
+		return varName
+	}
+
+	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
+	nullTyp, _ := t.GetNullTypeWithImports(currentPkg, forType)
+	i.ImportList(nullTyp.UseExprImports)
+
+	useExpr := nullTyp.UseExpr
+	if useExpr == "" {
+		useExpr = "SRC"
+	}
+
+	return strings.NewReplacer(
+		"SRC", varName,
+		"BASETYPE", colTyp,
+		"NULLTYPE", nullTyp.Name,
+	).Replace(useExpr)
+}
+
 func (t Types) GetNullType(currentPkg, forType string) NullType {
 	typ, _ := t.GetNullTypeWithImports(currentPkg, forType)
 	return typ
