@@ -24,10 +24,8 @@ func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
 	{{range $column := $table.Columns -}}
     {{if $column.Generated}}{{continue}}{{end -}}
     {{$colAlias := $tAlias.Column $column.Name -}}
-		if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-			vals = append(vals, {{printf "%q" $column.Name}})
-		}
-	{{end -}}
+			if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} { vals = append(vals, {{printf "%q" $column.Name}}) }
+		{{end -}}
 
 	return vals
 }
@@ -35,12 +33,10 @@ func (s {{$tAlias.UpSingular}}Setter) SetColumns() []string {
 func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 	{{- range $column := $table.Columns -}}
     {{if $column.Generated}}{{continue}}{{end -}}
-    {{$colAlias := $tAlias.Column $column.Name -}}
-    {{$colTyp := $.Types.GetOptional $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
-		if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-      t.{{$colAlias}} = {{$.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable}}
-		}
-	{{end -}}
+	    {{$colAlias := $tAlias.Column $column.Name -}}
+	    {{$colTyp := $.Types.GetOptional $.CurrentPackage $.Importer $column.Type $column.Nullable -}}
+			if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} { t.{{$colAlias}} = {{$.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable}} }
+		{{end -}}
 }
 
 {{block "setter_insert_mod" . -}}
@@ -57,16 +53,12 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
     vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
-    {{range $index, $column := $table.NonGeneratedColumns -}}
-      {{$colAlias := $tAlias.Column $column.Name -}}
-      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
-      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-        vals[{{$index}}] = {{$.Dialect}}.Arg({{$colGetter}})
-      } else {
-        vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
-      }
+	    {{range $index, $column := $table.NonGeneratedColumns -}}
+	      {{$colAlias := $tAlias.Column $column.Name -}}
+	      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
+	      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} { vals[{{$index}}] = {{$.Dialect}}.Arg({{$colGetter}}) } else { vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT") }
 
-    {{end -}}
+	    {{end -}}
 
     return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
   }))
@@ -91,16 +83,11 @@ func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expres
   {{$.Importer.Import "github.com/stephenafamo/bob/expr" }}
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 	{{range $column := $table.Columns -}}
-	{{if $column.Generated}}{{continue}}{{end -}}
-	{{$colAlias := $tAlias.Column $column.Name -}}
-    if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-      exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
-        {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), 
-        {{$.Dialect}}.Arg(s.{{$colAlias}}),
-      }})
-		}
+		{{if $column.Generated}}{{continue}}{{end -}}
+		{{$colAlias := $tAlias.Column $column.Name -}}
+	    if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} { exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{ {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), {{$.Dialect}}.Arg(s.{{$colAlias}}), }}) }
 
-	{{end -}}
+		{{end -}}
 
   return exprs
 }

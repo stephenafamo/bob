@@ -189,63 +189,34 @@
 {{end}}
 
 {{if not $rel.IsToMany -}}
-  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} related *{{$.SetterType $rel.Foreign}}) error {
-    var err error
+	  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} related *{{$.SetterType $rel.Foreign}}) error {
+	    var err error
 
-    {{if $rel.InsertEarly -}}
-      {{$to}}, err := {{$.TableVar $rel.Foreign}}.Insert(related).One(ctx, exec)
+	    {{if $rel.InsertEarly -}}
+	      {{$to}}, err := {{$.TableVar $rel.Foreign}}.Insert(related).One(ctx, exec)
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
-    {{end}}
+	    {{end}}
 
-    {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := $.AllTables.Get $side.TableName}}
-      {{$sideAlias := $.Aliases.Table $side.TableName}}
+	    {{range $index, $side := (reverse $valuedSides) -}}
+	      {{$sideTable := $.AllTables.Get $side.TableName}}
 
-      {{if eq $side.Position $rel.ForeignPosition -}}
-        {{$to}}, err := insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, related
-      {{- else -}}
-        {{$show := lt $index (len $valuedSides | add -1)}}
-        {{if $show -}}
-          {{if $rel.NeedsMany $side.Position -}}
-            {{$sideAlias.DownPlural}}{{$side.Position}}, err
-          {{- else -}}
-            {{$sideAlias.DownSingular}}{{$side.Position}}, err
-          {{- end -}}
-        {{- else -}}
-          _, err
-        {{- end -}}
-        {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
-        = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, 1
-        {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
-          , {{$sideAlias.DownSingular}}{{$side.Position}}
-        {{- end -}}
-      {{- end}}
-        {{- range $map := $side.UniqueExternals -}}
-          {{- $a := $.Aliases.Table .ExternalTable -}}
-          , {{$a.DownSingular}}{{$map.ExtPosition}}
-        {{- end -}}
-        )
+	      {{if eq $side.Position $rel.ForeignPosition -}}
+	        {{$to}}, err := insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, related
+	        {{- range $map := $side.UniqueExternals -}}
+	          {{- $a := $.Aliases.Table .ExternalTable -}}
+	          , {{$a.DownSingular}}{{$map.ExtPosition}}
+	        {{- end -}}
+	        )
       if err != nil {
-        return err
-      }
-    {{- end}}
+	        return err
+	      }
+	      {{- end}}
+	    {{- end}}
 
-
-    {{$from}}.R.{{$relAlias}} = {{$to}}
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      {{if $invRel.IsToMany -}}
-        {{$to}}.R.{{$invAlias}} = append({{$to}}.R.{{$invAlias}}, {{$from}})
-      {{- else -}}
-        {{$to}}.R.{{$invAlias}} = {{$from}}
-      {{- end}}
-    {{- end}}
-
-    return nil
-  }
+	    return {{$from}}.Attach{{$relAlias}}(ctx, exec,{{$.RelDependenciesPosArgs $rel}} {{$to}})
+	  }
 
   func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} {{$to}} *{{$.ModelType $rel.Foreign}}) error {
     var err error
@@ -294,10 +265,10 @@
   }
 
 {{else -}}
-  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} related ...*{{$.SetterType $rel.Foreign}}) error {
-    if len(related) == 0 {
-      return nil
-    }
+	  func ({{$from}} *{{$tAlias.UpSingular}}) Insert{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} related ...*{{$.SetterType $rel.Foreign}}) error {
+	    if len(related) == 0 {
+	      return nil
+	    }
 
     var err error
 
@@ -309,53 +280,23 @@
       {{$to}} := {{$.SliceType $rel.Foreign}}(inserted)
     {{end}}
 
-    {{range $index, $side := (reverse $valuedSides) -}}
-      {{$sideTable := $.AllTables.Get $side.TableName}}
-      {{$sideAlias := $.Aliases.Table $side.TableName}}
-      {{if eq $side.Position $rel.ForeignPosition -}}
-        {{$to}}, err := insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, related
-      {{- else -}}
-        {{$show := lt $index (len $valuedSides | add -1)}}
-        {{if $show -}}
-          {{if $rel.NeedsMany $side.Position -}}
-            {{$sideAlias.DownPlural}}{{$side.Position}}, err
-          {{- else -}}
-            {{$sideAlias.DownSingular}}{{$side.Position}}, err
-          {{- end -}}
-        {{- else -}}
-          _, err
-        {{- end -}}
-        {{- if and $show ($sideTable.IsJoinTableForRel $rel $side.Position) -}}:{{- end -}}
-        = attach{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, len(related)
-        {{- if not ($sideTable.IsJoinTableForRel $rel $side.Position) -}}
-          , {{if $rel.NeedsMany $side.Position}}{{$sideAlias.DownPlural}}{{else}}{{$sideAlias.DownSingular}}{{end}}{{$side.Position}}
-        {{- end -}}
-      {{- end}}
-      {{- range $map := $side.UniqueExternals -}}
-        {{- $a := $.Aliases.Table .ExternalTable -}}
-        , {{if $rel.NeedsMany .ExtPosition}}{{$a.DownPlural}}{{else}}{{$a.DownSingular}}{{end}}{{$map.ExtPosition}}
-      {{- end -}}
+	    {{range $index, $side := (reverse $valuedSides) -}}
+	      {{$sideTable := $.AllTables.Get $side.TableName}}
+	      {{if eq $side.Position $rel.ForeignPosition -}}
+	        {{$to}}, err := insert{{$tAlias.UpSingular}}{{$relAlias}}{{$index}}(ctx, exec, related
+	      {{- range $map := $side.UniqueExternals -}}
+	        {{- $a := $.Aliases.Table .ExternalTable -}}
+	        , {{if $rel.NeedsMany .ExtPosition}}{{$a.DownPlural}}{{else}}{{$a.DownSingular}}{{end}}{{$map.ExtPosition}}
+	      {{- end -}}
       )
       if err != nil {
-        return err
-      }
-    {{- end}}
+	        return err
+	      }
+	      {{- end}}
+	    {{- end}}
 
-
-    {{$from}}.R.{{$relAlias}} = append({{$from}}.R.{{$relAlias}}, {{$to}}...)
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      for _, rel := range {{$to}} {
-        {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, {{$from}})
-        {{- else -}}
-          rel.R.{{$invAlias}} = {{$from}}
-        {{- end}}
-      }
-    {{- end}}
-    return nil
-  }
+	    return {{$from}}.Attach{{$relAlias}}(ctx, exec,{{$.RelDependenciesPosArgs $rel}} {{$to}}...)
+	  }
 
 
   func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.RelDependenciesPos $rel}} related ...*{{$.ModelType $rel.Foreign}}) error {

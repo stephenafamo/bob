@@ -355,6 +355,22 @@ func (d *TemplateData[T, C, I]) RelDependenciesPos(r orm.Relationship) string {
 	return strings.Join(ma, "")
 }
 
+func (d *TemplateData[T, C, I]) RelDependenciesPosArgs(r orm.Relationship) string {
+	needed := d.AllTables.NeededBridgeRels(r)
+	ma := make([]string, len(needed))
+
+	for i, need := range needed {
+		alias := d.TableAlias(need.Table)
+		if need.Many {
+			ma[i] = fmt.Sprintf("%s%d,", alias.DownPlural, need.Position)
+		} else {
+			ma[i] = fmt.Sprintf("%s%d,", alias.DownSingular, need.Position)
+		}
+	}
+
+	return strings.Join(ma, "")
+}
+
 func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {
 	_, err := tpl.New(name).
 		Funcs(sprig.GenericFuncMap()).
