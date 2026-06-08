@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed PostgreSQL `um` / `dm` standalone join mods (`InnerJoin`, `LeftJoin`, etc.) applied before `um.From(...)` / `dm.Using(...)`: the join is now preserved and attached to the next `FROM` / `USING` from_item instead of being dropped. (thanks @atzedus)
 - Fixed/extended PostgreSQL `sm.From(...)`: it now accepts variadic join chains (`sm.From(table, joins...)`), and inline joins are merged with already attached standalone joins when replacing the primary `FROM` source. (thanks @atzedus)
 
+### Fixed
+
+- Fixed generated `Setter.Apply` wrapping all insert values in a single `ExpressionFunc`, which prevented `BeforeInsertHooks` and query mods from modifying individual column values via `q.Values.Vals[row][columnIndex]`. Base and SQLite codegen templates now emit one expression per column (MySQL already did). Generated SQL is unchanged. (thanks @atzedus)
+
 ### Changed
 
 - Moved PostgreSQL `SetCols` tuple-assignment builder from `dialect/psql/dialect/setcols.go` to shared `clause/setcols.go` (`clause.NewSetCols`, `clause.SetColsOptions`). Dialect wrappers configure `ToRow` via `SetColsOptions.RowPrefix` (e.g. `"ROW"` on PostgreSQL). (thanks @atzedus)
