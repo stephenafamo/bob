@@ -73,7 +73,7 @@ type Constructor[ConstraintExtra, IndexExtra any] interface {
 // minus the tables specified in the excludes.
 func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 	ctx context.Context, c Constructor[ConstraintExtra, IndexExtra],
-	concurrency int, only, except map[string][]string,
+	concurrency int, only, except map[string][]string, columnOrder string,
 ) ([]Table[ConstraintExtra, IndexExtra], error) {
 	var err error
 	var ret []Table[ConstraintExtra, IndexExtra]
@@ -91,7 +91,7 @@ func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 
 	colFilter := ParseColumnFilter(tablesInfo.Keys(), only, except)
 
-	ret, err = tables(ctx, c, concurrency, tablesInfo, colFilter)
+	ret, err = tables(ctx, c, concurrency, tablesInfo, colFilter, columnOrder)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load tables: %w", err)
 	}
@@ -126,7 +126,7 @@ func BuildDBInfo[DBExtra, ConstraintExtra, IndexExtra any](
 	return ret, nil
 }
 
-func tables[C, I any](ctx context.Context, c Constructor[C, I], concurrency int, infos TablesInfo, filter ColumnFilter) ([]Table[C, I], error) {
+func tables[C, I any](ctx context.Context, c Constructor[C, I], concurrency int, infos TablesInfo, filter ColumnFilter, columnOrder string) ([]Table[C, I], error) {
 	sort.Slice(infos, func(i, j int) bool {
 		return infos[i].Key < infos[j].Key
 	})
@@ -142,7 +142,7 @@ func tables[C, I any](ctx context.Context, c Constructor[C, I], concurrency int,
 		go func(i int, info TableInfo) {
 			defer wg.Done()
 			defer limiter.put()
-			t, err := table(ctx, c, info, filter)
+			t, err := table(ctx, c, info, filter, columnOrder)
 			if err != nil {
 				errs <- err
 				return
@@ -162,7 +162,7 @@ func tables[C, I any](ctx context.Context, c Constructor[C, I], concurrency int,
 }
 
 // table returns columns info for a given table
-func table[C, I any](ctx context.Context, c Constructor[C, I], info TableInfo, filter ColumnFilter) (Table[C, I], error) {
+func table[C, I any](ctx context.Context, c Constructor[C, I], info TableInfo, filter ColumnFilter, columnOrder string) (Table[C, I], error) {
 	var err error
 	t := Table[C, I]{
 		Key: info.Key,
@@ -170,6 +170,12 @@ func table[C, I any](ctx context.Context, c Constructor[C, I], info TableInfo, f
 
 	if t.Schema, t.Name, t.Columns, err = c.TableDetails(ctx, info, filter); err != nil {
 		return Table[C, I]{}, fmt.Errorf("unable to fetch table column info (%s): %w", info.Key, err)
+	}
+
+	if columnOrder == "name" {
+		sort.Slice(t.Columns, func(i, j int) bool {
+			return t.Columns[i].Name < t.Columns[j].Name
+		})
 	}
 
 	return t, nil
