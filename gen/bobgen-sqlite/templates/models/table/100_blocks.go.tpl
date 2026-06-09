@@ -19,24 +19,23 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     {{end}}
   }
 
-	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-    vals := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
-    {{range $index, $column := $table.NonGeneratedColumns -}}
-      {{$colAlias := $tAlias.Column $column.Name -}}
-      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
-      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-        vals = append(vals, {{$.Dialect}}.Arg({{$colGetter}}))
-      }
-
+  vals := make([]bob.Expression, 0, len(q.TableRef.Columns))
+  for _, col := range q.TableRef.Columns {
+    switch col {
+    {{range $column := $table.NonGeneratedColumns -}}
+    case {{printf "%q" $column.Name}}:
+      vals = append(vals, bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+        {{$colAlias := $tAlias.Column $column.Name -}}
+        {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
+        if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
+          return {{$.Dialect}}.Arg(nil).WriteSQL(ctx, w, d, start)
+        }
+        return {{$.Dialect}}.Arg({{$colGetter}}).WriteSQL(ctx, w, d, start)
+      }))
     {{end -}}
-
-    {{if $table.Constraints.Primary -}}
-    if len(vals) == 0 {
-      vals = append(vals{{range $table.Constraints.Primary.Columns}}, {{$.Dialect}}.Arg(nil){{end}})
     }
-    {{end}}
+  }
 
-    return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
-  }))
+  q.AppendValues(vals...)
 }
 {{- end}}
