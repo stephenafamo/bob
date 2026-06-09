@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order).
+
 ### Fixed
 
 - Fixed generated `Setter.Apply` wrapping all insert values in a single `ExpressionFunc`, which prevented `BeforeInsertHooks` and query mods from modifying individual column values via `q.Values.Vals[row][columnIndex]`. Base and SQLite codegen templates now emit one expression per column (MySQL already did). Generated SQL is unchanged. (thanks @atzedus)

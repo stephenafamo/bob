@@ -299,6 +299,12 @@ func (d driver) getTable(ctx context.Context, schema, name string, colFilter dri
 		return table, err
 	}
 
+	if d.config.ColumnOrder == "name" {
+		sort.Slice(table.Columns, func(i, j int) bool {
+			return table.Columns[i].Name < table.Columns[j].Name
+		})
+	}
+
 	table.Constraints.Primary = d.primaryKey(schema, name, tinfo)
 	table.Constraints.Foreign, err = d.foreignKeys(ctx, schema, name)
 	if err != nil {
