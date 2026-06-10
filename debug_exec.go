@@ -27,7 +27,7 @@ func (w writerPrinter) PrintQuery(query string, args ...any) {
 		if valuer, ok := val.(driver.Valuer); ok {
 			val, _ = valuer.Value()
 		}
-		w.WriteString(fmt.Sprintf("\n%d: %T: %v", i, arg, val))
+		w.WriteString(fmt.Sprintf("\n%d: %T: %v", i+1, arg, val))
 	}
 	w.WriteString("\n")
 }
