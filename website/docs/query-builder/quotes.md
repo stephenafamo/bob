@@ -24,7 +24,8 @@ For qualified column names in `SET` / `ON CONFLICT DO UPDATE`, use `SetExpr` (or
 | `im.OnConflictOnConstraint(name)` | psql, sqlite | Constraint name |
 | `um/dm.WhereCurrentOf(cursor)` | psql | Cursor name |
 | `um/im/mm.SetCol("col")` | psql; um/im on sqlite; um + `im.UpdateCol` on mysql | LHS of single-column `SET` |
-| `um/im/mm.SetCols("a", "b")` | psql only | Tuple assignment `(a, b) = ...` |
+| `um/im.SetCols("a", "b")` | psql, sqlite | Tuple assignment `(a, b) = ...`; PostgreSQL `ToRow` emits `ROW (...)` |
+| `mm.SetCols("a", "b")` | psql only | Tuple assignment in `MERGE ... UPDATE SET` |
 | `mm.Columns("a", "b")` | psql only | `MERGE ... INSERT (a, b)` column list |
 | `im.SetExcluded("a", "b")` | psql, sqlite | `"a" = EXCLUDED."a"`, ... |
 | `im.Excluded("col")` | psql, sqlite | `EXCLUDED."col"` |
@@ -70,6 +71,9 @@ um.Set(
 
 // MERGE update
 mm.SetCol("price").To(psql.Quote("u", "price"))
+
+// Tuple SET (PostgreSQL ToRow uses ROW (...); SQLite uses (...))
+um.SetCols("temp_lo", "temp_hi").ToExprs(psql.Raw("temp_lo + 1"), psql.Raw("temp_lo + 15"))
 
 // Table in FROM (pass Quote when you want quoting)
 sm.From(psql.Quote("films"))

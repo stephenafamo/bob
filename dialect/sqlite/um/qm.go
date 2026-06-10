@@ -2,6 +2,7 @@ package um
 
 import (
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
@@ -77,6 +78,11 @@ func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
 // SetExpr is like SetCol but the column LHS is any expression (e.g. sqlite.Quote("t", "col")).
 func SetExpr(col bob.Expression) mods.Set[*dialect.UpdateQuery] {
 	return mods.Set[*dialect.UpdateQuery]{Col: col}
+}
+
+// SetCols creates a multi-column setter: (columns...) = (values...) | (subquery)
+func SetCols(columns ...string) clause.SetCols[*dialect.UpdateQuery] {
+	return clause.NewSetCols[*dialect.UpdateQuery](columns...)
 }
 
 func From(table any) dialect.FromChain[*dialect.UpdateQuery] {
