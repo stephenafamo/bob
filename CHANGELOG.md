@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed generated `Setter.Apply` wrapping all insert values in a single `ExpressionFunc`, which prevented `BeforeInsertHooks` and query mods from modifying individual column values via `q.Values.Vals[row][columnIndex]`. Base and SQLite codegen templates now emit one expression per column (MySQL already did). Generated SQL is unchanged. (thanks @atzedus)
+- Fixed generated query mods for combined `UNION/INTERSECT/EXCEPT` queries dropping or misrouting the first operand's `ORDER BY/LIMIT/OFFSET` into the combined-result clauses. (thanks @daddz)
 
 ### Changed
 
