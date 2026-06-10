@@ -100,6 +100,11 @@ func SetExpr(col bob.Expression) mods.Set[*clause.ConflictClause] {
 	return mods.Set[*clause.ConflictClause]{Col: col}
 }
 
+// SetCols creates a multi-column setter: (columns...) = (values...) | (subquery)
+func SetCols(columns ...string) clause.SetCols[*clause.ConflictClause] {
+	return clause.NewSetCols[*clause.ConflictClause](columns...)
+}
+
 // Excluded references a column from the EXCLUDED pseudo-table in ON CONFLICT DO UPDATE.
 func Excluded(column string) dialect.Expression {
 	return dialect.Expression{}.New(

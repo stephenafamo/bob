@@ -254,8 +254,8 @@ func SetExpr(col bob.Expression) mods.Set[*UpdateAction] {
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
-func SetCols(columns ...string) dialect.SetCols[*UpdateAction] {
-	return dialect.NewSetCols[*UpdateAction](columns...)
+func SetCols(columns ...string) clause.SetCols[*UpdateAction] {
+	return clause.NewSetCols[*UpdateAction](columns...).Options(clause.SetColsOptions{RowPrefix: "ROW"})
 }
 
 // InsertAction collects options for WHEN ... THEN INSERT actions.

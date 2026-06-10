@@ -8688,6 +8688,162 @@
 			"path": "./queries",
 			"files": [
 				{
+					"path": "queries/combined.sql",
+					"queries": [
+						{
+							"type": 1,
+							"name": "PlainUsersOrderLimitOffset",
+							"raw": "SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC LIMIT 2 OFFSET 1",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": null
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											34,
+											36
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 9))\nq.SetTable(EXPR.subExpr(15, 20))\nq.AppendWhere(EXPR.subExpr(27, 37))\nq.AppendOrder(EXPR.subExpr(47, 54))\nq.SetLimit(EXPR.subExpr(61, 62))\nq.SetOffset(EXPR.subExpr(70, 71))\n"
+						},
+						{
+							"type": 1,
+							"name": "CombinedUsersOrderLimitOffset",
+							"raw": "(SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC LIMIT 2 OFFSET 1)\nUNION\n(SELECT id FROM users WHERE id IN ($2) ORDER BY id ASC LIMIT 3 OFFSET 4)\nORDER BY id DESC LIMIT 5 OFFSET 6",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": null
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											35,
+											37
+										]
+									],
+									"can_be_multiple": true
+								},
+								{
+									"col": {
+										"name": "id_2",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											115,
+											117
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.SetLimit(EXPR.subExpr(62, 63))\nq.SetOffset(EXPR.subExpr(71, 72))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(81, 151),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    q.CombinedOrder.AppendOrder(EXPR.subExpr(162, 169))\nq.CombinedLimit.SetLimit(EXPR.subExpr(176, 177))\nq.CombinedOffset.SetOffset(EXPR.subExpr(185, 186))\n"
+						},
+						{
+							"type": 1,
+							"name": "CombinedUsersFetchWithTies",
+							"raw": "(SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC FETCH FIRST 2 ROWS WITH TIES)\nUNION ALL\n(SELECT id FROM users WHERE id IN ($2))\nORDER BY id DESC FETCH FIRST 5 ROWS WITH TIES",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "id",
+									"db_name": "id",
+									"nullable": false,
+									"type": "int32",
+									"type_limits": null
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "id",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											35,
+											37
+										]
+									],
+									"can_be_multiple": true
+								},
+								{
+									"col": {
+										"name": "id_2",
+										"db_name": "",
+										"nullable": false,
+										"type": "int32",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											131,
+											133
+										]
+									],
+									"can_be_multiple": true
+								}
+							],
+							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.Fetch.SetFetch(clause.Fetch{\n\t\t\t\t\t\t\t\tCount: EXPR.subExpr(68, 69),\n\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: true,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(97, 134),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    q.CombinedOrder.AppendOrder(EXPR.subExpr(145, 152))\nq.CombinedFetch.SetFetch(clause.Fetch{\n\t\t\t\t\t\t\t\t\tCount: EXPR.subExpr(165, 166),\n\t\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\t"
+						}
+					]
+				},
+				{
 					"path": "queries/users.sql",
 					"queries": [
 						{

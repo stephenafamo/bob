@@ -59,8 +59,8 @@ func SetExpr(col bob.Expression) mods.Set[*dialect.UpdateQuery] {
 }
 
 // SetCols creates a multi-column setter: (columns...) = ROW(...) | (values...) | (subquery)
-func SetCols(columns ...string) dialect.SetCols[*dialect.UpdateQuery] {
-	return dialect.NewSetCols[*dialect.UpdateQuery](columns...)
+func SetCols(columns ...string) clause.SetCols[*dialect.UpdateQuery] {
+	return clause.NewSetCols[*dialect.UpdateQuery](columns...).Options(clause.SetColsOptions{RowPrefix: "ROW"})
 }
 
 func From(table any, joins ...dialect.JoinChain[*dialect.UpdateQuery]) dialect.FromChain[*dialect.UpdateQuery] {
