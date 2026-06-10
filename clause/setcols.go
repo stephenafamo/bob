@@ -1,4 +1,4 @@
-package dialect
+package clause
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 // columnsAssignment represents (columns...) = [ROW] (values...) or (columns...) = (subquery).
 // Exactly one of query or values is set, depending on ToQuery vs ToExprs/ToRow.
 type columnsAssignment struct {
-	cols   []bob.Expression
-	query  bob.Query // ToQuery: subquery on the right-hand side
-	values []any     // ToExprs / ToRow: expressions on the right-hand side
-	isRow  bool
+	cols      []bob.Expression
+	query     bob.Query // ToQuery: subquery on the right-hand side
+	values    []any     // ToExprs / ToRow: expressions on the right-hand side
+	rowPrefix string    // ToRow only: token before "(", e.g. "ROW" on PostgreSQL
 }
 
 func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
@@ -33,12 +33,12 @@ func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 		return append(colArgs, valArgs...), nil
 	}
 
-	valPrefix := "("
-	if a.isRow {
-		valPrefix = "ROW ("
+	if a.rowPrefix != "" {
+		w.WriteString(a.rowPrefix)
+		w.WriteString(" ")
 	}
 
-	valArgs, err := bob.ExpressSlice(ctx, w, d, start+len(colArgs), a.values, valPrefix, ", ", ")")
+	valArgs, err := bob.ExpressSlice(ctx, w, d, start+len(colArgs), a.values, "(", ", ", ")")
 	if err != nil {
 		return nil, err
 	}
@@ -46,30 +46,50 @@ func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 	return append(colArgs, valArgs...), nil
 }
 
-// SetCols is a reusable helper for PostgreSQL tuple assignments:
+// SetColsOptions configures tuple-assignment rendering for a [SetCols] builder.
+type SetColsOptions struct {
+	// RowPrefix is emitted before the value list in ToRow, e.g. "ROW" on PostgreSQL.
+	RowPrefix string
+}
+
+// SetCols is a reusable helper for tuple assignments in SET clauses:
 // (columns...) = ROW(...) | (values...) | (subquery)
 type SetCols[Q interface{ AppendSet(clauses ...any) }] struct {
 	columns []string
+	opts    SetColsOptions
 }
 
-// NewSetCols creates a reusable tuple-assignment builder for SET clauses.
-// It can be used by UPDATE queries, INSERT ... ON CONFLICT DO UPDATE,
-// and MERGE UPDATE actions.
+// NewSetCols creates a tuple-assignment builder for SET clauses.
+// It can be used by UPDATE queries, INSERT ... ON CONFLICT DO UPDATE, and MERGE UPDATE actions.
+// Dialect-specific rendering is configured via [SetCols.Options].
 func NewSetCols[Q interface{ AppendSet(clauses ...any) }](columns ...string) SetCols[Q] {
 	return SetCols[Q]{columns: columns}
 }
 
-// ToRow sets columns to ROW of expressions: (columns...) = ROW (expressions...)
+// Options returns a copy of the builder with the given options applied.
+func (s SetCols[Q]) Options(opts SetColsOptions) SetCols[Q] {
+	s.opts = opts
+	return s
+}
+
+// ToRow sets columns to a row of expressions: (columns...) = [prefix] (expressions...)
 func (s SetCols[Q]) ToRow(values ...bob.Expression) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: internal.ToAnySlice(values), isRow: true})
+		q.AppendSet(columnsAssignment{
+			cols:      internal.QuoteIdentifiers(s.columns),
+			values:    internal.ToAnySlice(values),
+			rowPrefix: s.opts.RowPrefix,
+		})
 	})
 }
 
 // ToExprs sets columns to expressions: (columns...) = (expressions...)
 func (s SetCols[Q]) ToExprs(values ...bob.Expression) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
-		q.AppendSet(columnsAssignment{cols: internal.QuoteIdentifiers(s.columns), values: internal.ToAnySlice(values)})
+		q.AppendSet(columnsAssignment{
+			cols:   internal.QuoteIdentifiers(s.columns),
+			values: internal.ToAnySlice(values),
+		})
 	})
 }
 

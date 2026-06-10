@@ -113,6 +113,49 @@ func TestInsert(t *testing.T) {
 				VALUES (?1, ?2), (?3, ?4)`,
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
+		"on conflict do update set tuple to exprs": {
+			Query: sqlite.Insert(
+				im.Into("users", "id", "first_name", "last_name"),
+				im.Values(sqlite.Arg(1, "Thomas", "Anderson")),
+				im.OnConflict("id").DoUpdate(
+					im.SetCols("first_name", "last_name").ToExprs(
+						sqlite.Raw("EXCLUDED.first_name"),
+						sqlite.Raw("EXCLUDED.last_name"),
+					),
+				),
+			),
+			ExpectedSQL:  `INSERT INTO users ("id", "first_name", "last_name") VALUES (?1, ?2, ?3) ON CONFLICT (id) DO UPDATE SET ("first_name", "last_name") = (EXCLUDED.first_name, EXCLUDED.last_name)`,
+			ExpectedArgs: []any{1, "Thomas", "Anderson"},
+		},
+		"on conflict do update set tuple to row": {
+			Query: sqlite.Insert(
+				im.Into("users", "id", "first_name", "last_name"),
+				im.Values(sqlite.Arg(1, "Thomas", "Anderson")),
+				im.OnConflict("id").DoUpdate(
+					im.SetCols("first_name", "last_name").ToRow(
+						sqlite.Arg("Neo"),
+						sqlite.Arg("Anderson"),
+					),
+				),
+			),
+			ExpectedSQL:  `INSERT INTO users ("id", "first_name", "last_name") VALUES (?1, ?2, ?3) ON CONFLICT (id) DO UPDATE SET ("first_name", "last_name") = (?4, ?5)`,
+			ExpectedArgs: []any{1, "Thomas", "Anderson", "Neo", "Anderson"},
+		},
+		"on conflict do update set tuple to query": {
+			Query: sqlite.Insert(
+				im.Into("users", "id", "first_name", "last_name"),
+				im.Values(sqlite.Arg(1, "Thomas", "Anderson")),
+				im.OnConflict("id").DoUpdate(
+					im.SetCols("first_name", "last_name").ToQuery(sqlite.Select(
+						sm.Columns("first_name", "last_name"),
+						sm.From("archived_users"),
+						sm.Where(sqlite.Raw("archived_users.id = EXCLUDED.id")),
+					)),
+				),
+			),
+			ExpectedSQL:  `INSERT INTO users ("id", "first_name", "last_name") VALUES (?1, ?2, ?3) ON CONFLICT (id) DO UPDATE SET ("first_name", "last_name") = (SELECT first_name, last_name FROM archived_users WHERE archived_users.id = EXCLUDED.id)`,
+			ExpectedArgs: []any{1, "Thomas", "Anderson"},
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)
