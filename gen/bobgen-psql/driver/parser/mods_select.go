@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	pg "github.com/pganalyze/pg_query_go/v6"
+
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/internal"
 )
@@ -175,18 +176,21 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 		)
 	}
 
-	if limitInfo, ok := info.children["LimitCount"]; ok {
+	// ORDER BY / LIMIT / OFFSET that belong to the main (first) select branch.
+	// For a plain query this is the whole query; for a combined query (UNION /
+	// INTERSECT / EXCEPT) this is the first operand, which keeps its own clauses.
+	if limitInfo, ok := mainInfo.children["LimitCount"]; ok {
 		w.editRules = append(w.editRules,
 			internal.RecordPoints(
 				int(limitInfo.start),
 				int(limitInfo.end)-1,
 				func(start, end int) error {
-					switch stmt.SelectStmt.LimitOption {
+					switch main.LimitOption {
 					case pg.LimitOption_LIMIT_OPTION_COUNT:
-						fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
+						fmt.Fprintf(w.mods, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 					case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
 						w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
-						fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
+						fmt.Fprintf(w.mods, `q.Fetch.SetFetch(clause.Fetch{
 								Count: EXPR.subExpr(%d, %d),
 								WithTies: true,
 							})
@@ -204,24 +208,79 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 				int(offsetInfo.start),
 				int(offsetInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
 		)
 	}
 
-	if orderInfo, ok := info.children["SortClause"]; ok {
+	if orderInfo, ok := mainInfo.children["SortClause"]; ok {
 		w.editRules = append(w.editRules,
 			internal.RecordPoints(
 				int(orderInfo.start),
 				int(orderInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
+					fmt.Fprintf(w.mods, "q.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
 		)
+	}
+
+	// For a combined query the top-level ORDER BY / LIMIT / OFFSET apply to the
+	// outer-most query (the combined result), so they are recorded separately.
+	// When there are no combines, mainInfo == info and these clauses are already
+	// handled above as part of the main branch.
+	if len(combines) > 0 {
+		if limitInfo, ok := info.children["LimitCount"]; ok {
+			w.editRules = append(w.editRules,
+				internal.RecordPoints(
+					int(limitInfo.start),
+					int(limitInfo.end)-1,
+					func(start, end int) error {
+						switch stmt.SelectStmt.LimitOption {
+						case pg.LimitOption_LIMIT_OPTION_COUNT:
+							fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
+						case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
+							w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
+							fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
+									Count: EXPR.subExpr(%d, %d),
+									WithTies: true,
+								})
+							`, start, end)
+						}
+						return nil
+					},
+				)...,
+			)
+		}
+
+		if offsetInfo, ok := info.children["LimitOffset"]; ok {
+			w.editRules = append(w.editRules,
+				internal.RecordPoints(
+					int(offsetInfo.start),
+					int(offsetInfo.end)-1,
+					func(start, end int) error {
+						fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
+						return nil
+					},
+				)...,
+			)
+		}
+
+		if orderInfo, ok := info.children["SortClause"]; ok {
+			w.editRules = append(w.editRules,
+				internal.RecordPoints(
+					int(orderInfo.start),
+					int(orderInfo.end)-1,
+					func(start, end int) error {
+						fmt.Fprintf(w.mods, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
+						return nil
+					},
+				)...,
+			)
+		}
 	}
 
 	for i, lockClause := range stmt.SelectStmt.LockingClause {
