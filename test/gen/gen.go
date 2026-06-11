@@ -315,7 +315,9 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 		filePath := filepath.Join(outFolder, eObj.fileName)
 		fh, err := os.Open(filePath)
 		if err != nil {
-			panic(fmt.Sprintf("Cant open the file: %#v", filePath))
+			fmt.Printf("unable to open %q while printing compile context: %v\n", filePath, err)
+			fmt.Printf("-----------------\n")
+			continue
 		}
 
 		scanner := bufio.NewScanner(fh)
