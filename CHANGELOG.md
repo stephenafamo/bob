@@ -5,13 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
+## [v0.46.0] - 2026-06-11
 
 ### Added
 
 - `With()` on generated queries as a more ergonomic method to add mods on top of generated queries (thanks @daddz)
-- Added `Asc()/Desc()/...` helpers to `sm.OrderCombined` for PostgreSQL/MySQL (thanks @daddz) 
+- Added `Asc()/Desc()/...` helpers to `sm.OrderCombined` for PostgreSQL/MySQL (thanks @daddz)
 - Added SQLite `um.SetCols(columns...)` and `im.SetCols(columns...)` for tuple assignment in `UPDATE ... SET` and `ON CONFLICT DO UPDATE SET` (`.ToExprs(...)`, `.ToRow(...)`, `.ToQuery(...)`). SQLite renders `(cols) = (exprs...)`; PostgreSQL `ToRow` still emits `ROW (...)`. MySQL does not support tuple assignment — use multiple `SetCol` calls. (thanks @atzedus)
 
 ### Fixed
