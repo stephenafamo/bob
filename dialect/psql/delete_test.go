@@ -75,6 +75,21 @@ func TestDelete(t *testing.T) {
 			  WHERE (employees.id = $1)`,
 			ExpectedArgs: []any{1},
 		},
+		"standalone inner join before using": {
+			Query: psql.Delete(
+				dm.From("employees"),
+				dm.InnerJoin("departments").OnEQ(
+					psql.Quote("accounts", "dept_id"),
+					psql.Quote("departments", "id"),
+				),
+				dm.Using("accounts"),
+				dm.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `DELETE FROM employees USING accounts
+			  INNER JOIN departments ON (accounts.dept_id = departments.id)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
 		"standalone inner join on last using item": {
 			Query: psql.Delete(
 				dm.From("employees"),

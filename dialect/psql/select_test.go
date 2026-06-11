@@ -93,6 +93,41 @@ func TestSelect(t *testing.T) {
 				),
 			),
 		},
+		"from with inline inner join": {
+			Doc:         "FROM with INNER JOIN attached inline",
+			ExpectedSQL: `SELECT id FROM users INNER JOIN events ON ("users"."id" = "events"."user_id")`,
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.From("users", sm.InnerJoin("events").OnEQ(
+					psql.Quote("users", "id"),
+					psql.Quote("events", "user_id"),
+				)),
+			),
+		},
+		"from inline joins keep existing standalone joins": {
+			Doc:         "Replacing FROM with inline joins preserves already attached standalone joins",
+			ExpectedSQL: `SELECT id FROM users CROSS JOIN events INNER JOIN admins ON ("users"."id" = "admins"."user_id")`,
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.CrossJoin("events"),
+				sm.From("users", sm.InnerJoin("admins").OnEQ(
+					psql.Quote("users", "id"),
+					psql.Quote("admins", "user_id"),
+				)),
+			),
+		},
+		"standalone inner join before from": {
+			Doc:         "INNER JOIN applied as a standalone mod before From",
+			ExpectedSQL: `SELECT id FROM users INNER JOIN events ON ("users"."id" = "events"."user_id")`,
+			Query: psql.Select(
+				sm.Columns("id"),
+				sm.InnerJoin("events").OnEQ(
+					psql.Quote("users", "id"),
+					psql.Quote("events", "user_id"),
+				),
+				sm.From("users"),
+			),
+		},
 		"from rows from with cross join": {
 			Doc: "FROM ROWS FROM (...) with an additional table via CROSS JOIN",
 			Query: psql.Select(

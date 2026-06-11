@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
 
+### Fixed
+
+- Fixed PostgreSQL `um` / `dm` standalone join mods (`InnerJoin`, `LeftJoin`, etc.) applied before `um.From(...)` / `dm.Using(...)`: the join is now preserved and attached to the next `FROM` / `USING` from_item instead of being dropped. (thanks @atzedus)
+- Fixed/extended PostgreSQL `sm.From(...)`: it now accepts variadic join chains (`sm.From(table, joins...)`), and inline joins are merged with already attached standalone joins when replacing the primary `FROM` source. (thanks @atzedus)
+
 ## [v0.45.0] - 2026-05-28
 
 ### Added
