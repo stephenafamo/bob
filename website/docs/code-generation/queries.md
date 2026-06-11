@@ -165,11 +165,42 @@ users, err := AllUsers(1).With(
 ).All(ctx, db)
 ```
 
-:::caution
+:::note
 
-`With()` (like using the query as a mod) only **appends** clauses. For a `WHERE` clause this is fine: the extra condition is joined to the existing one with `AND`. But if the generated query already has an `ORDER BY`, `LIMIT`, or `OFFSET` clause, adding another one does **not** replace it — both are emitted, producing invalid SQL. Only add these clauses when the base query does not already define them.
+How an extra mod combines with a clause the generated query already has depends on which field that clause sits on:
+
+- `sm.Where(...)` is always joined to an existing `WHERE` with `AND`.
+- `sm.OrderBy(...)` is appended to an existing `ORDER BY` (both end up in the same clause).
+- `sm.Limit(...)` / `sm.Offset(...)` **replace** an existing `LIMIT` / `OFFSET`.
+
+For the **psql** generator, a generated plain query places its `ORDER BY` / `LIMIT` / `OFFSET` on these regular fields, so the rules above apply directly. 
+
+For a **combined** query (`UNION` / `INTERSECT` / `EXCEPT`), the outer-most `ORDER BY` / `LIMIT` / `OFFSET` — the ones that apply to the combined result rather than the first branch — live on separate fields. 
+A plain `sm.OrderBy` / `sm.Limit` / `sm.Offset` targets the first branch; to change the outer clauses use `sm.OrderCombined`, `sm.LimitCombined`, `sm.OffsetCombined` (and `sm.FetchCombined`).
+
+The **sqlite** generator behaves the same for plain queries (regular fields) but has no combined-clause mods. 
+
+The **mysql** generator currently emits a plain query's `ORDER BY` / `LIMIT` / `OFFSET` onto the combined fields, so adding another one via `With()` appends rather than replaces and can produce invalid SQL — for mysql, only add these when the base query does not already define them.
 
 :::
+
+For a combined (`UNION` / `INTERSECT` / `EXCEPT`) query, use the `*Combined` mods to change the outer-most clauses that apply to the combined result:
+
+```go
+// Given a generated query such as:
+//   (SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC LIMIT 2 OFFSET 1)
+//   UNION
+//   (SELECT id FROM users WHERE id IN ($2) ORDER BY id ASC LIMIT 3 OFFSET 4)
+//   ORDER BY id DESC LIMIT 5 OFFSET 6
+
+// Replace the outer LIMIT/OFFSET and re-order the combined result.
+// sm.OrderBy/sm.Limit here would target the first branch instead.
+users, err := CombinedUsersOrderLimitOffset(1, 2).With(
+    sm.OrderCombined(psql.Quote("id")).Desc(),
+    sm.LimitCombined(10),
+    sm.OffsetCombined(0),
+).All(ctx, db)
+```
 
 ## Annotating queries
 

@@ -266,6 +266,33 @@ func (o OrderCombined) Apply(q *SelectQuery) {
 	q.AppendCombinedOrder(o())
 }
 
+func (o OrderCombined) Asc() OrderCombined {
+	order := o()
+	order.Direction = "ASC"
+
+	return OrderCombined(func() clause.OrderDef {
+		return order
+	})
+}
+
+func (o OrderCombined) Desc() OrderCombined {
+	order := o()
+	order.Direction = "DESC"
+
+	return OrderCombined(func() clause.OrderDef {
+		return order
+	})
+}
+
+func (o OrderCombined) Collate(collationName string) OrderCombined {
+	order := o()
+	order.Collation = collationName
+
+	return OrderCombined(func() clause.OrderDef {
+		return order
+	})
+}
+
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
 func (s OrderBy[Q]) Apply(q Q) {
