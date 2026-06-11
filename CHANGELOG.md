@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved PostgreSQL `SetCols` tuple-assignment builder from `dialect/psql/dialect/setcols.go` to shared `clause/setcols.go` (`clause.NewSetCols`, `clause.SetColsOptions`). Dialect wrappers configure `ToRow` via `SetColsOptions.RowPrefix` (e.g. `"ROW"` on PostgreSQL). (thanks @atzedus)
 - `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
-
 - Generated slice relationship loaders (`<Parent>Slice.Load<Relationship>`) now stitch loaded parents and children in O(N+M) using a map keyed by the join column, instead of the previous O(N×M) nested loop. This greatly speeds up eager-loading and then-loading relationships with many rows on both sides. The map is only used for single-column joins whose key type is comparable with `==`; composite keys and types with a custom `compare_expr` (e.g. `[]byte`) fall back to the original nested loop, so generated behaviour is unchanged. (thanks @sandonemaki)
 
 ## [v0.45.0] - 2026-05-28
