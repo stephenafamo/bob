@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ### Added
 
+- `With()` on generated queries as a more ergonomic method to add mods on top of generated queries (thanks @daddz)
 - Added SQLite `um.SetCols(columns...)` and `im.SetCols(columns...)` for tuple assignment in `UPDATE ... SET` and `ON CONFLICT DO UPDATE SET` (`.ToExprs(...)`, `.ToRow(...)`, `.ToQuery(...)`). SQLite renders `(cols) = (exprs...)`; PostgreSQL `ToRow` still emits `ROW (...)`. MySQL does not support tuple assignment — use multiple `SetCol` calls. (thanks @atzedus)
 
 ### Fixed
@@ -19,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Moved PostgreSQL `SetCols` tuple-assignment builder from `dialect/psql/dialect/setcols.go` to shared `clause/setcols.go` (`clause.NewSetCols`, `clause.SetColsOptions`). Dialect wrappers configure `ToRow` via `SetColsOptions.RowPrefix` (e.g. `"ROW"` on PostgreSQL). (thanks @atzedus)
-
 - `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
 

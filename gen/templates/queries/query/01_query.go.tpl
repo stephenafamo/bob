@@ -6,6 +6,7 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 //go:embed {{.QueryFile.BaseName}}.bob.sql
@@ -114,6 +115,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       Mod: bob.ModFunc[{{$dialectType}}](func(q {{$dialectType}}) {
           {{replace "EXPR" "expressionTypArgs" ($query.Mods.IncludeInTemplate $.Importer)}}
       }),
+      Build: {{$.Dialect}}.{{$queryType}},
     }
   {{- else -}}
     return &{{$upperName}}Query{
@@ -127,6 +129,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       Mod: bob.ModFunc[{{$dialectType}}](func(q {{$dialectType}}) {
           {{replace "EXPR" "expressionTypArgs" ($query.Mods.IncludeInTemplate $.Importer)}}
       }),
+      Build: {{$.Dialect}}.{{$queryType}},
     }
   {{- end}} 
 }

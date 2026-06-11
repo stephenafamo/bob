@@ -153,6 +153,24 @@ query := sqlite.Select(
 )
 ```
 
+#### Augmenting with `With()`
+
+As a shortcut, the generated query also has a `With()` method that applies extra mods on top of the generated query and returns a runnable query, so you can keep the finishers without re-wrapping it in `Select`:
+
+```go
+// Also filter where name = "Bob", and only return 10 rows
+users, err := AllUsers(1).With(
+    sm.Where(psql.Quote("name").EQ(psql.Arg("Bob"))),
+    sm.Limit(10),
+).All(ctx, db)
+```
+
+:::caution
+
+`With()` (like using the query as a mod) only **appends** clauses. For a `WHERE` clause this is fine: the extra condition is joined to the existing one with `AND`. But if the generated query already has an `ORDER BY`, `LIMIT`, or `OFFSET` clause, adding another one does **not** replace it — both are emitted, producing invalid SQL. Only add these clauses when the base query does not already define them.
+
+:::
+
 ## Annotating queries
 
 Each query has the following attributes that can be modified with annotations:
