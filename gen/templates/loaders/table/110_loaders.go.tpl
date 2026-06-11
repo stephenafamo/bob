@@ -432,6 +432,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	}
 
 	for _, o := range os {
+    if o == nil {
+			continue
+		}
 		o.R.{{$relAlias}} = nil
 		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
@@ -490,6 +493,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	}
 	{{else}}
 	for _, o := range os {
+    if o == nil {
+			continue
+		}
 		for i, rel := range {{$fAlias.DownPlural}} {
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
