@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed generated `Setter.Apply` wrapping all insert values in a single `ExpressionFunc`, which prevented `BeforeInsertHooks` and query mods from modifying individual column values via `q.Values.Vals[row][columnIndex]`. Base and SQLite codegen templates now emit one expression per column (MySQL already did). Generated SQL is unchanged. (thanks @atzedus)
 - Fixed generated query mods for combined `UNION/INTERSECT/EXCEPT` queries dropping or misrouting the first operand's `ORDER BY/LIMIT/OFFSET` into the combined-result clauses. (thanks @daddz)
+- Fixed PostgreSQL `um` / `dm` standalone join mods (`InnerJoin`, `LeftJoin`, etc.) applied before `um.From(...)` / `dm.Using(...)`: the join is now preserved and attached to the next `FROM` / `USING` from_item instead of being dropped. (thanks @atzedus)
+- Fixed/extended PostgreSQL `sm.From(...)`: it now accepts variadic join chains (`sm.From(table, joins...)`), and inline joins are merged with already attached standalone joins when replacing the primary `FROM` source. (thanks @atzedus)
 
 ### Changed
 
@@ -25,11 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
 
 - Generated slice relationship loaders (`<Parent>Slice.Load<Relationship>`) now stitch loaded parents and children in O(N+M) using a map keyed by the join column, instead of the previous O(N×M) nested loop. This greatly speeds up eager-loading and then-loading relationships with many rows on both sides. The map is only used for single-column joins whose key type is comparable with `==`; composite keys and types with a custom `compare_expr` (e.g. `[]byte`) fall back to the original nested loop, so generated behaviour is unchanged. (thanks @sandonemaki)
-
-### Fixed
-
-- Fixed PostgreSQL `um` / `dm` standalone join mods (`InnerJoin`, `LeftJoin`, etc.) applied before `um.From(...)` / `dm.Using(...)`: the join is now preserved and attached to the next `FROM` / `USING` from_item instead of being dropped. (thanks @atzedus)
-- Fixed/extended PostgreSQL `sm.From(...)`: it now accepts variadic join chains (`sm.From(table, joins...)`), and inline joins are merged with already attached standalone joins when replacing the primary `FROM` source. (thanks @atzedus)
 
 ## [v0.45.0] - 2026-05-28
 
