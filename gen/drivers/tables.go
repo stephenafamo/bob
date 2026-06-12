@@ -99,6 +99,7 @@ func (tables Tables[C, I]) ColumnAssigner(
 
 	destTable := tables.Get(destTName)
 	destCol := destTable.GetColumn(destColName)
+	src = types.TypeCastExpr(currentPkg, i, destCol.Type, srcCol.Type, src)
 
 	nullType := types.GetNullType(currentPkg, destCol.Type)
 	typeReplacer := strings.NewReplacer(

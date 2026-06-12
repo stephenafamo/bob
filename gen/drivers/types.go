@@ -187,6 +187,17 @@ func (t Types) GetNameAndDef(curr, namedType string) (string, Type) {
 	return namedType, typedef
 }
 
+func (t Types) TypeCastExpr(currentPkg string, i language.Importer, destType, srcType, expr string) string {
+	destName, destDef := t.GetNameAndDef(currentPkg, destType)
+	srcName, _ := t.GetNameAndDef(currentPkg, srcType)
+	if destName == srcName {
+		return expr
+	}
+
+	i.ImportList(destDef.Imports)
+	return fmt.Sprintf("%s(%s)", destName, expr)
+}
+
 func (t Types) GetCompareExpr(currentPkg string, i language.Importer, forType string, aNullable, bNullable bool) string {
 	_, typDef := t.GetNameAndDef(currentPkg, forType)
 	compareExpr := typDef.CompareExpr
