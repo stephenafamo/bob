@@ -87,6 +87,12 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
         pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
       {{- end}}
     }
+    {{if eq (len $firstSide.FromColumns) 1}}
+    {{- $local := index $firstSide.FromColumns 0}}
+    {{- $column := $.Table.GetColumn $local}}
+    {{- $fromCol := index $firstFrom.Columns $local}}
+    PKArgExpr := psql.Any(psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"))
+    {{else}}
     PKArgExpr := psql.Select(sm.Columns(
       {{- range $index, $local := $firstSide.FromColumns -}}
         {{$column := $.Table.GetColumn $local}}
@@ -94,6 +100,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
         psql.F("unnest", psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
       {{- end}}
     ))
+    {{end}}
   {{end}}
 	{{- end}}
 
@@ -125,12 +132,17 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		),
 		{{- else -}}
 			{{if gt (len $side.FromColumns) 0 -}}
-				sm.Where({{$.Dialect}}.Group(
-				{{- range $index, $local := $side.FromColumns -}}
-					{{- $fromCol := index $from.Columns $local -}}
-					{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
-					{{$to.UpPlural}}.Columns.{{$toCol}},
-				{{- end}}).OP("IN", PKArgExpr)),
+				{{if and (eq $.Dialect "psql") (eq (len $side.FromColumns) 1) -}}
+					{{- $toCol := index $to.Columns (index $side.ToColumns 0) -}}
+					sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ(PKArgExpr)),
+				{{- else -}}
+					sm.Where({{$.Dialect}}.Group(
+					{{- range $index, $local := $side.FromColumns -}}
+						{{- $fromCol := index $from.Columns $local -}}
+						{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
+						{{$to.UpPlural}}.Columns.{{$toCol}},
+					{{- end}}).OP("IN", PKArgExpr)),
+				{{- end}}
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
