@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** MySQL `sm.ForUpdate` and `sm.ForShare` now take `tables ...any` with the same semantics as PostgreSQL (`mysql.Quote(...)` when needed). (thanks @atzedus)
 - **BREAKING:** `clause.Lock.Tables` is now `[]any` instead of `[]string` (used by `FOR UPDATE` / `FOR SHARE` rendering). (thanks @atzedus)
 - **BREAKING:** `View` / `Table` `Name()` now returns the bare table (or view) name as `string`. In v0.44.0, `Name()` returned a dialect `Expression` (qualified table reference for SQL). That role moved to new methods:
-  - `NameExpr()` — what `Name()` did in v0.44.0 (on PostgreSQL and SQLite, respects `UseSchema` whens schema was generated empty)
+  - `NameExpr()` — what `Name()` did in v0.44.0 (on PostgreSQL and SQLite, respects `UseSchema` when schema was generated empty)
   - `NameAsExpr()` — what `NameAs()` did in v0.44.0 (name plus table alias)
     Update manual call sites, codegen templates, and generated models: `Users.Name()` in SQL builders → `Users.NameExpr()`, `Users.NameAs()` → `Users.NameAsExpr()`; use `Users.Name()` when you need the unqualified name string. On PostgreSQL and SQLite, `Schema()` still returns the schema when set.
 - Codegen templates and `orm.Preload` now use `NameExpr()` / `NameAsExpr()` instead of `Name()` / `NameAs()`. (thanks @atzedus)
