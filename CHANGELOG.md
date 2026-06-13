@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated slice relationship loaders (`<Parent>Slice.Load<Relationship>`) now stitch loaded parents and children in O(N+M) using a map keyed by the join column, instead of the previous O(N×M) nested loop. This greatly speeds up eager-loading and then-loading relationships with many rows on both sides. The map is only used for single-column joins whose key type is comparable with `==`; composite keys and types with a custom `compare_expr` (e.g. `[]byte`) fall back to the original nested loop, so generated behaviour is unchanged. (thanks @sandonemaki)
 - PostgreSQL single-column relationship loaders — both the slice relationship query (`<Parent>Slice.<Rel>`) and the batch count method (`<Parent>Slice.LoadCount<Rel>`) — now filter related rows with `col = ANY($1)` instead of `col IN (SELECT unnest($1))`, so the query planner can use an index scan on the foreign key instead of a `Seq Scan + Hash Semi Join`. Composite-key relationships keep the existing `IN (SELECT unnest(...))` form. (thanks @sandonemaki)
 
+
 ## [v0.45.0] - 2026-05-28
 
 ### Added
