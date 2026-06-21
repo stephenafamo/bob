@@ -202,13 +202,13 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
 		{{- end}}
 	}
-	PKArgExpr := {{$.Dialect}}.Select(sm.Columns(
-		{{- range $index, $local := $firstSide.FromColumns -}}
-		{{- $column := $.Table.GetColumn $local -}}
-		{{- $fromCol := index $firstFrom.Columns $local}}
-		{{$.Dialect}}.F("unnest", {{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
-		{{- end}}
-	))
+	{{- if eq (len $firstSide.FromColumns) 1}}
+	{{- $local := index $firstSide.FromColumns 0 -}}
+	{{- $column := $.Table.GetColumn $local -}}
+	{{- $fromCol := index $firstFrom.Columns $local}}
+	PKArgExpr := {{$.Dialect}}.Any({{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"))
+	{{- else}}
+	{{- end}}
 	{{- end}}
 
 	// countResult holds one scanned row from the batch count query.
@@ -269,12 +269,46 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		),
 		{{end -}}
 		{{- end}}
-		// WHERE fk IN (parent PKs)
+		// WHERE fk IN (parent PKs) — psql single-column FK uses `= ANY(array)` (see PKArgExpr above)
 		{{if eq (len $firstSide.FromColumns) 1 -}}
 		{{$local := index $firstSide.FromColumns 0 -}}
 		{{$toLocal := index $firstSide.ToColumns 0 -}}
 		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+		{{if eq $.Dialect "psql" -}}
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.EQ(PKArgExpr)),
+		{{- else -}}
 		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.OP("IN", PKArgExpr)),
+		{{- end}}
+		{{- else if eq $.Dialect "psql" -}}
+		sm.InnerJoin({{$.Dialect}}.Select(
+			sm.Distinct(),
+			sm.Columns(
+				{{range $index, $local := $firstSide.FromColumns -}}
+				{{$toLocal := index $firstSide.ToColumns $index -}}
+				{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+				{{$.Dialect}}.Quote("bob_rel_keys_src", {{quote $firstToColAlias}}),
+				{{end -}}
+			),
+			sm.From({{$.Dialect}}.F("unnest",
+				{{range $index, $local := $firstSide.FromColumns -}}
+				{{$column := $.Table.GetColumn $local -}}
+				{{$fromCol := index $firstFrom.Columns $local -}}
+				{{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"),
+				{{end -}}
+			)).As("bob_rel_keys_src"
+				{{- range $index, $local := $firstSide.FromColumns -}}
+				{{- $toLocal := index $firstSide.ToColumns $index -}}
+				{{- $firstToColAlias := index $firstTo.Columns $toLocal -}}
+				, {{quote $firstToColAlias}}
+				{{- end -}}
+			),
+		)).As("bob_rel_keys").On(
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{$toLocal := index $firstSide.ToColumns $index -}}
+			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.EQ({{$.Dialect}}.Quote("bob_rel_keys", {{quote $firstToColAlias}})),
+			{{end -}}
+		),
 		{{- else -}}
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}
