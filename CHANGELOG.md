@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.0] - 2026-06-22
+
+### Added
+
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order).
+
+### Changed
+
+- Change the closure in `RunInTx` to pass `bob.Transaction` instead of `bob.Executor`
+
 ## [v0.46.0] - 2026-06-11
 
 ### Added
@@ -12,10 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `With()` on generated queries as a more ergonomic method to add mods on top of generated queries (thanks @daddz)
 - Added `Asc()/Desc()/...` helpers to `sm.OrderCombined` for PostgreSQL/MySQL (thanks @daddz)
 - Added SQLite `um.SetCols(columns...)` and `im.SetCols(columns...)` for tuple assignment in `UPDATE ... SET` and `ON CONFLICT DO UPDATE SET` (`.ToExprs(...)`, `.ToRow(...)`, `.ToQuery(...)`). SQLite renders `(cols) = (exprs...)`; PostgreSQL `ToRow` still emits `ROW (...)`. MySQL does not support tuple assignment — use multiple `SetCol` calls. (thanks @atzedus)
-
-### Added
-
-- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order).
 
 ### Fixed
 

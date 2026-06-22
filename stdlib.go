@@ -64,7 +64,7 @@ func (d DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
 // RunInTx runs the provided function in a transaction.
 // If the function returns an error, the transaction is rolled back.
 // Otherwise, the transaction is committed.
-func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(context.Context, Executor) error) error {
+func (d DB) RunInTx(ctx context.Context, txOptions *sql.TxOptions, fn func(context.Context, Transaction) error) error {
 	tx, err := d.BeginTx(ctx, txOptions)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
