@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order).
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order). (thanks @cbarber)
 
 ### Changed
 
