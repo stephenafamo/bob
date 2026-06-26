@@ -145,7 +145,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 		return nil, fmt.Errorf("unable to load enums: %w", err)
 	}
 
-	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except)
+	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Only, d.config.Except, d.config.ColumnOrder)
 	if err != nil {
 		return nil, err
 	}

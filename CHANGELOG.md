@@ -11,8 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PostgreSQL single-column relationship loaders — both the slice relationship query (`<Parent>Slice.<Rel>`) and the batch count method (`<Parent>Slice.LoadCount<Rel>`) — now filter related rows with `col = ANY($1)` instead of `col IN (SELECT unnest($1))`, so the query planner can use an index scan on the foreign key instead of a `Seq Scan + Hash Semi Join`. Composite-key relationships keep the existing `IN (SELECT unnest(...))` form. (thanks @sandonemaki)
 
-## [v0.46.0] - 2026-06-11
+## [0.47.0] - 2026-06-22
 
+### Added
+
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order). (thanks @cbarber)
+
+### Changed
+
+- Change the closure in `RunInTx` to pass `bob.Transaction` instead of `bob.Executor`
+
+## [v0.46.0] - 2026-06-11
 
 ### Added
 

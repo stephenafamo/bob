@@ -56,6 +56,7 @@ The values that exist for the drivers:
 | only          | Only generate these                               |                          |
 | except        | Skip generation for these                         |                          |
 | concurrency   | How many tables to fetch in parallel              | 10                       |
+| column_order  | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
 
 ## Driver-specific code
 
