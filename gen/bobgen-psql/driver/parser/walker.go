@@ -152,6 +152,7 @@ func (w *walker) updatePosition(pos int32) {
 	w.position = pos
 }
 
+//nolint:gocyclo
 func (w *walker) walk(a any) nodeInfo {
 	if a == nil {
 		return newNodeInfo()
