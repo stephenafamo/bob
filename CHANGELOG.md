@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fixed column_order on `*` selectors in sql queries in postgres
+
 ### Added
 
 - Added `bob.NextUniqueInt()` for generating unique SQL alias suffixes ([#719](https://github.com/stephenafamo/bob/issues/719)). (thanks @atzedus)
