@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.48.0] - 2026-06-26
 
 ### Changed
 
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed PostgreSQL generated query parsing for CTEs that use table functions in `FROM` (for example `unnest(...) AS alias`), which could incorrectly widen CTE spans and generate malformed query mods such as duplicated outer `SELECT` projections.
 
-## [0.47.0] - 2026-06-22
+## [v0.47.0] - 2026-06-22
 
 ### Added
 
