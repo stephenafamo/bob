@@ -235,7 +235,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		for i, side := range rel.Sides {
 			alias = settings.Alias
 			if settings.Alias == "" {
-				alias = fmt.Sprintf("%s_%d", side.To.Alias(), internal.NextUniqueInt())
+				alias = fmt.Sprintf("%s_%d", side.To.Alias(), bob.NextUniqueInt())
 			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
