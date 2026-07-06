@@ -6,8 +6,9 @@ import (
 	"io"
 	"iter"
 
-	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/scan"
+
+	"github.com/stephenafamo/bob"
 )
 
 type ExecQuery[Q bob.Expression] struct {
@@ -78,22 +79,39 @@ func (q Query[Q, T, Ts, Tr]) Each(ctx context.Context, exec bob.Executor) (func(
 	return bob.Each(ctx, exec, q, q.Scanner)
 }
 
-type ModExecQuery[Q any, E bob.Expression] struct {
+type ModExecQuery[Q bob.Expression, E bob.Expression] struct {
 	ExecQuery[E]
-	Mod bob.Mod[Q]
+	Mod   bob.Mod[Q]
+	Build func(...bob.Mod[Q]) bob.BaseQuery[Q]
 }
 
 func (q ModExecQuery[Q, E]) Apply(e Q) {
 	q.Mod.Apply(e)
 }
 
-type ModQuery[Q any, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
+func (q ModExecQuery[Q, E]) With(mods ...bob.Mod[Q]) ExecQuery[Q] {
+	return ExecQuery[Q]{
+		BaseQuery: q.Build(append([]bob.Mod[Q]{q.Mod}, mods...)...),
+	}
+}
+
+type ModQuery[Q bob.Expression, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
 	Query[E, T, Ts, Tr]
-	Mod bob.Mod[Q]
+	Mod   bob.Mod[Q]
+	Build func(...bob.Mod[Q]) bob.BaseQuery[Q]
 }
 
 func (q ModQuery[Q, E, T, Ts, Tr]) Apply(e Q) {
 	q.Mod.Apply(e)
+}
+
+func (q ModQuery[Q, E, T, Ts, Tr]) With(mods ...bob.Mod[Q]) Query[Q, T, Ts, Tr] {
+	return Query[Q, T, Ts, Tr]{
+		ExecQuery: ExecQuery[Q]{
+			BaseQuery: q.Build(append([]bob.Mod[Q]{q.Mod}, mods...)...),
+		},
+		Scanner: q.Scanner,
+	}
 }
 
 func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {

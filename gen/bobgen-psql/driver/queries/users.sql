@@ -38,3 +38,26 @@ ON target.id = source.id
 WHEN MATCHED THEN UPDATE SET primary_email = source.primary_email
 WHEN NOT MATCHED THEN INSERT (id, primary_email) VALUES (source.id, source.primary_email)
 ;
+
+
+-- SearchUsersByTerms
+WITH input_terms AS (
+    SELECT DISTINCT term
+    FROM unnest($1::text[]) AS term
+    WHERE term <> ''
+)
+SELECT primary_email
+FROM (
+    SELECT
+        u.id,
+        u.primary_email,
+        count(*) FILTER (
+            WHERE u.primary_email ILIKE ('%' || input_terms.term || '%')
+        ) AS matched_term_count
+    FROM users u
+    LEFT JOIN input_terms ON TRUE
+    GROUP BY u.id, u.primary_email
+) ranked
+ORDER BY matched_term_count DESC, id ASC
+LIMIT 5
+;

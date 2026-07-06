@@ -48,6 +48,7 @@ The values that exist for the drivers:
 | queries       | List of folders containing query files            | []string{}           |
 | only          | Only generate these                               |                      |
 | except        | Skip generation for these                         |                      |
+| column_order  | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
 
 ## Driver-specific code
 

@@ -55,21 +55,17 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     })
   {{end}}
 
-	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-    vals := make([]bob.Expression, {{len $table.NonGeneratedColumns}})
-    {{range $index, $column := $table.NonGeneratedColumns -}}
-      {{$colAlias := $tAlias.Column $column.Name -}}
-      {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
-      if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-        vals[{{$index}}] = {{$.Dialect}}.Arg({{$colGetter}})
-      } else {
-        vals[{{$index}}] = {{$.Dialect}}.Raw("DEFAULT")
-      }
-
-    {{end -}}
-
-    return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
-  }))
+	q.AppendValues(
+  {{range $index, $column := $table.NonGeneratedColumns -}}
+    bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
+        {{$colAlias := $tAlias.Column $column.Name -}}
+        {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
+        if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
+          return {{$.Dialect}}.Raw("DEFAULT").WriteSQL(ctx, w, d, start)
+        }
+        return {{$.Dialect}}.Arg({{$colGetter}}).WriteSQL(ctx, w, d, start)
+    }),
+  {{- end}})
 }
 {{- end}}
 

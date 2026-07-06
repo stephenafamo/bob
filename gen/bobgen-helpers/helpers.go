@@ -41,6 +41,9 @@ type Config struct {
 	Queries []string `yaml:"queries"`
 	// List of tables that will be should be ignored. Others are included
 	Except map[string][]string
+	// Order of columns in generated models.
+	// "name" sorts alphabetically; "ordinal" (default) preserves database column order.
+	ColumnOrder string `yaml:"column_order"`
 }
 
 func GetConfigFromFile[ConstraintExtra, DriverConfig any](configPath, driverConfigKey string) (gen.Config[ConstraintExtra], DriverConfig, plugins.Config, error) {

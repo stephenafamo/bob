@@ -1,0 +1,19 @@
+-- PlainUsersOrderLimitOffset
+SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC LIMIT 2 OFFSET 1
+;
+
+
+-- CombinedUsersOrderLimitOffset
+(SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC LIMIT 2 OFFSET 1)
+UNION
+(SELECT id FROM users WHERE id IN ($2) ORDER BY id ASC LIMIT 3 OFFSET 4)
+ORDER BY id DESC LIMIT 5 OFFSET 6
+;
+
+
+-- CombinedUsersFetchWithTies
+(SELECT id FROM users WHERE id IN ($1) ORDER BY id DESC FETCH FIRST 2 ROWS WITH TIES)
+UNION ALL
+(SELECT id FROM users WHERE id IN ($2))
+ORDER BY id DESC FETCH FIRST 5 ROWS WITH TIES
+;

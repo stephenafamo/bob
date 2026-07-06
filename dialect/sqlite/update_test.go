@@ -100,6 +100,41 @@ func TestUpdate(t *testing.T) {
 			  WHERE ("employees"."id" = ?1)`,
 			ExpectedArgs: []any{1},
 		},
+		"set tuple columns from row": {
+			Query: sqlite.Update(
+				um.Table("weather"),
+				um.SetCols("temp_lo", "temp_hi", "prcp").ToRow(
+					sqlite.Raw("temp_lo + 1"),
+					sqlite.Raw("temp_lo + 15"),
+					sqlite.Raw("DEFAULT"),
+				),
+				um.Where(sqlite.Quote("city").EQ(sqlite.Arg("San Francisco"))),
+			),
+			ExpectedSQL:  `UPDATE weather SET ("temp_lo", "temp_hi", "prcp") = (temp_lo + 1, temp_lo + 15, DEFAULT) WHERE ("city" = ?1)`,
+			ExpectedArgs: []any{"San Francisco"},
+		},
+		"set tuple columns from exprs": {
+			Query: sqlite.Update(
+				um.Table("products"),
+				um.SetCols("name", "price").ToExprs(
+					sqlite.Raw("'updated'"),
+					sqlite.Raw("price * 1.1"),
+				),
+			),
+			ExpectedSQL: `UPDATE products SET ("name", "price") = ('updated', price * 1.1)`,
+		},
+		"set tuple columns from sub-select": {
+			Query: sqlite.Update(
+				um.Table("accounts"),
+				um.SetCols("contact_first_name", "contact_last_name").ToQuery(sqlite.Select(
+					sm.Columns("first_name", "last_name"),
+					sm.From("employees"),
+					sm.Where(sqlite.Quote("employees", "id").EQ(sqlite.Quote("accounts", "sales_person"))),
+				)),
+			),
+			ExpectedSQL: `UPDATE accounts SET ("contact_first_name", "contact_last_name") =
+			  (SELECT first_name, last_name FROM employees WHERE ("employees"."id" = "accounts"."sales_person"))`,
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

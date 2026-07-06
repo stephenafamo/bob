@@ -7,11 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `bob.NextUniqueInt()` for generating unique SQL alias suffixes ([#719](https://github.com/stephenafamo/bob/issues/719)). (thanks @atzedus)
+
+### Fixed
+
+- Fixed generated join alias suffixes using `randInt()`, which could produce negative values when `maphash.Hash.Sum64()` overflowed `int64` ([#719](https://github.com/stephenafamo/bob/issues/719)). Generated join mods now use `bob.NextUniqueInt()` instead. (thanks @atzedus)
+
+## [v0.48.0] - 2026-06-26
+
 ### Changed
 
-- `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
+- PostgreSQL single-column relationship loaders — both the slice relationship query (`<Parent>Slice.<Rel>`) and the batch count method (`<Parent>Slice.LoadCount<Rel>`) — now filter related rows with `col = ANY($1)` instead of `col IN (SELECT unnest($1))`, so the query planner can use an index scan on the foreign key instead of a `Seq Scan + Hash Semi Join`. Composite-key relationships keep the existing `IN (SELECT unnest(...))` form. (thanks @sandonemaki)
 
+### Fixed
+
+- Fixed PostgreSQL generated query parsing for CTEs that use table functions in `FROM` (for example `unnest(...) AS alias`), which could incorrectly widen CTE spans and generate malformed query mods such as duplicated outer `SELECT` projections.
+
+## [v0.47.0] - 2026-06-22
+
+### Added
+
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order). (thanks @cbarber)
+
+### Changed
+
+- Change the closure in `RunInTx` to pass `bob.Transaction` instead of `bob.Executor`
+
+## [v0.46.0] - 2026-06-11
+
+### Added
+
+- `With()` on generated queries as a more ergonomic method to add mods on top of generated queries (thanks @daddz)
+- Added `Asc()/Desc()/...` helpers to `sm.OrderCombined` for PostgreSQL/MySQL (thanks @daddz)
+- Added SQLite `um.SetCols(columns...)` and `im.SetCols(columns...)` for tuple assignment in `UPDATE ... SET` and `ON CONFLICT DO UPDATE SET` (`.ToExprs(...)`, `.ToRow(...)`, `.ToQuery(...)`). SQLite renders `(cols) = (exprs...)`; PostgreSQL `ToRow` still emits `ROW (...)`. MySQL does not support tuple assignment — use multiple `SetCol` calls. (thanks @atzedus)
+
+### Fixed
+
+- Fixed generated `Setter.Apply` wrapping all insert values in a single `ExpressionFunc`, which prevented `BeforeInsertHooks` and query mods from modifying individual column values via `q.Values.Vals[row][columnIndex]`. Base and SQLite codegen templates now emit one expression per column (MySQL already did). Generated SQL is unchanged. (thanks @atzedus)
+- Fixed generated query mods for combined `UNION/INTERSECT/EXCEPT` queries dropping or misrouting the first operand's `ORDER BY/LIMIT/OFFSET` into the combined-result clauses. (thanks @daddz)
+- Fixed PostgreSQL `um` / `dm` standalone join mods (`InnerJoin`, `LeftJoin`, etc.) applied before `um.From(...)` / `dm.Using(...)`: the join is now preserved and attached to the next `FROM` / `USING` from_item instead of being dropped. (thanks @atzedus)
+- Fixed/extended PostgreSQL `sm.From(...)`: it now accepts variadic join chains (`sm.From(table, joins...)`), and inline joins are merged with already attached standalone joins when replacing the primary `FROM` source. (thanks @atzedus)
+
+### Changed
+
+- Moved PostgreSQL `SetCols` tuple-assignment builder from `dialect/psql/dialect/setcols.go` to shared `clause/setcols.go` (`clause.NewSetCols`, `clause.SetColsOptions`). Dialect wrappers configure `ToRow` via `SetColsOptions.RowPrefix` (e.g. `"ROW"` on PostgreSQL). (thanks @atzedus)
+- `EQ` comparisons passed to `SET` / `ON CONFLICT DO UPDATE SET` / `MERGE ... UPDATE SET` / MySQL `ON DUPLICATE KEY UPDATE` render without the extra parentheses used in `WHERE` / `ON` (e.g. `SET "users"."name" = $1` vs `WHERE ("users"."name" = $1)`). (thanks @atzedus)
 - `NameAsExpr()` on dialect `View` / `Table` types (PostgreSQL, SQLite, MySQL) omits a redundant `AS` when the alias matches the table name (for example `FROM "users"` instead of `FROM "users" AS "users"`). An explicit alias is still emitted when a schema is set at construction (`AS "schema.table"`). (thanks @atzedus)
+- Generated slice relationship loaders (`<Parent>Slice.Load<Relationship>`) now stitch loaded parents and children in O(N+M) using a map keyed by the join column, instead of the previous O(N×M) nested loop. This greatly speeds up eager-loading and then-loading relationships with many rows on both sides. The map is only used for single-column joins whose key type is comparable with `==`; composite keys and types with a custom `compare_expr` (e.g. `[]byte`) fall back to the original nested loop, so generated behaviour is unchanged. (thanks @sandonemaki)
 
 ## [v0.45.0] - 2026-05-28
 

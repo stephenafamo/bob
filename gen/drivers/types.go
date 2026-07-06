@@ -57,6 +57,9 @@ type NullType struct {
 	// ValidExpr is used to check if a value of this type is valid
 	// e.g. `SRC.Valid` for sql.Null[T] or `SRC.IsSet()` for null.Val[T]
 	ValidExpr string `yaml:"valid_expr"`
+	// InvalidExpr is used to check if an optional value is unset
+	// e.g. `SRC.IsUnset()` for omitnull.Val[T]
+	InvalidExpr string `yaml:"invalid_expr"`
 	// UseExpr is used to convert a null value of this type
 	// to a non-null value, if not provided it is assigned directly
 	UseExpr string `yaml:"use_expr"`
@@ -236,6 +239,34 @@ func (t Types) GetCompareExpr(currentPkg string, i language.Importer, forType st
 	}
 }
 
+// CanCompareWithEquals reports whether the type is compared with == (i.e. usable as a map key).
+func (t Types) CanCompareWithEquals(currentPkg, forType string) bool {
+	_, typDef := t.GetNameAndDef(currentPkg, forType)
+	return typDef.CompareExpr == "" || typDef.CompareExpr == "AAA == BBB"
+}
+
+// UnwrapNullExpr returns an expression for the underlying value of varName, for use as a map key.
+func (t Types) UnwrapNullExpr(currentPkg string, i language.Importer, forType, varName string, nullable bool) string {
+	if !nullable {
+		return varName
+	}
+
+	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
+	nullTyp, _ := t.GetNullTypeWithImports(currentPkg, forType)
+	i.ImportList(nullTyp.UseExprImports)
+
+	useExpr := nullTyp.UseExpr
+	if useExpr == "" {
+		useExpr = "SRC"
+	}
+
+	return strings.NewReplacer(
+		"SRC", varName,
+		"BASETYPE", colTyp,
+		"NULLTYPE", nullTyp.Name,
+	).Replace(useExpr)
+}
+
 func (t Types) GetNullType(currentPkg, forType string) NullType {
 	typ, _ := t.GetNullTypeWithImports(currentPkg, forType)
 	return typ
@@ -290,6 +321,21 @@ func (t Types) getOptional(curr, namedType string, isNull, fromOrToNull bool) (N
 }
 
 func (t Types) IsOptionalValid(currentPkg, forType string, null bool, varName string) string {
+	optTyp, _ := t.getOptional(currentPkg, forType, null, null)
+	return t.replaceOptionalExprs(currentPkg, forType, null, varName, optTyp.ValidExpr)
+}
+
+func (t Types) IsOptionalInvalid(currentPkg, forType string, null bool, varName string) string {
+	optTyp, _ := t.getOptional(currentPkg, forType, null, null)
+	expr := optTyp.InvalidExpr
+	if expr == "" {
+		return "!(" + t.IsOptionalValid(currentPkg, forType, null, varName) + ")"
+	}
+
+	return t.replaceOptionalExprs(currentPkg, forType, null, varName, expr)
+}
+
+func (t Types) replaceOptionalExprs(currentPkg, forType string, null bool, varName, expr string) string {
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, _ := t.getOptional(currentPkg, forType, null, null)
 	nullTyp := t.GetNullType(currentPkg, forType)
@@ -298,7 +344,7 @@ func (t Types) IsOptionalValid(currentPkg, forType string, null bool, varName st
 		"NULLTYPE", nullTyp.Name,
 		"BASETYPE", colTyp,
 		"OPTIONALTYPE", optTyp.Name,
-	).Replace(optTyp.ValidExpr)
+	).Replace(expr)
 }
 
 func (t Types) FromOptional(currentPkg string, i language.Importer, forType, varName string, isNull, fromOrToNull bool) string {
@@ -351,6 +397,7 @@ func (a AarondlNull) OptionalType(name string, def Type, isNull, fromOrToNull bo
 		ot := NullType{
 			Name:              fmt.Sprintf("omit.Val[%s]", name),
 			ValidExpr:         "SRC.IsValue()",
+			InvalidExpr:       "SRC.IsUnset()",
 			UseExpr:           "SRC.MustGet()",
 			UseExprImports:    []string{},
 			CreateExpr:        "omit.From(SRC)",
@@ -414,6 +461,7 @@ func (a AarondlNull) OptionalType(name string, def Type, isNull, fromOrToNull bo
 		ot := NullType{
 			Name:              fmt.Sprintf("omit.Val[%s]", name),
 			ValidExpr:         "SRC.IsValue()",
+			InvalidExpr:       "SRC.IsUnset()",
 			UseExpr:           "SRC.MustGet()",
 			UseExprImports:    []string{},
 			CreateExpr:        "omit.From(SRC)",
@@ -432,7 +480,8 @@ func (a AarondlNull) OptionalType(name string, def Type, isNull, fromOrToNull bo
 
 	nt := NullType{
 		Name:              fmt.Sprintf("omitnull.Val[%s]", name),
-		ValidExpr:         "!SRC.IsUnset()",
+		ValidExpr:         "SRC.IsValue() || SRC.IsNull()",
+		InvalidExpr:       "SRC.IsUnset()",
 		UseExpr:           "SRC.MustGet()",
 		UseExprImports:    []string{},
 		CreateExpr:        "omitnull.From(SRC)",
@@ -499,6 +548,7 @@ func optionalTypePointers(tm TypeModifier, name string, def Type, isNull, fromOr
 	ot := NullType{
 		Name:              fmt.Sprintf("*%s", name),
 		ValidExpr:         "SRC != nil",
+		InvalidExpr:       "SRC == nil",
 		UseExpr:           "func () BASETYPE { if SRC == nil { return *new(BASETYPE) }; return *SRC }()",
 		UseExprImports:    nil,
 		CreateExpr:        "func () *BASETYPE { return &SRC }()",
@@ -514,6 +564,7 @@ func optionalTypePointers(tm TypeModifier, name string, def Type, isNull, fromOr
 		ot = NullType{
 			Name:              fmt.Sprintf("*%s", nullType.Name),
 			ValidExpr:         "SRC != nil",
+			InvalidExpr:       "SRC == nil",
 			UseExpr:           "func () NULLTYPE { if SRC == nil { return *new(NULLTYPE) }; v := SRC; return *v }()",
 			UseExprImports:    nil,
 			CreateExpr:        "func () *NULLTYPE { v := SRC; return &v }()",

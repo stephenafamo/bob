@@ -93,12 +93,20 @@ func TestMain(m *testing.M) {
   {{else}}
     {{$.Importer.Import "github.com/stephenafamo/bob"}}
     var err error
-    testDB, err = bob.Open("{{$sqlDriver}}", dsn)
+    db, err := bob.Open("{{$sqlDriver}}", dsn)
     if err != nil {
       log.Fatalf("failed to open database connection: %v", err)
     }
+
+    {{if or (eq $.Driver "modernc.org/sqlite") (eq $.Driver "github.com/mattn/go-sqlite3") (eq $.Driver "github.com/ncruces/go-sqlite3")}}
+      // SQLite only permits one writer at a time; keep the generated test suite on
+      // a single shared connection to avoid cross-test write contention in CI.
+      db.SetMaxOpenConns(1)
+      db.SetMaxIdleConns(1)
+    {{end}}
+
+    testDB = db
   {{end}}
 
 	os.Exit(m.Run())
 }
-
