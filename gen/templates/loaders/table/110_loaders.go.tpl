@@ -138,7 +138,7 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
             },
             {{- end}}
           },
-        }, {{$fAlias.UpPlural}}.Columns.Names(), opts...)
+        }, {{$fAlias.UpPlural}}.Columns.Names(), {{$fAlias.DownSingular}}ScanMapperNullable, opts...)
     },
     {{end -}}
   }
@@ -409,7 +409,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
-  mapper := scan.Mod(scan.StructMapper[*{{$fAlias.UpSingular}}](), func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+  mapper := scan.Mod(q.Scanner, func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}

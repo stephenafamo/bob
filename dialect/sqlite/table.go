@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/scan"
 )
 
 type (
@@ -22,12 +23,14 @@ type (
 )
 
 func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, []T, Tset, C] {
-	return NewTablex[T, []T, Tset](schema, tableName, columns)
+	return NewTablex[T, []T, Tset](schema, tableName, columns, nil)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, Tslice, Tset, C] {
+// NewTablex creates a new Table with a custom scanner.
+// If scanner is nil, it falls back to [scan.StructMapper].
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) *Table[T, Tslice, Tset, C] {
 	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
-	view, mappings := newView[T, Tslice](schema, tableName, columns)
+	view, mappings := newView[T, Tslice](schema, tableName, columns, scanner)
 	t := &Table[T, Tslice, Tset, C]{
 		View:          view,
 		pkCols:        expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
