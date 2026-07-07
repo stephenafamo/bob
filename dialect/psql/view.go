@@ -21,15 +21,21 @@ func UseSchema(ctx context.Context, schema string) context.Context {
 }
 
 func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View[T, []T, C] {
-	return NewViewx[T, []T](schema, tableName, columns)
+	return NewViewx[T, []T](schema, tableName, columns, nil)
 }
 
-func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) *View[T, Tslice, C] {
-	v, _ := newView[T, Tslice](schema, tableName, columns)
+// NewViewx creates a new View with a custom scanner.
+// If scanner is nil, it falls back to [scan.StructMapper].
+func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) *View[T, Tslice, C] {
+	v, _ := newView[T, Tslice](schema, tableName, columns, scanner)
 	return v
 }
 
-func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C) (*View[T, Tslice, C], mappings.Mapping) {
+func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) (*View[T, Tslice, C], mappings.Mapping) {
+	if scanner == nil {
+		scanner = scan.StructMapper[T]()
+	}
+
 	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
@@ -41,7 +47,7 @@ func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, col
 		name:    tableName,
 		alias:   alias,
 		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(alias),
-		scanner: scan.StructMapper[T](),
+		scanner: scanner,
 		Columns: columns,
 	}, mappings
 }
