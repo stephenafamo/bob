@@ -215,7 +215,20 @@ type PreloadableQuery interface {
 	AppendPreloadSelect(columns ...any)
 }
 
-func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel PreloadRel[E], cols []string, opts ...PreloadOption[Q]) Preloader[Q] {
+// PreloadMapper returns a mapper for the preloaded child rows of a query.
+// The prefix is the runtime-generated join alias followed by "." — every
+// column belonging to the child is prefixed with it in the result set.
+//
+// The returned mapper must reproduce the LEFT JOIN semantics of the default
+// reflection-based mapper: return a zero value (and no error) when every
+// prefixed column is NULL (an unmatched join), and tolerate NULL values in
+// columns whose struct fields cannot otherwise hold them.
+type PreloadMapper[T any] func(prefix string) scan.Mapper[T]
+
+// Preload builds a query mod to preload a relationship in the same query.
+// If mapper is nil, it falls back to a reflection-based [scan.StructMapper]
+// for the child columns.
+func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel PreloadRel[E], cols []string, mapper PreloadMapper[T], opts ...PreloadOption[Q]) Preloader[Q] {
 	settings := NewPreloadSettings[T, Ts, Q](cols)
 	for _, o := range opts {
 		if o == nil {
@@ -284,10 +297,10 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			expr.NewColumnsExpr(settings.Columns...).WithParent(alias).WithPrefix(alias + "."),
 		})
 		return alias, queryMods
-	}, rel.Name, settings)
+	}, rel.Name, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, opt PreloadSettings[Q]) Preloader[Q] {
+func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
 	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(parent)
 		prefix := alias + "."
@@ -311,12 +324,21 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 		}
 
 		return queryMods, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
-			before, after := scan.StructMapper[T](
-				scan.WithStructTagPrefix(prefix),
-				scan.WithTypeConverter(NullTypeConverter{}),
-				scan.WithRowValidator(rowValidator),
-				scan.WithMapperMods(mapperMods...),
-			)(ctx, cols)
+			var childMapper scan.Mapper[T]
+			if mapper != nil {
+				childMapper = mapper(prefix)
+				if len(mapperMods) > 0 {
+					childMapper = scan.Mod(childMapper, mapperMods...)
+				}
+			} else {
+				childMapper = scan.StructMapper[T](
+					scan.WithStructTagPrefix(prefix),
+					scan.WithTypeConverter(NullTypeConverter{}),
+					scan.WithRowValidator(rowValidator),
+					scan.WithMapperMods(mapperMods...),
+				)
+			}
+			before, after := childMapper(ctx, cols)
 
 			return before, func(link, retrieved any) error {
 				loader, isLoader := retrieved.(Preloadable)

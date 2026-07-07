@@ -36,6 +36,6 @@ func PreloadAs(alias string) PreloadOption {
 	return orm.PreloadAs[*dialect.SelectQuery](alias)
 }
 
-func Preload[T orm.Preloadable, Ts ~[]T](rel orm.PreloadRel[Expression], cols []string, opts ...PreloadOption) Preloader {
-	return orm.Preload[T, Ts](rel, cols, opts...)
+func Preload[T orm.Preloadable, Ts ~[]T](rel orm.PreloadRel[Expression], cols []string, mapper orm.PreloadMapper[T], opts ...PreloadOption) Preloader {
+	return orm.Preload[T, Ts](rel, cols, mapper, opts...)
 }
