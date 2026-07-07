@@ -410,13 +410,33 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
   mapper := scan.Mod(scan.StructMapper[*{{$fAlias.UpSingular}}](), func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+    // Resolve each joined key column name to its index once per query. The
+    // previous code scanned by name on every row, which meant a linear column
+    // search per row; the columns are added by this loader so they are always
+    // present, but an unselected column simply stays unresolved and is skipped.
+    {{range $index, $local := $firstSide.FromColumns -}}
+      {{- $fromColAlias := index $firstFrom.Columns $local -}}
+    {{$fromColAlias}}Idx := -1
+    {{end -}}
+    for i, col := range cols {
+      switch col {
+      {{range $index, $local := $firstSide.FromColumns -}}
+        {{- $fromColAlias := index $firstFrom.Columns $local -}}
+      case "related_{{$firstSide.From}}.{{$fromColAlias}}":
+        {{$fromColAlias}}Idx = i
+      {{end -}}
+      }
+    }
+
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}
         {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
         {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
         {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromTyp}}))
-        row.ScheduleScanByName("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+        if {{$fromColAlias}}Idx >= 0 {
+          row.ScheduleScanByIndex({{$fromColAlias}}Idx, &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+        }
       {{end}}
 
       return nil, nil
