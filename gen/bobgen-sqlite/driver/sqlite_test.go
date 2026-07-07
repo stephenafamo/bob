@@ -217,6 +217,7 @@ func testSQLiteDriver(t *testing.T, config Config) {
 				OverwriteGolden: overwriteGolden,
 				Templates:       gen.SQLiteTemplates,
 				Dialect:         "sqlite",
+				GoTestArgs:      []string{"-p=1"},
 			})
 		})
 	}

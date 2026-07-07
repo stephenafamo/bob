@@ -24,17 +24,31 @@ type DeleteQuery struct {
 	bob.ContextualModdable[*DeleteQuery]
 }
 
+// AppendTableRef sets the primary USING from_item on the query.
+// If the query has no UsingItems, the new TableRef is set as the primary USING from_item.
+// If the query has one UsingItem and it is empty, the new TableRef is set as the primary USING from_item.
+// If the query has one UsingItem and it is not empty, the new TableRef is appended to the last UsingItem.
 func (d *DeleteQuery) AppendTableRef(using clause.TableRef) {
+	if len(d.UsingItems) == 1 && d.UsingItems[0].Expression == nil {
+		if len(d.UsingItems[0].Joins) > 0 {
+			using.Joins = append(d.UsingItems[0].Joins, using.Joins...)
+		}
+		d.UsingItems[0] = using
+
+		return
+	}
+
 	d.UsingItems = append(d.UsingItems, using)
 }
 
 // AppendJoin satisfies Joinable for JoinChain[*DeleteQuery].
-// When UsingItems is non-empty, the join is appended to the last USING item (e.g. after dm.Using).
-// Otherwise it is ignored; prefer dm.Using(table, joins...) for joins on a new from_item.
+// When UsingItems is non-empty, the join is appended to the last USING item (e.g. after um.From).
+// Otherwise the new UsingItem is appended with an empty TableRef and the join is appended to it.
 func (d *DeleteQuery) AppendJoin(j clause.Join) {
 	if len(d.UsingItems) == 0 {
-		return
+		d.UsingItems = append(d.UsingItems, clause.TableRef{})
 	}
+
 	d.UsingItems[len(d.UsingItems)-1].AppendJoin(j)
 }
 

@@ -20,11 +20,16 @@ func (w *walker) modWithClause(with *pg.WithClause, info nodeInfo) {
 	if with.Recursive {
 		w.mods.WriteString("q.SetRecursive(true)\n")
 	}
-	if len(with.Ctes) > 0 {
+	for i := range with.Ctes {
+		cteInfo, ok := cteInfos.children[strconv.Itoa(i)]
+		if !ok {
+			continue
+		}
+
 		w.editRules = append(w.editRules,
 			internal.RecordPoints(
-				int(cteInfos.start),
-				int(cteInfos.end-1),
+				int(cteInfo.start),
+				int(cteInfo.end-1),
 				func(start, end int) error {
 					fmt.Fprintf(w.mods, "q.AppendCTE(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil

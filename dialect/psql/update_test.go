@@ -123,6 +123,22 @@ func TestUpdate(t *testing.T) {
 			  WHERE (employees.id = $1)`,
 			ExpectedArgs: []any{1},
 		},
+		"standalone inner join before from": {
+			Query: psql.Update(
+				um.Table("employees"),
+				um.SetCol("sales_count").To("sales_count + 1"),
+				um.InnerJoin("departments").OnEQ(
+					psql.Quote("accounts", "dept_id"),
+					psql.Quote("departments", "id"),
+				),
+				um.From("accounts"),
+				um.Where(psql.Quote("employees", "id").EQ(psql.Arg(1))),
+			),
+			ExpectedSQL: `UPDATE employees SET "sales_count" = sales_count + 1 FROM accounts
+			  INNER JOIN departments ON (accounts.dept_id = departments.id)
+			  WHERE (employees.id = $1)`,
+			ExpectedArgs: []any{1},
+		},
 		"standalone inner join on last from item": {
 			Query: psql.Update(
 				um.Table("employees"),

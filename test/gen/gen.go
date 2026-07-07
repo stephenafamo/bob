@@ -93,6 +93,7 @@ type DriverTestConfig[T, C, I any] struct {
 	GoldenFileMod   func([]byte) []byte
 	GetDriver       func() drivers.Interface[T, C, I]
 	Dialect         string // "mysql", "psql", "sqlite" - for dialect-specific test templates
+	GoTestArgs      []string
 }
 
 type AssembleTestConfig[T, C, I any] struct {
@@ -167,7 +168,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 
 		testDriver(
 			t, defaultFolder, config.Templates,
-			gen.Config[C]{}, d, goModFilePath,
+			gen.Config[C]{}, d, goModFilePath, config.GoTestArgs,
 			&aliasPlugin[T, C, I]{},
 			queryPathPlugin[T, C, I]{
 				outputPath:   defaultFolder,
@@ -185,7 +186,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 
 		testDriver(
 			t, aliasesFolder, config.Templates,
-			gen.Config[C]{Aliases: aliases}, d, goModFilePath,
+			gen.Config[C]{Aliases: aliases}, d, goModFilePath, config.GoTestArgs,
 			&aliasPlugin[T, C, I]{},
 			queryPathPlugin[T, C, I]{
 				outputPath:   aliasesFolder,
@@ -196,7 +197,7 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 	})
 }
 
-func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, extraPlugins ...gen.Plugin) {
+func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, goTestArgs []string, extraPlugins ...gen.Plugin) {
 	t.Helper()
 	buf := &bytes.Buffer{}
 
@@ -253,7 +254,9 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 		t.Fatalf("go mod tidy cmd execution failed: %s", err)
 	}
 
-	cmd = exec.CommandContext(ctx, "go", "test", "-v", "./...")
+	args := append([]string{"test", "-v"}, goTestArgs...)
+	args = append(args, "./...")
+	cmd = exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = dst
 	cmd.Stdout = buf
 	cmd.Stderr = buf
@@ -315,7 +318,9 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 		filePath := filepath.Join(outFolder, eObj.fileName)
 		fh, err := os.Open(filePath)
 		if err != nil {
-			panic(fmt.Sprintf("Cant open the file: %#v", filePath))
+			fmt.Printf("unable to open %q while printing compile context: %v\n", filePath, err)
+			fmt.Printf("-----------------\n")
+			continue
 		}
 
 		scanner := bufio.NewScanner(fh)
