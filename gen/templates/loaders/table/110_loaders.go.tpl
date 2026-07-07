@@ -237,8 +237,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	  return nil
 	}
 
-	{{$.Importer.Import "github.com/stephenafamo/bob"}}
-	{{$fAlias.DownPlural}}, err := bob.Allx[bob.SliceTransformer[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice]](ctx, exec, os.{{relQueryMethodName $tAlias $relAlias}}(mods...), {{$fAlias.DownSingular}}ScanMapper)
+	{{$fAlias.DownPlural}}, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	if err != nil {
 		return err
 	}
@@ -410,7 +409,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
-  mapper := scan.Mod({{$fAlias.DownSingular}}ScanMapper, func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+  mapper := scan.Mod(q.Scanner, func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}

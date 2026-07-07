@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `bob.NextUniqueInt()` for generating unique SQL alias suffixes ([#719](https://github.com/stephenafamo/bob/issues/719)). (thanks @atzedus)
+- Code generation now emits a reflection-free `scan.Mapper` per table (`<table>ScanMapper`) that scans each result column directly into the struct field by index. The mapper is passed to the model constructor, so every query built from a model — `Query()`, relationship loaders, and `Insert`/`Update`/`Delete` with `RETURNING` — scans without the per-row reflection of `scan.StructMapper`. (thanks @sandonemaki)
+
+### Changed
+
+- `NewViewx` and `NewTablex` in the `psql`, `mysql` and `sqlite` dialects now take a `scan.Mapper[T]` argument used for all queries built from the view/table. Pass `nil` to keep the previous reflection-based `scan.StructMapper` behaviour. `NewView`/`NewTable` are unchanged. (thanks @sandonemaki)
 
 ### Fixed
 
