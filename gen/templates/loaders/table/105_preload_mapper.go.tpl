@@ -50,8 +50,14 @@ func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$t
 			}
 		}
 
+		// One scratch buffer reused for every row: before -> scan -> after runs
+		// synchronously per row, the scheduled columns are fully overwritten each
+		// row, and unselected columns stay zero, so a single buffer preserves the
+		// per-row NULL semantics without allocating a buffer per parent row. The
+		// returned child (o below) is always freshly allocated, so buf never
+		// escapes past the after func.
+		buf := new({{$tAlias.DownSingular}}PreloadBuf)
 		return func(row *scan.Row) (any, error) {
-			buf := new({{$tAlias.DownSingular}}PreloadBuf)
 			for _, t := range targets {
 				row.ScheduleScanByIndex(t.idx, t.dst(buf))
 			}
