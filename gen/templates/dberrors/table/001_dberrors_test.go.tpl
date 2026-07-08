@@ -20,6 +20,14 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		conflictMods  func(context.Context, *testing.T, bob.Executor, *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice
 	}{
 	{{range $index := (prepend $table.Constraints.Uniques $table.Constraints.Primary)}}
+		{{- $hasNullableColumn := false -}}
+		{{- range $indexColumn := $index.Columns -}}
+			{{- $column := $table.GetColumn $indexColumn -}}
+			{{- if $column.Nullable -}}
+				{{- $hasNullableColumn = true -}}
+			{{- end -}}
+		{{- end -}}
+		{{- if $hasNullableColumn -}}{{continue}}{{- end -}}
 		{{- $errName := printf "ErrUnique%s" ($index.Name | camelcase) -}}
 		{
 			name: "{{$errName}}",
@@ -32,17 +40,40 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
           {{- $colAlias := $tAlias.Column $indexColumn -}}
           {{- $column := $table.GetColumn $indexColumn -}}
           {{if $column.Nullable -}}
-          if !{{$.Types.GetNullTypeValid $.CurrentPackage $column.Type (cat "obj." $colAlias)}} {
+          if !{{$.Types.GetNullTypeValid $.CurrentPackage $column.Type (printf "obj.%s" $colAlias)}} {
             shouldUpdate = true
+            {{ $handledByRel := false }}
+            {{ range $rel := $.Relationships.Get $table.Key }}
+              {{- if $rel.IsToMany -}}{{continue}}{{end -}}
+              {{- $ftable := $.Aliases.Table $rel.Foreign -}}
+              {{- $relAlias := $tAlias.Relationship $rel.Name -}}
+              {{- range $side := $rel.ValuedSides -}}
+                {{- if ne $side.TableName $table.Key}}{{continue}}{{end -}}
+                {{- range $mapping := $side.Mapped -}}
+                  {{- if ne $mapping.Column $indexColumn}}{{continue}}{{end -}}
+                  {{- if ne $mapping.ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+            updateMods = append(updateMods, factory.{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}(factory.{{$ftable.UpSingular}}Mods.WithParentsCascading()))
+                    {{ $handledByRel = true }}
+                {{- end -}}
+              {{- end -}}
+            {{ end }}
+            {{ if not $handledByRel}}
             updateMods = append(updateMods, factory.{{$tAlias.UpSingular}}Mods.Random{{$colAlias}}NotNull(nil))
+            {{- end}}
           }
           {{- end}}
         {{end}}
 
         if shouldUpdate {
-          if err := obj.Update(ctx, exec, f.New{{$tAlias.UpSingular}}WithContext(ctx, updateMods...).BuildSetter()); err != nil {
-            t.Fatalf("Error updating object: %v", err)
+          createMods := make(factory.{{$tAlias.UpSingular}}ModSlice, 0, len(updateMods)+1)
+          createMods = append(createMods, updateMods...)
+          createMods = append(createMods, factory.{{$tAlias.UpSingular}}Mods.WithParentsCascading())
+
+          newObj, err := f.New{{$tAlias.UpSingular}}WithContext(ctx, createMods...).Create(ctx, exec)
+          if err != nil {
+            t.Fatalf("Error creating object with non-null unique columns: %v", err)
           }
+          obj = newObj
         }
 
         return factory.{{$tAlias.UpSingular}}ModSlice{
