@@ -37,8 +37,8 @@ func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods
 	return {{$.FactoryNewWithContextFunc $table.Key}}(ctx, f, baseMods, mods...)
 }
 
-func (f *Factory) FromExisting{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
-	return {{$.FactoryFromExistingFunc $table.Key}}(f, m)
+func (f *Factory) FromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+	return {{$.FactoryFromExistingFunc $table.Key}}(ctx, f, m)
 }
 
 func (f *Factory) ClearBase{{$tAlias.UpSingular}}Mods() {

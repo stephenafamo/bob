@@ -316,6 +316,16 @@ func writeTableRefTo(ctx context.Context, w io.StringWriter, d bob.Dialect, star
 		w.WriteString(" WITH ORDINALITY")
 	}
 
+	if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), table.TableSampleArgs,
+		" TABLESAMPLE "+table.TableSample+"(", ", ", ")", args); err != nil {
+		return err
+	}
+
+	if err := bob.ExpressIfTo(ctx, w, d, nextStart(), table.Repeatable,
+		table.Repeatable != nil, " REPEATABLE (", ")", args); err != nil {
+		return err
+	}
+
 	if len(table.Partitions) > 0 {
 		if err := bob.ExpressSliceTo(ctx, w, d, nextStart(), table.Partitions, " PARTITION (", ", ", ")", args); err != nil {
 			return err
@@ -392,7 +402,7 @@ func writeJoinTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start in
 
 	for i, col := range join.Using {
 		if i == 0 {
-			w.WriteString(" USING(")
+			w.WriteString(" USING (")
 		} else {
 			w.WriteString(", ")
 		}
@@ -400,8 +410,13 @@ func writeJoinTo(ctx context.Context, w io.StringWriter, d bob.Dialect, start in
 		d.WriteQuoted(w, col)
 
 		if i == len(join.Using)-1 {
-			w.WriteString(") ")
+			w.WriteString(")")
 		}
+	}
+
+	if join.UsingAs != "" {
+		w.WriteString(" AS ")
+		d.WriteQuoted(w, join.UsingAs)
 	}
 
 	return nil

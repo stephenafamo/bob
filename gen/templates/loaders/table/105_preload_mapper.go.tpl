@@ -4,7 +4,7 @@
        one to-one relationship: those are the only tables Preload can load,
        and generating unreferenced mappers would trip the `unused` linter. */ -}}
 {{- $isPreloadTarget := false -}}
-{{- range $t := $.Tables -}}
+{{- range $t := $.AllTables -}}
 {{- range $rel := $.Relationships.Get $t.Key -}}
 {{- if and (not $rel.IsToMany) (eq $rel.Foreign $table.Key) -}}{{- $isPreloadTarget = true -}}{{- end -}}
 {{- end -}}
@@ -23,12 +23,12 @@ type {{$tAlias.DownSingular}}PreloadBuf struct {
 	{{end -}}
 }
 
-// {{$tAlias.DownSingular}}ScanMapperNullable maps the preloaded {{$tAlias.DownSingular}}
+// {{$tAlias.UpSingular}}ScanMapperNullable maps the preloaded {{$tAlias.DownSingular}}
 // columns (prefixed with the runtime join alias) without reflection, while
 // keeping the LEFT JOIN semantics of the reflection-based mapper: a row whose
 // prefixed columns are all NULL yields nil (no child), and NULL values never
 // error, they just leave the zero value in the field.
-func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$tAlias.UpSingular}}] {
+func {{$tAlias.UpSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$tAlias.UpSingular}}] {
 	return func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any) (*{{$tAlias.UpSingular}}, error)) {
 		// resolve the column names once per query, not per row
 		type target struct {

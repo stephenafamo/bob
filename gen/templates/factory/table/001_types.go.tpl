@@ -81,7 +81,7 @@ func New{{$tAlias.UpSingular}}WithContext(ctx context.Context, f {{$tAlias.DownS
 	return o
 }
 
-func FromExisting{{$tAlias.UpSingular}}(f {{$tAlias.DownSingular}}Factory, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
+func FromExisting{{$tAlias.UpSingular}}(ctx context.Context, f {{$tAlias.DownSingular}}Factory, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
 	o := &{{$tAlias.UpSingular}}Template{f: f, alreadyPersisted: true}
 
   {{range $column := $table.Columns -}}
@@ -90,9 +90,6 @@ func FromExisting{{$tAlias.UpSingular}}(f {{$tAlias.DownSingular}}Factory, m *mo
         o.{{$colAlias}} = func() {{$colTyp}} { return m.{{$colAlias}} }
   {{end}}
 
-  {{if $.Relationships.Get $table.Key -}}
-  ctx := context.Background()
-  {{- end}}
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}
