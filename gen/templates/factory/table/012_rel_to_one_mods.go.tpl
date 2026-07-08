@@ -9,8 +9,18 @@ func (m {{$tAlias.DownSingular}}Mods) WithParentsCascading() {{$tAlias.UpSingula
     ctx = {{$tAlias.DownSingular}}WithParentsCascadingCtx.WithValue(ctx, true)
     {{range $.Relationships.Get $table.Key -}}
     {{- if .IsToMany -}}{{continue}}{{end -}}
+    {{- $rel := . -}}
     {{- $ftable := $.Aliases.Table .Foreign -}}
     {{- $relAlias := $tAlias.Relationship .Name -}}
+    {{ if not ($table.RelIsRequired .) }}
+    if false{{range $side := $rel.ValuedSides -}}
+      {{- if ne $side.TableName $table.Key}}{{continue}}{{end -}}
+      {{- range $mapping := $side.Mapped -}}
+        {{- if ne $mapping.ExternalTable $rel.Foreign}}{{continue}}{{end -}}
+        || o.{{index $tAlias.Columns $mapping.Column}} != nil
+      {{- end -}}
+    {{- end}} {
+    {{- end}}
     {
       {{range $.AllTables.NeededBridgeRels . -}}
         {{$alias := $.Aliases.Table .Table -}}
@@ -19,6 +29,9 @@ func (m {{$tAlias.DownSingular}}Mods) WithParentsCascading() {{$tAlias.UpSingula
       related := o.f.New{{$ftable.UpSingular}}WithContext(ctx, {{$.FactoryModsVar .Foreign}}.WithParentsCascading())
       m.With{{$relAlias}}({{$.AllTables.RelArgs $.Aliases .}} related).Apply(ctx, o)
     }
+    {{ if not ($table.RelIsRequired .)}}
+    }
+    {{ end }}
     {{end -}}
 	})
 }
