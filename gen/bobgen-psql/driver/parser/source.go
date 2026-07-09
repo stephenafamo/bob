@@ -538,12 +538,19 @@ func (w *walker) getStarColumns(target *pg.Node, info nodeInfo, prefix string, s
 			continue
 		}
 
-		columns = append(columns, source.columns...)
+		cols := source.columns
+		if w.columnOrder == "name" {
+			cols = slices.SortedFunc(slices.Values(cols), func(a, b col) int {
+				return strings.Compare(a.name, b.name)
+			})
+		}
+
+		columns = append(columns, cols...)
 
 		if i > 0 {
 			buf.WriteString(", ")
 		}
-		expandQuotedSource(buf, source, prefix)
+		expandQuotedSource(buf, queryResult{schema: source.schema, name: source.name, columns: cols}, prefix)
 		i++
 	}
 	w.editRules = append(

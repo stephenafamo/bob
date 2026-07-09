@@ -39,13 +39,13 @@ MYSQL_DSN="user:pass@tcp(host:port)/dbname"
 
 The values that exist for the drivers:
 
-| Name        | Description                          | Default |
-| ----------- | ------------------------------------ | ------- |
-| dsn         | URL to connect to                    |         |
-| only        | Only generate these                  |         |
-| except      | Skip generation for these            |         |
-| queries     | Folders containing sql query files   |         |
-| concurrency  | How many tables to fetch in parallel | 10      |
+| Name         | Description                                                                                                      | Default   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- | --------- |
+| dsn          | URL to connect to                                                                                                |           |
+| only         | Only generate these                                                                                              |           |
+| except       | Skip generation for these                                                                                        |           |
+| queries      | Folders containing sql query files                                                                               |           |
+| concurrency  | How many tables to fetch in parallel                                                                             | 10        |
 | column_order | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
 
 ## Only/Except:
