@@ -351,6 +351,29 @@ func TestLoadersTemplateGeneratesFacadeExpandPreloadMethods(t *testing.T) {
 	}
 }
 
+func TestLoadersTemplateUsesAllTablesForCrossComponentLoadStitching(t *testing.T) {
+	content, err := fs.ReadFile(templates, "templates/loaders/table/110_loaders.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tpl, err := template.New("loaders").
+		Funcs(sprig.GenericFuncMap()).
+		Funcs(templateFunctions).
+		Parse(string(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[0]}
+
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestLoadersTemplateGeneratesExpandDrivenThenLoadMethods(t *testing.T) {
 	content, err := fs.ReadFile(templates, "templates/loaders/table/110_loaders.go.tpl")
 	if err != nil {
