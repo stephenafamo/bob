@@ -85,8 +85,8 @@ func testPreloadChildMapper(prefix string) scan.Mapper[*testPreloadChild] {
 			}
 		}
 
+		buf := new(childBuf)
 		return func(row *scan.Row) (any, error) {
-				buf := new(childBuf)
 				for _, t := range targets {
 					row.ScheduleScanByIndex(t.idx, t.dst(buf))
 				}
