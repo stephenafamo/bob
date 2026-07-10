@@ -152,18 +152,18 @@ func TestBuildModelSplitDataDisambiguatesSameTableAcrossSchemas(t *testing.T) {
 		"/tmp/models",
 		"example.com/models",
 		drivers.Tables[any, any]{
-			{Key: "public.setting", Name: "setting"},
-			{Key: "reference.setting", Name: "setting"},
+			{Key: "public.widget", Name: "widget"},
+			{Key: "reference.widget", Name: "widget"},
 		},
 	)
 
-	public := got.TableComponents["public.setting"]
-	reference := got.TableComponents["reference.setting"]
-	if public.PackagePath != "example.com/models/public/setting" || public.ImportAlias != "publicsetting" {
-		t.Fatalf("unexpected public setting component: %#v", public)
+	public := got.TableComponents["public.widget"]
+	reference := got.TableComponents["reference.widget"]
+	if public.PackagePath != "example.com/models/public/widget" || public.ImportAlias != "publicwidget" {
+		t.Fatalf("unexpected public widget component: %#v", public)
 	}
-	if reference.PackagePath != "example.com/models/reference/setting" || reference.ImportAlias != "referencesetting" {
-		t.Fatalf("unexpected reference setting component: %#v", reference)
+	if reference.PackagePath != "example.com/models/reference/widget" || reference.ImportAlias != "referencewidget" {
+		t.Fatalf("unexpected reference widget component: %#v", reference)
 	}
 }
 
