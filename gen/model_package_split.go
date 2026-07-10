@@ -74,6 +74,9 @@ func buildModelSplitData[C, I any](
 		packageTable := safeModelPackageSegment(table.Name)
 		relativePath := path.Join(packageSchema, packageTable)
 		importAlias := strings.ReplaceAll(packageSchema+"_"+packageTable, "_", "")
+		if !token.IsIdentifier(importAlias) {
+			importAlias = "model_" + importAlias
+		}
 		component := &ModelSplitComponent{
 			ID:           table.Key,
 			Package:      packageTable,

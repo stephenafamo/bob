@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"go/token"
 	"os"
 	"path/filepath"
 	"testing"
@@ -112,6 +113,7 @@ func TestBuildModelSplitDataSanitizesPackageNamesAndDisambiguatesAliases(t *test
 			{Key: "sales.type", Name: "type"},
 			{Key: "a_b.c", Name: "c"},
 			{Key: "a.bc", Name: "bc"},
+			{Key: "t.ype", Name: "ype"},
 		},
 	)
 
@@ -132,6 +134,11 @@ func TestBuildModelSplitDataSanitizesPackageNamesAndDisambiguatesAliases(t *test
 	right := got.TableComponents["a.bc"]
 	if left.ImportAlias == right.ImportAlias {
 		t.Fatalf("colliding table keys produced duplicate import alias %q", left.ImportAlias)
+	}
+
+	keywordAlias := got.TableComponents["t.ype"]
+	if !token.IsIdentifier(keywordAlias.ImportAlias) {
+		t.Fatalf("schema/table concatenation produced invalid import alias %q", keywordAlias.ImportAlias)
 	}
 }
 
