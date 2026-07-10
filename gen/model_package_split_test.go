@@ -91,11 +91,14 @@ func TestBuildModelSplitDataTablePackages(t *testing.T) {
 	}
 
 	loyaltyProgram := got.TableComponents["public.loyalty_program"]
-	if loyaltyProgram.Package != "loyalty_program" {
-		t.Fatalf("loyalty program package: want loyalty_program, got %q", loyaltyProgram.Package)
+	if loyaltyProgram.Package != "loyaltyprogram" {
+		t.Fatalf("loyalty program package: want loyaltyprogram, got %q", loyaltyProgram.Package)
 	}
-	if loyaltyProgram.ImportAlias != "publicloyaltyprogram" {
-		t.Fatalf("loyalty program import alias: want publicloyaltyprogram, got %q", loyaltyProgram.ImportAlias)
+	if loyaltyProgram.ImportAlias != "loyaltyprogram" {
+		t.Fatalf("loyalty program import alias: want loyaltyprogram, got %q", loyaltyProgram.ImportAlias)
+	}
+	if loyaltyProgram.RelativePath != "public/loyalty_program" {
+		t.Fatalf("loyalty program relative path: want public/loyalty_program, got %q", loyaltyProgram.RelativePath)
 	}
 	if loyaltyProgram.PackagePath != "example.com/models/public/loyalty_program" {
 		t.Fatalf("loyalty program import path: want example.com/models/public/loyalty_program, got %q", loyaltyProgram.PackagePath)

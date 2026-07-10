@@ -71,16 +71,13 @@ func buildModelSplitData[C, I any](
 			schema = "public"
 		}
 		packageSchema := safeModelPackageSegment(schema)
-		packageTable := safeModelPackageSegment(table.Name)
-		relativePath := path.Join(packageSchema, packageTable)
-		importAlias := strings.ReplaceAll(packageSchema+"_"+packageTable, "_", "")
-		if !token.IsIdentifier(importAlias) {
-			importAlias = "model_" + importAlias
-		}
+		packageTablePath := safeModelPackageSegment(table.Name)
+		packageName := safeGoPackageName(table.Name)
+		relativePath := path.Join(packageSchema, packageTablePath)
 		component := &ModelSplitComponent{
 			ID:           table.Key,
-			Package:      packageTable,
-			ImportAlias:  importAlias,
+			Package:      packageName,
+			ImportAlias:  packageName,
 			RelativePath: relativePath,
 			OutFolder:    filepath.Join(rootOutFolder, filepath.FromSlash(relativePath)),
 			PackagePath:  path.Join(rootPackagePath, relativePath),
@@ -96,11 +93,42 @@ func buildModelSplitData[C, I any](
 	}
 	for _, component := range data.Components {
 		if aliasCounts[component.ImportAlias] > 1 {
-			component.ImportAlias += "_" + stableModelComponentID(component.TableKeys)[:8]
+			schema, _, _ := strings.Cut(component.RelativePath, "/")
+			component.ImportAlias = safeGoPackageName(schema) + component.Package
+		}
+	}
+
+	clear(aliasCounts)
+	for _, component := range data.Components {
+		aliasCounts[component.ImportAlias]++
+	}
+	for _, component := range data.Components {
+		if aliasCounts[component.ImportAlias] > 1 {
+			component.ImportAlias += stableModelComponentID(component.TableKeys)[:8]
 		}
 	}
 
 	return data
+}
+
+func safeGoPackageName(raw string) string {
+	normalized := strings.Map(func(r rune) rune {
+		switch {
+		case unicode.IsLetter(r):
+			return unicode.ToLower(r)
+		case unicode.IsDigit(r):
+			return r
+		default:
+			return -1
+		}
+	}, raw)
+	if normalized == "" {
+		normalized = "model"
+	}
+	if !token.IsIdentifier(normalized) {
+		normalized = "model" + normalized
+	}
+	return normalized
 }
 
 func safeModelPackageSegment(raw string) string {
