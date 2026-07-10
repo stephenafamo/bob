@@ -101,6 +101,40 @@ func TestBuildModelSplitDataTablePackages(t *testing.T) {
 	}
 }
 
+func TestBuildModelSplitDataSanitizesPackageNamesAndDisambiguatesAliases(t *testing.T) {
+	t.Parallel()
+
+	got := buildModelSplitData(
+		"/tmp/models",
+		"example.com/models",
+		drivers.Tables[any, any]{
+			{Key: "sales.order-item", Name: "order-item"},
+			{Key: "sales.type", Name: "type"},
+			{Key: "a_b.c", Name: "c"},
+			{Key: "a.bc", Name: "bc"},
+		},
+	)
+
+	orderItem := got.TableComponents["sales.order-item"]
+	if orderItem.Package == "order-item" || orderItem.RelativePath == "sales/order-item" {
+		t.Fatalf("unsafe SQL identifier was used as a Go package: %#v", orderItem)
+	}
+	if orderItem.PackagePath != "example.com/models/"+orderItem.RelativePath {
+		t.Fatalf("package path and relative path disagree: %#v", orderItem)
+	}
+
+	keyword := got.TableComponents["sales.type"]
+	if keyword.Package == "type" {
+		t.Fatalf("Go keyword was used as a package name: %#v", keyword)
+	}
+
+	left := got.TableComponents["a_b.c"]
+	right := got.TableComponents["a.bc"]
+	if left.ImportAlias == right.ImportAlias {
+		t.Fatalf("colliding table keys produced duplicate import alias %q", left.ImportAlias)
+	}
+}
+
 func TestBuildModelSplitDataDisambiguatesSameTableAcrossSchemas(t *testing.T) {
 	t.Parallel()
 
@@ -144,6 +178,23 @@ func TestPrepareTablePackageRelationshipsDropsReverseToMany(t *testing.T) {
 	}
 	if len(got["parent"]) != 0 {
 		t.Fatalf("expected reverse parent-to-child relationship to be dropped, got %#v", got["parent"])
+	}
+}
+
+func TestPrepareTablePackageRelationshipsDropsConfiguredMultiSideRelationships(t *testing.T) {
+	t.Parallel()
+
+	got := prepareTablePackageRelationships(Relationships{
+		"child": {{
+			Name: "child_parent_through_bridge",
+			Sides: []orm.RelSide{
+				{From: "child", To: "bridge", Modify: "from"},
+				{From: "bridge", To: "parent", Modify: "to"},
+			},
+		}},
+	})
+	if len(got["child"]) != 0 {
+		t.Fatalf("expected configured multi-side relationship to be dropped, got %#v", got["child"])
 	}
 }
 

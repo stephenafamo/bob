@@ -3,10 +3,12 @@ package gen
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"go/token"
 	"path"
 	"path/filepath"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
@@ -68,11 +70,13 @@ func buildModelSplitData[C, I any](
 		if !found || schema == "" {
 			schema = "public"
 		}
-		relativePath := path.Join(schema, table.Name)
-		importAlias := strings.ReplaceAll(schema+"_"+table.Name, "_", "")
+		packageSchema := safeModelPackageSegment(schema)
+		packageTable := safeModelPackageSegment(table.Name)
+		relativePath := path.Join(packageSchema, packageTable)
+		importAlias := strings.ReplaceAll(packageSchema+"_"+packageTable, "_", "")
 		component := &ModelSplitComponent{
 			ID:           table.Key,
-			Package:      table.Name,
+			Package:      packageTable,
 			ImportAlias:  importAlias,
 			RelativePath: relativePath,
 			OutFolder:    filepath.Join(rootOutFolder, filepath.FromSlash(relativePath)),
@@ -83,14 +87,47 @@ func buildModelSplitData[C, I any](
 		data.TableComponents[table.Key] = component
 	}
 
+	aliasCounts := make(map[string]int, len(data.Components))
+	for _, component := range data.Components {
+		aliasCounts[component.ImportAlias]++
+	}
+	for _, component := range data.Components {
+		if aliasCounts[component.ImportAlias] > 1 {
+			component.ImportAlias += "_" + stableModelComponentID(component.TableKeys)[:8]
+		}
+	}
+
 	return data
+}
+
+func safeModelPackageSegment(raw string) string {
+	normalized := strings.Map(func(r rune) rune {
+		switch {
+		case unicode.IsLetter(r):
+			return unicode.ToLower(r)
+		case unicode.IsDigit(r), r == '_':
+			return r
+		default:
+			return '_'
+		}
+	}, raw)
+	if normalized == "" {
+		normalized = "model"
+	}
+	if !token.IsIdentifier(normalized) {
+		normalized = "model_" + normalized
+	}
+	if normalized != raw || !token.IsIdentifier(raw) {
+		normalized += "_" + stableModelComponentID([]string{raw})[:8]
+	}
+	return normalized
 }
 
 func prepareTablePackageRelationships(relationships Relationships) Relationships {
 	forward := make(Relationships, len(relationships))
 	for table, rels := range relationships {
 		for _, rel := range rels {
-			if len(rel.Sides) > 0 && rel.Sides[0].Modify == "from" {
+			if len(rel.Sides) == 1 && rel.Sides[0].Modify == "from" {
 				forward[table] = append(forward[table], rel)
 			}
 		}
