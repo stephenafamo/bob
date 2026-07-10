@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed an unused type import (e.g. `github.com/google/uuid`) in generated models when the type is only referenced through optional wrapper expressions, such as m2m relationship helpers for a join table with a `uuid` column ([#730](https://github.com/stephenafamo/bob/issues/730)).
 - Fixed the counts plugin's generated `C` field reusing the `relation_tag` struct tag, which collided with the relations `R` field and caused `encoding/json` to drop both fields when a real tag name was configured. The `C` field now uses a dedicated `relation_tag_count` config option (default `"-"`). (thanks @jacobmolby)
 - Fixed generated join alias suffixes using `randInt()`, which could produce negative values when `maphash.Hash.Sum64()` overflowed `int64` ([#719](https://github.com/stephenafamo/bob/issues/719)). Generated join mods now use `bob.NextUniqueInt()` instead. (thanks @atzedus)
 - Fixed `orm.Query.Clone()` dropping the `Scanner`, which made `All`/`One`/`Cursor`/`Each` on a cloned query panic with a nil pointer dereference. (thanks @sandonemaki)
