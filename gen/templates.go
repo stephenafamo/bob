@@ -149,12 +149,47 @@ func (d *TemplateData[T, C, I]) splitRef(tableKey, name string) string {
 		return name
 	}
 
-	d.Importer.Import(component.PackagePath)
-	return path.Base(component.PackagePath) + "." + name
+	importAlias := component.ImportAlias
+	if importAlias == "" {
+		importAlias = path.Base(component.PackagePath)
+	}
+	d.Importer.Import(importAlias, component.PackagePath)
+	return importAlias + "." + name
+}
+
+func (d *TemplateData[T, C, I]) ModelPackage(tableKey string) string {
+	if d.ModelSplit == nil || !d.ModelSplit.Enabled {
+		return ""
+	}
+	component := d.ModelSplit.TableComponents[tableKey]
+	if component == nil {
+		return ""
+	}
+	if d.ModelSplit.Generation == modelSplitGenerationComponent &&
+		d.ModelSplit.CurrentComponent != nil &&
+		component.ID == d.ModelSplit.CurrentComponent.ID {
+		return ""
+	}
+	importAlias := component.ImportAlias
+	if importAlias == "" {
+		importAlias = path.Base(component.PackagePath)
+	}
+	d.Importer.Import(importAlias, component.PackagePath)
+	return importAlias
 }
 
 func (d *TemplateData[T, C, I]) IsModelSplitFacade() bool {
 	return d.ModelSplit != nil && d.ModelSplit.Enabled && d.ModelSplit.Generation == modelSplitGenerationFacade
+}
+
+func (d *TemplateData[T, C, I]) UsesTablePackages() bool {
+	return d.ModelSplit != nil && d.ModelSplit.Enabled &&
+		d.ModelSplit.Mode == modelPackageSplitModeTablePackages
+}
+
+func (d *TemplateData[T, C, I]) IsTablePackage() bool {
+	return d.UsesTablePackages() &&
+		d.ModelSplit.Generation == modelSplitGenerationComponent
 }
 
 func (d *TemplateData[T, C, I]) HasExpandThenLoader(tableKey string) bool {

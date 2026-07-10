@@ -144,17 +144,30 @@ func Build{{$tAlias.UpSingular}}Preloader() {{$tAlias.UpSingular}}Preloader {
   }
 }
 
+{{if $.IsTablePackage -}}
+func (l {{$tAlias.UpSingular}}Preloader) ForExpandMap(expands map[string]struct{}, maxDepth int, computedTerminal func(string) bool) ([]bob.Mod[*dialect.SelectQuery], error) {
+{{else -}}
 func (l {{$tAlias.UpSingular}}Preloader) ForExpandMap(expands map[string]struct{}, opts ...ExpandLoadOption) ([]bob.Mod[*dialect.SelectQuery], error) {
+{{end -}}
 	paths := make([]string, 0, len(expands))
 	for path := range expands {
 		paths = append(paths, path)
 	}
 
+	{{if $.IsTablePackage -}}
+	return l.ForExpandPaths(paths, maxDepth, computedTerminal)
+	{{else -}}
 	return l.ForExpandPaths(paths, opts...)
+	{{end -}}
 }
 
+{{if $.IsTablePackage -}}
+func (l {{$tAlias.UpSingular}}Preloader) ForExpandPaths(paths []string, maxDepth int, computedTerminal func(string) bool) ([]bob.Mod[*dialect.SelectQuery], error) {
+	options := expandLoadOptions{maxDepth: maxDepth, computedTerminal: computedTerminal}
+{{else -}}
 func (l {{$tAlias.UpSingular}}Preloader) ForExpandPaths(paths []string, opts ...ExpandLoadOption) ([]bob.Mod[*dialect.SelectQuery], error) {
 	options := newExpandLoadOptions(opts...)
+{{end -}}
 	tree, err := buildExpandTree(paths, options.maxDepth)
 	if err != nil {
 		return nil, err
@@ -194,17 +207,44 @@ func (l {{$tAlias.UpSingular}}Preloader) forExpandTree(tree expandTree, depth in
 		{{- if $rel.IsToMany -}}{{continue}}{{- end -}}
 		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
 		{{- $fAlias := $.Aliases.Table $rel.Foreign -}}
+		{{- $fPackage := $.ModelPackage $rel.Foreign -}}
 		case {{snakecase $relAlias | quote}}:
 			var childOpts []{{$.Dialect}}.PreloadOption
 			{{if and ($.HasExpandPreloader $rel.Foreign) ($.SameModelSplitComponent $rel.Foreign) -}}
 			var err error
+			{{if $.IsTablePackage -}}
+			childOpts, err = Preload.forExpandTree(child, depth+1, opts)
+			{{else -}}
 			childOpts, err = Preload.{{$fAlias.UpSingular}}.forExpandTree(child, depth+1, opts)
+			{{end -}}
 			if err != nil {
 				return nil, err
 			}
 			{{else -}}
 			if len(child.children) > 0 {
-				{{if $.HasExpandPreloader $rel.Foreign -}}
+				{{if and $.IsTablePackage ($.HasExpandPreloader $rel.Foreign) -}}
+				remainingDepth := opts.maxDepth
+				if remainingDepth >= 0 {
+					remainingDepth -= depth + 1
+				}
+				foreignMods, err := {{$fPackage}}.Preload.ForExpandPaths(
+					child.relativePaths(),
+					remainingDepth,
+					func(path string) bool {
+						return opts.computedTerminal != nil && opts.computedTerminal(child.path+"."+path)
+					},
+				)
+				if err != nil {
+					return nil, err
+				}
+				for _, foreignMod := range foreignMods {
+					preloadOpt, ok := any(foreignMod).({{$.Dialect}}.PreloadOption)
+					if !ok {
+						return nil, fmt.Errorf("expand preload option %T is not a preload option", foreignMod)
+					}
+					childOpts = append(childOpts, preloadOpt)
+				}
+				{{else if $.HasExpandPreloader $rel.Foreign -}}
 				return nil, fmt.Errorf("expand path %q cannot be nested because {{$fAlias.UpSingular}} is generated in another model component", child.path)
 				{{else -}}
 				return nil, fmt.Errorf("expand path %q cannot be nested because {{$fAlias.UpSingular}} has no generated preload relationships", child.path)
@@ -251,17 +291,30 @@ func Build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.UpSingula
   }
 }
 
+{{if $.IsTablePackage -}}
+func (l {{$tAlias.UpSingular}}ThenLoader[Q]) ForExpandMap(expands map[string]struct{}, maxDepth int, computedTerminal func(string) bool) ([]bob.Mod[Q], error) {
+{{else -}}
 func (l {{$tAlias.UpSingular}}ThenLoader[Q]) ForExpandMap(expands map[string]struct{}, opts ...ExpandLoadOption) ([]bob.Mod[Q], error) {
+{{end -}}
 	paths := make([]string, 0, len(expands))
 	for path := range expands {
 		paths = append(paths, path)
 	}
 
+	{{if $.IsTablePackage -}}
+	return l.ForExpandPaths(paths, maxDepth, computedTerminal)
+	{{else -}}
 	return l.ForExpandPaths(paths, opts...)
+	{{end -}}
 }
 
+{{if $.IsTablePackage -}}
+func (l {{$tAlias.UpSingular}}ThenLoader[Q]) ForExpandPaths(paths []string, maxDepth int, computedTerminal func(string) bool) ([]bob.Mod[Q], error) {
+	options := expandLoadOptions{maxDepth: maxDepth, computedTerminal: computedTerminal}
+{{else -}}
 func (l {{$tAlias.UpSingular}}ThenLoader[Q]) ForExpandPaths(paths []string, opts ...ExpandLoadOption) ([]bob.Mod[Q], error) {
 	options := newExpandLoadOptions(opts...)
+{{end -}}
 	tree, err := buildExpandTree(paths, options.maxDepth)
 	if err != nil {
 		return nil, err
@@ -286,22 +339,44 @@ func (l {{$tAlias.UpSingular}}ThenLoader[Q]) forExpandTree(tree expandTree, dept
 		{{range $rel := $.Relationships.Get $table.Key -}}
 		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
 		{{- $fAlias := $.Aliases.Table $rel.Foreign -}}
+		{{- $fPackage := $.ModelPackage $rel.Foreign -}}
 		case {{snakecase $relAlias | quote}}:
 			{{if and ($.HasExpandThenLoader $rel.Foreign) ($.SameModelSplitComponent $rel.Foreign) -}}
+			{{if $.IsTablePackage -}}
+			childMods, err := SelectThenLoad.forExpandTree(child, depth+1, opts)
+			{{else -}}
 			childMods, err := SelectThenLoad.{{$fAlias.UpSingular}}.forExpandTree(child, depth+1, opts)
+			{{end -}}
 			if err != nil {
 				return nil, err
 			}
 			mods = append(mods, l.{{$relAlias}}(childMods...))
 			{{else -}}
 			if len(child.children) > 0 {
-				{{if $.HasExpandThenLoader $rel.Foreign -}}
+				{{if and $.IsTablePackage ($.HasExpandThenLoader $rel.Foreign) -}}
+				remainingDepth := opts.maxDepth
+				if remainingDepth >= 0 {
+					remainingDepth -= depth + 1
+				}
+				childMods, err := {{$fPackage}}.SelectThenLoad.ForExpandPaths(
+					child.relativePaths(),
+					remainingDepth,
+					func(path string) bool {
+						return opts.computedTerminal != nil && opts.computedTerminal(child.path+"."+path)
+					},
+				)
+				if err != nil {
+					return nil, err
+				}
+				mods = append(mods, l.{{$relAlias}}(childMods...))
+				{{else if $.HasExpandThenLoader $rel.Foreign -}}
 				return nil, fmt.Errorf("expand path %q cannot be nested because {{$fAlias.UpSingular}} is generated in another model component", child.path)
 				{{else -}}
 				return nil, fmt.Errorf("expand path %q cannot be nested because {{$fAlias.UpSingular}} has no generated expand relationships", child.path)
 				{{end -}}
+			} else {
+				mods = append(mods, l.{{$relAlias}}())
 			}
-			mods = append(mods, l.{{$relAlias}}())
 			{{end -}}
 		{{end -}}
 		default:

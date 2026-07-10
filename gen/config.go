@@ -41,10 +41,6 @@ type Config[ConstraintExtra any] struct {
 	Aliases       drivers.Aliases              `yaml:"aliases"`       // customize aliases
 	Constraints   Constraints[ConstraintExtra] `yaml:"constraints"`   // define additional constraints
 	Relationships Relationships                `yaml:"relationships"` // define additional relationships
-	// Control which relationships are emitted into generated code.
-	RelationshipCodegen RelationshipCodegen `yaml:"relationship_codegen"`
-	// Split generated model code into smaller packages.
-	ModelPackageSplit ModelPackageSplit `yaml:"model_package_split"`
 
 	Replacements []Replace   `yaml:"replacements"`
 	Inflections  Inflections `yaml:"inflections"`
@@ -55,40 +51,12 @@ type Config[ConstraintExtra any] struct {
 	Generator string `yaml:"generator"`
 }
 
-type RelationshipCodegen struct {
-	// Mode controls which relationships are emitted.
-	// Valid values are:
-	// - "all" (default): emit all relationships.
-	// - "to_one": emit all to-one relationships and allowlisted to-many relationships.
-	Mode string `yaml:"mode"`
-	// AllowToMany contains generated Go relationship names keyed by table key.
-	AllowToMany map[string][]string `yaml:"allow_to_many"`
-	// MutationMethods generates relationship Insert/Attach/Detach helpers. Defaults to true.
-	MutationMethods *bool `yaml:"mutation_methods"`
-}
-
 func boolDefaultTrue(v *bool) bool {
 	return v == nil || *v
 }
 
 func (c Config[C]) shouldGenerateSliceMutationMethods() bool {
 	return boolDefaultTrue(c.SliceMutationMethods)
-}
-
-func (c RelationshipCodegen) shouldGenerateMutationMethods() bool {
-	return boolDefaultTrue(c.MutationMethods)
-}
-
-type ModelPackageSplit struct {
-	// Mode controls model package splitting.
-	// Valid values are:
-	// - "" (default): do not split generated model code.
-	// - "relationship_components": split by strongly connected components of
-	//   the generated relationship dependency graph.
-	Mode string `yaml:"mode"`
-	// InternalDir is the directory under the models output where component
-	// packages are generated. Defaults to "internal/components".
-	InternalDir string `yaml:"internal_dir"`
 }
 
 // Replace replaces a column type with something else

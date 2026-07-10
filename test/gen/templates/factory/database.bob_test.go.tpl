@@ -1,3 +1,4 @@
+{{if not $.UsesTablePackages}}
 {{ $sqlDriver := "" }}
 {{ $dsnEnvVarName := "" }}
 {{ if eq $.Driver "github.com/go-sql-driver/mysql" }}
@@ -110,3 +111,4 @@ func TestMain(m *testing.M) {
 
 	os.Exit(m.Run())
 }
+{{end}}

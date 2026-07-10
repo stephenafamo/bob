@@ -8,7 +8,19 @@
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{if $.IsModelSplitFacade}}{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}{{end}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
+{{$table := index .Tables 0 -}}
 
+{{if $.IsTablePackage -}}
+{{if $.Relationships.Get (index .Tables 0).Key -}}
+var Preload = {{$.BuildPreloaderFunc (index .Tables 0).Key}}()
+
+var (
+	SelectThenLoad = {{$.BuildThenLoaderFunc (index $.Tables 0).Key}}[*dialect.SelectQuery]()
+	InsertThenLoad = {{$.BuildThenLoaderFunc (index $.Tables 0).Key}}[*dialect.InsertQuery]()
+	UpdateThenLoad = {{$.BuildThenLoaderFunc (index $.Tables 0).Key}}[*dialect.UpdateQuery]()
+)
+{{end -}}
+{{else -}}
 var Preload = getPreloaders()
 
 type preloaders struct {
@@ -66,6 +78,7 @@ func getThenLoaders[Q orm.Loadable]() thenLoaders[Q] {
 		{{end}}{{end}}
 	}
 }
+{{end -}}
 
 {{if $.IsModelSplitFacade -}}
 {{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
@@ -322,6 +335,27 @@ func (tree expandTree) sortedSegments() []string {
 	sort.Strings(segments)
 
 	return segments
+}
+
+func (tree expandTree) relativePaths() []string {
+	paths := make([]string, 0)
+	var walk func(expandTree, string)
+	walk = func(node expandTree, prefix string) {
+		for _, segment := range node.sortedSegments() {
+			child := *node.children[segment]
+			path := segment
+			if prefix != "" {
+				path = prefix + "." + segment
+			}
+			if len(child.children) == 0 {
+				paths = append(paths, path)
+				continue
+			}
+			walk(child, path)
+		}
+	}
+	walk(tree, "")
+	return paths
 }
 
 func (tree expandTree) computedTerminal(options expandLoadOptions) bool {

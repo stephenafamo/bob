@@ -122,10 +122,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if err := initAliases(s.Config.Aliases, dbInfo.Tables, relationships, relationLoadedName); err != nil {
 		return fmt.Errorf("initializing aliases: %w\nSee: https://bob.stephenafamo.com/docs/code-generation/configuration#aliases", err)
 	}
-	relationships, err = filterGeneratedRelationships(s.Config, s.Config.Aliases, relationships)
-	if err != nil {
-		return fmt.Errorf("filtering relationships: %w", err)
-	}
+	relationships = prepareTablePackageRelationships(relationships)
 	if err = s.initTags(); err != nil {
 		return fmt.Errorf("unable to initialize struct tags: %w", err)
 	}
@@ -144,7 +141,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		NoTests:                     s.Config.NoTests,
 		NoBackReferencing:           s.Config.NoBackReferencing,
 		SliceMutationMethods:        s.Config.shouldGenerateSliceMutationMethods(),
-		RelationshipMutationMethods: s.Config.RelationshipCodegen.shouldGenerateMutationMethods(),
+		RelationshipMutationMethods: true,
 		StructTagCasing:             s.Config.StructTagCasing,
 		TagIgnore:                   make(map[string]struct{}),
 		Tags:                        s.Config.Tags,
@@ -154,11 +151,7 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		OutputPackages:              pkgMap,
 		Driver:                      dbInfo.Driver,
 	}
-	if splitData, err := buildModelSplitData(s.Config.ModelPackageSplit, modelsOutFolder(s.Outputs), pkgMap["models"], dbInfo.Tables, relationships); err != nil {
-		return fmt.Errorf("building model package split data: %w", err)
-	} else {
-		data.ModelSplit = splitData
-	}
+	data.ModelSplit = buildModelSplitData(modelsOutFolder(s.Outputs), pkgMap["models"], dbInfo.Tables)
 
 	for _, v := range s.Config.TagIgnore {
 		if !rgxValidTableColumn.MatchString(v) {

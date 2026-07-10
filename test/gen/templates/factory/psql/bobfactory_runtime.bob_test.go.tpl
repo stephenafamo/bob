@@ -1,3 +1,4 @@
+{{if not $.UsesTablePackages}}
 {{- $hasUsers := has "users" $.TableNames -}}
 {{- $hasVideos := has "videos" $.TableNames -}}
 {{- $hasTags := has "tags" $.TableNames -}}
@@ -1896,3 +1897,4 @@ func TestLoadedToOneAfterAttach(t *testing.T) {
 	}
 }
 {{- end }}
+{{end}}

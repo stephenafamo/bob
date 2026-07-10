@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"go/format"
 	"io"
 	"io/fs"
 	"maps"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 	"text/template"
 
 	"github.com/stephenafamo/bob/gen/drivers"
@@ -228,6 +231,38 @@ func generateTableOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], ge
 	return nil
 }
 
+func cleanGeneratedSubdirectories(root string) error {
+	var directories []string
+	err := filepath.WalkDir(root, func(path string, item fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if item.IsDir() {
+			if path != root {
+				directories = append(directories, path)
+			}
+			return nil
+		}
+		name := item.Name()
+		name = name[:len(name)-len(filepath.Ext(name))]
+		if strings.HasSuffix(name, ".bob") || strings.HasSuffix(name, ".bob_test") {
+			return os.Remove(path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for i := len(directories) - 1; i >= 0; i-- {
+		if err := os.Remove(directories[i]); err != nil &&
+			!errors.Is(err, fs.ErrNotExist) &&
+			!errors.Is(err, syscall.ENOTEMPTY) {
+			return err
+		}
+	}
+	return nil
+}
+
 func generateSplitModelOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], generator string, noTests bool) error {
 	if data.ModelSplit == nil || !data.ModelSplit.Enabled {
 		return generateTableOutput(o, data, generator, noTests)
@@ -246,18 +281,27 @@ func generateSplitModelOutput[T, C, I any](o *Output, data *TemplateData[T, C, I
 		data.ModelSplit.CurrentComponent = originalComponent
 	}()
 
-	if err := o.initOutFolders(); err != nil {
-		return fmt.Errorf("unable to initialize root model output folder: %w", err)
-	}
-	if err := os.RemoveAll(filepath.Join(o.OutFolder, filepath.FromSlash(data.ModelSplit.InternalDir))); err != nil {
-		return fmt.Errorf("removing old split model output: %w", err)
-	}
+	if data.ModelSplit.GeneratesFacade() {
+		if err := o.initOutFolders(); err != nil {
+			return fmt.Errorf("unable to initialize root model output folder: %w", err)
+		}
+		if err := os.RemoveAll(filepath.Join(o.OutFolder, filepath.FromSlash(data.ModelSplit.InternalDir))); err != nil {
+			return fmt.Errorf("removing old split model output: %w", err)
+		}
 
-	data.Tables = originalTables
-	data.ModelSplit.Generation = modelSplitGenerationFacade
-	data.ModelSplit.CurrentComponent = nil
-	if err := generateSingletonOutput(o, data, generator, noTests); err != nil {
-		return fmt.Errorf("root facade singleton output: %w", err)
+		data.Tables = originalTables
+		data.ModelSplit.Generation = modelSplitGenerationFacade
+		data.ModelSplit.CurrentComponent = nil
+		if err := generateSingletonOutput(o, data, generator, noTests); err != nil {
+			return fmt.Errorf("root facade singleton output: %w", err)
+		}
+	} else {
+		if err := o.initOutFolders(); err != nil {
+			return fmt.Errorf("unable to initialize root model output folder: %w", err)
+		}
+		if err := cleanGeneratedSubdirectories(o.OutFolder); err != nil {
+			return fmt.Errorf("cleaning old table-package model output: %w", err)
+		}
 	}
 
 	for _, component := range data.ModelSplit.Components {
@@ -288,12 +332,21 @@ func generateSplitFactoryOutput[T, C, I any](o *Output, data *TemplateData[T, C,
 	originalPkgName := o.PkgName
 	originalOutFolder := o.OutFolder
 	originalSplit := data.ModelSplit
+	originalModelsPackage := data.OutputPackages["models"]
 	defer func() {
 		data.Tables = originalTables
 		o.PkgName = originalPkgName
 		o.OutFolder = originalOutFolder
 		data.ModelSplit = originalSplit
+		data.OutputPackages["models"] = originalModelsPackage
 	}()
+
+	factoryModelsFolder := filepath.Join(filepath.Dir(originalSplit.RootOutFolder), "internal", "factorymodels")
+	factoryModelsPackage := path.Join(path.Dir(originalSplit.RootPackagePath), "internal", "factorymodels")
+	if err := generateFactoryModelsFacade(factoryModelsFolder, originalSplit, originalTables, data); err != nil {
+		return fmt.Errorf("generating factory models facade: %w", err)
+	}
+	data.OutputPackages["models"] = factoryModelsPackage
 
 	factorySplit := modelSplitForOutput(originalSplit, o.OutFolder, data.OutputPackages[o.Key])
 	data.ModelSplit = factorySplit
@@ -301,7 +354,11 @@ func generateSplitFactoryOutput[T, C, I any](o *Output, data *TemplateData[T, C,
 	if err := o.initOutFolders(); err != nil {
 		return fmt.Errorf("unable to initialize root factory output folder: %w", err)
 	}
-	if err := os.RemoveAll(filepath.Join(o.OutFolder, filepath.FromSlash(factorySplit.InternalDir))); err != nil {
+	if factorySplit.Mode == modelPackageSplitModeTablePackages {
+		if err := cleanGeneratedSubdirectories(o.OutFolder); err != nil {
+			return fmt.Errorf("cleaning old schema/table factory output: %w", err)
+		}
+	} else if err := os.RemoveAll(filepath.Join(o.OutFolder, filepath.FromSlash(factorySplit.InternalDir))); err != nil {
 		return fmt.Errorf("removing old split factory output: %w", err)
 	}
 
@@ -329,6 +386,46 @@ func generateSplitFactoryOutput[T, C, I any](o *Output, data *TemplateData[T, C,
 	}
 
 	return nil
+}
+
+func generateFactoryModelsFacade[T, C, I any](
+	outFolder string,
+	modelSplit *ModelSplitData,
+	tables drivers.Tables[C, I],
+	data *TemplateData[T, C, I],
+) error {
+	if err := os.RemoveAll(outFolder); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(outFolder, os.ModePerm); err != nil {
+		return err
+	}
+
+	var source strings.Builder
+	source.WriteString("// Code generated by BobGen. DO NOT EDIT.\n\npackage factorymodels\n\nimport (\n")
+	for _, component := range modelSplit.Components {
+		fmt.Fprintf(&source, "	%s %q\n", component.ImportAlias, component.PackagePath)
+	}
+	source.WriteString(")\n\n")
+	for _, table := range tables {
+		component := modelSplit.TableComponents[table.Key]
+		if component == nil {
+			continue
+		}
+		alias := data.Aliases.Table(table.Key)
+		fmt.Fprintf(&source, "type %s = %s.%s\n", alias.UpSingular, component.ImportAlias, alias.UpSingular)
+		fmt.Fprintf(&source, "type %sSlice = %s.%sSlice\n", alias.UpSingular, component.ImportAlias, alias.UpSingular)
+		if table.Constraints.Primary != nil || len(data.Relationships.Get(table.Key)) > 0 {
+			fmt.Fprintf(&source, "type %sSetter = %s.%sSetter\n", alias.UpSingular, component.ImportAlias, alias.UpSingular)
+		}
+		fmt.Fprintf(&source, "var %s = %s.%s\n\n", alias.UpPlural, component.ImportAlias, alias.UpPlural)
+	}
+
+	formatted, err := format.Source([]byte(source.String()))
+	if err != nil {
+		return fmt.Errorf("formatting facade: %w", err)
+	}
+	return os.WriteFile(filepath.Join(outFolder, "bob_factory_models.bob.go"), formatted, 0o644)
 }
 
 func generateQueryOutput[T, C, I any](o *Output, data *TemplateData[T, C, I], generator string, noTests bool) error {

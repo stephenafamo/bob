@@ -83,6 +83,227 @@ func Test_enumValToScreamingSnakeCase(t *testing.T) {
 	}
 }
 
+func TestTablePackageJoinsOmitGlobalsWithoutRelationships(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[3]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["profiles"]
+
+	content, err := fs.ReadFile(templates, "templates/joins/bob_joins.bob.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := template.New("joins").Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(out.String(), "BuildProfileJoins") {
+		t.Fatalf("did not expect join globals without relationships:\n%s", out.String())
+	}
+}
+
+func TestTablePackageSingletonJoinsAreFlattened(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[0]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["users"]
+
+	content, err := fs.ReadFile(templates, "templates/joins/bob_joins.bob.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := template.New("joins").Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	if !strings.Contains(got, "SelectJoins = BuildJoinSet[UserJoins[*dialect.SelectQuery]]") {
+		t.Fatalf("expected flattened table-package joins, got:\n%s", got)
+	}
+	if strings.Contains(got, "type joins[") {
+		t.Fatalf("table-package joins must not retain the all-table wrapper:\n%s", got)
+	}
+}
+
+func TestSQLiteTablePackageSingletonJoinsAreFlattened(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Dialect = "sqlite"
+	data.Tables = drivers.Tables[any, any]{data.AllTables[0]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["users"]
+
+	base, err := fs.ReadFile(templates, "templates/joins/bob_joins.bob.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	override, err := fs.ReadFile(sqliteTemplates, "bobgen-sqlite/templates/joins/bob_sqlite_blocks.bob.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := template.New("joins").Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tpl.Parse(string(override)); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	if !strings.Contains(got, "SelectJoins = BuildJoinSet[UserJoins[*dialect.SelectQuery]]") {
+		t.Fatalf("expected flattened SQLite table-package joins, got:\n%s", got)
+	}
+	if strings.Contains(got, "getJoins[") {
+		t.Fatalf("SQLite table-package joins must not retain the all-table helper:\n%s", got)
+	}
+}
+
+func TestTablePackageExpandMethodsUseCommonInterface(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[0]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["users"]
+
+	content, err := fs.ReadFile(templates, "templates/loaders/table/110_loaders.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := template.New("loaders").Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	for _, want := range []string{
+		"ForExpandMap(expands map[string]struct{}, maxDepth int, computedTerminal func(string) bool)",
+		"ForExpandPaths(paths []string, maxDepth int, computedTerminal func(string) bool)",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("expected table-package loader to contain %q, got:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "opts ...ExpandLoadOption") {
+		t.Fatalf("table-package loaders must not expose package-specific option types:\n%s", got)
+	}
+}
+
+func TestTablePackageLoadersOmitGlobalsWithoutRelationships(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[3]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["profiles"]
+
+	content, err := fs.ReadFile(templates, "templates/loaders/bob_loaders.bob.go.tpl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tpl, err := template.New("loaders").Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := tpl.Execute(&out, &data); err != nil {
+		t.Fatal(err)
+	}
+	for _, unwanted := range []string{"BuildProfilePreloader", "BuildProfileThenLoader"} {
+		if strings.Contains(out.String(), unwanted) {
+			t.Fatalf("did not expect %q without relationships:\n%s", unwanted, out.String())
+		}
+	}
+}
+
+func TestTablePackageSingletonTemplatesAreFlattened(t *testing.T) {
+	t.Parallel()
+
+	data := expandDrivenThenLoadTemplateData()
+	data.Tables = drivers.Tables[any, any]{data.AllTables[0]}
+	data.ModelSplit.Mode = modelPackageSplitModeTablePackages
+	data.ModelSplit.Generation = modelSplitGenerationComponent
+	data.ModelSplit.CurrentComponent = data.ModelSplit.TableComponents["users"]
+
+	tests := []struct {
+		name       string
+		path       string
+		contains   []string
+		notContain []string
+	}{
+		{
+			name: "where",
+			path: "templates/where/bob_where.bob.go.tpl",
+			contains: []string{
+				"SelectWhere = BuildUserWhere[*dialect.SelectQuery](Users.Columns)",
+				"func Where[Q psql.Filterable]() UserWhere[Q]",
+			},
+			notContain: []string{"SelectWhere = Where[*dialect.SelectQuery]()", "Users UserWhere[Q]"},
+		},
+		{
+			name: "loaders",
+			path: "templates/loaders/bob_loaders.bob.go.tpl",
+			contains: []string{
+				"var Preload = BuildUserPreloader()",
+				"SelectThenLoad = BuildUserThenLoader[*dialect.SelectQuery]()",
+			},
+			notContain: []string{"type preloaders struct", "User UserPreloader"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			content, err := fs.ReadFile(templates, tt.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tpl, err := template.New(tt.name).Funcs(sprig.GenericFuncMap()).Funcs(templateFunctions).Parse(string(content))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var out bytes.Buffer
+			if err := tpl.Execute(&out, &data); err != nil {
+				t.Fatal(err)
+			}
+			got := out.String()
+			for _, want := range tt.contains {
+				if !strings.Contains(got, want) {
+					t.Fatalf("expected %q in generated output:\n%s", want, got)
+				}
+			}
+			for _, unwanted := range tt.notContain {
+				if strings.Contains(got, unwanted) {
+					t.Fatalf("did not expect %q in generated output:\n%s", unwanted, got)
+				}
+			}
+		})
+	}
+}
+
 func TestRelationshipMutationMethodsTemplateCanBeDisabled(t *testing.T) {
 	content, err := fs.ReadFile(templates, "templates/models/table/011_rel_ops.go.tpl")
 	if err != nil {

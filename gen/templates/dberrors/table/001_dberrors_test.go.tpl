@@ -4,7 +4,6 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "errors"}}
 {{$.Importer.Import "testing"}}
-{{$.Importer.Import "models" (index $.OutputPackages "models") }}
 {{$.Importer.Import "factory" (index $.OutputPackages "factory") }}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 
@@ -17,7 +16,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 	tests := []struct{
 		name        string
 		expectedErr   *UniqueConstraintError
-		conflictMods  func(context.Context, *testing.T, bob.Executor, *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice
+		conflictMods  func(context.Context, *testing.T, bob.Executor, *{{$.ModelType $table.Key}}) factory.{{$tAlias.UpSingular}}ModSlice
 	}{
 	{{range $index := (prepend $table.Constraints.Uniques $table.Constraints.Primary)}}
 		{{- $hasNullableColumn := false -}}
@@ -32,7 +31,7 @@ func Test{{$tAlias.UpSingular}}UniqueConstraintErrors(t *testing.T) {
 		{
 			name: "{{$errName}}",
 			expectedErr: {{$tAlias.UpSingular}}Errors.{{$errName}},
-			conflictMods: func(ctx context.Context, t *testing.T, exec bob.Executor, obj *models.{{$tAlias.UpSingular}}) factory.{{$tAlias.UpSingular}}ModSlice {
+			conflictMods: func(ctx context.Context, t *testing.T, exec bob.Executor, obj *{{$.ModelType $table.Key}}) factory.{{$tAlias.UpSingular}}ModSlice {
         shouldUpdate := false
         updateMods := make(factory.{{$tAlias.UpSingular}}ModSlice, 0, {{len $index.Columns}})
 
