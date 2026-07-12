@@ -65,7 +65,7 @@ func (p fakePreparer) QueryContext(ctx context.Context, query string, args ...an
 }
 
 func (p fakePreparer) PrepareContext(ctx context.Context, query string) (fakeStmt, error) {
-	return fakeStmt{rows: p.rows}, nil
+	return fakeStmt(p), nil
 }
 
 type testStmtQuery struct{}
