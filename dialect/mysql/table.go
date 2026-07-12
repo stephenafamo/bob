@@ -27,12 +27,14 @@ import (
 type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 
 func NewTable[T any, Tset setter[T], C bob.Expression](tableName string, columns C, uniques ...[]string) *Table[T, []T, Tset, C] {
-	return NewTablex[T, []T, Tset](tableName, columns, uniques...)
+	return NewTablex[T, []T, Tset](tableName, columns, nil, uniques...)
 }
 
-func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](tableName string, columns C, uniques ...[]string) *Table[T, Tslice, Tset, C] {
+// NewTablex creates a new Table with a custom scanner.
+// If scanner is nil, it falls back to [scan.StructMapper].
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](tableName string, columns C, scanner scan.Mapper[T], uniques ...[]string) *Table[T, Tslice, Tset, C] {
 	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
-	view, mappings := newView[T, Tslice](tableName, columns)
+	view, mappings := newView[T, Tslice](tableName, columns, scanner)
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
 		pkCols:           expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
