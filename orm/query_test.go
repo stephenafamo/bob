@@ -161,3 +161,21 @@ func TestModQueryWithPreservesScanner(t *testing.T) {
 		t.Fatal("With() did not preserve the original scanner")
 	}
 }
+
+func TestQueryClonePreservesScanner(t *testing.T) {
+	scannerCalled := false
+	scanner := func(context.Context, []string) (func(*scan.Row) (any, error), func(any) (int, error)) {
+		scannerCalled = true
+		return nil, nil
+	}
+
+	cloned := newModQuery(scanner).Query.Clone()
+	if cloned.Scanner == nil {
+		t.Fatal("Clone() dropped the scanner")
+	}
+
+	cloned.Scanner(context.Background(), nil)
+	if !scannerCalled {
+		t.Fatal("Clone() did not preserve the original scanner")
+	}
+}

@@ -56,6 +56,7 @@ type Query[Q bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
 func (q Query[Q, T, Ts, Tr]) Clone() Query[Q, T, Ts, Tr] {
 	return Query[Q, T, Ts, Tr]{
 		ExecQuery: q.ExecQuery.Clone(),
+		Scanner:   q.Scanner,
 	}
 }
 
