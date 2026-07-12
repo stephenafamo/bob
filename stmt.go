@@ -155,6 +155,9 @@ func (s QueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
 	}
 
 	t, err = scan.OneFromRows(ctx, s.mapper, rows)
+	if closeErr := rows.Close(); err == nil {
+		err = closeErr
+	}
 	if err != nil {
 		return t, err
 	}
@@ -182,6 +185,9 @@ func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
 	}
 
 	rawSlice, err := scan.AllFromRows(ctx, s.mapper, rows)
+	if closeErr := rows.Close(); err == nil {
+		err = closeErr
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -243,5 +249,11 @@ func (s QueryStmt[Arg, T, Ts]) Cursor(ctx context.Context, arg Arg) (scan.ICurso
 		}
 	})
 
-	return scan.CursorFromRows(ctx, m2, rows)
+	c, err := scan.CursorFromRows(ctx, m2, rows)
+	if err != nil {
+		rows.Close()
+		return nil, err
+	}
+
+	return c, nil
 }
