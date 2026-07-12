@@ -106,8 +106,20 @@ func TestSomeViewExistsUsesExistsExpression(t *testing.T) {
 		t.Fatal("expected matching row to exist")
 	}
 	got := query.String()
-	if !strings.Contains(got, "EXISTS ((") || !strings.Contains(got, "WITH") || strings.Contains(got, "count(1)") {
-		t.Fatalf("expected EXISTS query, got:\n%s", got)
+	existsAt := strings.Index(got, "EXISTS ((")
+	withAt := strings.Index(got, "WITH")
+	switch {
+	case existsAt < 0:
+		t.Fatalf("expected an EXISTS subquery, got:\n%s", got)
+	case withAt < 0:
+		t.Fatalf("expected the CTE WITH clause to be preserved, got:\n%s", got)
+	case withAt < existsAt:
+		// A WITH hoisted ahead of EXISTS would change semantics for
+		// data-modifying CTEs; keeping it inside the subquery is the property
+		// the EXISTS optimization relies on for CTE-backed views.
+		t.Fatalf("expected the WITH clause to stay inside the EXISTS subquery, got:\n%s", got)
+	case strings.Contains(got, "count(1)"):
+		t.Fatalf("expected an EXISTS probe rather than count(1), got:\n%s", got)
 	}
 }
 
