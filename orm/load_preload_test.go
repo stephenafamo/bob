@@ -16,13 +16,35 @@ import (
 )
 
 type testPreloadChild struct {
-	ID   int64            `db:"id"`
-	Name sql.Null[string] `db:"name"`
+	ID     int64                  `db:"id"`
+	Name   sql.Null[string]       `db:"name"`
+	GChild *testPreloadGrandChild `db:"-"`
 }
 
 func (c *testPreloadChild) Preload(name string, rel any) error {
-	return fmt.Errorf("child has no relationship %q", name)
+	if name != "GChild" {
+		return fmt.Errorf("child has no relationship %q", name)
+	}
+
+	gchild, ok := rel.(*testPreloadGrandChild)
+	if !ok {
+		return fmt.Errorf("cannot load %T as %q", rel, name)
+	}
+
+	c.GChild = gchild
+	return nil
 }
+
+type testPreloadGrandChild struct {
+	ID  int64            `db:"id"`
+	Tag sql.Null[string] `db:"tag"`
+}
+
+func (g *testPreloadGrandChild) Preload(name string, rel any) error {
+	return fmt.Errorf("grandchild has no relationship %q", name)
+}
+
+type testPreloadGrandChildSlice []*testPreloadGrandChild
 
 type testPreloadChildSlice []*testPreloadChild
 
@@ -143,7 +165,14 @@ func (r *testRows) Scan(dest ...any) error {
 // buildTestPreloadScanner builds the full row scanner the way bob does for a
 // preloading query: the parent's base mapper extended with the preloader's
 // mapper mod. The child join is aliased "c" so column names are predictable.
-func buildTestPreloadScanner(mapper PreloadMapper[*testPreloadChild]) scan.Mapper[*testPreloadParent] {
+func buildTestPreloadScanner(mapper PreloadMapper[*testPreloadChild], opts ...PreloadOption[testPreloadQuery]) scan.Mapper[*testPreloadParent] {
+	scanner, _ := buildTestPreloadScannerLoaders(mapper, opts...)
+	return scanner
+}
+
+// buildTestPreloadScannerLoaders also returns the preloader's extra loaders:
+// index 0 is the child's *AfterPreloader, then any nested preloaders' loaders.
+func buildTestPreloadScannerLoaders(mapper PreloadMapper[*testPreloadChild], opts ...PreloadOption[testPreloadQuery]) (scan.Mapper[*testPreloadParent], []bob.Loader) {
 	rel := PreloadRel[bob.Expression]{
 		Name: "Child",
 		Sides: []PreloadSide[bob.Expression]{{
@@ -155,17 +184,18 @@ func buildTestPreloadScanner(mapper PreloadMapper[*testPreloadChild]) scan.Mappe
 	}
 
 	loader := Preload[*testPreloadChild, testPreloadChildSlice](
-		rel, []string{"id", "name"}, mapper, PreloadAs[testPreloadQuery]("c"),
+		rel, []string{"id", "name"}, mapper,
+		append([]PreloadOption[testPreloadQuery]{PreloadAs[testPreloadQuery]("c")}, opts...)...,
 	)
-	_, mapperMod, _ := loader("")
+	_, mapperMod, loaders := loader("")
 
-	return scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod)
+	return scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod), loaders
 }
 
-func runTestPreload(t *testing.T, mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any) []*testPreloadParent {
+func runTestPreload(t *testing.T, mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any, opts ...PreloadOption[testPreloadQuery]) []*testPreloadParent {
 	t.Helper()
 
-	full := buildTestPreloadScanner(mapper)
+	full := buildTestPreloadScanner(mapper, opts...)
 	res, err := scan.AllFromRows(context.Background(), full, &testRows{cols: cols, rows: rows})
 	if err != nil {
 		t.Fatalf("scanning: %v", err)
@@ -245,8 +275,8 @@ func BenchmarkPreloadMapper(b *testing.B) {
 	}
 }
 
-func benchPreload(mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any) func(*testing.B) {
-	full := buildTestPreloadScanner(mapper)
+func benchPreload(mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any, opts ...PreloadOption[testPreloadQuery]) func(*testing.B) {
+	full := buildTestPreloadScanner(mapper, opts...)
 
 	return func(b *testing.B) {
 		b.ReportAllocs()

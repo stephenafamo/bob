@@ -36,6 +36,12 @@ func PreloadAs(alias string) PreloadOption {
 	return orm.PreloadAs[*dialect.SelectQuery](alias)
 }
 
+// PreloadDedup shares one related-struct instance between parent rows with
+// the same join key. See [orm.PreloadDedup].
+func PreloadDedup() PreloadOption {
+	return orm.PreloadDedup[*dialect.SelectQuery]{}
+}
+
 func Preload[T orm.Preloadable, Ts ~[]T](rel orm.PreloadRel[Expression], cols []string, mapper orm.PreloadMapper[T], opts ...PreloadOption) Preloader {
 	return orm.Preload[T, Ts](rel, cols, mapper, opts...)
 }

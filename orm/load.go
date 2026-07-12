@@ -1,16 +1,21 @@
 package orm
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
+	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/aarondl/opt"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/scan"
 )
@@ -55,6 +60,7 @@ type PreloadSettings[Q Loadable] struct {
 	ExtraLoader *AfterPreloader
 	Mods        [][]preloadfilter
 	Alias       string
+	Dedup       bool
 }
 
 type PreloadOption[Q Loadable] interface {
@@ -81,6 +87,14 @@ func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
 		el.Columns = internal.Except(el.Columns, e...)
 	}
+}
+
+// PreloadDedup shares one related-struct instance between all parent rows with
+// the same join key (like ThenLoad); avoid it if structs are mutated per parent.
+type PreloadDedup[Q Loadable] struct{}
+
+func (PreloadDedup[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
+	el.Dedup = true
 }
 
 type PreloadWhere[Q Loadable] []preloadfilter
@@ -237,6 +251,12 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		o.ModifyPreloadSettings(&settings)
 	}
 
+	// the join columns on the preloaded table, identifying the related row (Dedup only)
+	var keyColumns []string
+	if len(rel.Sides) > 0 {
+		keyColumns = rel.Sides[len(rel.Sides)-1].ToColumns
+	}
+
 	return buildPreloader[T](func(parent string) (string, mods.QueryMods[Q]) {
 		if parent == "" {
 			parent = rel.Sides[0].From.Alias()
@@ -297,10 +317,10 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			expr.NewColumnsExpr(settings.Columns...).WithParent(alias).WithPrefix(alias + "."),
 		})
 		return alias, queryMods
-	}, rel.Name, mapper, settings)
+	}, rel.Name, keyColumns, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
+func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
 	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(parent)
 		prefix := alias + "."
@@ -324,6 +344,8 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 		}
 
 		return queryMods, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+			usingStructMapper := mapper == nil
+
 			var childMapper scan.Mapper[T]
 			if mapper != nil {
 				childMapper = mapper(prefix)
@@ -340,7 +362,7 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 			}
 			before, after := childMapper(ctx, cols)
 
-			return before, func(link, retrieved any) error {
+			legacy := func(link, retrieved any) error {
 				loader, isLoader := retrieved.(Preloadable)
 				if !isLoader {
 					return fmt.Errorf("object %T cannot pre load", retrieved)
@@ -357,8 +379,356 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 
 				return loader.Preload(name, t)
 			}
+
+			if !opt.Dedup {
+				return before, legacy
+			}
+
+			// per-execution state: scan runs this generator once per execution; no locking needed
+			if usingStructMapper {
+				if keyFromLink := preloadKeyFromLink[T](prefix, keyColumns, cols); keyFromLink != nil {
+					return before, preloadDedupByLink(name, keyFromLink, after, legacy, opt.ExtraLoader)
+				}
+			} else if keyFromValue := preloadKeyFromValue[T](prefix, keyColumns, cols); keyFromValue != nil {
+				return before, preloadDedupByValue(name, keyFromValue, after, legacy, opt.ExtraLoader)
+			}
+
+			// key not resolvable (e.g. dropped by PreloadOnly/PreloadExcept): keep the safe per-row path
+			return before, legacy
 		}, extraLoaders
 	}
+}
+
+// dedup turns itself off after this many distinct keys with zero hits
+const preloadDedupColdLimit = 1024
+
+// preloadDedupCache is per-execution: a last-key fast path over a key->instance map
+type preloadDedupCache[T any] struct {
+	cache    map[string]T
+	scratch  []byte
+	lastKey  []byte
+	lastVal  T
+	haveLast bool
+	everHit  bool
+	off      bool
+}
+
+func newPreloadDedupCache[T any]() *preloadDedupCache[T] {
+	return &preloadDedupCache[T]{cache: make(map[string]T)}
+}
+
+// fast path first: consecutive rows usually share the same key
+func (c *preloadDedupCache[T]) lookup(key []byte) (T, bool) {
+	if c.haveLast && bytes.Equal(key, c.lastKey) {
+		c.everHit = true
+		return c.lastVal, true
+	}
+	// string(key) in a map index does not allocate
+	if t, hit := c.cache[string(key)]; hit {
+		c.everHit = true
+		c.lastKey = append(c.lastKey[:0], key...)
+		c.lastVal = t
+		c.haveLast = true
+		return t, true
+	}
+	var zero T
+	return zero, false
+}
+
+func (c *preloadDedupCache[T]) store(key []byte, t T) {
+	c.cache[string(key)] = t
+
+	// safety valve: no hit within the first preloadDedupColdLimit distinct keys
+	// means the workload has no duplication — stop caching for this execution
+	if !c.everHit && len(c.cache) >= preloadDedupColdLimit {
+		*c = preloadDedupCache[T]{off: true}
+		return
+	}
+
+	c.lastKey = append(c.lastKey[:0], key...)
+	c.lastVal = t
+	c.haveLast = true
+}
+
+// preloadDedupByLink keys before construction (reflection mapper): a duplicate
+// row skips after(link) and with it any nested AfterMods/Collects — the cached
+// instance already carries that data.
+func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+	c := newPreloadDedupCache[T]()
+
+	return func(link, retrieved any) error {
+		if c.off {
+			return legacy(link, retrieved)
+		}
+
+		loader, isLoader := retrieved.(Preloadable)
+		if !isLoader {
+			return fmt.Errorf("object %T cannot pre load", retrieved)
+		}
+
+		var ok bool
+		c.scratch, ok = keyFromLink(c.scratch[:0], link)
+		if !ok {
+			// NULL join key = unmatched LEFT JOIN row: keep the legacy path, never cache
+			return legacy(link, retrieved)
+		}
+
+		if t, hit := c.lookup(c.scratch); hit {
+			return loader.Preload(name, t)
+		}
+
+		t, err := after(link)
+		if err != nil {
+			return err
+		}
+
+		c.store(c.scratch, t)
+
+		if err = collector.Collect(t); err != nil {
+			return err
+		}
+
+		return loader.Preload(name, t)
+	}
+}
+
+// preloadDedupByValue keys after construction: a typed mapper's link is opaque,
+// so the key is read from the built value; construction still runs per row.
+func preloadDedupByValue[T any](name string, keyFromValue func([]byte, T) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+	c := newPreloadDedupCache[T]()
+
+	return func(link, retrieved any) error {
+		if c.off {
+			return legacy(link, retrieved)
+		}
+
+		loader, isLoader := retrieved.(Preloadable)
+		if !isLoader {
+			return fmt.Errorf("object %T cannot pre load", retrieved)
+		}
+
+		t, err := after(link)
+		if err != nil {
+			return err
+		}
+
+		var ok bool
+		c.scratch, ok = keyFromValue(c.scratch[:0], t)
+		if !ok {
+			// unmatched LEFT JOIN row: keep the legacy behavior, never cache
+			if err = collector.Collect(t); err != nil {
+				return err
+			}
+			return loader.Preload(name, t)
+		}
+
+		if cached, hit := c.lookup(c.scratch); hit {
+			return loader.Preload(name, cached)
+		}
+
+		c.store(c.scratch, t)
+
+		if err = collector.Collect(t); err != nil {
+			return err
+		}
+
+		return loader.Preload(name, t)
+	}
+}
+
+func preloadKeyColumnsSelected(prefix string, keyColumns, cols []string) bool {
+	if len(keyColumns) == 0 {
+		return false
+	}
+
+	for _, key := range keyColumns {
+		if !slices.Contains(cols, prefix+key) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// preloadKeyFromLink builds the pre-construction join-key extractor for the
+// reflection-based StructMapper; returns nil if the key cannot be resolved.
+func preloadKeyFromLink[T any](prefix string, keyColumns, cols []string) func([]byte, any) ([]byte, bool) {
+	if !preloadKeyColumnsSelected(prefix, keyColumns, cols) {
+		return nil
+	}
+
+	structCols, err := scan.StructMapperColumns[T]()
+	if err != nil {
+		return nil
+	}
+
+	mappable := make(map[string]struct{}, len(structCols))
+	for _, c := range structCols {
+		mappable[c] = struct{}{}
+	}
+
+	keyIdx := make([]int, len(keyColumns))
+	for i := range keyIdx {
+		keyIdx[i] = -1
+	}
+
+	linkLen := 0
+	for _, col := range cols {
+		name, hasPrefix := strings.CutPrefix(col, prefix)
+		if !hasPrefix {
+			continue
+		}
+		if _, ok := mappable[name]; !ok {
+			continue
+		}
+		for i, key := range keyColumns {
+			if name == key {
+				keyIdx[i] = linkLen
+			}
+		}
+		linkLen++
+	}
+
+	for _, idx := range keyIdx {
+		if idx < 0 {
+			return nil
+		}
+	}
+
+	composite := len(keyIdx) > 1
+
+	return func(dst []byte, link any) ([]byte, bool) {
+		vals, ok := link.([]reflect.Value)
+		if !ok || len(vals) != linkLen {
+			return dst, false
+		}
+
+		for _, idx := range keyIdx {
+			w, ok := vals[idx].Interface().(*wrapper)
+			if !ok || w.IsNull {
+				return dst, false
+			}
+			dst = appendPreloadKeyPointer(dst, w.V, composite)
+		}
+
+		return dst, true
+	}
+}
+
+// preloadKeyFromValue builds the post-construction join-key extractor for a
+// typed PreloadMapper (T must be *struct); returns nil if the key is unresolvable.
+func preloadKeyFromValue[T any](prefix string, keyColumns, cols []string) func([]byte, T) ([]byte, bool) {
+	if !preloadKeyColumnsSelected(prefix, keyColumns, cols) {
+		return nil
+	}
+
+	typ := reflect.TypeFor[T]()
+	if typ.Kind() != reflect.Pointer || typ.Elem().Kind() != reflect.Struct {
+		return nil
+	}
+
+	fieldNames := mappings.GetMappings(typ).All
+
+	keyIdx := make([]int, 0, len(keyColumns))
+	for _, key := range keyColumns {
+		idx := -1
+		for i, name := range fieldNames {
+			if name == key {
+				idx = i
+				break
+			}
+		}
+		if idx < 0 {
+			return nil
+		}
+		keyIdx = append(keyIdx, idx)
+	}
+
+	composite := len(keyIdx) > 1
+
+	return func(dst []byte, t T) ([]byte, bool) {
+		rv := reflect.ValueOf(t)
+		if !rv.IsValid() || rv.IsNil() {
+			return dst, false
+		}
+
+		rv = rv.Elem()
+		for _, idx := range keyIdx {
+			dst = appendPreloadKeyValue(dst, rv.Field(idx), composite)
+		}
+
+		return dst, true
+	}
+}
+
+// appendPreloadKeyValue appends an unambiguous encoding of one key column:
+// composite-key parts are length-suffixed so parts cannot bleed into each other.
+func appendPreloadKeyValue(dst []byte, v reflect.Value, composite bool) []byte {
+	start := len(dst)
+
+	switch v.Kind() {
+	case reflect.String:
+		dst = append(dst, v.String()...)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		dst = strconv.AppendInt(dst, v.Int(), 10)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		dst = strconv.AppendUint(dst, v.Uint(), 10)
+	case reflect.Bool:
+		dst = strconv.AppendBool(dst, v.Bool())
+	default:
+		if v.Kind() == reflect.Slice && v.Type().Elem().Kind() == reflect.Uint8 {
+			dst = append(dst, v.Bytes()...)
+			break
+		}
+		dst = fmt.Appendf(dst, "%v", v.Interface())
+	}
+
+	return appendPreloadKeyLen(dst, start, composite)
+}
+
+// appendPreloadKeyPointer is appendPreloadKeyValue for a scan destination like wrapper.V
+func appendPreloadKeyPointer(dst []byte, p any, composite bool) []byte {
+	start := len(dst)
+
+	switch x := p.(type) {
+	case *string:
+		dst = append(dst, *x...)
+	case *[]byte:
+		dst = append(dst, *x...)
+	case *int:
+		dst = strconv.AppendInt(dst, int64(*x), 10)
+	case *int32:
+		dst = strconv.AppendInt(dst, int64(*x), 10)
+	case *int64:
+		dst = strconv.AppendInt(dst, *x, 10)
+	case *uint32:
+		dst = strconv.AppendUint(dst, uint64(*x), 10)
+	case *uint64:
+		dst = strconv.AppendUint(dst, *x, 10)
+	case *bool:
+		dst = strconv.AppendBool(dst, *x)
+	default:
+		rv := reflect.ValueOf(p)
+		if rv.Kind() == reflect.Pointer && !rv.IsNil() {
+			return appendPreloadKeyValue(dst, rv.Elem(), composite)
+		}
+		dst = fmt.Appendf(dst, "%v", p)
+	}
+
+	return appendPreloadKeyLen(dst, start, composite)
+}
+
+func appendPreloadKeyLen(dst []byte, start int, composite bool) []byte {
+	if !composite {
+		return dst
+	}
+
+	partLen := len(dst) - start
+	dst = append(dst, 0x00)
+	dst = strconv.AppendInt(dst, int64(partLen), 10)
+	dst = append(dst, 0x1f)
+
+	return dst
 }
 
 // the row is valid if at least one column is not null
