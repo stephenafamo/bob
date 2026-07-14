@@ -14,6 +14,9 @@ type {{$tAlias.DownSingular}}Where[Q {{$.Dialect}}.Filterable] struct {
 			{{$colAlias}} {{$.Dialect}}.WhereMod[Q, {{$colTyp}}]
 		{{- end}}
   {{end -}}
+  {{if $.Relationships.Get $table.Key -}}
+	R {{$tAlias.DownSingular}}WhereR[Q]
+  {{end -}}
 }
 
 func ({{$tAlias.DownSingular}}Where[Q]) AliasedAs(alias string) {{$tAlias.DownSingular}}Where[Q] {
@@ -32,15 +35,28 @@ func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias
 					{{$colAlias}}: {{$.Dialect}}.Where[Q, {{$colTyp}}](cols.{{$colAlias}}.Expression),
 				{{- end}}
 			{{end -}}
+			{{if $.Relationships.Get $table.Key -}}
+			R: {{$tAlias.DownSingular}}WhereR[Q]{cols: cols},
+			{{end -}}
 	}
 }
+
+{{if $.Relationships.Get $table.Key -}}
+// {{$tAlias.DownSingular}}WhereR holds the relationship-based filters of
+// {{$tAlias.DownSingular}}Where under the R namespace — mirroring the model's
+// R struct — so they cannot collide with column-based filter fields.
+type {{$tAlias.DownSingular}}WhereR[Q {{$.Dialect}}.Filterable] struct {
+	cols {{$tAlias.DownSingular}}Columns
+}
+{{end -}}
 
 {{/* EXISTS semi-join filter helpers.
      Stage 1: to-one relationships.
      Stage 2: has-many relationships. Both are single-side; the FK direction is
        absorbed by FromColumns/ToColumns so the same code path serves both.
-     Generates Has{Rel}(filters...) that adds a correlated EXISTS subquery
-     instead of an INNER JOIN, so the parent rows are not multiplied.
+     Generates R.Has{Rel}(filters...) that adds a correlated EXISTS subquery
+     instead of an INNER JOIN, so the parent rows are not multiplied. The
+     methods live on the R sub-struct so they cannot collide with column names.
      Self-referential relations (foreign table == parent table) alias the
      subquery table so the correlation still targets the parent row. */}}
 {{range $rel := $.Relationships.Get $table.Key -}}
@@ -61,7 +77,7 @@ func build{{$tAlias.UpSingular}}Where[Q {{$.Dialect}}.Filterable](cols {{$tAlias
 // correlated EXISTS subquery (semi-join). Unlike an INNER JOIN it does not
 // multiply parent rows, so no DISTINCT is needed. The optional filters are
 // applied to the subquery (i.e. to {{$to.UpPlural}}).
-func (w {{$tAlias.DownSingular}}Where[Q]) Has{{$relAlias}}(filters ...bob.Mod[*dialect.SelectQuery]) mods.Where[Q] {
+func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*dialect.SelectQuery]) mods.Where[Q] {
 	{{if $selfRef -}}
 	// self-referential relation: alias the subquery table so the correlation
 	// columns still reference the parent row rather than the subquery's own row.
@@ -117,7 +133,7 @@ func (w {{$tAlias.DownSingular}}Where[Q]) Has{{$relAlias}}(filters ...bob.Mod[*d
 // many-to-many relationship) using a correlated EXISTS subquery instead of
 // INNER JOINs, so the parent rows are not multiplied. The optional filters are
 // applied to the subquery (i.e. to {{$lastTo.UpPlural}}).
-func (w {{$tAlias.DownSingular}}Where[Q]) Has{{$relAlias}}(filters ...bob.Mod[*dialect.SelectQuery]) mods.Where[Q] {
+func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*dialect.SelectQuery]) mods.Where[Q] {
 	{{range $index, $side := $rel.Sides -}}
 	{{- if and (ne $index 0) (eq $side.To $table.Key) -}}
 	{{- $sTo := $.Aliases.Table $side.To -}}
