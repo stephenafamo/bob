@@ -85,8 +85,8 @@ func testPreloadChildMapper(prefix string) scan.Mapper[*testPreloadChild] {
 			}
 		}
 
+		buf := new(childBuf)
 		return func(row *scan.Row) (any, error) {
-				buf := new(childBuf)
 				for _, t := range targets {
 					row.ScheduleScanByIndex(t.idx, t.dst(buf))
 				}
@@ -226,6 +226,39 @@ func TestPreloadMapperParity(t *testing.T) {
 			}
 			if !reflect.DeepEqual(byReflection, typed) {
 				t.Errorf("mappers disagree: reflection %s, typed %s", printTestParents(byReflection), printTestParents(typed))
+			}
+		})
+	}
+}
+
+// BenchmarkAfterPreloader isolates the AfterPreloader collect/load path: N
+// per-row Collect calls followed by one Load that assembles the collected
+// objects for the sub-loaders. A no-op sub-loader is appended so Collect and
+// Load do not short-circuit on an empty func list.
+func BenchmarkAfterPreloader(b *testing.B) {
+	children := make([]*testPreloadChild, 10000)
+	for i := range children {
+		children[i] = &testPreloadChild{
+			ID:   int64(i),
+			Name: sql.Null[string]{V: fmt.Sprintf("name-%d", i), Valid: true},
+		}
+	}
+	noop := bob.LoaderFunc(func(context.Context, bob.Executor, any) error { return nil })
+
+	for _, n := range []int{100, 1000, 10000} {
+		b.Run(fmt.Sprintf("%d", n), func(b *testing.B) {
+			b.ReportAllocs()
+			for range b.N {
+				ap := NewAfterPreloader[*testPreloadChild, testPreloadChildSlice]()
+				ap.AppendLoader(noop)
+				for _, c := range children[:n] {
+					if err := ap.Collect(c); err != nil {
+						b.Fatal(err)
+					}
+				}
+				if err := ap.Load(context.Background(), nil, nil); err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 	}
