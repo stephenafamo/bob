@@ -60,7 +60,6 @@ type PreloadSettings[Q Loadable] struct {
 	ExtraLoader *AfterPreloader
 	Mods        [][]preloadfilter
 	Alias       string
-	Dedup       bool
 }
 
 type PreloadOption[Q Loadable] interface {
@@ -87,14 +86,6 @@ func (e PreloadExcept[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	if len(e) > 0 {
 		el.Columns = internal.Except(el.Columns, e...)
 	}
-}
-
-// PreloadDedup shares one related-struct instance between all parent rows with
-// the same join key (like ThenLoad); avoid it if structs are mutated per parent.
-type PreloadDedup[Q Loadable] struct{}
-
-func (PreloadDedup[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
-	el.Dedup = true
 }
 
 type PreloadWhere[Q Loadable] []preloadfilter
@@ -242,6 +233,10 @@ type PreloadMapper[T any] func(prefix string) scan.Mapper[T]
 // Preload builds a query mod to preload a relationship in the same query.
 // If mapper is nil, it falls back to a reflection-based [scan.StructMapper]
 // for the child columns.
+//
+// Related rows with the same join key are shared as a single instance across
+// parent rows (the same semantics as ThenLoad), so preloaded structs should be
+// treated as read-only.
 func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel PreloadRel[E], cols []string, mapper PreloadMapper[T], opts ...PreloadOption[Q]) Preloader[Q] {
 	settings := NewPreloadSettings[T, Ts, Q](cols)
 	for _, o := range opts {
@@ -251,7 +246,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		o.ModifyPreloadSettings(&settings)
 	}
 
-	// the join columns on the preloaded table, identifying the related row (Dedup only)
+	// the join columns on the preloaded table, identifying the related row for dedup
 	var keyColumns []string
 	if len(rel.Sides) > 0 {
 		keyColumns = rel.Sides[len(rel.Sides)-1].ToColumns
@@ -378,10 +373,6 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 				}
 
 				return loader.Preload(name, t)
-			}
-
-			if !opt.Dedup {
-				return before, legacy
 			}
 
 			// per-execution state: scan runs this generator once per execution; no locking needed

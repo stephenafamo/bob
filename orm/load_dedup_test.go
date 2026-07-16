@@ -160,47 +160,23 @@ func TestPreloadDedupSharesInstance(t *testing.T) {
 
 	for _, m := range testDedupMappers {
 		t.Run(m.name, func(t *testing.T) {
-			t.Run("enabled", func(t *testing.T) {
-				scanner, loaders := buildTestPreloadScannerLoaders(
-					m.mapper, PreloadDedup[testPreloadQuery]{}, testCollectLoader(),
-				)
-				res := scanTestPreloadRows(t, scanner, cols, rows)
+			scanner, loaders := buildTestPreloadScannerLoaders(m.mapper, testCollectLoader())
+			res := scanTestPreloadRows(t, scanner, cols, rows)
 
-				if len(res) != 3 {
-					t.Fatalf("got %d parents, want 3", len(res))
+			if len(res) != 3 {
+				t.Fatalf("got %d parents, want 3", len(res))
+			}
+			if res[0].Child == nil || res[0].Child.ID != 10 || res[0].Child.Name.V != "x" {
+				t.Fatalf("unexpected child: %+v", res[0].Child)
+			}
+			for i, p := range res {
+				if p.Child != res[0].Child {
+					t.Errorf("parent %d does not share the child instance", i)
 				}
-				if res[0].Child == nil || res[0].Child.ID != 10 || res[0].Child.Name.V != "x" {
-					t.Fatalf("unexpected child: %+v", res[0].Child)
-				}
-				for i, p := range res {
-					if p.Child != res[0].Child {
-						t.Errorf("parent %d does not share the child instance", i)
-					}
-				}
-				if got := len(testCollected(t, loaders[0])); got != 1 {
-					t.Errorf("collected %d children, want 1", got)
-				}
-			})
-
-			t.Run("disabled by default", func(t *testing.T) {
-				scanner, loaders := buildTestPreloadScannerLoaders(m.mapper, testCollectLoader())
-				res := scanTestPreloadRows(t, scanner, cols, rows)
-
-				if len(res) != 3 {
-					t.Fatalf("got %d parents, want 3", len(res))
-				}
-				for i := 1; i < len(res); i++ {
-					if res[i].Child == res[0].Child {
-						t.Errorf("parent %d shares the child instance without PreloadDedup", i)
-					}
-					if res[i].Child == nil || res[i].Child.ID != 10 {
-						t.Errorf("parent %d has unexpected child: %+v", i, res[i].Child)
-					}
-				}
-				if got := len(testCollected(t, loaders[0])); got != 3 {
-					t.Errorf("collected %d children, want 3", got)
-				}
-			})
+			}
+			if got := len(testCollected(t, loaders[0])); got != 1 {
+				t.Errorf("collected %d children, want 1", got)
+			}
 		})
 	}
 }
@@ -218,9 +194,7 @@ func TestPreloadDedupNonConsecutiveKeys(t *testing.T) {
 
 	for _, m := range testDedupMappers {
 		t.Run(m.name, func(t *testing.T) {
-			scanner, loaders := buildTestPreloadScannerLoaders(
-				m.mapper, PreloadDedup[testPreloadQuery]{}, testCollectLoader(),
-			)
+			scanner, loaders := buildTestPreloadScannerLoaders(m.mapper, testCollectLoader())
 			res := scanTestPreloadRows(t, scanner, cols, rows)
 
 			if res[0].Child == nil || res[0].Child.ID != 10 || res[2].Child == nil || res[2].Child.ID != 20 {
@@ -254,7 +228,6 @@ func TestPreloadDedupKeyColumnNotSelected(t *testing.T) {
 			scanner, loaders := buildTestPreloadScannerLoaders(
 				m.mapper,
 				PreloadOnly[testPreloadQuery]{"name"},
-				PreloadDedup[testPreloadQuery]{},
 				testCollectLoader(),
 			)
 			res := scanTestPreloadRows(t, scanner, cols, rows)
@@ -288,9 +261,7 @@ func TestPreloadDedupNullRows(t *testing.T) {
 
 	for _, m := range testDedupMappers {
 		t.Run(m.name, func(t *testing.T) {
-			scanner, loaders := buildTestPreloadScannerLoaders(
-				m.mapper, PreloadDedup[testPreloadQuery]{}, testCollectLoader(),
-			)
+			scanner, loaders := buildTestPreloadScannerLoaders(m.mapper, testCollectLoader())
 			res := scanTestPreloadRows(t, scanner, cols, rows)
 
 			if res[1].Child != nil {
@@ -311,7 +282,7 @@ func TestPreloadDedupNullRows(t *testing.T) {
 }
 
 // The safety valve: preloadDedupColdLimit distinct keys without a single hit
-// turn dedup off; the remaining rows get fresh instances (default behavior).
+// turn dedup off; the remaining rows get fresh per-row instances.
 func TestPreloadDedupAutoOff(t *testing.T) {
 	cols := []string{"id", "c.id", "c.name"}
 
@@ -328,7 +299,7 @@ func TestPreloadDedupAutoOff(t *testing.T) {
 
 	for _, m := range testDedupMappers {
 		t.Run(m.name, func(t *testing.T) {
-			scanner, _ := buildTestPreloadScannerLoaders(m.mapper, PreloadDedup[testPreloadQuery]{})
+			scanner, _ := buildTestPreloadScannerLoaders(m.mapper)
 			res := scanTestPreloadRows(t, scanner, cols, rows)
 
 			last, prev := res[len(res)-1], res[len(res)-2]
@@ -362,7 +333,7 @@ func TestPreloadDedupAutoOffNotTriggeredAfterHit(t *testing.T) {
 
 	for _, m := range testDedupMappers {
 		t.Run(m.name, func(t *testing.T) {
-			scanner, _ := buildTestPreloadScannerLoaders(m.mapper, PreloadDedup[testPreloadQuery]{})
+			scanner, _ := buildTestPreloadScannerLoaders(m.mapper)
 			res := scanTestPreloadRows(t, scanner, cols, rows)
 
 			if res[1].Child != res[0].Child {
@@ -417,7 +388,7 @@ func TestPreloadDedupCompositeKey(t *testing.T) {
 		t.Run(m.name, func(t *testing.T) {
 			loader := Preload[*testPreloadChild, testPreloadChildSlice](
 				rel, []string{"id", "name"}, m.mapper,
-				PreloadAs[testPreloadQuery]("c"), PreloadDedup[testPreloadQuery]{},
+				PreloadAs[testPreloadQuery]("c"),
 			)
 			_, mapperMod, _ := loader("")
 			scanner := scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod)
@@ -438,7 +409,8 @@ func TestPreloadDedupCompositeKey(t *testing.T) {
 }
 
 // Nested preloads: the reflection path skips them on duplicate rows; the typed
-// path runs per row unless nested dedup is on. The tree must match the baseline.
+// path builds the child per row but the nested preloader dedups its own
+// collects. The tree must match the baseline.
 func TestPreloadDedupNested(t *testing.T) {
 	cols := []string{"id", "c.id", "c.name", "g.id", "g.tag"}
 	rows := [][]any{
@@ -451,28 +423,18 @@ func TestPreloadDedupNested(t *testing.T) {
 		name              string
 		child             PreloadMapper[*testPreloadChild]
 		gchild            PreloadMapper[*testPreloadGrandChild]
-		nestedDedup       bool
 		wantNestedCollect int
 	}{
-		// reflection: skipping duplicate child rows also skips the nested preloader
-		{"reflection", nil, nil, false, 1},
-		// typed: the child is built per row, so the nested preloader collects per row
-		{"typed", testPreloadChildMapper, testPreloadGrandChildMapper, false, 3},
-		{"typed nested dedup", testPreloadChildMapper, testPreloadGrandChildMapper, true, 1},
+		{"reflection", nil, nil, 1},
+		{"typed", testPreloadChildMapper, testPreloadGrandChildMapper, 1},
 	}
 
 	for _, v := range variants {
 		t.Run(v.name, func(t *testing.T) {
-			nestedOpts := []PreloadOption[testPreloadQuery]{testCollectLoader()}
-			if v.nestedDedup {
-				nestedOpts = append(nestedOpts, PreloadDedup[testPreloadQuery]{})
-			}
-
 			scanner, loaders := buildTestPreloadScannerLoaders(
 				v.child,
-				PreloadDedup[testPreloadQuery]{},
 				testCollectLoader(),
-				testNestedGChildPreloader(v.gchild, nestedOpts...),
+				testNestedGChildPreloader(v.gchild, testCollectLoader()),
 			)
 			res := scanTestPreloadRows(t, scanner, cols, rows)
 
@@ -529,10 +491,8 @@ func BenchmarkPreloadDedup(b *testing.B) {
 				rows[i] = []any{int64(i), int64(key), fmt.Sprintf("name-%d", key)}
 			}
 
-			b.Run(fmt.Sprintf("%s/%s/off", m.name, shape.name),
+			b.Run(fmt.Sprintf("%s/%s", m.name, shape.name),
 				benchPreload(m.mapper, cols, rows))
-			b.Run(fmt.Sprintf("%s/%s/on", m.name, shape.name),
-				benchPreload(m.mapper, cols, rows, PreloadDedup[testPreloadQuery]{}))
 		}
 	}
 }
