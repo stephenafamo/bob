@@ -27,7 +27,7 @@ func testCollectLoader() Loader[testPreloadQuery] {
 	return func(context.Context, bob.Executor, any) error { return nil }
 }
 
-func testCollected(t *testing.T, l bob.Loader) []any {
+func testCollectedCount(t *testing.T, l bob.Loader) int {
 	t.Helper()
 
 	after, ok := l.(*AfterPreloader)
@@ -35,7 +35,7 @@ func testCollected(t *testing.T, l bob.Loader) []any {
 		t.Fatalf("loader is %T, not *AfterPreloader", l)
 	}
 
-	return after.collected
+	return after.numCollected()
 }
 
 func scanTestPreloadRows(t *testing.T, scanner scan.Mapper[*testPreloadParent], cols []string, rows [][]any) []*testPreloadParent {
@@ -174,7 +174,7 @@ func TestPreloadDedupSharesInstance(t *testing.T) {
 					t.Errorf("parent %d does not share the child instance", i)
 				}
 			}
-			if got := len(testCollected(t, loaders[0])); got != 1 {
+			if got := testCollectedCount(t, loaders[0]); got != 1 {
 				t.Errorf("collected %d children, want 1", got)
 			}
 		})
@@ -209,7 +209,7 @@ func TestPreloadDedupNonConsecutiveKeys(t *testing.T) {
 			if res[0].Child == res[2].Child {
 				t.Error("different keys share the same child instance")
 			}
-			if got := len(testCollected(t, loaders[0])); got != 2 {
+			if got := testCollectedCount(t, loaders[0]); got != 2 {
 				t.Errorf("collected %d children, want 2", got)
 			}
 		})
@@ -243,7 +243,7 @@ func TestPreloadDedupKeyColumnNotSelected(t *testing.T) {
 			if res[0].Child == res[1].Child {
 				t.Error("children are shared even though the key column is not selected")
 			}
-			if got := len(testCollected(t, loaders[0])); got != 2 {
+			if got := testCollectedCount(t, loaders[0]); got != 2 {
 				t.Errorf("collected %d children, want 2", got)
 			}
 		})
@@ -274,7 +274,7 @@ func TestPreloadDedupNullRows(t *testing.T) {
 				t.Error("duplicate rows around a NULL row do not share the child instance")
 			}
 			// the NULL row still collects its zero value, so 2 = one real child + one nil
-			if got := len(testCollected(t, loaders[0])); got != 2 {
+			if got := testCollectedCount(t, loaders[0]); got != 2 {
 				t.Errorf("collected %d children, want 2", got)
 			}
 		})
@@ -453,10 +453,10 @@ func TestPreloadDedupNested(t *testing.T) {
 				t.Fatalf("unexpected grandchild: %+v", gchild)
 			}
 
-			if got := len(testCollected(t, loaders[0])); got != 1 {
+			if got := testCollectedCount(t, loaders[0]); got != 1 {
 				t.Errorf("collected %d children, want 1", got)
 			}
-			if got := len(testCollected(t, loaders[1])); got != v.wantNestedCollect {
+			if got := testCollectedCount(t, loaders[1]); got != v.wantNestedCollect {
 				t.Errorf("collected %d grandchildren, want %d", got, v.wantNestedCollect)
 			}
 		})
