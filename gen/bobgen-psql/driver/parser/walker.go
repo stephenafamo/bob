@@ -78,6 +78,7 @@ type queryResult struct {
 type walker struct {
 	db           tables
 	sharedSchema string
+	columnOrder  string
 	names        map[position]string
 	nullability  map[position]nullable
 	groups       map[argPos]struct{}

@@ -20,12 +20,13 @@ import (
 
 var returningWithClauseRegex = regexp.MustCompile(`(?is)\breturning\s+with\s*\(`)
 
-func New(db *sql.DB, t tables, sharedSchema string, translator *Translator) *Parser {
+func New(db *sql.DB, t tables, sharedSchema string, translator *Translator, columnOrder string) *Parser {
 	return &Parser{
 		conn:         db,
 		db:           t,
 		sharedSchema: sharedSchema,
 		translator:   translator,
+		columnOrder:  columnOrder,
 	}
 }
 
@@ -34,6 +35,7 @@ type Parser struct {
 	db           tables
 	sharedSchema string
 	translator   *Translator
+	columnOrder  string
 }
 
 func (p *Parser) ParseFolders(ctx context.Context, paths ...string) ([]drivers.QueryFolder, error) {
@@ -73,11 +75,6 @@ func (p *Parser) ParseQueries(ctx context.Context, s string) ([]drivers.Query, e
 }
 
 func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, error) {
-	argTypes, resTypes, err := p.getArgsAndCols(ctx, input)
-	if err != nil {
-		return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
-	}
-
 	scanResult, err := pgparse.Scan(input)
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("scan: %w", err)
@@ -95,6 +92,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	w := walker{
 		db:           p.db,
 		sharedSchema: p.sharedSchema,
+		columnOrder:  p.columnOrder,
 		input:        input,
 		tokens:       scanResult.GetTokens(),
 		mods:         &strings.Builder{},
@@ -139,17 +137,22 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, errors.Join(w.errors...)
 	}
 
+	formatted, err := w.formattedQuery()
+	if err != nil {
+		return drivers.Query{}, fmt.Errorf("format: %w", err)
+	}
+
+	argTypes, resTypes, err := p.getArgsAndCols(ctx, formatted)
+	if err != nil {
+		return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
+	}
+
 	if len(source.columns) != len(resTypes) {
 		return drivers.Query{}, fmt.Errorf("expected %d columns, got %d", len(resTypes), len(source.columns))
 	}
 
 	if len(w.args) != len(argTypes) {
 		return drivers.Query{}, fmt.Errorf("expected %d args, got %d", len(resTypes), len(source.columns))
-	}
-
-	formatted, err := w.formattedQuery()
-	if err != nil {
-		return drivers.Query{}, fmt.Errorf("format: %w", err)
 	}
 
 	comment, err := w.getQueryComment(info.start)

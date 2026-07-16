@@ -104,6 +104,8 @@ type TemplateData[T, C, I any] struct {
 	Tags []string
 	// RelationTag controls the value of the tags for the Relationship struct
 	RelationTag string
+	// RelationTagCount controls the value of the tag for the counts (C) struct field
+	RelationTagCount string
 	// RelationLoadedName is the resolved name of the nested struct on R that
 	// tracks whether each relationship has been loaded (default "Loaded").
 	RelationLoadedName string

@@ -25,6 +25,8 @@ type Config[ConstraintExtra any] struct {
 	StructTagCasing string `yaml:"struct_tag_casing"`
 	// Relationship struct tag name
 	RelationTag string `yaml:"relation_tag"`
+	// Counts struct tag name (for the C field added by the counts plugin)
+	RelationTagCount string `yaml:"relation_tag_count"`
 	// Name of the nested struct on R that tracks whether each relationship
 	// has been loaded. Must be an exported Go identifier. Defaults to "Loaded".
 	// The configured value is also used as the suffix of the underlying type
