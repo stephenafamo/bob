@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `NewViewx` and `NewTablex` in the `psql`, `mysql` and `sqlite` dialects now take a `scan.Mapper[T]` argument used for all queries built from the view/table. Pass `nil` to keep the previous reflection-based `scan.StructMapper` behaviour. `NewView`/`NewTable` are unchanged. (thanks @sandonemaki)
+- `Preload` now shares a single related-struct instance between all parent rows with the same join key, instead of building an identical instance per parent row — the same semantics as `ThenLoad`. The emitted SQL is unchanged; construction, nested loader collection and mapping now run once per distinct related row, which significantly reduces time, allocations and retained memory on high-duplication workloads. Preloaded structs should be treated as read-only: code that mutates a preloaded struct and relies on each parent having its own copy must copy the struct first. (thanks @sandonemaki)
 
 ### Fixed
 
