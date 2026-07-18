@@ -208,13 +208,6 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 	{{- $fromCol := index $firstFrom.Columns $local}}
 	PKArgExpr := {{$.Dialect}}.Any({{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"))
 	{{- else}}
-	PKArgExpr := {{$.Dialect}}.Select(sm.Columns(
-		{{- range $index, $local := $firstSide.FromColumns -}}
-		{{- $column := $.Table.GetColumn $local -}}
-		{{- $fromCol := index $firstFrom.Columns $local}}
-		{{$.Dialect}}.F("unnest", {{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
-		{{- end}}
-	))
 	{{- end}}
 	{{- end}}
 
@@ -286,6 +279,36 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		{{- else -}}
 		sm.Where({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.OP("IN", PKArgExpr)),
 		{{- end}}
+		{{- else if eq $.Dialect "psql" -}}
+		sm.InnerJoin({{$.Dialect}}.Select(
+			sm.Distinct(),
+			sm.Columns(
+				{{range $index, $local := $firstSide.FromColumns -}}
+				{{$toLocal := index $firstSide.ToColumns $index -}}
+				{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+				{{$.Dialect}}.Quote("bob_rel_keys_src", {{quote $firstToColAlias}}),
+				{{end -}}
+			),
+			sm.From({{$.Dialect}}.F("unnest",
+				{{range $index, $local := $firstSide.FromColumns -}}
+				{{$column := $.Table.GetColumn $local -}}
+				{{$fromCol := index $firstFrom.Columns $local -}}
+				{{$.Dialect}}.Cast({{$.Dialect}}.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"),
+				{{end -}}
+			)).As("bob_rel_keys_src"
+				{{- range $index, $local := $firstSide.FromColumns -}}
+				{{- $toLocal := index $firstSide.ToColumns $index -}}
+				{{- $firstToColAlias := index $firstTo.Columns $toLocal -}}
+				, {{quote $firstToColAlias}}
+				{{- end -}}
+			),
+		)).As("bob_rel_keys").On(
+			{{range $index, $local := $firstSide.FromColumns -}}
+			{{$toLocal := index $firstSide.ToColumns $index -}}
+			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
+			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.EQ({{$.Dialect}}.Quote("bob_rel_keys", {{quote $firstToColAlias}})),
+			{{end -}}
+		),
 		{{- else -}}
 		sm.Where({{$.Dialect}}.Group(
 			{{range $index, $local := $firstSide.FromColumns -}}
