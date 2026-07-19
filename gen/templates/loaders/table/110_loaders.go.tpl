@@ -382,18 +382,16 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	  return nil
 	}
 
-  // since we are changing the columns, we need to check if the original columns were set or add the defaults
-  sq := dialect.SelectQuery{}
-  for _, mod := range mods {
-   mod.Apply(&sq)
-  }
-
-	if len(sq.SelectList.Columns) == 0 {
-		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns))
-	}
-
 	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(
 		mods,
+		// since we are changing the columns, the defaults must be added if the
+		// original mods did not set any; this runs after the user mods and
+		// before the related_* columns below, so it sees exactly what they set
+		bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+			if len(q.SelectList.Columns) == 0 {
+				sm.Columns({{$fAlias.UpPlural}}.Columns).Apply(q)
+			}
+		}),
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
@@ -405,18 +403,38 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
     {{- $fromColAlias := index $firstFrom.Columns $local -}}
     {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
     {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
-    {{$fromColAlias}}Slice := []{{$fromTyp}}{}
+    {{$fromColAlias}}Slice := make([]{{$fromTyp}}, 0, len(os))
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
   mapper := scan.Mod(q.Scanner, func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any, any) error) {
+    // Resolve each joined key column name to its index once per query. The
+    // previous code scanned by name on every row, which meant a linear column
+    // search per row; the columns are added by this loader so they are always
+    // present, but an unselected column simply stays unresolved and is skipped.
+    {{range $index, $local := $firstSide.FromColumns -}}
+      {{- $fromColAlias := index $firstFrom.Columns $local -}}
+    {{$fromColAlias}}Idx := -1
+    {{end -}}
+    for i, col := range cols {
+      switch col {
+      {{range $index, $local := $firstSide.FromColumns -}}
+        {{- $fromColAlias := index $firstFrom.Columns $local -}}
+      case "related_{{$firstSide.From}}.{{$fromColAlias}}":
+        {{$fromColAlias}}Idx = i
+      {{end -}}
+      }
+    }
+
     return func(row *scan.Row) (any, error) {
       {{range $index, $local := $firstSide.FromColumns -}}
         {{- $fromColAlias := index $firstFrom.Columns $local -}}
         {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
         {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
         {{$fromColAlias}}Slice = append({{$fromColAlias}}Slice, *new({{$fromTyp}}))
-        row.ScheduleScanByName("related_{{$firstSide.From}}.{{$fromColAlias}}", &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+        if {{$fromColAlias}}Idx >= 0 {
+          row.ScheduleScanByIndex({{$fromColAlias}}Idx, &{{$fromColAlias}}Slice[len({{$fromColAlias}}Slice)-1])
+        }
       {{end}}
 
       return nil, nil
