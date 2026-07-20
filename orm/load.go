@@ -120,13 +120,29 @@ func (l Preloader[Q]) ModifyPreloadSettings(s *PreloadSettings[Q]) {
 	s.SubLoaders = append(s.SubLoaders, l)
 }
 
-// NewAfterPreloader returns a new AfterPreloader based on the given types
+// NewAfterPreloader returns a new AfterPreloader based on the given types.
+// The type parameters are captured in closures so that collecting and
+// assembling the loaded objects needs no reflection at load time.
 func NewAfterPreloader[T any, Ts ~[]T]() *AfterPreloader {
-	var one T
-	var slice Ts
+	var collected Ts
 	return &AfterPreloader{
-		oneType:   reflect.TypeOf(one),
-		sliceType: reflect.TypeOf(slice),
+		appendCollected: func(v any) error {
+			t, ok := v.(T)
+			if !ok {
+				return fmt.Errorf("expected to receive %T but got %T", *new(T), v)
+			}
+			collected = append(collected, t)
+			return nil
+		},
+		numCollected: func() int { return len(collected) },
+		toLoad: func() any {
+			// a single object is passed as-is (T); many are passed as the
+			// slice (Ts), matching the reflection-based implementation.
+			if len(collected) == 1 {
+				return collected[0]
+			}
+			return collected
+		},
 	}
 }
 
@@ -136,11 +152,12 @@ func NewAfterPreloader[T any, Ts ~[]T]() *AfterPreloader {
 // later, when this object is called like any other [bob.Loader], it
 // calls the appended loaders with the collected objects
 type AfterPreloader struct {
-	oneType   reflect.Type
-	sliceType reflect.Type
+	funcs []bob.Loader
 
-	funcs     []bob.Loader
-	collected []any
+	// typed helpers set by [NewAfterPreloader]; they close over a Ts buffer
+	appendCollected func(any) error
+	numCollected    func() int
+	toLoad          func() any
 }
 
 func (a *AfterPreloader) AppendLoader(fs ...bob.Loader) {
@@ -152,29 +169,15 @@ func (a *AfterPreloader) Collect(v any) error {
 		return nil
 	}
 
-	if reflect.TypeOf(v) != a.oneType {
-		return fmt.Errorf("expected to receive %s but got %T", a.oneType.String(), v)
-	}
-
-	a.collected = append(a.collected, v)
-	return nil
+	return a.appendCollected(v)
 }
 
 func (a *AfterPreloader) Load(ctx context.Context, exec bob.Executor, _ any) error {
-	if len(a.collected) == 0 || len(a.funcs) == 0 {
+	if len(a.funcs) == 0 || a.numCollected() == 0 {
 		return nil
 	}
 
-	obj := a.collected[0]
-
-	if len(a.collected) > 1 {
-		all := reflect.MakeSlice(a.sliceType, len(a.collected), len(a.collected))
-		for k, v := range a.collected {
-			all.Index(k).Set(reflect.ValueOf(v))
-		}
-
-		obj = all.Interface()
-	}
+	obj := a.toLoad()
 
 	for _, f := range a.funcs {
 		if err := f.Load(ctx, exec, obj); err != nil {

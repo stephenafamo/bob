@@ -7,17 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fixed column_order on `*` selectors in sql queries in postgres
+
 ### Added
 
 - Added `bob.NextUniqueInt()` for generating unique SQL alias suffixes ([#719](https://github.com/stephenafamo/bob/issues/719)). (thanks @atzedus)
 - Code generation now emits a reflection-free `scan.Mapper` per table (`<table>ScanMapper`) that scans each result column directly into the struct field by index. The mapper is passed to the model constructor, so every query built from a model — `Query()`, relationship loaders, and `Insert`/`Update`/`Delete` with `RETURNING` — scans without the per-row reflection of `scan.StructMapper`. (thanks @sandonemaki)
+- Generated `Where` structs now include relationship filters under an `R` field (e.g. `SelectWhere.Pilots.R.HasJets(filters ...bob.Mod[*dialect.SelectQuery])`) that filter rows by the existence of related rows, using a correlated `EXISTS` subquery (semi-join) built from the schema's relationship definitions. The `R` namespace mirrors the model struct and keeps the filters from colliding with column names. Unlike filtering through `SelectJoins`, this does not multiply parent rows, so `DISTINCT` is not needed and `Count()`/`LIMIT`-based pagination stay correct ([#722](https://github.com/stephenafamo/bob/pull/722)). (thanks @sandonemaki)
 
 ### Changed
 
 - `NewViewx` and `NewTablex` in the `psql`, `mysql` and `sqlite` dialects now take a `scan.Mapper[T]` argument used for all queries built from the view/table. Pass `nil` to keep the previous reflection-based `scan.StructMapper` behaviour. `NewView`/`NewTable` are unchanged. (thanks @sandonemaki)
+- JOIN a DISTINCT unnest(...) for composite-key relationship loaders & counts on PostgreSQL. (thanks @sandonemaki)
 
 ### Fixed
 
+- Fixed an unused type import (e.g. `github.com/google/uuid`) in generated models when the type is only referenced through optional wrapper expressions, such as m2m relationship helpers for a join table with a `uuid` column ([#730](https://github.com/stephenafamo/bob/issues/730)).
+- Fixed the counts plugin's generated `C` field reusing the `relation_tag` struct tag, which collided with the relations `R` field and caused `encoding/json` to drop both fields when a real tag name was configured. The `C` field now uses a dedicated `relation_tag_count` config option (default `"-"`). (thanks @jacobmolby)
 - Fixed generated join alias suffixes using `randInt()`, which could produce negative values when `maphash.Hash.Sum64()` overflowed `int64` ([#719](https://github.com/stephenafamo/bob/issues/719)). Generated join mods now use `bob.NextUniqueInt()` instead. (thanks @atzedus)
 - Fixed `orm.Query.Clone()` dropping the `Scanner`, which made `All`/`One`/`Cursor`/`Each` on a cloned query panic with a nil pointer dereference. (thanks @sandonemaki)
 

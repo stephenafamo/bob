@@ -24,6 +24,13 @@ import (
 
 var flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
+const columnOrderNameStarQuery = `-- GetUsersWithVideos
+SELECT
+  u.*,
+  v.id AS video_id
+FROM users AS u
+INNER JOIN videos AS v ON v.user_id = u.id;`
+
 func TestDriver(t *testing.T) {
 	postgresContainer, err := postgres.Run(
 		t.Context(), "pgvector/pgvector:0.8.0-pg16",
@@ -61,6 +68,7 @@ func TestDriver(t *testing.T) {
 
 	t.Run("driver", func(t *testing.T) { testPostgresDriver(t, dsn) })
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
+	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
 }
 
 func testPostgresDriver(t *testing.T, dsn string) {
@@ -132,6 +140,65 @@ func testPostgresDriver(t *testing.T, dsn string) {
 				Dialect:         "psql",
 			})
 		})
+	}
+}
+
+func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {
+	t.Helper()
+
+	queryDir := t.TempDir()
+	if err := os.WriteFile(queryDir+"/joined.sql", []byte(columnOrderNameStarQuery), 0o600); err != nil {
+		t.Fatalf("write query file: %v", err)
+	}
+
+	drv := New(Config{
+		Config: helpers.Config{
+			Dsn:         dsn,
+			Queries:     []string{queryDir},
+			ColumnOrder: "name",
+		},
+		Schemas: []string{"public"},
+	})
+
+	info, err := drv.Assemble(context.Background())
+	if err != nil {
+		t.Fatalf("Assemble: %v", err)
+	}
+
+	var query drivers.Query
+	found := false
+	for _, folder := range info.QueryFolders {
+		for _, file := range folder.Files {
+			for _, q := range file.Queries {
+				if q.Name == "GetUsersWithVideos" {
+					query = q
+					found = true
+				}
+			}
+		}
+	}
+	if !found {
+		t.Fatal("query GetUsersWithVideos not found in assembled output")
+	}
+
+	colTypes := make(map[string]string, len(query.Columns))
+	for _, col := range query.Columns {
+		colTypes[col.Name] = col.TypeName
+	}
+
+	wantTypes := map[string]string{
+		"id":              "int32",
+		"email_validated": "bool",
+		"primary_email":   "string",
+		"parent_id":       "int32",
+		"party_id":        "int32",
+		"referrer":        "int32",
+		"video_id":        "int32",
+	}
+	for name, want := range wantTypes {
+		if got := colTypes[name]; got != want {
+			t.Errorf("column %s: type = %q, want %q", name, got, want)
+		}
 	}
 }
 
