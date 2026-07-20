@@ -382,18 +382,16 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	  return nil
 	}
 
-  // since we are changing the columns, we need to check if the original columns were set or add the defaults
-  sq := dialect.SelectQuery{}
-  for _, mod := range mods {
-   mod.Apply(&sq)
-  }
-
-	if len(sq.SelectList.Columns) == 0 {
-		mods = append(mods, sm.Columns({{$fAlias.UpPlural}}.Columns))
-	}
-
 	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(
 		mods,
+		// since we are changing the columns, the defaults must be added if the
+		// original mods did not set any; this runs after the user mods and
+		// before the related_* columns below, so it sees exactly what they set
+		bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+			if len(q.SelectList.Columns) == 0 {
+				sm.Columns({{$fAlias.UpPlural}}.Columns).Apply(q)
+			}
+		}),
 		{{range $index, $local := $firstSide.FromColumns -}}
 			{{- $toCol := index $firstTo.Columns (index $firstSide.ToColumns $index) -}}
 			{{- $fromCol := index $firstFrom.Columns $local -}}
@@ -405,7 +403,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
     {{- $fromColAlias := index $firstFrom.Columns $local -}}
     {{- $fromCol := $.Tables.GetColumn $firstSide.From $local -}}
     {{- $fromTyp := $.Types.Get $.CurrentPackage $.Importer $fromCol.Type -}}
-    {{$fromColAlias}}Slice := []{{$fromTyp}}{}
+    {{$fromColAlias}}Slice := make([]{{$fromTyp}}, 0, len(os))
   {{end}}
 
 	{{$.Importer.Import "github.com/stephenafamo/scan" -}}
