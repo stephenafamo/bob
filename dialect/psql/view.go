@@ -147,8 +147,11 @@ func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (in
 
 // Exists checks if there is any matching row
 func (v *ViewQuery[T, Tslice]) Exists(ctx context.Context, exec bob.Executor) (bool, error) {
-	count, err := v.Count(ctx, exec)
-	return count > 0, err
+	ctx, err := v.RunHooks(ctx, exec)
+	if err != nil {
+		return false, err
+	}
+	return bob.One(ctx, exec, Select(sm.Columns(Exists(v.BaseQuery))), scan.SingleColumnMapper[bool])
 }
 
 // asCountQuery clones and rewrites an existing query to a count query
