@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `Exists`, `Any` and `All` (in the `psql`, `mysql` and `sqlite` dialects) wrapping a query operand in an extra parenthesis group, producing invalid SQL like `EXISTS ((SELECT ...))`. A `bob.Query` already writes its own parentheses when rendered as an expression, so it is no longer wrapped again; non-query operands (e.g. `Arg`, `Raw`) keep the surrounding parentheses. This also fixes the generated relationship `Where` filters from [#722](https://github.com/stephenafamo/bob/pull/722), which failed to execute on SQLite ([#742](https://github.com/stephenafamo/bob/issues/742)).
+
 ### Changed
 
 - PostgreSQL single-column slice relationship loaders (`<Parent>Slice.<Rel>`) and batch counts (`<Parent>Slice.LoadCount<Rel>`) now de-duplicate the key array bound to `= ANY($1)` when the key column can contain duplicates (a non-unique foreign key). The array is only a semi-join filter, so query results are unchanged — a slice of 10,000 parents sharing 50 related rows now binds 50 keys instead of 10,000. Keys that are unique by construction (the parent's own primary key or a uniquely-constrained column) and key types not comparable with `==` keep the previous plain loop, decided at codegen time ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
