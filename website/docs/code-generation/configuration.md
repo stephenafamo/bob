@@ -21,7 +21,7 @@ When using the CLI, Bob loads several built-in plugins.
 - `enums`: Generates code for enums in a separate package, if there are any present.
 - `models`: Generates code for models. Depends on `enums`.
 - `factory`: Generates code for factories. Depends on `models`.
-- `dberrors`: Generates code for unique constraint errors. Depends on `models`.
+- `dberrors`: Generates code for unique and check constraint errors. Depends on `models`.
 - `where`: Adds templates to the `models` package to generate code for where clauses e.g `models.SelectWhere.Table.Where.Rel()`.
 - `loaders`: Adds templates to the `models` package to generate code for loaders e.g `models.SelectThenLoad.Table.Rel()`.
 - `joins`: Adds templates to the `models` package to generate code for joins e.g `models.SelectJoin.Table.LeftJoin.Rel`.
