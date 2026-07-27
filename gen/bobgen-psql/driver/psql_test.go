@@ -37,15 +37,10 @@ func TestDriver(t *testing.T) {
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
+	testcontainers.CleanupContainer(t, postgresContainer)
 	if err != nil {
-		fmt.Printf("could not start postgres container: %v\n", err)
-		return
+		t.Fatalf("could not start postgres container: %v", err)
 	}
-	defer func() {
-		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
 
 	dsn, err := postgresContainer.ConnectionString(t.Context(), "sslmode=disable")
 	if err != nil {
