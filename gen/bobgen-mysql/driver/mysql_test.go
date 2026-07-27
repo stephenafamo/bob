@@ -13,9 +13,9 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
+	ctest "github.com/stephenafamo/bob/test/containers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
-	"github.com/testcontainers/testcontainers-go"
 	mysqltest "github.com/testcontainers/testcontainers-go/modules/mysql"
 )
 
@@ -31,11 +31,7 @@ func TestDriver(t *testing.T) {
 		mysqltest.WithUsername("root"),
 		mysqltest.WithPassword("password"),
 	)
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(mysqlContainer); err != nil {
-			fmt.Printf("failed to terminate MySQL container: %v\n", err)
-		}
-	})
+	ctest.Cleanup(t, mysqlContainer)
 	if err != nil {
 		t.Fatalf("failed to start container: %v", err)
 	}
