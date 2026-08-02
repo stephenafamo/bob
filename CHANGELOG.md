@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PostgreSQL single-column slice relationship loaders (`<Parent>Slice.<Rel>`) and batch counts (`<Parent>Slice.LoadCount<Rel>`) now de-duplicate the key array bound to `= ANY($1)` when the key column can contain duplicates (a non-unique foreign key). The array is only a semi-join filter, so query results are unchanged — a slice of 10,000 parents sharing 50 related rows now binds 50 keys instead of 10,000. Keys that are unique by construction (the parent's own primary key or a uniquely-constrained column) and key types not comparable with `==` keep the previous plain loop, decided at codegen time ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
 - Generated through-relationship loaders (`Load<Rel>`) no longer apply every query mod twice (once against a throwaway query to detect whether the user set columns, then again for real). The default columns are now added by a deferred `bob.ModFunc` during the single real application — the same pattern `View.Query` uses — and the join-key slice is pre-allocated to the parent slice length. Generated SQL is unchanged ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
 
+### Fixed
+
+- Fixed the PostgreSQL code generator's query parser renumbering each reference to a repeated query parameter (`$N`) as a distinct argument (e.g. `id = $1 OR parent_id = $1` generating `$1`/`$2`), which changed the meaning of the generated query mods. Repeated `$N` references now map to a single generated parameter ([#745](https://github.com/stephenafamo/bob/pull/745)). (thanks @dmakushin)
+
 ## [v0.49.0] - 2026-07-20
 
 ### Added
