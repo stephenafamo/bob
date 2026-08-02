@@ -101,6 +101,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		groups:       make(map[argPos]struct{}),
 		multiple:     make(map[[2]int]struct{}),
 		atom:         &atomic.Int64{},
+		paramIdxMap:  make(map[int64]int64),
 	}
 
 	stmt := parseResult.Stmts[0]
@@ -152,7 +153,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	}
 
 	if len(w.args) != len(argTypes) {
-		return drivers.Query{}, fmt.Errorf("expected %d args, got %d", len(resTypes), len(source.columns))
+		return drivers.Query{}, fmt.Errorf("expected %d args, got %d", len(argTypes), len(w.args))
 	}
 
 	comment, err := w.getQueryComment(info.start)

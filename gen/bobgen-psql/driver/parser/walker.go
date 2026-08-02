@@ -92,8 +92,9 @@ type walker struct {
 	imports   [][]string
 	mods      *strings.Builder
 
-	atom *atomic.Int64
-	args [][]argPos
+	atom        *atomic.Int64
+	paramIdxMap map[int64]int64
+	args        [][]argPos
 
 	errors []error
 }
@@ -466,11 +467,18 @@ func (w *walker) walkParamRef(a *pg.ParamRef) nodeInfo {
 	if len(w.args) < int(a.Number) {
 		w.args = append(w.args, make([][]argPos, int(a.Number)-len(w.args))...)
 	}
+
+	newIdx, ok := w.paramIdxMap[int64(a.Number)]
+	if !ok {
+		newIdx = w.atom.Add(1)
+		w.paramIdxMap[int64(a.Number)] = newIdx
+	}
+
 	w.editRules = append(w.editRules, internal.EditCallback(
 		internal.ReplaceFromFunc(
 			int(info.start), int(info.end-1),
 			func() string {
-				return fmt.Sprintf("$%d", w.atom.Add(1))
+				return fmt.Sprintf("$%d", newIdx)
 			},
 		),
 		func(start, end int, _, _ string) error {
