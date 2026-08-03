@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Generated `dberrors` packages now include generic and per-table check-constraint errors for PostgreSQL, matched by constraint name for `pq` and `pgx` drivers. (thanks @keithbro-imx)
+
 ## [v0.46.0] - 2026-06-11
 
 ### Added
