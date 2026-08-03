@@ -6,7 +6,7 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/stephenafamo/bob/gen/bobgen-helpers/parser"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/internal"

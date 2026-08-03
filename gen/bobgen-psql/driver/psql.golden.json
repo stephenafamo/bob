@@ -9378,6 +9378,45 @@
 								}
 							],
 							"mods": "q.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenMatched, Action: dialect.MergeAction{Type: dialect.MergeActionUpdate}})\nq.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenNotMatched, Action: dialect.MergeAction{Type: dialect.MergeActionInsert}})\nq.When[1].Action.Columns = []string{\"id\", \"primary_email\"}\nq.Table.Expression = EXPR.subExpr(11, 26)\nq.Using.Source = EXPR.subExpr(33, 94)\nq.Using.Condition = EXPR.subExpr(98, 119)\nq.When[0].Action.Set = append(q.When[0].Action.Set, EXPR.subExpr(149, 185))\nq.When[1].Action.Values = append(q.When[1].Action.Values, EXPR.subExpr(243, 274))\n"
+						},
+						{
+							"type": 1,
+							"name": "SearchUsersByTerms",
+							"raw": "WITH input_terms AS (\n    SELECT DISTINCT term\n    FROM unnest($1::text[]) AS term\n    WHERE term \u003c\u003e ''\n)\nSELECT primary_email\nFROM (\n    SELECT\n        u.id,\n        u.primary_email,\n        count(*) FILTER (\n            WHERE u.primary_email ILIKE ('%' || input_terms.term || '%')\n        ) AS matched_term_count\n    FROM users u\n    LEFT JOIN input_terms ON TRUE\n    GROUP BY u.id, u.primary_email\n) ranked\nORDER BY matched_term_count DESC, id ASC\nLIMIT 5",
+							"config": {
+								"result_type_one": "",
+								"result_type_all": "",
+								"result_type_transformer": ""
+							},
+							"columns": [
+								{
+									"name": "primary_email",
+									"db_name": "primary_email",
+									"nullable": false,
+									"type": "string",
+									"type_limits": null
+								}
+							],
+							"args": [
+								{
+									"col": {
+										"name": "arg1",
+										"db_name": "",
+										"nullable": false,
+										"type": "pq.StringArray",
+										"type_limits": null
+									},
+									"children": null,
+									"positions": [
+										[
+											63,
+											65
+										]
+									],
+									"can_be_multiple": false
+								}
+							],
+							"mods": "q.AppendCTE(EXPR.subExpr(5, 105))\nq.AppendSelect(EXPR.subExpr(113, 126))\nq.SetTable(EXPR.subExpr(132, 409))\nq.AppendOrder(EXPR.subExpr(419, 450))\nq.SetLimit(EXPR.subExpr(457, 458))\n"
 						}
 					]
 				},

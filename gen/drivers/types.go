@@ -351,7 +351,9 @@ func (t Types) FromOptional(currentPkg string, i language.Importer, forType, var
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, imports := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)
-	i.ImportList(imports)
+	if exprNamesType(optTyp.UseExpr) {
+		i.ImportList(imports)
+	}
 	i.ImportList(optTyp.UseExprImports)
 	return strings.NewReplacer(
 		"SRC", varName,
@@ -365,7 +367,9 @@ func (t Types) ToOptional(currentPkg string, i language.Importer, forType, varNa
 	colTyp, _ := t.GetNameAndDef(currentPkg, forType)
 	optTyp, imports := t.getOptional(currentPkg, forType, isNull, fromOrToNull)
 	nullTyp := t.GetNullType(currentPkg, forType)
-	i.ImportList(imports)
+	if exprNamesType(optTyp.CreateExpr) {
+		i.ImportList(imports)
+	}
 	i.ImportList(optTyp.CreateExprImports)
 	return strings.NewReplacer(
 		"SRC", varName,
@@ -373,6 +377,17 @@ func (t Types) ToOptional(currentPkg string, i language.Importer, forType, varNa
 		"BASETYPE", colTyp,
 		"OPTIONALTYPE", optTyp.Name,
 	).Replace(optTyp.CreateExpr)
+}
+
+// exprNamesType reports whether an optional/null expression template writes a
+// type name into the generated code. Expressions like `omit.From(SRC)` only
+// reference the wrapped value, so the base type's imports are not needed for
+// them; expressions like `func () *BASETYPE {...}` or `NULLTYPE{V: SRC}` spell
+// out a type name and do need them.
+func exprNamesType(expr string) bool {
+	return strings.Contains(expr, "BASETYPE") ||
+		strings.Contains(expr, "NULLTYPE") ||
+		strings.Contains(expr, "OPTIONALTYPE")
 }
 
 var _ TypeModifier = AarondlNull{}

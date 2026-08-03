@@ -78,6 +78,7 @@ type queryResult struct {
 type walker struct {
 	db           tables
 	sharedSchema string
+	columnOrder  string
 	names        map[position]string
 	nullability  map[position]nullable
 	groups       map[argPos]struct{}
@@ -91,8 +92,9 @@ type walker struct {
 	imports   [][]string
 	mods      *strings.Builder
 
-	atom *atomic.Int64
-	args [][]argPos
+	atom        *atomic.Int64
+	paramIdxMap map[int64]int64
+	args        [][]argPos
 
 	errors []error
 }
@@ -152,6 +154,7 @@ func (w *walker) updatePosition(pos int32) {
 	w.position = pos
 }
 
+//nolint:gocyclo
 func (w *walker) walk(a any) nodeInfo {
 	if a == nil {
 		return newNodeInfo()
@@ -164,6 +167,9 @@ func (w *walker) walk(a any) nodeInfo {
 		if a != nil {
 			info = w.reflectWalk(reflect.ValueOf(a.Node))
 		}
+
+	case *pg.Node_RangeFunction:
+		info = w.walkRangeFunction(a.RangeFunction)
 
 	case *pg.NullTest:
 		info = w.walkNullTest(a)
@@ -212,6 +218,9 @@ func (w *walker) walk(a any) nodeInfo {
 
 	case *pg.RangeVar:
 		info = w.walkRangeVar(a)
+
+	case *pg.RangeFunction:
+		info = w.walkRangeFunction(a)
 
 	case *pg.Alias:
 		info = w.walkAlias(a)
@@ -458,11 +467,18 @@ func (w *walker) walkParamRef(a *pg.ParamRef) nodeInfo {
 	if len(w.args) < int(a.Number) {
 		w.args = append(w.args, make([][]argPos, int(a.Number)-len(w.args))...)
 	}
+
+	newIdx, ok := w.paramIdxMap[int64(a.Number)]
+	if !ok {
+		newIdx = w.atom.Add(1)
+		w.paramIdxMap[int64(a.Number)] = newIdx
+	}
+
 	w.editRules = append(w.editRules, internal.EditCallback(
 		internal.ReplaceFromFunc(
 			int(info.start), int(info.end-1),
 			func() string {
-				return fmt.Sprintf("$%d", w.atom.Add(1))
+				return fmt.Sprintf("$%d", newIdx)
 			},
 		),
 		func(start, end int, _, _ string) error {
@@ -597,6 +613,67 @@ func (w *walker) walkRangeVar(a *pg.RangeVar) nodeInfo {
 
 	w.position = info.end
 	info = info.addChild("Alias", w.walk(a.Alias))
+
+	return info
+}
+
+func (w *walker) walkRangeFunction(a *pg.RangeFunction) nodeInfo {
+	if a == nil {
+		return newNodeInfo()
+	}
+
+	info := newNodeInfo()
+	if a.Lateral {
+		lateralInfo := w.findTokenAfter(w.position, pg.Token_LATERAL_P)
+		if lateralInfo.isValid() {
+			info = info.addChild("Lateral", lateralInfo)
+			w.updatePosition(lateralInfo.end)
+		}
+	}
+
+	functionsInfo := newNodeInfo()
+	for i, fn := range a.Functions {
+		childInfo := w.walkRangeFunctionItem(fn)
+		functionsInfo = functionsInfo.addChild(strconv.Itoa(i), childInfo)
+	}
+	info = info.addChild("Functions", functionsInfo)
+
+	if a.Ordinality {
+		ordinalityInfo := w.findTokenAfter(functionsInfo.end, pg.Token_ORDINALITY)
+		if ordinalityInfo.isValid() {
+			info = info.addChild("Ordinality", ordinalityInfo)
+			w.updatePosition(ordinalityInfo.end)
+		}
+	}
+
+	if alias := a.Alias; alias != nil {
+		w.updatePosition(functionsInfo.end)
+		info = info.addChild("Alias", w.walkAlias(alias))
+	}
+
+	if len(a.Coldeflist) > 0 {
+		coldefInfo := w.walk(a.Coldeflist)
+		info = info.addChild("Coldeflist", coldefInfo)
+	}
+
+	return w.balanceParenthesis(info)
+}
+
+func (w *walker) walkRangeFunctionItem(fn *pg.Node) nodeInfo {
+	if fn == nil {
+		return newNodeInfo()
+	}
+
+	list := fn.GetList()
+	if list == nil {
+		return w.walk(fn)
+	}
+
+	info := newNodeInfo()
+	for i, item := range list.Items {
+		childInfo := w.walk(item)
+		info = info.addChild(strconv.Itoa(i), childInfo)
+	}
 
 	return info
 }

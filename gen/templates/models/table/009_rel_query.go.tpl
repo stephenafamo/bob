@@ -78,6 +78,39 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 			{{$fromCol := index $firstFrom.Columns $local -}}
       pk{{$fromCol}} := make(pgtypes.Array[{{$colTyp}}], 0, len(os))
 		{{- end}}
+    {{if eq (len $firstSide.FromColumns) 1}}
+    {{- $local := index $firstSide.FromColumns 0}}
+    {{- $column := $.Table.GetColumn $local}}
+    {{- $colTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type $column.Nullable}}
+    {{- $fromCol := index $firstFrom.Columns $local}}
+    {{- /* keys that are unique by construction (the parent's own PK or a
+           unique column) never contain duplicates, so the seen-map would be
+           pure overhead; dedup only de-duplicatable, ==-comparable keys */ -}}
+    {{- $canDedup := and (not ($.Table.HasExactUnique $local)) ($.Types.CanCompareWithEquals $.CurrentPackage $column.Type)}}
+    {{- if $canDedup}}
+    // the array is only a filter (semi-join), so duplicate keys can be
+    // dropped before they are sent over the wire
+    seen{{$fromCol}} := make(map[{{$colTyp}}]struct{}, len(os))
+    for _, o := range os {
+      if o == nil {
+        continue
+      }
+      if _, ok := seen{{$fromCol}}[o.{{$fromCol}}]; ok {
+        continue
+      }
+      seen{{$fromCol}}[o.{{$fromCol}}] = struct{}{}
+      pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
+    }
+    {{- else}}
+    for _, o := range os {
+      if o == nil {
+        continue
+      }
+      pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
+    }
+    {{- end}}
+    PKArgExpr := psql.Any(psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"))
+    {{else}}
     for _, o := range os {
       if o == nil {
         continue
@@ -87,13 +120,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
         pk{{$fromCol}} = append(pk{{$fromCol}}, o.{{$fromCol}})
       {{- end}}
     }
-    PKArgExpr := psql.Select(sm.Columns(
-      {{- range $index, $local := $firstSide.FromColumns -}}
-        {{$column := $.Table.GetColumn $local}}
-        {{$fromCol := index $firstFrom.Columns $local -}}
-        psql.F("unnest", psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]")),
-      {{- end}}
-    ))
+    {{end}}
   {{end}}
 	{{- end}}
 
@@ -125,12 +152,44 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		),
 		{{- else -}}
 			{{if gt (len $side.FromColumns) 0 -}}
-				sm.Where({{$.Dialect}}.Group(
-				{{- range $index, $local := $side.FromColumns -}}
-					{{- $fromCol := index $from.Columns $local -}}
-					{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
-					{{$to.UpPlural}}.Columns.{{$toCol}},
-				{{- end}}).OP("IN", PKArgExpr)),
+				{{if and (eq $.Dialect "psql") (eq (len $side.FromColumns) 1) -}}
+					{{- $toCol := index $to.Columns (index $side.ToColumns 0) -}}
+					sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ(PKArgExpr)),
+				{{- else if eq $.Dialect "psql" -}}
+					sm.InnerJoin(psql.Select(
+						sm.Distinct(),
+						sm.Columns(
+							{{- range $index, $local := $side.FromColumns -}}
+							{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
+							psql.Quote("bob_rel_keys_src", {{quote $toCol}}),
+							{{- end}}
+						),
+						sm.From(psql.F("unnest",
+							{{- range $index, $local := $side.FromColumns -}}
+							{{- $fromCol := index $from.Columns $local -}}
+							{{- $column := $.Table.GetColumn $local -}}
+							psql.Cast(psql.Arg(pk{{$fromCol}}), "{{$column.DBType}}[]"),
+							{{- end}}
+						)).As("bob_rel_keys_src"
+							{{- range $index, $local := $side.FromColumns -}}
+							{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
+							, {{quote $toCol}}
+							{{- end -}}
+						),
+					)).As("bob_rel_keys").On(
+						{{- range $index, $local := $side.FromColumns -}}
+						{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
+						{{$to.UpPlural}}.Columns.{{$toCol}}.EQ(psql.Quote("bob_rel_keys", {{quote $toCol}})),
+						{{- end}}
+					),
+				{{- else -}}
+					sm.Where({{$.Dialect}}.Group(
+					{{- range $index, $local := $side.FromColumns -}}
+						{{- $fromCol := index $from.Columns $local -}}
+						{{- $toCol := index $to.Columns (index $side.ToColumns $index) -}}
+						{{$to.UpPlural}}.Columns.{{$toCol}},
+					{{- end}}).OP("IN", PKArgExpr)),
+				{{- end}}
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}

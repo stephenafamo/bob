@@ -62,13 +62,3 @@ func (m modAs[Q, C]) AliasedAs(alias string) bob.Mod[Q] {
   return m
 }
 
-{{$.Importer.Import "hash/maphash"}}
-func randInt() int64 {
-	out := int64(new(maphash.Hash).Sum64())
-
-	if out < 0 {
-		return -out % 10000
-	}
-
-	return out % 10000
-}

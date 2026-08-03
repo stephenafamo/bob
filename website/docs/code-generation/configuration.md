@@ -119,6 +119,8 @@ type Config struct {
 	StructTagCasing string `yaml:"struct_tag_casing"`
 	// Relationship struct tag name
 	RelationTag string `yaml:"relation_tag"`
+	// Counts struct tag name (for the C field added by the counts plugin)
+	RelationTagCount string `yaml:"relation_tag_count"`
 	// Name of the nested struct on R that tracks whether each relationship has been loaded.
 	// Must be an exported Go identifier. Defaults to "Loaded".
 	RelationLoadedName string `yaml:"relation_loaded_name"`
@@ -150,6 +152,7 @@ type Config struct {
 | no_back_referencing | If this is set to true, when relationships are loaded, the parent is not added to the loaded object's relations | false                    |
 | struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake"                  |
 | relation_tag        | Struct tag for the relationship object                                                                          | "-"                      |
+| relation_tag_count  | Struct tag for the counts (C) struct field added by the counts plugin                                           | "-"                      |
 | relation_loaded_name | Name of the nested struct on `R` that tracks whether each relationship has been loaded. Must be an exported Go identifier. Renames both the field on `R` and the underlying type suffix (`<table>R<name>`). [See more](./relationships#checking-if-a-relationship-has-been-loaded) | "Loaded"                 |
 | tag_ignore          | List of column names that should have tags values set to '-'                                                    | []                       |
 | enum_format         | Format for enum value identifiers. "title_case" (e.g., InProgress) or "screaming_snake_case" (e.g., IN_PROGRESS) | "title_case"             |

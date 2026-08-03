@@ -49,10 +49,33 @@ func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
     }))
 }
 
+{{/* A single ==-comparable primary key column is matched in O(N+M) via a map;
+     composite keys and custom compare_expr types fall back to the nested loop. */ -}}
+{{- $pkCol := index $pkCols 0 -}}
+{{- $useMap := and (not $multiPK) ($.Types.CanCompareWithEquals $.CurrentPackage ($table.GetColumn $pkCol).Type)}}
 // copyMatchingRows finds models in the given slice that have the same primary key
 // then it first copies the existing relationships from the old model to the new model
 // and then replaces the old model in the slice with the new model
 func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingular}}) {
+  {{if $useMap -}}
+  {{$colAlias := $tAlias.Column $pkCol -}}
+  fromByPK := make(map[{{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}}]*{{$tAlias.UpSingular}}, len(from))
+  for _, new := range from {
+    // keep the first row for each key, like the nested loop did
+    if _, ok := fromByPK[new.{{$colAlias}}]; !ok {
+      fromByPK[new.{{$colAlias}}] = new
+    }
+  }
+
+  for i, old := range o {
+    new, ok := fromByPK[old.{{$colAlias}}]
+    if !ok {
+      continue
+    }
+    {{if $.Relationships.Get $table.Key}}new.R = old.R{{end}}
+    o[i] = new
+  }
+  {{- else -}}
   for i, old := range o {
     for _, new := range from {
 			{{range $column := $table.Constraints.Primary.Columns -}}
@@ -73,6 +96,7 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
       break
     }
   }
+  {{- end}}
 }
 
 

@@ -8,6 +8,6 @@
 {{- end -}}
 {{- if $hasToMany}}
 
-	C {{$tAlias.DownSingular}}C `db:"-" {{generateTags $.Tags $.RelationTag | trim}}`
+	C {{$tAlias.DownSingular}}C `db:"-" {{generateTags $.Tags $.RelationTagCount | trim}}`
 {{- end -}}
 {{- end -}}

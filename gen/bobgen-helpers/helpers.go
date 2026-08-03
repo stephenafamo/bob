@@ -72,9 +72,10 @@ func GetConfigFromProvider[ConstraintExtra, DriverConfig any](provider koanf.Pro
 
 	// Add some defaults
 	err := k.Load(confmap.Provider(map[string]any{
-		"struct_tag_casing": "snake",
-		"relation_tag":      "-",
-		"generator":         fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
+		"struct_tag_casing":  "snake",
+		"relation_tag":       "-",
+		"relation_tag_count": "-",
+		"generator":          fmt.Sprintf("BobGen %s %s", driverConfigKey, Version()),
 	}, ""), nil)
 	if err != nil {
 		return config, driverConfig, pluginsConfig, fmt.Errorf("failed to load defaults: %w", err)

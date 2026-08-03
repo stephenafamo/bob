@@ -48,7 +48,7 @@ type OptionalWithUnique struct {
 var (
 	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("", expr.ColsForStruct[WithAutoIncr](""), nil)
 	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
-		"books", expr.ColsForStruct[WithUnique]("books"), []string{"id"}, []string{"title", "author_id"},
+		"books", expr.ColsForStruct[WithUnique]("books"), nil, []string{"id"}, []string{"title", "author_id"},
 	)
 )
 

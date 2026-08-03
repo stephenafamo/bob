@@ -64,8 +64,10 @@ type JetSetter struct {
 // This should almost always be used instead of []*Jet.
 type JetSlice []*Jet
 
-// JetsTable contains methods to work with the jets table
-var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets")
+// JetsTable contains methods to work with the jets table.
+// jetScanMapper is a generated reflection-free scan.Mapper used by
+// every query built from the table.
+var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets", buildJetColumns("jets"), jetScanMapper)
 ```
 
 :::tip

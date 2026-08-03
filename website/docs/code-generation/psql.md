@@ -45,18 +45,18 @@ PSQL_DSN="postgres://user:pass@host:port/dbname?sslmode=disable"
 
 The values that exist for the drivers:
 
-| Name          | Description                                       | Default                  |
-| ------------- | ------------------------------------------------- | ------------------------ |
-| driver        | Driver to use for generating driver-specific code | `github.com/lib/pq`      |
-| dsn           | URL to connect to                                 |                          |
-| schemas       | Schemas find tables in                            | ["public"]               |
-| shared_schema | Schema to not include prefix in model             | first value in "schemas" |
-| uuid_pkg      | UUID package to use (gofrs or google)             | "gofrs"                  |
-| queries       | Folders containing sql query files                |                          |
-| only          | Only generate these                               |                          |
-| except        | Skip generation for these                         |                          |
-| concurrency   | How many tables to fetch in parallel              | 10                       |
-| column_order  | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
+| Name          | Description                                                                                                      | Default                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| driver        | Driver to use for generating driver-specific code                                                                | `github.com/lib/pq`      |
+| dsn           | URL to connect to                                                                                                |                          |
+| schemas       | Schemas find tables in                                                                                           | ["public"]               |
+| shared_schema | Schema to not include prefix in model                                                                            | first value in "schemas" |
+| uuid_pkg      | UUID package to use (gofrs or google)                                                                            | "gofrs"                  |
+| queries       | Folders containing sql query files                                                                               |                          |
+| only          | Only generate these                                                                                              |                          |
+| except        | Skip generation for these                                                                                        |                          |
+| concurrency   | How many tables to fetch in parallel                                                                             | 10                       |
+| column_order  | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal"                |
 
 ## Driver-specific code
 

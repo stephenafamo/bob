@@ -11,6 +11,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Generated `dberrors` packages now include generic and per-table check-constraint errors for PostgreSQL, matched by constraint name for `pq` and `pgx` drivers. (thanks @keithbro-imx)
 
+### Changed
+
+- PostgreSQL single-column slice relationship loaders (`<Parent>Slice.<Rel>`) and batch counts (`<Parent>Slice.LoadCount<Rel>`) now de-duplicate the key array bound to `= ANY($1)` when the key column can contain duplicates (a non-unique foreign key). The array is only a semi-join filter, so query results are unchanged — a slice of 10,000 parents sharing 50 related rows now binds 50 keys instead of 10,000. Keys that are unique by construction (the parent's own primary key or a uniquely-constrained column) and key types not comparable with `==` keep the previous plain loop, decided at codegen time ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
+- Generated through-relationship loaders (`Load<Rel>`) no longer apply every query mod twice (once against a throwaway query to detect whether the user set columns, then again for real). The default columns are now added by a deferred `bob.ModFunc` during the single real application — the same pattern `View.Query` uses — and the join-key slice is pre-allocated to the parent slice length. Generated SQL is unchanged ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
+
+### Fixed
+
+- Fixed the PostgreSQL code generator's query parser renumbering each reference to a repeated query parameter (`$N`) as a distinct argument (e.g. `id = $1 OR parent_id = $1` generating `$1`/`$2`), which changed the meaning of the generated query mods. Repeated `$N` references now map to a single generated parameter ([#745](https://github.com/stephenafamo/bob/pull/745)). (thanks @dmakushin)
+
+## [v0.49.0] - 2026-07-20
+
+### Added
+
+- Added `bob.NextUniqueInt()` for generating unique SQL alias suffixes ([#719](https://github.com/stephenafamo/bob/issues/719)). (thanks @atzedus)
+- Code generation now emits a reflection-free `scan.Mapper` per table (`<table>ScanMapper`) that scans each result column directly into the struct field by index. The mapper is passed to the model constructor, so every query built from a model — `Query()`, relationship loaders, and `Insert`/`Update`/`Delete` with `RETURNING` — scans without the per-row reflection of `scan.StructMapper`. (thanks @sandonemaki)
+- Generated `Where` structs now include relationship filters under an `R` field (e.g. `SelectWhere.Pilots.R.HasJets(filters ...bob.Mod[*dialect.SelectQuery])`) that filter rows by the existence of related rows, using a correlated `EXISTS` subquery (semi-join) built from the schema's relationship definitions. The `R` namespace mirrors the model struct and keeps the filters from colliding with column names. Unlike filtering through `SelectJoins`, this does not multiply parent rows, so `DISTINCT` is not needed and `Count()`/`LIMIT`-based pagination stay correct ([#722](https://github.com/stephenafamo/bob/pull/722)). (thanks @sandonemaki)
+
+### Changed
+
+- `NewViewx` and `NewTablex` in the `psql`, `mysql` and `sqlite` dialects now take a `scan.Mapper[T]` argument used for all queries built from the view/table. Pass `nil` to keep the previous reflection-based `scan.StructMapper` behaviour. `NewView`/`NewTable` are unchanged. (thanks @sandonemaki)
+- JOIN a DISTINCT unnest(...) for composite-key relationship loaders & counts on PostgreSQL. (thanks @sandonemaki)
+- `Preload` now shares a single related-struct instance between all parent rows with the same join key, instead of building an identical instance per parent row — the same semantics as `ThenLoad`. The emitted SQL is unchanged; construction, nested loader collection and mapping now run once per distinct related row, which significantly reduces time, allocations and retained memory on high-duplication workloads. Preloaded structs should be treated as read-only: code that mutates a preloaded struct and relies on each parent having its own copy must copy the struct first. (thanks @sandonemaki)
+
+### Fixed
+
+- Fixed an unused type import (e.g. `github.com/google/uuid`) in generated models when the type is only referenced through optional wrapper expressions, such as m2m relationship helpers for a join table with a `uuid` column ([#730](https://github.com/stephenafamo/bob/issues/730)).
+- Fixed the counts plugin's generated `C` field reusing the `relation_tag` struct tag, which collided with the relations `R` field and caused `encoding/json` to drop both fields when a real tag name was configured. The `C` field now uses a dedicated `relation_tag_count` config option (default `"-"`). (thanks @jacobmolby)
+- Fixed generated join alias suffixes using `randInt()`, which could produce negative values when `maphash.Hash.Sum64()` overflowed `int64` ([#719](https://github.com/stephenafamo/bob/issues/719)). Generated join mods now use `bob.NextUniqueInt()` instead. (thanks @atzedus)
+- Fixed `orm.Query.Clone()` dropping the `Scanner`, which made `All`/`One`/`Cursor`/`Each` on a cloned query panic with a nil pointer dereference. (thanks @sandonemaki)
+- Fixed column_order on `*` selectors in sql queries in postgres
+
+## [v0.48.0] - 2026-06-26
+
+### Changed
+
+- PostgreSQL single-column relationship loaders — both the slice relationship query (`<Parent>Slice.<Rel>`) and the batch count method (`<Parent>Slice.LoadCount<Rel>`) — now filter related rows with `col = ANY($1)` instead of `col IN (SELECT unnest($1))`, so the query planner can use an index scan on the foreign key instead of a `Seq Scan + Hash Semi Join`. Composite-key relationships keep the existing `IN (SELECT unnest(...))` form. (thanks @sandonemaki)
+
+### Fixed
+
+- Fixed PostgreSQL generated query parsing for CTEs that use table functions in `FROM` (for example `unnest(...) AS alias`), which could incorrectly widen CTE spans and generate malformed query mods such as duplicated outer `SELECT` projections.
+
+## [v0.47.0] - 2026-06-22
+
+### Added
+
+- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order). (thanks @cbarber)
+
+### Changed
+
+- Change the closure in `RunInTx` to pass `bob.Transaction` instead of `bob.Executor`
+
 ## [v0.46.0] - 2026-06-11
 
 ### Added
@@ -18,10 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `With()` on generated queries as a more ergonomic method to add mods on top of generated queries (thanks @daddz)
 - Added `Asc()/Desc()/...` helpers to `sm.OrderCombined` for PostgreSQL/MySQL (thanks @daddz)
 - Added SQLite `um.SetCols(columns...)` and `im.SetCols(columns...)` for tuple assignment in `UPDATE ... SET` and `ON CONFLICT DO UPDATE SET` (`.ToExprs(...)`, `.ToRow(...)`, `.ToQuery(...)`). SQLite renders `(cols) = (exprs...)`; PostgreSQL `ToRow` still emits `ROW (...)`. MySQL does not support tuple assignment — use multiple `SetCol` calls. (thanks @atzedus)
-
-### Added
-
-- Added `column_order` config option (shared across all drivers). Set to `"name"` to sort generated model columns alphabetically, producing deterministic output regardless of the order migrations were applied to the database. Defaults to `"ordinal"` (previous behaviour: database physical column order).
 
 ### Fixed
 
