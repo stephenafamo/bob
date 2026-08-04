@@ -21,3 +21,27 @@ func (e *UniqueConstraintError) Is(target error) bool {
   return false
 }
 {{end}}
+
+// ErrCheckConstraint captures all check constraint errors by explicitly leaving `s` empty.
+var ErrCheckConstraint = &CheckConstraintError{s: ""}
+
+type CheckConstraintError struct {
+  // schema is the schema where the check constraint is defined.
+  schema string
+  // table is the name of the table where the check constraint is defined.
+  table string
+  // columns are the columns referenced by the check constraint.
+  columns []string
+	// s is a string uniquely identifying the constraint in the raw error message returned from the database.
+	s string
+}
+
+func (e *CheckConstraintError) Error() string {
+  return e.s
+}
+
+{{block "check_constraint_error_detection_method" . -}}
+func (e *CheckConstraintError) Is(target error) bool {
+  return false
+}
+{{end}}

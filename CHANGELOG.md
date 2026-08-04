@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Generated `dberrors` packages now include generic and per-table check-constraint errors for PostgreSQL, matched by constraint name for `pq` and `pgx` drivers. (thanks @keithbro-imx)
+
 ### Changed
 
 - PostgreSQL single-column slice relationship loaders (`<Parent>Slice.<Rel>`) and batch counts (`<Parent>Slice.LoadCount<Rel>`) now de-duplicate the key array bound to `= ANY($1)` when the key column can contain duplicates (a non-unique foreign key). The array is only a semi-join filter, so query results are unchanged — a slice of 10,000 parents sharing 50 related rows now binds 50 keys instead of 10,000. Keys that are unique by construction (the parent's own primary key or a uniquely-constrained column) and key types not comparable with `==` keep the previous plain loop, decided at codegen time ([#740](https://github.com/stephenafamo/bob/pull/740)). (thanks @sandonemaki)
