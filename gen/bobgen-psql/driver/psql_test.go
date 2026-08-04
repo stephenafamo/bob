@@ -16,6 +16,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
+	ctest "github.com/stephenafamo/bob/test/containers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
 	"github.com/testcontainers/testcontainers-go"
@@ -37,15 +38,10 @@ func TestDriver(t *testing.T) {
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
+	ctest.Cleanup(t, postgresContainer)
 	if err != nil {
-		fmt.Printf("could not start postgres container: %v\n", err)
-		return
+		t.Fatalf("could not start postgres container: %v", err)
 	}
-	defer func() {
-		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
 
 	dsn, err := postgresContainer.ConnectionString(t.Context(), "sslmode=disable")
 	if err != nil {
