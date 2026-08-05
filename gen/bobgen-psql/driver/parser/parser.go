@@ -112,12 +112,12 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	info := w.walk(stmt.Stmt)
 	switch node := stmt.Stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
-		if len(node.SelectStmt.ValuesLists) > 0 {
-			return drivers.Query{}, fmt.Errorf("VALUES statement is not supported")
-		}
-
 		info = info.children["SelectStmt"]
-		w.modSelectStatement(node, info)
+		if len(node.SelectStmt.ValuesLists) > 0 {
+			w.modValuesStatement(node, info)
+		} else {
+			w.modSelectStatement(node, info)
+		}
 
 	case *pg.Node_InsertStmt:
 		info = info.children["InsertStmt"]
@@ -239,6 +239,10 @@ func isReturningWithParseError(sql string, err error) bool {
 func getQueryType(stmt *pg.Node) bob.QueryType {
 	switch stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
+		// VALUES (...) is parsed as SelectStmt with ValuesLists set; no separate node type exists
+		if len(stmt.Node.(*pg.Node_SelectStmt).SelectStmt.ValuesLists) > 0 {
+			return bob.QueryTypeValues
+		}
 		return bob.QueryTypeSelect
 	case *pg.Node_InsertStmt:
 		return bob.QueryTypeInsert
