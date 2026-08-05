@@ -89,6 +89,11 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("expected 1 statement, got %d", len(parseResult.Stmts))
 	}
 
+	stmt := parseResult.Stmts[0]
+	qType := getQueryType(stmt.Stmt)
+
+	var argTypes, resTypes []string
+
 	w := walker{
 		db:           p.db,
 		sharedSchema: p.sharedSchema,
@@ -104,7 +109,6 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		paramIdxMap:  make(map[int64]int64),
 	}
 
-	stmt := parseResult.Stmts[0]
 	info := w.walk(stmt.Stmt)
 	switch node := stmt.Stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
@@ -130,6 +134,15 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	case *pg.Node_MergeStmt:
 		info = info.children["MergeStmt"]
 		w.modMergeStatement(node, info)
+	case *pg.Node_ListenStmt:
+		// pg.ListenStmt has no Location field; find the keyword token directly
+		info = w.findTokenAfter(0, pg.Token_LISTEN)
+		w.modListenStatement(node, info)
+
+	case *pg.Node_NotifyStmt:
+		// pg.NotifyStmt has no Location field; find the keyword token directly
+		info = w.findTokenAfter(0, pg.Token_NOTIFY)
+		w.modNotifyStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
@@ -143,9 +156,12 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("format: %w", err)
 	}
 
-	argTypes, resTypes, err := p.getArgsAndCols(ctx, formatted)
-	if err != nil {
-		return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
+	// LISTEN/NOTIFY cannot be PREPAREd; they have no args or result columns
+	if qType != bob.QueryTypeListen && qType != bob.QueryTypeNotify {
+		argTypes, resTypes, err = p.getArgsAndCols(ctx, formatted)
+		if err != nil {
+			return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
+		}
 	}
 
 	if len(source.columns) != len(resTypes) {
