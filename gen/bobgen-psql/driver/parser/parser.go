@@ -232,6 +232,10 @@ func getQueryType(stmt *pg.Node) bob.QueryType {
 		return bob.QueryTypeDelete
 	case *pg.Node_MergeStmt:
 		return bob.QueryTypeMerge
+	case *pg.Node_ListenStmt:
+		return bob.QueryTypeListen
+	case *pg.Node_NotifyStmt:
+		return bob.QueryTypeNotify
 	default:
 		return bob.QueryTypeUnknown
 	}
