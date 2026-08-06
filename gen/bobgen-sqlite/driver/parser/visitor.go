@@ -113,8 +113,12 @@ func (v *visitor) VisitSql_stmt_list(ctx *sqliteparser.Sql_stmt_listContext) any
 
 			switch child := child.(type) {
 			case *sqliteparser.Select_stmtContext:
-				queryType = bob.QueryTypeSelect
-				imports = v.modSelect_stmt(child, mods)
+				if child.Select_core().Values_clause() != nil {
+					queryType = bob.QueryTypeValues
+				} else {
+					queryType = bob.QueryTypeSelect
+					imports = v.modSelect_stmt(child, mods)
+				}
 			case *sqliteparser.Insert_stmtContext:
 				queryType = bob.QueryTypeInsert
 				v.modInsert_stmt(child, mods)
