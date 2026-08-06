@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for `LISTEN` and `NOTIFY` statements in PostgreSQL, including `bobgen-psql` parser support. Note: `LISTEN` requires a persistent connection and only registers the channel — receiving notifications must be implemented using your specific database driver. (thanks @manhrev)
+- Added `bobgen-psql` and `bobgen-sqlite` parser support for top-level `VALUES` queries. MySQL support is partial. (thanks @manhrev)
 - Generated `dberrors` packages now include generic and per-table check-constraint errors for PostgreSQL, matched by constraint name for `pq` and `pgx` drivers. (thanks @keithbro-imx)
 
 ### Changed
