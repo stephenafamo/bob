@@ -73,9 +73,10 @@ func (p *Parser) getArgsAndCols(ctx context.Context, q string) ([]string, []stri
 		return nil, nil, fmt.Errorf("uuid: %w", err)
 	}
 
-	_, err = p.conn.ExecContext(ctx, fmt.Sprintf("PREPARE %q AS %s", queryID.String(), q))
+	prepareQuery := fmt.Sprintf("PREPARE %q AS %s", queryID.String(), q)
+	_, err = p.conn.ExecContext(ctx, prepareQuery)
 	if err != nil {
-		return nil, nil, fmt.Errorf("prepare: %w", err)
+		return nil, nil, fmt.Errorf("prepare: %w\nQuery was: %s", err, prepareQuery)
 	}
 
 	info, err := stdscan.All(
