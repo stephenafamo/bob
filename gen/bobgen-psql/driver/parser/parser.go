@@ -89,6 +89,11 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("expected 1 statement, got %d", len(parseResult.Stmts))
 	}
 
+	stmt := parseResult.Stmts[0]
+	qType := getQueryType(stmt.Stmt)
+
+	var argTypes, resTypes []string
+
 	w := walker{
 		db:           p.db,
 		sharedSchema: p.sharedSchema,
@@ -104,16 +109,15 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		paramIdxMap:  make(map[int64]int64),
 	}
 
-	stmt := parseResult.Stmts[0]
 	info := w.walk(stmt.Stmt)
 	switch node := stmt.Stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
-		if len(node.SelectStmt.ValuesLists) > 0 {
-			return drivers.Query{}, fmt.Errorf("VALUES statement is not supported")
-		}
-
 		info = info.children["SelectStmt"]
-		w.modSelectStatement(node, info)
+		if len(node.SelectStmt.ValuesLists) > 0 {
+			w.modValuesStatement(node, info)
+		} else {
+			w.modSelectStatement(node, info)
+		}
 
 	case *pg.Node_InsertStmt:
 		info = info.children["InsertStmt"]
@@ -130,6 +134,15 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	case *pg.Node_MergeStmt:
 		info = info.children["MergeStmt"]
 		w.modMergeStatement(node, info)
+	case *pg.Node_ListenStmt:
+		// pg.ListenStmt has no Location field; find the keyword token directly
+		info = w.findTokenAfter(0, pg.Token_LISTEN)
+		w.modListenStatement(node, info)
+
+	case *pg.Node_NotifyStmt:
+		// pg.NotifyStmt has no Location field; find the keyword token directly
+		info = w.findTokenAfter(0, pg.Token_NOTIFY)
+		w.modNotifyStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
@@ -143,9 +156,12 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 		return drivers.Query{}, fmt.Errorf("format: %w", err)
 	}
 
-	argTypes, resTypes, err := p.getArgsAndCols(ctx, formatted)
-	if err != nil {
-		return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
+	// LISTEN/NOTIFY cannot be PREPAREd; they have no args or result columns
+	if qType != bob.QueryTypeListen && qType != bob.QueryTypeNotify {
+		argTypes, resTypes, err = p.getArgsAndCols(ctx, formatted)
+		if err != nil {
+			return drivers.Query{}, fmt.Errorf("get args and cols: %w", err)
+		}
 	}
 
 	if len(source.columns) != len(resTypes) {
@@ -223,6 +239,10 @@ func isReturningWithParseError(sql string, err error) bool {
 func getQueryType(stmt *pg.Node) bob.QueryType {
 	switch stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
+		// VALUES (...) is parsed as SelectStmt with ValuesLists set; no separate node type exists
+		if len(stmt.Node.(*pg.Node_SelectStmt).SelectStmt.ValuesLists) > 0 {
+			return bob.QueryTypeValues
+		}
 		return bob.QueryTypeSelect
 	case *pg.Node_InsertStmt:
 		return bob.QueryTypeInsert
@@ -232,6 +252,10 @@ func getQueryType(stmt *pg.Node) bob.QueryType {
 		return bob.QueryTypeDelete
 	case *pg.Node_MergeStmt:
 		return bob.QueryTypeMerge
+	case *pg.Node_ListenStmt:
+		return bob.QueryTypeListen
+	case *pg.Node_NotifyStmt:
+		return bob.QueryTypeNotify
 	default:
 		return bob.QueryTypeUnknown
 	}
