@@ -20,7 +20,7 @@ Bob's new foundation made it possible to do many things SQLBoiler cannot since B
   * **SQLBoiler**: The same query mods are used every where, making it possible to craft invalid queries where a mod is used on the wrong query type (e.g. JOINS on a DELETE query)
   * **Bob**: Each query type has its own mods, making it impossible to craft an invalid query.
 * Dialect Support:
-  * **SQLBoiler**: Since every feature has to work accross all dialects, it is difficult to support the full range of a dialect or add new dialects.
+  * **SQLBoiler**: Since every feature has to work across all dialects, it is difficult to support the full range of a dialect or add new dialects.
   * **Bob**: Since every query and its mods are independent of each other, Bob can support the full range of capabilities of any dialect, and add new dialects without being concerned about the existing ones.
 * Building Custom SQL:
   * **SQLBoiler**: Outside of using the generated code, the user has to manage SQL building by hand which can involve a lot of manual string manipulation.

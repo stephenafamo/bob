@@ -1,6 +1,6 @@
 ---
 sidebar_position: 5
-description: Common operators accross dialects
+description: Common operators across dialects
 ---
 
 # Operators
