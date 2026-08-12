@@ -33,6 +33,9 @@ func Test{{$tAlias.UpSingular}}HasRelationsEmitExists(t *testing.T) {
 		if !strings.Contains(sql, "EXISTS") {
 			t.Errorf("Has{{$relAlias}}: expected EXISTS in query, got: %s", sql)
 		}
+		if strings.Contains(sql, "EXISTS ((") {
+			t.Errorf("Has{{$relAlias}}: expected a single set of parentheses around the subquery, got: %s", sql)
+		}
 	})
 	{{end -}}
 }

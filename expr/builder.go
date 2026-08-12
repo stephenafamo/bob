@@ -43,10 +43,20 @@ func Not[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	return b.New(Join{Exprs: []bob.Expression{not, X[T, B](exp)}})
 }
 
+// Query expressions add their own parentheses when embedded. Other operands
+// still need grouping because EXISTS, ANY and ALL require parentheses.
+func groupQuantifiedOperand(exp bob.Expression) bob.Expression {
+	if _, ok := exp.(bob.Query); ok {
+		return exp
+	}
+
+	return group{exp}
+}
+
 // Exists expression
 func Exists[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{exists, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{exists, groupQuantifiedOperand(exp)}})
 }
 
 // prefix the expression with a - (minus)
@@ -58,13 +68,13 @@ func Minus[T bob.Expression, B builder[T]](exp bob.Expression) T {
 // ANY expression
 func Any[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{anyOp, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{anyOp, groupQuantifiedOperand(exp)}})
 }
 
 // ALL expression
 func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{all, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{all, groupQuantifiedOperand(exp)}})
 }
 
 // To be embedded in query mods
