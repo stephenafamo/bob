@@ -115,7 +115,7 @@ func Case() expr.CaseChain[Expression, Expression] {
 	return expr.NewCase[Expression, Expression]()
 }
 
-// SQL: EXISTS ((SELECT 1))
+// SQL: EXISTS (SELECT 1)
 // Go: psql.Exists(psql.Select(sm.Columns("1")))
 func Exists(exp bob.Expression) Expression {
 	return bmod.Exists(exp)
@@ -127,13 +127,13 @@ func Minus(exp bob.Expression) Expression {
 	return bmod.Minus(exp)
 }
 
-// SQL: a = ANY((SELECT name FROM users))
+// SQL: a = ANY(SELECT name FROM users)
 // Go: psql.Quote("a").EQ(psql.Any(psql.Select(sm.Columns("name"), sm.From("users"))))
 func Any(exp bob.Expression) bob.Expression {
 	return bmod.Any(exp)
 }
 
-// SQL: a = ALL((SELECT name FROM users))
+// SQL: a = ALL(SELECT name FROM users)
 // Go: psql.Quote("a").EQ(psql.All(psql.Select(sm.Columns("name"), sm.From("users"))))
 func All(exp bob.Expression) bob.Expression {
 	return bmod.All(exp)

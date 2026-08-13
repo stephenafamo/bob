@@ -156,6 +156,23 @@ func TestSelect(t *testing.T) {
                 WHERE ("id" = ?2)`,
 			ExpectedArgs: []any{"123", 100},
 		},
+		"select where exists": {
+			Doc: "Select where an EXISTS subquery matches",
+			ExpectedSQL: `SELECT id FROM users WHERE EXISTS (
+                  SELECT 1
+                  FROM orders
+                  WHERE ("orders"."user_id" = "users"."id")
+                )`,
+			Query: sqlite.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.Where(sqlite.Exists(sqlite.Select(
+					sm.Columns("1"),
+					sm.From("orders"),
+					sm.Where(sqlite.Quote("orders", "user_id").EQ(sqlite.Quote("users", "id"))),
+				))),
+			),
+		},
 	}
 
 	testutils.RunTests(t, examples, formatter)

@@ -46,7 +46,7 @@ func Not[T bob.Expression, B builder[T]](exp bob.Expression) T {
 // Exists expression
 func Exists[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{exists, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{exists, subquery(exp)}})
 }
 
 // prefix the expression with a - (minus)
@@ -58,13 +58,26 @@ func Minus[T bob.Expression, B builder[T]](exp bob.Expression) T {
 // ANY expression
 func Any[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{anyOp, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{anyOp, subquery(exp)}})
 }
 
 // ALL expression
 func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	var b B
-	return b.New(Join{Exprs: []bob.Expression{all, group{exp}}})
+	return b.New(Join{Exprs: []bob.Expression{all, subquery(exp)}})
+}
+
+// A [bob.Query] writes its own surrounding parentheses when rendered as an
+// expression (see [bob.BaseQuery.WriteSQL]), so wrapping it in a group would
+// produce doubled parentheses such as EXISTS ((SELECT ...)).
+// Any other expression is wrapped in a group since EXISTS/ANY/ALL require
+// parentheses around their operand.
+func subquery(exp bob.Expression) bob.Expression {
+	if _, ok := exp.(bob.Query); ok {
+		return exp
+	}
+
+	return group{exp}
 }
 
 // To be embedded in query mods
