@@ -1,6 +1,6 @@
 ---
 sidebar_position: 4.5
-description: Common starters accross dialects
+description: Common starters across dialects
 ---
 
 # Starters
