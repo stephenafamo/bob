@@ -48,3 +48,29 @@ func Test_enumValToScreamingSnakeCase(t *testing.T) {
 		})
 	}
 }
+
+func Test_columnTagName(t *testing.T) {
+	tests := []struct {
+		name     string
+		casing   string
+		column   string
+		alias    string
+		expected string
+	}{
+		{"camel ID", "camel", "acronym_id", "AcronymID", "acronymId"},
+		{"camel HTTP", "camel", "acronym_http", "AcronymHTTP", "acronymHttp"},
+		{"camel URL", "camel", "acronym_url", "AcronymURL", "acronymUrl"},
+		{"camel DNS", "camel", "acronym_dns", "AcronymDNS", "acronymDns"},
+		{"camel mixed word", "camel", "acronym_valueKind", "AcronymValueKind", "acronymValueKind"},
+		{"title", "title", "acronym_id", "AcronymID", "AcronymID"},
+		{"alias", "alias", "acronym_id", "customName", "customName"},
+		{"default", "snake", "acronym_id", "AcronymID", "acronym_id"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if actual := columnTagName(tt.casing, tt.column, tt.alias); actual != tt.expected {
+				t.Errorf("columnTagName(%q, %q, %q) = %q; want %q", tt.casing, tt.column, tt.alias, actual, tt.expected)
+			}
+		})
+	}
+}

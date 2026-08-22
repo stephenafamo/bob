@@ -155,18 +155,7 @@ var templateFunctions = template.FuncMap{
 	"normalizeType":      NormalizeType,
 	"enumVal":            enumValToIdentifier,
 	"enumValScreaming":   enumValToScreamingSnakeCase,
-	"columnTagName": func(casing, name, alias string) string {
-		switch casing {
-		case "camel":
-			return strmangle.CamelCase(name)
-		case "title":
-			return strmangle.TitleCase(name)
-		case "alias":
-			return alias
-		default:
-			return name
-		}
-	},
+	"columnTagName":      columnTagName,
 	"quoteAndJoin": func(s1, s2 string) string {
 		if s1 == "" && s2 == "" {
 			return ""
@@ -185,6 +174,43 @@ var templateFunctions = template.FuncMap{
 	"isPrimitiveType":    isPrimitiveType,
 	"relQueryMethodName": relQueryMethodName,
 	"tableColumnAlias":   tableColumnAlias,
+}
+
+func columnTagName(casing, name, alias string) string {
+	switch casing {
+	case "camel":
+		return lowerCamelCase(name)
+	case "title":
+		return strmangle.TitleCase(name)
+	case "alias":
+		return alias
+	default:
+		return name
+	}
+}
+
+// lowerCamelCase converts underscore-separated names without preserving Go
+// initialisms. Struct tags use conventional camel casing such as "userId",
+// while generated Go identifiers continue to use strmangle.CamelCase and
+// produce "userID".
+func lowerCamelCase(name string) string {
+	words := strings.FieldsFunc(name, func(r rune) bool { return r == '_' })
+	if len(words) == 0 {
+		return ""
+	}
+
+	var result strings.Builder
+	result.Grow(len(name))
+	result.WriteString(strmangle.CamelCase(words[0]))
+	for _, word := range words[1:] {
+		if word == strings.ToUpper(word) {
+			word = strings.ToLower(word)
+		}
+		runes := []rune(word)
+		runes[0] = unicode.ToUpper(runes[0])
+		result.WriteString(string(runes))
+	}
+	return result.String()
 }
 
 // tableColumnAlias returns the column qualifier used by dialect View/Table types.
