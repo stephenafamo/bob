@@ -184,6 +184,8 @@ func (v *visitor) VisitSqlStatements(ctx *mysqlparser.SqlStatementsContext) any 
 				v.Err = fmt.Errorf("stmt %d: could not get columns in select statement, got %T", i, resp)
 				return nil
 			}
+		case *mysqlparser.ValuesStatementContext:
+			queryType = bob.QueryTypeValues
 		}
 
 		allresp = append(allresp, StmtInfo{
