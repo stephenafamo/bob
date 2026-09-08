@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. This fixes scanning array columns through native pgx, including nullable array columns. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
+
+### Changed
+
+- **BREAKING:** `bobgen-psql` now generates `pgtypes.Array[T]` for every array column instead of the `lib/pq` types `pq.BoolArray`, `pq.Int32Array`, `pq.Int64Array`, `pq.Float32Array`, `pq.Float64Array`, `pq.StringArray` and `pq.ByteaArray`, which only understand the text array format and cannot be scanned by native pgx. For example, a nullable `text[]` column is now `null.Val[pgtypes.Array[string]]` instead of `null.Val[pq.StringArray]`. All of these types have the same underlying slice type, so plain slice literals still assign to them and conversions such as `pgtypes.Array[string](x)` are free. The `pq.*Array` type definitions remain available for use with the `types` and `replacements` configuration. Note that `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+
 ### Fixed
 
 - Fixed the generated `<Table>Slice.copyMatchingRows` (used by `UpdateAll`, `ReloadAll`, and the `UpdateMod`/`DeleteMod`/`MergeMod` loaders) dropping relationship and plugin caches when refreshing a slice in place. It used to swap each slice element for a freshly scanned model after copying over only `.R`, silently losing `.C` and any other non-column field. It now copies just the column fields onto the existing model instead, so the slice keeps its original pointers and all its cached fields. See [#759](https://github.com/stephenafamo/bob/pull/759) for the full rationale. Note: code relying on pointer identity changing across `UpdateAll`/`ReloadAll` will now observe the same pointer, and models returned by a caller-driven `.All()` call are no longer mutated with `.R`.

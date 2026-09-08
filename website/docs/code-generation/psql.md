@@ -65,11 +65,15 @@ The `driver` configuration option enables Bob to generate code that is tailored 
 For Postgres, the supported drivers are:
 
 - [github.com/lib/pq](https://pkg.go.dev/github.com/lib/pq) (default)
-- [github.com/jackc/pgx](https://pkg.go.dev/github.com/jackc/pgx)
-- [github.com/jackc/pgx/v4](https://pkg.go.dev/github.com/jackc/pgx/v4)
-- [github.com/jackc/pgx/v5](https://pkg.go.dev/github.com/jackc/pgx/v5)
+- [github.com/jackc/pgx/v5/stdlib](https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib)
 
 Bob leverages driver-specific code to perform precise error matching for [generated error constants](./usage#generated-error-constants).
+
+## Arrays
+
+One-dimensional array columns are generated as `pgtypes.Array[T]` (or `pgtypes.EnumArray[T]` for arrays of enums) from the [`github.com/stephenafamo/bob/types/pgtypes`](https://pkg.go.dev/github.com/stephenafamo/bob/types/pgtypes) package. A `nil` array is `NULL`, while an empty non-nil array is an empty array (`{}`).
+
+These types work with all supported drivers: they implement `sql.Scanner` and `driver.Valuer` for `database/sql` drivers, and `pgtype.ArraySetter` and `pgtype.ArrayGetter` so that native pgx scans and encodes them directly. They also decode pgx's binary format when wrapped in another `sql.Scanner` such as `null.Val`.
 
 ## Only/Except:
 

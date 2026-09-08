@@ -150,7 +150,7 @@ func (t *Translator) getArrayType(info ColInfo) (string, string) {
 				return typ, info.UDTName
 			}
 		}
-		return "pq.StringArray", name
+		return t.addPgGenericArrayType(t.Types, "string"), name
 	}
 
 	typToTranslate := info.ArrType
@@ -163,24 +163,7 @@ func (t *Translator) getArrayType(info ColInfo) (string, string) {
 		drivers.Column{DBType: typToTranslate}, ColInfo{},
 	).Type
 
-	switch translated {
-	case "bool":
-		return "pq.BoolArray", typToTranslate
-	case "int32":
-		return "pq.Int32Array", typToTranslate
-	case "int64":
-		return "pq.Int64Array", typToTranslate
-	case "float32":
-		return "pq.Float32Array", typToTranslate
-	case "float64":
-		return "pq.Float64Array", typToTranslate
-	case "string":
-		return "pq.StringArray", typToTranslate
-	case "[]byte":
-		return "pq.ByteaArray", typToTranslate
-	default:
-		return t.addPgGenericArrayType(t.Types, translated), typToTranslate
-	}
+	return t.addPgGenericArrayType(t.Types, translated), typToTranslate
 }
 
 func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) string {
@@ -202,6 +185,8 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
                 arr[i] = random_%s(f, limits...)
             }
             return arr`, arrTyp, gen.NormalizeType(fullEnumTyp)),
+		CompareExpr:        `slices.Equal(AAA, BBB)`,
+		CompareExprImports: []string{`"slices"`},
 	})
 
 	return arrTyp
@@ -221,8 +206,9 @@ func (t *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 	typ := fmt.Sprintf("pgtypes.Array[%s]", singleTyp)
 
 	types.Register(typ, drivers.Type{
-		DependsOn: []string{singleTyp},
-		Imports:   append([]string{pgtypesImport}, singleTypDef.Imports...),
+		DependsOn:           []string{singleTyp},
+		Imports:             append([]string{pgtypesImport}, singleTypDef.Imports...),
+		NoRandomizationTest: singleTypDef.NoRandomizationTest,
 		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {
                 arr[i] = random_%s(f, limits...)
