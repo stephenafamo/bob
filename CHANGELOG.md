@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING:** `bobgen-psql` now generates `pgtypes.Array[T]` for every array column instead of the `lib/pq` types `pq.BoolArray`, `pq.Int32Array`, `pq.Int64Array`, `pq.Float32Array`, `pq.Float64Array`, `pq.StringArray` and `pq.ByteaArray`, which only understand the text array format and cannot be scanned by native pgx. For example, a nullable `text[]` column is now `null.Val[pgtypes.Array[string]]` instead of `null.Val[pq.StringArray]`. All of these types have the same underlying slice type, so plain slice literals still assign to them and conversions such as `pgtypes.Array[string](x)` are free. The `pq.*Array` type definitions remain available for use with the `types` and `replacements` configuration. Note that `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- **BREAKING:** `bobgen-psql` now generates `pgtypes.Array[T]` for every array column instead of the `lib/pq` types `pq.BoolArray`, `pq.Int32Array`, `pq.Int64Array`, `pq.Float32Array`, `pq.Float64Array`, `pq.StringArray` and `pq.ByteaArray`, which only understand the text array format and cannot be scanned by native pgx. For example, a nullable `text[]` column is now `null.Val[pgtypes.Array[string]]` instead of `null.Val[pq.StringArray]`. All of these types have the same underlying slice type, so plain slice literals still assign to them and conversions such as `pgtypes.Array[string](x)` are free. The built-in `pq.*Array` type definitions have been removed as well; to keep using them, define them under the `types` configuration. Note that `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
 
 ### Fixed
 
