@@ -3,6 +3,7 @@ package pgtypes
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -44,6 +45,18 @@ func encodeBinary(t *testing.T, oid uint32, v any) []byte {
 	if err != nil {
 		t.Fatalf("encoding %v: %v", v, err)
 	}
+
+	return buf
+}
+
+// encodeBinaryUnknownOID encodes a binary text[] whose element OID pgx does not
+// know about, which is how arrays of enums arrive from a native pgx connection.
+func encodeBinaryUnknownOID(t *testing.T, v []string) []byte {
+	t.Helper()
+
+	const unknownOID = 1_000_000
+	buf := encodeBinary(t, pgtype.TextArrayOID, v)
+	binary.BigEndian.PutUint32(buf[8:12], unknownOID)
 
 	return buf
 }
@@ -106,15 +119,10 @@ func TestArrayScanBinary(t *testing.T) {
 		{Val: json.RawMessage(`{"a":1}`)},
 	})
 	testScan(t, "null val", encodeBinary(t, pgtype.Int4ArrayOID, []*int32{ptr[int32](1), nil}), Array[null.Val[int32]]{null.From[int32](1), null.FromPtr[int32](nil)})
-	testScan(t, "unknown element oid",
-		// enums arrive with an OID pgx does not know, and text elements
-		encodeBinary(t, pgtype.TextArrayOID, []string{"a", "b"}), Array[string]{"a", "b"})
 }
 
 func TestArrayScanUnknownBinaryOID(t *testing.T) {
-	buf := encodeBinary(t, pgtype.TextArrayOID, []string{"hello", "привет"})
-	// overwrite the element OID with one pgx does not know about, like an enum
-	buf[8], buf[9], buf[10], buf[11] = 0, 0x0f, 0x42, 0x40
+	buf := encodeBinaryUnknownOID(t, []string{"hello", "привет"})
 
 	var got Array[string]
 	if err := got.Scan(buf); err != nil {

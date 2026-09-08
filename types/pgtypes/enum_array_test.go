@@ -13,14 +13,10 @@ type testEnum string
 func TestEnumArrayScan(t *testing.T) {
 	want := EnumArray[testEnum]{"hello", "привет", `a"b`}
 
-	binary := encodeBinary(t, pgtype.TextArrayOID, []string{"hello", "привет", `a"b`})
-	// enums arrive with an OID pgx does not know about
-	binary[8], binary[9], binary[10], binary[11] = 0, 0x0f, 0x42, 0x40
-
 	for name, src := range map[string]any{
 		"text":   `{hello,привет,"a\"b"}`,
 		"bytes":  []byte(`{hello,привет,"a\"b"}`),
-		"binary": binary,
+		"binary": encodeBinaryUnknownOID(t, []string{"hello", "привет", `a"b`}),
 	} {
 		var got EnumArray[testEnum]
 		if err := got.Scan(src); err != nil {

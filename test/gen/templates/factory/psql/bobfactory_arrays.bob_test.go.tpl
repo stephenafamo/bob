@@ -1,8 +1,7 @@
 {{- /*
   Round-trip tests for the Go types generated for Postgres array columns.
   Each distinct array type is sent as a query parameter and scanned back,
-  both bare and wrapped in the nullable type, under every configured driver
-  (lib/pq, pgx/stdlib and native pgx).
+  both bare and wrapped in the nullable type, under every configured driver.
   See https://github.com/stephenafamo/bob/issues/90 and
   https://github.com/stephenafamo/bob/issues/739
 */ -}}
@@ -19,7 +18,7 @@
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
 
 // jsonArraysEqual compares JSON arrays semantically, since jsonb normalizes its input
-func jsonArraysEqual[T any, A ~[]T, B ~[]T](a A, b B, val func(T) []byte) bool {
+func jsonArraysEqual[T any](a, b []T, val func(T) []byte) bool {
 	if len(a) != len(b) {
 		return false
 	}
