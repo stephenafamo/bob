@@ -8,24 +8,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// arrayMaps holds pgtype.Map instances for scanning arrays.
+// A Map is not safe for concurrent use, so each scan takes one from the pool.
+// Creating a Map is cheap since it defers to pgx's default type registry.
+//
 //nolint:gochecknoglobals
-var (
-	arrayMapOnce sync.Once
-	arrayMap     *pgtype.Map
-)
-
-// arrayTypeMap returns a shared [pgtype.Map] used only for scanning arrays.
-// It must never be used for encoding or type registration since those
-// mutate unsynchronised state inside the map.
-func arrayTypeMap() *pgtype.Map {
-	arrayMapOnce.Do(func() {
-		arrayMap = pgtype.NewMap()
-		// Force the lazy reflect index to be built before concurrent use.
-		arrayMap.TypeForValue(new(string))
-	})
-
-	return arrayMap
-}
+var arrayMaps = sync.Pool{New: func() any { return pgtype.NewMap() }}
 
 // textElemType is used for element types that pgx does not know about.
 // The text codec hands the element to sql.Scanner implementations as a string.
@@ -61,12 +49,9 @@ func isBinaryArray(b []byte) bool {
 // elemPtr is a pointer to the element type, used to pick the element codec
 // when decoding the text format.
 func scanArray(src any, target pgtype.ArraySetter, elemPtr any) error {
-	m := arrayTypeMap()
-
 	var (
 		buf    []byte
 		format int16
-		dt     *pgtype.Type
 	)
 
 	switch v := src.(type) {
@@ -83,6 +68,10 @@ func scanArray(src any, target pgtype.ArraySetter, elemPtr any) error {
 		return fmt.Errorf("pgtypes: cannot scan %T into a Postgres array", src)
 	}
 
+	m := arrayMaps.Get().(*pgtype.Map)
+	defer arrayMaps.Put(m)
+
+	var dt *pgtype.Type
 	if format == pgtype.BinaryFormatCode {
 		elemOID := binary.BigEndian.Uint32(buf[8:12])
 		var ok bool
