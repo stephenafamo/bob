@@ -60,20 +60,25 @@ The values that exist for the drivers:
 
 ## Driver-specific code
 
-The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
+The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected driver.
 
 For Postgres, the supported drivers are:
 
 - [github.com/lib/pq](https://pkg.go.dev/github.com/lib/pq) (default)
-- [github.com/jackc/pgx/v5/stdlib](https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib)
+- [github.com/jackc/pgx/v5/stdlib](https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib) (pgx through `database/sql`)
+- [github.com/jackc/pgx/v5](https://pkg.go.dev/github.com/jackc/pgx/v5) (native pgx, experimental, used with the `bob.Executor` implementations in [`github.com/stephenafamo/bob/drivers/pgx`](https://pkg.go.dev/github.com/stephenafamo/bob/drivers/pgx))
 
 Bob leverages driver-specific code to perform precise error matching for [generated error constants](./usage#generated-error-constants).
 
 ## Arrays
 
-One-dimensional array columns are generated as `pgtypes.Array[T]` (or `pgtypes.EnumArray[T]` for arrays of enums) from the [`github.com/stephenafamo/bob/types/pgtypes`](https://pkg.go.dev/github.com/stephenafamo/bob/types/pgtypes) package. A `nil` array is `NULL`, while an empty non-nil array is an empty array (`{}`).
+One-dimensional array columns are generated as `pq.StringArray`, `pq.Int32Array` and the other [lib/pq](https://pkg.go.dev/github.com/lib/pq) array types for primitive elements, and as `pgtypes.Array[T]` (or `pgtypes.EnumArray[T]` for arrays of enums) from [`github.com/stephenafamo/bob/types/pgtypes`](https://pkg.go.dev/github.com/stephenafamo/bob/types/pgtypes) for everything else.
 
-These types work with all supported drivers: they implement `sql.Scanner` and `driver.Valuer` for `database/sql` drivers, and `pgtype.ArraySetter` and `pgtype.ArrayGetter` so that native pgx scans and encodes them directly. They also decode pgx's binary format when wrapped in another `sql.Scanner` such as `null.Val`.
+With the native pgx driver, every array column is generated as `pgtypes.Array[T]`. Native pgx hands `sql.Scanner` types its binary wire format, which the lib/pq array types cannot parse. `pgtypes.Array[T]` implements `pgtype.ArraySetter` and `pgtype.ArrayGetter` so pgx scans and encodes it directly, and it also decodes the binary format when wrapped in another `sql.Scanner` such as `null.Val`. A `nil` array is `NULL`, while an empty non-nil array is an empty array (`{}`).
+
+When replacing the type of an array column for the native pgx driver, use `pgtypes.Array[T]` (for example `pgtypes.Array[types.JSON[MyStruct]]`) rather than a plain slice: a plain slice wrapped in `null.Val` cannot be scanned by native pgx, because `null.Val` is an `sql.Scanner` and receives the binary format.
+
+Native pgx support is experimental. Some other column types, such as `interval` and `tsvector`, are generated as `string` and cannot yet be scanned from pgx's binary format; use a type replacement for them.
 
 ## Only/Except:
 

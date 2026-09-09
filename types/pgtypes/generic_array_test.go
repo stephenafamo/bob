@@ -186,7 +186,7 @@ func TestArrayValue(t *testing.T) {
 		{"nil", Array[int32](nil), nil},
 		{"empty", Array[int32]{}, "{}"},
 		{"int32", Array[int32]{1, 2}, "{1,2}"},
-		{"bool", Array[bool]{true, false}, "{t,f}"},
+		{"bool", Array[bool]{true, false}, "{true,false}"},
 		{"string", Array[string]{`a"b`, "c,d", ""}, `{"a\"b","c,d",""}`},
 		{"bytea", Array[[]byte]{{1, 2}, {}}, `{"\\x0102","\\x"}`},
 		{"valuer", Array[scannerString]{"1.5"}, `{"1.5"}`},

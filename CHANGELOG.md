@@ -9,11 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. This fixes scanning array columns through native pgx, including nullable array columns. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
+- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array columns work, but some other types such as `interval` and `tsvector` are not yet scannable by native pgx into the generated Go types.
+- `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. With the native pgx driver, every array column is generated as `pgtypes.Array[T]`; the `lib/pq` and `pgx/v5/stdlib` drivers keep generating the same types as before. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
 
 ### Changed
 
-- **BREAKING:** `bobgen-psql` now generates `pgtypes.Array[T]` for every array column instead of the `lib/pq` types `pq.BoolArray`, `pq.Int32Array`, `pq.Int64Array`, `pq.Float32Array`, `pq.Float64Array`, `pq.StringArray` and `pq.ByteaArray`, which only understand the text array format and cannot be scanned by native pgx. For example, a nullable `text[]` column is now `null.Val[pgtypes.Array[string]]` instead of `null.Val[pq.StringArray]`. All of these types have the same underlying slice type, so plain slice literals still assign to them and conversions such as `pgtypes.Array[string](x)` are free. The built-in `pq.*Array` type definitions have been removed as well; to keep using them, define them under the `types` configuration. Note that `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- `pgtypes.EnumArray[T]` is now an alias of `pgtypes.Array[T]`. `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
 
 ### Fixed
 

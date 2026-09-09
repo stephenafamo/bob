@@ -2650,7 +2650,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -2662,7 +2662,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -2674,7 +2674,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -2686,7 +2686,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -2698,7 +2698,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -2710,7 +2710,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -2722,7 +2722,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -2736,7 +2736,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -2750,7 +2750,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2762,7 +2762,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2774,7 +2774,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2786,7 +2786,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -2798,7 +2798,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -2810,7 +2810,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -2822,7 +2822,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -2834,7 +2834,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -2900,7 +2900,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -2912,7 +2912,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -2996,7 +2996,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -3008,7 +3008,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -5184,7 +5184,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -5196,7 +5196,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -5208,7 +5208,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -5220,7 +5220,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -5232,7 +5232,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -5244,7 +5244,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -5256,7 +5256,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -5270,7 +5270,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -5284,7 +5284,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -5296,7 +5296,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -5308,7 +5308,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -5320,7 +5320,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -5332,7 +5332,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -5344,7 +5344,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -5356,7 +5356,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -5368,7 +5368,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -5434,7 +5434,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -5446,7 +5446,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -5506,7 +5506,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -5518,7 +5518,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -5530,7 +5530,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -5542,7 +5542,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -7679,7 +7679,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -7691,7 +7691,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -7703,7 +7703,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -7715,7 +7715,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[bool]",
+					"type": "pq.BoolArray",
 					"type_limits": null
 				},
 				{
@@ -7727,7 +7727,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -7739,7 +7739,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": null
 				},
 				{
@@ -7751,7 +7751,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -7765,7 +7765,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[string]",
+					"type": "pq.StringArray",
 					"type_limits": [
 						"10"
 					]
@@ -7779,7 +7779,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -7791,7 +7791,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -7803,7 +7803,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -7815,7 +7815,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float32]",
+					"type": "pq.Float32Array",
 					"type_limits": null
 				},
 				{
@@ -7827,7 +7827,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -7839,7 +7839,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -7851,7 +7851,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -7863,7 +7863,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[float64]",
+					"type": "pq.Float64Array",
 					"type_limits": null
 				},
 				{
@@ -7929,7 +7929,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -7941,7 +7941,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "",
-					"type": "pgtypes.Array[[]byte]",
+					"type": "pq.ByteaArray",
 					"type_limits": null
 				},
 				{
@@ -8025,7 +8025,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -8037,7 +8037,7 @@
 					"generated": false,
 					"autoincr": false,
 					"domain_name": "my_int_array",
-					"type": "pgtypes.Array[int32]",
+					"type": "pq.Int32Array",
 					"type_limits": null
 				},
 				{
@@ -9403,7 +9403,7 @@
 										"name": "arg1",
 										"db_name": "",
 										"nullable": false,
-										"type": "pgtypes.Array[string]",
+										"type": "pq.StringArray",
 										"type_limits": null
 									},
 									"children": null,

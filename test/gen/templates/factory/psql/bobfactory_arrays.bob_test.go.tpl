@@ -5,10 +5,16 @@
   See https://github.com/stephenafamo/bob/issues/90 and
   https://github.com/stephenafamo/bob/issues/739
 */ -}}
-{{- if has "type_monsters" $.TableNames -}}
+{{- $arrayCols := dict -}}
 {{- range $table := $.Tables -}}
-{{- if ne $table.Key "type_monsters"}}{{continue}}{{end -}}
-{{- $tAlias := $.Aliases.Table $table.Key -}}
+	{{- range $column := $table.Columns -}}
+		{{- if not (hasSuffix "[]" $column.DBType)}}{{continue}}{{end -}}
+		{{- if hasPrefix "ENUM" $column.DBType}}{{continue}}{{end -}}
+		{{- if hasKey $arrayCols $column.Type}}{{continue}}{{end -}}
+		{{- $_ := set $arrayCols $column.Type $column -}}
+	{{- end -}}
+{{- end -}}
+{{- if $arrayCols -}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "encoding/json"}}
@@ -39,8 +45,8 @@ func jsonArraysEqual[T any](a, b []T, val func(T) []byte) bool {
 	return true
 }
 
-// Test{{$tAlias.UpSingular}}ArrayRoundTrip sends random arrays as query parameters and scans them back
-func Test{{$tAlias.UpSingular}}ArrayRoundTrip(t *testing.T) {
+// TestArrayRoundTrip sends random arrays as query parameters and scans them back
+func TestArrayRoundTrip(t *testing.T) {
 	if testDB == nil {
 		t.Skip("skipping test, no DSN provided")
 	}
@@ -52,15 +58,16 @@ func Test{{$tAlias.UpSingular}}ArrayRoundTrip(t *testing.T) {
 	}
 	defer tx.Rollback(ctx)
 
-	{{$doneTypes := dict -}}
-	{{range $column := $table.Columns -}}
-		{{- if not (or (hasPrefix "pgtypes.Array[" $column.Type) (hasPrefix "pgtypes.EnumArray[" $column.Type))}}{{continue}}{{end -}}
-		{{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
-		{{- $_ := set $doneTypes $column.Type nil -}}
+	{{range $typ := keys $arrayCols | sortAlpha -}}
+		{{- $column := index $arrayCols $typ -}}
 		{{- $colTyp := $.Types.Get $.CurrentPackage $.Importer $column.Type -}}
 		{{- $nullTyp := $.Types.GetNullable $.CurrentPackage $.Importer $column.Type true -}}
 		{{- $cast := trimPrefix "_" $column.DBType -}}
+		{{- $isJSON := contains "types.JSON[" $column.Type -}}
 		{{- $elemTyp := trimPrefix "pgtypes.Array[" $column.Type | trimSuffix "]" -}}
+		{{- $nullT := $.Types.GetNullType $.CurrentPackage $column.Type -}}
+		{{- $_ := $.Importer.ImportList $nullT.CreateExprImports -}}
+		{{- $toNull := replace "SRC" "want" $nullT.CreateExpr | replace "NULLVAL" "true" | replace "BASETYPE" $colTyp | replace "NULLTYPE" $nullTyp -}}
 	t.Run("{{$column.DBType}}", func(t *testing.T) {
 		want := random_{{normalizeType $column.Type}}(nil, {{$column.LimitsString}})
 
@@ -68,7 +75,7 @@ func Test{{$tAlias.UpSingular}}ArrayRoundTrip(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error scanning {{$colTyp}}: %v", err)
 		}
-		{{if hasPrefix "pgtypes.Array[types.JSON[" $column.Type -}}
+		{{if $isJSON -}}
 		if !jsonArraysEqual(want, got, func(v {{$.Types.Get $.CurrentPackage $.Importer $elemTyp}}) []byte { return v.Val }) {
 		{{- else -}}
 		if !({{$.Types.GetCompareExpr $.CurrentPackage $.Importer $column.Type false false | replace "AAA" "want" | replace "BBB" "got"}}) {
@@ -85,12 +92,25 @@ func Test{{$tAlias.UpSingular}}ArrayRoundTrip(t *testing.T) {
 			t.Fatalf("{{$nullTyp}}: expected a value, got null")
 		}
 		gotUnwrapped := {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $column.Type "gotNull" true}}
-		{{if hasPrefix "pgtypes.Array[types.JSON[" $column.Type -}}
+		{{if $isJSON -}}
 		if !jsonArraysEqual(want, gotUnwrapped, func(v {{$.Types.Get $.CurrentPackage $.Importer $elemTyp}}) []byte { return v.Val }) {
 		{{- else -}}
 		if !({{$.Types.GetCompareExpr $.CurrentPackage $.Importer $column.Type false false | replace "AAA" "want" | replace "BBB" "gotUnwrapped"}}) {
 		{{- end}}
 			t.Errorf("{{$nullTyp}}: got %v, want %v", gotUnwrapped, want)
+		}
+
+		// wrapped in the nullable type as a parameter, as the generated setters do
+		gotFromNull, err := bob.One(ctx, tx, psql.RawQuery("SELECT ?::{{$cast}}", {{$toNull}}), scan.SingleColumnMapper[{{$colTyp}}])
+		if err != nil {
+			t.Fatalf("Error sending {{$nullTyp}}: %v", err)
+		}
+		{{if $isJSON -}}
+		if !jsonArraysEqual(want, gotFromNull, func(v {{$.Types.Get $.CurrentPackage $.Importer $elemTyp}}) []byte { return v.Val }) {
+		{{- else -}}
+		if !({{$.Types.GetCompareExpr $.CurrentPackage $.Importer $column.Type false false | replace "AAA" "want" | replace "BBB" "gotFromNull"}}) {
+		{{- end}}
+			t.Errorf("{{$nullTyp}} as parameter: got %v, want %v", gotFromNull, want)
 		}
 
 		// an empty array is not NULL
@@ -113,5 +133,4 @@ func Test{{$tAlias.UpSingular}}ArrayRoundTrip(t *testing.T) {
 	})
 	{{end}}
 }
-{{end -}}
 {{- end -}}
