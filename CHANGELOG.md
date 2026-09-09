@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Re-enabled `github.com/jackc/pgx/v5` as an experimental `psql.driver` value for native pgx codegen.
+
 ### Fixed
 
+- Fixed nullable Postgres array columns failing to scan with the native pgx driver (`null.Val[[]T]`). When `psql.driver` is `github.com/jackc/pgx/v5`, built-in arrays are generated as Go slices (`[]T`) and nullable arrays use nil for SQL `NULL` instead of `null.Val` ([#739](https://github.com/stephenafamo/bob/issues/739)).
 - Fixed the generated `<Table>Slice.copyMatchingRows` (used by `UpdateAll`, `ReloadAll`, and the `UpdateMod`/`DeleteMod`/`MergeMod` loaders) dropping relationship and plugin caches when refreshing a slice in place. It used to swap each slice element for a freshly scanned model after copying over only `.R`, silently losing `.C` and any other non-column field. It now copies just the column fields onto the existing model instead, so the slice keeps its original pointers and all its cached fields. See [#759](https://github.com/stephenafamo/bob/pull/759) for the full rationale. Note: code relying on pointer identity changing across `UpdateAll`/`ReloadAll` will now observe the same pointer, and models returned by a caller-driven `.All()` call are no longer mutated with `.R`.
 
 - **BREAKING:** Fixed the generated single-model `(*Foo).Update` and `(*Foo).Reload` silently clearing relationship and plugin caches on every call. Both methods used to overwrite the receiver wholesale (`*o = *v`) with the freshly scanned row, which zeroed out every non-column field — the relationship cache `.R` (including `R.Loaded`), the counts plugin's `.C`, and anything a plugin adds via `model/fields/additional`. They now copy only the column fields instead, so those caches survive. See [#758](https://github.com/stephenafamo/bob/pull/758) for the full rationale.

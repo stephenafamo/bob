@@ -86,14 +86,15 @@ func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 }
 
 type DriverTestConfig[T, C, I any] struct {
-	Root            string
-	Templates       gen.Templates
-	OverwriteGolden bool
-	GoldenFile      string
-	GoldenFileMod   func([]byte) []byte
-	GetDriver       func() drivers.Interface[T, C, I]
-	Dialect         string // "mysql", "psql", "sqlite" - for dialect-specific test templates
-	GoTestArgs      []string
+	Root               string
+	Templates          gen.Templates
+	OverwriteGolden    bool
+	SkipAssembleGolden bool
+	GoldenFile         string
+	GoldenFileMod      func([]byte) []byte
+	GetDriver          func() drivers.Interface[T, C, I]
+	Dialect            string // "mysql", "psql", "sqlite" - for dialect-specific test templates
+	GoTestArgs         []string
 }
 
 type AssembleTestConfig[T, C, I any] struct {
@@ -133,11 +134,15 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 
 	// Assemble in the driver first because the `queries` are a relative path
 	// if not, running "generate" will fail if `assemble` was not run first
-	_, _ = d.Assemble(t.Context())
+	if _, err := d.Assemble(t.Context()); err != nil {
+		t.Fatalf("assemble driver: %v", err)
+	}
 
-	t.Run("assemble", func(t *testing.T) {
-		d.TestAssemble(t)
-	})
+	if !config.SkipAssembleGolden {
+		t.Run("assemble", func(t *testing.T) {
+			d.TestAssemble(t)
+		})
+	}
 
 	if testing.Short() {
 		// skip testing generation

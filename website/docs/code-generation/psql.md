@@ -60,16 +60,19 @@ The values that exist for the drivers:
 
 ## Driver-specific code
 
-The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.
+The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected driver.
 
 For Postgres, the supported drivers are:
 
-- [github.com/lib/pq](https://pkg.go.dev/github.com/lib/pq) (default)
-- [github.com/jackc/pgx](https://pkg.go.dev/github.com/jackc/pgx)
-- [github.com/jackc/pgx/v4](https://pkg.go.dev/github.com/jackc/pgx/v4)
-- [github.com/jackc/pgx/v5](https://pkg.go.dev/github.com/jackc/pgx/v5)
+- [github.com/lib/pq](https://pkg.go.dev/github.com/lib/pq) (default) — `database/sql`
+- [github.com/jackc/pgx/v5/stdlib](https://pkg.go.dev/github.com/jackc/pgx/v5/stdlib) — pgx through `database/sql`
+- [github.com/jackc/pgx/v5](https://pkg.go.dev/github.com/jackc/pgx/v5) — experimental native pgx support (use with [`bob/drivers/pgx`](https://pkg.go.dev/github.com/stephenafamo/bob/drivers/pgx))
 
 Bob leverages driver-specific code to perform precise error matching for [generated error constants](./usage#generated-error-constants).
+
+When `driver` is `github.com/jackc/pgx/v5`, built-in Postgres array columns are generated as Go slices (`[]T`) and nullable arrays use nil for SQL `NULL` instead of wrapping in `null.Val[[]T]`. Enum arrays remain `pgtypes.EnumArray[T]` and retain their usual null wrappers because pgx handles unregistered enum OIDs in text format. This matches native pgx scanning while preserving enum-aware factory values. For `lib/pq` and `pgx/v5/stdlib`, arrays continue to use `pq.*Array` / `pgtypes.Array` with the usual null wrappers.
+
+Native pgx support is currently experimental. Some non-array PostgreSQL types that require driver-specific binary decoding, and arrays of custom composite types, may still need an explicit type replacement.
 
 ## Only/Except:
 

@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	pqDriver = "github.com/lib/pq"
-	// pgxDriver = "github.com/jackc/pgx/v5"
+	pqDriver        = "github.com/lib/pq"
+	pgxDriver       = parser.DriverPgx
 	pgxStdlibDriver = "github.com/jackc/pgx/v5/stdlib"
 	defaultDriver   = pqDriver
 )
@@ -72,13 +72,11 @@ func New(config Config) Interface {
 
 	switch config.Driver {
 	// These are the only supported drivers
-	case pqDriver, pgxStdlibDriver:
-	// case pgxDriver:
+	case pqDriver, pgxDriver, pgxStdlibDriver:
 	default:
 		panic(fmt.Sprintf(
-			"unsupported driver %s, supported drivers are: %q, %q",
-			config.Driver, pqDriver, pgxStdlibDriver,
-			// pgxDriver,
+			"unsupported driver %s, supported drivers are: %q, %q, %q",
+			config.Driver, pqDriver, pgxDriver, pgxStdlibDriver,
 		))
 	}
 
@@ -102,8 +100,11 @@ func New(config Config) Interface {
 	}
 
 	return &driver{
-		config:     config,
-		translator: &parser.Translator{Types: types},
+		config: config,
+		translator: &parser.Translator{
+			Types:  types,
+			Driver: config.Driver,
+		},
 	}
 }
 
@@ -121,6 +122,12 @@ func (d *driver) Dialect() string {
 
 func (d *driver) Types() drivers.Types {
 	return d.translator.Types
+}
+
+func (d *driver) ConfigureTypes(types drivers.Types, tables drivers.Tables[any, IndexExtra]) {
+	if d.config.Driver == pgxDriver {
+		parser.ConfigureNativePgxArrayTypes(types, tables)
+	}
 }
 
 // Assemble all the information we need to provide back to the driver

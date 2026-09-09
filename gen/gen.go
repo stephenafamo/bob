@@ -93,6 +93,9 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	initInflections(s.Config.Inflections)
 	processConstraintConfig(dbInfo.Tables, s.Config.Constraints)
 	processTypeReplacements(types, s.Config.Replacements, dbInfo.Tables)
+	if configurer, ok := driver.(drivers.TypeConfigurator[C, I]); ok {
+		configurer.ConfigureTypes(types, dbInfo.Tables)
+	}
 	types.SetOutputImports(pkgMap)
 
 	relationships := buildRelationships(dbInfo.Tables)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -12,12 +13,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aarondl/opt/null"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
+	"github.com/stephenafamo/bob/types"
+	"github.com/stephenafamo/bob/types/pgtypes"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
@@ -67,6 +72,7 @@ func TestDriver(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	t.Run("driver", func(t *testing.T) { testPostgresDriver(t, dsn) })
+	t.Run("native_pgx_arrays", func(t *testing.T) { testNativePgxArrays(t, dsn) })
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
 	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
 }
@@ -90,10 +96,6 @@ func testPostgresDriver(t *testing.T, dsn string) {
 			name:   "pq",
 			driver: "github.com/lib/pq",
 		},
-		// {
-		// 	name:       "pgx-v5",
-		// 	driver: "github.com/jackc/pgx/v5",
-		// },
 		{
 			name:   "pgx-v5-std",
 			driver: "github.com/jackc/pgx/v5/stdlib",
@@ -140,6 +142,118 @@ func testPostgresDriver(t *testing.T, dsn string) {
 				Dialect:         "psql",
 			})
 		})
+	}
+}
+
+func testNativePgxArrays(t *testing.T, dsn string) {
+	t.Helper()
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open database: %v", err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+
+	_, err = db.ExecContext(t.Context(), `
+		CREATE EXTENSION IF NOT EXISTS citext;
+		CREATE SCHEMA pgx_native_arrays;
+		CREATE TYPE pgx_native_arrays.status AS ENUM ('one', 'two');
+		CREATE TABLE pgx_native_arrays.array_types (
+			id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+			textarr_null text[],
+			textarr_nnull text[] NOT NULL,
+			intarr_null integer[],
+			intarr_nnull integer[] NOT NULL,
+			byteaarr_null bytea[],
+			byteaarr_nnull bytea[] NOT NULL,
+			jsonbarr_null jsonb[],
+			jsonbarr_nnull jsonb[] NOT NULL,
+			citextarr_null citext[],
+			citextarr_nnull citext[] NOT NULL,
+			enumarr_null pgx_native_arrays.status[],
+			enumarr_nnull pgx_native_arrays.status[] NOT NULL
+		);
+	`)
+	if err != nil {
+		t.Fatalf("create native pgx array schema: %v", err)
+	}
+
+	out := t.TempDir()
+	config := Config{
+		Config: helpers.Config{
+			Dsn:    dsn,
+			Driver: pgxDriver,
+		},
+		Schemas:      []string{"pgx_native_arrays"},
+		SharedSchema: "public",
+	}
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+		Root:               out,
+		Templates:          gen.PSQLTemplates,
+		SkipAssembleGolden: true, // Native pgx array types intentionally differ from the pq golden file.
+		GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+			return New(config)
+		},
+		Dialect: "psql",
+	})
+
+	pool, err := pgxpool.New(t.Context(), dsn)
+	if err != nil {
+		t.Fatalf("open pgx pool: %v", err)
+	}
+	t.Cleanup(pool.Close)
+
+	var (
+		nullText, emptyText   []string
+		nullBytea, emptyBytea [][]byte
+		nullJSON, emptyJSON   []types.JSON[json.RawMessage]
+		nullEnum, emptyEnum   null.Val[pgtypes.EnumArray[string]]
+	)
+	err = pool.QueryRow(t.Context(), `
+		SELECT
+			NULL::text[], '{}'::text[],
+			NULL::bytea[], '{}'::bytea[],
+			NULL::jsonb[], '{}'::jsonb[],
+			NULL::pgx_native_arrays.status[], '{}'::pgx_native_arrays.status[]
+	`).Scan(
+		&nullText, &emptyText,
+		&nullBytea, &emptyBytea,
+		&nullJSON, &emptyJSON,
+		&nullEnum, &emptyEnum,
+	)
+	if err != nil {
+		t.Fatalf("scan native pgx arrays: %v", err)
+	}
+
+	assertNullAndEmptyArrays(t, "text", nullText, emptyText)
+	assertNullAndEmptyArrays(t, "bytea", nullBytea, emptyBytea)
+	assertNullAndEmptyArrays(t, "jsonb", nullJSON, emptyJSON)
+	if nullEnum.IsValue() {
+		t.Errorf("enum NULL = %#v, want null", nullEnum)
+	}
+	if !emptyEnum.IsValue() {
+		t.Errorf("enum empty array = %#v, want value", emptyEnum)
+	} else {
+		empty := emptyEnum.MustGet()
+		if empty == nil {
+			t.Error("enum empty array = nil, want non-nil empty array")
+		} else if len(empty) != 0 {
+			t.Errorf("enum empty array length = %d, want 0", len(empty))
+		}
+	}
+}
+
+func assertNullAndEmptyArrays[S ~[]E, E any](t *testing.T, name string, nullArray, emptyArray S) {
+	t.Helper()
+
+	if nullArray != nil {
+		t.Errorf("%s NULL = %#v, want nil", name, nullArray)
+	}
+	if emptyArray == nil {
+		t.Errorf("%s empty array = nil, want non-nil empty array", name)
+	} else if len(emptyArray) != 0 {
+		t.Errorf("%s empty array length = %d, want 0", name, len(emptyArray))
 	}
 }
 

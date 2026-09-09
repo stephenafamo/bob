@@ -21,6 +21,12 @@ type Interface[DBExtra, ConstraintExtra, IndexExtra any] interface {
 	Types() Types
 }
 
+// TypeConfigurator allows a driver to adjust inferred types after user-defined
+// types and replacements have been applied.
+type TypeConfigurator[ConstraintExtra, IndexExtra any] interface {
+	ConfigureTypes(Types, Tables[ConstraintExtra, IndexExtra])
+}
+
 // DBInfo is the database's table data and dialect.
 type DBInfo[DBExtra, ConstraintExtra, IndexExtra any] struct {
 	Tables       Tables[ConstraintExtra, IndexExtra] `json:"tables"`
