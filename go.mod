@@ -28,9 +28,9 @@ require (
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/volatiletech/strmangle v0.0.6
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
-	golang.org/x/mod v0.24.0
+	golang.org/x/mod v0.29.0
 	golang.org/x/text v0.24.0
-	golang.org/x/tools v0.31.0
+	golang.org/x/tools v0.37.0
 	modernc.org/sqlite v1.20.3
 	mvdan.cc/gofumpt v0.7.0
 )
@@ -115,8 +115,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/grpc v1.70.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
