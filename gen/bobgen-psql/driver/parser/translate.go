@@ -11,7 +11,12 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 )
 
-const pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
+const (
+	pgtypesImport = `"github.com/stephenafamo/bob/types/pgtypes"`
+
+	// DriverPgx is the module path of the native pgx driver (not stdlib).
+	DriverPgx = "github.com/jackc/pgx/v5"
+)
 
 type Enum struct {
 	Schema string
@@ -33,7 +38,11 @@ type ColInfo struct {
 type Translator struct {
 	Enums []Enum
 	Types drivers.Types
-	mu    sync.Mutex
+	// Driver is the configured driver module path.
+	// Native pgx hands sql.Scanner types the binary wire format, which the
+	// lib/pq array types cannot parse, so it gets pgtypes.Array for every array.
+	Driver string
+	mu     sync.Mutex
 }
 
 //nolint:gocyclo
@@ -150,7 +159,7 @@ func (t *Translator) getArrayType(info ColInfo) (string, string) {
 				return typ, info.UDTName
 			}
 		}
-		return "pq.StringArray", name
+		return t.primitiveArrayType("string"), name
 	}
 
 	typToTranslate := info.ArrType
@@ -163,24 +172,41 @@ func (t *Translator) getArrayType(info ColInfo) (string, string) {
 		drivers.Column{DBType: typToTranslate}, ColInfo{},
 	).Type
 
-	switch translated {
-	case "bool":
-		return "pq.BoolArray", typToTranslate
-	case "int32":
-		return "pq.Int32Array", typToTranslate
-	case "int64":
-		return "pq.Int64Array", typToTranslate
-	case "float32":
-		return "pq.Float32Array", typToTranslate
-	case "float64":
-		return "pq.Float64Array", typToTranslate
-	case "string":
-		return "pq.StringArray", typToTranslate
-	case "[]byte":
-		return "pq.ByteaArray", typToTranslate
-	default:
-		return t.addPgGenericArrayType(t.Types, translated), typToTranslate
+	return t.primitiveArrayType(translated), typToTranslate
+}
+
+// primitiveArrayType returns the array type for an element type.
+// database/sql drivers keep the lib/pq array types for primitive elements,
+// which only understand the text format that those drivers deliver.
+func (t *Translator) primitiveArrayType(elemTyp string) string {
+	if t.Driver != DriverPgx {
+		switch elemTyp {
+		case "bool":
+			return "pq.BoolArray"
+		case "int32":
+			return "pq.Int32Array"
+		case "int64":
+			return "pq.Int64Array"
+		case "float32":
+			return "pq.Float32Array"
+		case "float64":
+			return "pq.Float64Array"
+		case "string":
+			return "pq.StringArray"
+		case "[]byte":
+			return "pq.ByteaArray"
+		}
 	}
+
+	return t.addPgGenericArrayType(t.Types, elemTyp)
+}
+
+func arrayRandomExpr(arrTyp, elemTyp string) string {
+	return fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
+            for i := range arr {
+                arr[i] = random_%s(f, limits...)
+            }
+            return arr`, arrTyp, gen.NormalizeType(elemTyp))
 }
 
 func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) string {
@@ -197,11 +223,9 @@ func (t *Translator) addPgEnumArrayType(types drivers.Types, enumTyp string) str
 		DependsOn:           []string{fullEnumTyp},
 		Imports:             []string{"output(enums)", pgtypesImport},
 		NoRandomizationTest: true, // enums are often not random enough
-		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
-            for i := range arr {
-                arr[i] = random_%s(f, limits...)
-            }
-            return arr`, arrTyp, gen.NormalizeType(fullEnumTyp)),
+		RandomExpr:          arrayRandomExpr(arrTyp, fullEnumTyp),
+		CompareExpr:         `slices.Equal(AAA, BBB)`,
+		CompareExprImports:  []string{`"slices"`},
 	})
 
 	return arrTyp
@@ -221,13 +245,10 @@ func (t *Translator) addPgGenericArrayType(types drivers.Types, singleTyp string
 	typ := fmt.Sprintf("pgtypes.Array[%s]", singleTyp)
 
 	types.Register(typ, drivers.Type{
-		DependsOn: []string{singleTyp},
-		Imports:   append([]string{pgtypesImport}, singleTypDef.Imports...),
-		RandomExpr: fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
-            for i := range arr {
-                arr[i] = random_%s(f, limits...)
-            }
-            return arr`, typ, gen.NormalizeType(singleTyp)),
+		DependsOn:           []string{singleTyp},
+		Imports:             append([]string{pgtypesImport}, singleTypDef.Imports...),
+		NoRandomizationTest: singleTypDef.NoRandomizationTest,
+		RandomExpr:          arrayRandomExpr(typ, singleTyp),
 		CompareExpr: fmt.Sprintf(`slices.EqualFunc(AAA, BBB, func(a, b %s) bool {
                 return %s
             })`, singleTyp, singleComparer),

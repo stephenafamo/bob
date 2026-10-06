@@ -1,39 +1,18 @@
 package pgtypes
 
 import (
+	"database/sql"
 	"database/sql/driver"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type EnumArray[T ~string] []T
+var (
+	_ sql.Scanner        = (*EnumArray[string])(nil)
+	_ driver.Valuer      = EnumArray[string]{}
+	_ pgtype.ArraySetter = (*EnumArray[string])(nil)
+	_ pgtype.ArrayGetter = EnumArray[string]{}
+)
 
-// Scan implements the sql.Scanner interface.
-func (e *EnumArray[T]) Scan(src any) error {
-	var arr pq.StringArray
-	if err := arr.Scan(src); err != nil {
-		return err
-	}
-
-	slice := make([]T, len(arr))
-	for i, s := range arr {
-		slice[i] = T(s)
-	}
-
-	*e = slice
-	return nil
-}
-
-// Value implements the driver.Valuer interface.
-func (e EnumArray[T]) Value() (driver.Value, error) {
-	if e == nil {
-		return nil, nil //nolint:nilnil
-	}
-
-	arr := make(pq.StringArray, len(e))
-	for i, s := range e {
-		arr[i] = string(s)
-	}
-
-	return arr.Value()
-}
+// EnumArray is an [Array] of a Postgres enum type.
+type EnumArray[T ~string] = Array[T]

@@ -194,6 +194,8 @@ func Types() drivers.Types {
                 }
                 return arr`,
 			NoRandomizationTest: true,
+			CompareExpr:         `slices.Equal(AAA, BBB)`,
+			CompareExprImports:  []string{`"slices"`},
 		},
 		"pq.Int32Array": {
 			DependsOn: []string{"int32"},

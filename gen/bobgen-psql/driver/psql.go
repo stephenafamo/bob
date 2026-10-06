@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	pqDriver = "github.com/lib/pq"
-	// pgxDriver = "github.com/jackc/pgx/v5"
+	pqDriver        = "github.com/lib/pq"
+	pgxDriver       = parser.DriverPgx
 	pgxStdlibDriver = "github.com/jackc/pgx/v5/stdlib"
 	defaultDriver   = pqDriver
 )
@@ -72,13 +72,11 @@ func New(config Config) Interface {
 
 	switch config.Driver {
 	// These are the only supported drivers
-	case pqDriver, pgxStdlibDriver:
-	// case pgxDriver:
+	case pqDriver, pgxStdlibDriver, pgxDriver:
 	default:
 		panic(fmt.Sprintf(
-			"unsupported driver %s, supported drivers are: %q, %q",
-			config.Driver, pqDriver, pgxStdlibDriver,
-			// pgxDriver,
+			"unsupported driver %s, supported drivers are: %q, %q, %q",
+			config.Driver, pqDriver, pgxStdlibDriver, pgxDriver,
 		))
 	}
 
@@ -103,7 +101,7 @@ func New(config Config) Interface {
 
 	return &driver{
 		config:     config,
-		translator: &parser.Translator{Types: types},
+		translator: &parser.Translator{Types: types, Driver: config.Driver},
 	}
 }
 
