@@ -10,17 +10,17 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 
   switch queryType {
   case bob.QueryTypeSelect:
-    ctx, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, o)
+    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, o)
   {{if .Table.Constraints.Primary -}}
     case bob.QueryTypeInsert:
-      ctx, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, o)
+      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, o)
     case bob.QueryTypeUpdate:
-      ctx, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
+      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
     case bob.QueryTypeDelete:
-      ctx, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
+      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
     {{if eq $.Dialect "psql" -}}
     case bob.QueryTypeMerge:
-      ctx, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
+      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
     {{- end}}
   {{- end}}
   }
