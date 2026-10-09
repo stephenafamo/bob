@@ -33,10 +33,6 @@ func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods
 }
 
 func (f *Factory) FromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
-  {{if $.Relationships.Get $table.Key -}}
-  visited := make(map[uintptr]struct{})
-  ctx = factoryVisitedCtx.WithValue(ctx, visited)
-  {{- end}}
   return f.fromExisting{{$tAlias.UpSingular}}(ctx, m)
 }
 
@@ -50,13 +46,17 @@ func (f *Factory) fromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *mod
   {{end}}
 
   {{if $.Relationships.Get $table.Key -}}
-  if visited, ok := factoryVisitedCtx.Value(ctx); ok {
-    ptr := uintptr(unsafe.Pointer(m))
-    if _, seen := visited[ptr]; seen {
-      return o
-    }
-    visited[ptr] = struct{}{}
+  visited, ok := factoryVisitedCtx.Value(ctx)
+  if !ok {
+    visited = make(map[uintptr]struct{})
+    ctx = factoryVisitedCtx.WithValue(ctx, visited)
   }
+
+  ptr := uintptr(unsafe.Pointer(m))
+  if _, seen := visited[ptr]; seen {
+    return o
+  }
+  visited[ptr] = struct{}{}
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}
