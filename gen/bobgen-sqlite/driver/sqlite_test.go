@@ -16,6 +16,7 @@ import (
 	"github.com/stephenafamo/bob/gen"
 	helpers "github.com/stephenafamo/bob/gen/bobgen-helpers"
 	"github.com/stephenafamo/bob/gen/drivers"
+	ctest "github.com/stephenafamo/bob/test/containers"
 	testfiles "github.com/stephenafamo/bob/test/files"
 	testgen "github.com/stephenafamo/bob/test/gen"
 	"github.com/testcontainers/testcontainers-go"
@@ -50,11 +51,7 @@ func TestLibSQL(t *testing.T) {
 		testcontainers.WithExposedPorts("7070:8080", "9000:8000"),
 		testcontainers.WithWaitStrategy(wait.ForListeningPort("8080/tcp").WithStartupTimeout(time.Second*5)),
 	)
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(libsqlServer); err != nil {
-			fmt.Printf("failed to terminate libsql container: %v\n", err)
-		}
-	})
+	ctest.Cleanup(t, libsqlServer)
 	if err != nil {
 		t.Fatalf("failed to start libsql container: %v", err)
 	}
