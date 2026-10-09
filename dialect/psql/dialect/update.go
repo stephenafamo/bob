@@ -89,7 +89,7 @@ func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if len(u.FromItems) > 0 {
 		w.WriteString("\nFROM ")
 
-		args, err = writeFromItemList(ctx, w, d, start+len(args), args, u.FromItems)
+		args, err = writeFromItemList(ctx, w, d, start, args, u.FromItems)
 		if err != nil {
 			return nil, err
 		}
