@@ -1902,6 +1902,48 @@ func TestLoadedFactoryBuildToMany(t *testing.T) {
 		t.Fatalf("Expected 2 Videos, got %d", len(user.R.Videos))
 	}
 }
+
+// TestFactoryCreateWithOptionalParentDoesNotUpdateChild checks that creating
+// an optional direct parent does not require a second update of the child.
+func TestFactoryCreateWithOptionalParentDoesNotUpdateChild(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	if _, err := tx.ExecContext(ctx, `
+		CREATE TEMP TABLE video_updates (id INT);
+		CREATE FUNCTION record_video_update() RETURNS trigger LANGUAGE plpgsql AS $$
+		BEGIN
+			INSERT INTO video_updates VALUES (NEW.id);
+			RETURN NEW;
+		END;
+		$$;
+		CREATE TRIGGER record_video_update AFTER UPDATE ON videos
+		FOR EACH ROW EXECUTE FUNCTION record_video_update();
+	`); err != nil {
+		t.Fatalf("Error creating update trigger: %v", err)
+	}
+
+	video := New().NewVideoWithContext(ctx, VideoMods.WithNewSponsor()).CreateOrFail(ctx, t, tx)
+	if video.R.Sponsor == nil {
+		t.Fatal("Expected created Video to include its Sponsor")
+	}
+
+	var updates int
+	if err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM video_updates").Scan(&updates); err != nil {
+		t.Fatalf("Error counting video updates: %v", err)
+	}
+	if updates != 0 {
+		t.Fatalf("Expected no update after creating Video with Sponsor, got %d", updates)
+	}
+}
 {{- end }}
 
 {{- if and $hasVideos $hasSponsors }}

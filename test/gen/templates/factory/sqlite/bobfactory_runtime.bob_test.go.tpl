@@ -1902,6 +1902,7 @@ func TestLoadedFactoryBuildToMany(t *testing.T) {
 		t.Fatalf("Expected 2 Videos, got %d", len(user.R.Videos))
 	}
 }
+
 {{- end }}
 
 {{- if and $hasVideos $hasSponsors }}
