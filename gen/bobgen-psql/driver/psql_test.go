@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -30,6 +31,24 @@ SELECT
   v.id AS video_id
 FROM users AS u
 INNER JOIN videos AS v ON v.user_id = u.id;`
+
+const argTypeOrderQueries = `-- GetUserByEmailAndValidated
+SELECT id FROM users WHERE email_validated = $2 AND primary_email = $1;
+
+-- SearchUsersByEmails
+WITH wanted AS (
+  SELECT unnest($1::text[]) AS email
+)
+SELECT u.id
+FROM users AS u
+INNER JOIN wanted ON u.primary_email = wanted.email
+WHERE u.email_validated = $2;
+
+-- UpdateUserFromSource
+UPDATE users SET primary_email = $1
+FROM (SELECT $2::int AS uid) AS s
+WHERE users.id = s.uid AND users.email_validated = $3
+RETURNING users.id;`
 
 func TestDriver(t *testing.T) {
 	postgresContainer, err := postgres.Run(
@@ -70,6 +89,7 @@ func TestDriver(t *testing.T) {
 	t.Run("native_pgx_arrays", func(t *testing.T) { testNativePgxArrays(t, dsn) })
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
 	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
+	t.Run("arg_type_order", func(t *testing.T) { testPostgresArgTypeOrder(t, dsn) })
 }
 
 func testPostgresDriver(t *testing.T, dsn string) {
@@ -256,6 +276,73 @@ func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {
 		if got := colTypes[name]; got != want {
 			t.Errorf("column %s: type = %q, want %q", name, got, want)
 		}
+	}
+}
+
+func testPostgresArgTypeOrder(t *testing.T, dsn string) {
+	t.Helper()
+
+	queryDir := t.TempDir()
+	if err := os.WriteFile(queryDir+"/args.sql", []byte(argTypeOrderQueries), 0o600); err != nil {
+		t.Fatalf("write query file: %v", err)
+	}
+
+	drv := New(Config{
+		Config: helpers.Config{
+			Dsn:     dsn,
+			Queries: []string{queryDir},
+		},
+		Schemas: []string{"public"},
+	})
+
+	info, err := drv.Assemble(context.Background())
+	if err != nil {
+		t.Fatalf("Assemble: %v", err)
+	}
+
+	queries := map[string]drivers.Query{}
+	for _, folder := range info.QueryFolders {
+		for _, file := range folder.Files {
+			for _, q := range file.Queries {
+				queries[q.Name] = q
+			}
+		}
+	}
+
+	tests := []struct {
+		name string
+		want []string
+	}{
+		{
+			name: "GetUserByEmailAndValidated",
+			want: []string{"email_validated bool", "primary_email string"},
+		},
+		{
+			name: "SearchUsersByEmails",
+			want: []string{"arg1 pq.StringArray", "email_validated bool"},
+		},
+		{
+			name: "UpdateUserFromSource",
+			want: []string{"primary_email string", "arg2 int32", "email_validated bool"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query, ok := queries[tt.name]
+			if !ok {
+				t.Fatalf("query %s not found in assembled output", tt.name)
+			}
+
+			got := make([]string, len(query.Args))
+			for i, arg := range query.Args {
+				got[i] = fmt.Sprintf("%s %s", arg.Col.Name, arg.Col.TypeName)
+			}
+
+			if !slices.Equal(got, tt.want) {
+				t.Errorf("args = %v, want %v\nformatted query: %s", got, tt.want, query.SQL)
+			}
+		})
 	}
 }
 
