@@ -50,32 +50,40 @@ func buildTemplatesFromKnownDirStructure(templates fs.FS, dir string) Templates 
 	LoadersTemplates, _ := fs.Sub(templates, "templates/loaders")
 	JoinsTemplates, _ := fs.Sub(templates, "templates/joins")
 	CountsTemplates, _ := fs.Sub(templates, "templates/counts")
+	// Sectionload templates only exist under bobgen-psql/templates. For the
+	// mysql/sqlite dialects (dir != "bobgen-psql"), this fs.Sub call still
+	// succeeds (it does not check the directory exists), but any later
+	// fs.ReadDir on it fails with fs.ErrNotExist. plugins.Sectionload uses
+	// that to skip registering the "dbsections" output for those dialects.
+	SectionloadTemplates, _ := fs.Sub(templates, "templates/sectionload")
 
 	return Templates{
-		DBInfo:   DBInfoTemplates,
-		Enums:    EnumTemplates,
-		Models:   ModelTemplates,
-		Factory:  FactoryTemplates,
-		Queries:  QueriesTemplates,
-		DBErrors: DBErrorTemplates,
-		Where:    WhereTemplates,
-		Loaders:  LoadersTemplates,
-		Joins:    JoinsTemplates,
-		Counts:   CountsTemplates,
+		DBInfo:      DBInfoTemplates,
+		Enums:       EnumTemplates,
+		Models:      ModelTemplates,
+		Factory:     FactoryTemplates,
+		Queries:     QueriesTemplates,
+		DBErrors:    DBErrorTemplates,
+		Where:       WhereTemplates,
+		Loaders:     LoadersTemplates,
+		Joins:       JoinsTemplates,
+		Counts:      CountsTemplates,
+		Sectionload: SectionloadTemplates,
 	}
 }
 
 type Templates struct {
-	Enums    fs.FS
-	Models   fs.FS
-	Factory  fs.FS
-	Queries  fs.FS
-	DBErrors fs.FS
-	Where    fs.FS
-	Loaders  fs.FS
-	Joins    fs.FS
-	Counts   fs.FS
-	DBInfo   fs.FS
+	Enums       fs.FS
+	Models      fs.FS
+	Factory     fs.FS
+	Queries     fs.FS
+	DBErrors    fs.FS
+	Where       fs.FS
+	Loaders     fs.FS
+	Joins       fs.FS
+	Counts      fs.FS
+	DBInfo      fs.FS
+	Sectionload fs.FS
 }
 
 type TemplateData[T, C, I any] struct {
