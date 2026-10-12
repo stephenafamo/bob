@@ -87,7 +87,7 @@ The mod function accepts options:
 
 1. `OnlyColumns`: In the related model, load only these columns.
 1. `ExceptColumns`: In the related model, do not load these columns.
-1. `PreloadAs`: Explicitly sets the table alias for the related model to allow using columns of the related model for the query.
+1. `PreloadAs`: Explicitly sets the table alias for the **final** related model side so you can reference its columns in the query. Intermediate sides of multi-hop relationships still receive automatic aliases.
 1. `Loaders`: Other loaders mods can be given as an option to the preloader to load nested relationships. This works for both other preloaders and then-loaders.
 
 ```go
@@ -107,6 +107,18 @@ jets, err := models.Jets(
 ).All(ctx, db)
 ```
 
+:::tip Automatic aliases
+
+When you do not pass `PreloadAs`, Bob allocates compact per-query aliases such as `bob_q0`, `bob_q1`, … for each non-explicit relationship side. These are implementation details:
+
+- They are stable for the **same ordered** preload/join mod sequence on a fresh query (important for drivers that cache prepared statements by SQL text).
+- Different mod order may produce different SQL, because join/select ordering already differs.
+- Do not hard-code automatic aliases in your own clauses; use `PreloadAs` (and join `AliasedAs`) when you need a name in `WHERE`/`ORDER BY`/etc.
+- The `bob_q` and `bob_g` prefixes are reserved for Bob-generated aliases. Explicit aliases you supply must be unique within the query.
+
+If you call a preloader directly (for example `loader("")`), pass `orm.WithNextAlias` to share an allocator. Without it, aliases fall back to unique `bob_g…` names that are not stable across builds.
+
+:::
 ### ThenLoad
 
 ```go

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `pgtypes.EnumArray[T]` is now an alias of `pgtypes.Array[T]`. `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- **BREAKING:** `orm.Preloader` now takes optional `...orm.PreloaderOpt` after `parent` ([#741](https://github.com/stephenafamo/bob/issues/741)). Existing calls such as `loader("")` still compile, but functions declared with the old exact signature and converted to `Preloader` must add the variadic parameter.
 
 ### Fixed
 
@@ -31,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Breaking change:** now that a shared child is bob's default outcome for a dedup-eligible relationship (not just a caller-constructed edge case), any caller relying on the previous overwrite behaviour — including plain default-configuration JOIN `Preload` calls that happen to preload a relationship shared by multiple parents — will see every parent accumulate in the back-reference instead of just the last one. Calling `Preload` twice with the same parent adds that parent twice, matching the pre-existing non-deduplicating behaviour of the slice loaders and `ThenLoad`.
 
 - Fixed `QueryStmt.All` (the prepared-statement path returned by `PrepareQueryx`) silently falling back to per-element `AfterQueryHook` calls when the slice type is not `HookableType` but the single/element type is, instead of returning `ErrHookableTypeMismatch` like `Allx` (the non-prepared path) already does for the same type combination. **Breaking change**: code on the prepared path relying on the undocumented fallback for this type combination now receives `ErrHookableTypeMismatch` instead of silently succeeding. Generated code is unaffected, since generated `<Table>Slice` types always implement `AfterQueryHook`.
+- Preload and generated multi-hop Joins no longer append process-global `NextUniqueInt` suffixes to table aliases ([#741](https://github.com/stephenafamo/bob/issues/741)). Both now allocate compact per-query aliases (`bob_q0`, `bob_q1`, …) from the query’s `bob.Load` counter, so building the same query twice produces the same SQL and works with prepared-statement caching. Preloaders invoked manually without `orm.WithNextAlias` fall back to unique `bob_g…` aliases. The `bob_q` and `bob_g` prefixes are reserved for Bob-generated aliases.
+- Fixed `PreloadAs` on multi-side relationships applying the explicit alias to every side, which produced duplicate aliases. It now applies only to the final side, matching join `AliasedAs`.
+- Fixed Preload qualifying `to_where` relationship columns with the parent table instead of the joined table, which produced invalid or incorrect `ON` clauses for relationships configured with `to_where` (or the inverse of one configured with `from_where`).
 
 ## [v0.50.0] - 2026-08-11
 

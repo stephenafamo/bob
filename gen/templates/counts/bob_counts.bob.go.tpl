@@ -123,7 +123,7 @@ func (a aliasedExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 // countPreloader returns a Preloader that adds a count subquery
 func countPreloader[T countPreloadable](name string, countExpr func(from string) bob.Expression) {{$.Dialect}}.Preloader {
-	return func(parent string) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
+	return func(parent string, _ ...orm.PreloaderOpt) (bob.Mod[*dialect.SelectQuery], scan.MapperMod, []bob.Loader) {
 		m := countPreloadMod[T]{
 			name:      name,
 			countExpr: countExpr,

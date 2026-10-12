@@ -102,18 +102,45 @@ func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 	}
 }
 
+// PreloaderOpt configures a single [Preloader] invocation.
+type PreloaderOpt func(*preloaderConfig)
+
+type preloaderConfig struct {
+	nextAlias func() string
+}
+
+// WithNextAlias sets the alias allocator shared by a Preloader and its
+// nested SubLoaders. Without it, aliases are unique but not stable.
+func WithNextAlias(next func() string) PreloaderOpt {
+	return func(c *preloaderConfig) {
+		c.nextAlias = next
+	}
+}
+
+func uniqueAlias() string {
+	return "bob_g" + strconv.FormatUint(bob.NextUniqueInt(), 36)
+}
+
 // Preloader builds a query mod that modifies the original query to retrieve related fields
 // while it can be used as a queryMod, it does not have any direct effect.
 // if using manually, the ApplyPreload method should be called
-// with the query's context AFTER other mods have been applied
-type Preloader[Q Loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
+// with the query's context AFTER other mods have been applied.
+type Preloader[Q Loadable] func(
+	parent string,
+	opts ...PreloaderOpt,
+) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
 
 // Apply satisfies bob.Mod[*dialect.SelectQuery].
 // 1. It modifies the query to join the preloading table and the extra columns to retrieve
 // 2. It modifies the mapper to scan the new columns.
 // 3. It calls the original object's Preload method with the loaded object
 func (l Preloader[Q]) Apply(q Q) {
-	mod, mapperMod, afterLoaders := l("")
+	var opts []PreloaderOpt
+	if a, ok := any(q).(interface{ NextQueryAlias() string }); ok {
+		opts = []PreloaderOpt{WithNextAlias(a.NextQueryAlias)}
+	}
+
+	mod, mapperMod, afterLoaders := l("", opts...)
 
 	mod.Apply(q)                    // add preload columns
 	q.AppendMapperMod(mapperMod)    // add mapper
@@ -255,7 +282,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		keyColumns = rel.Sides[len(rel.Sides)-1].ToColumns
 	}
 
-	return buildPreloader[T](func(parent string) (string, mods.QueryMods[Q]) {
+	return buildPreloader[T](func(parent string, nextAlias func() string) (string, mods.QueryMods[Q]) {
 		if parent == "" {
 			parent = rel.Sides[0].From.Alias()
 		}
@@ -264,9 +291,10 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		queryMods := make(mods.QueryMods[Q], 0, len(rel.Sides)+1)
 
 		for i, side := range rel.Sides {
-			alias = settings.Alias
-			if settings.Alias == "" {
-				alias = fmt.Sprintf("%s_%d", side.To.Alias(), bob.NextUniqueInt())
+			if settings.Alias != "" && i == len(rel.Sides)-1 {
+				alias = settings.Alias
+			} else {
+				alias = nextAlias()
 			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
@@ -287,7 +315,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			for _, to := range side.ToWhere {
 				on = append(on, expr.OP(
 					"=",
-					expr.Quote(parent, to.Column),
+					expr.Quote(alias, to.Column),
 					expr.Raw(to.SQLValue),
 				))
 			}
@@ -318,16 +346,20 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 	}, rel.Name, keyColumns, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
-	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
-		alias, queryMods := f(parent)
+func buildPreloader[T any, Q Loadable](f func(string, func() string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
+	return func(parent string, opts ...PreloaderOpt) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
+		cfg := preloaderConfig{nextAlias: uniqueAlias}
+		for _, o := range opts {
+			o(&cfg)
+		}
+		alias, queryMods := f(parent, cfg.nextAlias)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
 		extraLoaders := []bob.Loader{opt.ExtraLoader}
 
 		for _, l := range opt.SubLoaders {
-			queryMod, mapperMod, extraLoader := l(alias)
+			queryMod, mapperMod, extraLoader := l(alias, WithNextAlias(cfg.nextAlias))
 			if queryMod != nil {
 				queryMods = append(queryMods, queryMod)
 			}

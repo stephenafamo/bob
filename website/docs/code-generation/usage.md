@@ -355,8 +355,9 @@ To use these join mods with an aliased table name, use the `AliasedAs` method.
 models.SelectJoins.Jets.AliasedAs("j").InnerJoin.Airports.AliasedAs("a")
 ```
 
-:::
+For multi-hop relationships, `AliasedAs` on the join target sets only the **final** side’s alias. Intermediate hop tables receive compact per-query aliases (`bob_q0`, …) allocated when the mod is applied. Those automatic names are stable for the same ordered mod sequence on a fresh query and should not be referenced directly—pass an explicit `AliasedAs` for any side you need in query clauses. Repeated identical multi-hop joins on one query still need distinct final aliases, as before.
 
+:::
 ### Column Expressions
 
 For even more control, expressions are generated for every column to be used in any part of the query.

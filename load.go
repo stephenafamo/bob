@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/stephenafamo/scan"
 )
@@ -35,6 +36,15 @@ func (l LoaderFunc) Load(ctx context.Context, exec Executor, retrieved any) erro
 type Load struct {
 	loadFuncs         []Loader
 	preloadMapperMods []scan.MapperMod
+	queryAliasCounter uint64
+}
+
+// NextQueryAlias returns the next query-local alias (bob_q0, bob_q1, ...)
+// for automatically aliased joins.
+func (l *Load) NextQueryAlias() string {
+	n := l.queryAliasCounter
+	l.queryAliasCounter++
+	return "bob_q" + strconv.FormatUint(n, 36)
 }
 
 func (l *Load) SetMapperMods(mods ...scan.MapperMod) {
