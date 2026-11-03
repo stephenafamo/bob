@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `pgtypes.EnumArray[T]` is now an alias of `pgtypes.Array[T]`. `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- **BREAKING:** The minimum supported Go version is now 1.25 (`go 1.25.0` in `go.mod`), because `github.com/jackc/pgx/v5` v5.9 requires it. Projects on Go 1.24 or older can no longer build bob and must upgrade their Go toolchain.
+- Upgraded `github.com/jackc/pgx/v5` to v5.9.2, `golang.org/x/text` to v0.41.0, `golang.org/x/crypto` to v0.55.0, `github.com/moby/go-archive` to v0.3.0, `github.com/go-viper/mapstructure/v2` to v2.4.0 and `github.com/docker/docker` to v28.3.3 to fix advisories reported by `govulncheck`. Other modules moved only as required by these upgrades. `golang.org/x/crypto` v0.56.0, which fixes GO-2026-6354 and GO-2026-6355, requires Go 1.26 and is not included.
 
 ### Fixed
 
