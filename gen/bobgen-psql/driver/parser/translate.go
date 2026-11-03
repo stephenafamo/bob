@@ -70,6 +70,15 @@ func (t *Translator) TranslateColumnType(c drivers.Column, info ColInfo) drivers
 		c.Type = "float32"
 	case "bit", "interval", "uuint", "bit varying", "character", "character varying", "text":
 		c.Type = "string"
+	case "tsvector":
+		// From pgx v5.9, native pgx decodes tsvector with a binary codec and
+		// cannot scan it into a string. pgtypes.TSVector is a sql.Scanner, so
+		// pgx hands it the text form with every pgx version.
+		// The other drivers keep string.
+		c.Type = "string"
+		if t.Driver == DriverPgx {
+			c.Type = "pgtypes.TSVector"
+		}
 	case "xml":
 		c.Type = "xml"
 	case "money":

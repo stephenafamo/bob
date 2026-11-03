@@ -51,3 +51,33 @@ func TestTranslateArrayType(t *testing.T) {
 		})
 	}
 }
+
+func TestTranslateTSVectorType(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		driver string
+		want   string
+	}{
+		{"github.com/lib/pq", "string"},
+		{"github.com/jackc/pgx/v5/stdlib", "string"},
+		{DriverPgx, "pgtypes.TSVector"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.driver, func(t *testing.T) {
+			t.Parallel()
+
+			tr := &Translator{Types: helpers.Types(), Driver: tc.driver}
+			col := tr.TranslateColumnType(drivers.Column{DBType: "tsvector"}, ColInfo{})
+			if col.Type != tc.want {
+				t.Fatalf("got %q, want %q", col.Type, tc.want)
+			}
+
+			typ := tr.Types.Index(col.Type)
+			if typ.RandomExpr == "" {
+				t.Fatalf("%s has no random expression", col.Type)
+			}
+		})
+	}
+}
