@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array columns work, but some other types such as `interval` and `tsvector` are not yet scannable by native pgx into the generated Go types.
+- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array and `tsvector` columns work (`tsvector` is generated as `pgtypes.TSVector`, since pgx v5.9 and later cannot scan it into a `string`), but some other types such as `interval`, `bit`, `bit varying` and `"char"` are not yet scannable by native pgx into the generated Go types.
 - `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. With the native pgx driver, every array column is generated as `pgtypes.Array[T]`; the `lib/pq` and `pgx/v5/stdlib` drivers keep generating the same types as before. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
 
 ### Changed

@@ -144,10 +144,10 @@ func testPostgresDriver(t *testing.T, dsn string) {
 	}
 }
 
-// testNativePgxArrays generates and tests a schema of array columns with the
-// native pgx driver. It uses its own schema because the generated test suite
-// includes the type_monsters table, which has other columns (interval,
-// tsvector) that native pgx cannot yet scan into the generated Go types.
+// testNativePgxArrays generates and tests a schema of array and tsvector columns
+// with the native pgx driver. It uses its own schema because the generated test
+// suite includes the type_monsters table, which has other columns (interval,
+// "char") that native pgx cannot yet scan into the generated Go types.
 func testNativePgxArrays(t *testing.T, dsn string) {
 	t.Helper()
 
@@ -176,6 +176,11 @@ func testNativePgxArrays(t *testing.T, dsn string) {
 			jsonb_nnull jsonb[] NOT NULL,
 			enum_null `+schema+`.status[],
 			enum_nnull `+schema+`.status[] NOT NULL
+		);
+		CREATE TABLE `+schema+`.tsvector_types (
+			id serial PRIMARY KEY,
+			tsv_null tsvector,
+			tsv_nnull tsvector NOT NULL
 		);
 	`)
 	if err != nil {
