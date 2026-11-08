@@ -9,6 +9,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
+	"github.com/stephenafamo/bob/dialect/psql/vm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
@@ -35,6 +36,48 @@ func TestUpdate(t *testing.T) {
 			  WHERE (accounts.name = $1)
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
+		},
+		"from values continues placeholder numbering after set arguments": {
+			Query: psql.Update(
+				um.Table("widgets"),
+				um.SetCol("changed_by").ToArg("tester"),
+				um.SetCol("changed_by_id").ToArg(int64(42)),
+				um.From(psql.Values(
+					vm.RowValue(psql.Arg(int64(17), "first")),
+					vm.RowValue(psql.Arg(int64(29), "second")),
+				)).As("requested", "id", "value"),
+				um.Where(psql.Quote("widgets", "id").EQ(psql.Quote("requested", "id"))),
+			),
+			ExpectedSQL: `UPDATE widgets SET
+  "changed_by" = $1,
+  "changed_by_id" = $2
+  FROM (VALUES ($3, $4), ($5, $6)
+  ) AS "requested"("id", "value")
+  WHERE ("widgets"."id" = "requested"."id")`,
+			ExpectedArgs: []any{"tester", int64(42), int64(17), "first", int64(29), "second"},
+		},
+		"arguments continue across cte set from where and returning": {
+			Query: psql.Update(
+				um.With("source").As(psql.Select(sm.Columns(psql.Arg("source value")))),
+				um.Table("widgets"),
+				um.SetCol("changed_by").ToArg("tester"),
+				um.SetCol("changed_by_id").ToArg(int64(42)),
+				um.From(psql.Values(
+					vm.RowValue(psql.Arg(int64(17), "first")),
+				)).As("requested", "id", "value"),
+				um.From(um.FromFunction(
+					psql.F("json_to_recordset", psql.Arg(`[{"id":29}]`))(fm.Columns("id", "INTEGER")),
+				)),
+				um.Where(psql.Quote("widgets", "id").EQ(psql.Arg(int64(17)))),
+				um.Returning(psql.Arg("returned value")),
+			),
+			ExpectedSQL: `WITH source AS (SELECT $1)
+  UPDATE widgets SET "changed_by" = $2,
+  "changed_by_id" = $3
+  FROM (VALUES ($4, $5)
+  ) AS "requested"("id", "value"), json_to_recordset($6) AS (id INTEGER)
+  WHERE ("widgets"."id" = $7) RETURNING $8`,
+			ExpectedArgs: []any{"source value", "tester", int64(42), int64(17), "first", `[{"id":29}]`, int64(17), "returned value"},
 		},
 		"set qualified column as mod": {
 			Query: psql.Update(
@@ -343,5 +386,29 @@ func TestUpdateWhereCurrentOfConflict(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error when both WHERE and WHERE CURRENT OF are set")
+	}
+}
+
+func TestUpdateFromPlaceholderOffsetWithBuildN(t *testing.T) {
+	query, args, err := bob.BuildN(context.Background(), psql.Update(
+		um.Table("widgets"),
+		um.SetCol("changed_by").ToArg("tester"),
+		um.From(psql.Values(vm.RowValue(psql.Arg(int64(17))))),
+	), 7)
+	if err != nil {
+		t.Fatalf("build query: %v", err)
+	}
+
+	diff, err := testutils.QueryDiff(`UPDATE widgets SET "changed_by" = $7
+  FROM (VALUES ($8)
+  )`, query, formatter)
+	if err != nil {
+		t.Fatalf("compare query: %v", err)
+	}
+	if diff != "" {
+		t.Fatalf("query diff: %s", diff)
+	}
+	if diff := testutils.ArgsDiff([]any{"tester", int64(17)}, args); diff != "" {
+		t.Fatalf("arguments diff: %s", diff)
 	}
 }
