@@ -187,9 +187,25 @@ func buildTestPreloadScannerLoaders(mapper PreloadMapper[*testPreloadChild], opt
 		rel, []string{"id", "name"}, mapper,
 		append([]PreloadOption[testPreloadQuery]{PreloadAs[testPreloadQuery]("c")}, opts...)...,
 	)
-	_, mapperMod, loaders := loader("")
+	queryMod, mapperMod, loaders := loader("")
+	queryMod.Apply(testPreloadQuery{})
 
-	return scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod), loaders
+	return scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod), flattenTestLoaders(loaders)
+}
+
+// the loaders of a preloader and its nested preloaders, in one slice
+func flattenTestLoaders(loaders []bob.Loader) []bob.Loader {
+	flat := make([]bob.Loader, 0, len(loaders))
+	for _, l := range loaders {
+		if lazy, ok := l.(*lazyLoaders); ok {
+			flat = append(flat, flattenTestLoaders(*lazy)...)
+			continue
+		}
+
+		flat = append(flat, l)
+	}
+
+	return flat
 }
 
 func runTestPreload(t *testing.T, mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any, opts ...PreloadOption[testPreloadQuery]) []*testPreloadParent {

@@ -5,7 +5,7 @@
   {{$.Importer.Import "github.com/stephenafamo/bob/mods"}}
   {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
-  type {{$tAlias.DownSingular}}Joins[Q dialect.Joinable] struct {
+  type {{$tAlias.DownSingular}}Joins[Q joinable] struct {
     typ string
     {{range $.Relationships.Get $table.Key -}}
     {{- $relAlias := $tAlias.Relationship .Name -}}
@@ -18,7 +18,7 @@
     return build{{$tAlias.UpSingular}}Joins[Q](build{{$tAlias.UpSingular}}Columns(alias), j.typ)
   }
 
-  func build{{$tAlias.UpSingular}}Joins[Q dialect.Joinable](cols {{$tAlias.DownSingular}}Columns, typ string) {{$tAlias.DownSingular}}Joins[Q] {
+  func build{{$tAlias.UpSingular}}Joins[Q joinable](cols {{$tAlias.DownSingular}}Columns, typ string) {{$tAlias.DownSingular}}Joins[Q] {
     return {{$tAlias.DownSingular}}Joins[Q]{
       typ: typ,
       {{range $rel := $.Relationships.Get $table.Key -}}
@@ -26,9 +26,9 @@
         {{- $relAlias := $tAlias.Relationship $rel.Name -}}
         {{$relAlias}}: modAs[Q, {{$fAlias.DownSingular}}Columns] {
           c: {{$fAlias.UpPlural}}.Columns,
-          f: func(to {{$fAlias.DownSingular}}Columns) bob.Mod[Q] {
+          f: func(q Q, to {{$fAlias.DownSingular}}Columns) bob.Mod[Q] {
             {{if gt (len $rel.Sides) 1 -}}{{$.Importer.Import "strconv" -}}
-              uniqueSuffix := strconv.FormatUint(bob.NextUniqueInt(), 10)
+              uniqueSuffix := strconv.FormatUint(q.NextUniqueInt(), 10)
             {{- end}}
             mods := make(mods.QueryMods[Q], 0, {{len $rel.Sides}})
 
