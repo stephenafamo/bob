@@ -59,7 +59,12 @@ func New(config Config) Interface {
 	}
 
 	if config.SharedSchema == "" {
-		config.SharedSchema = config.Schemas[0]
+		// If no shared schema is specified, and only one schema is in use, use that schema as the shared schema
+		if len(config.Schemas) == 1 {
+			config.SharedSchema = config.Schemas[0]
+		} else {
+			config.SharedSchema = "public"
+		}
 	}
 
 	if config.UUIDPkg == "" {
