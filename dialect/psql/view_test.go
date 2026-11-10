@@ -3,6 +3,7 @@ package psql
 import (
 	"bytes"
 	"context"
+	"strings"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -74,6 +75,39 @@ func TestSomeViewQueryWithoutSchema(t *testing.T) {
 
 	if query != expected {
 		t.Errorf("Expected '%#v' but got '%#v'", expected, query)
+	}
+}
+
+func TestSomeViewExistsUsesExistsExpression(t *testing.T) {
+	ctx := context.Background()
+	if _, err := testDB.ExecContext(ctx, `CREATE TABLE exists_view_test (id BIGINT PRIMARY KEY)`); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if _, err := testDB.ExecContext(ctx, `DROP TABLE exists_view_test`); err != nil {
+			t.Error(err)
+		}
+	})
+	if _, err := testDB.ExecContext(ctx, `INSERT INTO exists_view_test (id) VALUES (1)`); err != nil {
+		t.Fatal(err)
+	}
+
+	view := NewView[int64, bob.Expression]("", "exists_view_test", Quote("id"))
+	var query strings.Builder
+	exists, err := view.Query(
+		sm.With("matching").As(Select(sm.Columns("id"), sm.From("exists_view_test"))),
+		sm.From("matching"),
+		sm.Where(Quote("id").EQ(Arg(1))),
+	).Exists(ctx, bob.DebugToWriter(testDB, &query))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists {
+		t.Fatal("expected matching row to exist")
+	}
+	got := query.String()
+	if !strings.Contains(got, "EXISTS ((") || !strings.Contains(got, "WITH") || strings.Contains(got, "count(1)") {
+		t.Fatalf("expected EXISTS query, got:\n%s", got)
 	}
 }
 
