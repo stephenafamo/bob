@@ -138,7 +138,8 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
   {{if not $query.Config.ResultTransformer}}
     type {{trimPrefix "*" $queryResultTypeOne}} = struct {
       {{range $col := $query.Columns.WithNames -}}
-        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"`
+        {{$tagName := columnTagName $.StructTagCasing $col.DBName $col.Name -}}
+        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"{{if $.Tags}} {{generateTags $.Tags $tagName | trim}}{{end}}`
       {{end}}
     }
 
