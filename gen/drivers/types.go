@@ -566,7 +566,7 @@ func optionalTypePointers(tm TypeModifier, name string, def Type, isNull, fromOr
 		InvalidExpr:       "SRC == nil",
 		UseExpr:           "func () BASETYPE { if SRC == nil { return *new(BASETYPE) }; return *SRC }()",
 		UseExprImports:    nil,
-		CreateExpr:        "func () *BASETYPE { return &SRC }()",
+		CreateExpr:        "func () *BASETYPE { v := SRC; return &v }()",
 		CreateExprImports: nil,
 	}
 
