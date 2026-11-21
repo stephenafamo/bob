@@ -82,10 +82,11 @@ func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dia
 	if len(d.UsingItems) > 0 {
 		w.WriteString("\nUSING ")
 
-		args, err = writeFromItemList(ctx, w, dl, start+len(args), args, d.UsingItems)
+		usingArgs, err := expressFromItems(ctx, w, dl, start+len(args), d.UsingItems)
 		if err != nil {
 			return nil, err
 		}
+		args = append(args, usingArgs...)
 	}
 
 	whereArgs, err := clause.WriteWhereAndCurrentOf(ctx, w, dl, start+len(args), d.Where, d.WhereCurrentOf)

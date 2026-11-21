@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `QueryStmt.All` (the prepared-statement path returned by `PrepareQueryx`) silently falling back to per-element `AfterQueryHook` calls when the slice type is not `HookableType` but the single/element type is, instead of returning `ErrHookableTypeMismatch` like `Allx` (the non-prepared path) already does for the same type combination. **Breaking change**: code on the prepared path relying on the undocumented fallback for this type combination now receives `ErrHookableTypeMismatch` instead of silently succeeding. Generated code is unaffected, since generated `<Table>Slice` types always implement `AfterQueryHook`.
 
+- Fixed the psql `UPDATE ... FROM` and `DELETE ... USING` clauses double-counting preceding arguments when numbering placeholders: after e.g. two `SET` arguments, a parameterized `FROM (VALUES ...)` source started at `$5` instead of `$3`, generating SQL that referenced placeholders beyond the returned argument slice. The from-item helper now follows the `bob.Express*` contract — it takes only the placeholder offset and returns just the newly generated arguments ([#772](https://github.com/stephenafamo/bob/issues/772), [#786](https://github.com/stephenafamo/bob/pull/786)). (thanks @dmakushin)
+
 ## [v0.50.0] - 2026-08-11
 
 ### Added
