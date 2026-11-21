@@ -9,13 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array columns work, but some other types such as `interval` and `tsvector` are not yet scannable by native pgx into the generated Go types.
+- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array and `tsvector` columns work (`tsvector` is generated as `pgtypes.TSVector`, since pgx v5.9 and later cannot scan it into a `string`), but some other types such as `interval`, `bit`, `bit varying` and `"char"` are not yet scannable by native pgx into the generated Go types.
 - `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. With the native pgx driver, every array column is generated as `pgtypes.Array[T]`; the `lib/pq` and `pgx/v5/stdlib` drivers keep generating the same types as before. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
 - Added `(*bob.Load).NextUniqueInt()`, which is like `bob.NextUniqueInt()` but only unique within a query, so aliases built with it are the same every time the query is built ([#741](https://github.com/stephenafamo/bob/issues/741)).
 
 ### Changed
 
 - `pgtypes.EnumArray[T]` is now an alias of `pgtypes.Array[T]`. `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- **BREAKING:** The minimum supported Go version is now 1.25 (`go 1.25.0` in `go.mod`), because `github.com/jackc/pgx/v5` v5.9 requires it. Projects on Go 1.24 or older can no longer build bob and must upgrade their Go toolchain.
+- Upgraded `github.com/jackc/pgx/v5` to v5.9.2, `golang.org/x/text` to v0.41.0, `golang.org/x/crypto` to v0.55.0, `github.com/moby/go-archive` to v0.3.0, `github.com/go-viper/mapstructure/v2` to v2.4.0 and `github.com/docker/docker` to v28.3.3 to fix advisories reported by `govulncheck`. Other modules moved only as required by these upgrades. `golang.org/x/crypto` v0.56.0, which fixes GO-2026-6354 and GO-2026-6355, requires Go 1.26 and is not included.
 
 ### Fixed
 
@@ -34,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `QueryStmt.All` (the prepared-statement path returned by `PrepareQueryx`) silently falling back to per-element `AfterQueryHook` calls when the slice type is not `HookableType` but the single/element type is, instead of returning `ErrHookableTypeMismatch` like `Allx` (the non-prepared path) already does for the same type combination. **Breaking change**: code on the prepared path relying on the undocumented fallback for this type combination now receives `ErrHookableTypeMismatch` instead of silently succeeding. Generated code is unaffected, since generated `<Table>Slice` types always implement `AfterQueryHook`.
 
 - Fixed `Preload` and generated joins through another table (such as `SelectJoins.Videos.InnerJoin.Tags`) giving the joined tables a different alias every time a query was built (`"users_10001"`, then `"users_10002"`, ...). The aliases are now numbered per query instead of per process, so the same query always results in the same SQL. This lets drivers that cache prepared statements by their SQL, such as `pgx`, reuse the statement, keeps every execution from adding an entry to `pg_stat_statements` on PostgreSQL 18, and stops the aliases from getting longer until the `"alias.column"` name of a preloaded column passes PostgreSQL's limit of 63 bytes ([#741](https://github.com/stephenafamo/bob/issues/741)). Note: code that calls a `Preloader` function directly now has to apply the mod it returns before using the returned mapper mod and loaders.
+- Fixed the psql `UPDATE ... FROM` and `DELETE ... USING` clauses double-counting preceding arguments when numbering placeholders: after e.g. two `SET` arguments, a parameterized `FROM (VALUES ...)` source started at `$5` instead of `$3`, generating SQL that referenced placeholders beyond the returned argument slice. The from-item helper now follows the `bob.Express*` contract — it takes only the placeholder offset and returns just the newly generated arguments ([#772](https://github.com/stephenafamo/bob/issues/772), [#786](https://github.com/stephenafamo/bob/pull/786)). (thanks @dmakushin)
 
 ## [v0.50.0] - 2026-08-11
 

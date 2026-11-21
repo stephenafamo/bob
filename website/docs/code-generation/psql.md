@@ -78,7 +78,7 @@ With the native pgx driver, every array column is generated as `pgtypes.Array[T]
 
 When replacing the type of an array column for the native pgx driver, use `pgtypes.Array[T]` (for example `pgtypes.Array[types.JSON[MyStruct]]`) rather than a plain slice: a plain slice wrapped in `null.Val` cannot be scanned by native pgx, because `null.Val` is an `sql.Scanner` and receives the binary format.
 
-Native pgx support is experimental. Some other column types, such as `interval` and `tsvector`, are generated as `string` and cannot yet be scanned from pgx's binary format; use a type replacement for them.
+With the native pgx driver, `tsvector` columns are generated as `pgtypes.TSVector`, because pgx v5.9 and later cannot scan `tsvector` into a `string`. Native pgx support is experimental. Some other column types, such as `interval`, `bit`, `bit varying` and `"char"`, are generated as `string` and cannot yet be scanned from pgx's binary format; use a type replacement for them.
 
 ## Only/Except:
 
