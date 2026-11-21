@@ -133,11 +133,12 @@ func (w *walker) getArgs(typs []string) []drivers.QueryArg {
 			))
 		}
 
+		// typs is ordered by the formatted query's parameter numbers, w.args by the input query's
 		bindArgs[i] = drivers.QueryArg{
 			Col: drivers.QueryCol{
 				Name:     name,
 				Nullable: internal.Pointer(nullable),
-				TypeName: typs[i],
+				TypeName: typs[w.paramIdxMap[int64(i+1)]-1],
 			}.Merge(configs...),
 			Positions:     positions,
 			CanBeMultiple: multiple,
