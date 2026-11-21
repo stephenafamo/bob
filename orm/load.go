@@ -106,6 +106,7 @@ func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 // while it can be used as a queryMod, it does not have any direct effect.
 // if using manually, the ApplyPreload method should be called
 // with the query's context AFTER other mods have been applied
+// the mapper mod and loaders it returns can only be used after the returned mod is applied
 type Preloader[Q Loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
 
 // Apply satisfies bob.Mod[*dialect.SelectQuery].
@@ -255,7 +256,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		keyColumns = rel.Sides[len(rel.Sides)-1].ToColumns
 	}
 
-	return buildPreloader[T](func(parent string) (string, mods.QueryMods[Q]) {
+	return buildPreloader[T](func(q Q, parent string) (string, mods.QueryMods[Q]) {
 		if parent == "" {
 			parent = rel.Sides[0].From.Alias()
 		}
@@ -266,7 +267,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 		for i, side := range rel.Sides {
 			alias = settings.Alias
 			if settings.Alias == "" {
-				alias = fmt.Sprintf("%s_%d", side.To.Alias(), bob.NextUniqueInt())
+				alias = fmt.Sprintf("%s_%d", side.To.Alias(), nextUniqueInt(q))
 			}
 			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
 			for i, fromCol := range side.FromColumns {
@@ -318,9 +319,9 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 	}, rel.Name, keyColumns, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
-	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
-		alias, queryMods := f(parent)
+func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
+	build := func(q Q, parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
+		alias, queryMods := f(q, parent)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
@@ -391,6 +392,45 @@ func buildPreloader[T any, Q Loadable](f func(string) (string, mods.QueryMods[Q]
 			return before, legacy
 		}, extraLoaders
 	}
+
+	// the alias can depend on the query, so the preloader is only built when its mod is applied
+	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
+		var mapperMod scan.MapperMod
+		var loaders lazyLoaders
+
+		apply := bob.ModFunc[Q](func(q Q) {
+			var queryMod bob.Mod[Q]
+			queryMod, mapperMod, loaders = build(q, parent)
+			queryMod.Apply(q)
+		})
+
+		return apply, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+			return mapperMod(ctx, cols)
+		}, []bob.Loader{&loaders}
+	}
+}
+
+// nextUniqueInt returns an integer to make an alias unique
+// it comes from the query if it numbers its own aliases, so that the same query always gets the same SQL
+func nextUniqueInt(q any) uint64 {
+	if u, ok := q.(interface{ NextUniqueInt() uint64 }); ok {
+		return u.NextUniqueInt()
+	}
+
+	return bob.NextUniqueInt()
+}
+
+// lazyLoaders are the loaders of a preloader, they are only known once its mod is applied
+type lazyLoaders []bob.Loader
+
+func (l *lazyLoaders) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
+	for _, loader := range *l {
+		if err := loader.Load(ctx, exec, retrieved); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // dedup turns itself off after this many distinct keys with zero hits
