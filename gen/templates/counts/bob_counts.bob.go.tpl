@@ -1,5 +1,4 @@
 {{$.Importer.Import "context"}}
-{{$.Importer.Import "io"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
@@ -102,23 +101,11 @@ func (c countPreloadMod[T]) Apply(q *dialect.SelectQuery) {
 // applyCount adds the count subquery to the query
 func (c countPreloadMod[T]) applyCount(q *dialect.SelectQuery, parent string) {
 	countCol := c.countExpr(parent)
-	q.AppendPreloadSelect(aliasedExpr{expr: countCol, alias: "__count_" + c.name})
-}
-
-// aliasedExpr wraps an expression with an alias
-type aliasedExpr struct {
-	expr  bob.Expression
-	alias string
-}
-
-func (a aliasedExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	args, err := a.expr.WriteSQL(ctx, w, d, start)
-	if err != nil {
-		return nil, err
-	}
-	w.WriteString(" AS ")
-	d.WriteQuoted(w, a.alias)
-	return args, nil
+	q.AppendPreloadSelect(orm.CountPreloadColumn{
+		Name:  c.name,
+		Alias: "__count_" + c.name,
+		Expr:  countCol,
+	})
 }
 
 // countPreloader returns a Preloader that adds a count subquery
