@@ -10,17 +10,17 @@ func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Ex
 
   switch queryType {
   case bob.QueryTypeSelect:
-    ctx, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
   {{if .Table.Constraints.Primary -}}
     case bob.QueryTypeInsert:
-      ctx, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
     case bob.QueryTypeUpdate:
-      ctx, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
     case bob.QueryTypeDelete:
-      ctx, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
     {{if eq $.Dialect "psql" -}}
     case bob.QueryTypeMerge:
-      ctx, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
     {{- end}}
   {{- end}}
   }
@@ -65,9 +65,12 @@ func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, 
     return err
   }
 
-	{{if $.Relationships.Get $table.Key}}o.R = v.R{{end}}
-  *o = *v
-
+  // Only the column fields are copied over, so that any non-column field
+  // (the relationship cache .R, plugin fields such as the counts .C) survives.
+  {{range $column := $table.Columns -}}
+  {{- $colAlias := $tAlias.Column $column.Name}}
+  o.{{$colAlias}} = v.{{$colAlias}}
+  {{end}}
   return nil
 }
 {{- end}}
@@ -90,9 +93,12 @@ func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) 
 	if err != nil {
 		return err
 	}
-	{{if $.Relationships.Get $table.Key}}o2.R = o.R{{end}}
-	*o = *o2
-
+	// Only the column fields are copied over, so that any non-column field
+	// (the relationship cache .R, plugin fields such as the counts .C) survives.
+	{{range $column := $table.Columns -}}
+	{{- $colAlias := $tAlias.Column $column.Name}}
+	o.{{$colAlias}} = o2.{{$colAlias}}
+	{{end}}
 	return nil
 }
 

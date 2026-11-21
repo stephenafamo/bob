@@ -175,6 +175,14 @@ func (s QueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
 }
 
 func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
+	// Mirror Allx: if the slice type is not hookable but the single type
+	// is, reject before executing the query (see ErrHookableTypeMismatch).
+	_, isSliceHookable := any(*new(Ts)).(HookableType)
+	_, isSingleHookable := any(*new(T)).(HookableType)
+	if !isSliceHookable && isSingleHookable {
+		return nil, ErrHookableTypeMismatch
+	}
+
 	args := s.binder.toArgs(arg)
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {
@@ -197,12 +205,6 @@ func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
 	if h, ok := any(typedSlice).(HookableType); ok {
 		if err = h.AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
 			return typedSlice, err
-		}
-	} else if _, ok := any(*new(T)).(HookableType); ok {
-		for _, t := range typedSlice {
-			if err = any(t).(HookableType).AfterQueryHook(ctx, s.exec, s.queryType); err != nil {
-				return typedSlice, err
-			}
 		}
 	}
 

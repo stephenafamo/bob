@@ -247,6 +247,46 @@ if models.ErrUniqueConstraint.Is(err) {
 
 When using the `errors.Is()` variant, be mindful that the order of arguments matters due to Go's internal implementation. The first argument should be the error constant, while the second argument should be the actual error returned from the database. If you flip the arguments, the function won't work as intended and won't catch the unique constraint error.
 
+### Check Constraint Errors
+
+For tables with check constraints, Bob generates `CheckConstraintError` constants in the same `dberrors` package. On PostgreSQL, these match SQLSTATE `23514` by constraint name.
+
+Take the following database table, for example:
+
+```sql
+CREATE TABLE pilots (
+    id serial PRIMARY KEY NOT NULL,
+    age int NOT NULL,
+    CONSTRAINT pilots_age_positive CHECK (age > 0)
+);
+```
+
+Bob will define the following field inside the generated `pilotErrors` struct:
+
+```go
+type pilotErrors struct {
+    ErrCheckPilotsAgePositive *CheckConstraintError
+}
+```
+
+The error can be matched in the same ways as unique constraint errors:
+
+```go
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
+if errors.Is(dberrors.PilotErrors.ErrCheckPilotsAgePositive, err) {
+    // handle the error
+}
+```
+
+Bob also defines a generic `ErrCheckConstraint` constant for matching any check constraint violation:
+
+```go
+pilot, err := models.Pilots.Insert(setter).One(ctx, db)
+if errors.Is(dberrors.ErrCheckConstraint, err) {
+    // handle the error
+}
+```
+
 ## Query Building
 
 Several constants[^1] are also generated to help with query building. As with all queries built with [Bob's query builder](../query-builder/intro), the building blocks are expressions and mods.

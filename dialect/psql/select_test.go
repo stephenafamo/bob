@@ -267,16 +267,19 @@ func TestSelect(t *testing.T) {
 					GROUP BY status`,
 			Query: psql.Select(
 				sm.Columns("status", psql.F("avg", "difference")),
-				sm.From(psql.Select(
-					sm.Columns(
-						"status",
-						psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
-							fm.Over(
-								wm.PartitionBy("presale_id"),
-								wm.OrderBy("created_date"),
-							),
-						).Minus(psql.Quote("created_date")).As("difference")),
-					sm.From("presales_presalestatus")),
+				sm.From(
+					psql.Select(
+						sm.Columns(
+							"status",
+							psql.F("LEAD", "created_date", 1, psql.F("NOW"))(
+								fm.Over(
+									wm.PartitionBy("presale_id"),
+									wm.OrderBy("created_date"),
+								),
+							).Minus(psql.Quote("created_date")).As("difference"),
+						),
+						sm.From("presales_presalestatus"),
+					),
 				).As("differnce_by_status"),
 				sm.Where(psql.Quote("status").In(psql.S("A"), psql.S("B"), psql.S("C"))),
 				sm.GroupBy("status"),
@@ -303,7 +306,8 @@ func TestSelect(t *testing.T) {
 				sm.From("users"),
 				sm.Where(
 					psql.Group(psql.Quote("id"), psql.Quote("employee_id")).
-						In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400))),
+						In(psql.ArgGroup(100, 200), psql.ArgGroup(300, 400)),
+				),
 			),
 			ExpectedSQL:  `SELECT id, name FROM users WHERE (("id", "employee_id") IN (($1, $2), ($3, $4)))`,
 			ExpectedArgs: []any{100, 200, 300, 400},

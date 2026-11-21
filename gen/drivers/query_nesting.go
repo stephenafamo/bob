@@ -174,7 +174,8 @@ func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typ
 			}
 		}
 
-		fmt.Fprintf(&self, "%s %s\n",
+		fmt.Fprintf(
+			&self, "%s %s\n",
 			child.Col.Name,
 			childType,
 		)
@@ -260,7 +261,8 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 
 	switch {
 	case isSingle && n.AllNullable():
-		fmt.Fprintf(transformation, `if %s == nil {
+		fmt.Fprintf(
+			transformation, `if %s == nil {
 			  var fresh %s
 			  %s
 			  %s = &fresh
@@ -281,7 +283,8 @@ func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types,
 		cmpExpr = strings.ReplaceAll(cmpExpr, "AAA", lhs)
 		cmpExpr = strings.ReplaceAll(cmpExpr, "BBB", rhs)
 
-		fmt.Fprintf(transformation, `
+		fmt.Fprintf(
+			transformation, `
 			var %s %s
 			if %s {
 			  fresh := %s{}

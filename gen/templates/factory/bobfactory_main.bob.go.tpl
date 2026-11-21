@@ -1,6 +1,5 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
-{{range $table := .Tables}}{{if $.Relationships.Get $table.Key}}{{$.Importer.Import "unsafe"}}{{end}}{{end}}
 
 type Factory struct {
     {{range $table := .Tables}}
@@ -33,10 +32,6 @@ func (f *Factory) New{{$tAlias.UpSingular}}WithContext(ctx context.Context, mods
 }
 
 func (f *Factory) FromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *models.{{$tAlias.UpSingular}}) *{{$tAlias.UpSingular}}Template {
-  {{if $.Relationships.Get $table.Key -}}
-  visited := make(map[uintptr]struct{})
-  ctx = factoryVisitedCtx.WithValue(ctx, visited)
-  {{- end}}
   return f.fromExisting{{$tAlias.UpSingular}}(ctx, m)
 }
 
@@ -50,13 +45,17 @@ func (f *Factory) fromExisting{{$tAlias.UpSingular}}(ctx context.Context, m *mod
   {{end}}
 
   {{if $.Relationships.Get $table.Key -}}
-  if visited, ok := factoryVisitedCtx.Value(ctx); ok {
-    ptr := uintptr(unsafe.Pointer(m))
-    if _, seen := visited[ptr]; seen {
-      return o
-    }
-    visited[ptr] = struct{}{}
+  path, ok := factoryPathCtx.Value(ctx)
+  if !ok {
+    path = make(map[any]struct{})
+    ctx = factoryPathCtx.WithValue(ctx, path)
   }
+
+  if _, onPath := path[m]; onPath {
+    return o
+  }
+  path[m] = struct{}{}
+  defer delete(path, m)
   {{range $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship .Name -}}
     {{if .IsToMany -}}

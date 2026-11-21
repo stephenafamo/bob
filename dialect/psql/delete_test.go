@@ -8,6 +8,8 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/dm"
 	"github.com/stephenafamo/bob/dialect/psql/fm"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/dialect/psql/vm"
 	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
@@ -33,6 +35,39 @@ func TestDelete(t *testing.T) {
 			  AND (employees.id = accounts.sales_person)`,
 			ExpectedArgs: []any{"Acme Corporation"},
 		},
+		"using values continues placeholder numbering after cte arguments": {
+			Query: psql.Delete(
+				dm.With("src").As(psql.Select(sm.Columns(psql.Arg("cte value")))),
+				dm.From("widgets"),
+				dm.Using(psql.Values(
+					vm.RowValue(psql.Arg(int64(17), "first")),
+				)).As("requested", "id", "value"),
+				dm.Where(psql.Quote("widgets", "id").EQ(psql.Quote("requested", "id"))),
+			),
+			ExpectedSQL: `WITH src AS (SELECT $1)
+  DELETE FROM widgets USING (VALUES ($2, $3)
+  ) AS "requested"("id", "value")
+  WHERE ("widgets"."id" = "requested"."id")`,
+			ExpectedArgs: []any{"cte value", int64(17), "first"},
+		},
+		"arguments continue across cte using join and where": {
+			Query: psql.Delete(
+				dm.With("source").As(psql.Select(sm.Columns(psql.Arg("source value")))),
+				dm.From("widgets"),
+				dm.Using(
+					"accounts",
+					dm.InnerJoin("requested").On(
+						psql.Quote("accounts", "id").EQ(psql.Arg(int64(17))),
+					),
+				),
+				dm.Where(psql.Quote("widgets", "id").EQ(psql.Arg(int64(29)))),
+			),
+			ExpectedSQL: `WITH source AS (SELECT $1)
+  DELETE FROM widgets USING accounts
+  INNER JOIN requested ON ("accounts"."id" = $2)
+  WHERE ("widgets"."id" = $3)`,
+			ExpectedArgs: []any{"source value", int64(17), int64(29)},
+		},
 		"with multiple using items": {
 			Query: psql.Delete(
 				dm.From("employees"),
@@ -47,7 +82,8 @@ func TestDelete(t *testing.T) {
 		"using item with inner join": {
 			Query: psql.Delete(
 				dm.From("employees"),
-				dm.Using("accounts",
+				dm.Using(
+					"accounts",
 					dm.InnerJoin("departments").OnEQ(
 						psql.Quote("accounts", "dept_id"),
 						psql.Quote("departments", "id"),
@@ -130,7 +166,8 @@ func TestDelete(t *testing.T) {
 		"using item with left join and alias": {
 			Query: psql.Delete(
 				dm.From("employees"),
-				dm.Using("accounts",
+				dm.Using(
+					"accounts",
 					dm.LeftJoin("departments").OnEQ(
 						psql.Quote("accounts", "dept_id"),
 						psql.Quote("departments", "id"),
@@ -180,7 +217,8 @@ func TestDelete(t *testing.T) {
 		"with multiple using items join rows from and table": {
 			Query: psql.Delete(
 				dm.From("employees"),
-				dm.Using("accounts",
+				dm.Using(
+					"accounts",
 					dm.LeftJoin("departments").OnEQ(
 						psql.Quote("accounts", "dept_id"),
 						psql.Quote("departments", "id"),

@@ -93,16 +93,19 @@ func TestSelect(t *testing.T) {
 				GROUP BY status`,
 			Query: mysql.Select(
 				sm.Columns("status", mysql.F("avg", "difference")),
-				sm.From(mysql.Select(
-					sm.Columns(
-						"status",
-						mysql.F("LEAD", "created_date", 1, mysql.F("NOW"))(
-							fm.Over(
-								wm.PartitionBy("presale_id"),
-								wm.OrderBy("created_date"),
-							),
-						).Minus(mysql.Quote("created_date")).As("difference")),
-					sm.From("presales_presalestatus")),
+				sm.From(
+					mysql.Select(
+						sm.Columns(
+							"status",
+							mysql.F("LEAD", "created_date", 1, mysql.F("NOW"))(
+								fm.Over(
+									wm.PartitionBy("presale_id"),
+									wm.OrderBy("created_date"),
+								),
+							).Minus(mysql.Quote("created_date")).As("difference"),
+						),
+						sm.From("presales_presalestatus"),
+					),
 				).As("differnce_by_status"),
 				sm.Where(mysql.Quote("status").In(mysql.S("A"), mysql.S("B"), mysql.S("C"))),
 				sm.GroupBy("status"),

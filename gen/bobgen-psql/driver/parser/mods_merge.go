@@ -14,7 +14,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 	}
 
 	if tableInfo, ok := info.children["Relation"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(tableInfo.start),
 				int(tableInfo.end)-1,
@@ -30,7 +31,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 	}
 
 	if sourceInfo, ok := info.children["SourceRelation"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(sourceInfo.start),
 				int(sourceInfo.end)-1,
@@ -48,7 +50,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 	}
 
 	if onInfo, ok := info.children["JoinCondition"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(onInfo.start),
 				int(onInfo.end)-1,
@@ -80,7 +83,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 			continue
 		}
 
-		fmt.Fprintf(w.mods,
+		fmt.Fprintf(
+			w.mods,
 			"q.When = append(q.When, dialect.MergeWhen{Type: %s, Action: dialect.MergeAction{Type: %s}})\n",
 			whenType,
 			actionType,
@@ -105,7 +109,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 
 		if hasWhenInfo {
 			if conditionInfo, ok := whenInfo.children["Condition"]; ok {
-				w.editRules = append(w.editRules,
+				w.editRules = append(
+					w.editRules,
 					internal.RecordPoints(
 						int(conditionInfo.start),
 						int(conditionInfo.end)-1,
@@ -120,7 +125,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 			switch when.CommandType {
 			case pg.CmdType_CMD_INSERT:
 				if valuesInfo, ok := whenInfo.children["Values"]; ok {
-					w.editRules = append(w.editRules,
+					w.editRules = append(
+						w.editRules,
 						internal.RecordPoints(
 							int(valuesInfo.start),
 							int(valuesInfo.end)-1,
@@ -134,7 +140,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 
 			case pg.CmdType_CMD_UPDATE:
 				if setInfo, ok := whenInfo.children["TargetList"]; ok {
-					w.editRules = append(w.editRules,
+					w.editRules = append(
+						w.editRules,
 						internal.RecordPoints(
 							int(setInfo.start),
 							int(setInfo.end)-1,
@@ -150,7 +157,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 	}
 
 	if returnInfo, ok := info.children["ReturningList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(returnInfo.start),
 				int(returnInfo.end)-1,

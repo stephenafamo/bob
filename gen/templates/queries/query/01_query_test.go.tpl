@@ -12,6 +12,7 @@
 
 {{$txType := "bob.Tx"}}
 {{if eq $.Driver "github.com/jackc/pgx/v5" -}}
+{{$.Importer.Import "bobpgx" "github.com/stephenafamo/bob/drivers/pgx"}}
 {{$txType = "bobpgx.Tx"}}
 {{- end}}
 

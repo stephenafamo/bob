@@ -13,7 +13,8 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 	}
 
 	if tableInfo, ok := info.children["Relation"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(tableInfo.start),
 				int(tableInfo.end)-1,
@@ -33,7 +34,8 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 	}
 
 	if whereInfo, ok := info.children["WhereClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
@@ -46,7 +48,8 @@ func (w *walker) modDeleteStatement(stmt *pg.Node_DeleteStmt, info nodeInfo) {
 	}
 
 	if returnInfo, ok := info.children["ReturningList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(returnInfo.start),
 				int(returnInfo.end)-1,

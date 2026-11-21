@@ -13,7 +13,8 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 	}
 
 	if tableInfo, ok := info.children["Relation"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(tableInfo.start),
 				int(tableInfo.end)-1,
@@ -29,7 +30,8 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 	}
 
 	if targetInfo, ok := info.children["TargetList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(targetInfo.start),
 				int(targetInfo.end)-1,
@@ -46,7 +48,8 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 	}
 
 	if whereInfo, ok := info.children["WhereClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
@@ -59,7 +62,8 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 	}
 
 	if returnInfo, ok := info.children["ReturningList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(returnInfo.start),
 				int(returnInfo.end)-1,

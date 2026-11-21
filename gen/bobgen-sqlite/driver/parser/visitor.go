@@ -994,20 +994,22 @@ func (v *visitor) VisitExpr_bind(ctx *sqliteparser.Expr_bindContext) any {
 
 	// So it does not refer to the same atomic
 	a := v.Atom
-	v.StmtRules = append(v.StmtRules, internal.EditCallback(
-		internal.ReplaceFromFunc(
-			ctx.GetStart().GetStart(), ctx.GetStop().GetStop(),
-			func() string {
-				return fmt.Sprintf("?%d", a.Add(1))
+	v.StmtRules = append(
+		v.StmtRules, internal.EditCallback(
+			internal.ReplaceFromFunc(
+				ctx.GetStart().GetStart(), ctx.GetStop().GetStop(),
+				func() string {
+					return fmt.Sprintf("?%d", a.Add(1))
+				},
+			),
+			func(start, end int, _, _ string) error {
+				v.UpdateInfo(NodeInfo{
+					Node:           ctx,
+					EditedPosition: [2]int{start, end},
+				})
+				return nil
 			},
 		),
-		func(start, end int, _, _ string) error {
-			v.UpdateInfo(NodeInfo{
-				Node:           ctx,
-				EditedPosition: [2]int{start, end},
-			})
-			return nil
-		}),
 	)
 
 	return nil
@@ -1233,7 +1235,8 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 		if len(source.Columns) != len(coreSource.Columns) {
 			v.Err = fmt.Errorf(
 				"select core %d: column count mismatch %d != %d",
-				i, len(source.Columns), len(coreSource.Columns))
+				i, len(source.Columns), len(coreSource.Columns),
+			)
 			return nil
 		}
 
@@ -1243,7 +1246,8 @@ func (v *visitor) VisitSelect_stmt(ctx *sqliteparser.Select_stmtContext) any {
 			if len(source.Columns[i].Type) == 0 {
 				v.Err = fmt.Errorf(
 					"select core %d: column %d type mismatch:\n%v\n%v",
-					i, i, col.Type, coreSource.Columns[i].Type)
+					i, i, col.Type, coreSource.Columns[i].Type,
+				)
 				return nil
 			}
 

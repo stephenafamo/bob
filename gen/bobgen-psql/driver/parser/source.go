@@ -311,7 +311,8 @@ func (w *walker) addSourcesOfFromItem(from *pg.Node, fromInfo nodeInfo, sources 
 		fromInfo = joinInfo.children["Larg"]
 
 		infoKey := strings.TrimPrefix(
-			reflect.TypeOf(join.Rarg.Node).Elem().Name(), "Node_")
+			reflect.TypeOf(join.Rarg.Node).Elem().Name(), "Node_",
+		)
 
 		joined := joinedInfo{
 			node:     join.Rarg,
