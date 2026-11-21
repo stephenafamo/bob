@@ -35,6 +35,7 @@ func (l LoaderFunc) Load(ctx context.Context, exec Executor, retrieved any) erro
 type Load struct {
 	loadFuncs         []Loader
 	preloadMapperMods []scan.MapperMod
+	uniqueCounter     uint64
 }
 
 func (l *Load) SetMapperMods(mods ...scan.MapperMod) {
@@ -64,4 +65,11 @@ func (l *Load) GetLoaders() []Loader {
 // AppendLoader add to the query's loaders
 func (l *Load) AppendLoader(f ...Loader) {
 	l.loadFuncs = append(l.loadFuncs, f...)
+}
+
+// NextUniqueInt is like the package level [NextUniqueInt], but the integers are only unique
+// within the query. Every query starts at 10001, so the same query always gets the same aliases.
+func (l *Load) NextUniqueInt() uint64 {
+	l.uniqueCounter++
+	return l.uniqueCounter + 10000
 }

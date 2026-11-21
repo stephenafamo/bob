@@ -32,11 +32,7 @@ func TestDriver(t *testing.T) {
 		mysqltest.WithUsername("root"),
 		mysqltest.WithPassword("password"),
 	)
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(mysqlContainer); err != nil {
-			fmt.Printf("failed to terminate MySQL container: %v\n", err)
-		}
-	})
+	testcontainers.CleanupContainer(t, mysqlContainer)
 	if err != nil {
 		t.Fatalf("failed to start container: %v", err)
 	}
