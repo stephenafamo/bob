@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop at a cycle while preserving loaded relationships shared by separate branches ([#761](https://github.com/stephenafamo/bob/issues/761)).
+
 - Fixed the libSQL generator test to use the port assigned by Testcontainers. The PostgreSQL generator test now cleans up after a failed container start and reports setup errors as test failures. See [#747](https://github.com/stephenafamo/bob/pull/747). (thanks @dmakushin)
 
 - Fixed generated relationship code for a `to_where` with a literal `go_value` such as `true` or `1` under the `database/sql` and `github.com/aarondl/opt/null` type systems. The setter took the address of the literal (`&true`), which does not compile. See [#553](https://github.com/stephenafamo/bob/issues/553).
