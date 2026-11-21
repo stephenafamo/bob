@@ -37,7 +37,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 			fmt.Fprintln(w.mods, "q.Distinct.On = []any{}")
 		} else {
 			distinctInfo := info.children["DistinctClause"]
-			w.editRules = append(w.editRules,
+			w.editRules = append(
+				w.editRules,
 				internal.RecordPoints(
 					int(distinctInfo.start),
 					int(distinctInfo.end-1),
@@ -55,7 +56,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if targetInfo, ok := mainInfo.children["TargetList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(targetInfo.start),
 				int(targetInfo.end)-1,
@@ -68,7 +70,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if fromInfo, ok := mainInfo.children["FromClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(fromInfo.start),
 				int(fromInfo.end)-1,
@@ -81,7 +84,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if whereInfo, ok := mainInfo.children["WhereClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(whereInfo.start),
 				int(whereInfo.end)-1,
@@ -94,7 +98,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if groupByInfo, ok := mainInfo.children["GroupClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(groupByInfo.start),
 				int(groupByInfo.end)-1,
@@ -110,7 +115,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if havingInfo, ok := mainInfo.children["HavingClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(havingInfo.start),
 				int(havingInfo.end)-1,
@@ -125,7 +131,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	if windowsInfo, ok := mainInfo.children["WindowClause"]; ok {
 		for _, windowInfo := range windowsInfo.children {
 			nameStart := w.getStartOfTokenBefore(windowInfo.start, pg.Token_IDENT)
-			w.editRules = append(w.editRules,
+			w.editRules = append(
+				w.editRules,
 				internal.RecordPoints(
 					int(nameStart),
 					int(windowInfo.end)-1,
@@ -154,7 +161,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 			strategy = "EXCEPT"
 		}
 
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(combine.Info.start),
 				int(combine.Info.end)-1,
@@ -180,7 +188,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	// For a plain query this is the whole query; for a combined query (UNION /
 	// INTERSECT / EXCEPT) this is the first operand, which keeps its own clauses.
 	if limitInfo, ok := mainInfo.children["LimitCount"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(limitInfo.start),
 				int(limitInfo.end)-1,
@@ -203,7 +212,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if offsetInfo, ok := mainInfo.children["LimitOffset"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(offsetInfo.start),
 				int(offsetInfo.end)-1,
@@ -216,7 +226,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	}
 
 	if orderInfo, ok := mainInfo.children["SortClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(orderInfo.start),
 				int(orderInfo.end)-1,
@@ -234,7 +245,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 	// handled above as part of the main branch.
 	if len(combines) > 0 {
 		if limitInfo, ok := info.children["LimitCount"]; ok {
-			w.editRules = append(w.editRules,
+			w.editRules = append(
+				w.editRules,
 				internal.RecordPoints(
 					int(limitInfo.start),
 					int(limitInfo.end)-1,
@@ -257,7 +269,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 		}
 
 		if offsetInfo, ok := info.children["LimitOffset"]; ok {
-			w.editRules = append(w.editRules,
+			w.editRules = append(
+				w.editRules,
 				internal.RecordPoints(
 					int(offsetInfo.start),
 					int(offsetInfo.end)-1,
@@ -270,7 +283,8 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 		}
 
 		if orderInfo, ok := info.children["SortClause"]; ok {
-			w.editRules = append(w.editRules,
+			w.editRules = append(
+				w.editRules,
 				internal.RecordPoints(
 					int(orderInfo.start),
 					int(orderInfo.end)-1,

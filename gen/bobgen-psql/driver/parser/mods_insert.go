@@ -14,7 +14,8 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 	}
 
 	if intoInfo, ok := info.children["Relation"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(intoInfo.start),
 				int(intoInfo.end)-1,
@@ -58,7 +59,8 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 	}
 
 	if conflictInfo, ok := info.children["OnConflictClause"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(conflictInfo.start),
 				int(conflictInfo.end)-1,
@@ -71,7 +73,8 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 	}
 
 	if returnInfo, ok := info.children["ReturningList"]; ok {
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(returnInfo.start),
 				int(returnInfo.end)-1,

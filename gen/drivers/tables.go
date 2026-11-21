@@ -297,7 +297,8 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 
 				if kside.TableName == r.Local() {
 					i.Import("github.com/stephenafamo/bob/orm")
-					mret = append(mret, fmt.Sprintf(`if %s != %s {
+					mret = append(mret, fmt.Sprintf(
+						`if %s != %s {
 								return &orm.RelationshipChainError{
 									Table1: %q, Column1: %q, Value: %q,
 								}
@@ -308,7 +309,8 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 					continue
 				}
 
-				mret = append(mret, fmt.Sprintf(`%s.%s = %s //h`,
+				mret = append(mret, fmt.Sprintf(
+					`%s.%s = %s //h`,
 					objVarName,
 					oalias.Columns[mapp.Column],
 					mapp.Value[1],
@@ -322,9 +324,11 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 				currPkg, i, types, aliases,
 				kside.TableName, mapp.ExternalTable,
 				mapp.Column, mapp.ExternalColumn,
-				extObjVarName, false)
+				extObjVarName, false,
+			)
 
-			mret = append(mret, fmt.Sprintf(`%s.%s = %s //h2`,
+			mret = append(mret, fmt.Sprintf(
+				`%s.%s = %s //h2`,
 				objVarName,
 				oalias.Columns[mapp.Column],
 				oSetter,
@@ -335,6 +339,31 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 	}
 
 	return strings.Join(ret, "\n")
+}
+
+// RelIsOptionalFKParent reports whether the factory can link a parent by setting
+// only writable, nullable foreign key columns on the child's initial insert.
+func (tables Tables[C, I]) RelIsOptionalFKParent(rel orm.Relationship) bool {
+	if len(rel.Sides) != 1 {
+		return false
+	}
+	side := rel.Sides[0]
+	if side.Modify != "from" || len(side.FromWhere) != 0 || len(side.ToWhere) != 0 || tables.RelIsView(rel) {
+		return false
+	}
+	child := tables.Get(side.From)
+	for _, name := range side.FromColumns {
+		col := child.GetColumn(name)
+		if !col.Nullable || col.Generated {
+			return false
+		}
+	}
+	for _, fk := range child.Constraints.Foreign {
+		if fk.ForeignTable == side.To && slices.Equal(fk.Columns, side.FromColumns) && slices.Equal(fk.ForeignColumns, side.ToColumns) {
+			return true
+		}
+	}
+	return false
 }
 
 func (tables Tables[C, I]) RelIsView(rel orm.Relationship) bool {

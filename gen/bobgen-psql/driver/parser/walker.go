@@ -183,6 +183,9 @@ func (w *walker) walk(a any) nodeInfo {
 			w.maybeSetName(info.position(), w.input[info.start:info.end])
 		}
 
+	case *pg.CaseExpr:
+		info = w.walkCaseExpr(a)
+
 	case *pg.CoalesceExpr:
 		info = w.reflectWalk(reflect.ValueOf(a))
 		for _, argInfo := range info.children["Args"].children {
@@ -338,6 +341,31 @@ func (w *walker) walkAConst(a *pg.A_Const) nodeInfo {
 	return info
 }
 
+// walkCaseExpr extends the span of a CASE expression to its closing END
+// keyword, which is not covered by any of its child nodes.
+func (w *walker) walkCaseExpr(a *pg.CaseExpr) nodeInfo {
+	info := w.reflectWalk(reflect.ValueOf(a))
+	if !info.isValid() {
+		return info
+	}
+
+	depth := 0
+	endInfo := w.findTokenAfterFunc(info.start, func(_ int, t *pg.ScanToken) bool {
+		switch t.Token {
+		case pg.Token_CASE:
+			depth++
+		case pg.Token_END_P:
+			depth--
+		}
+		return depth == 0
+	})
+	if endInfo.isValid() && endInfo.end > info.end {
+		info.end = endInfo.end
+	}
+
+	return info
+}
+
 func (w *walker) walkSelectStmt(a *pg.SelectStmt) nodeInfo {
 	if a == nil {
 		return newNodeInfo()
@@ -474,20 +502,22 @@ func (w *walker) walkParamRef(a *pg.ParamRef) nodeInfo {
 		w.paramIdxMap[int64(a.Number)] = newIdx
 	}
 
-	w.editRules = append(w.editRules, internal.EditCallback(
-		internal.ReplaceFromFunc(
-			int(info.start), int(info.end-1),
-			func() string {
-				return fmt.Sprintf("$%d", newIdx)
+	w.editRules = append(
+		w.editRules, internal.EditCallback(
+			internal.ReplaceFromFunc(
+				int(info.start), int(info.end-1),
+				func() string {
+					return fmt.Sprintf("$%d", newIdx)
+				},
+			),
+			func(start, end int, _, _ string) error {
+				w.args[a.Number-1] = append(w.args[a.Number-1], argPos{
+					original: info.position(),
+					edited:   [2]int{start, end},
+				})
+				return nil
 			},
 		),
-		func(start, end int, _, _ string) error {
-			w.args[a.Number-1] = append(w.args[a.Number-1], argPos{
-				original: info.position(),
-				edited:   [2]int{start, end},
-			})
-			return nil
-		}),
 	)
 
 	return info
@@ -723,10 +753,12 @@ func (w *walker) walkSortBy(a *pg.SortBy) nodeInfo {
 	switch {
 	case hasSortNulls:
 		info.end = w.getEndOfTokenAfter(
-			info.start, pg.Token_FIRST_P, pg.Token_LAST_P)
+			info.start, pg.Token_FIRST_P, pg.Token_LAST_P,
+		)
 	case hasSortDir && a.SortbyDir != pg.SortByDir_SORTBY_USING:
 		info.end = w.getEndOfTokenAfter(
-			info.start, pg.Token_ASC, pg.Token_DESC)
+			info.start, pg.Token_ASC, pg.Token_DESC,
+		)
 	}
 	return info
 }
@@ -777,7 +809,8 @@ func (w *walker) walkList(a *pg.List) nodeInfo {
 func (w *walker) walkRowExpr(a *pg.RowExpr) nodeInfo {
 	info := w.reflectWalk(reflect.ValueOf(a))
 	w.editRules = append(w.editRules,
-		internal.RecordPoints(int(info.start), int(info.end-1),
+		internal.RecordPoints(
+			int(info.start), int(info.end-1),
 			func(start, end int) error {
 				w.setGroup(argPos{
 					original: info.position(),

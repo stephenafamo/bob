@@ -154,6 +154,45 @@ func TestUserSliceReloadAll(t *testing.T) {
 	}
 }
 
+// TestUserSliceReloadAllKeepsCounts checks that ReloadAll does not reset the
+// counts plugin's .C on the models already in the slice.
+func TestUserSliceReloadAllKeepsCounts(t *testing.T) {
+	if testDB == nil {
+		t.Skip("skipping test, no DSN provided")
+	}
+
+	ctx := context.Background()
+	tx, err := testDB.Begin(ctx)
+	if err != nil {
+		t.Fatalf("Error starting transaction: %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	for i := 0; i < 2; i++ {
+		New().NewVideoWithContext(ctx, VideoMods.WithExistingUser(user)).CreateOrFail(ctx, t, tx)
+	}
+
+	users := models.UserSlice{user}
+	if err := users.LoadCountVideos(ctx, tx); err != nil {
+		t.Fatalf("Error loading count: %v", err)
+	}
+	if user.C.Videos == nil || *user.C.Videos != 2 {
+		t.Fatalf("setup: expected Videos count 2, got %v", user.C.Videos)
+	}
+
+	if err := users.ReloadAll(ctx, tx); err != nil {
+		t.Fatalf("Error reloading users: %v", err)
+	}
+
+	if users[0] != user {
+		t.Fatal("ReloadAll replaced the pointer in the slice")
+	}
+	if user.C.Videos == nil || *user.C.Videos != 2 {
+		t.Fatalf("ReloadAll dropped the counts field, got %v", user.C.Videos)
+	}
+}
+
 // TestVideoSliceDeleteAll tests DeleteAll on a slice
 func TestVideoSliceDeleteAll(t *testing.T) {
 	if testDB == nil {

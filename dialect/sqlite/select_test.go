@@ -89,16 +89,19 @@ func TestSelect(t *testing.T) {
 					GROUP BY status`,
 			Query: sqlite.Select(
 				sm.Columns("status", sqlite.F("avg", "difference")),
-				sm.From(sqlite.Select(
-					sm.Columns(
-						"status",
-						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
-							fm.Over(
-								wm.PartitionBy("presale_id"),
-								wm.OrderBy("created_date"),
-							),
-						).Minus(sqlite.Quote("created_date")).As("difference")),
-					sm.From("presales_presalestatus")),
+				sm.From(
+					sqlite.Select(
+						sm.Columns(
+							"status",
+							sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
+								fm.Over(
+									wm.PartitionBy("presale_id"),
+									wm.OrderBy("created_date"),
+								),
+							).Minus(sqlite.Quote("created_date")).As("difference"),
+						),
+						sm.From("presales_presalestatus"),
+					),
 				).As("differnce_by_status"),
 				sm.Where(sqlite.Quote("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
 				sm.GroupBy("status"),
@@ -155,6 +158,23 @@ func TestSelect(t *testing.T) {
                 ) AS "clients"
                 WHERE ("id" = ?2)`,
 			ExpectedArgs: []any{"123", 100},
+		},
+		"select where exists": {
+			Doc: "Select where an EXISTS subquery matches",
+			ExpectedSQL: `SELECT id FROM users WHERE EXISTS (
+                  SELECT 1
+                  FROM orders
+                  WHERE ("orders"."user_id" = "users"."id")
+                )`,
+			Query: sqlite.Select(
+				sm.Columns("id"),
+				sm.From("users"),
+				sm.Where(sqlite.Exists(sqlite.Select(
+					sm.Columns("1"),
+					sm.From("orders"),
+					sm.Where(sqlite.Quote("orders", "user_id").EQ(sqlite.Quote("users", "id"))),
+				))),
+			),
 		},
 	}
 

@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -31,26 +32,38 @@ SELECT
 FROM users AS u
 INNER JOIN videos AS v ON v.user_id = u.id;`
 
+const argTypeOrderQueries = `-- GetUserByEmailAndValidated
+SELECT id FROM users WHERE email_validated = $2 AND primary_email = $1;
+
+-- SearchUsersByEmails
+WITH wanted AS (
+  SELECT unnest($1::text[]) AS email
+)
+SELECT u.id
+FROM users AS u
+INNER JOIN wanted ON u.primary_email = wanted.email
+WHERE u.email_validated = $2;
+
+-- UpdateUserFromSource
+UPDATE users SET primary_email = $1
+FROM (SELECT $2::int AS uid) AS s
+WHERE users.id = s.uid AND users.email_validated = $3
+RETURNING users.id;`
+
 func TestDriver(t *testing.T) {
 	postgresContainer, err := postgres.Run(
 		t.Context(), "pgvector/pgvector:0.8.0-pg16",
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
+	testcontainers.CleanupContainer(t, postgresContainer)
 	if err != nil {
-		fmt.Printf("could not start postgres container: %v\n", err)
-		return
+		t.Fatalf("could not start postgres container: %v", err)
 	}
-	defer func() {
-		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
 
 	dsn, err := postgresContainer.ConnectionString(t.Context(), "sslmode=disable")
 	if err != nil {
-		fmt.Printf("could not get connection string: %v\n", err)
-		return
+		t.Fatalf("could not get connection string: %v", err)
 	}
 
 	os.Setenv("PSQL_TEST_DSN", dsn)
@@ -67,8 +80,10 @@ func TestDriver(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	t.Run("driver", func(t *testing.T) { testPostgresDriver(t, dsn) })
+	t.Run("native_pgx_arrays", func(t *testing.T) { testNativePgxArrays(t, dsn) })
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
 	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
+	t.Run("arg_type_order", func(t *testing.T) { testPostgresArgTypeOrder(t, dsn) })
 }
 
 func testPostgresDriver(t *testing.T, dsn string) {
@@ -143,6 +158,67 @@ func testPostgresDriver(t *testing.T, dsn string) {
 	}
 }
 
+// testNativePgxArrays generates and tests a schema of array and tsvector columns
+// with the native pgx driver. It uses its own schema because the generated test
+// suite includes the type_monsters table, which has other columns (interval,
+// "char") that native pgx cannot yet scan into the generated Go types.
+func testNativePgxArrays(t *testing.T, dsn string) {
+	t.Helper()
+
+	const schema = "pgx_native_arrays"
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("could not connect to db: %v", err)
+	}
+	defer db.Close()
+
+	_, err = db.ExecContext(t.Context(), `
+		CREATE SCHEMA `+schema+`;
+		CREATE TYPE `+schema+`.status AS ENUM ('active', 'inactive');
+		CREATE TABLE `+schema+`.array_types (
+			id serial PRIMARY KEY,
+			text_null text[],
+			text_nnull text[] NOT NULL,
+			int_null integer[],
+			int_nnull integer[] NOT NULL,
+			bool_nnull boolean[] NOT NULL,
+			float_nnull double precision[] NOT NULL,
+			numeric_nnull numeric[] NOT NULL,
+			bytea_nnull bytea[] NOT NULL,
+			jsonb_null jsonb[],
+			jsonb_nnull jsonb[] NOT NULL,
+			enum_null `+schema+`.status[],
+			enum_nnull `+schema+`.status[] NOT NULL
+		);
+		CREATE TABLE `+schema+`.tsvector_types (
+			id serial PRIMARY KEY,
+			tsv_null tsvector,
+			tsv_nnull tsvector NOT NULL
+		);
+	`)
+	if err != nil {
+		t.Fatalf("could not create schema: %v", err)
+	}
+
+	// The generated tests cast parameters to the array types by name
+	t.Setenv("PSQL_TEST_DSN", dsn+"&search_path="+schema+",public")
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+		Root:      t.TempDir(),
+		Templates: gen.PSQLTemplates,
+		GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+			return New(Config{
+				Config:       helpers.Config{Dsn: dsn, Driver: pgxDriver},
+				Schemas:      []string{schema},
+				SharedSchema: "public",
+			})
+		},
+		SkipAssembleGolden: true,
+		Dialect:            "psql",
+	})
+}
+
 func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {
 	t.Helper()
 
@@ -199,6 +275,73 @@ func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {
 		if got := colTypes[name]; got != want {
 			t.Errorf("column %s: type = %q, want %q", name, got, want)
 		}
+	}
+}
+
+func testPostgresArgTypeOrder(t *testing.T, dsn string) {
+	t.Helper()
+
+	queryDir := t.TempDir()
+	if err := os.WriteFile(queryDir+"/args.sql", []byte(argTypeOrderQueries), 0o600); err != nil {
+		t.Fatalf("write query file: %v", err)
+	}
+
+	drv := New(Config{
+		Config: helpers.Config{
+			Dsn:     dsn,
+			Queries: []string{queryDir},
+		},
+		Schemas: []string{"public"},
+	})
+
+	info, err := drv.Assemble(context.Background())
+	if err != nil {
+		t.Fatalf("Assemble: %v", err)
+	}
+
+	queries := map[string]drivers.Query{}
+	for _, folder := range info.QueryFolders {
+		for _, file := range folder.Files {
+			for _, q := range file.Queries {
+				queries[q.Name] = q
+			}
+		}
+	}
+
+	tests := []struct {
+		name string
+		want []string
+	}{
+		{
+			name: "GetUserByEmailAndValidated",
+			want: []string{"email_validated bool", "primary_email string"},
+		},
+		{
+			name: "SearchUsersByEmails",
+			want: []string{"arg1 pq.StringArray", "email_validated bool"},
+		},
+		{
+			name: "UpdateUserFromSource",
+			want: []string{"primary_email string", "arg2 int32", "email_validated bool"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query, ok := queries[tt.name]
+			if !ok {
+				t.Fatalf("query %s not found in assembled output", tt.name)
+			}
+
+			got := make([]string, len(query.Args))
+			for i, arg := range query.Args {
+				got[i] = fmt.Sprintf("%s %s", arg.Col.Name, arg.Col.TypeName)
+			}
+
+			if !slices.Equal(got, tt.want) {
+				t.Errorf("args = %v, want %v\nformatted query: %s", got, tt.want, query.SQL)
+			}
+		})
 	}
 }
 

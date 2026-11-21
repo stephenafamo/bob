@@ -2,7 +2,7 @@
 
 type contextKey string
 var (
-    factoryVisitedCtx = newContextual[map[uintptr]struct{}]("factoryVisited")
+    factoryPathCtx = newContextual[map[any]struct{}]("factoryPath")
 
     {{range $table := .Tables -}}
       {{ $tAlias := $.Aliases.Table $table.Key -}}
