@@ -44,8 +44,7 @@ func TestDriver(t *testing.T) {
 
 	dsn, err := postgresContainer.ConnectionString(t.Context(), "sslmode=disable")
 	if err != nil {
-		fmt.Printf("could not get connection string: %v\n", err)
-		return
+		t.Fatalf("could not get connection string: %v", err)
 	}
 
 	os.Setenv("PSQL_TEST_DSN", dsn)
