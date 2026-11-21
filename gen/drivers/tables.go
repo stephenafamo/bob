@@ -341,6 +341,31 @@ func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, t
 	return strings.Join(ret, "\n")
 }
 
+// RelIsOptionalFKParent reports whether the factory can link a parent by setting
+// only writable, nullable foreign key columns on the child's initial insert.
+func (tables Tables[C, I]) RelIsOptionalFKParent(rel orm.Relationship) bool {
+	if len(rel.Sides) != 1 {
+		return false
+	}
+	side := rel.Sides[0]
+	if side.Modify != "from" || len(side.FromWhere) != 0 || len(side.ToWhere) != 0 || tables.RelIsView(rel) {
+		return false
+	}
+	child := tables.Get(side.From)
+	for _, name := range side.FromColumns {
+		col := child.GetColumn(name)
+		if !col.Nullable || col.Generated {
+			return false
+		}
+	}
+	for _, fk := range child.Constraints.Foreign {
+		if fk.ForeignTable == side.To && slices.Equal(fk.Columns, side.FromColumns) && slices.Equal(fk.ForeignColumns, side.ToColumns) {
+			return true
+		}
+	}
+	return false
+}
+
 func (tables Tables[C, I]) RelIsView(rel orm.Relationship) bool {
 	for _, s := range rel.Sides {
 		t := tables.Get(s.To)
