@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Exists`, `Any` and `All` now render query operands with `WriteQuery` and supply the required parentheses. This fixes generated relationship `Where` filters that SQLite rejected as `EXISTS ((SELECT ...))`. Non-query operands such as `Arg` and `Raw` keep their surrounding parentheses ([#742](https://github.com/stephenafamo/bob/issues/742)). (thanks @evanmarshall)
+
 - Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop at a cycle while preserving loaded relationships shared by separate branches ([#761](https://github.com/stephenafamo/bob/issues/761)).
 
 - Fixed the libSQL generator test to use the port assigned by Testcontainers. The PostgreSQL generator test now cleans up after a failed container start and reports setup errors as test failures. See [#747](https://github.com/stephenafamo/bob/pull/747). (thanks @dmakushin)
