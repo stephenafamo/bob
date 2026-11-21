@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed `Exists`, `Any` and `All` (in the `psql`, `mysql` and `sqlite` dialects) wrapping a query operand in an extra parenthesis group, producing invalid SQL like `EXISTS ((SELECT ...))`. A `bob.Query` already writes its own parentheses when rendered as an expression, so it is no longer wrapped again; non-query operands (e.g. `Arg`, `Raw`) keep the surrounding parentheses. This also fixes the generated relationship `Where` filters from [#722](https://github.com/stephenafamo/bob/pull/722), which failed to execute on SQLite ([#742](https://github.com/stephenafamo/bob/issues/742)).
+- `Exists`, `Any` and `All` now render query operands with `WriteQuery` and supply the required parentheses. This fixes generated relationship `Where` filters that SQLite rejected as `EXISTS ((SELECT ...))`. Non-query operands such as `Arg` and `Raw` keep their surrounding parentheses ([#742](https://github.com/stephenafamo/bob/issues/742)). (thanks @evanmarshall)
 
 ### Changed
 

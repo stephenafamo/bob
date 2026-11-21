@@ -1,6 +1,9 @@
 package expr
 
 import (
+	"context"
+	"io"
+
 	"github.com/stephenafamo/bob"
 )
 
@@ -67,14 +70,13 @@ func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
 	return b.New(Join{Exprs: []bob.Expression{all, subquery(exp)}})
 }
 
-// A [bob.Query] writes its own surrounding parentheses when rendered as an
-// expression (see [bob.BaseQuery.WriteSQL]), so wrapping it in a group would
-// produce doubled parentheses such as EXISTS ((SELECT ...)).
-// Any other expression is wrapped in a group since EXISTS/ANY/ALL require
-// parentheses around their operand.
+// EXISTS, ANY and ALL supply the parentheses. Render a query as a statement
+// so its expression renderer does not add another pair.
 func subquery(exp bob.Expression) bob.Expression {
-	if _, ok := exp.(bob.Query); ok {
-		return exp
+	if q, ok := exp.(bob.Query); ok {
+		exp = bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
+			return q.WriteQuery(ctx, w, start)
+		})
 	}
 
 	return group{exp}
