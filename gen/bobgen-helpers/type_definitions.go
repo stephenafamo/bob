@@ -385,6 +385,14 @@ func Types() drivers.Types {
 			Imports:    []string{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `return pgtypes.LSN(f.UInt64())`,
 		},
+		"pgtypes.TSVector": {
+			Imports: []string{`"github.com/stephenafamo/bob/types/pgtypes"`},
+			RandomExpr: `var tv pgtypes.TSVector
+				_ = tv.Scan("'" + f.Lorem().Word() + "':" + strconv.Itoa(f.IntBetween(1, 1000)) + "A")
+				return tv`,
+			RandomExprImports: []string{`"strconv"`},
+			CompareExpr:       `AAA.String() == BBB.String()`,
+		},
 		"pgtypes.Snapshot": {
 			Imports: []string{`"github.com/stephenafamo/bob/types/pgtypes"`},
 			RandomExpr: `

@@ -183,6 +183,9 @@ func (w *walker) walk(a any) nodeInfo {
 			w.maybeSetName(info.position(), w.input[info.start:info.end])
 		}
 
+	case *pg.CaseExpr:
+		info = w.walkCaseExpr(a)
+
 	case *pg.CoalesceExpr:
 		info = w.reflectWalk(reflect.ValueOf(a))
 		for _, argInfo := range info.children["Args"].children {
@@ -335,6 +338,31 @@ func (w *walker) walkAConst(a *pg.A_Const) nodeInfo {
 		children: map[string]nodeInfo{},
 	}
 	w.maybeSetName(info.position(), w.input[info.start:info.end])
+	return info
+}
+
+// walkCaseExpr extends the span of a CASE expression to its closing END
+// keyword, which is not covered by any of its child nodes.
+func (w *walker) walkCaseExpr(a *pg.CaseExpr) nodeInfo {
+	info := w.reflectWalk(reflect.ValueOf(a))
+	if !info.isValid() {
+		return info
+	}
+
+	depth := 0
+	endInfo := w.findTokenAfterFunc(info.start, func(_ int, t *pg.ScanToken) bool {
+		switch t.Token {
+		case pg.Token_CASE:
+			depth++
+		case pg.Token_END_P:
+			depth--
+		}
+		return depth == 0
+	})
+	if endInfo.isValid() && endInfo.end > info.end {
+		info.end = endInfo.end
+	}
+
 	return info
 }
 
