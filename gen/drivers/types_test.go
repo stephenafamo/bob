@@ -1,33 +1,17 @@
 package drivers
 
 import (
-	"strings"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"go/types"
 	"testing"
+
+	"github.com/stephenafamo/bob/gen/language"
 )
 
-// fakeImporter records imports; only ImportList is exercised by ToOptional.
-type fakeImporter []string
-
-func (f *fakeImporter) Import(pkgs ...string) string {
-	*f = append(*f, pkgs...)
-	return ""
-}
-
-func (f *fakeImporter) ImportList(list []string) string {
-	*f = append(*f, list...)
-	return ""
-}
-
-func (f *fakeImporter) ToList() []string {
-	return *f
-}
-
-// TestToOptionalPointerLiteralValid checks that the generated code for an
-// optional/pointer value built from a literal (e.g. a relationship to_where
-// go_value like "true" or "1") is valid Go. The pointer type systems
-// ("github.com/aarondl/opt/null" -> AarondlNullPointers and "database/sql" ->
-// DatabaseSqlNull) wrap the source value with &SRC, which becomes the invalid
-// "&true"/"&1" (cannot take the address of a literal). See bob issue #553.
+// A relationship's to_where.go_value must be assignable to its setter field
+// even when the literal's default type differs from the column type.
 func TestToOptionalPointerLiteralValid(t *testing.T) {
 	t.Parallel()
 
@@ -35,31 +19,36 @@ func TestToOptionalPointerLiteralValid(t *testing.T) {
 		modifier TypeModifier
 		name     string
 		forType  string
-		lit      string // the literal thrown at the generator (e.g. go_value "true")
+		lit      string
 	}{
 		{DatabaseSqlNull{}, "database/sql bool literal true", "bool", "true"},
 		{DatabaseSqlNull{}, "database/sql int literal 1", "int", "1"},
+		{DatabaseSqlNull{}, "database/sql int32 literal 1", "int32", "1"},
 		{AarondlNullPointers{}, "opt/null bool literal true", "bool", "true"},
 		{AarondlNullPointers{}, "opt/null int literal 1", "int", "1"},
+		{AarondlNullPointers{}, "opt/null int32 literal 1", "int32", "1"},
 	}
 
 	for _, tc := range typeCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			var types Types
-			types.Register("bool", Type{})
-			types.Register("int", Type{})
-			types.SetTypeModifier(tc.modifier)
+			var registry Types
+			registry.Register(tc.forType, Type{})
+			registry.SetTypeModifier(tc.modifier)
 
-			var imp fakeImporter
-			// request a non-null bool/int handled as an optional pointer
-			expr := types.ToOptional("", &imp, tc.forType, tc.lit, false, false)
+			imp := language.Languages{}.GetOutputLanguage(".go").Importer()
+			expr := registry.ToOptional("", imp, tc.forType, tc.lit, false, false)
+			src := "package models\nvar _ *" + tc.forType + " = " + expr
+			fset := token.NewFileSet()
+			file, err := parser.ParseFile(fset, "setter.go", src, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			// The generated expression must be addressable Go: it may reference
-			// SRC through a variable, never the literal directly (&true or &1).
-			if bad := "&" + tc.lit; strings.Contains(expr, bad) {
-				t.Errorf("ToOptional(%q, %q) produced non-addressable literal %q in %q; want valid Go", tc.forType, tc.lit, bad, expr)
+			var config types.Config
+			if _, err := config.Check("models", fset, []*ast.File{file}, nil); err != nil {
+				t.Fatalf("%s\n%v", src, err)
 			}
 		})
 	}
