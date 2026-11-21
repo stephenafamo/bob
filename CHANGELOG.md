@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed the libSQL generator test to use the port assigned by Testcontainers. The PostgreSQL generator test now cleans up after a failed container start and reports setup errors as test failures. See [#747](https://github.com/stephenafamo/bob/pull/747). (thanks @dmakushin)
+
 - Fixed generated relationship code for a `to_where` with a literal `go_value` such as `true` or `1` under the `database/sql` and `github.com/aarondl/opt/null` type systems. The setter took the address of the literal (`&true`), which does not compile. See [#553](https://github.com/stephenafamo/bob/issues/553).
 
 - Fixed `bobgen-psql` cutting off the closing `END` of a `CASE` expression when building the mods for a query, so a query like `UPDATE ... SET col = CASE ... END WHERE ...` produced invalid SQL. See [#767](https://github.com/stephenafamo/bob/issues/767).
