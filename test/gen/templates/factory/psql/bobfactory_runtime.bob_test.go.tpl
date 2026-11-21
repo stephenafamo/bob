@@ -10,6 +10,36 @@
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
+func TestFactoryWithExistingUserHandlesCyclicRelations(t *testing.T) {
+	user := &models.User{ID: 1}
+	video := &models.Video{}
+	user.R.Videos = models.VideoSlice{video}
+	video.R.User = user
+
+	built := New().NewVideo(VideoMods.WithExistingUser(user)).Build()
+	if built.R.User == nil || built.R.User.ID != user.ID {
+		t.Fatal("lost the existing user when following a cycle")
+	}
+}
+
+func TestFactoryWithExistingUserPreservesSharedRelations(t *testing.T) {
+	{{- $user := $.Aliases.Table "users" }}
+	{{- $parent := $user.Relationship "users.users_parent_id_fkey" }}
+	{{- $referrer := $user.Relationship "users.users_referrer_fkey" }}
+	ancestor := &models.User{ID: 3}
+	shared := &models.User{ID: 2}
+	shared.R.{{$parent}} = ancestor
+	user := &models.User{ID: 1}
+	user.R.{{$parent}}, user.R.{{$referrer}} = shared, shared
+
+	built := New().NewVideo(VideoMods.WithExistingUser(user)).Build().R.User
+	for _, branch := range []*models.User{built.R.{{$parent}}, built.R.{{$referrer}}} {
+		if branch == nil || branch.R.{{$parent}} == nil || branch.R.{{$parent}}.ID != ancestor.ID {
+			t.Fatal("lost a loaded relationship on a shared user")
+		}
+	}
+}
+
 // =============================================================================
 // CRUD Operations Tests
 // =============================================================================

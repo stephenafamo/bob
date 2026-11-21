@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop traversing a relationship graph when they encounter a model already visited during the same conversion ([#761](https://github.com/stephenafamo/bob/issues/761)).
+- Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop at a cycle while preserving loaded relationships shared by separate branches ([#761](https://github.com/stephenafamo/bob/issues/761)).
 
 - Fixed the generated `<Table>Slice.copyMatchingRows` (used by `UpdateAll`, `ReloadAll`, and the `UpdateMod`/`DeleteMod`/`MergeMod` loaders) dropping relationship and plugin caches when refreshing a slice in place. It used to swap each slice element for a freshly scanned model after copying over only `.R`, silently losing `.C` and any other non-column field. It now copies just the column fields onto the existing model instead, so the slice keeps its original pointers and all its cached fields. See [#759](https://github.com/stephenafamo/bob/pull/759) for the full rationale. Note: code relying on pointer identity changing across `UpdateAll`/`ReloadAll` will now observe the same pointer, and models returned by a caller-driven `.All()` call are no longer mutated with `.R`.
 
