@@ -1903,6 +1903,9 @@ func TestLoadedFactoryBuildToMany(t *testing.T) {
 	}
 }
 
+{{- end }}
+
+{{- if and $hasVideos $hasSponsors }}
 // TestFactoryCreateWithOptionalParentDoesNotUpdateChild checks that creating
 // an optional direct parent does not require a second update of the child.
 func TestFactoryCreateWithOptionalParentDoesNotUpdateChild(t *testing.T) {
@@ -1935,6 +1938,32 @@ func TestFactoryCreateWithOptionalParentDoesNotUpdateChild(t *testing.T) {
 	if video.R.Sponsor == nil {
 		t.Fatal("Expected created Video to include its Sponsor")
 	}
+	if !video.R.Loaded.Sponsor || video.R.Sponsor.R.Video != video || !video.R.Sponsor.R.Loaded.Video {
+		t.Fatal("Expected Video and Sponsor to reference each other and be marked loaded")
+	}
+	existing := New().NewSponsor().CreateOrFail(ctx, t, tx)
+	withExisting := New().NewVideo(VideoMods.WithExistingSponsor(existing)).CreateOrFail(ctx, t, tx)
+	if withExisting.R.Sponsor == nil || withExisting.R.Sponsor.ID != existing.ID || withExisting.R.Sponsor.R.Video != withExisting {
+		t.Fatal("Expected the existing sponsor and its inverse to be linked")
+	}
+
+	{{$.Importer.Import "github.com/aarondl/opt/null"}}
+	byID := New().NewSponsor().CreateOrFail(ctx, t, tx)
+	withID := New().NewVideo(VideoMods.SponsorID(null.From(byID.ID))).CreateOrFail(ctx, t, tx)
+	if withID.R.Sponsor != nil || withID.R.Loaded.Sponsor {
+		t.Fatal("Setting only the foreign key should not load the sponsor")
+	}
+	for _, tc := range []struct{ video *models.Video; sponsor *models.Sponsor }{
+		{video, video.R.Sponsor}, {withExisting, existing}, {withID, byID},
+	} {
+		var storedID int32
+		if err := tx.QueryRowContext(ctx, "SELECT sponsor_id FROM videos WHERE id = $1", tc.video.ID).Scan(&storedID); err != nil {
+			t.Fatal(err)
+		}
+		if storedID != tc.sponsor.ID {
+			t.Fatalf("Video %d: stored sponsor ID %d, want %d", tc.video.ID, storedID, tc.sponsor.ID)
+		}
+	}
 
 	var updates int
 	if err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM video_updates").Scan(&updates); err != nil {
@@ -1944,9 +1973,7 @@ func TestFactoryCreateWithOptionalParentDoesNotUpdateChild(t *testing.T) {
 		t.Fatalf("Expected no update after creating Video with Sponsor, got %d", updates)
 	}
 }
-{{- end }}
 
-{{- if and $hasVideos $hasSponsors }}
 // TestLoadedToOneAfterAttach checks AttachX flips Loaded.X for a to-one relation.
 func TestLoadedToOneAfterAttach(t *testing.T) {
 	if testDB == nil {

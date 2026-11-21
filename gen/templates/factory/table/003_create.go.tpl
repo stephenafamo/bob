@@ -28,13 +28,10 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 	var err error
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}{{if not ($.Tables.RelIsView $rel) -}}
-		{{- $firstSide := index $rel.Sides 0 -}}
-		{{- $directParent := and (not $rel.IsToMany) (eq (len $rel.Sides) 1) (eq $firstSide.Modify "from") -}}
-		{{- if or ($table.RelIsRequired $rel) $directParent}}{{continue}}{{end -}}
+		{{- if or ($table.RelIsRequired $rel) ($.Tables.RelIsOptionalFKParent $rel)}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 		{{- $invRel := $.Relationships.GetInverse . -}}
 		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
-		{{- $directChild := and (eq (len $rel.Sides) 1) (eq $firstSide.Modify "to") $invRel.Name -}}
 		{{- $invAlias := "" -}}
     {{- if and (not $.NoBackReferencing) $invRel.Name -}}
 			{{- $invAlias = $ftable.Relationship $invRel.Name -}}
@@ -65,15 +62,10 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
               return err
             }
 
-				{{if $directChild -}}
-					m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, rel{{$index}}...)
-					m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-				{{else -}}
-					err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}}...)
-					if err != nil {
-						return err
-					}
-				{{end -}}
+            err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}}...)
+            if err != nil {
+              return err
+            }
 					}
 				}
 		{{- else -}}
@@ -98,15 +90,10 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
         if err != nil {
           return err
         }
-			{{if $directChild -}}
-				m.R.{{$relAlias}} = rel{{$index}}
-				m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-			{{else -}}
-				err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}})
-				if err != nil {
-					return err
-				}
-			{{end -}}
+        err = m.Attach{{$relAlias}}(ctx, exec, {{$.Tables.RelArgs $.Aliases $rel}} rel{{$index}})
+        if err != nil {
+          return err
+        }
 			}
 		{{end}}
 		}
@@ -122,6 +109,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Executor) (*models.{{$tAlias.UpSingular}}, error) {
 	var err error
 	opt := o.BuildSetter()
+	ensureCreatable{{$tAlias.UpSingular}}(opt)
 
 	// Retrieve ancestor models from context to avoid duplicate parent creation.
 	// Parents are keyed by "parent_table:child_table:child_rel_name".
@@ -129,48 +117,35 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	mInCreation, _ := modelsInCreationCtx.Value(ctx)
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
-		{{- $firstSide := index $rel.Sides 0 -}}
-		{{- $directParent := and (not $rel.IsToMany) (eq (len $rel.Sides) 1) (eq $firstSide.Modify "from") -}}
-		{{- if not $directParent}}{{continue}}{{end -}}
-		{{- $required := $table.RelIsRequired $rel -}}
+		{{- if not ($table.RelIsRequired $rel)}}{{continue}}{{end -}}
 		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 
 		var rel{{$index}} *models.{{$ftable.UpSingular}}
 
+		if o.r.{{$relAlias}} == nil {
       if parentModel, found := mInCreation["{{$rel.Foreign}}:{{$table.Key}}:{{$rel.Name}}"]; found {
         if pModel, ok := parentModel.(*models.{{$ftable.UpSingular}}); ok {
           rel{{$index}} = pModel
         }
       }
-		if rel{{$index}} == nil && o.r.{{$relAlias}} != nil {
-			if o.r.{{$relAlias}}.o.alreadyPersisted {
-				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
-			} else {
-				relCtx := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.WithValue(ctx, true)
-				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(relCtx, exec)
-				if err != nil {
-					return nil, err
-				}
-			}
 		}
 
-		{{if $required -}}
 		if rel{{$index}} == nil {
-			{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
+			if o.r.{{$relAlias}} == nil {
+				{{$tAlias.UpSingular}}Mods.WithNew{{$relAlias}}().Apply(ctx, o)
+			}
+
 			if o.r.{{$relAlias}}.o.alreadyPersisted {
 				rel{{$index}} = o.r.{{$relAlias}}.o.Build()
 			} else {
-				relCtx := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.WithValue(ctx, true)
-				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(relCtx, exec)
+				rel{{$index}}, err = o.r.{{$relAlias}}.o.Create(ctx, exec)
 				if err != nil {
 					return nil, err
 				}
 			}
 		}
-		{{end -}}
 
-		if rel{{$index}} != nil {
 		{{range $rel.ValuedSides -}}
 			{{- if ne .TableName $table.Key}}{{continue}}{{end -}}
 			{{range .Mapped}}
@@ -180,10 +155,30 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 				opt.{{$fromColA}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $.Table.Key $rel.Foreign .Column .ExternalColumn $relIndex true}}
 			{{end}}
 		{{- end}}
-		}
 	{{end}}
 
-	ensureCreatable{{$tAlias.UpSingular}}(opt)
+	{{range $index, $rel := $.Relationships.Get $table.Key -}}
+		{{- if not ($.Tables.RelIsOptionalFKParent $rel)}}{{continue}}{{end -}}
+		{{- $side := index $rel.Sides 0 -}}
+		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
+		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
+		var rel{{$index}} *models.{{$ftable.UpSingular}}
+		if done, _ := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.Value(ctx); !done && o.r.{{$relAlias}} != nil {
+			parent := o.r.{{$relAlias}}.o
+			if parent.alreadyPersisted {
+				rel{{$index}} = parent.Build()
+			} else {
+				relCtx := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.WithValue(ctx, true)
+				rel{{$index}}, err = parent.Create(relCtx, exec)
+				if err != nil {
+					return nil, err
+				}
+			}
+			{{range $i, $col := $side.FromColumns -}}
+			opt.{{$tAlias.Column $col}} = {{$.Tables.ColumnAssigner $.CurrentPackage $.Importer $.Types $.Aliases $table.Key $rel.Foreign $col (index $side.ToColumns $i) (printf "rel%d" $index) true}}
+			{{end -}}
+		}
+	{{end}}
 
 	m, err := models.{{$tAlias.UpPlural}}.Insert(opt).One(ctx, exec)
 	if err != nil {
@@ -208,15 +203,26 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
   ctx = modelsInCreationCtx.WithValue(ctx, newMInCreation)
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
-		{{- $firstSide := index $rel.Sides 0 -}}
-		{{- $directParent := and (not $rel.IsToMany) (eq (len $rel.Sides) 1) (eq $firstSide.Modify "from") -}}
-		{{- if not $directParent}}{{continue}}{{end -}}
-		{{- $ftable := $.Aliases.Table .Foreign -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
+		{{if $table.RelIsRequired $rel -}}
+		m.R.{{$relAlias}} = rel{{$index}}
+		m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+		{{else if $.Tables.RelIsOptionalFKParent $rel -}}
 		if rel{{$index}} != nil {
 			m.R.{{$relAlias}} = rel{{$index}}
 			m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+			{{ $invRel := $.Relationships.GetInverse $rel -}}
+			{{if and (not $.NoBackReferencing) $invRel.Name -}}
+				{{- $invAlias := ($.Aliases.Table $rel.Foreign).Relationship $invRel.Name -}}
+				{{if $invRel.IsToMany -}}
+				rel{{$index}}.R.{{$invAlias}} = append(rel{{$index}}.R.{{$invAlias}}, m)
+				{{else -}}
+				rel{{$index}}.R.{{$invAlias}} = m
+				rel{{$index}}.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
+				{{end -}}
+			{{end -}}
 		}
+		{{end -}}
 	{{end}}
 
   if err := o.insertOptRels(ctx, exec, m); err != nil {
