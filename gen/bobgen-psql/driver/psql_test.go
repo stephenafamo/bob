@@ -56,20 +56,14 @@ func TestDriver(t *testing.T) {
 		postgres.BasicWaitStrategies(),
 		testcontainers.WithLogger(log.New(io.Discard, "", log.LstdFlags)),
 	)
+	testcontainers.CleanupContainer(t, postgresContainer)
 	if err != nil {
-		fmt.Printf("could not start postgres container: %v\n", err)
-		return
+		t.Fatalf("could not start postgres container: %v", err)
 	}
-	defer func() {
-		if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
 
 	dsn, err := postgresContainer.ConnectionString(t.Context(), "sslmode=disable")
 	if err != nil {
-		fmt.Printf("could not get connection string: %v\n", err)
-		return
+		t.Fatalf("could not get connection string: %v", err)
 	}
 
 	os.Setenv("PSQL_TEST_DSN", dsn)
@@ -86,6 +80,7 @@ func TestDriver(t *testing.T) {
 	fmt.Printf(" DONE\n")
 
 	t.Run("driver", func(t *testing.T) { testPostgresDriver(t, dsn) })
+	t.Run("native_pgx_arrays", func(t *testing.T) { testNativePgxArrays(t, dsn) })
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
 	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
 	t.Run("arg_type_order", func(t *testing.T) { testPostgresArgTypeOrder(t, dsn) })
@@ -161,6 +156,67 @@ func testPostgresDriver(t *testing.T, dsn string) {
 			})
 		})
 	}
+}
+
+// testNativePgxArrays generates and tests a schema of array and tsvector columns
+// with the native pgx driver. It uses its own schema because the generated test
+// suite includes the type_monsters table, which has other columns (interval,
+// "char") that native pgx cannot yet scan into the generated Go types.
+func testNativePgxArrays(t *testing.T, dsn string) {
+	t.Helper()
+
+	const schema = "pgx_native_arrays"
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("could not connect to db: %v", err)
+	}
+	defer db.Close()
+
+	_, err = db.ExecContext(t.Context(), `
+		CREATE SCHEMA `+schema+`;
+		CREATE TYPE `+schema+`.status AS ENUM ('active', 'inactive');
+		CREATE TABLE `+schema+`.array_types (
+			id serial PRIMARY KEY,
+			text_null text[],
+			text_nnull text[] NOT NULL,
+			int_null integer[],
+			int_nnull integer[] NOT NULL,
+			bool_nnull boolean[] NOT NULL,
+			float_nnull double precision[] NOT NULL,
+			numeric_nnull numeric[] NOT NULL,
+			bytea_nnull bytea[] NOT NULL,
+			jsonb_null jsonb[],
+			jsonb_nnull jsonb[] NOT NULL,
+			enum_null `+schema+`.status[],
+			enum_nnull `+schema+`.status[] NOT NULL
+		);
+		CREATE TABLE `+schema+`.tsvector_types (
+			id serial PRIMARY KEY,
+			tsv_null tsvector,
+			tsv_nnull tsvector NOT NULL
+		);
+	`)
+	if err != nil {
+		t.Fatalf("could not create schema: %v", err)
+	}
+
+	// The generated tests cast parameters to the array types by name
+	t.Setenv("PSQL_TEST_DSN", dsn+"&search_path="+schema+",public")
+
+	testgen.TestDriver(t, testgen.DriverTestConfig[any, any, IndexExtra]{
+		Root:      t.TempDir(),
+		Templates: gen.PSQLTemplates,
+		GetDriver: func() drivers.Interface[any, any, IndexExtra] {
+			return New(Config{
+				Config:       helpers.Config{Dsn: dsn, Driver: pgxDriver},
+				Schemas:      []string{schema},
+				SharedSchema: "public",
+			})
+		},
+		SkipAssembleGolden: true,
+		Dialect:            "psql",
+	})
 }
 
 func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {

@@ -25,17 +25,14 @@ func TestDriver(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	mysqlContainer, err := mysqltest.Run(context.Background(),
+	mysqlContainer, err := mysqltest.Run(
+		context.Background(),
 		"mysql:8.0.35",
 		mysqltest.WithDatabase("bobgen"),
 		mysqltest.WithUsername("root"),
 		mysqltest.WithPassword("password"),
 	)
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(mysqlContainer); err != nil {
-			fmt.Printf("failed to terminate MySQL container: %v\n", err)
-		}
-	})
+	testcontainers.CleanupContainer(t, mysqlContainer)
 	if err != nil {
 		t.Fatalf("failed to start container: %v", err)
 	}

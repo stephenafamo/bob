@@ -24,7 +24,14 @@ func (j joinSet[Q]) AliasedAs(alias string) joinSet[Q] {
   }
 }
 
-type joins[Q dialect.Joinable] struct {
+// joinable queries number the aliases of the tables they join themselves,
+// so that building the same query again gives the same SQL
+type joinable interface {
+	dialect.Joinable
+	NextUniqueInt() uint64
+}
+
+type joins[Q joinable] struct {
 		{{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
 		{{$tAlias.UpPlural}} joinSet[{{$tAlias.DownSingular}}Joins[Q]]
@@ -39,7 +46,7 @@ func buildJoinSet[Q interface { aliasedAs(string) Q }, C any, F func(C, string) 
 	}
 }
 
-func getJoins[Q dialect.Joinable]() joins[Q] {
+func getJoins[Q joinable]() joins[Q] {
 	return joins[Q]{
 		{{range $table := .Tables -}}{{if $.Relationships.Get $table.Key -}}
 		{{$tAlias := $.Aliases.Table $table.Key -}}
@@ -50,11 +57,11 @@ func getJoins[Q dialect.Joinable]() joins[Q] {
 
 type modAs[Q any, C interface{ AliasedAs(string) C }] struct {
   c C
-  f func(C) bob.Mod[Q]
+  f func(Q, C) bob.Mod[Q]
 }
 
 func (m modAs[Q, C]) Apply(q Q) {
-  m.f(m.c).Apply(q)
+  m.f(q, m.c).Apply(q)
 }
 
 func (m modAs[Q, C]) AliasedAs(alias string) bob.Mod[Q] {

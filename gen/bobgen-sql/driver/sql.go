@@ -124,7 +124,8 @@ func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, 
 		config.DriverImage = defaultMySQLDriverImage
 	}
 
-	mysqlContainer, err := mysqltest.Run(ctx,
+	mysqlContainer, err := mysqltest.Run(
+		ctx,
 		config.DriverImage,
 		mysqltest.WithDatabase("bobgen"),
 		mysqltest.WithUsername("root"),
@@ -194,7 +195,9 @@ func getSQLiteDriver(ctx context.Context, config Config) (sqliteDriver.Interface
 		if err != nil {
 			return nil, fmt.Errorf("creating temp file: %w", err)
 		}
-		defer tmp.Close()
+		if err := tmp.Close(); err != nil {
+			return nil, fmt.Errorf("closing temp file: %w", err)
+		}
 
 		attach[schema] = tmp.Name()
 		_, err = db.ExecContext(ctx, fmt.Sprintf(

@@ -21,7 +21,8 @@ func (v *visitor) modWith_clause(ctx interface {
 		sb.WriteString("q.SetRecursive(true)\n")
 	}
 	for _, cte := range with.AllCommon_table_expression() {
-		v.StmtRules = append(v.StmtRules,
+		v.StmtRules = append(
+			v.StmtRules,
 			internal.RecordPoints(
 				cte.GetStart().GetStart(),
 				cte.GetStop().GetStop(),

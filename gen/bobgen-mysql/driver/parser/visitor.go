@@ -3649,15 +3649,17 @@ func (v *visitor) VisitBindExpressionAtom(ctx *mysqlparser.BindExpressionAtomCon
 
 	v.SetArg(ctx)
 	v.UpdateInfo(info)
-	v.StmtRules = append(v.StmtRules, internal.RecordPoint(
-		ctx.GetStart().GetStart(),
-		func(start int) error {
-			v.UpdateInfo(NodeInfo{
-				Node:           ctx,
-				EditedPosition: [2]int{start, start + 1},
-			})
-			return nil
-		}),
+	v.StmtRules = append(
+		v.StmtRules, internal.RecordPoint(
+			ctx.GetStart().GetStart(),
+			func(start int) error {
+				v.UpdateInfo(NodeInfo{
+					Node:           ctx,
+					EditedPosition: [2]int{start, start + 1},
+				})
+				return nil
+			},
+		),
 	)
 
 	return nil

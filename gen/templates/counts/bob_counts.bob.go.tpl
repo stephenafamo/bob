@@ -116,7 +116,9 @@ func (a aliasedExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	if err != nil {
 		return nil, err
 	}
-	w.WriteString(" AS ")
+	if _, err := w.WriteString(" AS "); err != nil {
+		return nil, err
+	}
 	d.WriteQuoted(w, a.alias)
 	return args, nil
 }

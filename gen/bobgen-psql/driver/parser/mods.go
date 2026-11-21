@@ -26,7 +26,8 @@ func (w *walker) modWithClause(with *pg.WithClause, info nodeInfo) {
 			continue
 		}
 
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(cteInfo.start),
 				int(cteInfo.end-1),
@@ -50,7 +51,8 @@ func (w *walker) modAppendTableRefItems(clauseInfo nodeInfo, items []*pg.Node) {
 			continue
 		}
 
-		w.editRules = append(w.editRules,
+		w.editRules = append(
+			w.editRules,
 			internal.RecordPoints(
 				int(itemInfo.start),
 				int(itemInfo.end)-1,

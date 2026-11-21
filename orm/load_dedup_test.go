@@ -390,7 +390,8 @@ func TestPreloadDedupCompositeKey(t *testing.T) {
 				rel, []string{"id", "name"}, m.mapper,
 				PreloadAs[testPreloadQuery]("c"),
 			)
-			_, mapperMod, _ := loader("")
+			queryMod, mapperMod, _ := loader("")
+			queryMod.Apply(testPreloadQuery{})
 			scanner := scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod)
 
 			res := scanTestPreloadRows(t, scanner, cols, rows)

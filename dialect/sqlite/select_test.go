@@ -89,16 +89,19 @@ func TestSelect(t *testing.T) {
 					GROUP BY status`,
 			Query: sqlite.Select(
 				sm.Columns("status", sqlite.F("avg", "difference")),
-				sm.From(sqlite.Select(
-					sm.Columns(
-						"status",
-						sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
-							fm.Over(
-								wm.PartitionBy("presale_id"),
-								wm.OrderBy("created_date"),
-							),
-						).Minus(sqlite.Quote("created_date")).As("difference")),
-					sm.From("presales_presalestatus")),
+				sm.From(
+					sqlite.Select(
+						sm.Columns(
+							"status",
+							sqlite.F("LEAD", "created_date", 1, sqlite.F("NOW"))(
+								fm.Over(
+									wm.PartitionBy("presale_id"),
+									wm.OrderBy("created_date"),
+								),
+							).Minus(sqlite.Quote("created_date")).As("difference"),
+						),
+						sm.From("presales_presalestatus"),
+					),
 				).As("differnce_by_status"),
 				sm.Where(sqlite.Quote("status").In(sqlite.S("A"), sqlite.S("B"), sqlite.S("C"))),
 				sm.GroupBy("status"),

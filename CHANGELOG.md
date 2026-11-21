@@ -7,7 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `bobgen-psql` now accepts `github.com/jackc/pgx/v5` (native pgx, used with `github.com/stephenafamo/bob/drivers/pgx`) as the `driver` option. Support is experimental: array and `tsvector` columns work (`tsvector` is generated as `pgtypes.TSVector`, since pgx v5.9 and later cannot scan it into a `string`), but some other types such as `interval`, `bit`, `bit varying` and `"char"` are not yet scannable by native pgx into the generated Go types.
+- `pgtypes.Array[T]` and `pgtypes.EnumArray[T]` now implement `pgtype.ArrayGetter` and `pgtype.ArraySetter`, so native pgx scans and encodes them directly. Their `Scan` method also decodes pgx's binary array format, so they work when wrapped in another `sql.Scanner` such as `null.Val`, `sql.Null` or `orm.NullTypeConverter`. With the native pgx driver, every array column is generated as `pgtypes.Array[T]`; the `lib/pq` and `pgx/v5/stdlib` drivers keep generating the same types as before. See [#90](https://github.com/stephenafamo/bob/issues/90) and [#739](https://github.com/stephenafamo/bob/issues/739).
+- Added `(*bob.Load).NextUniqueInt()`, which is like `bob.NextUniqueInt()` but only unique within a query, so aliases built with it are the same every time the query is built ([#741](https://github.com/stephenafamo/bob/issues/741)).
+
+### Changed
+
+- `pgtypes.EnumArray[T]` is now an alias of `pgtypes.Array[T]`. `github.com/stephenafamo/bob/types/pgtypes` now imports `github.com/jackc/pgx/v5/pgtype`.
+- **BREAKING:** The minimum supported Go version is now 1.25 (`go 1.25.0` in `go.mod`), because `github.com/jackc/pgx/v5` v5.9 requires it. Projects on Go 1.24 or older can no longer build bob and must upgrade their Go toolchain.
+- Upgraded `github.com/jackc/pgx/v5` to v5.9.2, `golang.org/x/text` to v0.41.0, `golang.org/x/crypto` to v0.55.0, `github.com/moby/go-archive` to v0.3.0, `github.com/go-viper/mapstructure/v2` to v2.4.0 and `github.com/docker/docker` to v28.3.3 to fix advisories reported by `govulncheck`. Other modules moved only as required by these upgrades. `golang.org/x/crypto` v0.56.0, which fixes GO-2026-6354 and GO-2026-6355, requires Go 1.26 and is not included.
+
 ### Fixed
+
+- Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop at a cycle while preserving loaded relationships shared by separate branches ([#761](https://github.com/stephenafamo/bob/issues/761)).
+
+- Fixed the libSQL generator test to use the port assigned by Testcontainers. The PostgreSQL generator test now cleans up after a failed container start and reports setup errors as test failures. See [#747](https://github.com/stephenafamo/bob/pull/747). (thanks @dmakushin)
+
+- Fixed generated relationship code for a `to_where` with a literal `go_value` such as `true` or `1` under the `database/sql` and `github.com/aarondl/opt/null` type systems. The setter took the address of the literal (`&true`), which does not compile. See [#553](https://github.com/stephenafamo/bob/issues/553).
+
+- Generated factories now insert a child with its explicitly requested optional parent’s foreign key when the relationship is a plain foreign key. This avoids a follow-up `UPDATE` and its audit or versioning side effects. See [#769](https://github.com/stephenafamo/bob/pull/769).
+
+- Fixed `bobgen-psql` cutting off the closing `END` of a `CASE` expression when building the mods for a query, so a query like `UPDATE ... SET col = CASE ... END WHERE ...` produced invalid SQL. See [#767](https://github.com/stephenafamo/bob/issues/767).
+
+- Fixed the generated `<Table>Slice.copyMatchingRows` (used by `UpdateAll`, `ReloadAll`, and the `UpdateMod`/`DeleteMod`/`MergeMod` loaders) dropping relationship and plugin caches when refreshing a slice in place. It used to swap each slice element for a freshly scanned model after copying over only `.R`, silently losing `.C` and any other non-column field. It now copies just the column fields onto the existing model instead, so the slice keeps its original pointers and all its cached fields. See [#759](https://github.com/stephenafamo/bob/pull/759) for the full rationale. Note: code relying on pointer identity changing across `UpdateAll`/`ReloadAll` will now observe the same pointer, and models returned by a caller-driven `.All()` call are no longer mutated with `.R`.
+
+- **BREAKING:** Fixed the generated single-model `(*Foo).Update` and `(*Foo).Reload` silently clearing relationship and plugin caches on every call. Both methods used to overwrite the receiver wholesale (`*o = *v`) with the freshly scanned row, which zeroed out every non-column field — the relationship cache `.R` (including `R.Loaded`), the counts plugin's `.C`, and anything a plugin adds via `model/fields/additional`. They now copy only the column fields instead, so those caches survive. See [#758](https://github.com/stephenafamo/bob/pull/758) for the full rationale.
+
+  **Breaking change:** code relying on `Update()`/`Reload()` clearing `.R` (e.g. a "reload if not loaded" pattern keyed off `R.Loaded.<Rel>`) will stop reloading, since `R.Loaded.<Rel>` now stays `true`. The same applies to `.C`.
+
+- Generated `AfterQueryHook` methods no longer assign an unused context. Generated count preload helpers now return a writer error if they cannot write the `AS` separator before an alias. See [#774](https://github.com/stephenafamo/bob/pull/774). (thanks @edi-oai)
 
 - **BREAKING:** The generated `Preload(name, retrieved)` method and the single-model `Load<Rel>` methods now **append** the current parent to a to-many back-reference instead of replacing it with a one-element slice holding only that parent. This is a regression fix, not a new choice of semantics: `orm.Preload` shares one related-struct instance across every parent row with the same join key ("dedup"), added opt-in as `orm.PreloadDedup` in commit `8d9485c` (2026-07-12) and made unconditional four days later by commit `76abd64` (2026-07-16), which dropped the opt-in gate so `buildPreloader` takes the dedup path whenever the join key is resolvable. Both commits shipped as [PR #736](https://github.com/stephenafamo/bob/pull/736) in **v0.50.0** — not v0.49.0, even though the closest CHANGELOG description of dedup ("`Preload` now shares a single related-struct instance...", still above) is filed under the already-released v0.49.0 section, a merge artifact from PR #736 landing after the v0.49.0 tag. That description also never mentions that dedup started as opt-in or that removing the gate changes what a to-many back-reference can hold — the gap this entry fills.
 
@@ -17,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `QueryStmt.All` (the prepared-statement path returned by `PrepareQueryx`) silently falling back to per-element `AfterQueryHook` calls when the slice type is not `HookableType` but the single/element type is, instead of returning `ErrHookableTypeMismatch` like `Allx` (the non-prepared path) already does for the same type combination. **Breaking change**: code on the prepared path relying on the undocumented fallback for this type combination now receives `ErrHookableTypeMismatch` instead of silently succeeding. Generated code is unaffected, since generated `<Table>Slice` types always implement `AfterQueryHook`.
 - Fixed the PostgreSQL code generator assigning query argument types by the `$N` written in the query rather than the `$N` the parser renumbers it to (e.g. `WHERE email_validated = $2 AND primary_email = $1` typing `$1` as `bool`), which gave the generated function its argument types in the wrong order. Argument names and bind positions were already correct, so only the types moved ([#753](https://github.com/stephenafamo/bob/issues/753)). (thanks @tak848)
+- Close attached sqlite temp files inside the loop (thanks @eliseomartelli)
+- Fixed `Preload` and generated joins through another table (such as `SelectJoins.Videos.InnerJoin.Tags`) giving the joined tables a different alias every time a query was built (`"users_10001"`, then `"users_10002"`, ...). The aliases are now numbered per query instead of per process, so the same query always results in the same SQL. This lets drivers that cache prepared statements by their SQL, such as `pgx`, reuse the statement, keeps every execution from adding an entry to `pg_stat_statements` on PostgreSQL 18, and stops the aliases from getting longer until the `"alias.column"` name of a preloaded column passes PostgreSQL's limit of 63 bytes ([#741](https://github.com/stephenafamo/bob/issues/741)). Note: code that calls a `Preloader` function directly now has to apply the mod it returns before using the returned mapper mod and loaders.
+- Fixed the psql `UPDATE ... FROM` and `DELETE ... USING` clauses double-counting preceding arguments when numbering placeholders: after e.g. two `SET` arguments, a parameterized `FROM (VALUES ...)` source started at `$5` instead of `$3`, generating SQL that referenced placeholders beyond the returned argument slice. The from-item helper now follows the `bob.Express*` contract — it takes only the placeholder offset and returns just the newly generated arguments ([#772](https://github.com/stephenafamo/bob/issues/772), [#786](https://github.com/stephenafamo/bob/pull/786)). (thanks @dmakushin)
 
 ## [v0.50.0] - 2026-08-11
 

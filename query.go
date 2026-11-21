@@ -183,22 +183,22 @@ func (q BaseQuery[E]) MustBuildN(ctx context.Context, start int) (string, []any)
 	return MustBuildN(ctx, q, start)
 }
 
-// Convinient function to build query from start
+// Convenient function to build query from start
 func (q BaseQuery[E]) Build(ctx context.Context) (string, []any, error) {
 	return BuildN(ctx, q, 1)
 }
 
-// Convinient function to build query from a point
+// Convenient function to build query from a point
 func (q BaseQuery[E]) BuildN(ctx context.Context, start int) (string, []any, error) {
 	return BuildN(ctx, q, start)
 }
 
-// Convinient function to cache a query
+// Convenient function to cache a query
 func (q BaseQuery[E]) Cache(ctx context.Context, exec Executor) (BaseQuery[*cached], error) {
 	return CacheN(ctx, exec, q, 1)
 }
 
-// Convinient function to cache a query from a point
+// Convenient function to cache a query from a point
 func (q BaseQuery[E]) CacheN(ctx context.Context, exec Executor, start int) (BaseQuery[*cached], error) {
 	return CacheN(ctx, exec, q, start)
 }
