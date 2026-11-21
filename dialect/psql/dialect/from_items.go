@@ -15,10 +15,15 @@ func needsFromItemParens(items []clause.TableRef, item clause.TableRef) bool {
 	return len(items) > 1 && len(item.Joins) > 0
 }
 
-func writeFromItemList(
+// expressFromItems writes a comma-separated list of from_items and returns
+// only the newly generated arguments, following the contract of
+// [bob.ExpressIf] and [bob.ExpressSlice]. start must be the placeholder
+// offset the first item begins at.
+func expressFromItems(
 	ctx context.Context, w io.StringWriter, d bob.Dialect, start int,
-	args []any, items []clause.TableRef,
+	items []clause.TableRef,
 ) ([]any, error) {
+	var args []any
 	for i, item := range items {
 		if i > 0 {
 			w.WriteString(", ")

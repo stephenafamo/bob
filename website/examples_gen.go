@@ -50,6 +50,7 @@ func genDialect(path string) {
 	fset := token.NewFileSet() // positions are relative to fset
 
 	// Parse src but stop after processing the imports.
+	//nolint:staticcheck // ParseDir is deprecated; only package grouping is needed here
 	dir, err := parser.ParseDir(fset, path, func(fi fs.FileInfo) bool {
 		return rgxExampleFiles.MatchString(fi.Name())
 	}, parser.AllErrors)

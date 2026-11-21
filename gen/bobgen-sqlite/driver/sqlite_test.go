@@ -42,26 +42,27 @@ func migrate(t *testing.T, db *sql.DB, schema embed.FS, pattern string) {
 }
 
 func TestLibSQL(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
+	const httpPort = "8080/tcp"
 
 	libsqlServer, err := testcontainers.Run(
 		ctx,
 		"ghcr.io/tursodatabase/libsql-server:c6e4e09",
-		testcontainers.WithExposedPorts("7070:8080", "9000:8000"),
-		testcontainers.WithWaitStrategy(wait.ForListeningPort("8080/tcp").WithStartupTimeout(time.Second*5)),
+		testcontainers.WithExposedPorts(httpPort),
+		testcontainers.WithWaitStrategy(wait.ForListeningPort(httpPort).WithStartupTimeout(time.Second*5)),
 	)
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(libsqlServer); err != nil {
-			fmt.Printf("failed to terminate libsql container: %v\n", err)
-		}
-	})
+	testcontainers.CleanupContainer(t, libsqlServer)
 	if err != nil {
 		t.Fatalf("failed to start libsql container: %v", err)
 	}
 
+	dsn, err := libsqlServer.PortEndpoint(ctx, httpPort, "http")
+	if err != nil {
+		t.Fatalf("failed to get libsql endpoint: %v", err)
+	}
 	config := Config{
 		Config: helpers.Config{
-			Dsn: "http://localhost:7070",
+			Dsn: dsn,
 		},
 	}
 
