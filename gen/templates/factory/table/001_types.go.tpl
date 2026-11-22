@@ -61,6 +61,9 @@ type {{$tAlias.DownSingular}}R struct {
 type {{$tAlias.DownSingular}}R{{$relAlias}}R struct{
     {{- if .IsToMany}}
         number int
+    {{- else if and (eq (len .Sides) 1) ($table.RelIsRequired .)}}
+        // A bridge insert can bind this parent directly instead of building it.
+        boundParent *models.{{$ftable.UpSingular}}
     {{- end}}
     o *{{$ftable.UpSingular}}Template
     {{$.Tables.RelDependenciesTyp $.Aliases .}}
