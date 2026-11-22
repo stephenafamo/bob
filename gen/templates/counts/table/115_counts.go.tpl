@@ -265,14 +265,14 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		sm.From({{$fAlias.UpPlural}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
-		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 		{{- else -}}
 		// Multi-hop: FROM first join table, JOIN through to final related table
 		sm.From({{$firstTo.UpPlural}}.NameAsExpr()),
 		{{range $where := $firstSide.ToWhere -}}
 		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
-		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 		{{range $sideIndex, $side := $rel.Sides -}}
 		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
@@ -287,11 +287,11 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 			{{end -}}
 			{{range $where := $side.FromWhere -}}
 			{{$fromWhereColAlias := index $sideFrom.Columns $where.Column -}}
-			{{$sideFrom.UpPlural}}.Columns.{{$fromWhereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{$sideFrom.UpPlural}}.Columns.{{$fromWhereColAlias}}.EQ({{relWhereSQL $.Importer $where}}),
 			{{end -}}
 			{{range $where := $side.ToWhere -}}
 			{{$toWhereColAlias := index $sideTo.Columns $where.Column -}}
-			{{$sideTo.UpPlural}}.Columns.{{$toWhereColAlias}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{$sideTo.UpPlural}}.Columns.{{$toWhereColAlias}}.EQ({{relWhereSQL $.Importer $where}}),
 			{{end -}}
 		),
 		{{end -}}

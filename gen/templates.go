@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/internal"
+	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -159,6 +160,10 @@ var templateFunctions = template.FuncMap{
 	"normalizeType":      NormalizeType,
 	"enumVal":            enumValToIdentifier,
 	"enumValScreaming":   enumValToScreamingSnakeCase,
+	"relWhereSQL": func(i language.Importer, where orm.RelWhere) string {
+		i.Import("github.com/stephenafamo/bob/expr")
+		return fmt.Sprintf("expr.Raw(%q)", where.SQLValue)
+	},
 	"columnTagName": func(casing, name, alias string) string {
 		switch casing {
 		case "camel":

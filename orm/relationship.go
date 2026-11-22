@@ -315,7 +315,9 @@ func (r Relationship) ValuedSides() []RelSetDetails {
 
 	sort.Slice(valuedSides, func(i, j int) bool {
 		for _, iMapped := range valuedSides[i].Mapped {
-			if iMapped.ExtPosition == valuedSides[j].Position {
+			// A constant predicate has no source row. Its zero ExtPosition
+			// must not make it depend on the local row at position zero.
+			if !iMapped.HasValue() && iMapped.ExtPosition == valuedSides[j].Position {
 				return true
 			}
 		}

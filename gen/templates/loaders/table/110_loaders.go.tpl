@@ -251,6 +251,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
+  {{if $side.FromWhere}}os = os.matching{{$relAlias}}Sources(){{end}}
   {{- /* Map-based stitching only for a single `==`-comparable join column;
 	       composite keys and custom compare_expr types fall back to the nested loop. */ -}}
 	{{- $useMap := eq (len $side.FromColumns) 1 -}}
@@ -457,6 +458,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
 	}
 
+  {{if $firstSide.FromWhere}}os = os.matching{{$relAlias}}Sources(){{end}}
   {{- /* Same as the direct-join case, but the child key is the carried slice
 	       {{`{{$fromCol}}Slice[i]`}} instead of a field on rel. */ -}}
 	{{- $useMap := eq (len $firstSide.FromColumns) 1 -}}

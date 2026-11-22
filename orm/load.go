@@ -288,7 +288,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			for _, to := range side.ToWhere {
 				on = append(on, expr.OP(
 					"=",
-					expr.Quote(parent, to.Column),
+					expr.Quote(alias, to.Column),
 					expr.Raw(to.SQLValue),
 				))
 			}

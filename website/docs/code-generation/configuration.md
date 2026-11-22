@@ -416,12 +416,14 @@ relationships:
 
 #### Related Where
 
-The configuration also allows us to describe relationships that are not only based on matching columns but also columns with static values. For example, we may want to add a relationship to teams for verified members.
+The configuration also supports relationships filtered by a static value. For example, a team can have a relationship to its verified users. Put the relationship under its first `from` table. `modify` controls which side Bob writes when attaching rows; it is not a cardinality override. A filter alone does not guarantee a unique result.
+
+`sql_value` is a SQL expression; use `true` for a boolean or `"'active'"` for a SQL string literal. `go_value` is the corresponding Go expression used in setters.
 
 ```yaml
 relationships:
-  users:
-    - name: 'users_to_videos_through_teams'
+  teams:
+    - name: 'verified_users'
       sides:
         - from: 'teams'
           to: 'users'

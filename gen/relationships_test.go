@@ -1,12 +1,26 @@
 package gen
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
 )
+
+func TestRelationshipConfigRejectsWrongSourceTable(t *testing.T) {
+	c := Config[any]{Relationships: Relationships{
+		"locations": {{Name: "versions_details", Sides: []orm.RelSide{{
+			From: "location_versions", To: "details", Columns: [][2]string{{"id", "resource_id"}},
+		}}}},
+	}}
+	tables := drivers.Tables[any, any]{{Key: "locations"}, {Key: "location_versions"}, {Key: "details"}}
+	err := processRelationshipConfig(&c, tables, Relationships{})
+	if err == nil || !strings.Contains(err.Error(), `relationship "versions_details" under "locations" starts from "location_versions"`) {
+		t.Fatalf("expected a diagnostic naming the relationship and both tables, got %v", err)
+	}
+}
 
 func TestJoinTable(t *testing.T) {
 	t.Parallel()

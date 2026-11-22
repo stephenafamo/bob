@@ -97,11 +97,11 @@ func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*
 		{{end -}}
 		{{range $where := $side.FromWhere -}}
 		{{- $fromCol := index $from.Columns $where.Column -}}
-		sm.Where(w.cols.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where(w.cols.{{$fromCol}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 		{{range $where := $side.ToWhere -}}
 		{{- $toCol := index $to.Columns $where.Column -}}
-		sm.Where({{$fcols}}.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where({{$fcols}}.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 	)
 	q.Apply(filters...)
@@ -160,7 +160,7 @@ func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 			{{- $toCol := index $sTo.Columns $where.Column}}
-			{{$sToRef}}.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+			{{$sToRef}}.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}}),
 			{{- end}}
 		),
 		{{end -}}
@@ -172,11 +172,11 @@ func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*
 		{{end -}}
 		{{range $where := $firstSide.FromWhere -}}
 		{{- $fromCol := index $firstFrom.Columns $where.Column -}}
-		sm.Where(w.cols.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where(w.cols.{{$fromCol}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 		{{range $where := $firstSide.ToWhere -}}
 		{{- $toCol := index $firstTo.Columns $where.Column -}}
-		sm.Where({{$firstTo.UpPlural}}.Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+		sm.Where({{$firstTo.UpPlural}}.Columns.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 	)
 	q.Apply(filters...)

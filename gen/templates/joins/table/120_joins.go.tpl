@@ -53,11 +53,11 @@
                   {{- end}}
                   {{- range $where := $side.FromWhere}}
                     {{- $fromCol := index $from.Columns $where.Column}}
-                    cols.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+                    cols.{{$fromCol}}.EQ({{relWhereSQL $.Importer $where}}),
                   {{- end}}
                   {{- range $where := $side.ToWhere}}
                     {{- $toCol := index $to.Columns $where.Column}}
-                    to.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+                    to.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}}),
                   {{- end}}
               ))
             }

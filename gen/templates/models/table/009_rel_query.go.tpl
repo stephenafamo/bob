@@ -33,13 +33,13 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
 				{{if eq $index 0 -}}sm.Where({{end -}}
-				{{$from.UpPlural}}.Columns.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+				{{if eq $index 0}}{{$.Dialect}}.Arg(o.{{$fromCol}}){{else}}{{$from.UpPlural}}.Columns.{{$fromCol}}{{end}}.EQ({{relWhereSQL $.Importer $where}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
 				{{if eq $index 0 -}}sm.Where({{end -}}
-				{{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+				{{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}}),
 				{{- if eq $index 0 -}}),{{- end -}}
 			{{- end}}
 		{{- if gt $index 0 -}}
@@ -57,7 +57,31 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 {{$lastFrom := $.Aliases.Table $lastSide.From -}}
 {{$lastTo := $.Aliases.Table $lastSide.To -}}
 
+{{if $firstSide.FromWhere -}}
+// Only these source rows participate in the relationship, even if other
+// rows in the slice have the same join key.
+func (os {{$tAlias.UpSingular}}Slice) matching{{$relAlias}}Sources() {{$tAlias.UpSingular}}Slice {
+  matched := make({{$tAlias.UpSingular}}Slice, 0, len(os))
+  for _, o := range os {
+    if o == nil { continue }
+    {{range $where := $firstSide.FromWhere -}}
+      {{$col := $table.GetColumn $where.Column -}}
+      {{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable false -}}
+      if !({{replace "AAA" (printf "o.%s" ($firstFrom.Column $col.Name)) $compare | replace "BBB" (printf "(%s)" $where.GoValue)}}) { continue }
+    {{end -}}
+    matched = append(matched, o)
+  }
+  return matched
+}
+{{end -}}
+
 func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+  {{if $firstSide.FromWhere -}}
+    os = os.matching{{$relAlias}}Sources()
+    if len(os) == 0 {
+      return {{$fAlias.UpPlural}}.Query(append(mods, sm.Where({{$.Dialect}}.Raw("1 = 0")))...)
+    }
+  {{end -}}
   {{if gt (len $firstSide.FromColumns) 0 -}}
   {{if (ne $.Dialect "psql")}}
     PKArgSlice := make([]bob.Expression, len(os))
@@ -143,11 +167,11 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 				{{- $fromCol := index $from.Columns $where.Column}}
-				{{$from.UpPlural}}.Columns.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+				{{$from.UpPlural}}.Columns.{{$fromCol}}.EQ({{relWhereSQL $.Importer $where}}),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				{{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}})),
+				{{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}}),
 			{{- end}}
 		),
 		{{- else -}}
@@ -191,13 +215,9 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 					{{- end}}).OP("IN", PKArgExpr)),
 				{{- end}}
 			{{- end}}
-			{{- range $where := $side.FromWhere}}
-				{{- $fromCol := index $from.Columns $where.Column}}
-				sm.Where({{$from.UpPlural}}.Columns.{{$fromCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
-			{{- end}}
 			{{- range $where := $side.ToWhere}}
 				{{- $toCol := index $to.Columns $where.Column}}
-				sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg({{quote $where.SQLValue}}))),
+				sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}})),
 			{{- end}}
 		{{- end -}}
 		{{- end}}
