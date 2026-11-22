@@ -65,6 +65,47 @@ func (r Relationships) Get(table string) []orm.Relationship {
 	return r[table]
 }
 
+func initBridgeRelationships[C, I any](rels Relationships, tables drivers.Tables[C, I]) {
+	for _, tableRels := range rels {
+		for i := range tableRels {
+			rel := &tableRels[i]
+			rel.Bridge = nil
+			if len(rel.Sides) != 2 || !rel.IsToMany() {
+				continue
+			}
+			left, right := rel.Sides[0], rel.Sides[1]
+			if left.Modify != "to" || right.Modify != "from" ||
+				len(left.FromWhere)+len(left.ToWhere)+len(right.FromWhere)+len(right.ToWhere) != 0 ||
+				tables.RelIsView(*rel) || len(tables.NeededBridgeRels(*rel)) == 0 {
+				continue
+			}
+
+			parents := rels[left.To]
+			local := requiredParentName(parents, left.From, left.ToColumns, left.FromColumns)
+			foreign := requiredParentName(parents, right.To, right.FromColumns, right.ToColumns)
+			if local != "" && foreign != "" && local != foreign {
+				rel.Bridge = &orm.RelBridge{Table: left.To, Local: local, Foreign: foreign}
+			}
+		}
+	}
+}
+
+// Match column pairs, not just tables: two foreign keys may reference the same parent table.
+func requiredParentName(rels []orm.Relationship, parent string, cols, parentCols []string) string {
+	for _, fk := range rels {
+		if len(fk.Sides) != 1 || fk.NeverRequired {
+			continue
+		}
+		s := fk.Sides[0]
+		if s.To == parent && s.Modify == "from" && !s.KeyNullable &&
+			len(s.FromWhere)+len(s.ToWhere) == 0 &&
+			slices.Equal(s.FromColumns, cols) && slices.Equal(s.ToColumns, parentCols) {
+			return fk.Name
+		}
+	}
+	return ""
+}
+
 func (rs Relationships) GlobalKey(r orm.Relationship) string {
 	tables := []string{r.Local(), r.Foreign()}
 	slices.Sort(tables)

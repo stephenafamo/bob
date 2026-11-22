@@ -21,6 +21,22 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
   {{end -}}
 }
 
+{{range $rel := $.Relationships.Get $table.Key -}}
+{{with $rel.Bridge -}}
+{{$bridge := $.Aliases.Table .Table -}}
+{{$localRel := $bridge.Relationship .Local -}}
+{{$foreignRel := $bridge.Relationship .Foreign -}}
+func (r *{{$tAlias.DownSingular}}R{{$tAlias.Relationship $rel.Name}}R) createBridge(ctx context.Context, exec bob.Executor, local *models.{{$tAlias.UpSingular}}, foreign *models.{{($.Aliases.Table $rel.Foreign).UpSingular}}) error {
+	// Bind the endpoints on a copy so the configured bridge template can be reused.
+	bridge := *r.{{$bridge.DownSingular}}
+	bridge.r.{{$localRel}} = &{{$bridge.DownSingular}}R{{$localRel}}R{boundParent: local}
+	bridge.r.{{$foreignRel}} = &{{$bridge.DownSingular}}R{{$foreignRel}}R{boundParent: foreign}
+	_, err := bridge.Create(ctx, exec)
+	return err
+}
+{{end -}}
+{{end -}}
+
 // insertOptRels creates and inserts any optional the relationships on *models.{{$tAlias.UpSingular}}
 // according to the relationships in the template. 
 // any required relationship should have already exist on the model
@@ -45,7 +61,23 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
           if r.o.alreadyPersisted {
             m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, r.o.Build())
           } else {
-            {{- range $.Tables.NeededBridgeRels . -}}
+          {{- if $rel.Bridge }}
+            for range r.number {
+              related, err := r.o.Create(ctx, exec)
+              if err != nil { return err }
+              if err := r.createBridge(ctx, exec, m, related); err != nil { return err }
+              m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, related)
+              {{- if $invAlias }}
+                {{- if $invRel.IsToMany }}
+                related.R.{{$invAlias}} = append(related.R.{{$invAlias}}, m)
+                {{- else }}
+                related.R.{{$invAlias}} = m
+                related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
+                {{- end }}
+              {{- end }}
+            }
+          {{- else }}
+            {{- range $.Tables.NeededBridgeRels $rel -}}
               {{$alias := $.Aliases.Table .Table -}}
               {{if not .Many}}
                 {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
@@ -66,6 +98,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
             if err != nil {
               return err
             }
+          {{- end }}
 					}
 				}
 		{{- else -}}
@@ -129,6 +162,10 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
           rel{{$index}} = pModel
         }
       }
+		{{if and (eq (len $rel.Sides) 1) (not $rel.IsToMany) -}}
+		} else {
+			rel{{$index}} = o.r.{{$relAlias}}.boundParent
+		{{end -}}
 		}
 
 		if rel{{$index}} == nil {
