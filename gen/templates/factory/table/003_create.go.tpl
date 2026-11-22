@@ -157,11 +157,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 		var rel{{$index}} *models.{{$ftable.UpSingular}}
 
 		if o.r.{{$relAlias}} == nil {
-      if parentModel, found := mInCreation["{{$rel.Foreign}}:{{$table.Key}}:{{$rel.Name}}"]; found {
-        if pModel, ok := parentModel.(*models.{{$ftable.UpSingular}}); ok {
-          rel{{$index}} = pModel
-        }
-      }
+      rel{{$index}} = factoryrt.Parent[models.{{$ftable.UpSingular}}](mInCreation, "{{$rel.Foreign}}:{{$table.Key}}:{{$rel.Name}}")
 		{{if and (eq (len $rel.Sides) 1) (not $rel.IsToMany) -}}
 		} else {
 			rel{{$index}} = o.r.{{$relAlias}}.boundParent
@@ -226,18 +222,15 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
   // Key format: "parent_table:child_table:child_rel_name" where child_rel_name is the FK name.
   // We store an entry for every relationship pointing TO this table (where this table is the parent).
   // This works regardless of NoBackReferencing since keys use child-side metadata.
-  newMInCreation := make(map[string]any, len(mInCreation)+1)
-  for k, v := range mInCreation {
-    newMInCreation[k] = v
-  }
+  ctx = modelsInCreationCtx.WithValue(ctx, mInCreation.With(m,
   {{range $childTable := $.Tables -}}
     {{- range $childRel := $.Relationships.Get $childTable.Key -}}
       {{- if $childRel.IsToMany -}}{{continue}}{{end -}}
       {{- if ne $childRel.Foreign $table.Key -}}{{continue}}{{end -}}
-      newMInCreation["{{$table.Key}}:{{$childTable.Key}}:{{$childRel.Name}}"] = m
+      "{{$table.Key}}:{{$childTable.Key}}:{{$childRel.Name}}",
     {{end -}}
   {{end}}
-  ctx = modelsInCreationCtx.WithValue(ctx, newMInCreation)
+  ))
 
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
@@ -272,11 +265,7 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 // Relations objects are also inserted and placed in the .R field
 // panics if an error occurs
 func (o *{{$tAlias.UpSingular}}Template) MustCreate(ctx context.Context, exec bob.Executor) *models.{{$tAlias.UpSingular}} {
-  m, err := o.Create(ctx, exec)
-  if err != nil {
-    panic(err)
-  }
-	return m
+  return factoryrt.Must(o.Create(ctx, exec))
 }
 
 // CreateOrFail builds a {{$tAlias.DownSingular}} and inserts it into the database
@@ -285,39 +274,21 @@ func (o *{{$tAlias.UpSingular}}Template) MustCreate(ctx context.Context, exec bo
 func (o *{{$tAlias.UpSingular}}Template) CreateOrFail(ctx context.Context, tb testing.TB, exec bob.Executor) *models.{{$tAlias.UpSingular}} {
   tb.Helper()
   m, err := o.Create(ctx, exec)
-  if err != nil {
-    tb.Fatal(err)
-    return nil
-  }
-	return m
+  return factoryrt.OrFail(tb, m, err)
 }
 
 
 // CreateMany builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field
 func (o {{$tAlias.UpSingular}}Template) CreateMany(ctx context.Context, exec bob.Executor, number int) (models.{{$tAlias.UpSingular}}Slice, error) {
-	var err error
-	m := make(models.{{$tAlias.UpSingular}}Slice, number)
-
-	for i := range m {
-	  m[i], err = o.Create(ctx, exec)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return m, nil
+	return factoryrt.CreateMany[models.{{$tAlias.UpSingular}}Slice](ctx, exec, number, o.Create)
 }
 
 // MustCreateMany builds multiple {{$tAlias.DownPlural}} and inserts them into the database
 // Relations objects are also inserted and placed in the .R field
 // panics if an error occurs
 func (o {{$tAlias.UpSingular}}Template) MustCreateMany(ctx context.Context, exec bob.Executor, number int) models.{{$tAlias.UpSingular}}Slice {
-  m, err := o.CreateMany(ctx, exec, number)
-  if err != nil {
-    panic(err)
-  }
-	return m
+  return factoryrt.Must(o.CreateMany(ctx, exec, number))
 }
 
 // CreateManyOrFail builds multiple {{$tAlias.DownPlural}} and inserts them into the database
@@ -326,10 +297,6 @@ func (o {{$tAlias.UpSingular}}Template) MustCreateMany(ctx context.Context, exec
 func (o {{$tAlias.UpSingular}}Template) CreateManyOrFail(ctx context.Context, tb testing.TB, exec bob.Executor, number int) models.{{$tAlias.UpSingular}}Slice {
   tb.Helper()
   m, err := o.CreateMany(ctx, exec, number)
-  if err != nil {
-    tb.Fatal(err)
-    return nil
-  }
-	return m
+  return factoryrt.OrFail(tb, m, err)
 }
 {{end}}

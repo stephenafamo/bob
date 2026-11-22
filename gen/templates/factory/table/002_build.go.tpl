@@ -1,4 +1,5 @@
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
+{{$.Importer.Import "factoryrt" "github.com/stephenafamo/bob/factory"}}
 {{ $table := .Table}}
 {{ $tAlias := .Aliases.Table $table.Key -}}
 
@@ -76,13 +77,7 @@ func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingul
 // BuildManySetter returns an []*models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
 func (o {{$tAlias.UpSingular}}Template) BuildManySetter(number int) []*models.{{$tAlias.UpSingular}}Setter {
-	m := make([]*models.{{$tAlias.UpSingular}}Setter, number)
-
-	for i := range m {
-	  m[i] = o.BuildSetter()
-	}
-
-	return m
+	return factoryrt.BuildMany[[]*models.{{$tAlias.UpSingular}}Setter](number, o.BuildSetter)
 }
 {{- end}}
 
@@ -108,11 +103,5 @@ func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 // Related objects are also created and placed in the .R field
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.CreateMany
 func (o {{$tAlias.UpSingular}}Template) BuildMany(number int) models.{{$tAlias.UpSingular}}Slice {
-	m := make(models.{{$tAlias.UpSingular}}Slice, number)
-
-	for i := range m {
-	  m[i] = o.Build()
-	}
-
-	return m
+	return factoryrt.BuildMany[models.{{$tAlias.UpSingular}}Slice](number, o.Build)
 }

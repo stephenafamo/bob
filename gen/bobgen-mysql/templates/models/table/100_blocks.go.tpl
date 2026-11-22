@@ -15,33 +15,6 @@
 {{- end}}
 
 
-{{define "setter_insert_mod" -}}
-{{$.Importer.Import "io"}}
-{{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{$table := .Table}}
-{{$tAlias := .Aliases.Table $table.Key -}}
-func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
-  {{if $table.Constraints.Primary -}}
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
-    })
-  {{end}}
-
-	q.AppendValues(
-  {{range $index, $column := $table.NonGeneratedColumns -}}
-    bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-        {{$colAlias := $tAlias.Column $column.Name -}}
-        {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
-        if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-          return {{$.Dialect}}.Raw("DEFAULT").WriteSQL(ctx, w, d, start)
-        }
-        return {{$.Dialect}}.Arg({{$colGetter}}).WriteSQL(ctx, w, d, start)
-    }),
-  {{- end}})
-}
-{{- end}}
-
-
 {{define "setter_update_mod" -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}

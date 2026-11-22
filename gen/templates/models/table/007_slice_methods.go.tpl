@@ -30,6 +30,7 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 
 {{if .Table.Constraints.Primary -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 {{$pkCols := $table.Constraints.Primary.Columns}}
@@ -62,24 +63,7 @@ func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
 func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingular}}) {
   {{if $useMap -}}
   {{$colAlias := $tAlias.Column $pkCol -}}
-  fromByPK := make(map[{{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}}]*{{$tAlias.UpSingular}}, len(from))
-  for _, new := range from {
-    // keep the first row for each key, like the nested loop did
-    if _, ok := fromByPK[new.{{$colAlias}}]; !ok {
-      fromByPK[new.{{$colAlias}}] = new
-    }
-  }
-
-  for _, old := range o {
-    new, ok := fromByPK[old.{{$colAlias}}]
-    if !ok {
-      continue
-    }
-    {{range $column := $table.Columns -}}
-    {{- $colAlias := $tAlias.Column $column.Name}}
-    old.{{$colAlias}} = new.{{$colAlias}}
-    {{end -}}
-  }
+  orm.CopyByKey(o, from, func(row *{{$tAlias.UpSingular}}) {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}} { return row.{{$colAlias}} }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- else -}}
   for _, old := range o {
     for _, new := range from {
@@ -96,10 +80,7 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
           continue
         }
       {{end -}}
-      {{range $column := $table.Columns -}}
-      {{- $colAlias := $tAlias.Column $column.Name}}
-      old.{{$colAlias}} = new.{{$colAlias}}
-      {{end -}}
+      old.copyColumns(new)
       break
     }
   }
@@ -107,93 +88,18 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
 }
 
 
-// UpdateMod modifies an update query with "WHERE primary_key IN (o...)"
-func (o {{$tAlias.UpSingular}}Slice) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
-  return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeUpdateHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterUpdateHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-
+{{range $op := list "Update" "Delete" "Merge" -}}
+{{if and (eq $op "Merge") (ne $.Dialect "psql")}}{{continue}}{{end -}}
+// {{$op}}Mod installs the model hooks{{if ne $op "Merge"}} and filters by primary key{{end}}.
+func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[*dialect.{{$op}}Query] {
+  return bob.ModFunc[*dialect.{{$op}}Query](func(q *dialect.{{$op}}Query) {
+    orm.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
+    {{if ne $op "Merge" -}}
     q.AppendWhere(o.pkIN())
+    {{end -}}
   })
 }
-
-// DeleteMod modifies an delete query with "WHERE primary_key IN (o...)"
-func (o {{$tAlias.UpSingular}}Slice) DeleteMod() bob.Mod[*dialect.DeleteQuery] {
-  return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeDeleteHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterDeleteHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-
-    q.AppendWhere(o.pkIN())
-  })
-}
-
-{{if eq $.Dialect "psql" -}}
-// MergeMod modifies a merge query to run BeforeMergeHooks and AfterMergeHooks
-// and updates the slice with the returned rows.
-func (o {{$tAlias.UpSingular}}Slice) MergeMod() bob.Mod[*dialect.MergeQuery] {
-  return bob.ModFunc[*dialect.MergeQuery](func(q *dialect.MergeQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeMergeHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterMergeHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-  })
-}
-{{- end}}
+{{end}}
 
 {{block "slice_update" . -}}
 {{$table := .Table}}

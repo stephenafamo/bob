@@ -16,6 +16,11 @@
   {{- $to = printf "%s%d" $ftable.DownPlural $rel.ForeignPosition}}
 {{- end}}
 {{- $valuedSides := $rel.ValuedSides}}
+{{- $attachArgs := ""}}
+{{- range $.Tables.NeededBridgeRels $rel}}
+  {{- $a := $.Aliases.Table .Table}}
+  {{- $attachArgs = printf "%s%s%d, " $attachArgs (ternary $a.DownPlural $a.DownSingular .Many) .Position}}
+{{- end}}
 
 
 {{range $index, $side := reverse $valuedSides -}}
@@ -197,8 +202,8 @@
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
-    {{end}}
-
+      return {{$from}}.Attach{{$relAlias}}(ctx, exec, {{$attachArgs}}{{$to}})
+    {{else}}
     {{range $index, $side := (reverse $valuedSides) -}}
       {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
@@ -247,6 +252,7 @@
     {{- end}}
 
     return nil
+    {{end}}
   }
 
   func ({{$from}} *{{$tAlias.UpSingular}}) Attach{{$relAlias}}(ctx context.Context, exec bob.Executor,{{$.Tables.RelDependenciesPos $.Aliases $rel}} {{$to}} *{{$ftable.UpSingular}}) error {
@@ -310,9 +316,8 @@
       if err != nil {
           return fmt.Errorf("inserting related objects: %w", err)
       }
-      {{$to}} := {{$ftable.UpSingular}}Slice(inserted)
-    {{end}}
-
+      return {{$from}}.Attach{{$relAlias}}(ctx, exec, {{$attachArgs}}inserted...)
+    {{else}}
     {{range $index, $side := (reverse $valuedSides) -}}
       {{$sideTable := $.Tables.Get $side.TableName}}
       {{$sideAlias := $.Aliases.Table $side.TableName}}
@@ -360,6 +365,7 @@
       }
     {{- end}}
     return nil
+    {{end}}
   }
 
 

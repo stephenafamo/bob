@@ -1,4 +1,5 @@
 {{$.Importer.Import "context"}}
+{{$.Importer.Import "factoryrt" "github.com/stephenafamo/bob/factory"}}
 
 type contextKey string
 var (
@@ -15,7 +16,7 @@ var (
 
     {{end}}
 
-    modelsInCreationCtx = newContextual[map[string]any]("modelsInCreation")
+    modelsInCreationCtx = newContextual[factoryrt.Parents]("modelsInCreation")
 )
 
 // Contextual is a convienience wrapper around context.WithValue and context.Value

@@ -269,29 +269,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			if settings.Alias == "" {
 				alias = fmt.Sprintf("%s_%d", side.To.Alias(), nextUniqueInt(q))
 			}
-			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
-			for i, fromCol := range side.FromColumns {
-				toCol := side.ToColumns[i]
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(parent, fromCol),
-					expr.Quote(alias, toCol),
-				))
-			}
-			for _, from := range side.FromWhere {
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(parent, from.Column),
-					expr.Raw(from.SQLValue),
-				))
-			}
-			for _, to := range side.ToWhere {
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(alias, to.Column),
-					expr.Raw(to.SQLValue),
-				))
-			}
+			on := side.Predicates(parent, alias)
 
 			if len(settings.Mods) > i {
 				for _, additional := range settings.Mods[i] {

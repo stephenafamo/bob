@@ -10,8 +10,7 @@
 {{- end -}}
 {{- end -}}
 {{- if $isPreloadTarget -}}
-{{$.Importer.Import "context" -}}
-{{$.Importer.Import "strings" -}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm" -}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
 
 // NULL-tolerant scan buffer for {{$tAlias.DownSingular}}ScanMapperNullable:
@@ -29,41 +28,16 @@ type {{$tAlias.DownSingular}}PreloadBuf struct {
 // prefixed columns are all NULL yields nil (no child), and NULL values never
 // error, they just leave the zero value in the field.
 func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$tAlias.UpSingular}}] {
-	return func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any) (*{{$tAlias.UpSingular}}, error)) {
-		// resolve the column names once per query, not per row
-		type target struct {
-			idx int
-			dst func(b *{{$tAlias.DownSingular}}PreloadBuf) any
-		}
-		targets := make([]target, 0, {{len $table.Columns}})
-		for i, col := range cols {
-			name, ok := strings.CutPrefix(col, prefix)
-			if !ok {
-				continue
-			}
+	return orm.JoinedModelMapper(prefix, func(name string) func(*{{$tAlias.DownSingular}}PreloadBuf) any {
 			switch name {
 			{{range $column := $table.Columns -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}
 			case {{quote $column.Name}}:
-				targets = append(targets, target{i, func(b *{{$tAlias.DownSingular}}PreloadBuf) any { return &b.{{$colAlias}} }})
+				return func(b *{{$tAlias.DownSingular}}PreloadBuf) any { return &b.{{$colAlias}} }
 			{{end -}}
+			default: return nil
 			}
-		}
-
-		// One scratch buffer reused for every row: before -> scan -> after runs
-		// synchronously per row, the scheduled columns are fully overwritten each
-		// row, and unselected columns stay zero, so a single buffer preserves the
-		// per-row NULL semantics without allocating a buffer per parent row. The
-		// returned child (o below) is always freshly allocated, so buf never
-		// escapes past the after func.
-		buf := new({{$tAlias.DownSingular}}PreloadBuf)
-		return func(row *scan.Row) (any, error) {
-			for _, t := range targets {
-				row.ScheduleScanByIndex(t.idx, t.dst(buf))
-			}
-			return buf, nil
-		}, func(link any) (*{{$tAlias.UpSingular}}, error) {
-			buf := link.(*{{$tAlias.DownSingular}}PreloadBuf)
+		}, func(buf *{{$tAlias.DownSingular}}PreloadBuf) *{{$tAlias.UpSingular}} {
 
 			// Same rule as the reflection mapper's row validator: the child
 			// exists only if at least one of its columns is not NULL. Columns
@@ -71,7 +45,7 @@ func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$t
 			// so this check also matches when only a subset is selected.
 			if {{range $i, $column := $table.Columns}}{{if $i}} &&
 				{{end}}!({{$.Types.GetNullTypeValid $.CurrentPackage $column.Type (printf "buf.%s" ($tAlias.Column $column.Name))}}){{end}} {
-				return nil, nil
+				return nil
 			}
 
 			o := new({{$tAlias.UpSingular}})
@@ -85,8 +59,7 @@ func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$t
 			}
 			{{end -}}
 			{{end -}}
-			return o, nil
-		}
-	}
+			return o
+		})
 }
 {{end -}}

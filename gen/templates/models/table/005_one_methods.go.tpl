@@ -6,29 +6,11 @@
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}} is retrieved from the database
 func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Executor, queryType bob.QueryType) error {
-  var err error
-
-  switch queryType {
-  case bob.QueryTypeSelect:
-    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-  {{if .Table.Constraints.Primary -}}
-    case bob.QueryTypeInsert:
-      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    case bob.QueryTypeUpdate:
-      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    case bob.QueryTypeDelete:
-      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    {{if eq $.Dialect "psql" -}}
-    case bob.QueryTypeMerge:
-      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    {{- end}}
-  {{- end}}
-  }
-
-	return err
+  return {{$tAlias.UpSingular}}Slice{o}.AfterQueryHook(ctx, exec, queryType)
 }
 
 {{if .Table.Constraints.Primary -}}
+{{$.Importer.Import "io"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 // primaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
@@ -69,12 +51,7 @@ func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, 
     return err
   }
 
-  // Only the column fields are copied over, so that any non-column field
-  // (the relationship cache .R, plugin fields such as the counts .C) survives.
-  {{range $column := $table.Columns -}}
-  {{- $colAlias := $tAlias.Column $column.Name}}
-  o.{{$colAlias}} = v.{{$colAlias}}
-  {{end}}
+  o.copyColumns(v)
   return nil
 }
 {{- end}}
@@ -95,13 +72,16 @@ func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) 
 	if err != nil {
 		return err
 	}
-	// Only the column fields are copied over, so that any non-column field
-	// (the relationship cache .R, plugin fields such as the counts .C) survives.
+	o.copyColumns(o2)
+	return nil
+}
+
+// Preserve relationships, counts, and plugin fields on refresh.
+func (o *{{$tAlias.UpSingular}}) copyColumns(o2 *{{$tAlias.UpSingular}}) {
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name}}
 	o.{{$colAlias}} = o2.{{$colAlias}}
 	{{end}}
-	return nil
 }
 
 {{- end}}
