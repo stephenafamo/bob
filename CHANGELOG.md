@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed filtered relationship inserts referencing a related row before it was created. Generated relationship queries use the configured `sql_value` as SQL, consistent with preloading: quote SQL text literals in the config (e.g. `sql_value: "'active'"`). A relationship configured under the wrong source table now fails generation with a diagnostic instead of producing invalid Go ([#553](https://github.com/stephenafamo/bob/issues/553)).
+
 - `Exists`, `Any` and `All` now render query operands with `WriteQuery` and supply the required parentheses. This fixes generated relationship `Where` filters that SQLite rejected as `EXISTS ((SELECT ...))`. Non-query operands such as `Arg` and `Raw` keep their surrounding parentheses ([#742](https://github.com/stephenafamo/bob/issues/742)). (thanks @evanmarshall)
 
 - Fixed generated factory relationship modifiers recursing until stack overflow when given existing models with loaded bidirectional relationships. Factories now stop at a cycle while preserving loaded relationships shared by separate branches ([#761](https://github.com/stephenafamo/bob/issues/761)).

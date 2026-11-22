@@ -445,6 +445,19 @@ func processRelationshipConfig[C, I any](config *Config[C], tables []drivers.Tab
 		return nil
 	}
 
+	for table, rels := range config.Relationships {
+		for _, rel := range rels {
+			if len(rel.Sides) > 0 && rel.Local() != table {
+				return fmt.Errorf(
+					"relationship %q under %q starts from %q; the first side's from table must match the relationship key",
+					rel.Name,
+					table,
+					rel.Local(),
+				)
+			}
+		}
+	}
+
 	setColumns(config.Relationships)
 	if err := flipRelationships(config.Relationships, tables); err != nil {
 		return err
