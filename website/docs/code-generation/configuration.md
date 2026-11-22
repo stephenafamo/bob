@@ -164,6 +164,10 @@ type Config struct {
 | inflections         | Define inflections for pluralization. [See more](#inflections)                                                  | {}                       |
 | generator           | Customize the generator name in the top level comment of generated files                                        | ""                       |
 
+Generated query results use `tags` and `struct_tag_casing` on both flat and nested fields. The `db` tag keeps the SQL result label for scanning. Other tags use Bob's distinct field names: with `tags: [json]` and snake casing, `SELECT a.id, b.id` produces JSON keys `id` and `id2`. Use SQL aliases such as `author_id` and `book_id` for more descriptive keys.
+
+For query results, `tag_ignore` matches result labels. An unqualified name such as `secret_token` also matches the leaf of a nested label such as `account__secret_token`. If the query renames a column with `AS`, use that result label rather than the source table's column name.
+
 ### Aliases
 
 Names are automatically generated for you. If you name your database entities properly you will likely have descriptive names generated in the end. However, in the case where the names in your database are bad AND unchangeable, or Bob's inference doesn't understand the names you do have (even though they are good and correct) you can use aliases to change the name of your tables, columns and relationships in the generated Go code.

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/stephenafamo/bob/gen/language"
-	"github.com/volatiletech/strmangle"
 )
 
 func (q Query) HasNestedReturns() bool {
@@ -41,11 +40,13 @@ func (q Query) NestedColumns() nestedSlice {
 					continue
 				}
 
-				// Find the node for the current part in the *current slice
+				// Only merge matching containers. A scalar result can have
+				// the same name as a nested result at this level.
+				isSingle := onePartIndex < len(toOneParts)-1
 				var foundNode *nested
 				for i := range *current {
-					if (*current)[i].Col.Name == part {
-						foundNode = &(*current)[i]
+					if node := &(*current)[i]; len(node.Children) > 0 && node.Col.Name == part && node.Single == isSingle {
+						foundNode = node
 						break
 					}
 				}
@@ -56,9 +57,8 @@ func (q Query) NestedColumns() nestedSlice {
 					continue
 				}
 
-				isSingle := onePartIndex < len(toOneParts)-1
 				// Node was not found, create a new one
-				*current = append(*current, nested{Single: isSingle, Col: QueryCol{Name: part}})
+				*current = append(*current, nested{Single: isSingle, Col: QueryCol{Name: part, DBName: part}})
 				// Move deeper into the children of the newly created node
 				current = &(*current)[len(*current)-1].Children
 			}
@@ -121,21 +121,21 @@ func (n nested) NotNull(currPkg string, types Types, rowName string, cols []Quer
 type nestedSlice []nested
 
 func (n nestedSlice) FixNames() nestedSlice {
-	// Fix duplicate names in the slice
-	names := make(map[string]int, len(n))
+	cols := n.columns().WithNames()
 	for i := range n {
-		name := strmangle.TitleCase(n[i].Col.Name)
-		index := names[name]
-		names[name] = index + 1
-		if index > 0 {
-			name = fmt.Sprintf("%s%d", name, index+1)
-		}
-
-		n[i].Col.Name = name
+		n[i].Col.Name = cols[i].Name
 		n[i].Children.FixNames()
 	}
 
 	return n
+}
+
+func (n nestedSlice) columns() QueryCols {
+	cols := make(QueryCols, len(n))
+	for i := range n {
+		cols[i] = n[i].Col
+	}
+	return cols
 }
 
 func (n nestedSlice) Nullable() bool {
@@ -151,6 +151,10 @@ func (n nestedSlice) Nullable() bool {
 }
 
 func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typeName string) []string {
+	return n.TypesWithTags(currPkg, i, types, typeName, QueryResultTags{})
+}
+
+func (n nestedSlice) TypesWithTags(currPkg string, i language.Importer, types Types, typeName string, tags QueryResultTags) []string {
 	allTypes := []string{""}
 
 	var self strings.Builder
@@ -158,12 +162,13 @@ func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typ
 	fmt.Fprintf(&self, "type %s = struct{\n", typeName)
 	typeName = strings.TrimSuffix(typeName, "_")
 
-	for _, child := range n {
+	fieldTags := tags.FieldTags(n.columns())
+	for idx, child := range n {
 		childType := child.Type(currPkg, i, types, typeName)
 
 		if len(child.Children) > 0 {
-			allTypes = append(allTypes, child.Children.Types(
-				currPkg, i, types, childType,
+			allTypes = append(allTypes, child.Children.TypesWithTags(
+				currPkg, i, types, childType, tags,
 			)...)
 
 			switch {
@@ -174,12 +179,11 @@ func (n nestedSlice) Types(currPkg string, i language.Importer, types Types, typ
 			}
 		}
 
-		fmt.Fprintf(
-			&self, "%s %s\n",
-			child.Col.Name,
-			childType,
-		)
-
+		fmt.Fprintf(&self, "%s %s", child.Col.Name, childType)
+		if fieldTags[idx] != "" {
+			fmt.Fprintf(&self, " `%s`", fieldTags[idx])
+		}
+		self.WriteByte('\n')
 	}
 
 	self.WriteString("}")
@@ -251,7 +255,14 @@ func (n nestedSlice) NotNull(currPkg string, types Types, rowName string, cols [
 	return strings.Join(assigns, " ||\n")
 }
 
-func (n nestedSlice) Transform(currPkg string, i language.Importer, types Types, cols []QueryCol, isSingle bool, typeName, collectedRowsVar, indexName string) string {
+func (n nestedSlice) Transform(
+	currPkg string,
+	i language.Importer,
+	types Types,
+	cols []QueryCol,
+	isSingle bool,
+	typeName, collectedRowsVar, indexName string,
+) string {
 	nullable := n.Nullable()
 	transformation := &strings.Builder{}
 

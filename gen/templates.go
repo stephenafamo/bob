@@ -128,6 +128,10 @@ type TemplateData[T, C, I any] struct {
 	Language language.Language
 }
 
+func (t *TemplateData[T, C, I]) QueryResultTags() drivers.QueryResultTags {
+	return drivers.QueryResultTags{Keys: t.Tags, Casing: t.StructTagCasing, Ignore: t.TagIgnore}
+}
+
 func loadTemplate(tpl *template.Template, customFuncs template.FuncMap, name, content string) error {
 	_, err := tpl.New(name).
 		Funcs(sprig.GenericFuncMap()).

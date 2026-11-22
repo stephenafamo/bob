@@ -17,6 +17,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{$lowerName := untitle $query.Name}}
 {{$flatArgs := $query.ArgsByPosition}}
 {{$hasNested := $query.HasNestedReturns}}
+{{$cols := $query.Columns.WithNames}}
 
 {{$queryResultTypeOne := printf "%sRow" $upperName}}
 {{if $query.Config.ResultTypeOne}}
@@ -98,7 +99,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
           Scanner: func(context.Context, []string) (func(*scan.Row) (any, error), func(any) ({{$queryResultTypeOne}}, error)) {
             return func(row *scan.Row) (any, error) {
                 var t {{$queryResultTypeOne}}
-                {{range $colIndex, $col := $query.Columns.WithNames -}}
+                {{range $colIndex, $col := $cols -}}
                   row.ScheduleScanByIndex({{$colIndex}}, &t.{{$col.Name}})
                 {{end -}}
                 return &t, nil
@@ -137,9 +138,9 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
 {{if $query.Columns}}
   {{if not $query.Config.ResultTransformer}}
     type {{trimPrefix "*" $queryResultTypeOne}} = struct {
-      {{range $col := $query.Columns.WithNames -}}
-        {{$tagName := columnTagName $.StructTagCasing $col.DBName $col.Name -}}
-        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"{{if $.Tags}} {{generateTags $.Tags $tagName | trim}}{{end}}`
+      {{$tags := $.QueryResultTags.FieldTags $cols -}}
+      {{range $i, $col := $cols -}}
+        {{$col.Name}} {{$col.Type $.CurrentPackage $.Importer $.Types}} `db:"{{$col.DBName}}"{{with index $tags $i}} {{.}}{{end}}`
       {{end}}
     }
 
@@ -160,7 +161,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
       final := make({{$queryResultTypeAll}}, 0, len(scanned))
 
       for _, row := range scanned {
-          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $query.Columns.WithNames false $typeName "final" "index"}}
+          {{- $nested.Transform $.CurrentPackage $.Importer $.Types $cols false $typeName "final" "index"}}
       }
 
       return final, nil
@@ -168,7 +169,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
 
     type {{$queryResultTypeAll}} = []{{$queryResultTypeOne}}_
 
-    {{range $nested.Types $.CurrentPackage $.Importer $.Types $typeName}} 
+    {{range $nested.TypesWithTags $.CurrentPackage $.Importer $.Types $typeName $.QueryResultTags}}
     {{.}}
     {{end}}
 

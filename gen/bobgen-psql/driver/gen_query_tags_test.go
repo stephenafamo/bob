@@ -1,8 +1,10 @@
 package driver_test
 
 import (
-	"context"
+	_ "embed"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -21,18 +23,23 @@ type stubMods struct{}
 
 func (stubMods) IncludeInTemplate(language.Importer) string { return "_ = q" }
 
-// Mirrors issue #602: the generated struct for a configured query should carry
-// the tags set in the config (e.g. json), the same way model structs do. Before
-// the fix the query row struct only ever had a db tag.
+//go:embed testdata/query_tags_test.go.txt
+var queryTagsTest []byte
+
 func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	nullable := false
 
-	oldWD, err := os.Getwd()
+	mod, err := exec.CommandContext(t.Context(), "go", "env", "GOMOD").Output()
 	if err != nil {
 		t.Fatal(err)
 	}
 	tmp := t.TempDir()
-	gomod := "module scratch.local/repro\n\ngo 1.24\n"
+	t.Chdir(tmp)
+	root := filepath.Dir(strings.TrimSpace(string(mod)))
+	gomod := fmt.Sprintf(
+		"module scratch.local/repro\n\ngo 1.26.0\n\nrequire github.com/stephenafamo/bob v0.0.0\nreplace github.com/stephenafamo/bob => %q\n",
+		filepath.ToSlash(root),
+	)
 	if err := os.WriteFile(filepath.Join(tmp, "go.mod"), []byte(gomod), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -40,11 +47,6 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	if err := os.MkdirAll(queryDir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chdir(tmp); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Chdir(oldWD) })
-
 	info := &drivers.DBInfo[any, any, driver.IndexExtra]{
 		Driver: "github.com/jackc/pgx/v5/stdlib",
 		Tables: drivers.Tables[any, driver.IndexExtra]{
@@ -69,11 +71,29 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 						Queries: []drivers.Query{
 							{
 								Name: "GetWidget",
-								SQL:  "SELECT widget_id, widget_name FROM widgets",
+								SQL:  "SELECT 11 AS widget_id, 22 AS widget_id, 'sample' AS widget_name, 'hidden' AS secret_token",
 								Type: bob.QueryTypeSelect,
 								Columns: drivers.QueryCols{
 									{Name: "widget_id", DBName: "widget_id", TypeName: "int32", Nullable: &nullable},
-									{Name: "widget_name", DBName: "widget_name", TypeName: "string", Nullable: &nullable},
+									{Name: "widget_id", DBName: "widget_id", TypeName: "int32", Nullable: &nullable},
+									{Name: "display_name", DBName: "widget_name", TypeName: "string", Nullable: &nullable},
+									{Name: "secret_token", DBName: "secret_token", TypeName: "string", Nullable: &nullable},
+								},
+								Mods: stubMods{},
+							},
+							{
+								Name: "GetNestedWidgets",
+								SQL:  `SELECT 7 AS related_widgets, 42 AS "related_widgets.widget_id", 'hidden' AS "related_widgets.secret_token"`,
+								Type: bob.QueryTypeSelect,
+								Columns: drivers.QueryCols{
+									{Name: "related_widgets", DBName: "related_widgets", TypeName: "int32", Nullable: &nullable},
+									{Name: "related_widgets.widget_id", DBName: "related_widgets.widget_id", TypeName: "int32", Nullable: &nullable},
+									{
+										Name:     "related_widgets.secret_token",
+										DBName:   "related_widgets.secret_token",
+										TypeName: "string",
+										Nullable: &nullable,
+									},
 								},
 								Mods: stubMods{},
 							},
@@ -89,26 +109,22 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	)
 
 	state := &gen.State[any]{Config: gen.Config[any]{
-		NoTests: true,
-		Tags:    []string{"json"},
+		NoTests:   true,
+		Tags:      []string{"json", "yaml"},
+		TagIgnore: []string{"secret_token"},
 	}}
 	if err := gen.Run[any, any, driver.IndexExtra](
-		context.Background(), state, stubDriver{types: helpers.Types(), info: info}, outputPlugins...,
+		t.Context(), state, stubDriver{types: helpers.Types(), info: info}, outputPlugins...,
 	); err != nil {
 		t.Fatalf("gen.Run: %v", err)
 	}
 
-	got, err := os.ReadFile(filepath.Join(queryDir, "get_widget.bob.go"))
-	if err != nil {
-		t.Fatalf("reading generated query file: %v", err)
+	if err := os.WriteFile(filepath.Join(queryDir, "tags_test.go"), queryTagsTest, 0o600); err != nil {
+		t.Fatal(err)
 	}
-
-	for _, want := range []string{
-		"`db:\"widget_id\" json:\"widget_id\"`",
-		"`db:\"widget_name\" json:\"widget_name\"`",
-	} {
-		if !strings.Contains(string(got), want) {
-			t.Errorf("generated query struct missing tag %s\n---\n%s", want, got)
-		}
+	cmd := exec.CommandContext(t.Context(), "go", "test", "-mod=mod", "./queries")
+	cmd.Env = append(os.Environ(), "GOWORK=off")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("testing generated query results: %v\n%s", err, out)
 	}
 }
