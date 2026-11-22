@@ -56,14 +56,17 @@ func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] 
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 // Update uses an executor to update the {{$tAlias.UpSingular}}
 func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
-	_, err := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ())).Exec(ctx, exec)
-  if err != nil {
-    return err
-  }
-
-  s.Overwrite(o)
-
-  return nil
+	q := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ()))
+	q.Expression.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
+		return {{$tAlias.UpPlural}}.BeforeUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+	})
+	q.Expression.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, _ any) error {
+		s.Overwrite(o)
+		_, err := {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+		return err
+	}))
+	_, err := q.Exec(ctx, exec)
+	return err
 }
 {{- end}}
 

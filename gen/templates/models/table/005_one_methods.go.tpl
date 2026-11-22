@@ -60,7 +60,11 @@ func (o *{{$tAlias.UpSingular}}) pkEQ() dialect.Expression {
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 // Update uses an executor to update the {{$tAlias.UpSingular}}
 func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
-	v, err := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ())).One(ctx, exec)
+	q := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ()))
+	q.Expression.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
+		return {{$tAlias.UpPlural}}.BeforeUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
+	})
+	v, err := q.One(ctx, exec)
   if err != nil {
     return err
   }
@@ -75,11 +79,9 @@ func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, 
 }
 {{- end}}
 
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dm" $.Dialect)}}
 // Delete deletes a single {{$tAlias.UpSingular}} record with an executor
 func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) error {
-	_, err := {{$tAlias.UpPlural}}.Delete(dm.Where(o.pkEQ())).Exec(ctx, exec)
-  return err
+	return {{$tAlias.UpSingular}}Slice{o}.DeleteAll(ctx, exec)
 }
 
 // Reload refreshes the {{$tAlias.UpSingular}} using the executor
