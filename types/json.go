@@ -40,16 +40,27 @@ func (j JSON[T]) Value() (driver.Value, error) {
 
 // Scan implements the Scanner interface.
 func (j *JSON[T]) Scan(value any) error {
+	var data []byte
 	switch x := value.(type) {
 	case string:
-		return json.NewDecoder(bytes.NewBuffer([]byte(x))).Decode(j)
+		data = []byte(x)
 	case []byte:
-		return json.NewDecoder(bytes.NewBuffer(x)).Decode(j)
+		data = x
 	case nil:
+		var zero T
+		j.Val = zero
 		return nil
 	default:
 		return fmt.Errorf("cannot scan type %T: %v", value, value)
 	}
+	// Destinations are reused across rows. Decode separately to avoid mutating
+	// pointers and slices already copied into previously scanned values.
+	var decoded T
+	if err := json.NewDecoder(bytes.NewReader(data)).Decode(&decoded); err != nil {
+		return err
+	}
+	j.Val = decoded
+	return nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
