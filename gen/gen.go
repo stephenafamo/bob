@@ -166,6 +166,9 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 		}
 	}
 
+	// Plugins may change the relationships. Resolve bridge parents from the
+	// final column mappings before rendering any templates.
+	initBridgeRelationships(data.Relationships, data.Tables)
 	return generate(s, data)
 }
 

@@ -22,7 +22,7 @@ func ensureCreatable{{$tAlias.UpSingular}}(m *models.{{$tAlias.UpSingular}}Sette
 }
 
 {{range $rel := $.Relationships.Get $table.Key -}}
-{{with and (not ($.Tables.RelIsView $rel)) ($.Tables.NeededBridgeRels $rel) ($.Relationships.FactoryBridgeParents $rel) -}}
+{{with $rel.Bridge -}}
 {{$bridge := $.Aliases.Table .Table -}}
 {{$localRel := $bridge.Relationship .Local -}}
 {{$foreignRel := $bridge.Relationship .Foreign -}}
@@ -61,8 +61,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
           if r.o.alreadyPersisted {
             m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, r.o.Build())
           } else {
-          {{- $bridges := $.Tables.NeededBridgeRels $rel -}}
-          {{- if and $bridges ($.Relationships.FactoryBridgeParents $rel) }}
+          {{- if $rel.Bridge }}
             for range r.number {
               related, err := r.o.Create(ctx, exec)
               if err != nil { return err }
@@ -78,7 +77,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
               {{- end }}
             }
           {{- else }}
-            {{- range $bridges -}}
+            {{- range $.Tables.NeededBridgeRels $rel -}}
               {{$alias := $.Aliases.Table .Table -}}
               {{if not .Many}}
                 {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)

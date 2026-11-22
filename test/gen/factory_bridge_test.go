@@ -25,6 +25,7 @@ CREATE TABLE exporters (id INTEGER PRIMARY KEY);
 CREATE TABLE owners (id INTEGER PRIMARY KEY);
 CREATE TABLE links (id INTEGER PRIMARY KEY, note TEXT NOT NULL,
   task_id INTEGER NOT NULL REFERENCES tasks, exporter_id INTEGER NOT NULL REFERENCES exporters,
+  backup_id INTEGER NOT NULL REFERENCES exporters(id),
   owner_id INTEGER NOT NULL REFERENCES owners(id),
   UNIQUE(task_id, exporter_id));
 CREATE TRIGGER no_relink BEFORE UPDATE ON links BEGIN SELECT RAISE(ABORT, 'unexpected bridge update'); END;
