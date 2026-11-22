@@ -1453,21 +1453,32 @@ func (v *visitor) VisitUpdatedElement(ctx *mysqlparser.UpdatedElementContext) an
 		return nil
 	}
 
+	col, expr := ctx.FullColumnName(), ctx.ExpressionOrDefault()
+	v.MatchNodeNames(col, expr)
+	// A bare SET parameter takes the target column's type, including
+	// nullability. An argument inside a larger expression need not.
+	if expr.GetStart() == expr.GetStop() && expr.GetStart().GetTokenType() == mysqlparser.MySqlParserBIND_PARAMETER {
+		v.UpdateInfo(NodeInfo{
+			Node:            expr,
+			ExprDescription: "Update Elem Bind",
+			Type:            v.Infos[antlrhelpers.Key(col)].Type,
+		})
+		return nil
+	}
+
 	v.UpdateInfo(NodeInfo{
-		Node:                 ctx.FullColumnName(),
+		Node:                 col,
 		ExprDescription:      "Update Elem Col",
-		ExprRef:              ctx.ExpressionOrDefault(),
+		ExprRef:              expr,
 		IgnoreRefNullability: true,
 	})
 
 	v.UpdateInfo(NodeInfo{
-		Node:                 ctx.ExpressionOrDefault(),
+		Node:                 expr,
 		ExprDescription:      "Update Elem Expr",
-		ExprRef:              ctx.FullColumnName(),
+		ExprRef:              col,
 		IgnoreRefNullability: true,
 	})
-
-	v.MatchNodeNames(ctx.FullColumnName(), ctx.ExpressionOrDefault())
 
 	return nil
 }
