@@ -56,4 +56,112 @@ func TestInsertPrimaryVersion(t *testing.T) {
 		if int64(len(c.R.Entries)) != want || c.C.Entries == nil || *c.C.Entries != want { t.Fatalf("collection %d: rows=%d count=%v", c.ID, len(c.R.Entries), c.C.Entries) }
 	}
 }
+
+func TestRelationshipAssignment(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.Begin(ctx)
+	if err != nil { t.Fatal(err) }
+	defer tx.Rollback(ctx)
+	loc, err := models.Locations.Insert(&models.LocationSetter{}).One(ctx, tx)
+	if err != nil { t.Fatal(err) }
+	old := &models.LocationVersion{}
+	loc.R.LocationVersions = models.LocationVersionSlice{old}
+	if err := loc.InsertLocationVersions(ctx, tx, &models.LocationVersionSetter{LocationID: &loc.ID}); err != nil { t.Fatal(err) }
+	if len(loc.R.LocationVersions) != 2 || loc.R.LocationVersions[0] != old || loc.R.{{$.RelationLoadedName}}.LocationVersions {
+		t.Fatal("insert must append without marking a partial result loaded")
+	}
+	if err := loc.LoadLocationVersions(ctx, tx); err != nil { t.Fatal(err) }
+	if len(loc.R.LocationVersions) != 1 || loc.R.LocationVersions[0] == old || !loc.R.{{$.RelationLoadedName}}.LocationVersions {
+		t.Fatal("load must replace the partial result")
+	}
+	child := loc.R.LocationVersions[0]
+	{{if $.NoBackReferencing}}
+	if child.R.Location != nil || child.R.{{$.RelationLoadedName}}.Location { t.Fatal("inverse populated with back-referencing disabled") }
+	{{else}}
+	if child.R.Location != loc || !child.R.{{$.RelationLoadedName}}.Location { t.Fatal("missing loaded inverse") }
+	{{end}}
+	if err := loc.Preload("LocationVersions", models.LocationVersionSlice{}); err != nil { t.Fatal(err) }
+	if loc.R.LocationVersions == nil || len(loc.R.LocationVersions) != 0 || !loc.R.{{$.RelationLoadedName}}.LocationVersions {
+		t.Fatal("preload must preserve a known empty result")
+	}
+	if err := loc.AttachLocationVersions(ctx, tx, child); err != nil { t.Fatal(err) }
+	if len(loc.R.LocationVersions) != 1 || loc.R.LocationVersions[0] != child || !loc.R.{{$.RelationLoadedName}}.LocationVersions {
+		t.Fatal("attach must append and preserve an existing loaded flag")
+	}
+}
+{{- end}}
+
+{{- if and (has "locations" $.TableNames) (has "teams" $.TableNames) -}}
+{{$.Importer.Import "testing"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models")}}
+func TestRepeatedTableCorrelation(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.Begin(ctx)
+	if err != nil { t.Fatal(err) }
+	defer tx.Rollback(ctx)
+	if _, err := tx.ExecContext(ctx, "INSERT INTO locations (id) VALUES (1), (2)"); err != nil { t.Fatal(err) }
+	if _, err := tx.ExecContext(ctx, `INSERT INTO teams (id, location_id, parent_id, active) VALUES
+		(10, 1, NULL, false), (11, 1, 10, true), (12, 1, 10, true), (13, 1, 10, false),
+		(20, 2, NULL, true), (21, 2, 20, false)`); err != nil { t.Fatal(err) }
+
+	// Both subqueries join teams twice. The filter on teams must apply to the child.
+	activeChild := models.SelectWhere.Teams.Active.EQ(true)
+	locs, err := models.Locations.Query(models.SelectWhere.Locations.R.HasTeams(activeChild),
+		models.PreloadCount.Location.Teams(activeChild)).All(ctx, tx)
+	if err != nil { t.Fatal(err) }
+	if len(locs) != 1 || locs[0].ID != 1 || locs[0].C.Teams == nil || *locs[0].C.Teams != 2 {
+		t.Fatalf("expected only location 1 with 2 active child teams, got %+v", locs)
+	}
+}
+{{- end}}
+
+{{- if and (has "revisions" $.TableNames) (has "revision_labels" $.TableNames) -}}
+{{$.Importer.Import "slices"}}
+{{$.Importer.Import "testing"}}
+{{$.Importer.Import "context"}}
+{{$.Importer.Import "errors"}}
+{{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models")}}
+func TestCompositeRowRefresh(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.Begin(ctx)
+	if err != nil { t.Fatal(err) }
+	defer tx.Rollback(ctx)
+	pk := models.Revisions.PrimaryKey()
+	if !slices.Equal(pk.Names(), []string{"code", "seq"}) || !slices.Equal(pk.Parent(), []string{"revisions"}) {
+		t.Fatalf("primary key: got %v on %v, want (code, seq) on revisions", pk.Names(), pk.Parent())
+	}
+	if _, err := tx.ExecContext(ctx, "INSERT INTO revisions (code, seq, label) VALUES (x'01', 2, 'first'), (x'02', 2, 'second'), (x'02', 3, 'third')"); err != nil { t.Fatal(err) }
+	label, err := models.FindRevision(ctx, tx, []byte{2}, 2, "label")
+	if err != nil || label.Label != "second" || label.Code != nil { t.Fatalf("find with projection: %+v, %v", label, err) }
+	exists, err := models.RevisionExists(ctx, tx, []byte{1}, 3)
+	if err != nil || exists { t.Fatalf("partial key matched: %v, %v", exists, err) }
+	a := &models.Revision{Code: []byte{1}, Seq: 2}
+	b := &models.Revision{Code: []byte{2}, Seq: 2}
+	missing := &models.Revision{Code: []byte{1}, Seq: 3, Label: "untouched"}
+	duplicate := *a
+	rows := models.RevisionSlice{b, a, missing, &duplicate}
+	if err := rows.ReloadAll(ctx, tx); err != nil { t.Fatal(err) }
+	if rows[0] != b || b.Label != "second" || a.Label != "first" || duplicate.Label != "first" || missing.Label != "untouched" {
+		t.Fatalf("composite-key refresh: %q, %q, %q, %q", b.Label, a.Label, duplicate.Label, missing.Label)
+	}
+	b.Seq = 3
+	if err := b.Reload(ctx, tx); err != nil || b.Label != "third" { t.Fatalf("reload: %+v, %v", b, err) }
+}
+
+func TestViewHookDispatch(t *testing.T) {
+	type marker struct{}
+	ctx := context.WithValue(t.Context(), marker{}, true)
+	stop := errors.New("select hook")
+	models.RevisionLabels.AfterSelectHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, rows models.RevisionLabelSlice) (context.Context, error) {
+		if ctx.Value(marker{}) == true && len(rows) == 1 { return ctx, stop }
+		return ctx, nil
+	})
+	view := &models.RevisionLabel{}
+	if err := view.AfterQueryHook(ctx, nil, bob.QueryTypeSelect); !errors.Is(err, stop) { t.Fatalf("select hook: %v", err) }
+	for _, typ := range []bob.QueryType{bob.QueryTypeInsert, bob.QueryTypeUpdate, bob.QueryTypeDelete, bob.QueryTypeMerge, bob.QueryTypeUnknown} {
+		if err := view.AfterQueryHook(ctx, nil, typ); err != nil { t.Fatalf("unexpected view hook for %v: %v", typ, err) }
+	}
+	if err := view.AfterQueryHook(bob.SkipModelHooks(ctx), nil, bob.QueryTypeSelect); err != nil { t.Fatalf("skipped select hook: %v", err) }
+}
 {{- end}}

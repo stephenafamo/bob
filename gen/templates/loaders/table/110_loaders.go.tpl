@@ -17,53 +17,11 @@ func (o *{{$tAlias.UpSingular}}) Preload(name string, retrieved any) error {
 	{{range $.Relationships.Get $table.Key -}}
 	{{- $fAlias := $.Aliases.Table .Foreign -}}
 	{{- $relAlias := $tAlias.Relationship .Name -}}
-	{{- $invRel := $.Relationships.GetInverse . -}}
 	case "{{$relAlias}}":
-		{{if .IsToMany -}}
-			rels, ok := retrieved.({{$fAlias.UpSingular}}Slice)
-			if !ok {
-				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
-			}
-
-			o.R.{{$relAlias}} = rels
-			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-
-			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
-			for _, rel := range rels {
-				if rel != nil {
-					{{if $invRel.IsToMany -}}
-						rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-					{{- else -}}
-						rel.R.{{$invAlias}} =  o
-						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-					{{- end}}
-				}
-			}
-			{{- end}}
-			return nil
-		{{else -}}
-			rel, ok := retrieved.(*{{$fAlias.UpSingular}})
-			if !ok {
-				return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name)
-			}
-
-			o.R.{{$relAlias}} = rel
-			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-
-			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
-				if rel != nil {
-					{{if $invRel.IsToMany -}}
-						rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-					{{- else -}}
-						rel.R.{{$invAlias}} =  o
-						rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-					{{- end}}
-				}
-			{{- end}}
-			return nil
-		{{end -}}
+		related, ok := retrieved.({{if .IsToMany}}{{$fAlias.UpSingular}}Slice{{else}}*{{$fAlias.UpSingular}}{{end}})
+		if !ok { return fmt.Errorf("{{$tAlias.DownSingular}} cannot load %T as %q", retrieved, name) }
+		{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace(o, related)
+		return nil
 
 	{{end -}}
 	default:
@@ -127,7 +85,6 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
 {{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $.Relationships.GetInverse . -}}
 
 // Load{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
 func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
@@ -135,9 +92,8 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 	  return nil
 	}
 
-	// Reset the relationship
-	o.R.{{$relAlias}} = nil
-	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = false
+	assignment := {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}()
+	assignment.Reset(o, false)
 
 	{{if $rel.IsToMany -}}
 	related, err := o.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
@@ -148,29 +104,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 		return err
 	}
 
-	{{if and (not $.NoBackReferencing) $invRel.Name -}}
-	{{- $invAlias := $fAlias.Relationship $invRel.Name -}}
-	{{if $rel.IsToMany -}}
-		for _, rel := range related {
-			{{if $invRel.IsToMany -}}
-				rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-			{{- else -}}
-				rel.R.{{$invAlias}} =  o
-				rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-			{{- end}}
-		}
-	{{else -}}
-		{{if $invRel.IsToMany -}}
-			related.R.{{$invAlias}} = append(related.R.{{$invAlias}}, o)
-		{{else -}}
-			related.R.{{$invAlias}} =  o
-			related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-		{{- end}}
-	{{- end}}
-	{{- end}}
-
-	o.R.{{$relAlias}} = related
-	o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+	assignment.Replace(o, related)
 	return nil
 }
 
@@ -207,32 +141,13 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 	{{end -}}
 	if err != nil { return err }
 
+	assignment := {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}()
 	for _, o := range os {
 		if o != nil {
-			o.R.{{$relAlias}} = nil
-			o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+			assignment.Reset(o, true)
 		}
 	}
 	{{if $side.FromWhere}}os = os.matching{{$relAlias}}Sources(){{end}}
-	link := func(o *{{$tAlias.UpSingular}}, rel *{{$fAlias.UpSingular}}) {
-		{{if not $rel.IsToMany -}}
-		if o.R.{{$relAlias}} != nil { return } // keep the first match
-		{{end -}}
-		{{if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{$invAlias := $fAlias.Relationship $invRel.Name -}}
-			{{if $invRel.IsToMany -}}
-			rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-			{{else -}}
-			rel.R.{{$invAlias}} = o
-			rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-			{{end -}}
-		{{end -}}
-		{{if $rel.IsToMany -}}
-		o.R.{{$relAlias}} = append(o.R.{{$relAlias}}, rel)
-		{{else -}}
-		o.R.{{$relAlias}} = rel
-		{{end -}}
-	}
 	{{if and (eq (len $side.FromColumns) 1) ($.Types.CanCompareWithEquals $.CurrentPackage ($.Tables.GetColumn $side.From (index $side.FromColumns 0)).Type) -}}
 		{{$local := $.Tables.GetColumn $side.From (index $side.FromColumns 0) -}}
 		{{$foreign := $.Tables.GetColumn $side.To (index $side.ToColumns 0) -}}
@@ -252,7 +167,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 				if !({{$.Types.GetNullTypeValid $.CurrentPackage $foreign.Type $c}}) { var zero {{$key}}; return zero, false }
 				{{end -}}
 				return {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $foreign.Type $c $foreign.Nullable}}, true
-			}, link)
+			}, assignment.Link)
 	{{else -}}
 		// Composite keys and custom equality cannot assume a Go map key.
 		for _, o := range os {
@@ -267,7 +182,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 				{{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $local.Type $local.Nullable $foreign.Nullable -}}
 				if !({{replace "AAA" $p $compare | replace "BBB" $c}}) { continue }
 				{{end -}}
-				link(o, rel)
+				assignment.Link(o, rel)
 				{{if not $rel.IsToMany}}break{{end}}
 			}
 		}

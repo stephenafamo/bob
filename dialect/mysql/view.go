@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
@@ -29,7 +28,7 @@ func newView[T any, Tslice ~[]T, C bob.Expression](tableName string, columns C, 
 		scanner = scan.StructMapper[T]()
 	}
 
-	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
+	mappings := mappings.GetMappings[T]()
 
 	return &View[T, Tslice, C]{
 		name:    tableName,

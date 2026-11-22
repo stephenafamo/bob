@@ -1,0 +1,39 @@
+package psql
+
+import (
+	"context"
+
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/dialect/psql/um"
+	"github.com/stephenafamo/bob/orm"
+)
+
+// UpdateRow updates a row by primary key and copies the returned columns into it.
+func (t *Table[T, S, Set, C]) UpdateRow(ctx context.Context, exec bob.Executor, row T, setter Set) error {
+	rows := t.RowMapping()
+	q := t.Update(setter.UpdateMod(), um.Where(rows.Equal(row)))
+	q.Expression.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
+		return t.BeforeUpdateHooks.RunHooks(ctx, exec, S{row})
+	})
+	return rows.RefreshRow(ctx, exec, row, q.One)
+}
+
+func (v *View[T, S, C]) RunAfterQueryHooks(ctx context.Context, exec bob.Executor, typ bob.QueryType, rows S) error {
+	return (orm.AfterModelHooks[S]{Select: &v.AfterSelectHooks}).Run(ctx, exec, typ, rows)
+}
+
+func (t *Table[T, S, Set, C]) RunAfterQueryHooks(ctx context.Context, exec bob.Executor, typ bob.QueryType, rows S) error {
+	return (orm.AfterModelHooks[S]{
+		Select: &t.AfterSelectHooks, Insert: &t.AfterInsertHooks, Update: &t.AfterUpdateHooks,
+		Delete: &t.AfterDeleteHooks, Merge: &t.AfterMergeHooks,
+	}).Run(ctx, exec, typ, rows)
+}
+
+func (v *View[T, S, C]) lookup(where bob.Expression, cols ...string) orm.RowQuery[T, S] {
+	q := v.Query(sm.Where(where))
+	if len(cols) != 0 {
+		q.Apply(sm.Columns(v.ColumnsExpr().Only(cols...)))
+	}
+	return q
+}

@@ -2,7 +2,6 @@ package psql
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
@@ -10,9 +9,6 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -25,31 +21,33 @@ type (
 	ormMergeQuery[T any, Tslice ~[]T]  = orm.Query[*dialect.MergeQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 )
 
-func NewTable[T any, Tset setter[T], C bob.Expression](schema, tableName string, columns C) *Table[T, []T, Tset, C] {
-	return NewTablex[T, []T, Tset](schema, tableName, columns, nil)
+func NewTable[T any, Tset setter[T], C bob.Expression](
+	schema, tableName string, columns C, rows orm.RowMapping[T, []T],
+) *Table[T, []T, Tset, C] {
+	return NewTablex[T, []T, Tset](schema, tableName, columns, nil, rows)
 }
 
-// NewTablex creates a new Table with a custom scanner.
+// NewTablex creates a Table with a row mapping and a custom scanner.
 // If scanner is nil, it falls back to [scan.StructMapper].
-func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](schema, table string, columns C, scanner scan.Mapper[T]) *Table[T, Tslice, Tset, C] {
-	setMapping := mappings.GetMappings(reflect.TypeOf((*new(Tset))))
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
+	schema, table string,
+	columns C,
+	scanner scan.Mapper[T],
+	rows orm.RowMapping[T, Tslice],
+) *Table[T, Tslice, Tset, C] {
 	view, mappings := newView[T, Tslice](schema, table, columns, scanner)
-	t := &Table[T, Tslice, Tset, C]{
+	return &Table[T, Tslice, Tset, C]{
 		View:             view,
-		pkCols:           expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
-		setterMapping:    setMapping,
-		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
+		RowOperations:    orm.NewRowOperations(rows, view.lookup),
+		nonGeneratedCols: mappings.NonGenerated,
 	}
-
-	return t
 }
 
 // The table contains extract information from the struct and contains
 // caches ???
 type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	*View[T, Tslice, C]
-	pkCols           expr.ColumnsExpr
-	setterMapping    mappings.Mapping
+	orm.RowOperations[T, Tslice]
 	nonGeneratedCols []string
 
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
@@ -68,11 +66,6 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	UpdateQueryHooks bob.Hooks[*dialect.UpdateQuery, bob.SkipQueryHooksKey]
 	DeleteQueryHooks bob.Hooks[*dialect.DeleteQuery, bob.SkipQueryHooksKey]
 	MergeQueryHooks  bob.Hooks[*dialect.MergeQuery, bob.SkipQueryHooksKey]
-}
-
-// Returns the primary key columns for this table.
-func (t *Table[T, Tslice, Tset, C]) PrimaryKey() expr.ColumnsExpr {
-	return t.pkCols
 }
 
 // Starts an insert query for this table

@@ -129,7 +129,16 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 	return exprs
 }
 
-var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"))
+var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"), orm.RowMapping[*User, []*User]{
+	KeyColumns:  expr.NewColumnsExpr("id").WithParent("users"),
+	KeyValues:   func(u *User) bob.Expression { return Arg(u.ID) },
+	CopyColumns: copyUser,
+	CopyMatching: func(dst []*User, src ...*User) {
+		orm.CopyByKey(dst, src, func(u *User) int64 { return u.ID }, copyUser)
+	},
+})
+
+func copyUser(dst, src *User) { *dst = *src }
 
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()

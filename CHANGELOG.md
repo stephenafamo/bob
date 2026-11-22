@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- Bob uses Scan v0.10.0 field metadata for column names, named arguments,
+  and preload keys. Embedded fields use their mapped column names, and
+  named nested fields use Scan's dotted names.
+- `NewTable` and `NewTablex` now require an `orm.RowMapping` in all three
+  dialects. For `NewTablex`, pass it after the scanner. MySQL also requires
+  the setter's `Overwrite` function before the optional unique indexes.
 - Bob generates less Go code for models and factories. Batch loads, counts,
-  row refreshes, scanners, and factory builds now share runtime helpers.
+  row refreshes, primary-key lookups, after-query hooks, relationship
+  assignment, scanners, and factory builds now share runtime helpers.
   Upgrade Bob and `bobgen` together before regenerating. Existing model and
   factory calls retain their signatures.
+- Bulk refreshes now match primary keys with custom equality (such as byte
+  slices) by value.
 - Relationship `Has…` filters and preloaded counts use the same join
-  predicates as relationship preloads, including static filters.
+  predicates as relationship preloads, including static filters. They
+  automatically alias intermediate joins when a path repeats a table.
 
 ## [v0.51.0] - 2026-11-22
 

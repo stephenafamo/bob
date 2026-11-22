@@ -2,116 +2,48 @@ package mappings
 
 import (
 	"reflect"
-	"regexp"
 	"strings"
+
+	"github.com/stephenafamo/scan"
 )
-
-var (
-	matchFirstCapRe = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	matchAllCapRe   = regexp.MustCompile("([a-z0-9])([A-Z])")
-)
-
-type colProperties struct {
-	Name          string
-	IsPK          bool
-	IsGenerated   bool
-	AutoIncrement bool
-}
-
-func getColProperties(tag string) colProperties {
-	var p colProperties
-	if tag == "" {
-		return p
-	}
-
-	parts := strings.Split(tag, ",")
-	p.Name = parts[0]
-
-	for _, part := range parts[1:] {
-		switch part {
-		case "pk":
-			p.IsPK = true
-		case "generated":
-			p.IsGenerated = true
-		case "autoincr":
-			p.AutoIncrement = true
-		}
-	}
-
-	return p
-}
 
 type Mapping struct {
 	All           []string
-	PKs           []string
-	NonPKs        []string
-	Generated     []string
 	NonGenerated  []string
 	AutoIncrement []string
 }
 
-func GetMappings(typ reflect.Type) Mapping {
-	c := Mapping{}
-
+// GetMappings adds Bob's write-column flags to Scan's resolved fields.
+func GetMappings[T any]() Mapping {
+	typ := reflect.TypeFor[T]()
+	fields, err := scan.StructMapperFields(typ)
+	if err != nil {
+		return Mapping{} // A non-struct model has no column metadata.
+	}
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 
-	if typ.Kind() != reflect.Struct {
-		return c
-	}
-
-	c.All = make([]string, typ.NumField())
-	c.PKs = make([]string, typ.NumField())
-	c.NonPKs = make([]string, typ.NumField())
-	c.Generated = make([]string, typ.NumField())
-	c.NonGenerated = make([]string, typ.NumField())
-	c.AutoIncrement = make([]string, typ.NumField())
-
-	// Go through the struct fields and populate the map.
-	// Recursively go into any child structs, adding a prefix where necessary
-	for i := range typ.NumField() {
-		field := typ.Field(i)
-
-		// Don't consider unexported fields
-		if !field.IsExported() {
+	c := Mapping{All: make([]string, 0, len(fields)), NonGenerated: make([]string, 0, len(fields))}
+	for _, field := range fields {
+		if field.Name == "" || len(field.Index) == 0 {
 			continue
 		}
-
-		// Skip columns that have the tag "-"
-		tag := field.Tag.Get("db")
-		if tag == "-" {
-			continue
+		c.All = append(c.All, field.Name)
+		_, opts, _ := strings.Cut(typ.FieldByIndex(field.Index).Tag.Get("db"), ",")
+		var generated bool
+		for opt := range strings.SplitSeq(opts, ",") {
+			switch opt {
+			case "generated":
+				generated = true
+			case "autoincr":
+				c.AutoIncrement = append(c.AutoIncrement, field.Name)
+			}
 		}
-
-		if tag == "" {
-			tag = snakeCase(field.Name)
-		}
-
-		props := getColProperties(tag)
-
-		c.All[field.Index[0]] = props.Name
-		if props.IsPK {
-			c.PKs[field.Index[0]] = props.Name
-		} else {
-			c.NonPKs[field.Index[0]] = props.Name
-		}
-		if props.IsGenerated {
-			c.Generated[field.Index[0]] = props.Name
-		} else {
-			c.NonGenerated[field.Index[0]] = props.Name
-		}
-		if props.AutoIncrement {
-			c.AutoIncrement[field.Index[0]] = props.Name
+		if !generated {
+			c.NonGenerated = append(c.NonGenerated, field.Name)
 		}
 	}
 
 	return c
-}
-
-// snakeCaseFieldFunc is a NameMapperFunc that maps struct field to snake case.
-func snakeCase(str string) string {
-	snake := matchFirstCapRe.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCapRe.ReplaceAllString(snake, "${1}_${2}")
-	return strings.ToLower(snake)
 }

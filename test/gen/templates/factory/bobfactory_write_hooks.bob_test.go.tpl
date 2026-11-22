@@ -27,6 +27,14 @@ func TestSingleModelWriteHooks(t *testing.T) {
 				s.calls = append(s.calls, name)
 				if len(rows) != 1 { return ctx, errors.New("expected one video") }
 				if before { return ctx, s.veto }
+				if name == "after update" {
+					if rows[0].UserID != user.ID { return ctx, errors.New("after update saw stale columns") }
+					{{if eq $.Dialect "mysql"}}
+					if rows[0] != v { return ctx, errors.New("MySQL hook must receive the original model") }
+					{{else}}
+					if rows[0] == v { return ctx, errors.New("RETURNING hook must receive the returned model") }
+					{{end}}
+				}
 			}
 			return ctx, nil
 		}

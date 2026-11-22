@@ -46,12 +46,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}{{if not ($.Tables.RelIsView $rel) -}}
 		{{- if or ($table.RelIsRequired $rel) ($.Tables.RelIsOptionalFKParent $rel)}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
-		{{- $invRel := $.Relationships.GetInverse . -}}
 		{{- $ftable := $.Aliases.Table $rel.Foreign -}}
-		{{- $invAlias := "" -}}
-    {{- if and (not $.NoBackReferencing) $invRel.Name -}}
-			{{- $invAlias = $ftable.Relationship $invRel.Name -}}
-		{{- end -}}
 
     is{{$relAlias}}Done, _ := {{$tAlias.DownSingular}}Rel{{$relAlias}}Ctx.Value(ctx)
 		if !is{{$relAlias}}Done && o.r.{{$relAlias}} != nil {
@@ -59,22 +54,14 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 		{{- if .IsToMany -}}
 				for _, r := range o.r.{{$relAlias}} {
           if r.o.alreadyPersisted {
-            m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, r.o.Build())
+            models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().AppendLocal(m, r.o.Build())
           } else {
           {{- if $rel.Bridge }}
             for range r.number {
               related, err := r.o.Create(ctx, exec)
               if err != nil { return err }
               if err := r.createBridge(ctx, exec, m, related); err != nil { return err }
-              m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, related)
-              {{- if $invAlias }}
-                {{- if $invRel.IsToMany }}
-                related.R.{{$invAlias}} = append(related.R.{{$invAlias}}, m)
-                {{- else }}
-                related.R.{{$invAlias}} = m
-                related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-                {{- end }}
-              {{- end }}
+              models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Append(m, related)
             }
           {{- else }}
             {{- range $.Tables.NeededBridgeRels $rel -}}
@@ -103,8 +90,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
 				}
 		{{- else -}}
       if o.r.{{$relAlias}}.o.alreadyPersisted {
-        m.R.{{$relAlias}} = o.r.{{$relAlias}}.o.Build()
-        m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+        models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().SetLocal(m, o.r.{{$relAlias}}.o.Build())
       } else {
         {{- range $.Tables.NeededBridgeRels . -}}
           {{$alias := $.Aliases.Table .Table -}}
@@ -235,22 +221,10 @@ func (o *{{$tAlias.UpSingular}}Template) Create(ctx context.Context, exec bob.Ex
 	{{range $index, $rel := $.Relationships.Get $table.Key -}}
 		{{- $relAlias := $tAlias.Relationship .Name -}}
 		{{if $table.RelIsRequired $rel -}}
-		m.R.{{$relAlias}} = rel{{$index}}
-		m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+		models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().SetLocal(m, rel{{$index}})
 		{{else if $.Tables.RelIsOptionalFKParent $rel -}}
 		if rel{{$index}} != nil {
-			m.R.{{$relAlias}} = rel{{$index}}
-			m.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-			{{ $invRel := $.Relationships.GetInverse $rel -}}
-			{{if and (not $.NoBackReferencing) $invRel.Name -}}
-				{{- $invAlias := ($.Aliases.Table $rel.Foreign).Relationship $invRel.Name -}}
-				{{if $invRel.IsToMany -}}
-				rel{{$index}}.R.{{$invAlias}} = append(rel{{$index}}.R.{{$invAlias}}, m)
-				{{else -}}
-				rel{{$index}}.R.{{$invAlias}} = m
-				rel{{$index}}.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-				{{end -}}
-			{{end -}}
+			models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace(m, rel{{$index}})
 		}
 		{{end -}}
 	{{end}}

@@ -9,7 +9,6 @@
 {{range $rel := $.Relationships.Get $table.Key -}}{{if not ($.Tables.RelIsView $rel) -}}
 {{- $ftable := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-{{- $invRel := $.Relationships.GetInverse . -}}
 {{- $from := printf "%s%d" $tAlias.DownSingular $rel.LocalPosition}}
 {{- $to := printf "%s%d" $ftable.DownSingular $rel.ForeignPosition}}
 {{if $rel.NeedsMany $rel.ForeignPosition -}}
@@ -238,18 +237,7 @@
     {{- end}}
 
 
-    {{$from}}.R.{{$relAlias}} = {{$to}}
-    {{$from}}.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      {{if $invRel.IsToMany -}}
-        {{$to}}.R.{{$invAlias}} = append({{$to}}.R.{{$invAlias}}, {{$from}})
-      {{- else -}}
-        {{$to}}.R.{{$invAlias}} = {{$from}}
-        {{$to}}.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-      {{- end}}
-    {{- end}}
+    {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace({{$from}}, {{$to}})
 
     return nil
     {{end}}
@@ -287,18 +275,7 @@
     {{- end}}
 
 
-    {{$from}}.R.{{$relAlias}} = {{$to}}
-    {{$from}}.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      {{if $invRel.IsToMany -}}
-        {{$to}}.R.{{$invAlias}} = append({{$to}}.R.{{$invAlias}}, {{$from}})
-      {{- else -}}
-        {{$to}}.R.{{$invAlias}} = {{$from}}
-        {{$to}}.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-      {{- end}}
-    {{- end}}
+    {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace({{$from}}, {{$to}})
 
     return nil
   }
@@ -351,19 +328,7 @@
     {{- end}}
 
 
-    {{$from}}.R.{{$relAlias}} = append({{$from}}.R.{{$relAlias}}, {{$to}}...)
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      for _, rel := range {{$to}} {
-        {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, {{$from}})
-        {{- else -}}
-          rel.R.{{$invAlias}} = {{$from}}
-          rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-        {{- end}}
-      }
-    {{- end}}
+    {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Append({{$from}}, {{$to}}...)
     return nil
     {{end}}
   }
@@ -406,19 +371,7 @@
     {{- end}}
 
 
-    {{$from}}.R.{{$relAlias}} = append({{$from}}.R.{{$relAlias}}, {{$to}}...)
-
-    {{if and (not $.NoBackReferencing) $invRel.Name -}}
-    {{- $invAlias := $ftable.Relationship $invRel.Name -}}
-      for _, rel := range related {
-        {{if $invRel.IsToMany -}}
-          rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, {{$from}})
-        {{- else -}}
-          rel.R.{{$invAlias}} = {{$from}}
-          rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-        {{- end}}
-      }
-    {{- end}}
+    {{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Append({{$from}}, {{$to}}...)
 
     return nil
   }

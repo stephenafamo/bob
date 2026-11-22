@@ -20,7 +20,7 @@ require (
 	github.com/nsf/jsondiff v0.0.0-20260207060731-8e8d90c4c0ac
 	github.com/pganalyze/pg_query_go/v6 v6.2.5
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
-	github.com/stephenafamo/scan v0.9.0
+	github.com/stephenafamo/scan v0.10.0
 	github.com/stephenafamo/sqlparser v0.0.0-20260122161205-e324475bd1fc
 	github.com/testcontainers/testcontainers-go v0.45.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.45.0

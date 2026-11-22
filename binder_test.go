@@ -12,6 +12,10 @@ import (
 
 type customString string
 
+type bindValue struct{ Text string }
+
+func (v bindValue) Value() (driver.Value, error) { return v.Text, nil }
+
 type binderTester interface {
 	Run(t *testing.T, origin []any)
 }
@@ -52,6 +56,24 @@ func testBinder(t *testing.T, origin []any, tests []binderTester) {
 }
 
 func TestBinding(t *testing.T) {
+	t.Run("mapped field paths", func(t *testing.T) {
+		type Fields struct {
+			ID int `db:"user_id,pk"`
+		}
+		type args struct {
+			*Fields
+			Owner *Fields `db:"author"`
+			Value bindValue
+		}
+		testBinder(t, []any{namedArg("author.user_id"), namedArg("user_id"), namedArg("value")}, []binderTester{
+			binderTests[*args]{
+				args:  &args{Fields: &Fields{1}, Owner: &Fields{2}, Value: bindValue{"test"}},
+				final: []any{2, 1, bindValue{"test"}},
+			},
+			binderTests[args]{args: args{}, final: []any{nil, nil, bindValue{}}},
+		})
+	})
+
 	t.Run("no args", func(t *testing.T) {
 		testBinder(t, []any{}, []binderTester{
 			binderTests[struct{}]{

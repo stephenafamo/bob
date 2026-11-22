@@ -8,48 +8,26 @@
 func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingular}}) {
     {{- range $index, $rel := $.Relationships.Get $table.Key -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
-        {{- $invRel := $.Relationships.GetInverse . -}}
         {{- $ftable := $.Aliases.Table $rel.Foreign -}}
-        {{- $invAlias := "" -}}
-    {{- if and (not $.NoBackReferencing) $invRel.Name -}}
-            {{- $invAlias = $ftable.Relationship $invRel.Name}}
-        {{- end -}}
 
         if t.r.{{$relAlias}} != nil {
             {{- if not .IsToMany}}
                 rel := t.r.{{$relAlias}}.o.Build()
-                {{- if and (not $.NoBackReferencing) $invRel.Name}}
-                    {{- if not $invRel.IsToMany}}
-                        rel.R.{{$invAlias}} = o
-                        rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-                    {{- else}}
-                        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-                    {{- end}}
-                {{- end}}
                 {{$.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
             {{- else -}}
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.BuildMany(r.number)
                   {{- $setter := $.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
-                  {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
+                  {{- if $setter }}
                   for _, rel := range related {
                     {{$setter}}
-                    {{- if and (not $.NoBackReferencing) $invRel.Name}}
-                        {{- if not $invRel.IsToMany}}
-                            rel.R.{{$invAlias}} = o
-                            rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-                        {{- else}}
-                            rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-                        {{- end}}
-                    {{- end}}
                   }
                   {{- end}}
                   rel = append(rel, related...)
                 }
             {{- end}}
-            o.R.{{$relAlias}} = rel
-            o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+            models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace(o, rel)
         }
 
     {{end -}}

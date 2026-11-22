@@ -3,13 +3,11 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -27,22 +25,16 @@ func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View
 // NewViewx creates a new View with a custom scanner.
 // If scanner is nil, it falls back to [scan.StructMapper].
 func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) *View[T, Tslice, C] {
-	v, _ := newView[T, Tslice](schema, tableName, columns, scanner)
-	return v
-}
-
-func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) (*View[T, Tslice, C], mappings.Mapping) {
 	if scanner == nil {
 		scanner = scan.StructMapper[T]()
 	}
 
-	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	allCols := expr.NewColumnsExpr(mappings.All...).WithParent(alias)
+	allCols := expr.ColsForStruct[T](alias)
 
 	return &View[T, Tslice, C]{
 		schema:        schema,
@@ -52,7 +44,7 @@ func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, col
 		returningCols: allCols.WithParent(tableName),
 		scanner:       scanner,
 		Columns:       columns,
-	}, mappings
+	}
 }
 
 type View[T any, Tslice ~[]T, C bob.Expression] struct {

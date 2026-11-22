@@ -23,6 +23,19 @@ func CopyByKey[T any, K comparable](dst, src []T, key func(T) K, copyColumns fun
 	}
 }
 
+// CopyByMatch is the fallback for composite keys and types with custom
+// equality. Like CopyByKey, it copies from the first match only.
+func CopyByMatch[T any](dst, src []T, equal func(T, T) bool, copyColumns func(T, T)) {
+	for _, row := range dst {
+		for _, fresh := range src {
+			if equal(row, fresh) {
+				copyColumns(row, fresh)
+				break
+			}
+		}
+	}
+}
+
 // ApplyModelHooks connects a bulk mutation to the models being changed.
 // RETURNING supplies the refreshed rows (whose own hooks run in Bob); Exec
 // supplies no rows, so the loader runs the after hook on the original models.

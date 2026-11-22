@@ -3,12 +3,11 @@ package expr
 import (
 	"context"
 	"io"
-	"reflect"
 	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
+	"github.com/stephenafamo/scan"
 )
 
 // NewColumnsExpr returns a [ColumnsExpr] object with the given column names
@@ -81,6 +80,16 @@ func (c ColumnsExpr) DisableAlias() ColumnsExpr {
 	return c
 }
 
+// RowValue returns the columns without AS aliases for use in a predicate.
+// A single column is a scalar; multiple columns form a parenthesized tuple.
+func (c ColumnsExpr) RowValue() bob.Expression {
+	c = c.DisableAlias()
+	if len(c.names) > 1 {
+		return group{c}
+	}
+	return c
+}
+
 // Only drops other column names from the column set
 func (c ColumnsExpr) Only(cols ...string) ColumnsExpr {
 	c.names = internal.Only(c.names, cols...)
@@ -136,6 +145,6 @@ func (c ColumnsExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 }
 
 func ColsForStruct[T any](name string) ColumnsExpr {
-	var model T
-	return NewColumnsExpr(mappings.GetMappings(reflect.TypeOf(model)).All...).WithParent(name)
+	cols, _ := scan.StructMapperColumns[T]()
+	return NewColumnsExpr(cols...).WithParent(name)
 }

@@ -46,9 +46,13 @@ type OptionalWithUnique struct {
 }
 
 var (
-	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr]("", expr.ColsForStruct[WithAutoIncr](""), nil)
+	// These fixtures only exercise inserts and unique-index lookup.
+	table1 = NewTablex[*WithAutoIncr, []*WithAutoIncr, *OptionalWithAutoIncr](
+		"", expr.ColsForStruct[WithAutoIncr](""), nil, orm.RowMapping[*WithAutoIncr, []*WithAutoIncr]{}, nil,
+	)
 	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
-		"books", expr.ColsForStruct[WithUnique]("books"), nil, []string{"id"}, []string{"title", "author_id"},
+		"books", expr.ColsForStruct[WithUnique]("books"), nil, orm.RowMapping[*WithUnique, []*WithUnique]{}, nil,
+		[]string{"id"}, []string{"title", "author_id"},
 	)
 )
 

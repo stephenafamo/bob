@@ -38,7 +38,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper)
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper, {{$tAlias.DownSingular}}RowMapping)
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}

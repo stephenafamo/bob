@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 
@@ -17,35 +16,42 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/im"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
-	"github.com/stephenafamo/bob/expr"
-	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
 type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 
-func NewTable[T any, Tset setter[T], C bob.Expression](tableName string, columns C, uniques ...[]string) *Table[T, []T, Tset, C] {
-	return NewTablex[T, []T, Tset](tableName, columns, nil, uniques...)
+func NewTable[T any, Tset setter[T], C bob.Expression](
+	tableName string, columns C, rows orm.RowMapping[T, []T], overwrite func(Tset, T), uniques ...[]string,
+) *Table[T, []T, Tset, C] {
+	return NewTablex[T, []T, Tset](tableName, columns, nil, rows, overwrite, uniques...)
 }
 
-// NewTablex creates a new Table with a custom scanner.
+// NewTablex creates a Table with a row mapping and a custom scanner.
+// After a successful single-row update, overwrite applies the setter to the original row.
 // If scanner is nil, it falls back to [scan.StructMapper].
-func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](tableName string, columns C, scanner scan.Mapper[T], uniques ...[]string) *Table[T, Tslice, Tset, C] {
-	setMapping := mappings.GetMappings(reflect.TypeOf(*new(Tset)))
+func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
+	tableName string,
+	columns C,
+	scanner scan.Mapper[T],
+	rows orm.RowMapping[T, Tslice],
+	overwrite func(Tset, T),
+	uniques ...[]string,
+) *Table[T, Tslice, Tset, C] {
+	setterCols, _ := scan.StructMapperColumns[Tset]()
 	view, mappings := newView[T, Tslice](tableName, columns, scanner)
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
-		pkCols:           expr.NewColumnsExpr(mappings.PKs...).WithParent(view.alias),
-		setterMapping:    setMapping,
-		nonGeneratedCols: internal.FilterNonZero(mappings.NonGenerated),
-		uniqueIdx:        uniqueIndexes(setMapping.All, uniques...),
+		RowOperations:    orm.NewRowOperations(rows, view.lookup),
+		overwrite:        overwrite,
+		setterCols:       setterCols,
+		nonGeneratedCols: mappings.NonGenerated,
+		uniqueIdx:        uniqueIndexes(setterCols, uniques...),
 	}
 
-	allAutoIncr := internal.FilterNonZero(mappings.AutoIncrement)
-	if len(allAutoIncr) == 1 {
-		t.autoIncrementColumn = allAutoIncr[0]
+	if len(mappings.AutoIncrement) == 1 {
+		t.autoIncrementColumn = mappings.AutoIncrement[0]
 	}
 
 	return t
@@ -55,8 +61,9 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](tableName s
 // caches ???
 type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	*View[T, Tslice, C]
-	pkCols           expr.ColumnsExpr
-	setterMapping    mappings.Mapping
+	orm.RowOperations[T, Tslice]
+	overwrite        func(Tset, T)
+	setterCols       []string
 	nonGeneratedCols []string
 
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
@@ -78,11 +85,6 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 
 	// field indexes of unique columns
 	uniqueIdx [][]int
-}
-
-// Returns the primary key columns for this table.
-func (t *Table[T, Tslice, Tset, C]) PrimaryKey() expr.ColumnsExpr {
-	return t.pkCols
 }
 
 // Starts an insert query for this table
@@ -282,7 +284,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 
 		uCols := t.table.uniqueIdx[i]
 		if len(uCols) == 1 {
-			filters = append(filters, Quote(t.table.setterMapping.All[uCols[0]]).In(args...))
+			filters = append(filters, Quote(t.table.setterCols[uCols[0]]).In(args...))
 			continue
 		}
 
@@ -350,7 +352,7 @@ Outer:
 		colVals := make([]bob.Expression, 0, len(unique))
 
 		for _, uniqueCol := range unique {
-			insertColIndex := slices.Index(t.Expression.Columns, t.table.setterMapping.All[uniqueCol])
+			insertColIndex := slices.Index(t.Expression.Columns, t.table.setterCols[uniqueCol])
 			insertedField := row[insertColIndex]
 
 			if insertedField == nil || isDefaultOrNull(w, insertedField) {
@@ -377,7 +379,7 @@ func (t *Table[T, Tslice, Tset, C]) uniqueColNames(i int) []bob.Expression {
 	colNames := make([]bob.Expression, len(u))
 
 	for i, col := range u {
-		colNames[i] = Quote(t.setterMapping.All[col])
+		colNames[i] = Quote(t.setterCols[col])
 	}
 
 	return colNames

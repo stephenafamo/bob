@@ -6,49 +6,15 @@
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}}Slice is retrieved from the database
 func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bob.Executor, queryType bob.QueryType) error {
-  var err error
-
-  switch queryType {
-  case bob.QueryTypeSelect:
-    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, o)
-  {{if .Table.Constraints.Primary -}}
-    case bob.QueryTypeInsert:
-      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, o)
-    case bob.QueryTypeUpdate:
-      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
-    case bob.QueryTypeDelete:
-      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
-    {{if eq $.Dialect "psql" -}}
-    case bob.QueryTypeMerge:
-      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
-    {{- end}}
-  {{- end}}
-  }
-
-	return err
+	return {{$tAlias.UpPlural}}.RunAfterQueryHooks(ctx, exec, queryType, o)
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 {{$pkCols := $table.Constraints.Primary.Columns}}
 {{$multiPK := gt (len $pkCols) 1}}
-func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
-  if len(o) == 0 {
-    return {{$.Dialect}}.Raw("NULL")
-  }
-
-  return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{tableColumnAlias $table.Schema $table.Name $table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
-    .In(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-      pkPairs := make([]bob.Expression, len(o))
-      for i, row := range o {
-        pkPairs[i] = row.primaryKeyVals()
-      }
-      return bob.ExpressSlice(ctx, w, d, start, pkPairs, "", ", ", "")
-    }))
-}
 
 {{/* A single ==-comparable primary key column is matched in O(N+M) via a map;
      composite keys and custom compare_expr types fall back to the nested loop. */ -}}
@@ -65,25 +31,14 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
   {{$colAlias := $tAlias.Column $pkCol -}}
   orm.CopyByKey(o, from, func(row *{{$tAlias.UpSingular}}) {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}} { return row.{{$colAlias}} }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- else -}}
-  for _, old := range o {
-    for _, new := range from {
-			{{range $column := $table.Constraints.Primary.Columns -}}
-				{{- $colAlias := $tAlias.Column $column -}}
-				{{- $typInfo :=  $.Types.Index ($table.GetColumn $column).Type -}}
-        {{- with $typInfo.CompareExpr -}}
-          {{$.Importer.ImportList $typInfo.CompareExprImports -}}
-          if {{replace "AAA" (cat "new." $colAlias) . | replace "BBB" (cat "old." $colAlias)}}
-        {{- else -}}
-          if new.{{$colAlias}} != old.{{$colAlias}}
-        {{- end -}}
-        {
-          continue
-        }
-      {{end -}}
-      old.copyColumns(new)
-      break
-    }
-  }
+  orm.CopyByMatch(o, from, func(a, b *{{$tAlias.UpSingular}}) bool {
+    return {{range $i, $name := $pkCols}}{{if $i}} && {{end}}
+      {{- $col := $table.GetColumn $name -}}
+      {{- $field := $tAlias.Column $name -}}
+      {{- $cmp := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable $col.Nullable -}}
+      ({{replace "AAA" (printf "a.%s" $field) $cmp | replace "BBB" (printf "b.%s" $field)}})
+      {{- end}}
+  }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- end}}
 }
 
@@ -95,7 +50,7 @@ func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[*dialect.{{$op}}Query]
   return bob.ModFunc[*dialect.{{$op}}Query](func(q *dialect.{{$op}}Query) {
     orm.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
     {{if ne $op "Merge" -}}
-    q.AppendWhere(o.pkIN())
+    q.AppendWhere({{$tAlias.DownSingular}}RowMapping.In(o))
     {{end -}}
   })
 }
@@ -125,18 +80,7 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Exe
 
 
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
-  if len(o) == 0 {
-    return nil
-  }
-
-	o2, err := {{$tAlias.UpPlural}}.Query(sm.Where(o.pkIN())).All(ctx, exec)
-	if err != nil {
-		return err
-	}
-
-  o.copyMatchingRows(o2...)
-
-	return nil
+	return {{$tAlias.UpPlural}}.ReloadRows(ctx, exec, o)
 }
 
 {{- end}}

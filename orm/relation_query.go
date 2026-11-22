@@ -2,6 +2,7 @@ package orm
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
@@ -31,18 +32,28 @@ func Correlate[Q interface {
 	AppendWhere(...any)
 }, E bob.Expression](rel PreloadRel[E], parent string, from func(Q, bob.Expression)) bob.Mod[Q] {
 	return bob.ModFunc[Q](func(q Q) {
+		// Reserve each table's usual alias for its last occurrence, so filters
+		// on the final table keep working. The outer reference takes priority.
+		owners := make(map[string]int, len(rel.Sides)+1)
+		for i, s := range rel.Sides {
+			owners[strings.ToLower(s.To.Alias())] = i + 1
+		}
+		owners[strings.ToLower(parent)] = -1
+
 		left := parent
 		for i, s := range rel.Sides {
 			right := s.To.Alias()
-			if right == parent || right == rel.Sides[0].From.Alias() {
-				// Keep the subquery from shadowing the outer reference.
+			// Keep the established relationship alias for self-references,
+			// including when the outer query uses a custom alias.
+			if owners[strings.ToLower(right)] != i+1 || right == rel.Sides[0].From.Alias() {
 				right = rel.Name
 				if i > 0 {
 					right += strconv.Itoa(i)
 				}
-				for right == parent || right == left {
+				for owners[strings.ToLower(right)] != 0 {
 					right += "_"
 				}
+				owners[strings.ToLower(right)] = i + 1
 			}
 			ref := clause.TableRef{Expression: s.To.NameExpr(), Alias: right}
 			on := s.Predicates(left, right)

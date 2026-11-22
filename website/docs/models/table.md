@@ -13,7 +13,7 @@ Table models have all the capabilities of [View models](./view) (`Name()`, `Name
 
 In addition to **EVERYTHING** a [View model](./view) is capable of, a Table model makes it easy to make changes to a database table.
 
-To create a Table model, use the `NewTable()` function. This takes 2 type parameters:
+To create a Table model, use `NewTable()` and specify the model and setter types. Go can infer the column expression type:
 
 1. The first type parameter should match the general structure of the table.
 2. The second type parameter is used as the "setter". The setter is expected to have "Optional" fields to specify which values are being inserted/updated.
@@ -34,7 +34,9 @@ type UserSetter struct {
     Email     omit.Val[string]
 }
 
-var userTable = psql.NewTable[any, User, UserSetter]("public", "users")
+var userTable = psql.NewTable[*User, *UserSetter](
+    "public", "users", expr.ColsForStruct[User]("public.users"), userRowMapping,
+)
 ```
 
 :::tip
@@ -42,6 +44,18 @@ var userTable = psql.NewTable[any, User, UserSetter]("public", "users")
 The `NewTablex()` function takes an extra type parameter to determine how slices are returned, and a `scan.Mapper` used to scan rows for every query built from the table. Pass `nil` to fall back to the reflection-based `scan.StructMapper`.
 
 :::
+
+Both constructors take an `orm.RowMapping`. In this example, `userRowMapping`
+has type `orm.RowMapping[*User, []*User]`. The generator supplies it for generated tables. The mapping
+defines how to read a model's key and copy column values into an existing model.
+Set `KeyColumns` to the qualified columns in primary-key constraint order
+(for example, `expr.NewColumnsExpr("id").WithParent("public.users")`).
+`PrimaryKey()` returns this column list. `FindByKey`, `ExistsByKey`, `ReloadRow`,
+and `ReloadRows` use the same order for comparisons.
+`UpdateRow` uses `RETURNING` on PostgreSQL and SQLite. On MySQL,
+both constructors take one extra function, such as `(*UserSetter).Overwrite`,
+after the row mapping and before any unique indexes. It applies the setter to
+the original model after a successful `Exec`.
 
 ## Why do we need a setter?
 

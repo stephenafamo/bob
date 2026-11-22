@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
@@ -31,12 +30,16 @@ func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, co
 	return v
 }
 
-func newView[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) (*View[T, Tslice, C], mappings.Mapping) {
+func newView[T any, Tslice ~[]T, C bob.Expression](
+	schema, tableName string,
+	columns C,
+	scanner scan.Mapper[T],
+) (*View[T, Tslice, C], mappings.Mapping) {
 	if scanner == nil {
 		scanner = scan.StructMapper[T]()
 	}
 
-	mappings := mappings.GetMappings(reflect.TypeOf(*new(T)))
+	mappings := mappings.GetMappings[T]()
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)

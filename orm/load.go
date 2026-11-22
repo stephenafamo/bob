@@ -15,7 +15,6 @@ import (
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/scan"
 )
@@ -241,7 +240,12 @@ type PreloadMapper[T any] func(prefix string) scan.Mapper[T]
 // Related rows with the same join key are shared as a single instance across
 // parent rows (the same semantics as ThenLoad), so preloaded structs should be
 // treated as read-only.
-func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel PreloadRel[E], cols []string, mapper PreloadMapper[T], opts ...PreloadOption[Q]) Preloader[Q] {
+func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](
+	rel PreloadRel[E],
+	cols []string,
+	mapper PreloadMapper[T],
+	opts ...PreloadOption[Q],
+) Preloader[Q] {
 	settings := NewPreloadSettings[T, Ts, Q](cols)
 	for _, o := range opts {
 		if o == nil {
@@ -297,7 +301,13 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 	}, rel.Name, keyColumns, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
+func buildPreloader[T any, Q Loadable](
+	f func(Q, string) (string, mods.QueryMods[Q]),
+	name string,
+	keyColumns []string,
+	mapper PreloadMapper[T],
+	opt PreloadSettings[Q],
+) Preloader[Q] {
 	build := func(q Q, parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(q, parent)
 		prefix := alias + "."
@@ -465,7 +475,13 @@ func (c *preloadDedupCache[T]) store(key []byte, t T) {
 // preloadDedupByLink keys before construction (reflection mapper): a duplicate
 // row skips after(link) and with it any nested AfterMods/Collects — the cached
 // instance already carries that data.
-func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+func preloadDedupByLink[T any](
+	name string,
+	keyFromLink func([]byte, any) ([]byte, bool),
+	after func(any) (T, error),
+	legacy scan.AfterMod,
+	collector *AfterPreloader,
+) scan.AfterMod {
 	c := newPreloadDedupCache[T]()
 
 	return func(link, retrieved any) error {
@@ -506,7 +522,13 @@ func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byt
 
 // preloadDedupByValue keys after construction: a typed mapper's link is opaque,
 // so the key is read from the built value; construction still runs per row.
-func preloadDedupByValue[T any](name string, keyFromValue func([]byte, T) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+func preloadDedupByValue[T any](
+	name string,
+	keyFromValue func([]byte, T) ([]byte, bool),
+	after func(any) (T, error),
+	legacy scan.AfterMod,
+	collector *AfterPreloader,
+) scan.AfterMod {
 	c := newPreloadDedupCache[T]()
 
 	return func(link, retrieved any) error {
@@ -639,24 +661,21 @@ func preloadKeyFromValue[T any](prefix string, keyColumns, cols []string) func([
 		return nil
 	}
 
-	fieldNames := mappings.GetMappings(typ).All
-
-	keyIdx := make([]int, 0, len(keyColumns))
-	for _, key := range keyColumns {
-		idx := -1
-		for i, name := range fieldNames {
-			if name == key {
-				idx = i
-				break
-			}
-		}
-		if idx < 0 {
-			return nil
-		}
-		keyIdx = append(keyIdx, idx)
+	fields, err := scan.StructMapperFields(typ)
+	if err != nil {
+		return nil
 	}
 
-	composite := len(keyIdx) > 1
+	keyPaths := make([][]int, 0, len(keyColumns))
+	for _, key := range keyColumns {
+		i := slices.IndexFunc(fields, func(f scan.MappedField) bool { return f.Name == key })
+		if i < 0 || len(fields[i].Index) == 0 {
+			return nil
+		}
+		keyPaths = append(keyPaths, fields[i].Index)
+	}
+
+	composite := len(keyPaths) > 1
 
 	return func(dst []byte, t T) ([]byte, bool) {
 		rv := reflect.ValueOf(t)
@@ -665,8 +684,16 @@ func preloadKeyFromValue[T any](prefix string, keyColumns, cols []string) func([
 		}
 
 		rv = rv.Elem()
-		for _, idx := range keyIdx {
-			dst = appendPreloadKeyValue(dst, rv.Field(idx), composite)
+		for _, path := range keyPaths {
+			field, err := rv.FieldByIndexErr(path)
+			if err != nil {
+				return dst, false
+			}
+			field = reflect.Indirect(field)
+			if !field.IsValid() {
+				return dst, false
+			}
+			dst = appendPreloadKeyValue(dst, field, composite)
 		}
 
 		return dst, true
