@@ -231,18 +231,13 @@ type QueryCols []QueryCol
 
 func (q QueryCols) WithNames() QueryCols {
 	newCols := slices.Clone(q)
-	names := make(map[string]int, len(newCols))
+	names := make([]string, len(q))
 	for i := range newCols {
-		if newCols[i].Name == "" {
-			continue
-		}
-		name := strmangle.TitleCase(newCols[i].Name)
-		index := names[name]
-		names[name] = index + 1
-		if index > 0 {
-			name = fmt.Sprintf("%s%d", name, index+1)
-		}
-		newCols[i].Name = name
+		names[i] = strmangle.TitleCase(q[i].Name)
+	}
+	makeNamesDistinct(names, "")
+	for i := range newCols {
+		newCols[i].Name = names[i]
 	}
 
 	return newCols
