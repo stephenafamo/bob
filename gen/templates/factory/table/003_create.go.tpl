@@ -45,7 +45,35 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
           if r.o.alreadyPersisted {
             m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, r.o.Build())
           } else {
-            {{- range $.Tables.NeededBridgeRels . -}}
+          {{- $bridges := $.Tables.NeededBridgeRels $rel -}}
+          {{- with and $bridges ($.Relationships.FactoryBridgeParents $rel) }}
+            {{- $bridge := $.Aliases.Table .Table}}
+            {{- $.Importer.Import "maps" }}
+            ancestors, _ := modelsInCreationCtx.Value(ctx)
+            for range r.number {
+              related, err := r.o.Create(ctx, exec)
+              if err != nil { return err }
+              // Keep the caller's bridge settings, but use the two endpoints
+              // being linked instead of creating substitute parents.
+              bridge := *r.{{$bridge.DownSingular}}
+              bridge.r.{{$bridge.Relationship .Local}} = nil
+              bridge.r.{{$bridge.Relationship .Foreign}} = nil
+              parents := maps.Clone(ancestors)
+              parents["{{$rel.Local}}:{{.Table}}:{{.Local}}"] = m
+              parents["{{$rel.Foreign}}:{{.Table}}:{{.Foreign}}"] = related
+              if _, err := bridge.Create(modelsInCreationCtx.WithValue(ctx, parents), exec); err != nil { return err }
+              m.R.{{$relAlias}} = append(m.R.{{$relAlias}}, related)
+              {{- if $invAlias }}
+                {{- if $invRel.IsToMany }}
+                related.R.{{$invAlias}} = append(related.R.{{$invAlias}}, m)
+                {{- else }}
+                related.R.{{$invAlias}} = m
+                related.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
+                {{- end }}
+              {{- end }}
+            }
+          {{- else }}
+            {{- range $bridges -}}
               {{$alias := $.Aliases.Table .Table -}}
               {{if not .Many}}
                 {{$alias.DownSingular}}{{.Position}}, err := r.{{$alias.DownSingular}}.Create(ctx, exec)
@@ -66,6 +94,7 @@ func (o *{{$tAlias.UpSingular}}Template) insertOptRels(ctx context.Context, exec
             if err != nil {
               return err
             }
+          {{- end }}
 					}
 				}
 		{{- else -}}

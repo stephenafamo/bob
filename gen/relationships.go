@@ -65,6 +65,45 @@ func (r Relationships) Get(table string) []orm.Relationship {
 	return r[table]
 }
 
+type factoryBridgeParents struct {
+	Table, Local, Foreign string
+}
+
+// FactoryBridgeParents finds the two required parent relationships to set on a
+// bridge template before its insert. Match column pairs, not just table names:
+// a bridge can have multiple foreign keys to the same table.
+func (rels Relationships) FactoryBridgeParents(rel orm.Relationship) *factoryBridgeParents {
+	if len(rel.Sides) != 2 || !rel.IsToMany() {
+		return nil
+	}
+	left, right := rel.Sides[0], rel.Sides[1]
+	if left.Modify != "to" || right.Modify != "from" ||
+		len(left.FromWhere)+len(left.ToWhere)+len(right.FromWhere)+len(right.ToWhere) != 0 {
+		return nil
+	}
+
+	find := func(parent string, cols, parentCols []string) string {
+		for _, fk := range rels[left.To] {
+			if len(fk.Sides) != 1 || fk.NeverRequired {
+				continue
+			}
+			s := fk.Sides[0]
+			if s.To == parent && s.Modify == "from" && !s.KeyNullable &&
+				len(s.FromWhere)+len(s.ToWhere) == 0 &&
+				slices.Equal(s.FromColumns, cols) && slices.Equal(s.ToColumns, parentCols) {
+				return fk.Name
+			}
+		}
+		return ""
+	}
+	local := find(left.From, left.ToColumns, left.FromColumns)
+	foreign := find(right.To, right.FromColumns, right.ToColumns)
+	if local == "" || foreign == "" || local == foreign {
+		return nil
+	}
+	return &factoryBridgeParents{Table: left.To, Local: local, Foreign: foreign}
+}
+
 func (rs Relationships) GlobalKey(r orm.Relationship) string {
 	tables := []string{r.Local(), r.Foreign()}
 	slices.Sort(tables)
