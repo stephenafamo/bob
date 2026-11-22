@@ -23,7 +23,7 @@ type stubMods struct{}
 
 func (stubMods) IncludeInTemplate(language.Importer) string { return "_ = q" }
 
-//go:embed testdata/query_tags_test.go.txt
+//go:embed testdata/query_tags_test.go
 var queryTagsTest []byte
 
 func TestQueryRowStructHasConfiguredTags(t *testing.T) {
