@@ -123,7 +123,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 
 	{{$firstSide := index $rel.Sides 0 -}}
 	{{$firstFrom := $.Aliases.Table $firstSide.From -}}
-	{{$firstTo := $.Aliases.Table $firstSide.To -}}
+	{{$path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
 
 	{{if $firstSide.FromWhere}}matched := os.matching{{$relAlias}}Sources(){{end}}
 	{{$comparable := true -}}
@@ -143,23 +143,17 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		sm.Columns(
 			{{range $index, $local := $firstSide.FromColumns -}}
 			{{$toLocal := index $firstSide.ToColumns $index -}}
-			{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
-			{{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}.As({{quote $local}}),
+			{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $toLocal}}).As({{quote $local}}),
 			{{end -}}
 			{{$.Dialect}}.Raw("count(*) as count"),
 		),
-		sm.From({{$firstTo.UpPlural}}.NameAsExpr()),
+		sm.From({{$path}}[0].Table),
 		{{range $where := $firstSide.ToWhere -}}
-		{{$whereColAlias := index $firstTo.Columns $where.Column -}}
-		sm.Where({{$firstTo.UpPlural}}.Columns.{{$whereColAlias}}.EQ({{relWhereSQL $.Importer $where}})),
+		sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
 		{{end -}}
 		{{range $sideIndex, $side := $rel.Sides -}}
 		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
-		{{$sideFrom := $.Aliases.Table $side.From -}}
-		{{$sideTo := $.Aliases.Table $side.To -}}
-		sm.InnerJoin({{$sideTo.UpPlural}}.NameAsExpr()).On(
-			{{$tAlias.DownSingular}}Rel{{$relAlias}}.Sides[{{$sideIndex}}].Predicates({{$sideFrom.UpPlural}}.Alias(), {{$sideTo.UpPlural}}.Alias())...,
-		),
+		sm.InnerJoin({{$path}}[{{$sideIndex}}].Table).On({{$path}}[{{$sideIndex}}].On...),
 		{{- end}}
 		{{if $firstSide.FromColumns -}}
 		{{if $firstSide.FromWhere}}matched{{else}}os{{end}}.keysFor{{$relAlias}}(),
@@ -167,8 +161,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		// GROUP BY fk columns
 		{{range $index, $local := $firstSide.FromColumns -}}
 		{{$toLocal := index $firstSide.ToColumns $index -}}
-		{{$firstToColAlias := index $firstTo.Columns $toLocal -}}
-		sm.GroupBy({{$firstTo.UpPlural}}.Columns.{{$firstToColAlias}}),
+		sm.GroupBy({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $toLocal}})),
 		{{end -}}
 	}
 	batchMods = append(batchMods, mods...)

@@ -16,6 +16,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/im"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -39,19 +40,18 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	overwrite func(Tset, T),
 	uniques ...[]string,
 ) *Table[T, Tslice, Tset, C] {
-	setterCols, _ := scan.StructMapperColumns[Tset]()
-	view, mappings := newView[T, Tslice](tableName, columns, scanner)
+	view := NewViewx[T, Tslice](tableName, columns, scanner)
+	write := mappings.WriteColumns[T](view.ColumnsExpr().Names())
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
 		RowOperations:    orm.NewRowOperations(rows, view.lookup),
 		overwrite:        overwrite,
-		setterCols:       setterCols,
-		nonGeneratedCols: mappings.NonGenerated,
-		uniqueIdx:        uniqueIndexes(setterCols, uniques...),
+		nonGeneratedCols: write.NonGenerated,
+		uniqueIdx:        uniqueIndexes(write.NonGenerated, uniques...),
 	}
 
-	if len(mappings.AutoIncrement) == 1 {
-		t.autoIncrementColumn = mappings.AutoIncrement[0]
+	if len(write.AutoIncrement) == 1 {
+		t.autoIncrementColumn = write.AutoIncrement[0]
 	}
 
 	return t
@@ -63,7 +63,6 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	*View[T, Tslice, C]
 	orm.RowOperations[T, Tslice]
 	overwrite        func(Tset, T)
-	setterCols       []string
 	nonGeneratedCols []string
 
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
@@ -243,7 +242,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		return nil, retrievalErr
 	}
 
-	query := Select(sm.Columns(t.table.ColumnsExpr()), sm.From(t.table.NameAsExpr()))
+	query := Select(sm.Columns(t.table.projection), sm.From(t.table.NameAsExpr()))
 
 	// Change query type to Insert so that the correct hooks are run
 	query.QueryType = bob.QueryTypeInsert
@@ -284,7 +283,7 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 
 		uCols := t.table.uniqueIdx[i]
 		if len(uCols) == 1 {
-			filters = append(filters, Quote(t.table.setterCols[uCols[0]]).In(args...))
+			filters = append(filters, Quote(t.table.nonGeneratedCols[uCols[0]]).In(args...))
 			continue
 		}
 
@@ -352,7 +351,10 @@ Outer:
 		colVals := make([]bob.Expression, 0, len(unique))
 
 		for _, uniqueCol := range unique {
-			insertColIndex := slices.Index(t.Expression.Columns, t.table.setterCols[uniqueCol])
+			insertColIndex := slices.Index(t.Expression.Columns, t.table.nonGeneratedCols[uniqueCol])
+			if insertColIndex < 0 || insertColIndex >= len(row) {
+				continue Outer
+			}
 			insertedField := row[insertColIndex]
 
 			if insertedField == nil || isDefaultOrNull(w, insertedField) {
@@ -379,7 +381,7 @@ func (t *Table[T, Tslice, Tset, C]) uniqueColNames(i int) []bob.Expression {
 	colNames := make([]bob.Expression, len(u))
 
 	for i, col := range u {
-		colNames[i] = Quote(t.setterCols[col])
+		colNames[i] = Quote(t.nonGeneratedCols[col])
 	}
 
 	return colNames

@@ -25,4 +25,5 @@ var {{$t.DownSingular}}Rel{{$name}} = {{$.Dialect}}.PreloadRel{
 		{{end -}}
 	},
 }
+var {{$t.DownSingular}}PathFor{{$name}} = {{$t.DownSingular}}Rel{{$name}}.QueryPath("")
 {{end -}}

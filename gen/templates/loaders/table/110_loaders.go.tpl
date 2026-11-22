@@ -125,12 +125,13 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			if len(q.SelectList.Columns) == 0 { sm.Columns({{$fAlias.UpPlural}}.Columns).Apply(q) }
 		}),
 		{{range $i, $local := $side.FromColumns -}}
-		sm.Columns({{$to.UpPlural}}.Columns.{{$to.Column (index $side.ToColumns $i)}}.As("related_{{$side.From}}.{{$from.Column $local}}")),
+		sm.Columns({{$.Dialect}}.Quote({{$tAlias.DownSingular}}PathFor{{$relAlias}}[0].Table.Alias, {{quote (index $side.ToColumns $i)}}).As("related_{{$side.From}}.{{$from.Column $local}}")),
 		{{end -}}
 	)...)
 	{{range $i, $local := $side.FromColumns -}}
-		{{$col := $.Tables.GetColumn $side.To (index $side.ToColumns $i) -}}
-		var keys{{$i}} []{{$.Types.GetNullable $.CurrentPackage $.Importer $col.Type $col.Nullable}}
+		{{$parent := $.Tables.GetColumn $side.From $local -}}
+		{{$bridge := $.Tables.GetColumn $side.To (index $side.ToColumns $i) -}}
+		var keys{{$i}} []{{$.Types.GetNullable $.CurrentPackage $.Importer $parent.Type $bridge.Nullable}}
 	{{end -}}
 	mapper := scan.Mod(q.Scanner, {{range $i, $local := $side.FromColumns -}}
 		orm.CollectColumn("related_{{$side.From}}.{{$from.Column $local}}", &keys{{$i}}),
@@ -154,7 +155,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		{{$key := $.Types.Get $.CurrentPackage $.Importer $local.Type -}}
 		{{$p := printf "o.%s" ($from.Column $local.Name) -}}
 		{{$c := printf "rel.%s" ($to.Column $foreign.Name) -}}
-		{{if $through}}{{$c = "keys0[i]"}}{{end -}}
+		{{$childKeyType := $foreign.Type -}}
+		{{if $through}}{{$c = "keys0[i]"}}{{$childKeyType = $local.Type}}{{end -}}
 		orm.StitchByKey(os, children,
 			func(o *{{$tAlias.UpSingular}}) ({{$key}}, bool) {
 				{{if $local.Nullable -}}
@@ -164,9 +166,9 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			},
 			func(i int, rel *{{$fAlias.UpSingular}}) ({{$key}}, bool) {
 				{{if $foreign.Nullable -}}
-				if !({{$.Types.GetNullTypeValid $.CurrentPackage $foreign.Type $c}}) { var zero {{$key}}; return zero, false }
+				if !({{$.Types.GetNullTypeValid $.CurrentPackage $childKeyType $c}}) { var zero {{$key}}; return zero, false }
 				{{end -}}
-				return {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $foreign.Type $c $foreign.Nullable}}, true
+				return {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $childKeyType $c $foreign.Nullable}}, true
 			}, assignment.Link)
 	{{else -}}
 		// Composite keys and custom equality cannot assume a Go map key.

@@ -19,32 +19,29 @@ func NewView[T any, C bob.Expression](tableName string, columns C) *View[T, []T,
 // NewViewx creates a new View with a custom scanner.
 // If scanner is nil, it falls back to [scan.StructMapper].
 func NewViewx[T any, Tslice ~[]T, C bob.Expression](tableName string, columns C, scanner scan.Mapper[T]) *View[T, Tslice, C] {
-	v, _ := newView[T, Tslice](tableName, columns, scanner)
-	return v
-}
-
-func newView[T any, Tslice ~[]T, C bob.Expression](tableName string, columns C, scanner scan.Mapper[T]) (*View[T, Tslice, C], mappings.Mapping) {
+	allCols := mappings.SQLColumns[T](columns, tableName, scanner != nil)
+	projection := mappings.Projection(columns, allCols, scanner != nil)
 	if scanner == nil {
 		scanner = scan.StructMapper[T]()
 	}
 
-	mappings := mappings.GetMappings[T]()
-
 	return &View[T, Tslice, C]{
-		name:    tableName,
-		alias:   tableName,
-		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(tableName),
-		scanner: scanner,
-		Columns: columns,
-	}, mappings
+		name:       tableName,
+		alias:      tableName,
+		allCols:    allCols,
+		projection: projection,
+		scanner:    scanner,
+		Columns:    columns,
+	}
 }
 
 type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	name  string
 	alias string
 
-	allCols expr.ColumnsExpr
-	scanner scan.Mapper[T]
+	allCols    expr.ColumnsExpr
+	projection bob.Expression
+	scanner    scan.Mapper[T]
 
 	Columns C
 
@@ -96,7 +93,7 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 	q.BaseQuery.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
-				q.AppendSelect(v.ColumnsExpr())
+				q.AppendSelect(v.projection)
 			}
 			return ctx, nil
 		},

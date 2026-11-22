@@ -8,6 +8,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -25,22 +26,23 @@ func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View
 // NewViewx creates a new View with a custom scanner.
 // If scanner is nil, it falls back to [scan.StructMapper].
 func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) *View[T, Tslice, C] {
-	if scanner == nil {
-		scanner = scan.StructMapper[T]()
-	}
-
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
 	}
 
-	allCols := expr.ColsForStruct[T](alias)
+	allCols := mappings.SQLColumns[T](columns, alias, scanner != nil)
+	projection := mappings.Projection(columns, allCols, scanner != nil)
+	if scanner == nil {
+		scanner = scan.StructMapper[T]()
+	}
 
 	return &View[T, Tslice, C]{
 		schema:        schema,
 		name:          tableName,
 		alias:         alias,
 		allCols:       allCols,
+		projection:    projection,
 		returningCols: allCols.WithParent(tableName),
 		scanner:       scanner,
 		Columns:       columns,
@@ -53,6 +55,7 @@ type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	alias  string
 
 	allCols       expr.ColumnsExpr
+	projection    bob.Expression
 	returningCols expr.ColumnsExpr
 	scanner       scan.Mapper[T]
 
@@ -117,7 +120,7 @@ func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *
 	q.BaseQuery.Expression.AppendContextualModFunc(
 		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
 			if len(q.SelectList.Columns) == 0 {
-				q.AppendSelect(v.ColumnsExpr())
+				q.AppendSelect(v.projection)
 			}
 			return ctx, nil
 		},

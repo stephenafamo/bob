@@ -50,6 +50,15 @@ The values that exist for the drivers:
 | except        | Skip generation for these                                                                                        |                      |
 | column_order  | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal"            |
 
+## Composite primary keys
+
+For composite keys, `Find<Model>` and `<Model>Exists` take key values in
+`PRIMARY KEY (...)` order. For example, if `revisions` declares columns `seq`
+and `code` but its key is `PRIMARY KEY (code, seq)`, call
+`FindRevision(ctx, db, code, seq)`. When regenerating models from v0.51.0 or
+earlier, check both lookup helpers: swapped values of the same Go type will
+still compile.
+
 ## Driver-specific code
 
 The `driver` configuration option enables Bob to generate code that is tailored to the specifics of the selected `database/sql` driver.

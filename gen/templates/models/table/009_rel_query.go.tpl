@@ -9,6 +9,7 @@
 {{range $rel := $.Relationships.Get $table.Key -}}
 {{- $fAlias := $.Aliases.Table $rel.Foreign -}}
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
+{{- $path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
 func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
 	return {{$fAlias.UpPlural}}.Query(append(mods,
@@ -17,20 +18,18 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 		{{/* This also flips the meaning of $from and $to */}}
 		{{- $side := index $rel.Sides $index -}}
 		{{- $from := $.Aliases.Table $side.From -}}
-		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAsExpr()).On({{$tAlias.DownSingular}}Rel{{$relAlias}}.Sides[{{$index}}].Predicates({{$from.UpPlural}}.Alias(), {{$to.UpPlural}}.Alias())...),
+		sm.InnerJoin({{$path}}[{{sub $index 1}}].Table).On({{$path}}[{{$index}}].On...),
 		{{- else -}}
 			{{range $i, $local := $side.FromColumns -}}
 				{{- $fromCol := index $from.Columns $local -}}
-				{{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
-				sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
+				sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote (index $side.ToColumns $i)}}).EQ({{$.Dialect}}.Arg(o.{{$fromCol}}))),
 			{{- end}}
 			{{- range $where := $side.FromWhere}}
 			sm.Where({{$.Dialect}}.Arg(o.{{$from.Column $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
 			{{- end}}
 			{{- range $where := $side.ToWhere}}
-			sm.Where({{$to.UpPlural}}.Columns.{{$to.Column $where.Column}}.EQ({{relWhereSQL $.Importer $where}})),
+				sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
 			{{- end}}
 		{{- end}}
 		{{- end}}
@@ -39,7 +38,6 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 
 {{$firstSide := (index $rel.Sides 0) -}}
 {{$firstFrom := $.Aliases.Table $firstSide.From -}}
-{{$firstTo := $.Aliases.Table $firstSide.To -}}
 
 
 {{if $firstSide.FromWhere -}}
@@ -66,7 +64,7 @@ func (os {{$tAlias.UpSingular}}Slice) matching{{$relAlias}}Sources() {{$tAlias.U
 func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.SelectQuery] {
 	{{if eq $.Dialect "psql" -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/dialect/psql/psqlrel"}}
-	return psqlrel.FilterRelationshipKeys({{$firstTo.UpPlural}}.Alias(),
+	return psqlrel.FilterRelationshipKeys({{$path}}[0].Table.Alias,
 		{{range $i, $name := $firstSide.FromColumns -}}
 		{{$col := $table.GetColumn $name -}}
 		{{$type := $.Types.GetNullable $.CurrentPackage $.Importer $col.Type $col.Nullable -}}
@@ -81,7 +79,7 @@ func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.Se
 		if o != nil { keys = append(keys, {{$.Dialect}}.ArgGroup({{range $firstSide.FromColumns}}o.{{$firstFrom.Column .}},{{end}})) }
 	}
 	if len(keys) == 0 { return sm.Where({{$.Dialect}}.Raw("1 = 0")) }
-	return sm.Where({{$.Dialect}}.Group({{range $firstSide.ToColumns}}{{$firstTo.UpPlural}}.Columns.{{$firstTo.Column .}},{{end}}).OP("IN", {{$.Dialect}}.Group(keys...)))
+	return sm.Where({{$.Dialect}}.Group({{range $firstSide.ToColumns}}{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote .}}),{{end}}).OP("IN", {{$.Dialect}}.Group(keys...)))
 	{{end -}}
 }
 {{end -}}
@@ -90,7 +88,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
   {{if $firstSide.FromWhere -}}
     os = os.matching{{$relAlias}}Sources()
     if len(os) == 0 {
-      return {{$fAlias.UpPlural}}.Query(append(mods, sm.Where({{$.Dialect}}.Raw("1 = 0")))...)
+      mods = append(mods, sm.Where({{$.Dialect}}.Raw("1 = 0")))
     }
   {{end -}}
 
@@ -99,15 +97,12 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		{{/* Index counts down */}}
 		{{/* This also flips the meaning of $from and $to */}}
 		{{- $side := index $rel.Sides $index -}}
-		{{- $from := $.Aliases.Table $side.From -}}
-		{{- $to := $.Aliases.Table $side.To -}}
 		{{- if gt $index 0 -}}
-		sm.InnerJoin({{$from.UpPlural}}.NameAsExpr()).On({{$tAlias.DownSingular}}Rel{{$relAlias}}.Sides[{{$index}}].Predicates({{$from.UpPlural}}.Alias(), {{$to.UpPlural}}.Alias())...),
+		sm.InnerJoin({{$path}}[{{sub $index 1}}].Table).On({{$path}}[{{$index}}].On...),
 		{{- else -}}
 			{{if $side.FromColumns}}os.keysFor{{$relAlias}}(),{{end}}
 			{{- range $where := $side.ToWhere}}
-				{{- $toCol := index $to.Columns $where.Column}}
-				sm.Where({{$to.UpPlural}}.Columns.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}})),
+				sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
 			{{- end}}
 		{{- end -}}
 		{{- end}}

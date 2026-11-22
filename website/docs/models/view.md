@@ -29,6 +29,11 @@ var userView = psql.NewView[*User, bob.Expression]("public", "users", expr.ColsF
 
 The `NewViewx()` function takes an extra type parameter to determine how slices of the corresponding table struct are returned, and a `scan.Mapper` used to scan rows for every query built from the view. Pass `nil` to fall back to the reflection-based `scan.StructMapper`.
 
+If a custom mapper reads one SQL column into a nested struct, pass the physical
+column names. For example, use `expr.NewColumnsExpr("pos").WithParent("points")`
+when the `points.pos` column contains both coordinates. `ColsForStruct` would
+infer separate names for the nested fields.
+
 :::
 
 A View model provides the following methods:
@@ -143,4 +148,3 @@ userView.Query().Exists(ctx, db)
 The `Count()` function clones the current query which can be an expensive operation.
 
 :::
-

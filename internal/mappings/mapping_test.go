@@ -19,18 +19,23 @@ func TestMappedWriteColumns(t *testing.T) {
 		Label  sql.NullString
 	}
 	want := Mapping{
-		All:           []string{"row_id", "computed", "owner.row_id", "owner.computed", "label"},
 		NonGenerated:  []string{"row_id", "owner.row_id", "label"},
 		AutoIncrement: []string{"row_id", "owner.row_id"},
 	}
-	if diff := cmp.Diff(want, GetMappings[*model]()); diff != "" {
+	if diff := cmp.Diff(want, WriteColumns[*model]([]string{"row_id", "computed", "owner.row_id", "owner.computed", "label"})); diff != "" {
 		t.Fatal(diff)
 	}
 }
 
-func TestRootScannerHasNoNamedColumns(t *testing.T) {
-	cols := GetMappings[sql.NullString]()
-	if len(cols.All) != 0 || len(cols.NonGenerated) != 0 || len(cols.AutoIncrement) != 0 {
-		t.Fatalf("root scanner mapped as table columns: %+v", cols)
+func TestCustomScannerWriteColumns(t *testing.T) {
+	type point struct{ X, Y int }
+	type model struct {
+		Pos      point `db:"pos"`
+		Computed point `db:",generated"`
+		ID       int   `db:",autoincr"`
+	}
+	want := Mapping{NonGenerated: []string{"id", "pos"}, AutoIncrement: []string{"id"}}
+	if diff := cmp.Diff(want, WriteColumns[model]([]string{"id", "pos", "computed"})); diff != "" {
+		t.Fatal(diff)
 	}
 }

@@ -26,33 +26,23 @@ func NewView[T any, C bob.Expression](schema, tableName string, columns C) *View
 // NewViewx creates a new View with a custom scanner.
 // If scanner is nil, it falls back to [scan.StructMapper].
 func NewViewx[T any, Tslice ~[]T, C bob.Expression](schema, tableName string, columns C, scanner scan.Mapper[T]) *View[T, Tslice, C] {
-	v, _ := newView[T, Tslice](schema, tableName, columns, scanner)
-	return v
-}
-
-func newView[T any, Tslice ~[]T, C bob.Expression](
-	schema, tableName string,
-	columns C,
-	scanner scan.Mapper[T],
-) (*View[T, Tslice, C], mappings.Mapping) {
-	if scanner == nil {
-		scanner = scan.StructMapper[T]()
-	}
-
-	mappings := mappings.GetMappings[T]()
 	alias := tableName
 	if schema != "" {
 		alias = fmt.Sprintf("%s.%s", schema, tableName)
+	}
+	allCols := mappings.SQLColumns[T](columns, alias, scanner != nil)
+	if scanner == nil {
+		scanner = scan.StructMapper[T]()
 	}
 
 	return &View[T, Tslice, C]{
 		schema:  schema,
 		name:    tableName,
 		alias:   alias,
-		allCols: expr.NewColumnsExpr(mappings.All...).WithParent(alias),
+		allCols: allCols,
 		scanner: scanner,
 		Columns: columns,
-	}, mappings
+	}
 }
 
 type View[T any, Tslice ~[]T, C bob.Expression] struct {

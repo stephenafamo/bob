@@ -112,6 +112,22 @@ func TestRepeatedTableCorrelation(t *testing.T) {
 	if len(locs) != 1 || locs[0].ID != 1 || locs[0].C.Teams == nil || *locs[0].C.Teams != 2 {
 		t.Fatalf("expected only location 1 with 2 active child teams, got %+v", locs)
 	}
+	loc := locs[0]
+	if err := loc.LoadTeams(ctx, tx, activeChild); err != nil { t.Fatal(err) }
+	if len(loc.R.Teams) != 2 { t.Fatalf("direct load: got %d active child teams, want 2", len(loc.R.Teams)) }
+	other := &models.Location{ID: 2}
+	batch := models.LocationSlice{other, nil, loc}
+	if err := batch.LoadTeams(ctx, tx, activeChild); err != nil { t.Fatal(err) }
+	if len(loc.R.Teams) != 2 || len(other.R.Teams) != 0 { t.Fatal("batch attached child teams to the wrong location") }
+	if err := batch.LoadCountTeams(ctx, tx, activeChild); err != nil { t.Fatal(err) }
+	if *loc.C.Teams != 2 || *other.C.Teams != 0 { t.Fatal("wrong grouped counts for the repeated table") }
+
+	// The bridge stores the integer parent key as nullable TEXT. The loader
+	// must scan it as the parent's type before stitching the results.
+	if _, err := tx.ExecContext(ctx, `INSERT INTO links VALUES ('1', 11), ('2', 21), (NULL, 12)`); err != nil { t.Fatal(err) }
+	if err := batch.LoadLinkedTeams(ctx, tx); err != nil { t.Fatal(err) }
+	if len(loc.R.LinkedTeams) != 1 || loc.R.LinkedTeams[0].ID != 11 ||
+		len(other.R.LinkedTeams) != 1 || other.R.LinkedTeams[0].ID != 21 { t.Fatal("wrong teams for mixed-type bridge keys") }
 }
 {{- end}}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
+	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
@@ -35,11 +36,11 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	scanner scan.Mapper[T],
 	rows orm.RowMapping[T, Tslice],
 ) *Table[T, Tslice, Tset, C] {
-	view, mappings := newView[T, Tslice](schema, table, columns, scanner)
+	view := NewViewx[T, Tslice](schema, table, columns, scanner)
 	return &Table[T, Tslice, Tset, C]{
 		View:             view,
 		RowOperations:    orm.NewRowOperations(rows, view.lookup),
-		nonGeneratedCols: mappings.NonGenerated,
+		nonGeneratedCols: mappings.WriteColumns[T](view.ColumnsExpr().Names()).NonGenerated,
 	}
 }
 
