@@ -20,32 +20,35 @@ func Setup[T, C, I any](config Config, templates gen.Templates) []gen.Plugin {
 		Joins[C](config.Joins, templates.Joins),
 		Counts[C](config.Counts, templates.Counts),
 		Queries[T, C, I](templates.Queries),
+		Sectionload[T, C, I](config.Sectionload, templates.Sectionload),
 	}
 }
 
 type Config struct {
-	DBInfo   OutputConfig `yaml:"dbinfo"`
-	Enums    OutputConfig `yaml:"enums"`
-	Models   OutputConfig `yaml:"models"`
-	Factory  OutputConfig `yaml:"factory"`
-	DBErrors OutputConfig `yaml:"dberrors"`
-	Where    OnOffConfig  `yaml:"where"`
-	Loaders  OnOffConfig  `yaml:"loaders"`
-	Joins    OnOffConfig  `yaml:"joins"`
-	Counts   OnOffConfig  `yaml:"counts"`
+	DBInfo      OutputConfig      `yaml:"dbinfo"`
+	Enums       OutputConfig      `yaml:"enums"`
+	Models      OutputConfig      `yaml:"models"`
+	Factory     OutputConfig      `yaml:"factory"`
+	DBErrors    OutputConfig      `yaml:"dberrors"`
+	Where       OnOffConfig       `yaml:"where"`
+	Loaders     OnOffConfig       `yaml:"loaders"`
+	Joins       OnOffConfig       `yaml:"joins"`
+	Counts      OnOffConfig       `yaml:"counts"`
+	Sectionload SectionloadConfig `yaml:"sectionload"`
 }
 
 func (c Config) Merge(c2 Config) Config {
 	return Config{
-		DBInfo:   mergeOutputConfig(c.DBInfo, c2.DBInfo),
-		Enums:    mergeOutputConfig(c.Enums, c2.Enums),
-		Models:   mergeOutputConfig(c.Models, c2.Models),
-		Factory:  mergeOutputConfig(c.Factory, c2.Factory),
-		DBErrors: mergeOutputConfig(c.DBErrors, c2.DBErrors),
-		Where:    mergeOnOffConfig(c.Where, c2.Where),
-		Loaders:  mergeOnOffConfig(c.Loaders, c2.Loaders),
-		Joins:    mergeOnOffConfig(c.Joins, c2.Joins),
-		Counts:   mergeOnOffConfig(c.Counts, c2.Counts),
+		DBInfo:      mergeOutputConfig(c.DBInfo, c2.DBInfo),
+		Enums:       mergeOutputConfig(c.Enums, c2.Enums),
+		Models:      mergeOutputConfig(c.Models, c2.Models),
+		Factory:     mergeOutputConfig(c.Factory, c2.Factory),
+		DBErrors:    mergeOutputConfig(c.DBErrors, c2.DBErrors),
+		Where:       mergeOnOffConfig(c.Where, c2.Where),
+		Loaders:     mergeOnOffConfig(c.Loaders, c2.Loaders),
+		Joins:       mergeOnOffConfig(c.Joins, c2.Joins),
+		Counts:      mergeOnOffConfig(c.Counts, c2.Counts),
+		Sectionload: mergeSectionloadConfig(c.Sectionload, c2.Sectionload),
 	}
 }
 
