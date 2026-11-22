@@ -76,6 +76,15 @@ One-dimensional array columns are generated as `pq.StringArray`, `pq.Int32Array`
 
 With the native pgx driver, every array column is generated as `pgtypes.Array[T]`. Native pgx hands `sql.Scanner` types its binary wire format, which the lib/pq array types cannot parse. `pgtypes.Array[T]` implements `pgtype.ArraySetter` and `pgtype.ArrayGetter` so pgx scans and encodes it directly, and it also decodes the binary format when wrapped in another `sql.Scanner` such as `null.Val`. A `nil` array is `NULL`, while an empty non-nil array is an empty array (`{}`).
 
+If a generated `text[]` or `varchar[]` field fails to scan with `pq: unable to parse array; expected '{' at offset 0`, check how you pass the connection to Bob. The same `*pgxpool.Pool` can be used through either API:
+
+| Runtime executor (`pool` is a `*pgxpool.Pool`) | Generator `driver` | Generated string array |
+| --- | --- | --- |
+| `bob.NewDB(stdlib.OpenDBFromPool(pool))` | `github.com/jackc/pgx/v5/stdlib` | `pq.StringArray` |
+| `bobpgx.NewPool(pool)` | `github.com/jackc/pgx/v5` | `pgtypes.Array[string]` |
+
+Here `bobpgx` is `github.com/stephenafamo/bob/drivers/pgx`. If you use the native executor with models generated for `stdlib`, set the native driver and regenerate the models. Set `psql.driver` for `bobgen-psql`, or `sql.driver` for `bobgen-sql` with `dialect: psql`.
+
 When replacing the type of an array column for the native pgx driver, use `pgtypes.Array[T]` (for example `pgtypes.Array[types.JSON[MyStruct]]`) rather than a plain slice: a plain slice wrapped in `null.Val` cannot be scanned by native pgx, because `null.Val` is an `sql.Scanner` and receives the binary format.
 
 With the native pgx driver, `tsvector` columns are generated as `pgtypes.TSVector`, because pgx v5.9 and later cannot scan `tsvector` into a `string`. Native pgx support is experimental. Some other column types, such as `interval`, `bit`, `bit varying` and `"char"`, are generated as `string` and cannot yet be scanned from pgx's binary format; use a type replacement for them.
