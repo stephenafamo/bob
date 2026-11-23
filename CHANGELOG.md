@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `mysql.Concat` and the `Concat` operator on MySQL expressions now render `CONCAT(a, b)` instead of `a || b`. (thanks @jacobmolby)
+
 ## [v0.51.0] - 2026-11-22
 
 ### Added

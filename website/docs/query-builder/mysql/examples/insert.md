@@ -155,7 +155,7 @@ VALUES (?, ?), (?, ?)
 AS new
 ON DUPLICATE KEY UPDATE
 `did` = `new`.`did`,
-`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')
+`dbname` = (CONCAT(`new`.`dname`, ' (formerly ', `d`.`dname`, ')'))
 ```
 
 Args:

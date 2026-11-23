@@ -155,6 +155,22 @@ func TestSelect(t *testing.T) {
 				FROM users
 				ORDER BY name COLLATE ` + "`utf8mb4_bg_0900_as_cs`" + ` ASC`,
 		},
+		"concat": {
+			Query: mysql.Select(
+				sm.Columns(
+					mysql.Concat(mysql.Quote("first"), mysql.S(" "), mysql.Quote("last")),
+					mysql.Quote("first").Concat(mysql.S(" "), mysql.Quote("last")),
+					mysql.F("LOWER", mysql.Quote("first"))().Concat(mysql.Arg("!")),
+				),
+				sm.From("users"),
+			),
+			ExpectedSQL: `
+				SELECT (CONCAT(` + "`first`" + `, ' ', ` + "`last`" + `)),
+				(CONCAT(` + "`first`" + `, ' ', ` + "`last`" + `)),
+				(CONCAT(LOWER(` + "`first`" + `), ?))
+				FROM users`,
+			ExpectedArgs: []any{"!"},
+		},
 		"union with combined args": {
 			Query: mysql.Select(
 				sm.Columns("id", "name"),

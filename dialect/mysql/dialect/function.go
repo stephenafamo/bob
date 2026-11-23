@@ -30,6 +30,11 @@ type Function struct {
 	expr.Chain[Expression, Expression]
 }
 
+// SQL: CONCAT(f(), a, b)
+func (f *Function) Concat(targets ...bob.Expression) Expression {
+	return Concat(append([]bob.Expression{f}, targets...)...)
+}
+
 func (f *Function) SetWindow(w clause.Window) {
 	f.w = &w
 }
