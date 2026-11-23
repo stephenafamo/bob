@@ -223,6 +223,22 @@ type PreloadableQuery interface {
 	AppendPreloadSelect(columns ...any)
 }
 
+// Predicates matches the two sets of keys and applies each side's static
+// filters, qualified with the aliases in effect for this use of the path.
+func (s PreloadSide[E]) Predicates(from, to string) []bob.Expression {
+	on := make([]bob.Expression, 0, len(s.FromColumns)+len(s.FromWhere)+len(s.ToWhere))
+	for i, col := range s.FromColumns {
+		on = append(on, expr.OP("=", expr.Quote(from, col), expr.Quote(to, s.ToColumns[i])))
+	}
+	for _, w := range s.FromWhere {
+		on = append(on, expr.OP("=", expr.Quote(from, w.Column), expr.Raw(w.SQLValue)))
+	}
+	for _, w := range s.ToWhere {
+		on = append(on, expr.OP("=", expr.Quote(to, w.Column), expr.Raw(w.SQLValue)))
+	}
+	return on
+}
+
 // PreloadMapper returns a mapper for the preloaded child rows of a query.
 // The prefix is the runtime-generated join alias followed by "." — every
 // column belonging to the child is prefixed with it in the result set.

@@ -116,6 +116,7 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	if len(os) == 0 { return nil }
 	{{if $through -}}
+	{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 	{{$.Importer.Import "github.com/stephenafamo/scan"}}
 	// The child row does not contain the parent key. Select the key from the
@@ -134,7 +135,7 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		var keys{{$i}} []{{$.Types.GetNullable $.CurrentPackage $.Importer $parent.Type $bridge.Nullable}}
 	{{end -}}
 	mapper := scan.Mod(q.Scanner, {{range $i, $local := $side.FromColumns -}}
-		orm.CollectColumn("related_{{$side.From}}.{{$from.Column $local}}", &keys{{$i}}),
+		genruntime.CollectColumn("related_{{$side.From}}.{{$from.Column $local}}", &keys{{$i}}),
 	{{end -}})
 	children, err := bob.Allx[bob.SliceTransformer[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice]](ctx, exec, q, mapper)
 	{{else -}}
@@ -157,7 +158,8 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		{{$c := printf "rel.%s" ($to.Column $foreign.Name) -}}
 		{{$childKeyType := $foreign.Type -}}
 		{{if $through}}{{$c = "keys0[i]"}}{{$childKeyType = $local.Type}}{{end -}}
-		orm.StitchByKey(os, children,
+		{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
+		genruntime.StitchByKey(os, children,
 			func(o *{{$tAlias.UpSingular}}) ({{$key}}, bool) {
 				{{if $local.Nullable -}}
 				if !({{$.Types.GetNullTypeValid $.CurrentPackage $local.Type $p}}) { var zero {{$key}}; return zero, false }

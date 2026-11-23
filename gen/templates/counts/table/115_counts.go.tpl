@@ -10,6 +10,7 @@
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
@@ -55,7 +56,7 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 		{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
 		{{$relAlias}}: func(mods ...bob.Mod[*dialect.SelectQuery]) {{$.Dialect}}.Preloader {
-			return orm.PreloadCount[*dialect.SelectQuery]("{{$relAlias}}", func(parent string) bob.Expression {
+			return genruntime.PreloadCount[*dialect.SelectQuery]("{{$relAlias}}", func(parent string) bob.Expression {
 				if parent == "" { parent = {{$tAlias.UpPlural}}.Alias() }
 				q := correlatedQuery({{$tAlias.DownSingular}}Rel{{$relAlias}}, parent, {{$.Dialect}}.Raw("count(*)"), mods)
 				return {{$.Dialect}}.Group(q.Expression)
@@ -187,7 +188,7 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 		K{{$index}} {{$.Types.Get $.CurrentPackage $.Importer $column.Type}}
 		{{end -}}
 	}
-	orm.AssignCounts(os, results,
+	genruntime.AssignCounts(os, results,
 		func(o *{{$tAlias.UpSingular}}) (countKey, bool) {
 			var key countKey
 			{{range $i, $name := $firstSide.FromColumns -}}

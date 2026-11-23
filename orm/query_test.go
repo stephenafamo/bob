@@ -26,7 +26,10 @@ func (r rawExpr) WriteSQL(_ context.Context, w io.StringWriter, _ bob.Dialect, _
 // "SELECT id FROM todo", mirroring what the queries plugin emits. Extra funcs
 // run inside the Mod after the SELECT/FROM, so a test can add the clauses a
 // generated query already carries.
-func newModQuery(scanner scan.Mapper[int], extra ...func(*dialect.SelectQuery)) orm.ModQuery[*dialect.SelectQuery, rawExpr, int, []int, bob.SliceTransformer[int, []int]] {
+func newModQuery(
+	scanner scan.Mapper[int],
+	extra ...func(*dialect.SelectQuery),
+) orm.ModQuery[*dialect.SelectQuery, rawExpr, int, []int, bob.SliceTransformer[int, []int]] {
 	return orm.ModQuery[*dialect.SelectQuery, rawExpr, int, []int, bob.SliceTransformer[int, []int]]{
 		Query: orm.Query[rawExpr, int, []int, bob.SliceTransformer[int, []int]]{
 			ExecQuery: orm.ExecQuery[rawExpr]{

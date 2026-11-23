@@ -1,4 +1,4 @@
-package orm
+package genruntime
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
@@ -31,7 +32,7 @@ func AssignCounts[P, R any, K comparable](parents []*P, results []R, parentKey f
 
 // PreloadCount adds a correlated count to the select list and delivers it
 // to the model. An absent column or SQL NULL leaves the count unloaded.
-func PreloadCount[Q PreloadableQuery](name string, countExpr func(string) bob.Expression) Preloader[Q] {
+func PreloadCount[Q orm.PreloadableQuery](name string, countExpr func(string) bob.Expression) orm.Preloader[Q] {
 	column := "__count_" + name
 	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		mod := bob.ModFunc[Q](func(q Q) {

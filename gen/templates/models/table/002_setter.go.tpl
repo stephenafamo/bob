@@ -45,7 +45,7 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 
 {{block "setter_insert_mod" . -}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
 func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
@@ -57,7 +57,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 
 	q.AppendValues(
   {{range $index, $column := $table.NonGeneratedColumns -}}
-    orm.ValueOrDefault(func() (any, bool) {
+    genruntime.ValueOrDefault(func() (any, bool) {
         {{$colAlias := $tAlias.Column $column.Name -}}
         {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
         if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
@@ -84,13 +84,13 @@ func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] 
 func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expression {
   exprs := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
 
-  {{$.Importer.Import "github.com/stephenafamo/bob/orm" }}
+  {{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime" }}
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
     if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-      exprs = append(exprs, orm.SetField(prefix, {{quote $column.Name}}, s.{{$colAlias}}))
+      exprs = append(exprs, genruntime.SetField(prefix, {{quote $column.Name}}, s.{{$colAlias}}))
 		}
 
 	{{end -}}

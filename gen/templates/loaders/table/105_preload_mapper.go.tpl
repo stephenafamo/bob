@@ -10,7 +10,7 @@
 {{- end -}}
 {{- end -}}
 {{- if $isPreloadTarget -}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm" -}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime" -}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
 
 // NULL-tolerant scan buffer for {{$tAlias.DownSingular}}ScanMapperNullable:
@@ -28,7 +28,7 @@ type {{$tAlias.DownSingular}}PreloadBuf struct {
 // prefixed columns are all NULL yields nil (no child), and NULL values never
 // error, they just leave the zero value in the field.
 func {{$tAlias.DownSingular}}ScanMapperNullable(prefix string) scan.Mapper[*{{$tAlias.UpSingular}}] {
-	return orm.JoinedModelMapper(prefix, func(name string) func(*{{$tAlias.DownSingular}}PreloadBuf) any {
+	return genruntime.JoinedModelMapper(prefix, func(name string) func(*{{$tAlias.DownSingular}}PreloadBuf) any {
 			switch name {
 			{{range $column := $table.Columns -}}
 			{{- $colAlias := $tAlias.Column $column.Name -}}

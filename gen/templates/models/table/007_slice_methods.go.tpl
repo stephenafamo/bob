@@ -10,7 +10,7 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 {{$pkCols := $table.Constraints.Primary.Columns}}
@@ -29,9 +29,9 @@ func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bo
 func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingular}}) {
   {{if $useMap -}}
   {{$colAlias := $tAlias.Column $pkCol -}}
-  orm.CopyByKey(o, from, func(row *{{$tAlias.UpSingular}}) {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}} { return row.{{$colAlias}} }, (*{{$tAlias.UpSingular}}).copyColumns)
+  genruntime.CopyByKey(o, from, func(row *{{$tAlias.UpSingular}}) {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}} { return row.{{$colAlias}} }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- else -}}
-  orm.CopyByMatch(o, from, func(a, b *{{$tAlias.UpSingular}}) bool {
+  genruntime.CopyByMatch(o, from, func(a, b *{{$tAlias.UpSingular}}) bool {
     return {{range $i, $name := $pkCols}}{{if $i}} && {{end}}
       {{- $col := $table.GetColumn $name -}}
       {{- $field := $tAlias.Column $name -}}
@@ -48,7 +48,7 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
 // {{$op}}Mod installs the model hooks{{if ne $op "Merge"}} and filters by primary key{{end}}.
 func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[*dialect.{{$op}}Query] {
   return bob.ModFunc[*dialect.{{$op}}Query](func(q *dialect.{{$op}}Query) {
-    orm.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
+    genruntime.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
     {{if ne $op "Merge" -}}
     q.AppendWhere({{$tAlias.DownSingular}}RowMapping.In(o))
     {{end -}}

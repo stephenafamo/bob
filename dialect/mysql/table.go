@@ -17,11 +17,15 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/um"
 	"github.com/stephenafamo/bob/internal/mappings"
+	"github.com/stephenafamo/bob/internal/ormruntime"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
-type setter[T any] = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+type (
+	setter[T any]                = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+	rowOperations[T any, S ~[]T] = ormruntime.Rows[T, S, *ViewQuery[T, S]]
+)
 
 func NewTable[T any, Tset setter[T], C bob.Expression](
 	tableName string, columns C, rows orm.RowMapping[T, []T], overwrite func(Tset, T), uniques ...[]string,
@@ -44,7 +48,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	write := mappings.WriteColumns[T](view.ColumnsExpr().Names())
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
-		RowOperations:    orm.NewRowOperations(rows, view.lookup),
+		rowOperations:    ormruntime.NewRows(rows, view.lookup),
 		overwrite:        overwrite,
 		nonGeneratedCols: write.NonGenerated,
 		uniqueIdx:        uniqueIndexes(write.NonGenerated, uniques...),
@@ -61,7 +65,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 // caches ???
 type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	*View[T, Tslice, C]
-	orm.RowOperations[T, Tslice]
+	rowOperations[T, Tslice]
 	overwrite        func(Tset, T)
 	nonGeneratedCols []string
 

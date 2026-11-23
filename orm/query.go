@@ -117,26 +117,27 @@ func (q ModQuery[Q, E, T, Ts, Tr]) With(mods ...bob.Mod[Q]) Query[Q, T, Ts, Tr] 
 
 func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPosition]) bob.Expression {
 	return bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+		cursor := from
 		args := []any{}
 
 		for queryArg := range argIter {
-			if to < queryArg.Start {
-				w.WriteString(querySQL[from:to])
+			if to <= queryArg.Start {
+				w.WriteString(querySQL[cursor:to])
 				return args, nil
 			}
 
-			if from > queryArg.Start {
-				if to < queryArg.Stop {
-					return nil, fmt.Errorf("arg %q end(%d) is after expression end(%d)", queryArg.Name, queryArg.Stop, to)
-				}
+			if queryArg.Stop <= cursor {
 				continue
 			}
 
+			if queryArg.Start < cursor {
+				return nil, fmt.Errorf("arg %q starts before expression start(%d)", queryArg.Name, cursor)
+			}
 			if to < queryArg.Stop {
 				return nil, fmt.Errorf("arg %q end(%d) is greater than to(%d)", queryArg.Name, queryArg.Stop, to)
 			}
 
-			w.WriteString(querySQL[from:queryArg.Start])
+			w.WriteString(querySQL[cursor:queryArg.Start])
 
 			arg, err := bob.Express(ctx, w, d, start, queryArg.Expression)
 			if err != nil {
@@ -145,10 +146,10 @@ func ArgsToExpression(querySQL string, from, to int, argIter iter.Seq[ArgWithPos
 			args = append(args, arg...)
 
 			start += len(arg)
-			from = queryArg.Stop
+			cursor = queryArg.Stop
 		}
 
-		w.WriteString(querySQL[from:to])
+		w.WriteString(querySQL[cursor:to])
 		return args, nil
 	})
 }

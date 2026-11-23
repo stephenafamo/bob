@@ -28,6 +28,7 @@ var queryTagsTest []byte
 
 func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	nullable := false
+	canBeNull := true
 
 	mod, err := exec.CommandContext(t.Context(), "go", "env", "GOMOD").Output()
 	if err != nil {
@@ -78,6 +79,27 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 									{Name: "widget_id", DBName: "widget_id", TypeName: "int32", Nullable: &nullable},
 									{Name: "display_name", DBName: "widget_name", TypeName: "string", Nullable: &nullable},
 									{Name: "secret_token", DBName: "secret_token", TypeName: "string", Nullable: &nullable},
+								},
+								Mods: stubMods{},
+							},
+							{
+								Name: "GroupedWidgets",
+								SQL:  `SELECT id, label, child AS "children.id" FROM sample ORDER BY seq`,
+								Type: bob.QueryTypeSelect,
+								Columns: drivers.QueryCols{
+									{Name: "id", DBName: "id", TypeName: "int32", Nullable: &nullable},
+									{Name: "label", DBName: "label", TypeName: "string", Nullable: &canBeNull},
+									{Name: "children.id", DBName: "children.id", TypeName: "int32", Nullable: &canBeNull},
+								},
+								Mods: stubMods{},
+							},
+							{
+								Name: "GroupedBytes",
+								SQL:  `SELECT CAST(label AS BLOB) AS code, child AS "children.id" FROM sample WHERE label <> '' ORDER BY seq`,
+								Type: bob.QueryTypeSelect,
+								Columns: drivers.QueryCols{
+									{Name: "code", DBName: "code", TypeName: "[]byte", Nullable: &nullable},
+									{Name: "children.id", DBName: "children.id", TypeName: "int32", Nullable: &canBeNull},
 								},
 								Mods: stubMods{},
 							},

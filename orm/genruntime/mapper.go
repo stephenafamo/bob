@@ -1,4 +1,4 @@
-package orm
+package genruntime
 
 import (
 	"context"
@@ -11,6 +11,18 @@ import (
 type scanTarget[T any] struct {
 	idx int
 	dst func(*T) any
+}
+
+// PositionalMapper scans one value per row. The generated schedule binds
+// fields by position, so even columns with identical labels remain distinct.
+func PositionalMapper[T any](schedule func(*scan.Row, *T)) scan.Mapper[T] {
+	return func(context.Context, []string) (scan.BeforeFunc, func(any) (T, error)) {
+		return func(row *scan.Row) (any, error) {
+			v := new(T)
+			schedule(row, v)
+			return v, nil
+		}, func(v any) (T, error) { return *v.(*T), nil }
+	}
 }
 
 func scanTargets[T any](cols []string, prefix string, field func(string) func(*T) any) []scanTarget[T] {

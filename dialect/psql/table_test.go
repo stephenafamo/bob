@@ -19,6 +19,7 @@ import (
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/bob/orm/genruntime"
 	"github.com/stephenafamo/scan"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -134,7 +135,7 @@ var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.C
 	KeyValues:   func(u *User) bob.Expression { return Arg(u.ID) },
 	CopyColumns: copyUser,
 	CopyMatching: func(dst []*User, src ...*User) {
-		orm.CopyByKey(dst, src, func(u *User) int64 { return u.ID }, copyUser)
+		genruntime.CopyByKey(dst, src, func(u *User) int64 { return u.ID }, copyUser)
 	},
 })
 

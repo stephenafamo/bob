@@ -8,11 +8,13 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dm"
 	"github.com/stephenafamo/bob/dialect/sqlite/im"
 	"github.com/stephenafamo/bob/dialect/sqlite/um"
+	"github.com/stephenafamo/bob/internal/ormruntime"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/stephenafamo/scan"
 )
 
 type (
+	rowOperations[T any, S ~[]T]       = ormruntime.Rows[T, S, *ViewQuery[T, S]]
 	setter[T any]                      = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
 	ormInsertQuery[T any, Tslice ~[]T] = orm.Query[*dialect.InsertQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
 	ormUpdateQuery[T any, Tslice ~[]T] = orm.Query[*dialect.UpdateQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]
@@ -36,7 +38,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	view := NewViewx[T, Tslice](schema, tableName, columns, scanner)
 	return &Table[T, Tslice, Tset, C]{
 		View:          view,
-		RowOperations: orm.NewRowOperations(rows, view.lookup),
+		rowOperations: ormruntime.NewRows(rows, view.lookup),
 	}
 }
 
@@ -44,7 +46,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 // caches ???
 type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	*View[T, Tslice, C]
-	orm.RowOperations[T, Tslice]
+	rowOperations[T, Tslice]
 
 	BeforeInsertHooks bob.Hooks[Tset, bob.SkipModelHooksKey]
 	AfterInsertHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]

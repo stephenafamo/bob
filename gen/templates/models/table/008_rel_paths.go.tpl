@@ -1,6 +1,7 @@
 {{$table := .Table -}}
 {{$t := $.Aliases.Table $table.Key -}}
 {{range $rel := $.Relationships.Get $table.Key -}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime" -}}
 {{$name := $t.Relationship $rel.Name -}}
 // Shared by relationship filters, joins and preloaders.
 var {{$t.DownSingular}}Rel{{$name}} = {{$.Dialect}}.PreloadRel{
@@ -25,5 +26,5 @@ var {{$t.DownSingular}}Rel{{$name}} = {{$.Dialect}}.PreloadRel{
 		{{end -}}
 	},
 }
-var {{$t.DownSingular}}PathFor{{$name}} = {{$t.DownSingular}}Rel{{$name}}.QueryPath("")
+var {{$t.DownSingular}}PathFor{{$name}} = genruntime.QueryPath({{$t.DownSingular}}Rel{{$name}})
 {{end -}}

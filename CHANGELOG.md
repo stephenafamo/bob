@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- Custom SQL queries now share their argument rendering, query construction,
+  and positional row scanning in `orm/genruntime`, reducing the Go emitted per query.
+- Generated SQL queries with nested results now index parents by their projected
+  fields when those fields use Go equality. This speeds up `.All()` for large
+  result sets while preserving result order and custom field comparisons.
 - Bob uses Scan v0.10.0 field metadata for inferred column names, named
   arguments, and preload keys. Embedded fields use their mapped column names,
   and named nested fields use Scan's dotted names. An explicit SQL column list

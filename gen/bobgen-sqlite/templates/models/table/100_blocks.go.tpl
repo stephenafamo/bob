@@ -1,5 +1,5 @@
 {{define "setter_insert_mod" -}}
-{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
@@ -24,7 +24,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
     switch col {
     {{range $column := $table.NonGeneratedColumns -}}
     case {{printf "%q" $column.Name}}:
-      vals = append(vals, orm.ValueOrNull(func() (any, bool) {
+      vals = append(vals, genruntime.ValueOrNull(func() (any, bool) {
         {{$colAlias := $tAlias.Column $column.Name -}}
         {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
         if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
