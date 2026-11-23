@@ -87,7 +87,7 @@ func TestInsert(t *testing.T) {
 				AS ` + "`new`" + `
 				ON DUPLICATE KEY UPDATE
 				` + "`did` = `new`.`did`," + `
-				` + "`dbname` = (`new`.`dname` || ' (formerly ' || `d`.`dname` || ')')",
+				` + "`dbname` = (CONCAT(`new`.`dname`, ' (formerly ', `d`.`dname`, ')'))",
 			ExpectedArgs: []any{8, "Anvil Distribution", 9, "Sentry Distribution"},
 		},
 		"insert with quoted row alias": {

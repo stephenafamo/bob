@@ -18,6 +18,21 @@ func (Expression) New(exp bob.Expression) Expression {
 	return b
 }
 
+// SQL: CONCAT(x, a, b)
+func (x Expression) Concat(targets ...bob.Expression) Expression {
+	return Concat(append([]bob.Expression{x.Base}, targets...)...)
+}
+
+// SQL: CONCAT(a, b, c)
+func Concat(exps ...bob.Expression) Expression {
+	args := make([]any, len(exps))
+	for i, exp := range exps {
+		args[i] = exp
+	}
+
+	return expr.X[Expression, Expression](NewFunction("CONCAT", args...))
+}
+
 // Implements fmt.Stringer()
 func (x Expression) String() string {
 	w := strings.Builder{}

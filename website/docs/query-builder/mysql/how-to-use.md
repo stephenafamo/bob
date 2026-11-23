@@ -61,4 +61,4 @@ These are MySQL specific starters, **in addition** to the [common starters](../s
 
 These are MySQL specific operators, **in addition** to the [common operators](../operators)
 
-> Empty
+- `Concat(y any)`: CONCAT(X, Y)

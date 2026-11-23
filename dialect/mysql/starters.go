@@ -54,10 +54,10 @@ func And(args ...bob.Expression) Expression {
 	return bmod.And(args...)
 }
 
-// SQL: a || b || c
+// SQL: CONCAT(a, b, c)
 // Go: mysql.Concat("a", "b", "c")
 func Concat(args ...bob.Expression) Expression {
-	return expr.X[Expression, Expression](expr.Join{Exprs: args, Sep: " || "})
+	return dialect.Concat(args...)
 }
 
 // SQL: $1, $2, $3
