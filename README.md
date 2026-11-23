@@ -179,6 +179,8 @@ The project uses [Github Actions](https://docs.github.com/en/actions) as defined
 
 ## Contributing
 
+See the [contributor guide](CONTRIBUTING.md) for how to add query-builder tests and generate the matching SQL examples.
+
 Thanks to all the people who have contributed to Bob!
 
 [![contributors](https://contributors-img.web.app/image?repo=stephenafamo/bob)](https://github.com/stephenafamo/bob/graphs/contributors)
