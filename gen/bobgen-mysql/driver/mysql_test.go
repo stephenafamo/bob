@@ -27,7 +27,7 @@ func TestDriver(t *testing.T) {
 
 	mysqlContainer, err := mysqltest.Run(
 		context.Background(),
-		"mysql:8.0.35",
+		DefaultImage,
 		mysqltest.WithDatabase("bobgen"),
 		mysqltest.WithUsername("root"),
 		mysqltest.WithPassword("password"),
@@ -180,4 +180,9 @@ func TestDriver(t *testing.T) {
 			})
 		})
 	}
+	t.Run("batch_keys", func(t *testing.T) {
+		testgen.TestBatchKeys(t, db, "mysql", gen.MySQLTemplates, New(Config{Config: helpers.Config{
+			Dsn: dsn, Only: map[string][]string{"batch_parents": nil, "batch_children": nil, "batch_exact_parents": nil, "batch_exact_children": nil},
+		}}))
+	})
 }

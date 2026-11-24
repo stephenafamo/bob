@@ -30,7 +30,7 @@ Read more about [the principles](./principles).
 | Dialect       | Raw | Select | Insert | Update | Delete |
 | ------------- | --- | ------ | ------ | ------ | ------ |
 | Postgres      | ✅  | ✅     | ✅     | ✅     | ✅     |
-| MySQL/MariaDB | ✅  | ✅     | ✅     | ✅     | ✅     |
+| MySQL 8.4+    | ✅  | ✅     | ✅     | ✅     | ✅     |
 | SQLite        | ✅  | ✅     | ✅     | ✅     | ✅     |
 
 ## Examples

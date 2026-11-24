@@ -16,6 +16,10 @@ type bindValue struct{ Text string }
 
 func (v bindValue) Value() (driver.Value, error) { return v.Text, nil }
 
+type cents struct{ Amount int64 }
+
+func (v *cents) Value() (driver.Value, error) { return v.Amount, nil }
+
 type binderTester interface {
 	Run(t *testing.T, origin []any)
 }
@@ -184,7 +188,12 @@ func TestBinding(t *testing.T) {
 	})
 
 	t.Run("reuse names", func(t *testing.T) {
+		amount := &cents{Amount: 100}
 		testBinder(t, []any{1, 2, namedArg("three"), 4, namedArg("three")}, []binderTester{
+			binderTests[*cents]{
+				args:  amount,
+				final: []any{1, 2, amount, 4, amount},
+			},
 			binderTests[struct{ Three int }]{
 				args:  struct{ Three int }{Three: 3},
 				final: []any{1, 2, 3, 4, 3},

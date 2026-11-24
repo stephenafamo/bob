@@ -65,9 +65,15 @@ func makeBinder[Arg any](args []any) (binder[Arg], error) {
 
 func canUseAsSingleValue(typ reflect.Type) bool {
 	if typ.Kind() == reflect.Pointer {
+		if typ.Implements(driverValuerIntf) {
+			return true
+		}
 		typ = typ.Elem()
 	}
 
+	if typ.Implements(driverValuerIntf) {
+		return true
+	}
 	switch typ.Kind() {
 	case reflect.Bool, reflect.String,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -78,15 +84,7 @@ func canUseAsSingleValue(typ reflect.Type) bool {
 		return typ.Elem().Kind() == reflect.Uint8
 	}
 
-	if typ == timeType {
-		return true
-	}
-
-	if typ.Implements(driverValuerIntf) {
-		return true
-	}
-
-	return false
+	return typ == timeType
 }
 
 func makeSingleArgBinder[Arg any](args []any) (binder[Arg], error) {

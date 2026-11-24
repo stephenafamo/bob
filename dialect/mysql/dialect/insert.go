@@ -10,7 +10,7 @@ import (
 )
 
 // Trying to represent the query structure as documented in
-// https://dev.mysql.com/doc/refman/8.0/en/insert.html
+// https://dev.mysql.com/doc/refman/8.4/en/insert.html
 type InsertQuery struct {
 	hints
 	modifiers[string]

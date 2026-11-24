@@ -84,6 +84,11 @@ func TestDriver(t *testing.T) {
 	t.Run("assemble", func(t *testing.T) { testPostgresAssemble(t, dsn) })
 	t.Run("column_order_name_star_types", func(t *testing.T) { testPostgresColumnOrderStarTypes(t, dsn) })
 	t.Run("arg_type_order", func(t *testing.T) { testPostgresArgTypeOrder(t, dsn) })
+	t.Run("batch_keys", func(t *testing.T) {
+		testgen.TestBatchKeys(t, db, "psql", gen.PSQLTemplates, New(Config{Config: helpers.Config{
+			Dsn: dsn, Only: map[string][]string{"batch_parents": nil, "batch_children": nil, "batch_arrays": nil, "batch_items": nil},
+		}, Schemas: []string{"public"}}))
+	})
 }
 
 func testPostgresDriver(t *testing.T, dsn string) {

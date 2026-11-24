@@ -38,6 +38,12 @@ func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods .
 
 {{$firstSide := (index $rel.Sides 0) -}}
 {{$firstFrom := $.Aliases.Table $firstSide.From -}}
+{{$arrayKey := false -}}
+{{if eq $.Dialect "psql" -}}
+	{{range $name := $firstSide.ToColumns -}}
+		{{if hasSuffix "[]" ($.Tables.GetColumn $firstSide.To $name).DBType -}}{{$arrayKey = true}}{{break}}{{end -}}
+	{{end -}}
+{{end -}}
 
 
 {{if $firstSide.FromWhere -}}
@@ -62,14 +68,14 @@ func (os {{$tAlias.UpSingular}}Slice) matching{{$relAlias}}Sources() {{$tAlias.U
 {{if $firstSide.FromColumns -}}
 // keysFor{{$relAlias}} filters the first join table by this batch of source keys.
 func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.SelectQuery] {
-	{{if eq $.Dialect "psql" -}}
+	{{if and (eq $.Dialect "psql") (not $arrayKey) -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/dialect/psql/psqlrel"}}
-	return psqlrel.FilterRelationshipKeys({{$path}}[0].Table.Alias,
+	return psqlrel.FilterRelationshipKeys({{$path}}[0].Table,
 		{{range $i, $name := $firstSide.FromColumns -}}
 		{{$col := $table.GetColumn $name -}}
 		{{$type := $.Types.GetNullable $.CurrentPackage $.Importer $col.Type $col.Nullable -}}
 		{{$dedup := and (eq (len $firstSide.FromColumns) 1) (not ($table.HasExactUnique $name)) ($.Types.CanCompareWithEquals $.CurrentPackage $col.Type) -}}
-		psqlrel.RelationshipKey{Column: {{quote (index $firstSide.ToColumns $i)}}, DBType: {{quote $col.DBType}},
+		psqlrel.BatchKey{Column: {{quote (index $firstSide.ToColumns $i)}},
 			Values: psqlrel.{{if $dedup}}UniqueKeyValues{{else}}KeyValues{{end}}(os, func(o *{{$tAlias.UpSingular}}) {{$type}} { return o.{{$firstFrom.Column $name}} })},
 		{{end -}}
 	)
@@ -84,6 +90,28 @@ func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.Se
 }
 {{end -}}
 
+{{if $firstSide.FromColumns -}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/%srel" $.Dialect $.Dialect)}}
+func (os {{$tAlias.UpSingular}}Slice) parentsFor{{$relAlias}}() ({{$tAlias.UpSingular}}Slice, bob.Mod[*dialect.SelectQuery], {{$.Dialect}}.Expression) {
+	{{if eq $.Dialect "psql" -}}
+	return psqlrel.MatchParents{{if $arrayKey}}WithArrayKey{{end}}(os, {{$path}}[0].Table, []psqlrel.BatchKey{
+		{{range $i, $name := $firstSide.FromColumns -}}
+		{{$col := $table.GetColumn $name -}}
+		{Column: {{quote (index $firstSide.ToColumns $i)}},
+			Values: psqlrel.KeyValues(os, func(o *{{$tAlias.UpSingular}}) {{$.Types.GetNullable $.CurrentPackage $.Importer $col.Type $col.Nullable}} { return o.{{$firstFrom.Column $name}} })},
+		{{end -}}
+	},
+	{{else -}}
+	keys, owners := {{$.Dialect}}rel.MatchParents(os, func(o *{{$tAlias.UpSingular}}) []any {
+		return []any{ {{range $firstSide.FromColumns}}o.{{$firstFrom.Column .}},{{end}} }
+	}, {{$path}}[0].Table, {{$tAlias.DownSingular}}Rel{{$relAlias}}.Sides[0].ToColumns,
+		{{block "model/relationship/batch_key_args" (dict "Tables" $.Tables "Side" $firstSide)}}{{end}}
+	{{end -}}
+		{{range $i, $_ := $rel.Sides}}{{$path}}[{{$i}}].Table.Alias,{{end}})
+	{{if ne $.Dialect "psql"}}return os, keys, owners{{end}}
+}
+{{end -}}
+
 func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
   {{if $firstSide.FromWhere -}}
     os = os.matching{{$relAlias}}Sources()
@@ -92,6 +120,12 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
     }
   {{end -}}
 
+	{{if $firstSide.FromColumns -}}
+	return {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(os.keysFor{{$relAlias}}(), mods...)
+}
+
+func {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys bob.Mod[*dialect.SelectQuery], mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+	{{end -}}
 	return {{$fAlias.UpPlural}}.Query(append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
@@ -100,7 +134,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 		{{- if gt $index 0 -}}
 		sm.InnerJoin({{$path}}[{{sub $index 1}}].Table).On({{$path}}[{{$index}}].On...),
 		{{- else -}}
-			{{if $side.FromColumns}}os.keysFor{{$relAlias}}(),{{end}}
+			{{if $side.FromColumns}}keys,{{end}}
 			{{- range $where := $side.ToWhere}}
 				sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
 			{{- end}}

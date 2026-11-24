@@ -79,28 +79,28 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
     a, dialect.Dialect, bob.QueryType{{$queryType}}, {{$.Dialect}}.{{$queryType}},
     func(q {{$dialectType}}) {
       {{$mods := $query.Mods.IncludeInTemplate $.Importer -}}
-      {{if contains "EXPR.subExpr(" $mods}}fragment := a.bindSQL(){{end}}
+      {{if contains "EXPR.subExpr(" $mods}}fragment := genruntime.BindSQL({{$lowerName}}SQL, a.args()...){{end}}
       {{if contains "EXPR.raw(" $mods}}raw := func(from, to int) string { return {{$lowerName}}SQL[from:to] }{{end}}
       {{$mods | replace "EXPR.subExpr(" "fragment(" | replace "EXPR.raw(" "raw(" | replace "EXPR" "a"}}
     },
-    {{if $query.Columns -}}
-      {{$.Importer.Import "github.com/stephenafamo/scan"}}
-      {{if eq (len $cols) 1 -}}
-        {{$col := index $cols 0 -}}
-        scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]({{quote $col.DBName}}),
-      {{else if $query.Config.ResultTransformer -}}
-        scan.StructMapper[{{$queryResultTypeOne}}](),
-      {{else -}}
-        genruntime.PositionalMapper(func(row *scan.Row, t *{{$queryResultTypeOne}}) {
-          {{range $i, $col := $cols -}}row.ScheduleScanByIndex({{$i}}, &t.{{$col.Name}})
-          {{end -}}
-        }),
-      {{end -}}
-    {{end -}}
+    {{if $query.Columns}}scanMapper_{{$lowerName}},{{end}}
   )
 }
 
 {{if $query.Columns}}
+  {{$.Importer.Import "github.com/stephenafamo/scan"}}
+  var scanMapper_{{$lowerName}} = {{if eq (len $cols) 1 -}}
+    {{$col := index $cols 0 -}}
+    scan.ColumnMapper[{{$col.Type $.CurrentPackage $.Importer $.Types}}]({{quote $col.DBName}})
+  {{else if $query.Config.ResultTransformer -}}
+    scan.StructMapper[{{$queryResultTypeOne}}]()
+  {{else -}}
+    genruntime.PositionalMapper(func(row *scan.Row, t *{{$queryResultTypeOne}}) {
+      {{range $i, $col := $cols -}}row.ScheduleScanByIndex({{$i}}, &t.{{$col.Name}})
+      {{end -}}
+    })
+  {{end -}}
+
   {{if not $query.Config.ResultTransformer}}
     type {{trimPrefix "*" $queryResultTypeOne}} = struct {
       {{$tags := $.QueryResultTags.FieldTags $cols -}}
@@ -153,13 +153,13 @@ type {{$lowerName}} struct {
   {{end}}
 }
 
-func (o {{$lowerName}}) bindSQL() func(int, int) bob.Expression {
-  return genruntime.BindSQL({{$lowerName}}SQL{{range $flatArg := $flatArgs}},
-    orm.ArgWithPosition{Name: {{quote (camelCase $flatArg.Name)}}, Start: {{$flatArg.Start}}, Stop: {{$flatArg.Stop}}, Expression: o.{{titleCase $flatArg.Name}}}{{end}})
+func (o {{$lowerName}}) args() []orm.ArgWithPosition {
+  return []orm.ArgWithPosition{ {{range $flatArg := $flatArgs}}
+    {Name: {{quote (camelCase $flatArg.Name)}}, Start: {{$flatArg.Start}}, Stop: {{$flatArg.Stop}}, Expression: o.{{titleCase $flatArg.Name}}},{{end}} }
 }
 
 func (o {{$lowerName}}) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-	return o.bindSQL()(0, len({{$lowerName}}SQL)).WriteSQL(ctx, w, d, start)
+	return genruntime.WriteSQL(ctx, w, d, start, {{$lowerName}}SQL, o.args())
 }
 
 {{end}}

@@ -11,10 +11,8 @@
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
-{{$.Importer.Import "github.com/stephenafamo/scan"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 
 // {{$tAlias.DownSingular}}C is where relationship counts are stored.
 type {{$tAlias.DownSingular}}C struct {
@@ -56,10 +54,9 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 		{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
 		{{$relAlias}}: func(mods ...bob.Mod[*dialect.SelectQuery]) {{$.Dialect}}.Preloader {
-			return genruntime.PreloadCount[*dialect.SelectQuery]("{{$relAlias}}", func(parent string) bob.Expression {
+			return genruntime.PreloadCount("{{$relAlias}}", func(parent string) bob.BaseQuery[*dialect.SelectQuery] {
 				if parent == "" { parent = {{$tAlias.UpPlural}}.Alias() }
-				q := correlatedQuery({{$tAlias.DownSingular}}Rel{{$relAlias}}, parent, {{$.Dialect}}.Raw("count(*)"), mods)
-				return {{$.Dialect}}.Group(q.Expression)
+				return correlatedQuery({{$tAlias.DownSingular}}Rel{{$relAlias}}, parent, {{$.Dialect}}.Raw("count(*)"), mods)
 			})
 		},
 		{{end -}}
@@ -123,101 +120,26 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 	}
 
 	{{$firstSide := index $rel.Sides 0 -}}
-	{{$firstFrom := $.Aliases.Table $firstSide.From -}}
-	{{$path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
-
-	{{if $firstSide.FromWhere}}matched := os.matching{{$relAlias}}Sources(){{end}}
-	{{$comparable := true -}}
-	// countResult holds one scanned row from the batch count query.
-	// Keys that matched the SQL filter are non-NULL, even for nullable FKs.
-	type countResult struct {
-		{{range $index, $local := $firstSide.FromColumns -}}
-		{{- $column := $.Table.GetColumn $local -}}
-		{{- if not ($.Types.CanCompareWithEquals $.CurrentPackage $column.Type)}}{{$comparable = false}}{{end}}
-		K{{$index}} {{$.Types.Get $.CurrentPackage $.Importer $column.Type}} `db:{{quote $local}}`
-		{{end -}}
-		Count int64
-	}
-
-	batchMods := []bob.Mod[*dialect.SelectQuery]{
-		// SELECT fk AS parent_pk, count(*)
-		sm.Columns(
-			{{range $index, $local := $firstSide.FromColumns -}}
-			{{$toLocal := index $firstSide.ToColumns $index -}}
-			{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $toLocal}}).As({{quote $local}}),
-			{{end -}}
-			{{$.Dialect}}.Raw("count(*) as count"),
-		),
-		sm.From({{$path}}[0].Table),
-		{{range $where := $firstSide.ToWhere -}}
-		sm.Where({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $where.Column}}).EQ({{relWhereSQL $.Importer $where}})),
-		{{end -}}
-		{{range $sideIndex, $side := $rel.Sides -}}
-		{{if eq $sideIndex 0 -}}{{continue}}{{end -}}
-		sm.InnerJoin({{$path}}[{{$sideIndex}}].Table).On({{$path}}[{{$sideIndex}}].On...),
-		{{- end}}
-		{{if $firstSide.FromColumns -}}
-		{{if $firstSide.FromWhere}}matched{{else}}os{{end}}.keysFor{{$relAlias}}(),
-		{{end -}}
-		// GROUP BY fk columns
-		{{range $index, $local := $firstSide.FromColumns -}}
-		{{$toLocal := index $firstSide.ToColumns $index -}}
-		sm.GroupBy({{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $toLocal}})),
-		{{end -}}
-	}
-	batchMods = append(batchMods, mods...)
-
-	results, err := bob.All(ctx, exec,
-		{{$.Dialect}}.Select(batchMods...),
-		scan.StructMapper[countResult](),
+	parents := os{{if $firstSide.FromWhere}}.matching{{$relAlias}}Sources(){{end}}
+	{{if $firstSide.FromColumns -}}
+	parents, keys, owners := parents.parentsFor{{$relAlias}}()
+	q := {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys, mods...)
+	counts, err := genruntime.ParentCounts(ctx, exec, q.ExecQuery, len(parents), {{$.Dialect}}.Raw("max(?)", owners).As("parents"),
+		{{range $col := $firstSide.ToColumns}}{{$.Dialect}}.Quote({{$tAlias.DownSingular}}PathFor{{$relAlias}}[0].Table.Alias, {{quote $col}}),{{end}}
 	)
-	if err != nil {
-		return err
-	}
-
-	{{if $firstSide.FromWhere -}}
-	// Rows excluded by the source predicate have a loaded count of zero,
-	// even if an included parent shares their join key.
-	for _, o := range os { if o != nil { o.C.{{$relAlias}} = new(int64) } }
-	os = matched
-	{{end -}}
-	{{if $comparable -}}
-	type countKey struct {
-		{{range $index, $local := $firstSide.FromColumns -}}
-		{{- $column := $.Table.GetColumn $local -}}
-		K{{$index}} {{$.Types.Get $.CurrentPackage $.Importer $column.Type}}
-		{{end -}}
-	}
-	genruntime.AssignCounts(os, results,
-		func(o *{{$tAlias.UpSingular}}) (countKey, bool) {
-			var key countKey
-			{{range $i, $name := $firstSide.FromColumns -}}
-			{{$col := $.Table.GetColumn $name -}}
-			{{$field := printf "o.%s" ($firstFrom.Column $name) -}}
-			{{if $col.Nullable}}if !({{$.Types.GetNullTypeValid $.CurrentPackage $col.Type $field}}) { return key, false }{{end}}
-			key.K{{$i}} = {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $col.Type $field $col.Nullable}}
-			{{end -}}
-			return key, true
-		},
-		func(r countResult) (countKey, int64) { return countKey{ {{range $i, $_ := $firstSide.FromColumns}}r.K{{$i}},{{end}} }, r.Count },
-		func(o *{{$tAlias.UpSingular}}, n int64) { o.C.{{$relAlias}} = &n })
+	if err != nil { return err }
+	{{if $firstSide.FromWhere}}for _, o := range os { if o != nil { o.C.{{$relAlias}} = new(int64) } }{{end}}
+	for i, o := range parents { if o != nil { n := counts[i]; o.C.{{$relAlias}} = &n } }
 	{{else -}}
-	for _, o := range os {
-		if o == nil { continue }
-		var count int64
-		for _, r := range results {
-			{{range $i, $name := $firstSide.FromColumns -}}
-			{{$col := $.Table.GetColumn $name -}}
-			{{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable false -}}
-			if !({{replace "AAA" (printf "o.%s" ($firstFrom.Column $name)) $compare | replace "BBB" (printf "r.K%d" $i)}}) { continue }
-			{{end -}}
-			count = r.Count
-			break
-		}
-		o.C.{{$relAlias}} = &count
-	}
-	{{- end}}
+	// No join keys: one shared count for all eligible parents.
+	count, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).Count(ctx, exec)
+	if err != nil { return err }
+	{{if $firstSide.FromWhere -}}
+	for _, o := range os { if o != nil { o.C.{{$relAlias}} = new(int64) } }
+	{{end -}}
+	for _, o := range parents { if o != nil { n := count; o.C.{{$relAlias}} = &n } }
 
+	{{end -}}
 	return nil
 }
 

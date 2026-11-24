@@ -57,6 +57,10 @@ both constructors take one extra function, such as `(*UserSetter).Overwrite`,
 after the row mapping and before any unique indexes. It applies the setter to
 the original model after a successful `Exec`.
 
+For PostgreSQL and MySQL, a hand-written setter must append insert values
+in model field order, skipping generated fields. Changing the order or
+subset of columns in the read projection does not change that order.
+
 ## Why do we need a setter?
 
 A setter is necessary due to Golang's handling of zero values. As example, when running `userTable.Insert(User{})`, it isn't possible to distinguish which fields were purposefully set by the user vs. fields initialized to their zero values.

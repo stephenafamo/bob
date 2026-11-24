@@ -109,35 +109,18 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 }
 
 {{$side := index $rel.Sides 0 -}}
-{{$from := $.Aliases.Table $side.From -}}
-{{$to := $.Aliases.Table $side.To -}}
-{{$through := gt (len $rel.Sides) 1 -}}
 // Load{{$relAlias}} loads the relationship for the whole slice with a single query.
 func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
 	if len(os) == 0 { return nil }
-	{{if $through -}}
+	parents := os{{if $side.FromWhere}}.matching{{$relAlias}}Sources(){{end}}
+	{{if $side.FromColumns -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
-	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
-	{{$.Importer.Import "github.com/stephenafamo/scan"}}
-	// The child row does not contain the parent key. Select the key from the
-	// first join table and scan it alongside the child, in the same row order.
-	q := os.{{relQueryMethodName $tAlias $relAlias}}(append(mods,
-		bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-			if len(q.SelectList.Columns) == 0 { sm.Columns({{$fAlias.UpPlural}}.Columns).Apply(q) }
-		}),
-		{{range $i, $local := $side.FromColumns -}}
-		sm.Columns({{$.Dialect}}.Quote({{$tAlias.DownSingular}}PathFor{{$relAlias}}[0].Table.Alias, {{quote (index $side.ToColumns $i)}}).As("related_{{$side.From}}.{{$from.Column $local}}")),
-		{{end -}}
-	)...)
-	{{range $i, $local := $side.FromColumns -}}
-		{{$parent := $.Tables.GetColumn $side.From $local -}}
-		{{$bridge := $.Tables.GetColumn $side.To (index $side.ToColumns $i) -}}
-		var keys{{$i}} []{{$.Types.GetNullable $.CurrentPackage $.Importer $parent.Type $bridge.Nullable}}
-	{{end -}}
-	mapper := scan.Mod(q.Scanner, {{range $i, $local := $side.FromColumns -}}
-		genruntime.CollectColumn("related_{{$side.From}}.{{$from.Column $local}}", &keys{{$i}}),
-	{{end -}})
-	children, err := bob.Allx[bob.SliceTransformer[*{{$fAlias.UpSingular}}, {{$fAlias.UpSingular}}Slice]](ctx, exec, q, mapper)
+	parents, keys, owners := parents.parentsFor{{$relAlias}}()
+	q := {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys, mods...)
+	q.Expression.AppendPreloadSelect(owners.As("related_.parents"))
+	indexes := make(genruntime.ParentIndexes[{{$fAlias.UpSingular}}])
+	q.Scanner = indexes.Mapper(q.Scanner, "related_.parents")
+	children, err := q.All(ctx, exec)
 	{{else -}}
 	children, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	{{end -}}
@@ -149,43 +132,15 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 			assignment.Reset(o, true)
 		}
 	}
-	{{if $side.FromWhere}}os = os.matching{{$relAlias}}Sources(){{end}}
-	{{if and (eq (len $side.FromColumns) 1) ($.Types.CanCompareWithEquals $.CurrentPackage ($.Tables.GetColumn $side.From (index $side.FromColumns 0)).Type) -}}
-		{{$local := $.Tables.GetColumn $side.From (index $side.FromColumns 0) -}}
-		{{$foreign := $.Tables.GetColumn $side.To (index $side.ToColumns 0) -}}
-		{{$key := $.Types.Get $.CurrentPackage $.Importer $local.Type -}}
-		{{$p := printf "o.%s" ($from.Column $local.Name) -}}
-		{{$c := printf "rel.%s" ($to.Column $foreign.Name) -}}
-		{{$childKeyType := $foreign.Type -}}
-		{{if $through}}{{$c = "keys0[i]"}}{{$childKeyType = $local.Type}}{{end -}}
-		{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
-		genruntime.StitchByKey(os, children,
-			func(o *{{$tAlias.UpSingular}}) ({{$key}}, bool) {
-				{{if $local.Nullable -}}
-				if !({{$.Types.GetNullTypeValid $.CurrentPackage $local.Type $p}}) { var zero {{$key}}; return zero, false }
-				{{end -}}
-				return {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $local.Type $p $local.Nullable}}, true
-			},
-			func(i int, rel *{{$fAlias.UpSingular}}) ({{$key}}, bool) {
-				{{if $foreign.Nullable -}}
-				if !({{$.Types.GetNullTypeValid $.CurrentPackage $childKeyType $c}}) { var zero {{$key}}; return zero, false }
-				{{end -}}
-				return {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $childKeyType $c $foreign.Nullable}}, true
-			}, assignment.Link)
+	{{if $side.FromColumns -}}
+	for _, child := range children {
+		for _, j := range indexes[child] { assignment.Link(parents[j], child) }
+	}
 	{{else -}}
-		// Composite keys and custom equality cannot assume a Go map key.
-		for _, o := range os {
+		// With no join keys, each eligible parent gets the same result.
+		for _, o := range parents {
 			if o == nil { continue }
-			for {{if $through}}i{{else}}_{{end}}, rel := range children {
-				{{range $i, $name := $side.FromColumns -}}
-				{{$local := $.Tables.GetColumn $side.From $name -}}
-				{{$foreign := $.Tables.GetColumn $side.To (index $side.ToColumns $i) -}}
-				{{$p := printf "o.%s" ($from.Column $name) -}}
-				{{$c := printf "rel.%s" ($to.Column $foreign.Name) -}}
-				{{if $through}}{{$c = printf "keys%d[i]" $i}}{{end -}}
-				{{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $local.Type $local.Nullable $foreign.Nullable -}}
-				if !({{replace "AAA" $p $compare | replace "BBB" $c}}) { continue }
-				{{end -}}
+			for _, rel := range children {
 				assignment.Link(o, rel)
 				{{if not $rel.IsToMany}}break{{end}}
 			}

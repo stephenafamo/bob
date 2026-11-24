@@ -9,7 +9,7 @@ import (
 )
 
 // Trying to represent the query structure as documented in
-// https://dev.mysql.com/doc/refman/8.0/en/delete.html
+// https://dev.mysql.com/doc/refman/8.4/en/delete.html
 type DeleteQuery struct {
 	hints
 

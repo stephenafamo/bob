@@ -45,7 +45,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	uniques ...[]string,
 ) *Table[T, Tslice, Tset, C] {
 	view := NewViewx[T, Tslice](tableName, columns, scanner)
-	write := mappings.WriteColumns[T](view.ColumnsExpr().Names())
+	write := mappings.WriteColumns[T](scanner != nil, view.ColumnsExpr().Names())
 	t := &Table[T, Tslice, Tset, C]{
 		View:             view,
 		rowOperations:    ormruntime.NewRows(rows, view.lookup),

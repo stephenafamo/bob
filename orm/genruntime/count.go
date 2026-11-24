@@ -6,37 +6,49 @@ import (
 	"slices"
 
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/internal/ormruntime"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/bob/types"
 	"github.com/stephenafamo/scan"
 )
 
-// AssignCounts indexes grouped query results and records zero for parents
-// without a match. Each assignment gets its own count value.
-func AssignCounts[P, R any, K comparable](parents []*P, results []R, parentKey func(*P) (K, bool), result func(R) (K, int64), set func(*P, int64)) {
-	counts := make(map[K]int64, len(results))
-	for _, row := range results {
-		k, n := result(row)
-		counts[k] = n
+// ParentCounts consumes a fresh relationship query. Group by the physical
+// key after hooks run, and deliver each group's count to all its owners.
+func ParentCounts[Q ormruntime.Countable[Q]](ctx context.Context, exec bob.Executor, q orm.ExecQuery[Q],
+	n int, owners bob.Expression, groups ...any,
+) ([]int64, error) {
+	ctx, err := q.RunHooks(ctx, exec)
+	if err != nil {
+		return nil, err
 	}
-	for _, p := range parents {
-		if p == nil {
-			continue
-		}
-		var count int64
-		if k, ok := parentKey(p); ok {
-			count = counts[k]
-		}
-		set(p, count)
+	type result struct {
+		Parents types.JSON[[]int]
+		Count   int64
 	}
+	count := ormruntime.CountQuery(q.BaseQuery, []any{owners, "count(*) AS count"}, groups...)
+	rows, err := bob.All(ctx, exec, count, scan.StructMapper[result]())
+	if err != nil {
+		return nil, err
+	}
+	counts := make([]int64, n)
+	for _, r := range rows {
+		for _, i := range r.Parents.Val {
+			counts[i] += r.Count
+		}
+	}
+	return counts, nil
 }
 
 // PreloadCount adds a correlated count to the select list and delivers it
 // to the model. An absent column or SQL NULL leaves the count unloaded.
-func PreloadCount[Q orm.PreloadableQuery](name string, countExpr func(string) bob.Expression) orm.Preloader[Q] {
+func PreloadCount[Q interface {
+	orm.PreloadableQuery
+	ormruntime.Countable[Q]
+}](name string, subquery func(string) bob.BaseQuery[Q]) orm.Preloader[Q] {
 	column := "__count_" + name
 	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		mod := bob.ModFunc[Q](func(q Q) {
-			value := countExpr(parent)
+			value := ormruntime.CountQuery(subquery(parent), []any{"count(*)"})
 			q.AppendPreloadSelect(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 				args, err := value.WriteSQL(ctx, w, d, start)
 				if err != nil {

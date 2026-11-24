@@ -15,7 +15,7 @@ While views only provide methods to query the underlying database, tables also a
 | Dialect       | View | Table |
 | ------------- | ---- | ----- |
 | Postgres      | ✅   | ✅    |
-| MySQL/MariaDB | ✅   | ✅    |
+| MySQL 8.4+    | ✅   | ✅    |
 | SQLite        | ✅   | ✅    |
 
 <DocCardList items={useCurrentSidebarCategory().items.filter(i => i.label != 'Introduction')} />

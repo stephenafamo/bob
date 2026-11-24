@@ -2,9 +2,11 @@ package genruntime
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
+	"github.com/stephenafamo/bob/types"
 	"github.com/stephenafamo/scan"
 )
 
@@ -67,18 +69,28 @@ func JoinedModelMapper[B, T any](prefix string, field func(string) func(*B) any,
 	}
 }
 
-// CollectColumn scans an extra column beside each mapped row, e.g. the
-// parent key of a many-to-many join. Resolve its index once per result set.
-func CollectColumn[T any](name string, dst *[]T) scan.MapperMod {
-	return func(_ context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+// ParentIndexes associates the owner list with the actual scanned model.
+// Loaders and after-select hooks may reorder the slice before it is linked.
+type ParentIndexes[T any] map[*T][]int
+
+func (p ParentIndexes[T]) Mapper(m scan.Mapper[*T], name string) scan.Mapper[*T] {
+	return func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any) (*T, error)) {
+		before, after := m(ctx, cols)
 		index := slices.Index(cols, name)
+		var owners types.JSON[[]int]
 		return func(row *scan.Row) (any, error) {
-			var zero T
-			*dst = append(*dst, zero)
-			if index >= 0 {
-				row.ScheduleScanByIndex(index, &(*dst)[len(*dst)-1])
+				if index < 0 {
+					return nil, fmt.Errorf("missing relationship owner column %q", name)
+				}
+				owners.Val = nil // each child keeps its own decoded slice
+				row.ScheduleScanByIndex(index, &owners)
+				return before(row)
+			}, func(link any) (*T, error) {
+				child, err := after(link)
+				if err == nil {
+					p[child] = owners.Val
+				}
+				return child, err
 			}
-			return nil, nil
-		}, func(any, any) error { return nil }
 	}
 }

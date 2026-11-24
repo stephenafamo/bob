@@ -128,6 +128,12 @@ pilots, err := models.Pilots(
 ).All(ctx, db)
 ```
 
+Calling `LoadX` on a slice loads that relationship in one query for the
+whole batch. The database matches the keys and returns the positions of the
+matching input models. For example, if the target column treats `ABC` and
+`abc` as equal, both inputs receive the matching row. `LoadCountX` uses the
+same rule in its own single query.
+
 ## Checking if a relationship has been loaded
 
 Each model exposes a `R.Loaded` struct with one `bool` per relationship that records whether that relationship has been populated. This lets you tell apart `nil` ("not loaded yet") from a genuine empty result ("loaded, but no related rows").
@@ -309,3 +315,7 @@ pilots, err := models.Pilots().All(ctx, db)
 // Load jet counts for all pilots
 err = pilots.LoadCountJets(ctx, db)
 ```
+
+A batch count runs the related table’s select-query hooks once. Like a
+single-model count, it keeps the filters but ignores the selected columns,
+ordering, grouping, limit, and offset. Each parent gets its full count.

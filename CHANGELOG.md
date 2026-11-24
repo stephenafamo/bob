@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Migration
+
+- Upgrade Bob and `bobgen` together, then regenerate. Hand-written calls to
+  `NewTable` and `NewTablex` must now supply an `orm.RowMapping`. For
+  `NewTablex`, pass it after the scanner. MySQL also requires the setter's
+  `Overwrite` function before the optional unique indexes.
+- **SQLite:** `Find<Model>` and `<Model>Exists` now take composite keys in
+  `PRIMARY KEY (...)` order. Check existing calls where this differs from
+  table-column order: same-typed arguments can compile but select the wrong row.
+
+### Changes
+
+- **MySQL:** The minimum supported server version is 8.4. `bobgen-sql` uses
+  `mysql:8.4` by default.
+  Generated MySQL batch loaders group typed `VALUES ROW` inputs or use
+  direct key lookups when a conversion would change equality.
+  MariaDB compatibility is best-effort.
+
 - Custom SQL queries now share their argument rendering, query construction,
   and positional row scanning in `orm/genruntime`, reducing the Go emitted per query.
 - Generated SQL queries with nested results now index parents by their projected
@@ -16,24 +34,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   arguments, and preload keys. Embedded fields use their mapped column names,
   and named nested fields use Scan's dotted names. An explicit SQL column list
   can map a single database column to a nested Go value with a custom scanner.
-- `NewTable` and `NewTablex` now require an `orm.RowMapping` in all three
-  dialects. For `NewTablex`, pass it after the scanner. MySQL also requires
-  the setter's `Overwrite` function before the optional unique indexes.
+  A nullable SQL value such as `sql.NullString` binds as one value; use a
+  struct or map to supply multiple named arguments.
 - Bob generates less Go code for models and factories. Batch loads, counts,
   row refreshes, primary-key lookups, after-query hooks, relationship
   assignment, scanners, and factory builds now share runtime helpers.
-  Upgrade Bob and `bobgen` together before regenerating.
-- **SQLite migration:** `Find<Model>` and `<Model>Exists` now take composite
-  primary-key arguments in the order declared in `PRIMARY KEY (...)`, rather
-  than table-column order. After regenerating, reorder arguments at existing
-  call sites if those orders differ. Calls with same-typed keys can still
-  compile but look up a different row.
 - Bulk refreshes now match primary keys with custom equality (such as byte
   slices) by value.
 - Relationship `Has…` filters and preloaded counts use the same join
   predicates as relationship preloads, including static filters. They
   automatically alias intermediate joins when a path repeats a table, as do
   single-row and batch relationship loads and counts.
+  PostgreSQL, MySQL, and SQLite now match batch relationship keys in SQL.
+  Each batch load or count takes one query and honors the target key's
+  collation, even when the selected columns omit the relationship key.
 
 ## [v0.51.0] - 2026-11-22
 

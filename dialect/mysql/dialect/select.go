@@ -9,7 +9,7 @@ import (
 )
 
 // Trying to represent the query structure as documented in
-// https://dev.mysql.com/doc/refman/8.0/en/select.html
+// https://dev.mysql.com/doc/refman/8.4/en/select.html
 type SelectQuery struct {
 	hints
 	modifiers[any]

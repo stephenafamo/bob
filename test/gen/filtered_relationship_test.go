@@ -31,6 +31,8 @@ CREATE TABLE collections (id INTEGER PRIMARY KEY, code BLOB UNIQUE);
 CREATE TABLE entries (id INTEGER PRIMARY KEY, code BLOB REFERENCES collections(code));
 CREATE TABLE revisions (seq INTEGER NOT NULL, code BLOB NOT NULL, label TEXT NOT NULL, PRIMARY KEY(code, seq));
 CREATE VIEW revision_labels AS SELECT label FROM revisions;
+CREATE TABLE parents (code TEXT COLLATE NOCASE PRIMARY KEY NOT NULL);
+CREATE TABLE children (id INTEGER PRIMARY KEY, parent_code TEXT COLLATE BINARY NOT NULL REFERENCES parents(code));
 `); err != nil {
 		t.Fatal(err)
 	}
@@ -42,6 +44,8 @@ CREATE VIEW revision_labels AS SELECT label FROM revisions;
 	config := gen.Config[any]{
 		TypeSystem: "database/sql",
 		Aliases: drivers.Aliases{
+			"parents":     {Relationships: map[string]string{"fk_children_0": "Children"}},
+			"children":    {Relationships: map[string]string{"fk_children_0": "Parent"}},
 			"collections": {Relationships: map[string]string{"fk_entries_0": "Entries"}},
 			"locations": {Relationships: map[string]string{
 				"locations_primary_version": "PrimaryVersion", "primary_versions": "PrimaryVersions",
@@ -79,9 +83,19 @@ CREATE VIEW revision_labels AS SELECT label FROM revisions;
 			config.NoBackReferencing = tc.disableBacklinks
 			config.RelationLoadedName = "Fetched"
 			d := driver.New(driver.Config{Config: helpers.Config{Dsn: dsn}})
-			testDriver(t, t.TempDir(), gen.SQLiteTemplates, config, d, modPath,
-				[]string{"-run", "^Test(InsertPrimaryVersion|RelationshipAssignment|RepeatedTableCorrelation|CompositeRowRefresh|ViewHookDispatch)$"},
-				templatePlugin[any]{dialect: "sqlite"})
+			testDriver(
+				t,
+				t.TempDir(),
+				gen.SQLiteTemplates,
+				config,
+				d,
+				modPath,
+				[]string{
+					"-run",
+					"^Test(InsertPrimaryVersion|RelationshipAssignment|RepeatedTableCorrelation|CompositeRowRefresh|ViewHookDispatch|RelationshipCollation)$",
+				},
+				templatePlugin[any]{dialect: "sqlite"},
+			)
 		})
 	}
 }

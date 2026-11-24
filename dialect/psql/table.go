@@ -42,7 +42,7 @@ func NewTablex[T any, Tslice ~[]T, Tset setter[T], C bob.Expression](
 	return &Table[T, Tslice, Tset, C]{
 		View:             view,
 		rowOperations:    ormruntime.NewRows(rows, view.lookup),
-		nonGeneratedCols: mappings.WriteColumns[T](view.ColumnsExpr().Names()).NonGenerated,
+		nonGeneratedCols: mappings.WriteColumns[T](scanner != nil, view.ColumnsExpr().Names()).NonGenerated,
 	}
 }
 

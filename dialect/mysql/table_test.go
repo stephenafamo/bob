@@ -51,7 +51,7 @@ var (
 		"", expr.ColsForStruct[WithAutoIncr](""), nil, orm.RowMapping[*WithAutoIncr, []*WithAutoIncr]{}, nil,
 	)
 	table2 = NewTablex[*WithUnique, []*WithUnique, *OptionalWithUnique](
-		"books", expr.ColsForStruct[WithUnique]("books"), nil, orm.RowMapping[*WithUnique, []*WithUnique]{}, nil,
+		"books", expr.NewColumnsExpr("author_id", "title", "id").WithParent("books"), nil, orm.RowMapping[*WithUnique, []*WithUnique]{}, nil,
 		[]string{"id"}, []string{"title", "author_id"},
 	)
 )
@@ -208,7 +208,7 @@ func TestGetInsertedUsesExplicitColumns(t *testing.T) {
 		t.Fatalf("Build: %v", err)
 	}
 
-	expectedSQL := "SELECT `books`.`id` AS `id`, `books`.`title` AS `title`, `books`.`author_id` AS `author_id` FROM `books` WHERE ((`id` IN ((?))))"
+	expectedSQL := "SELECT `books`.`author_id` AS `author_id`, `books`.`title` AS `title`, `books`.`id` AS `id` FROM `books` WHERE ((`id` IN ((?))))"
 	if diff, err := testutils.QueryDiff(expectedSQL, gotSQL, nil); err != nil {
 		t.Fatalf("QueryDiff: %v", err)
 	} else if diff != "" {

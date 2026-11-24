@@ -12,6 +12,21 @@ import (
 	"github.com/stephenafamo/bob/orm/genruntime"
 )
 
+func TestSQLTuples(t *testing.T) {
+	for _, n := range []int{0, 1, 3} {
+		rows := genruntime.SQLTuples(n, func(args []any, i int) []any {
+			return append(args, i, nil)
+		}, "(", "::int, ", " + 1)")
+		var out strings.Builder
+		args, err := rows.WriteSQL(t.Context(), &out, dialect.Dialect, 5)
+		parts := []string{"($5::int, $6 + 1)", "($7::int, $8 + 1)", "($9::int, $10 + 1)"}
+		values := []any{0, nil, 1, nil, 2, nil}
+		if err != nil || out.String() != strings.Join(parts[:n], ", ") || !reflect.DeepEqual(args, values[:2*n]) {
+			t.Fatalf("%d tuples: %q %v, %v", n, out.String(), args, err)
+		}
+	}
+}
+
 func TestBoundSQLFragments(t *testing.T) {
 	// One tuple expands to two. The trailing occurrences share an argument
 	// and must be renumbered after the expanded tuples.

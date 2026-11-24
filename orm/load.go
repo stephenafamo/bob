@@ -228,7 +228,9 @@ type PreloadableQuery interface {
 func (s PreloadSide[E]) Predicates(from, to string) []bob.Expression {
 	on := make([]bob.Expression, 0, len(s.FromColumns)+len(s.FromWhere)+len(s.ToWhere))
 	for i, col := range s.FromColumns {
-		on = append(on, expr.OP("=", expr.Quote(from, col), expr.Quote(to, s.ToColumns[i])))
+		// Match the direct loader's target.column = argument. SQLite uses
+		// the left column's collation when the two declarations differ.
+		on = append(on, expr.OP("=", expr.Quote(to, s.ToColumns[i]), expr.Quote(from, col)))
 	}
 	for _, w := range s.FromWhere {
 		on = append(on, expr.OP("=", expr.Quote(from, w.Column), expr.Raw(w.SQLValue)))

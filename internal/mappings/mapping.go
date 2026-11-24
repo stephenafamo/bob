@@ -20,12 +20,8 @@ func SQLColumns[T any](columns bob.Expression, parent string, customScanner bool
 		return expr.ColsForStruct[T](parent)
 	}
 	var names []string
-	seen := make(map[string]bool)
-	visitFields[T](func(name, _ string, topLevel bool) {
-		if topLevel && !seen[name] {
-			names = append(names, name)
-			seen[name] = true
-		}
+	modelColumns[T](true, nil, func(name, _ string) {
+		names = append(names, name)
 	})
 	return expr.NewColumnsExpr(names...).WithParent(parent)
 }
@@ -44,21 +40,15 @@ type Mapping struct {
 	AutoIncrement []string
 }
 
-// WriteColumns applies model tag options to the declared SQL columns, in
-// insert order. A Scan field can be a descendant of a single physical column
-// when the caller supplies a custom scanner.
-func WriteColumns[T any](names []string) Mapping {
-	options := make(map[string]string)
-	visitFields[T](func(name, opts string, _ bool) {
-		if opts != "" {
-			options[name] = opts
-		}
-	})
-
+// WriteColumns follows model declaration order, independent of the SELECT
+// projection. Setters append their VALUES in this order.
+func WriteColumns[T any](customScanner bool, physical []string) Mapping {
 	var c Mapping
-	for _, name := range names {
+	var mapped bool
+	modelColumns[T](customScanner, physical, func(name, opts string) {
+		mapped = true
 		var generated bool
-		for opt := range strings.SplitSeq(options[name], ",") {
+		for opt := range strings.SplitSeq(opts, ",") {
 			switch opt {
 			case "generated":
 				generated = true
@@ -69,21 +59,39 @@ func WriteColumns[T any](names []string) Mapping {
 		if !generated {
 			c.NonGenerated = append(c.NonGenerated, name)
 		}
+	})
+	if !mapped && customScanner {
+		// A scalar model has no field order. Its declared physical
+		// columns are the only available positional mapping.
+		c.NonGenerated = physical
 	}
 	return c
 }
 
-// Visit each Scan field and its named ancestors. Start from Scan's resolved
-// name so untagged fields and flattened embeds follow the mapper's rules.
-func visitFields[T any](visit func(name, opts string, topLevel bool)) {
+// The default scanner reads leaves; custom scanners can read a whole
+// top-level field as one physical column. Embedded fields stay flattened.
+func modelColumns[T any](customScanner bool, physical []string, visit func(name, opts string)) {
 	typ := reflect.TypeFor[T]()
 	fields, _ := scan.StructMapperFields(typ)
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 
+	// A custom scanner may explicitly name nested columns. Expand those
+	// parents, even when only one of their children is in the projection.
+	expanded := make(map[string]bool)
+	if customScanner {
+		for _, col := range physical {
+			for i := strings.LastIndexByte(col, '.'); i >= 0; i = strings.LastIndexByte(col, '.') {
+				col = col[:i]
+				expanded[col] = true
+			}
+		}
+	}
+	seen := make(map[string]bool)
 	for _, field := range fields {
 		name := field.Name
+		var column, options string
 		for path := field.Index; len(path) > 0 && name != ""; path = path[:len(path)-1] {
 			f := typ.FieldByIndex(path)
 			if f.Anonymous {
@@ -98,8 +106,17 @@ func visitFields[T any](visit func(name, opts string, topLevel bool)) {
 					parent = name[:i]
 				}
 			}
-			visit(name, opts, parent == "")
+			if column == "" || !expanded[name] {
+				column, options = name, opts
+			}
+			if !customScanner {
+				break
+			}
 			name = parent
+		}
+		if column != "" && !seen[column] {
+			visit(column, options)
+			seen[column] = true
 		}
 	}
 }

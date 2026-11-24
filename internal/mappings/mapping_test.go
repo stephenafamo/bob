@@ -22,20 +22,27 @@ func TestMappedWriteColumns(t *testing.T) {
 		NonGenerated:  []string{"row_id", "owner.row_id", "label"},
 		AutoIncrement: []string{"row_id", "owner.row_id"},
 	}
-	if diff := cmp.Diff(want, WriteColumns[*model]([]string{"row_id", "computed", "owner.row_id", "owner.computed", "label"})); diff != "" {
+	if diff := cmp.Diff(want, WriteColumns[*model](false, nil)); diff != "" {
 		t.Fatal(diff)
 	}
 }
 
 func TestCustomScannerWriteColumns(t *testing.T) {
+	if diff := cmp.Diff([]string{"code"}, WriteColumns[string](true, []string{"code"}).NonGenerated); diff != "" {
+		t.Fatal(diff)
+	}
 	type point struct{ X, Y int }
 	type model struct {
 		Pos      point `db:"pos"`
 		Computed point `db:",generated"`
 		ID       int   `db:",autoincr"`
 	}
-	want := Mapping{NonGenerated: []string{"id", "pos"}, AutoIncrement: []string{"id"}}
-	if diff := cmp.Diff(want, WriteColumns[model]([]string{"id", "pos", "computed"})); diff != "" {
+	want := Mapping{NonGenerated: []string{"pos", "id"}, AutoIncrement: []string{"id"}}
+	if diff := cmp.Diff(want, WriteColumns[model](true, []string{"id", "pos"})); diff != "" {
+		t.Fatal(diff)
+	}
+	want.NonGenerated = []string{"pos.x", "pos.y", "id"}
+	if diff := cmp.Diff(want, WriteColumns[model](true, []string{"id", "pos.y"})); diff != "" {
 		t.Fatal(diff)
 	}
 }

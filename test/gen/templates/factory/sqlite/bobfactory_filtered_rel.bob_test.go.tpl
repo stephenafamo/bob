@@ -1,5 +1,6 @@
 {{- if and (has "locations" $.TableNames) (has "location_versions" $.TableNames) -}}
 {{$.Importer.Import "testing"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/dialect/sqlite/sm"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models")}}
 func TestInsertPrimaryVersion(t *testing.T) {
 	ctx := t.Context()
@@ -37,6 +38,12 @@ func TestInsertPrimaryVersion(t *testing.T) {
 		t.Fatalf("filtered EXISTS or preloaded count: %+v", selected)
 	}
 	batch := models.LocationSlice{loc, nil, other}
+	// The database identifies the parent even when the child projection
+	// omits the integer foreign key needed for a comparison in Go.
+	if err := batch.LoadPrimaryVersions(ctx, tx, sm.Columns(models.LocationVersions.Columns.ID)); err != nil { t.Fatal(err) }
+	if len(loc.R.PrimaryVersions) != 1 || loc.R.PrimaryVersions[0].ID != primary.ID || len(other.R.PrimaryVersions) != 0 {
+		t.Fatal("projected rows attached to the wrong location")
+	}
 	if err := batch.LoadCountPrimaryVersions(ctx, tx); err != nil { t.Fatal(err) }
 	if *loc.C.PrimaryVersions != 1 || *other.C.PrimaryVersions != 0 { t.Fatal("wrong filtered batch counts") }
 
@@ -91,8 +98,60 @@ func TestRelationshipAssignment(t *testing.T) {
 }
 {{- end}}
 
+{{- if and (has "parents" $.TableNames) (has "children" $.TableNames) -}}
+{{$.Importer.Import "testing"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/dialect/sqlite/sm"}}
+{{$.Importer.Import "models" (index $.OutputPackages "models")}}
+func TestRelationshipCollation(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.Begin(ctx)
+	if err != nil { t.Fatal(err) }
+	defer tx.Rollback(ctx)
+	if _, err := tx.ExecContext(ctx, `INSERT INTO parents VALUES ('ABC'), ('DEF');
+		INSERT INTO children VALUES (1,'abc'), (2,'ABC'), (3,'abc'), (4,'def')`); err != nil { t.Fatal(err) }
+	// Children use BINARY: only the exact match belongs to parent ABC.
+	selected, err := models.Parents.Query(models.SelectWhere.Parents.R.HasChildren(),
+		models.PreloadCount.Parent.Children()).All(ctx, tx)
+	if err != nil || len(selected) != 1 || selected[0].Code != "ABC" || *selected[0].C.Children != 1 { t.Fatalf("Has/preload count: %+v, %v", selected, err) }
+	has := selected[0]
+	joined, err := models.Parents.Query(models.SelectJoins().Parents.InnerJoin.Children).All(ctx, tx)
+	if err != nil || len(joined) != 1 { t.Fatalf("join: %+v, %v", joined, err) }
+	if err := has.LoadChildren(ctx, tx); err != nil || len(has.R.Children) != 1 || has.R.Children[0].ID != 2 {
+		t.Fatalf("direct: %+v, %v", has.R.Children, err)
+	}
+	copy := *has
+	lower := &models.Parent{Code: "abc"}
+	empty := &models.Parent{Code: "DEF"}
+	parents := models.ParentSlice{nil, has, lower, &copy, empty}
+	if err := parents.LoadChildren(ctx, tx); err != nil { t.Fatal(err) }
+	if err := parents.LoadCountChildren(ctx, tx); err != nil { t.Fatal(err) }
+	for i, n := range []int{1, 2, 1, 0} {
+		p := parents[i+1]
+		if len(p.R.Children) != n || *p.C.Children != int64(n) { t.Fatalf("parent %q: rows=%d count=%d", p.Code, len(p.R.Children), *p.C.Children) }
+	}
+	// In the reverse direction the target uses NOCASE. Mixed-case source
+	// keys must attach the same parent instance, just as a joined preload does.
+	children, err := models.Children.Query(models.Preload.Child.Parent()).All(ctx, tx)
+	if err != nil || len(children) != 4 { t.Fatalf("preload: %+v, %v", children, err) }
+	wantParent := map[string]string{"abc":"ABC", "ABC":"ABC", "def":"DEF"}
+	for _, c := range children { if c.R.Parent == nil || c.R.Parent.Code != wantParent[c.ParentCode] { t.Fatalf("preload missed %q", c.ParentCode) } }
+	if err := children.LoadParent(ctx, tx); err != nil { t.Fatal(err) }
+	seen := map[string]*models.Parent{}
+	for _, c := range children {
+		want := wantParent[c.ParentCode]
+		if c.R.Parent == nil || c.R.Parent.Code != want || (seen[want] != nil && c.R.Parent != seen[want]) { t.Fatalf("batch missed %q", c.ParentCode) }
+		seen[want] = c.R.Parent
+	}
+	if err := children.LoadParent(ctx, tx, sm.OrderBy(models.Parents.Columns.Code), sm.Limit(1)); err != nil { t.Fatal(err) }
+	for _, c := range children {
+		if (c.R.Parent != nil) != (wantParent[c.ParentCode] == "ABC") { t.Fatalf("LIMIT applied to input parents instead of target rows: %+v", c) }
+	}
+}
+{{- end}}
+
 {{- if and (has "locations" $.TableNames) (has "teams" $.TableNames) -}}
 {{$.Importer.Import "testing"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/dialect/sqlite/sm"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models")}}
 func TestRepeatedTableCorrelation(t *testing.T) {
 	ctx := t.Context()
@@ -123,11 +182,24 @@ func TestRepeatedTableCorrelation(t *testing.T) {
 	if *loc.C.Teams != 2 || *other.C.Teams != 0 { t.Fatal("wrong grouped counts for the repeated table") }
 
 	// The bridge stores the integer parent key as nullable TEXT. The loader
-	// must scan it as the parent's type before stitching the results.
-	if _, err := tx.ExecContext(ctx, `INSERT INTO links VALUES ('1', 11), ('2', 21), (NULL, 12)`); err != nil { t.Fatal(err) }
+	// must use SQLite's key comparison when attaching the results.
+	if _, err := tx.ExecContext(ctx, `INSERT INTO locations VALUES (3);
+		INSERT INTO links VALUES ('1', 11), ('2', 21), (NULL, 12)`); err != nil { t.Fatal(err) }
+	if rows, err := loc.LinkedTeams().All(ctx, tx); err != nil || len(rows) != 1 || rows[0].ID != 11 {
+		t.Fatalf("direct mixed-type comparison: %v, %v", rows, err)
+	}
 	if err := batch.LoadLinkedTeams(ctx, tx); err != nil { t.Fatal(err) }
 	if len(loc.R.LinkedTeams) != 1 || loc.R.LinkedTeams[0].ID != 11 ||
 		len(other.R.LinkedTeams) != 1 || other.R.LinkedTeams[0].ID != 21 { t.Fatal("wrong teams for mixed-type bridge keys") }
+	if err := batch.LoadCountLinkedTeams(ctx, tx); err != nil { t.Fatal(err) }
+	if *loc.C.LinkedTeams != 1 || *other.C.LinkedTeams != 1 { t.Fatal("wrong mixed-type batch counts") }
+	selected, err := models.Locations.Query(models.SelectWhere.Locations.R.HasLinkedTeams(),
+		models.PreloadCount.Location.LinkedTeams(sm.OrderBy(models.Teams.Columns.ID), sm.Offset(3)),
+		sm.OrderBy(models.Locations.Columns.ID)).All(ctx, tx)
+	if err != nil || len(selected) != 2 || selected[0].ID != 1 || selected[1].ID != 2 ||
+		*selected[0].C.LinkedTeams != 1 || *selected[1].C.LinkedTeams != 1 { t.Fatalf("mixed-type Has/count: %v, %v", selected, err) }
+	joined, err := models.Locations.Query(models.SelectJoins().Locations.InnerJoin.LinkedTeams).All(ctx, tx)
+	if err != nil || len(joined) != 2 { t.Fatalf("mixed-type join: %v, %v", joined, err) }
 }
 {{- end}}
 

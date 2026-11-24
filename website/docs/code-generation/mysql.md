@@ -6,7 +6,8 @@ description: ORM Generation for MySQL
 
 # Bob Gen for MySQL
 
-Generates an ORM based on a MySQL database schema
+Generates an ORM from a MySQL 8.4+ schema. MariaDB compatibility is best-effort:
+generated SQL targets MySQL 8.4 and may use syntax that MariaDB does not support.
 
 ## Usage
 
@@ -47,6 +48,15 @@ The values that exist for the drivers:
 | queries      | Folders containing sql query files                                                                               |           |
 | concurrency  | How many tables to fetch in parallel                                                                             | 10        |
 | column_order | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
+
+### Batch relationship loads and counts
+
+Bob groups matching integer and character inputs in `VALUES ROW` before
+joining them to related rows. If converting a key could change equality,
+Bob uses `target_column = ?` for each parent and combines the matching keys
+with `UNION ALL`. This lets MySQL use a target index without rounding a
+parameter to the column's storage scale.
+Each batch load or count uses one query.
 
 ## Only/Except:
 

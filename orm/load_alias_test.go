@@ -36,8 +36,8 @@ func preloadMentor(opts ...psql.PreloadOption) psql.Preloader {
 // statements by their SQL (such as pgx) can never reuse the statement.
 func TestPreloadAliases(t *testing.T) {
 	// what the queries below have in common, up to the condition of the second join
-	common := `SELECT "pilots"."id" AS "id", "pilots"."mentor_id" AS "mentor_id", "pilots_10001"."id" AS "pilots_10001.id", "pilots_10002"."id" AS "pilots_10002.id" FROM "pilots" LEFT JOIN "pilots" AS "pilots_10001" ON "pilots"."mentor_id" = "pilots_10001"."id" LEFT JOIN "pilots" AS "pilots_10002" ON `
-	nested := common + `"pilots_10001"."mentor_id" = "pilots_10002"."id"`
+	common := `SELECT "pilots"."id" AS "id", "pilots"."mentor_id" AS "mentor_id", "pilots_10001"."id" AS "pilots_10001.id", "pilots_10002"."id" AS "pilots_10002.id" FROM "pilots" LEFT JOIN "pilots" AS "pilots_10001" ON "pilots_10001"."id" = "pilots"."mentor_id" LEFT JOIN "pilots" AS "pilots_10002" ON `
+	nested := common + `"pilots_10002"."id" = "pilots_10001"."mentor_id"`
 
 	clone := aliasPilots.Query(preloadMentor()).Clone()
 	clone.Apply(preloadMentor())
@@ -55,7 +55,7 @@ func TestPreloadAliases(t *testing.T) {
 		},
 		"preload added to a clone": {
 			Doc:         "A clone continues the numbering of the query it was cloned from",
-			ExpectedSQL: common + `"pilots"."mentor_id" = "pilots_10002"."id"`,
+			ExpectedSQL: common + `"pilots_10002"."id" = "pilots"."mentor_id"`,
 			Query:       clone,
 		},
 	}

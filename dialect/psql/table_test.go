@@ -14,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
@@ -140,6 +141,27 @@ var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.C
 })
 
 func copyUser(dst, src *User) { *dst = *src }
+
+func TestInsertWithReorderedProjection(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.ExecContext(ctx, `CREATE TEMP TABLE users (id INTEGER, name TEXT, email TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+	// The read projection reverses the two strings and leaves out id.
+	table := NewTable[*User, *UserSetter]("", "users", expr.NewColumnsExpr("email", "name"), orm.RowMapping[*User, []*User]{})
+	user, err := table.Insert(im.Values(Arg(7), Arg("Ada"), Arg("ada@example.org"))).One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *user != (User{Name: "Ada", Email: "ada@example.org"}) {
+		t.Fatalf("unexpected returned row: %+v", user)
+	}
+}
 
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()

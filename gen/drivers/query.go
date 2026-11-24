@@ -386,12 +386,38 @@ func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName 
 		return fmt.Sprintf("%s.Arg(%s)", dialect, varName)
 	}
 
+	if !slices.ContainsFunc(a.Children, func(c QueryArg) bool { return c.CanBeMultiple || len(c.Children) > 0 }) {
+		return a.scalarTuples(i, queryName, varName)
+	}
+
 	if !a.CanBeMultiple {
 		return a.groupExpression(i, dialect, queryName, varName)
 	}
 
 	return fmt.Sprintf("genruntime.SQLGroups(len(%s), func(i int) bob.Expression { child := %s[i]; return %s })",
 		varName, varName, a.groupExpression(i, dialect, queryName, "child"))
+}
+
+// A tuple of scalar parameters has a fixed layout. Emit its literal SQL
+// spans once, even when the caller passes thousands of rows.
+func (a QueryArg) scalarTuples(i language.Importer, queryName, varName string) string {
+	i.Import("github.com/stephenafamo/bob/orm/genruntime")
+	n, row := "1", varName
+	if a.CanBeMultiple {
+		n, row = "len("+varName+")", varName+"[i]"
+	}
+	fields := make([]string, 0, len(a.Children))
+	spans := make([]string, 0, len(a.Children)+1)
+	start := a.Positions[0][0]
+	for _, child := range a.Children {
+		pos := child.Positions[0]
+		spans = append(spans, fmt.Sprintf("%sSQL[%d:%d]", queryName, start, pos[0]))
+		fields = append(fields, row+"."+strmangle.TitleCase(child.Col.Name))
+		start = pos[1]
+	}
+	spans = append(spans, fmt.Sprintf("%sSQL[%d:%d]", queryName, start, a.Positions[0][1]))
+	return fmt.Sprintf("genruntime.SQLTuples(%s, func(args []any, i int) []any { return append(args, %s) }, %s)",
+		n, strings.Join(fields, ", "), strings.Join(spans, ", "))
 }
 
 func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varName string) string {

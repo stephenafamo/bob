@@ -21,6 +21,9 @@ import (
 
 var rgxEnum = regexp.MustCompile(`^enum\([^\)]+\)$`)
 
+// DefaultImage is the MySQL LTS series used for schema generation and tests.
+const DefaultImage = "mysql:8.4"
+
 type (
 	Interface = drivers.Interface[any, any, any]
 	DBInfo    = drivers.DBInfo[any, any, any]
@@ -53,9 +56,7 @@ type driver struct {
 	enumMu sync.Mutex
 }
 
-func (d *driver) Dialect() string {
-	return "mysql"
-}
+func (d *driver) Dialect() string { return "mysql" }
 
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
@@ -84,7 +85,14 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 
 	dbinfo = &DBInfo{Driver: "github.com/go-sql-driver/mysql"}
 
-	dbinfo.Tables, err = drivers.BuildDBInfo[any](ctx, d, d.config.Concurrency, d.config.Config.Only, d.config.Config.Except, d.config.Config.ColumnOrder)
+	dbinfo.Tables, err = drivers.BuildDBInfo[any](
+		ctx,
+		d,
+		d.config.Concurrency,
+		d.config.Config.Only,
+		d.config.Config.Except,
+		d.config.Config.ColumnOrder,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +124,10 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 		var subqueries []string
 		stringPatterns, regexPatterns := drivers.ClassifyPatterns(include)
 		if len(stringPatterns) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("table_name in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
+			subqueries = append(
+				subqueries,
+				fmt.Sprintf("table_name in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1)),
+			) // third param is not used for ? placeholders
 			for _, w := range stringPatterns {
 				args = append(args, w)
 			}
@@ -132,7 +143,10 @@ func (d *driver) TablesInfo(ctx context.Context, tableFilter drivers.Filter) (dr
 		var subqueries []string
 		stringPatterns, regexPatterns := drivers.ClassifyPatterns(exclude)
 		if len(stringPatterns) > 0 {
-			subqueries = append(subqueries, fmt.Sprintf("table_name not in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1))) // third param is not used for ? placeholders
+			subqueries = append(
+				subqueries,
+				fmt.Sprintf("table_name not in (%s)", strmangle.Placeholders(false, len(stringPatterns), 1, 1)),
+			) // third param is not used for ? placeholders
 			for _, w := range stringPatterns {
 				args = append(args, w)
 			}
@@ -339,7 +353,7 @@ func (d *driver) Constraints(ctx context.Context, _ drivers.ColumnFilter) (drive
 func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 	ret := drivers.DBIndexes[any]{}
 
-	// Check if expression column exists (MySQL 8.0.13+, not in MariaDB)
+	// MariaDB does not expose STATISTICS.EXPRESSION.
 	var hasExpression bool
 	checkQuery := `SELECT COUNT(*)
 		FROM information_schema.columns
@@ -351,7 +365,6 @@ func (d *driver) Indexes(ctx context.Context) (drivers.DBIndexes[any], error) {
 		hasExpression = count > 0
 	}
 
-	// Build query with conditional expression column
 	expressionColumn := "NULL"
 	if hasExpression {
 		expressionColumn = "s.expression"
