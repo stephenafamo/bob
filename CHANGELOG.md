@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- `bobgen` now runs `bobcheck` on the whole Go module after generation. It
+  reports discarded results of `Apply` methods that return a Bob query.
+  Set `disable_bobcheck: true` in `bobgen.yaml` to skip it.
+
 ### Migration
 
 - Upgrade Bob and `bobgen` together, then regenerate. Hand-written calls to

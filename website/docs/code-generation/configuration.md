@@ -113,6 +113,8 @@ type Config struct {
 	Tags []string `yaml:"tags"`
 	// Disable generating go test files
 	NoTests bool `yaml:"no_tests"`
+	// Skip the module-wide bobcheck run after generation.
+	DisableBobcheck bool `yaml:"disable_bobcheck"`
 	// Disable back referencing in the loaded relationship structs
 	NoBackReferencing bool `yaml:"no_back_referencing"`
 	// Decides the casing for go structure tag names. camel, title or snake (default snake)
@@ -149,6 +151,7 @@ type Config struct {
 | type_system         | How to handle optional and nullable types. Available options are `github.com/aarondl/opt` and `database/sql`    | "github.com/aarondl/opt" |
 | tags                | Struct tags to generate                                                                                         | []                       |
 | no_tests            | Disable generating go test files                                                                                | false                    |
+| disable_bobcheck    | Skip the automatic `bobcheck` run. By default it checks `./...`, including tests, from the Go module root after writing all generated files. | false |
 | no_back_referencing | If this is set to true, when relationships are loaded, the parent is not added to the loaded object's relations | false                    |
 | struct_tag_casing   | Decides the casing for go structure tag names. camel, title or snake (default snake)                            | "snake"                  |
 | relation_tag        | Struct tag for the relationship object                                                                          | "-"                      |

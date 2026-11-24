@@ -110,7 +110,8 @@ func TestScalarTableModelHasNoUUIDImport(t *testing.T) {
 		plugins.PresetAll, gen.PSQLTemplates,
 	)
 
-	state := &gen.State[any]{Config: gen.Config[any]{}}
+	// This fixture inspects generated source without installing its dependencies.
+	state := &gen.State[any]{Config: gen.Config[any]{DisableBobcheck: true}}
 	if err := gen.Run[any, any, driver.IndexExtra](
 		context.Background(), state, stubDriver{types: types, info: info}, outputPlugins...,
 	); err != nil {

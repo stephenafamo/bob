@@ -36,6 +36,8 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	}
 	tmp := t.TempDir()
 	t.Chdir(tmp)
+	t.Setenv("GOWORK", "off")
+	t.Setenv("GOFLAGS", "-mod=mod")
 	root := filepath.Dir(strings.TrimSpace(string(mod)))
 	gomod := fmt.Sprintf(
 		"module scratch.local/repro\n\ngo 1.26.0\n\nrequire github.com/stephenafamo/bob v0.0.0\nreplace github.com/stephenafamo/bob => %q\n",
@@ -144,8 +146,7 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(queryDir, "tags_test.go"), queryTagsTest, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.CommandContext(t.Context(), "go", "test", "-mod=mod", "./queries")
-	cmd.Env = append(os.Environ(), "GOWORK=off")
+	cmd := exec.CommandContext(t.Context(), "go", "test", "./queries")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("testing generated query results: %v\n%s", err, out)
 	}

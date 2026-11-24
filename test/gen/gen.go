@@ -203,7 +203,16 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 	})
 }
 
-func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, config gen.Config[C], d drivers.Interface[T, C, I], modPath string, goTestArgs []string, extraPlugins ...gen.Plugin) {
+func testDriver[T, C, I any](
+	t *testing.T,
+	dst string,
+	tpls gen.Templates,
+	config gen.Config[C],
+	d drivers.Interface[T, C, I],
+	modPath string,
+	goTestArgs []string,
+	extraPlugins ...gen.Plugin,
+) {
 	t.Helper()
 	buf := &bytes.Buffer{}
 
@@ -241,6 +250,8 @@ func testDriver[T, C, I any](t *testing.T, dst string, tpls gen.Templates, confi
 	if err := os.Chdir(dst); err != nil { // ensure we are in the destination directory
 		t.Fatalf("Unable to change directory to %s: %s", dst, err)
 	}
+	// Let bobcheck resolve the generated imports in this new test module.
+	t.Setenv("GOFLAGS", "-mod=mod")
 	if err := gen.Run(t.Context(), state, d, allPlugins...); err != nil {
 		t.Fatalf("Unable to execute State.Run: %s", err)
 	}
