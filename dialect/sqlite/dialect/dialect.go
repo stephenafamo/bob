@@ -3,6 +3,7 @@ package dialect
 import (
 	"io"
 	"strconv"
+	"strings"
 )
 
 //nolint:gochecknoglobals
@@ -22,6 +23,6 @@ func (d dialect) WriteNamedArg(w io.StringWriter, name string) {
 
 func (d dialect) WriteQuoted(w io.StringWriter, s string) {
 	w.WriteString(`"`)
-	w.WriteString(s)
+	w.WriteString(strings.ReplaceAll(s, `"`, `""`))
 	w.WriteString(`"`)
 }

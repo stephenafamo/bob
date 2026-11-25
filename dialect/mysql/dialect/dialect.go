@@ -2,6 +2,7 @@ package dialect
 
 import (
 	"io"
+	"strings"
 )
 
 //nolint:gochecknoglobals
@@ -15,6 +16,6 @@ func (d dialect) WriteArg(w io.StringWriter, position int) {
 
 func (d dialect) WriteQuoted(w io.StringWriter, s string) {
 	w.WriteString("`")
-	w.WriteString(s)
+	w.WriteString(strings.ReplaceAll(s, "`", "``"))
 	w.WriteString("`")
 }
