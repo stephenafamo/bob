@@ -121,6 +121,12 @@ func (d *driver) Types() drivers.Types {
 	return d.translator.Types
 }
 
+func (d *driver) ConfigureTypes(types *drivers.Types, tables drivers.Tables[any, IndexExtra]) {
+	if d.config.Driver == pgxDriver {
+		parser.ConfigurePlainSliceArrayTypes(types, tables)
+	}
+}
+
 // Assemble all the information we need to provide back to the driver
 func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	var dbinfo *DBInfo

@@ -85,7 +85,7 @@ If a generated `text[]` or `varchar[]` field fails to scan with `pq: unable to p
 
 Here `bobpgx` is `github.com/stephenafamo/bob/drivers/pgx`. If you use the native executor with models generated for `stdlib`, set the native driver and regenerate the models. Set `psql.driver` for `bobgen-psql`, or `sql.driver` for `bobgen-sql` with `dialect: psql`.
 
-When replacing the type of an array column for the native pgx driver, use `pgtypes.Array[T]` (for example `pgtypes.Array[types.JSON[MyStruct]]`) rather than a plain slice: a plain slice wrapped in `null.Val` cannot be scanned by native pgx, because `null.Val` is an `sql.Scanner` and receives the binary format.
+When replacing the type of an array column for the native pgx driver, you can use either `pgtypes.Array[T]` (for example `pgtypes.Array[types.JSON[MyStruct]]`) or a plain slice (for example `[]types.JSON[MyStruct]`). A nullable `pgtypes.Array[T]` column is wrapped in the configured null type such as `null.Val`, as usual. A nullable plain slice column uses the bare slice instead, because native pgx hands a wrapping `sql.Scanner` the binary format, which it cannot parse: a `nil` slice is `NULL`, and an empty non-nil slice is `{}`. To use a different null type for the plain slice, set `null_type` on its type definition.
 
 With the native pgx driver, `tsvector` columns are generated as `pgtypes.TSVector`, because pgx v5.9 and later cannot scan `tsvector` into a `string`. Native pgx support is experimental. Some other column types, such as `interval`, `bit`, `bit varying` and `"char"`, are generated as `string` and cannot yet be scanned from pgx's binary format; use a type replacement for them.
 

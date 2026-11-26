@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Drivers can implement `drivers.TypeConfigurator` to adjust type definitions after user-defined types and replacements are applied.
+
+### Fixed
+
+- With the native pgx driver, a nullable array column whose type is replaced with a plain slice (for example `[]types.JSON[MyStruct]`) is now generated as the bare slice, with `nil` meaning `NULL`, instead of `null.Val[[]T]`, which native pgx cannot scan. A `null_type` set on the slice's type definition is kept. See [#739](https://github.com/stephenafamo/bob/issues/739).
+
 ## [v0.51.0] - 2026-11-22
 
 ### Added
