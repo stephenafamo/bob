@@ -76,11 +76,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
                         q.AppendCombine(clause.Combine{
                             Strategy: "%s",
                             All: %t,
-                            Query: bob.BaseQuery[bob.Expression]{
-                                Expression: EXPR.subExpr(%d, %d),
-                                QueryType: bob.QueryTypeSelect,
-                                Dialect: dialect.Dialect,
-                            },
+                            Query: bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect),
                         })
                     `, strategy, all, start+1, end-1) // skip surrounding parens
 				return nil
@@ -98,7 +94,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 			order.BY().GetSymbol().GetStop()+1,
 			order.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendCombinedOrder(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -114,7 +110,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 				limit.GetStart().GetStart(),
 				limit.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetCombinedLimit(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -124,7 +120,7 @@ func (v *visitor) modSelectStatement(ctx mysqlparser.ISelectStatementContext, sb
 				offset.GetStart().GetStart(),
 				offset.GetStop().GetStop(),
 				func(start, end int) error {
-					fmt.Fprintf(sb, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
+					fmt.Fprintf(sb, "q.SetCombinedOffset(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...)
@@ -333,7 +329,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.SetTable(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -345,7 +341,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		for i, col := range allCols {
 			colNames[i] = v.GetName(col)
 		}
-		fmt.Fprintf(sb, "q.TableRef.Columns = %#v\n", colNames)
+		fmt.Fprintf(sb, "q.SetTableColumns(%#v...)\n", colNames)
 	}
 
 	if stmtOrVals := ctx.InsertStatementValue(); stmtOrVals != nil {
@@ -353,11 +349,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 			stmtOrVals.GetStart().GetStart(),
 			stmtOrVals.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: EXPR.subExpr(%d, %d),
-						Dialect: dialect.Dialect,
-						QueryType: bob.QueryTypeSelect,
-						}
+				fmt.Fprintf(sb, `q.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect))
 					`, start, end)
 				return nil
 			},
@@ -371,7 +363,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 				set.ExpressionOrDefault().GetStop().GetStop(),
 				func(start, end int) error {
 					fmt.Fprintf(sb,
-						"q.Sets = append(q.Sets, dialect.Set{Col: %q, Val: EXPR.subExpr(%d, %d)})\n",
+						"q.AppendAssignment(dialect.Set{Col: %q, Val: EXPR.subExpr(%d, %d)})\n",
 						v.GetName(set.FullColumnName()), start, end)
 					return nil
 				},
@@ -383,7 +375,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			tableAlias.GetStart().GetStart(), tableAlias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.RowAlias = EXPR.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.SetRowAlias(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -394,7 +386,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		for i, col := range colAliases {
 			aliasNames[i] = v.GetName(col)
 		}
-		fmt.Fprintf(sb, "q.ColumnAlias = %#v\n", aliasNames)
+		fmt.Fprintf(sb, "q.SetColumnAliases(%#v...)\n", aliasNames)
 	}
 
 	if duplicate := ctx.GetDuplicated(); len(duplicate) > 0 {
@@ -403,7 +395,7 @@ func (v *visitor) modInsertStatement(ctx mysqlparser.IInsertStatementContext, sb
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			first.GetStart().GetStart(), last.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.DuplicateKeyUpdate.AppendSet(EXPR.subExpr(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendDuplicateKeyUpdate(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -449,7 +441,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.SetTable(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -469,7 +461,7 @@ func (v *visitor) modSingleUpdateStatement(ctx mysqlparser.ISingleUpdateStatemen
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			tableAlias.GetStart().GetStart(), tableAlias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Alias = EXPR.raw(%d, %d)\n", start, end)
+				fmt.Fprintf(sb, "q.SetTableAlias(EXPR.raw(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)
@@ -718,7 +710,7 @@ func (v *visitor) modMultipleDeleteStatement(ctx mysqlparser.IMultipleDeleteStat
 		v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 			table.GetStart().GetStart(), table.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.AppendTable(EXPR.raw(%d, %d))\n", start, end)
+				fmt.Fprintf(sb, "q.AppendTable(EXPR.subExpr(%d, %d))\n", start, end)
 				return nil
 			},
 		)...)

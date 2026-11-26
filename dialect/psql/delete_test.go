@@ -261,7 +261,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteWhereCurrentOfConflict(t *testing.T) {
-	_, _, err := bob.Build(context.Background(), psql.Delete(
+	_, _, err := bob.Build(context.Background(), nil, psql.Delete(
 		dm.From("films"),
 		dm.Where(psql.Quote("id").EQ(psql.Arg(1))),
 		dm.WhereCurrentOf("c_films"),

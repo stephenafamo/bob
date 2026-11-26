@@ -23,6 +23,11 @@ jobs:
       - name: Install Dependencies
         run: go mod download
 
+      - name: Test bobcheck without the race detector
+        run: |
+          go test ./analysis/bobcheck
+          go test -run '^TestBobcheckAfterGenerationFromSubdirectory$' ./gen/bobgen-psql/driver
+
       - name: Run tests
         run: go test -timeout 20m -race -covermode atomic -coverprofile=covprofile.out -coverpkg=github.com/stephenafamo/bob/... ./...
 

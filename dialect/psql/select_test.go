@@ -5,7 +5,6 @@ import (
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
-	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/fm"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/wm"
@@ -14,8 +13,8 @@ import (
 )
 
 var (
-	_ bob.Loadable     = &dialect.SelectQuery{}
-	_ bob.MapperModder = &dialect.SelectQuery{}
+	_ bob.Loadable     = psql.SelectQuery{}
+	_ bob.MapperModder = psql.SelectQuery{}
 )
 
 func TestSelect(t *testing.T) {

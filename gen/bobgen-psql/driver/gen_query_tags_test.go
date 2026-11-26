@@ -16,6 +16,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/gen/plugins"
+	testgen "github.com/stephenafamo/bob/test/gen"
 )
 
 // stubMods is a minimal drivers.TemplateInclude for a query with no mods.
@@ -28,6 +29,7 @@ var queryTagsTest []byte
 
 func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	nullable := false
+	canBeNull := true
 
 	mod, err := exec.CommandContext(t.Context(), "go", "env", "GOMOD").Output()
 	if err != nil {
@@ -35,6 +37,8 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	}
 	tmp := t.TempDir()
 	t.Chdir(tmp)
+	t.Setenv("GOWORK", "off")
+	t.Setenv("GOFLAGS", "-mod=mod")
 	root := filepath.Dir(strings.TrimSpace(string(mod)))
 	gomod := fmt.Sprintf(
 		"module scratch.local/repro\n\ngo 1.26.0\n\nrequire github.com/stephenafamo/bob v0.0.0\nreplace github.com/stephenafamo/bob => %q\n",
@@ -82,6 +86,27 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 								Mods: stubMods{},
 							},
 							{
+								Name: "GroupedWidgets",
+								SQL:  `SELECT id, label, child AS "children.id" FROM sample ORDER BY seq`,
+								Type: bob.QueryTypeSelect,
+								Columns: drivers.QueryCols{
+									{Name: "id", DBName: "id", TypeName: "int32", Nullable: &nullable},
+									{Name: "label", DBName: "label", TypeName: "string", Nullable: &canBeNull},
+									{Name: "children.id", DBName: "children.id", TypeName: "int32", Nullable: &canBeNull},
+								},
+								Mods: stubMods{},
+							},
+							{
+								Name: "GroupedBytes",
+								SQL:  `SELECT CAST(label AS BLOB) AS code, child AS "children.id" FROM sample WHERE label <> '' ORDER BY seq`,
+								Type: bob.QueryTypeSelect,
+								Columns: drivers.QueryCols{
+									{Name: "code", DBName: "code", TypeName: "[]byte", Nullable: &nullable},
+									{Name: "children.id", DBName: "children.id", TypeName: "int32", Nullable: &canBeNull},
+								},
+								Mods: stubMods{},
+							},
+							{
 								Name: "GetNestedWidgets",
 								SQL:  `SELECT 7 AS related_widgets, 42 AS "related_widgets.widget_id", 'hidden' AS "related_widgets.secret_token"`,
 								Type: bob.QueryTypeSelect,
@@ -109,9 +134,10 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	)
 
 	state := &gen.State[any]{Config: gen.Config[any]{
-		NoTests:   true,
-		Tags:      []string{"json", "yaml"},
-		TagIgnore: []string{"secret_token"},
+		DisableBobcheck: testgen.SkipBobcheck,
+		NoTests:         true,
+		Tags:            []string{"json", "yaml"},
+		TagIgnore:       []string{"secret_token"},
 	}}
 	if err := gen.Run[any, any, driver.IndexExtra](
 		t.Context(), state, stubDriver{types: helpers.Types(), info: info}, outputPlugins...,
@@ -122,8 +148,7 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(queryDir, "tags_test.go"), queryTagsTest, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.CommandContext(t.Context(), "go", "test", "-mod=mod", "./queries")
-	cmd.Env = append(os.Environ(), "GOWORK=off")
+	cmd := exec.CommandContext(t.Context(), "go", "test", "./queries")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("testing generated query results: %v\n%s", err, out)
 	}

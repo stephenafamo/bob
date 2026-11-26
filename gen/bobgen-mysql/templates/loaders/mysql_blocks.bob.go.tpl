@@ -1,6 +1,6 @@
 {{- define "helpers/then_load_variables"}}
 var (
-  SelectThenLoad = getThenLoaders[*dialect.SelectQuery]()
-  InsertThenLoad = getThenLoaders[*dialect.InsertQuery]()
+  SelectThenLoad = getThenLoaders[dialect.SelectEditor]()
+  InsertThenLoad = getThenLoaders[dialect.InsertEditor]()
   )
 {{end -}}

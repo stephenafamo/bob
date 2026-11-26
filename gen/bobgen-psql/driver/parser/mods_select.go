@@ -34,7 +34,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 
 	if distinct := main.DistinctClause; distinct != nil {
 		if len(distinct) == 1 && distinct[0].Node == nil {
-			fmt.Fprintln(w.mods, "q.Distinct.On = []any{}")
+			fmt.Fprintln(w.mods, "q.SetDistinctOn()")
 		} else {
 			distinctInfo := info.children["DistinctClause"]
 			w.editRules = append(
@@ -45,7 +45,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					func(start, end int) error {
 						fmt.Fprintf(
 							w.mods,
-							"q.Distinct.On = append(q.Distinct.On,EXPR.subExpr(%d, %d))\n",
+							"q.AppendDistinctOn(EXPR.subExpr(%d, %d))\n",
 							start, end,
 						)
 						return nil
@@ -171,11 +171,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
                         q.AppendCombine(clause.Combine{
                             Strategy: "%s",
                             All: %t,
-                            Query: bob.BaseQuery[bob.Expression]{
-                                Expression: EXPR.subExpr(%d, %d),
-                                QueryType: bob.QueryTypeSelect,
-                                Dialect: dialect.Dialect,
-                            },
+                            Query: bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect),
                         })
                     `, strategy, combine.All, start, end)
 					return nil
@@ -199,7 +195,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 						fmt.Fprintf(w.mods, "q.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
 					case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
 						w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
-						fmt.Fprintf(w.mods, `q.Fetch.SetFetch(clause.Fetch{
+						fmt.Fprintf(w.mods, `q.SetFetch(clause.Fetch{
 								Count: EXPR.subExpr(%d, %d),
 								WithTies: true,
 							})
@@ -253,10 +249,10 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					func(start, end int) error {
 						switch stmt.SelectStmt.LimitOption {
 						case pg.LimitOption_LIMIT_OPTION_COUNT:
-							fmt.Fprintf(w.mods, "q.CombinedLimit.SetLimit(EXPR.subExpr(%d, %d))\n", start, end)
+							fmt.Fprintf(w.mods, "q.SetCombinedLimit(EXPR.subExpr(%d, %d))\n", start, end)
 						case pg.LimitOption_LIMIT_OPTION_WITH_TIES:
 							w.imports = append(w.imports, []string{"github.com/stephenafamo/bob/clause"})
-							fmt.Fprintf(w.mods, `q.CombinedFetch.SetFetch(clause.Fetch{
+							fmt.Fprintf(w.mods, `q.SetCombinedFetch(clause.Fetch{
 									Count: EXPR.subExpr(%d, %d),
 									WithTies: true,
 								})
@@ -275,7 +271,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					int(offsetInfo.start),
 					int(offsetInfo.end)-1,
 					func(start, end int) error {
-						fmt.Fprintf(w.mods, "q.CombinedOffset.SetOffset(EXPR.subExpr(%d, %d))\n", start, end)
+						fmt.Fprintf(w.mods, "q.SetCombinedOffset(EXPR.subExpr(%d, %d))\n", start, end)
 						return nil
 					},
 				)...,
@@ -289,7 +285,7 @@ func (w *walker) modSelectStatement(stmt *pg.Node_SelectStmt, info nodeInfo) {
 					int(orderInfo.start),
 					int(orderInfo.end)-1,
 					func(start, end int) error {
-						fmt.Fprintf(w.mods, "q.CombinedOrder.AppendOrder(EXPR.subExpr(%d, %d))\n", start, end)
+						fmt.Fprintf(w.mods, "q.AppendCombinedOrder(EXPR.subExpr(%d, %d))\n", start, end)
 						return nil
 					},
 				)...,

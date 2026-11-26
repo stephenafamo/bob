@@ -20,7 +20,7 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 				int(intoInfo.start),
 				int(intoInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.TableRef.Expression = EXPR.subExpr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTable(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -33,18 +33,14 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 		colNames[i] = w.names[colNameInfo.position()]
 	}
 	if len(colNames) > 0 {
-		fmt.Fprintf(w.mods, "q.TableRef.Columns = %#v\n", colNames)
+		fmt.Fprintf(w.mods, "q.SetTableColumns(%#v...)\n", colNames)
 	}
 
 	if selectInfo, ok := info.children["SelectStmt"].children["SelectStmt"]; ok {
 		w.editRules = append(w.editRules, internal.RecordPoints(
 			int(selectInfo.start), int(selectInfo.end)-1,
 			func(start, end int) error {
-				fmt.Fprintf(w.mods, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: EXPR.subExpr(%d, %d),
-						Dialect: dialect.Dialect,
-						QueryType: bob.QueryTypeSelect,
-						}
+				fmt.Fprintf(w.mods, `q.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect))
 					`, start, end)
 				return nil
 			},
@@ -53,9 +49,9 @@ func (w *walker) modInsertStatement(stmt *pg.Node_InsertStmt, info nodeInfo) {
 
 	switch stmt.InsertStmt.Override {
 	case pg.OverridingKind_OVERRIDING_USER_VALUE:
-		fmt.Fprintln(w.mods, `q.Overriding = "USER"`)
+		fmt.Fprintln(w.mods, `q.SetOverriding("USER")`)
 	case pg.OverridingKind_OVERRIDING_SYSTEM_VALUE:
-		fmt.Fprintln(w.mods, `q.Overriding = "SYSTEM"`)
+		fmt.Fprintln(w.mods, `q.SetOverriding("SYSTEM")`)
 	}
 
 	if conflictInfo, ok := info.children["OnConflictClause"]; ok {

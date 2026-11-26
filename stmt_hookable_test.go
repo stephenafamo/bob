@@ -264,7 +264,10 @@ func TestHookableTypeMismatch(t *testing.T) {
 				var queryCalls int
 				switch path {
 				case "Allx":
-					_, queryCalls, err = p18RunAllx[SliceTransformer[p18PlainElem, p18PlainElemSlice], p18PlainElem, p18PlainElemSlice](t, []int64{1, 2})
+					_, queryCalls, err = p18RunAllx[SliceTransformer[p18PlainElem, p18PlainElemSlice], p18PlainElem, p18PlainElemSlice](
+						t,
+						[]int64{1, 2},
+					)
 				case "PrepareQueryx.All":
 					_, queryCalls, err = p18RunPreparedAll[p18PlainElem, p18PlainElemSlice](t, []int64{1, 2})
 				}
@@ -284,10 +287,7 @@ func TestHookableTypeMismatch(t *testing.T) {
 
 	t.Run("case5_prepared_path_passes_QueryType_through_to_the_hook", func(t *testing.T) {
 		// Same combination as case 3 (both hookable), prepared path only,
-		// checking what QueryType reaches AfterQueryHook. Related to P-19
-		// (Clone() dropping QueryType): PrepareQueryx stores queryType from
-		// q.Type() directly at prepare time (stmt.go), it does not go
-		// through BaseQuery.Clone(), so this does not exercise P-19's bug.
+		// checking what QueryType reaches AfterQueryHook.
 		p18ResetCounters()
 
 		_, _, err := p18RunPreparedAll[p18Elem, p18HookableSlice](t, []int64{1})

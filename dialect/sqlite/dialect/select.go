@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_select.html
-type SelectQuery struct {
+type selectState struct {
 	clause.With
 	clause.SelectList
 	Distinct bool
@@ -26,15 +26,18 @@ type SelectQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*SelectQuery]
+	bob.ContextualModdable[SelectEditor]
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (s selectState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
-	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
-		return nil, err
+	if len(s.Mods) != 0 {
+		ctx, err = s.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,

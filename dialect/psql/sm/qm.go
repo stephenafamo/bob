@@ -8,32 +8,32 @@ import (
 )
 
 // With starts a CTE. The name and column list are quoted as SQL identifiers.
-func With(name string, columns ...string) dialect.CTEChain[*dialect.SelectQuery] {
-	return dialect.With[*dialect.SelectQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.SelectEditor] {
+	return dialect.With[dialect.SelectEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
-	return mods.Recursive[*dialect.SelectQuery](r)
+func Recursive(r bool) bob.Mod[dialect.SelectEditor] {
+	return mods.Recursive[dialect.SelectEditor](r)
 }
 
-func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
+func Distinct(on ...any) bob.Mod[dialect.SelectEditor] {
 	if on == nil {
 		on = []any{} // nil means no distinct
 	}
 
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.Distinct.On = on
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetDistinctOn(on...)
 	})
 }
 
-func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Select[*dialect.SelectQuery](clauses)
+func Columns(clauses ...any) bob.Mod[dialect.SelectEditor] {
+	return mods.Select[dialect.SelectEditor](clauses)
 }
 
 // From sets the query source. Pass a table name as a string (unquoted literal) or use
 // psql.Quote(...) / a subquery Expression for quoted or qualified names.
 // Optional joins are attached to this from_item.
-func From(table any, joins ...dialect.JoinChain[*dialect.SelectQuery]) dialect.FromChain[*dialect.SelectQuery] {
+func From(table any, joins ...dialect.JoinChain[dialect.SelectEditor]) dialect.FromChain[dialect.SelectEditor] {
 	return dialect.From(table, joins...)
 }
 
@@ -43,42 +43,42 @@ func FromFunction(funcs ...*dialect.Function) bob.Expression {
 	return dialect.TableFunctions(funcs...)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.InnerJoin[*dialect.SelectQuery](e)
+func InnerJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.InnerJoin[dialect.SelectEditor](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.LeftJoin[*dialect.SelectQuery](e)
+func LeftJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.LeftJoin[dialect.SelectEditor](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.RightJoin[*dialect.SelectQuery](e)
+func RightJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.RightJoin[dialect.SelectEditor](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.FullJoin[*dialect.SelectQuery](e)
+func FullJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.FullJoin[dialect.SelectEditor](e)
 }
 
-func CrossJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.CrossJoin[*dialect.SelectQuery](e)
+func CrossJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.CrossJoin[dialect.SelectEditor](e)
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.SelectQuery] {
-	return mods.Where[*dialect.SelectQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.SelectEditor] {
+	return mods.Where[dialect.SelectEditor]{E: e}
 }
 
-func Having(e any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Having[*dialect.SelectQuery]{e}
+func Having(e any) bob.Mod[dialect.SelectEditor] {
+	return mods.Having[dialect.SelectEditor]{e}
 }
 
-func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
-	return mods.GroupBy[*dialect.SelectQuery]{
+func GroupBy(e any) bob.Mod[dialect.SelectEditor] {
+	return mods.GroupBy[dialect.SelectEditor]{
 		E: e,
 	}
 }
 
-func GroupByDistinct(distinct bool) bob.Mod[*dialect.SelectQuery] {
-	return mods.GroupByDistinct[*dialect.SelectQuery](distinct)
+func GroupByDistinct(distinct bool) bob.Mod[dialect.SelectEditor] {
+	return mods.GroupByDistinct[dialect.SelectEditor](distinct)
 }
 
 func Grouping(groups ...any) clause.Grouping {
@@ -98,87 +98,87 @@ func GroupingSets(groups ...any) clause.GroupingSet {
 }
 
 // Window defines a named window for the query. The name is quoted as an SQL identifier.
-func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
+func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[dialect.SelectEditor] {
 	w := clause.Window{}
 	for _, mod := range winMods {
-		mod.Apply(&w)
+		mod.Edit(&w)
 	}
 
-	return mods.NamedWindow[*dialect.SelectQuery](clause.NamedWindow{
+	return mods.NamedWindow[dialect.SelectEditor](clause.NamedWindow{
 		Name:       name,
 		Definition: w,
 	})
 }
 
-func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
-	return dialect.OrderBy[*dialect.SelectQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[dialect.SelectEditor] {
+	return dialect.OrderBy[dialect.SelectEditor](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Limit[*dialect.SelectQuery]{
+func Limit(count any) bob.Mod[dialect.SelectEditor] {
+	return mods.Limit[dialect.SelectEditor]{
 		Count: count,
 	}
 }
 
-func Offset(count any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Offset[*dialect.SelectQuery]{
+func Offset(count any) bob.Mod[dialect.SelectEditor] {
+	return mods.Offset[dialect.SelectEditor]{
 		Count: count,
 	}
 }
 
-func Fetch(count any, withTies bool) bob.Mod[*dialect.SelectQuery] {
-	return mods.Fetch[*dialect.SelectQuery]{
+func Fetch(count any, withTies bool) bob.Mod[dialect.SelectEditor] {
+	return mods.Fetch[dialect.SelectEditor]{
 		Count:    &count,
 		WithTies: withTies,
 	}
 }
 
-func Union(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Union(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func UnionAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func UnionAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Intersect(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Intersect(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func IntersectAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func IntersectAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Except(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Except(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func ExceptAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      true,
@@ -186,8 +186,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 }
 
 // ForUpdate locks selected tables. Pass table names as psql.Quote(...) or another Expression.
-func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForUpdate(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
 			Tables:   tables,
@@ -196,8 +196,8 @@ func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 // ForNoKeyUpdate locks selected tables without affecting key columns.
-func ForNoKeyUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForNoKeyUpdate(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthNoKeyUpdate,
 			Tables:   tables,
@@ -206,8 +206,8 @@ func ForNoKeyUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 // ForShare acquires a shared lock on selected tables.
-func ForShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForShare(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthShare,
 			Tables:   tables,
@@ -216,8 +216,8 @@ func ForShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 // ForKeyShare acquires a key-share lock on selected tables.
-func ForKeyShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForKeyShare(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthKeyShare,
 			Tables:   tables,
@@ -235,23 +235,22 @@ func OrderCombined(e any) dialect.OrderCombined {
 }
 
 // To apply limit to the result of a UNION, INTERSECT, or EXCEPT query
-func LimitCombined(count any) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedLimit.SetLimit(count)
+func LimitCombined(count any) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetCombinedLimit(count)
 	})
 }
 
 // To apply offset to the result of a UNION, INTERSECT, or EXCEPT query
-func OffsetCombined(count any) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedOffset.SetOffset(count)
+func OffsetCombined(count any) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetCombinedOffset(count)
 	})
 }
 
 // To apply fetch to the result of a UNION, INTERSECT, or EXCEPT query
-func FetchCombined(count any, withTies bool) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedFetch.Count = count
-		q.CombinedFetch.WithTies = withTies
+func FetchCombined(count any, withTies bool) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetCombinedFetch(clause.Fetch{Count: count, WithTies: withTies})
 	})
 }

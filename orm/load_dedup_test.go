@@ -22,6 +22,26 @@ var testDedupMappers = []struct {
 	{"typed", testPreloadChildMapper},
 }
 
+func TestPreloadKeyFromEmbeddedField(t *testing.T) {
+	type Fields struct {
+		ID *int `db:"child_id,pk"`
+	}
+	type child struct{ *Fields }
+	key := preloadKeyFromValue[*child]("child.", []string{"child_id"}, []string{"child.child_id"})
+	if key == nil {
+		t.Fatal("embedded key not found")
+	}
+	for _, c := range []*child{nil, {}, {&Fields{}}} {
+		if _, ok := key(nil, c); ok {
+			t.Fatal("NULL child key accepted for deduplication")
+		}
+	}
+	id := 42
+	if got, ok := key(nil, &child{&Fields{&id}}); !ok || string(got) != "42" {
+		t.Fatalf("key = %q, %t; want 42, true", got, ok)
+	}
+}
+
 // a no-op loader; attaching one makes the AfterPreloader actually collect
 func testCollectLoader() Loader[testPreloadQuery] {
 	return func(context.Context, bob.Executor, any) error { return nil }
@@ -391,7 +411,7 @@ func TestPreloadDedupCompositeKey(t *testing.T) {
 				PreloadAs[testPreloadQuery]("c"),
 			)
 			queryMod, mapperMod, _ := loader("")
-			queryMod.Apply(testPreloadQuery{})
+			queryMod.Edit(testPreloadQuery{})
 			scanner := scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod)
 
 			res := scanTestPreloadRows(t, scanner, cols, rows)

@@ -26,7 +26,9 @@ import (
 var (
 	goosList = strings.Fields("aix android darwin dragonfly freebsd hurd illumos ios js linux nacl netbsd openbsd plan9 solaris windows zos")
 
-	goarchList = strings.Fields("386 amd64 amd64p32 arm armbe arm64 arm64be loong64 mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv riscv64 s390 s390x sparc sparc64 wasm")
+	goarchList = strings.Fields(
+		"386 amd64 amd64p32 arm armbe arm64 arm64be loong64 mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv riscv64 s390 s390x sparc sparc64 wasm",
+	)
 )
 
 type goOutputLanguage struct {
@@ -203,6 +205,12 @@ func PackageForFolder(folder string) (string, string, error) {
 	relPath := strings.TrimPrefix(fullPath, modRoot)
 
 	return path.Join(modFile.Module.Mod.Path, filepath.ToSlash(relPath)), getGoVersion(modFile), nil
+}
+
+// ModuleRoot returns the root of the Go module containing folder.
+func ModuleRoot(folder string) (string, error) {
+	root, _, err := goModInfo(folder)
+	return root, err
 }
 
 // goModInfo returns the main module's root directory

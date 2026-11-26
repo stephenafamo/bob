@@ -6,76 +6,29 @@
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}} is retrieved from the database
 func (o *{{$tAlias.UpSingular}}) AfterQueryHook(ctx context.Context, exec bob.Executor, queryType bob.QueryType) error {
-  var err error
-
-  switch queryType {
-  case bob.QueryTypeSelect:
-    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-  {{if .Table.Constraints.Primary -}}
-    case bob.QueryTypeInsert:
-      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    case bob.QueryTypeUpdate:
-      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    case bob.QueryTypeDelete:
-      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    {{if eq $.Dialect "psql" -}}
-    case bob.QueryTypeMerge:
-      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-    {{- end}}
-  {{- end}}
-  }
-
-	return err
+  return {{$tAlias.UpSingular}}Slice{o}.AfterQueryHook(ctx, exec, queryType)
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
-
-// primaryKeyVals returns the primary key values of the {{$tAlias.UpSingular}} 
-func (o *{{$tAlias.UpSingular}}) primaryKeyVals() bob.Expression {
-	{{if gt (len $table.Constraints.Primary.Columns) 1 -}}
-		return {{$.Dialect}}.ArgGroup(
-			{{range $column := $table.Constraints.Primary.Columns -}}
-				o.{{$tAlias.Column $column}},
-			{{end}}
-		)
-	{{- else -}}
-		return {{$.Dialect}}.Arg(o.{{$tAlias.Column (index $table.Constraints.Primary.Columns 0)}})
-	{{- end}}
-}
-
+{{$.Importer.Import "github.com/stephenafamo/bob/expr"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$pkCols := $table.Constraints.Primary.Columns}}
-{{$multiPK := gt (len $pkCols) 1}}
-func (o *{{$tAlias.UpSingular}}) pkEQ() dialect.Expression {
-   return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{tableColumnAlias $table.Schema $table.Name $table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
-    .EQ(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-      return o.primaryKeyVals().WriteSQL(ctx, w, d, start)
-    }))
+var {{$tAlias.DownSingular}}RowMapping = orm.RowMapping[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]{
+	KeyColumns: expr.NewColumnsExpr({{range $pkCols}}{{quote .}},{{end}}).WithParent({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}),
+	KeyValues: func(o *{{$tAlias.UpSingular}}) bob.Expression {
+		return {{$tAlias.DownSingular}}Key({{range $pkCols}}o.{{$tAlias.Column .}},{{end}})
+	},
+	CopyColumns: (*{{$tAlias.UpSingular}}).copyColumns,
+	CopyMatching: {{$tAlias.UpSingular}}Slice.copyMatchingRows,
 }
 
 
 {{block "one_update" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 // Update uses an executor to update the {{$tAlias.UpSingular}}
 func (o *{{$tAlias.UpSingular}}) Update(ctx context.Context, exec bob.Executor, s *{{$tAlias.UpSingular}}Setter) error {
-	q := {{$tAlias.UpPlural}}.Update(s.UpdateMod(), um.Where(o.pkEQ()))
-	q.Expression.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-		return {{$tAlias.UpPlural}}.BeforeUpdateHooks.RunHooks(ctx, exec, {{$tAlias.UpSingular}}Slice{o})
-	})
-	v, err := q.One(ctx, exec)
-  if err != nil {
-    return err
-  }
-
-  // Only the column fields are copied over, so that any non-column field
-  // (the relationship cache .R, plugin fields such as the counts .C) survives.
-  {{range $column := $table.Columns -}}
-  {{- $colAlias := $tAlias.Column $column.Name}}
-  o.{{$colAlias}} = v.{{$colAlias}}
-  {{end}}
-  return nil
+	return {{$tAlias.UpPlural}}.UpdateRow(ctx, exec, o, s)
 }
 {{- end}}
 
@@ -86,22 +39,15 @@ func (o *{{$tAlias.UpSingular}}) Delete(ctx context.Context, exec bob.Executor) 
 
 // Reload refreshes the {{$tAlias.UpSingular}} using the executor
 func (o *{{$tAlias.UpSingular}}) Reload(ctx context.Context, exec bob.Executor) error {
-	o2, err := {{$tAlias.UpPlural}}.Query(
-		{{range $column := $table.Constraints.Primary.Columns -}}
-		{{- $colAlias := $tAlias.Column $column -}}
-    sm.Where({{$tAlias.UpPlural}}.Columns.{{$colAlias}}.EQ({{$.Dialect}}.Arg(o.{{$colAlias}}))),
-		{{end -}}
-	).One(ctx, exec)
-	if err != nil {
-		return err
-	}
-	// Only the column fields are copied over, so that any non-column field
-	// (the relationship cache .R, plugin fields such as the counts .C) survives.
+	return {{$tAlias.UpPlural}}.ReloadRow(ctx, exec, o)
+}
+
+// Preserve relationships, counts, and plugin fields on refresh.
+func (o *{{$tAlias.UpSingular}}) copyColumns(o2 *{{$tAlias.UpSingular}}) {
 	{{range $column := $table.Columns -}}
 	{{- $colAlias := $tAlias.Column $column.Name}}
 	o.{{$colAlias}} = o2.{{$colAlias}}
 	{{end}}
-	return nil
 }
 
 {{- end}}

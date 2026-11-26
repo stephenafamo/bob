@@ -3,6 +3,7 @@ package bob
 import (
 	"context"
 	"database/sql"
+	"slices"
 
 	"github.com/stephenafamo/scan"
 )
@@ -20,16 +21,16 @@ type PreparedExecutor interface {
 
 // Prepare prepares a query using the [Preparer] and returns a [NamedStmt]
 func Prepare[Arg any, P PreparedExecutor](ctx context.Context, exec Preparer[P], q Query) (Stmt[Arg], error) {
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return Stmt[Arg]{}, err
-		}
+	ctx, q, err := resolveForExecution(ctx, exec, q)
+	if err != nil {
+		return Stmt[Arg]{}, err
 	}
+	return prepare[Arg](ctx, exec, q)
+}
 
-	query, args, err := Build(ctx, q)
+// prepare captures the SQL and loaders after query hooks have run.
+func prepare[Arg any, P PreparedExecutor](ctx context.Context, exec Preparer[P], q Query) (Stmt[Arg], error) {
+	query, args, err := render(ctx, exec, q, 1)
 	if err != nil {
 		return Stmt[Arg]{}, err
 	}
@@ -45,15 +46,10 @@ func Prepare[Arg any, P PreparedExecutor](ctx context.Context, exec Preparer[P],
 	}
 
 	s := Stmt[Arg]{
-		stmt:   stmt,
-		exec:   exec,
-		binder: binder,
-	}
-
-	if l, ok := q.(Loadable); ok {
-		loaders := l.GetLoaders()
-		s.loaders = make([]Loader, len(loaders))
-		copy(s.loaders, loaders)
+		stmt:    stmt,
+		exec:    exec,
+		binder:  binder,
+		loaders: slices.Clone(loadersFor(ctx, q)),
 	}
 
 	return s, nil
@@ -92,6 +88,7 @@ func (s Stmt[Arg]) Close() error {
 
 // Exec executes a query without returning any rows. The args are for any placeholder parameters in the query.
 func (s Stmt[Arg]) Exec(ctx context.Context, arg Arg) (sql.Result, error) {
+	ctx = loaderContext(ctx, s.loaders)
 	args := s.binder.toArgs(arg)
 	result, err := s.stmt.ExecContext(ctx, args...)
 	if err != nil {
@@ -111,28 +108,36 @@ func (s Stmt[Arg]) NamedArgs() []string {
 	return s.binder.list()
 }
 
-func PrepareQuery[Arg any, P PreparedExecutor, T any](ctx context.Context, exec Preparer[P], q Query, m scan.Mapper[T]) (QueryStmt[Arg, T, []T], error) {
+func PrepareQuery[Arg any, P PreparedExecutor, T any](
+	ctx context.Context,
+	exec Preparer[P],
+	q Query,
+	m scan.Mapper[T],
+) (QueryStmt[Arg, T, []T], error) {
 	return PrepareQueryx[Arg, P, T, []T](ctx, exec, q, m)
 }
 
-func PrepareQueryx[Arg any, P PreparedExecutor, T any, Ts ~[]T](ctx context.Context, exec Preparer[P], q Query, m scan.Mapper[T]) (QueryStmt[Arg, T, Ts], error) {
+func PrepareQueryx[Arg any, P PreparedExecutor, T any, Ts ~[]T](
+	ctx context.Context,
+	exec Preparer[P],
+	q Query,
+	m scan.Mapper[T],
+) (QueryStmt[Arg, T, Ts], error) {
 	var qs QueryStmt[Arg, T, Ts]
 
-	s, err := Prepare[Arg](ctx, exec, q)
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
 		return qs, err
 	}
-
-	if l, ok := q.(MapperModder); ok {
-		if loaders := l.GetMapperMods(); len(loaders) > 0 {
-			m = scan.Mod(m, loaders...)
-		}
+	s, err := prepare[Arg](ctx, exec, q)
+	if err != nil {
+		return qs, err
 	}
 
 	qs = QueryStmt[Arg, T, Ts]{
 		Stmt:      s,
 		queryType: q.Type(),
-		mapper:    m,
+		mapper:    queryMapper(ctx, q, m),
 	}
 
 	return qs, nil
@@ -146,6 +151,7 @@ type QueryStmt[Arg, T any, Ts ~[]T] struct {
 }
 
 func (s QueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
+	ctx = loaderContext(ctx, s.loaders)
 	var t T
 
 	args := s.binder.toArgs(arg)
@@ -175,6 +181,7 @@ func (s QueryStmt[Arg, T, Ts]) One(ctx context.Context, arg Arg) (T, error) {
 }
 
 func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
+	ctx = loaderContext(ctx, s.loaders)
 	// Mirror Allx: if the slice type is not hookable but the single type
 	// is, reject before executing the query (see ErrHookableTypeMismatch).
 	_, isSliceHookable := any(*new(Ts)).(HookableType)
@@ -212,6 +219,7 @@ func (s QueryStmt[Arg, T, Ts]) All(ctx context.Context, arg Arg) (Ts, error) {
 }
 
 func (s QueryStmt[Arg, T, Ts]) Cursor(ctx context.Context, arg Arg) (scan.ICursor[T], error) {
+	ctx = loaderContext(ctx, s.loaders)
 	args := s.binder.toArgs(arg)
 	rows, err := s.stmt.QueryContext(ctx, args...)
 	if err != nil {

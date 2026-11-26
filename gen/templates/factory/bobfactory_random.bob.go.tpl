@@ -4,9 +4,18 @@
 var defaultFaker = faker.New()
 
 {{$doneTypes := dict }}
+{{$nullable := dict}}
 {{- range $table := .Tables}}
 {{- $tAlias := $.Aliases.Table $table.Key}}
   {{range $column := $table.Columns -}}
+    {{if and $column.Nullable (not (hasKey $nullable $column.Type)) -}}
+      {{$_ := set $nullable $column.Type true -}}
+      func randomNullable_{{normalizeType $column.Type}}(f *faker.Faker, notNull bool, limits ...string) {{$.Types.GetNullable $.CurrentPackage $.Importer $column.Type true}} {
+        if f == nil { f = &defaultFaker }
+        val := random_{{normalizeType $column.Type}}(f, limits...)
+        return {{$.Tables.ColumnSetter $.CurrentPackage $.Importer $.Types $table.Key $column.Name "val" "(notNull || f.Bool())"}}
+      }
+    {{end -}}
     {{- if hasKey $doneTypes $column.Type}}{{continue}}{{end -}}
     {{- $_ := set $doneTypes $column.Type nil -}}
     {{- $typDef := $.Types.Index $column.Type -}}

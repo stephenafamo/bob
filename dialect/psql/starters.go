@@ -19,11 +19,10 @@ var bmod = expr.Builder[Expression, Expression]{}
 //	SQL: generate_series(1, 3)
 //	Go: psql.F("generate_series", 1, 3)
 func F(name any, args ...any) mods.Moddable[*dialect.Function] {
-	f := dialect.NewFunction(name, args...)
-
 	return mods.Moddable[*dialect.Function](func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {
+		f := dialect.NewFunction(name, args...)
 		for _, mod := range mods {
-			mod.Apply(f)
+			mod.Edit(f)
 		}
 
 		return f

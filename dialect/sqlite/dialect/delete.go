@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_delete.html
-type DeleteQuery struct {
+type deleteState struct {
 	clause.With
 	clause.TableRef
 	clause.Where
@@ -20,15 +20,18 @@ type DeleteQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*DeleteQuery]
+	bob.ContextualModdable[DeleteEditor]
 }
 
-func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
+func (d deleteState) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = d.RunContextualMods(ctx, &d); err != nil {
-		return nil, err
+	if len(d.Mods) != 0 {
+		ctx, err = d.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,

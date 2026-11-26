@@ -20,9 +20,9 @@ func (w *walker) modUpdateStatement(stmt *pg.Node_UpdateStmt, info nodeInfo) {
 				int(tableInfo.end)-1,
 				func(start, end int) error {
 					if !stmt.UpdateStmt.GetRelation().GetInh() {
-						fmt.Fprintln(w.mods, "q.Only = true")
+						fmt.Fprintln(w.mods, "q.SetOnly(true)")
 					}
-					fmt.Fprintf(w.mods, "q.Table.Expression = EXPR.subExpr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTargetName(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,

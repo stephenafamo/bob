@@ -7,172 +7,172 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*dialect.SelectQuery] {
-	return dialect.With[*dialect.SelectQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.SelectEditor] {
+	return dialect.With[dialect.SelectEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.SelectQuery] {
-	return mods.Recursive[*dialect.SelectQuery](r)
+func Recursive(r bool) bob.Mod[dialect.SelectEditor] {
+	return mods.Recursive[dialect.SelectEditor](r)
 }
 
-func Distinct(on ...any) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func Distinct(on ...any) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("DISTINCT")
 	})
 }
 
-func HighPriority() bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func HighPriority() bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("HIGH_PRIORITY")
 	})
 }
 
-func Straight() bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func Straight() bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("STRAIGHT_JOIN")
 	})
 }
 
-func SmallResult() bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func SmallResult() bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("SQL_SMALL_RESULT")
 	})
 }
 
-func BigResult() bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func BigResult() bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("SQL_BIG_RESULT")
 	})
 }
 
-func BufferResult() bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func BufferResult() bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.AppendModifier("SQL_BUFFER_RESULT")
 	})
 }
 
-func Columns(clauses ...any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Select[*dialect.SelectQuery](clauses)
+func Columns(clauses ...any) bob.Mod[dialect.SelectEditor] {
+	return mods.Select[dialect.SelectEditor](clauses)
 }
 
-func From(table any) dialect.FromChain[*dialect.SelectQuery] {
-	return dialect.From[*dialect.SelectQuery](table)
+func From(table any) dialect.FromChain[dialect.SelectEditor] {
+	return dialect.From[dialect.SelectEditor](table)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.InnerJoin[*dialect.SelectQuery](e)
+func InnerJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.InnerJoin[dialect.SelectEditor](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.LeftJoin[*dialect.SelectQuery](e)
+func LeftJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.LeftJoin[dialect.SelectEditor](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.RightJoin[*dialect.SelectQuery](e)
+func RightJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.RightJoin[dialect.SelectEditor](e)
 }
 
-func CrossJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.CrossJoin[*dialect.SelectQuery](e)
+func CrossJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.CrossJoin[dialect.SelectEditor](e)
 }
 
-func StraightJoin(e any) dialect.JoinChain[*dialect.SelectQuery] {
-	return dialect.StraightJoin[*dialect.SelectQuery](e)
+func StraightJoin(e any) dialect.JoinChain[dialect.SelectEditor] {
+	return dialect.StraightJoin[dialect.SelectEditor](e)
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.SelectQuery] {
-	return mods.Where[*dialect.SelectQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.SelectEditor] {
+	return mods.Where[dialect.SelectEditor]{E: e}
 }
 
-func Having(e any) bob.Mod[*dialect.SelectQuery] {
-	return mods.Having[*dialect.SelectQuery]{e}
+func Having(e any) bob.Mod[dialect.SelectEditor] {
+	return mods.Having[dialect.SelectEditor]{e}
 }
 
-func GroupBy(e any) bob.Mod[*dialect.SelectQuery] {
-	return mods.GroupBy[*dialect.SelectQuery]{
+func GroupBy(e any) bob.Mod[dialect.SelectEditor] {
+	return mods.GroupBy[dialect.SelectEditor]{
 		E: e,
 	}
 }
 
-func WithRollup(distinct bool) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func WithRollup(distinct bool) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.SetGroupWith("ROLLUP")
 	})
 }
 
-func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.SelectQuery] {
+func Window(name string, winMods ...bob.Mod[*clause.Window]) bob.Mod[dialect.SelectEditor] {
 	w := clause.Window{}
 	for _, mod := range winMods {
-		mod.Apply(&w)
+		mod.Edit(&w)
 	}
 
-	return mods.NamedWindow[*dialect.SelectQuery](clause.NamedWindow{
+	return mods.NamedWindow[dialect.SelectEditor](clause.NamedWindow{
 		Name:       name,
 		Definition: w,
 	})
 }
 
-func OrderBy(e any) dialect.OrderBy[*dialect.SelectQuery] {
-	return dialect.OrderBy[*dialect.SelectQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[dialect.SelectEditor] {
+	return dialect.OrderBy[dialect.SelectEditor](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count int64) bob.Mod[*dialect.SelectQuery] {
-	return mods.Limit[*dialect.SelectQuery]{
+func Limit(count int64) bob.Mod[dialect.SelectEditor] {
+	return mods.Limit[dialect.SelectEditor]{
 		Count: count,
 	}
 }
 
-func Offset(count int64) bob.Mod[*dialect.SelectQuery] {
-	return mods.Offset[*dialect.SelectQuery]{
+func Offset(count int64) bob.Mod[dialect.SelectEditor] {
+	return mods.Offset[dialect.SelectEditor]{
 		Count: count,
 	}
 }
 
-func Union(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Union(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func UnionAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func UnionAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Union,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Intersect(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Intersect(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func IntersectAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func IntersectAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Intersect,
 		Query:    q,
 		All:      true,
 	}
 }
 
-func Except(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func Except(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      false,
 	}
 }
 
-func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
-	return mods.Combine[*dialect.SelectQuery]{
+func ExceptAll(q bob.Query) bob.Mod[dialect.SelectEditor] {
+	return mods.Combine[dialect.SelectEditor]{
 		Strategy: clause.Except,
 		Query:    q,
 		All:      true,
@@ -180,8 +180,8 @@ func ExceptAll(q bob.Query) bob.Mod[*dialect.SelectQuery] {
 }
 
 // ForUpdate locks selected tables. Pass table names as mysql.Quote(...) or another Expression.
-func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForUpdate(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthUpdate,
 			Tables:   tables,
@@ -190,8 +190,8 @@ func ForUpdate(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
 }
 
 // ForShare acquires a shared lock on selected tables.
-func ForShare(tables ...any) dialect.LockChain[*dialect.SelectQuery] {
-	return dialect.LockChain[*dialect.SelectQuery](func() clause.Lock {
+func ForShare(tables ...any) dialect.LockChain[dialect.SelectEditor] {
+	return dialect.LockChain[dialect.SelectEditor](func() clause.Lock {
 		return clause.Lock{
 			Strength: clause.LockStrengthShare,
 			Tables:   tables,
@@ -209,30 +209,30 @@ func OrderCombined(e any) dialect.OrderCombined {
 }
 
 // To apply limit to the result of a UNION, INTERSECT, or EXCEPT query
-func LimitCombined(count int64) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedLimit.SetLimit(count)
+func LimitCombined(count int64) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetCombinedLimit(count)
 	})
 }
 
 // To apply offset to the result of a UNION, INTERSECT, or EXCEPT query
-func OffsetCombined(count int64) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-		q.CombinedOffset.SetOffset(count)
+func OffsetCombined(count int64) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+		q.SetCombinedOffset(count)
 	})
 }
 
 // No need for the leading @
-func Into(var1 string, vars ...string) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func Into(var1 string, vars ...string) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.SetInto(into{
 			vars: append([]string{var1}, vars...),
 		})
 	})
 }
 
-func IntoDumpfile(filename string) bob.Mod[*dialect.SelectQuery] {
-	return bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
+func IntoDumpfile(filename string) bob.Mod[dialect.SelectEditor] {
+	return bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
 		q.SetInto(into{
 			dumpfile: filename,
 		})

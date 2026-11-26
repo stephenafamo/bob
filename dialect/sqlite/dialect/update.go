@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_update.html
-type UpdateQuery struct {
+type updateState struct {
 	clause.With
 	or
 	Table clause.TableRef
@@ -23,15 +23,18 @@ type UpdateQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*UpdateQuery]
+	bob.ContextualModdable[UpdateEditor]
 }
 
-func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (u updateState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = u.RunContextualMods(ctx, &u); err != nil {
-		return nil, err
+	if len(u.Mods) != 0 {
+		ctx, err = u.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,

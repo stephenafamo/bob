@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- `bobgen` now runs `bobcheck` on the whole Go module after generation. It
+  reports discarded results of `WithMods` methods that return a Bob query.
+  Set `disable_bobcheck: true` in `bobgen.yaml` to skip it.
+
+### Migration
+
+- **All dialects:** `WithMods` returns an independent query on dialect builders,
+  table and view builders, and generated SQL queries.
+  Replace bare `q.Apply(mods...)` with `q = q.WithMods(mods...)`; discarding
+  the result can omit a write filter. Regenerate and run `bobcheck`.
+  Query `Clone()` was removed. Replace `q.Clone().Apply(mods...)` with
+  `q.WithMods(mods...)`, or reuse `q` directly when no mods are needed.
+  To wrap an expression, replace `bob.BaseQuery` struct literals with
+  `bob.QueryFromExpression(expr, dialect, typ)`, which returns a `bob.ExpressionQuery`.
+  For custom query mods, rename `Apply` to `Edit`. `bob.Mod.Edit(editor)` and
+  `bob.ContextualMod.Edit(ctx, editor)` change the supplied editor in place.
+  `RawQuery` copies its argument list.
+  `GetLoaders(ctx)` and `GetMapperMods(ctx)` now use the hook context. Update
+  direct calls and implementations of `bob.Loadable` and `bob.MapperModder`.
+  Execution still recognizes custom queries with the old zero-argument getters.
+  Keep the result when configuring a reusable `F(...)` expression or a MySQL
+  index-hint or `INTO` builder; these also return independent branches.
+- **Custom preloaders:** Replace `p.Collect(row)` with `p.Collect(ctx, row)`.
+  Pass the scan mapper's context so the loader receives only rows from that execution.
+- **Build:** Pass an executor to `bob.Build(ctx, exec, q)` or `q.Build(ctx, exec)`.
+  The same change applies to `BuildN`, `MustBuild`, and `MustBuildN`. Pass `nil`
+  for an offline build. Build runs query hooks, including on nested queries;
+  `nil` does not skip them. Use `bob.SkipQueryHooks(ctx)` to skip registered query hooks.
+  On generated SQL queries, the old `Build(mods...)` constructor field is now
+  `NewBuilder`; `Build(ctx, exec)` renders the SQL.
+- **Table and view query hooks:** Use the editor type (for example,
+  `mysql.InsertEditor`) instead of `*dialect.InsertQuery`. Apply mods with
+  `mod.Edit(editor)` and return `(ctx, err)`. Hooks receive the build or execution
+  executor. An executor-dependent hook should return an error when it is absent.
+  Register hooks before constructing a table or view query. The query and its
+  branches keep the hooks registered at construction.
+  Before/after model hooks still use `bob.Hook[T]`.
+- **Custom queries:** `bob.HookableQuery.RunHooks` now returns
+  `(context.Context, bob.Query, error)`. Update context-only implementations
+  to return the query to execute. Use both the returned context and statement;
+  building the original query again starts a fresh hook pass.
+  `bob.RunQueryHooks` accepts any `bob.Query`.
+- Upgrade Bob and `bobgen` together, then regenerate. Hand-written calls to
+  `NewTable` and `NewTablex` must now supply an `orm.RowMapping`. For
+  `NewTablex`, pass it after the scanner. MySQL also requires the setter's
+  `Overwrite` function before the optional unique indexes.
+- **SQLite:** `Find<Model>` and `<Model>Exists` now take composite keys in
+  `PRIMARY KEY (...)` order. Check existing calls where this differs from
+  table-column order: same-typed arguments can compile but select the wrong row.
+
+### Changes
+
+- **All dialects:** Reusing an insert mod no longer shares its column list or row
+  cells between queries. Use `im.Rows(rows...)` to copy a batch in one pass over
+  the cells.
+- **MySQL:** `Insert(...).One`, `All`, and `Cursor` apply contextual mods once
+  per batch and use the resulting rows, columns, and context for readback. The
+  readback `SELECT` runs the insert's mapper mods and loaders. `INSERT … SET`
+  writes one row and reads it back by its auto-increment ID. Without an
+  auto-increment column, it returns `orm.ErrCannotRetrieveRow` before the write.
+
+- Custom SQL queries now share their argument rendering, query construction,
+  and positional row scanning in `orm/genruntime`, reducing the Go emitted per query.
+- Generated SQL queries with nested results now index parents by their projected
+  fields when those fields use Go equality. This speeds up `.All()` for large
+  result sets while preserving result order and custom field comparisons.
+- Bob uses Scan v0.10.0 field metadata for inferred column names, named
+  arguments, and preload keys. Embedded fields use their mapped column names,
+  and named nested fields use Scan's dotted names. An explicit SQL column list
+  can map a single database column to a nested Go value with a custom scanner.
+  A nullable SQL value such as `sql.NullString` binds as one value; use a
+  struct or map to supply multiple named arguments.
+- Bob generates less Go code for models and factories. Batch loads, counts,
+  row refreshes, primary-key lookups, after-query hooks, relationship
+  assignment, scanners, and factory builds now share runtime helpers.
+- Bulk refreshes now match primary keys with custom equality (such as byte
+  slices) by value.
+- Relationship `Has…` filters and preloaded counts use the same join
+  predicates as relationship preloads, including static filters. They
+  automatically alias intermediate joins when a path repeats a table, as do
+  single-row and batch relationship loads and counts.
+  A batch load can link rows even when the selected columns omit the
+  relationship key.
+
 ## [v0.51.0] - 2026-11-22
 
 ### Added

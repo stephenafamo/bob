@@ -9,8 +9,8 @@ import (
 )
 
 // Trying to represent the query structure as documented in
-// https://dev.mysql.com/doc/refman/8.0/en/select.html
-type SelectQuery struct {
+// https://dev.mysql.com/doc/refman/8.4/en/select.html
+type selectState struct {
 	hints
 	modifiers[any]
 	into any
@@ -30,23 +30,26 @@ type SelectQuery struct {
 	clause.Locks
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*SelectQuery]
+	bob.ContextualModdable[SelectEditor]
 
 	CombinedOrder  clause.OrderBy
 	CombinedLimit  clause.Limit
 	CombinedOffset clause.Offset
 }
 
-func (s *SelectQuery) SetInto(i any) {
+func (s *selectState) SetInto(i any) {
 	s.into = i
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (s selectState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
-	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
-		return nil, err
+	if len(s.Mods) != 0 {
+		ctx, err = s.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,

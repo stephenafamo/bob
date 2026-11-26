@@ -6,48 +6,15 @@
 
 // AfterQueryHook is called after {{$tAlias.UpSingular}}Slice is retrieved from the database
 func (o {{$tAlias.UpSingular}}Slice) AfterQueryHook(ctx context.Context, exec bob.Executor, queryType bob.QueryType) error {
-  var err error
-
-  switch queryType {
-  case bob.QueryTypeSelect:
-    _, err = {{$tAlias.UpPlural}}.AfterSelectHooks.RunHooks(ctx, exec, o)
-  {{if .Table.Constraints.Primary -}}
-    case bob.QueryTypeInsert:
-      _, err = {{$tAlias.UpPlural}}.AfterInsertHooks.RunHooks(ctx, exec, o)
-    case bob.QueryTypeUpdate:
-      _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
-    case bob.QueryTypeDelete:
-      _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
-    {{if eq $.Dialect "psql" -}}
-    case bob.QueryTypeMerge:
-      _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
-    {{- end}}
-  {{- end}}
-  }
-
-	return err
+	return {{$tAlias.UpPlural}}.RunAfterQueryHooks(ctx, exec, queryType, o)
 }
 
 {{if .Table.Constraints.Primary -}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 {{$pkCols := $table.Constraints.Primary.Columns}}
 {{$multiPK := gt (len $pkCols) 1}}
-func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
-  if len(o) == 0 {
-    return {{$.Dialect}}.Raw("NULL")
-  }
-
-  return {{if $multiPK}}{{$.Dialect}}.Group({{end}}{{- range $i, $col := $pkCols -}}{{if gt $i 0}}, {{end}}{{$.Dialect}}.Quote("{{tableColumnAlias $table.Schema $table.Name $table.Key}}", "{{$col}}"){{end}}{{if $multiPK}}){{end -}}
-    .In(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
-      pkPairs := make([]bob.Expression, len(o))
-      for i, row := range o {
-        pkPairs[i] = row.primaryKeyVals()
-      }
-      return bob.ExpressSlice(ctx, w, d, start, pkPairs, "", ", ", "")
-    }))
-}
 
 {{/* A single ==-comparable primary key column is matched in O(N+M) via a map;
      composite keys and custom compare_expr types fall back to the nested loop. */ -}}
@@ -62,138 +29,32 @@ func (o {{$tAlias.UpSingular}}Slice) pkIN() dialect.Expression {
 func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingular}}) {
   {{if $useMap -}}
   {{$colAlias := $tAlias.Column $pkCol -}}
-  fromByPK := make(map[{{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}}]*{{$tAlias.UpSingular}}, len(from))
-  for _, new := range from {
-    // keep the first row for each key, like the nested loop did
-    if _, ok := fromByPK[new.{{$colAlias}}]; !ok {
-      fromByPK[new.{{$colAlias}}] = new
-    }
-  }
-
-  for _, old := range o {
-    new, ok := fromByPK[old.{{$colAlias}}]
-    if !ok {
-      continue
-    }
-    {{range $column := $table.Columns -}}
-    {{- $colAlias := $tAlias.Column $column.Name}}
-    old.{{$colAlias}} = new.{{$colAlias}}
-    {{end -}}
-  }
+  genruntime.CopyByKey(o, from, func(row *{{$tAlias.UpSingular}}) {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $pkCol).Type}} { return row.{{$colAlias}} }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- else -}}
-  for _, old := range o {
-    for _, new := range from {
-			{{range $column := $table.Constraints.Primary.Columns -}}
-				{{- $colAlias := $tAlias.Column $column -}}
-				{{- $typInfo :=  $.Types.Index ($table.GetColumn $column).Type -}}
-        {{- with $typInfo.CompareExpr -}}
-          {{$.Importer.ImportList $typInfo.CompareExprImports -}}
-          if {{replace "AAA" (cat "new." $colAlias) . | replace "BBB" (cat "old." $colAlias)}}
-        {{- else -}}
-          if new.{{$colAlias}} != old.{{$colAlias}}
-        {{- end -}}
-        {
-          continue
-        }
-      {{end -}}
-      {{range $column := $table.Columns -}}
-      {{- $colAlias := $tAlias.Column $column.Name}}
-      old.{{$colAlias}} = new.{{$colAlias}}
-      {{end -}}
-      break
-    }
-  }
+  genruntime.CopyByMatch(o, from, func(a, b *{{$tAlias.UpSingular}}) bool {
+    return {{range $i, $name := $pkCols}}{{if $i}} && {{end}}
+      {{- $col := $table.GetColumn $name -}}
+      {{- $field := $tAlias.Column $name -}}
+      {{- $cmp := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable $col.Nullable -}}
+      ({{replace "AAA" (printf "a.%s" $field) $cmp | replace "BBB" (printf "b.%s" $field)}})
+      {{- end}}
+  }, (*{{$tAlias.UpSingular}}).copyColumns)
   {{- end}}
 }
 
 
-// UpdateMod modifies an update query with "WHERE primary_key IN (o...)"
-func (o {{$tAlias.UpSingular}}Slice) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
-  return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeUpdateHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterUpdateHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterUpdateHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-
-    q.AppendWhere(o.pkIN())
+{{range $op := list "Update" "Delete" "Merge" -}}
+{{if and (eq $op "Merge") (ne $.Dialect "psql")}}{{continue}}{{end -}}
+// {{$op}}Mod installs the model hooks{{if ne $op "Merge"}} and filters by primary key{{end}}.
+func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[dialect.{{$op}}Editor] {
+  return bob.ModFunc[dialect.{{$op}}Editor](func(q dialect.{{$op}}Editor) {
+    genruntime.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
+    {{if ne $op "Merge" -}}
+    q.AppendWhere({{$tAlias.DownSingular}}RowMapping.In(o))
+    {{end -}}
   })
 }
-
-// DeleteMod modifies an delete query with "WHERE primary_key IN (o...)"
-func (o {{$tAlias.UpSingular}}Slice) DeleteMod() bob.Mod[*dialect.DeleteQuery] {
-  return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeDeleteHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterDeleteHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterDeleteHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-
-    q.AppendWhere(o.pkIN())
-  })
-}
-
-{{if eq $.Dialect "psql" -}}
-// MergeMod modifies a merge query to run BeforeMergeHooks and AfterMergeHooks
-// and updates the slice with the returned rows.
-func (o {{$tAlias.UpSingular}}Slice) MergeMod() bob.Mod[*dialect.MergeQuery] {
-  return bob.ModFunc[*dialect.MergeQuery](func(q *dialect.MergeQuery) {
-    q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
-      return {{$tAlias.UpPlural}}.BeforeMergeHooks.RunHooks(ctx, exec, o)
-    })
-
-    q.AppendLoader(bob.LoaderFunc(func(ctx context.Context, exec bob.Executor, retrieved any) error {
-      var err error
-      switch retrieved := retrieved.(type) {
-      case *{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved)
-      case []*{{$tAlias.UpSingular}}:
-        o.copyMatchingRows(retrieved...)
-      case {{$tAlias.UpSingular}}Slice:
-        o.copyMatchingRows(retrieved...)
-      default:
-        // If the retrieved value is not a {{$tAlias.UpSingular}} or a slice of {{$tAlias.UpSingular}}
-        // then run the AfterMergeHooks on the slice
-        _, err = {{$tAlias.UpPlural}}.AfterMergeHooks.RunHooks(ctx, exec, o)
-      }
-
-      return err
-    }))
-  })
-}
-{{- end}}
+{{end}}
 
 {{block "slice_update" . -}}
 {{$table := .Table}}
@@ -219,18 +80,7 @@ func (o {{$tAlias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec bob.Exe
 
 
 func (o {{$tAlias.UpSingular}}Slice) ReloadAll(ctx context.Context, exec bob.Executor) error {
-  if len(o) == 0 {
-    return nil
-  }
-
-	o2, err := {{$tAlias.UpPlural}}.Query(sm.Where(o.pkIN())).All(ctx, exec)
-	if err != nil {
-		return err
-	}
-
-  o.copyMatchingRows(o2...)
-
-	return nil
+	return {{$tAlias.UpPlural}}.ReloadRows(ctx, exec, o)
 }
 
 {{- end}}

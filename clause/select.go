@@ -3,6 +3,7 @@ package clause
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 )
@@ -19,11 +20,11 @@ func (s *SelectList) CountSelectCols() int {
 }
 
 func (s *SelectList) SetSelect(columns ...any) {
-	s.Columns = columns
+	s.Columns = slices.Clone(columns)
 }
 
 func (s *SelectList) SetPreloadSelect(columns ...any) {
-	s.PreloadColumns = columns
+	s.PreloadColumns = slices.Clone(columns)
 }
 
 func (s *SelectList) AppendSelect(columns ...any) {
@@ -37,7 +38,7 @@ func (s *SelectList) AppendPreloadSelect(columns ...any) {
 func (s SelectList) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 
-	all := append(s.Columns, s.PreloadColumns...)
+	all := append(slices.Clip(s.Columns), s.PreloadColumns...)
 	if len(all) > 0 {
 		colArgs, err := bob.ExpressSlice(ctx, w, d, start+len(args), all, "", ", ", "")
 		if err != nil {

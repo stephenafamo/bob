@@ -1,4 +1,5 @@
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
+{{$.Importer.Import "factoryrt" "github.com/stephenafamo/bob/factory"}}
 {{ $table := .Table}}
 {{ $tAlias := .Aliases.Table $table.Key -}}
 
@@ -7,48 +8,26 @@
 func (t {{$tAlias.UpSingular}}Template) setModelRels(o *models.{{$tAlias.UpSingular}}) {
     {{- range $index, $rel := $.Relationships.Get $table.Key -}}
         {{- $relAlias := $tAlias.Relationship .Name -}}
-        {{- $invRel := $.Relationships.GetInverse . -}}
         {{- $ftable := $.Aliases.Table $rel.Foreign -}}
-        {{- $invAlias := "" -}}
-    {{- if and (not $.NoBackReferencing) $invRel.Name -}}
-            {{- $invAlias = $ftable.Relationship $invRel.Name}}
-        {{- end -}}
 
         if t.r.{{$relAlias}} != nil {
             {{- if not .IsToMany}}
                 rel := t.r.{{$relAlias}}.o.Build()
-                {{- if and (not $.NoBackReferencing) $invRel.Name}}
-                    {{- if not $invRel.IsToMany}}
-                        rel.R.{{$invAlias}} = o
-                        rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-                    {{- else}}
-                        rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-                    {{- end}}
-                {{- end}}
                 {{$.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
             {{- else -}}
                 rel := models.{{$ftable.UpSingular}}Slice{}
                 for _, r := range t.r.{{$relAlias}} {
                   related := r.o.BuildMany(r.number)
                   {{- $setter := $.Tables.SetFactoryDeps $.CurrentPackage $.Importer $.Types $.Aliases . false}}
-                  {{- if or $setter (and (not $.NoBackReferencing) $invRel.Name) }}
+                  {{- if $setter }}
                   for _, rel := range related {
                     {{$setter}}
-                    {{- if and (not $.NoBackReferencing) $invRel.Name}}
-                        {{- if not $invRel.IsToMany}}
-                            rel.R.{{$invAlias}} = o
-                            rel.R.{{$.RelationLoadedName}}.{{$invAlias}} = true
-                        {{- else}}
-                            rel.R.{{$invAlias}} = append(rel.R.{{$invAlias}}, o)
-                        {{- end}}
-                    {{- end}}
                   }
                   {{- end}}
                   rel = append(rel, related...)
                 }
             {{- end}}
-            o.R.{{$relAlias}} = rel
-            o.R.{{$.RelationLoadedName}}.{{$relAlias}} = true
+            models.{{$tAlias.UpSingular}}RelAssignments.{{$relAlias}}().Replace(o, rel)
         }
 
     {{end -}}
@@ -76,13 +55,7 @@ func (o {{$tAlias.UpSingular}}Template) BuildSetter() *models.{{$tAlias.UpSingul
 // BuildManySetter returns an []*models.{{$tAlias.UpSingular}}Setter
 // this does nothing with the relationship templates
 func (o {{$tAlias.UpSingular}}Template) BuildManySetter(number int) []*models.{{$tAlias.UpSingular}}Setter {
-	m := make([]*models.{{$tAlias.UpSingular}}Setter, number)
-
-	for i := range m {
-	  m[i] = o.BuildSetter()
-	}
-
-	return m
+	return factoryrt.BuildMany[[]*models.{{$tAlias.UpSingular}}Setter](number, o.BuildSetter)
 }
 {{- end}}
 
@@ -108,11 +81,5 @@ func (o {{$tAlias.UpSingular}}Template) Build() *models.{{$tAlias.UpSingular}} {
 // Related objects are also created and placed in the .R field
 // NOTE: Objects are not inserted into the database. Use {{$tAlias.UpSingular}}Template.CreateMany
 func (o {{$tAlias.UpSingular}}Template) BuildMany(number int) models.{{$tAlias.UpSingular}}Slice {
-	m := make(models.{{$tAlias.UpSingular}}Slice, number)
-
-	for i := range m {
-	  m[i] = o.Build()
-	}
-
-	return m
+	return factoryrt.BuildMany[models.{{$tAlias.UpSingular}}Slice](number, o.Build)
 }

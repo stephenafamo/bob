@@ -8783,7 +8783,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.SetLimit(EXPR.subExpr(62, 63))\nq.SetOffset(EXPR.subExpr(71, 72))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(81, 151),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    q.CombinedOrder.AppendOrder(EXPR.subExpr(162, 169))\nq.CombinedLimit.SetLimit(EXPR.subExpr(176, 177))\nq.CombinedOffset.SetOffset(EXPR.subExpr(185, 186))\n"
+							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.SetLimit(EXPR.subExpr(62, 63))\nq.SetOffset(EXPR.subExpr(71, 72))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.QueryFromExpression(EXPR.subExpr(81, 151), dialect.Dialect, bob.QueryTypeSelect),\n                        })\n                    q.AppendCombinedOrder(EXPR.subExpr(162, 169))\nq.SetCombinedLimit(EXPR.subExpr(176, 177))\nq.SetCombinedOffset(EXPR.subExpr(185, 186))\n"
 						},
 						{
 							"type": 1,
@@ -8839,7 +8839,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.Fetch.SetFetch(clause.Fetch{\n\t\t\t\t\t\t\t\tCount: EXPR.subExpr(68, 69),\n\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: true,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(97, 134),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    q.CombinedOrder.AppendOrder(EXPR.subExpr(145, 152))\nq.CombinedFetch.SetFetch(clause.Fetch{\n\t\t\t\t\t\t\t\t\tCount: EXPR.subExpr(165, 166),\n\t\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\t"
+							"mods": "q.AppendSelect(EXPR.subExpr(8, 10))\nq.SetTable(EXPR.subExpr(16, 21))\nq.AppendWhere(EXPR.subExpr(28, 38))\nq.AppendOrder(EXPR.subExpr(48, 55))\nq.SetFetch(clause.Fetch{\n\t\t\t\t\t\t\t\tCount: EXPR.subExpr(68, 69),\n\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: true,\n                            Query: bob.QueryFromExpression(EXPR.subExpr(97, 134), dialect.Dialect, bob.QueryTypeSelect),\n                        })\n                    q.AppendCombinedOrder(EXPR.subExpr(145, 152))\nq.SetCombinedFetch(clause.Fetch{\n\t\t\t\t\t\t\t\t\tCount: EXPR.subExpr(165, 166),\n\t\t\t\t\t\t\t\t\tWithTies: true,\n\t\t\t\t\t\t\t\t})\n\t\t\t\t\t\t\t"
 						}
 					]
 				},
@@ -9040,7 +9040,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 53),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.SetTableColumns([]string{\"id\", \"primary_email\"}...)\nq.SetTable(EXPR.subExpr(12, 17))\nq.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(38, 53), dialect.Dialect, bob.QueryTypeSelect))\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
@@ -9158,7 +9158,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 63),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.SetTableColumns([]string{\"id\", \"primary_email\"}...)\nq.SetTable(EXPR.subExpr(12, 17))\nq.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(38, 63), dialect.Dialect, bob.QueryTypeSelect))\n\t\t\t\t\t"
 						},
 						{
 							"type": 2,
@@ -9189,7 +9189,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.TableRef.Columns = []string{\"id\", \"primary_email\"}\nq.TableRef.Expression = EXPR.subExpr(12, 17)\nq.Query = bob.BaseQuery[bob.Expression]{\n\t\t\t\t\t\tExpression: EXPR.subExpr(38, 90),\n\t\t\t\t\t\tDialect: dialect.Dialect,\n\t\t\t\t\t\tQueryType: bob.QueryTypeSelect,\n\t\t\t\t\t\t}\n\t\t\t\t\t"
+							"mods": "q.SetTableColumns([]string{\"id\", \"primary_email\"}...)\nq.SetTable(EXPR.subExpr(12, 17))\nq.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(38, 90), dialect.Dialect, bob.QueryTypeSelect))\n\t\t\t\t\t"
 						},
 						{
 							"type": 3,
@@ -9280,7 +9280,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Only = true\nq.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 281))\n"
+							"mods": "q.SetOnly(true)\nq.SetTargetName(EXPR.subExpr(12, 17))\nq.AppendSet(EXPR.subExpr(22, 40))\nq.AppendWhere(EXPR.subExpr(47, 54))\nq.AppendReturning(EXPR.subExpr(65, 281))\n"
 						},
 						{
 							"type": 4,
@@ -9311,7 +9311,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.Table.Expression = EXPR.subExpr(12, 17)\nq.AppendWhere(EXPR.subExpr(24, 31))\n"
+							"mods": "q.SetTargetName(EXPR.subExpr(12, 17))\nq.AppendWhere(EXPR.subExpr(24, 31))\n"
 						},
 						{
 							"type": 6,
@@ -9377,7 +9377,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenMatched, Action: dialect.MergeAction{Type: dialect.MergeActionUpdate}})\nq.When = append(q.When, dialect.MergeWhen{Type: dialect.MergeWhenNotMatched, Action: dialect.MergeAction{Type: dialect.MergeActionInsert}})\nq.When[1].Action.Columns = []string{\"id\", \"primary_email\"}\nq.Table.Expression = EXPR.subExpr(11, 26)\nq.Using.Source = EXPR.subExpr(33, 94)\nq.Using.Condition = EXPR.subExpr(98, 119)\nq.When[0].Action.Set = append(q.When[0].Action.Set, EXPR.subExpr(149, 185))\nq.When[1].Action.Values = append(q.When[1].Action.Values, EXPR.subExpr(243, 274))\n"
+							"mods": "when0 := dialect.MergeWhen{Type: dialect.MergeWhenMatched, Action: dialect.MergeAction{Type: dialect.MergeActionUpdate}}\nwhen1 := dialect.MergeWhen{Type: dialect.MergeWhenNotMatched, Action: dialect.MergeAction{Type: dialect.MergeActionInsert}}\nwhen1.Action.Columns = []string{\"id\", \"primary_email\"}\nq.SetTargetName(EXPR.subExpr(11, 26))\nq.SetUsingSource(EXPR.subExpr(33, 94))\nq.SetUsingCondition(EXPR.subExpr(98, 119))\nwhen0.Action.Set = append(when0.Action.Set, EXPR.subExpr(149, 185))\nwhen1.Action.Values = append(when1.Action.Values, EXPR.subExpr(243, 274))\nq.AppendWhen(when0)\nq.AppendWhen(when1)\n"
 						},
 						{
 							"type": 1,

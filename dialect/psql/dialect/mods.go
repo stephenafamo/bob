@@ -3,6 +3,7 @@ package dialect
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
@@ -46,7 +47,7 @@ func (f FromChain[Q]) chain(from func() clause.TableRef) FromChain[Q] {
 	}
 }
 
-func (f FromChain[Q]) Apply(q Q) {
+func (f FromChain[Q]) Edit(q Q) {
 	ref := f.from()
 	if f.joins != nil {
 		f.joins(&ref)
@@ -129,6 +130,7 @@ func From[Q fromAppendable](table any, joins ...JoinChain[Q]) FromChain[Q] {
 			return clause.TableRef{Expression: table}
 		},
 		joins: func(ref *clause.TableRef) {
+			ref.Joins = slices.Grow(ref.Joins, len(joins))
 			for _, j := range joins {
 				ref.Joins = append(ref.Joins, j())
 			}
@@ -140,7 +142,7 @@ func From[Q fromAppendable](table any, joins ...JoinChain[Q]) FromChain[Q] {
 }
 
 // Joinable is implemented by query types that JoinChain[Q] can target.
-// *SelectQuery appends to the embedded FROM TableRef; *UpdateQuery and *DeleteQuery
+// SelectEditor appends to the embedded FROM TableRef; *UpdateQuery and *DeleteQuery
 // append to the last FromItems / UsingItems entry when present.
 type Joinable interface {
 	AppendJoin(clause.Join)
@@ -177,7 +179,7 @@ func CrossJoin[Q Joinable](e any) JoinChain[Q] {
 
 type JoinChain[Q Joinable] func() clause.Join
 
-func (j JoinChain[Q]) Apply(q Q) {
+func (j JoinChain[Q]) Edit(q Q) {
 	q.AppendJoin(j())
 }
 
@@ -256,7 +258,7 @@ func (j JoinChain[Q]) Natural() JoinChain[Q] {
 
 func (j JoinChain[Q]) On(on ...bob.Expression) JoinChain[Q] {
 	jo := j()
-	jo.On = append(jo.On, on...)
+	jo.On = append(slices.Clip(jo.On), on...)
 
 	return JoinChain[Q](func() clause.Join {
 		return jo
@@ -265,7 +267,7 @@ func (j JoinChain[Q]) On(on ...bob.Expression) JoinChain[Q] {
 
 func (j JoinChain[Q]) OnEQ(a, b bob.Expression) JoinChain[Q] {
 	jo := j()
-	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
+	jo.On = append(slices.Clip(jo.On), expr.X[Expression, Expression](a).EQ(b))
 
 	return JoinChain[Q](func() clause.Join {
 		return jo
@@ -291,10 +293,10 @@ func (j JoinChain[Q]) UsingAs(alias string, using ...string) JoinChain[Q] {
 	})
 }
 
-type OrderCombined OrderBy[*SelectQuery]
+type OrderCombined OrderBy[SelectEditor]
 
-func (o OrderCombined) Apply(q *SelectQuery) {
-	q.CombinedOrder.AppendOrder(o())
+func (o OrderCombined) Edit(q SelectEditor) {
+	q.AppendCombinedOrder(o())
 }
 
 func (o OrderCombined) Asc() OrderCombined {
@@ -353,7 +355,7 @@ func (o OrderCombined) Collate(collationName string) OrderCombined {
 
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
-func (s OrderBy[Q]) Apply(q Q) {
+func (s OrderBy[Q]) Edit(q Q) {
 	q.AppendOrder(s())
 }
 
@@ -413,7 +415,7 @@ func (o OrderBy[Q]) Collate(collationName string) OrderBy[Q] {
 
 type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
 
-func (c CTEChain[Q]) Apply(q Q) {
+func (c CTEChain[Q]) Edit(q Q) {
 	q.AppendCTE(c())
 }
 
@@ -488,7 +490,7 @@ func (c CTEChain[Q]) CycleValue(value, defaultVal any) CTEChain[Q] {
 
 type LockChain[Q interface{ AppendLock(bob.Expression) }] func() clause.Lock
 
-func (l LockChain[Q]) Apply(q Q) {
+func (l LockChain[Q]) Edit(q Q) {
 	q.AppendLock(l())
 }
 

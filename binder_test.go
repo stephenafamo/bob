@@ -12,6 +12,14 @@ import (
 
 type customString string
 
+type bindValue struct{ Text string }
+
+func (v bindValue) Value() (driver.Value, error) { return v.Text, nil }
+
+type cents struct{ Amount int64 }
+
+func (v *cents) Value() (driver.Value, error) { return v.Amount, nil }
+
 type binderTester interface {
 	Run(t *testing.T, origin []any)
 }
@@ -52,6 +60,24 @@ func testBinder(t *testing.T, origin []any, tests []binderTester) {
 }
 
 func TestBinding(t *testing.T) {
+	t.Run("mapped field paths", func(t *testing.T) {
+		type Fields struct {
+			ID int `db:"user_id,pk"`
+		}
+		type args struct {
+			*Fields
+			Owner *Fields `db:"author"`
+			Value bindValue
+		}
+		testBinder(t, []any{namedArg("author.user_id"), namedArg("user_id"), namedArg("value")}, []binderTester{
+			binderTests[*args]{
+				args:  &args{Fields: &Fields{1}, Owner: &Fields{2}, Value: bindValue{"test"}},
+				final: []any{2, 1, bindValue{"test"}},
+			},
+			binderTests[args]{args: args{}, final: []any{nil, nil, bindValue{}}},
+		})
+	})
+
 	t.Run("no args", func(t *testing.T) {
 		testBinder(t, []any{}, []binderTester{
 			binderTests[struct{}]{
@@ -162,7 +188,12 @@ func TestBinding(t *testing.T) {
 	})
 
 	t.Run("reuse names", func(t *testing.T) {
+		amount := &cents{Amount: 100}
 		testBinder(t, []any{1, 2, namedArg("three"), 4, namedArg("three")}, []binderTester{
+			binderTests[*cents]{
+				args:  amount,
+				final: []any{1, 2, amount, 4, amount},
+			},
 			binderTests[struct{ Three int }]{
 				args:  struct{ Three int }{Three: 3},
 				final: []any{1, 2, 3, 4, 3},

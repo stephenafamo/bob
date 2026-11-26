@@ -378,6 +378,7 @@ func (c QueryArg) TypeDef(currPkg string, i language.Importer, types Types, doIm
 func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName string) string {
 	if len(a.Children) == 0 {
 		if a.CanBeMultiple {
+			i.Import("github.com/stephenafamo/bob/expr")
 			return fmt.Sprintf("expr.ToArgs(%s...)", varName)
 		}
 
@@ -385,54 +386,53 @@ func (a QueryArg) ToExpression(i language.Importer, dialect, queryName, varName 
 		return fmt.Sprintf("%s.Arg(%s)", dialect, varName)
 	}
 
+	if !slices.ContainsFunc(a.Children, func(c QueryArg) bool { return c.CanBeMultiple || len(c.Children) > 0 }) {
+		return a.scalarTuples(i, queryName, varName)
+	}
+
 	if !a.CanBeMultiple {
 		return a.groupExpression(i, dialect, queryName, varName)
 	}
 
-	groupExpression := a.groupExpression(i, dialect, queryName, "child")
-	sb := strings.Builder{}
-	fmt.Fprintf(&sb, `func() bob.Expression {
-            expressions := make([]bob.Expression, len(%s))
-            for i, child := range %s {
-                expressions[i] = %s
-            }
-            return expr.Join{Exprs: expressions, Sep: ", "}
-        }()
-        `, varName, varName, groupExpression)
+	return fmt.Sprintf("genruntime.SQLGroups(len(%s), func(i int) bob.Expression { child := %s[i]; return %s })",
+		varName, varName, a.groupExpression(i, dialect, queryName, "child"))
+}
 
-	return sb.String()
+// A tuple of scalar parameters has a fixed layout. Emit its literal SQL
+// spans once, even when the caller passes thousands of rows.
+func (a QueryArg) scalarTuples(i language.Importer, queryName, varName string) string {
+	i.Import("github.com/stephenafamo/bob/orm/genruntime")
+	n, row := "1", varName
+	if a.CanBeMultiple {
+		n, row = "len("+varName+")", varName+"[i]"
+	}
+	fields := make([]string, 0, len(a.Children))
+	spans := make([]string, 0, len(a.Children)+1)
+	start := a.Positions[0][0]
+	for _, child := range a.Children {
+		pos := child.Positions[0]
+		spans = append(spans, fmt.Sprintf("%sSQL[%d:%d]", queryName, start, pos[0]))
+		fields = append(fields, row+"."+strmangle.TitleCase(child.Col.Name))
+		start = pos[1]
+	}
+	spans = append(spans, fmt.Sprintf("%sSQL[%d:%d]", queryName, start, a.Positions[0][1]))
+	return fmt.Sprintf("genruntime.SQLTuples(%s, func(args []any, i int) []any { return append(args, %s) }, %s)",
+		n, strings.Join(fields, ", "), strings.Join(spans, ", "))
 }
 
 func (a QueryArg) groupExpression(i language.Importer, dialect, queryName, varName string) string {
 	var sb strings.Builder
-
-	fmt.Fprintf(&sb, `bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-                  args := make([]any, 0, %d)`, len(a.Children))
-
-	start := a.Positions[0][0]
+	i.Import("github.com/stephenafamo/bob/orm")
+	i.Import("github.com/stephenafamo/bob/orm/genruntime")
+	start, stop := a.Positions[0][0], a.Positions[0][1]
+	// Bind child expressions at write time, including any expanding slices.
+	fmt.Fprintf(&sb, "genruntime.SQLGroup(%sSQL[%d:%d], func() []orm.ArgWithPosition { return []orm.ArgWithPosition{\n", queryName, start, stop)
 	for _, child := range a.Children {
 		childName := strmangle.TitleCase(child.Col.Name)
-		childExpression := child.ToExpression(i, dialect, queryName, fmt.Sprintf("%s.%s", varName, childName))
-		fmt.Fprintf(&sb, `
-            w.WriteString(%sSQL[%d:%d])
-            %sArgs, err := bob.Express(ctx, w, d, start+len(args), %s)
-            if err != nil {
-                return nil, err
-            }
-            args = append(args, %sArgs...)
-            `,
-			queryName, start, child.Positions[0][0],
-			childName,
-			strings.TrimSpace(childExpression),
-			childName)
-		start = child.Positions[0][1]
+		fmt.Fprintf(&sb, "{Name: %q, Start: %d, Stop: %d, Expression: %s},\n",
+			child.Col.Name, child.Positions[0][0]-start, child.Positions[0][1]-start,
+			child.ToExpression(i, dialect, queryName, varName+"."+childName))
 	}
-
-	fmt.Fprintf(&sb, `
-            w.WriteString(%sSQL[%d:%d])
-            return args, nil
-        })
-    `, queryName, start, a.Positions[0][1])
-
+	sb.WriteString("} })")
 	return sb.String()
 }

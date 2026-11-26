@@ -10,74 +10,74 @@ import (
 )
 
 // With starts a CTE. The name and column list are quoted as SQL identifiers.
-func With(name string, columns ...string) dialect.CTEChain[*dialect.InsertQuery] {
-	return dialect.With[*dialect.InsertQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.InsertEditor] {
+	return dialect.With[dialect.InsertEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.InsertQuery] {
-	return mods.Recursive[*dialect.InsertQuery](r)
+func Recursive(r bool) bob.Mod[dialect.InsertEditor] {
+	return mods.Recursive[dialect.InsertEditor](r)
 }
 
 // Into sets the insert target. Use psql.Quote(...) for quoted table names; column names
 // in columns are quoted automatically.
-func Into(name any, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.TableRef = clause.TableRef{
+func Into(name any, columns ...string) bob.Mod[dialect.InsertEditor] {
+	return bob.ModFunc[dialect.InsertEditor](func(i dialect.InsertEditor) {
+		i.SetTableRef(clause.TableRef{
 			Expression: name,
 			Columns:    columns,
-		}
+		})
 	})
 }
 
-func IntoAs(name any, alias string, columns ...string) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.TableRef = clause.TableRef{
+func IntoAs(name any, alias string, columns ...string) bob.Mod[dialect.InsertEditor] {
+	return bob.ModFunc[dialect.InsertEditor](func(i dialect.InsertEditor) {
+		i.SetTableRef(clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 			Columns:    columns,
-		}
+		})
 	})
 }
 
-func OverridingSystem() bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = dialect.OverridingSystem
+func OverridingSystem() bob.Mod[dialect.InsertEditor] {
+	return bob.ModFunc[dialect.InsertEditor](func(i dialect.InsertEditor) {
+		i.SetOverriding(dialect.OverridingSystem)
 	})
 }
 
-func OverridingUser() bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Overriding = dialect.OverridingUser
+func OverridingUser() bob.Mod[dialect.InsertEditor] {
+	return bob.ModFunc[dialect.InsertEditor](func(i dialect.InsertEditor) {
+		i.SetOverriding(dialect.OverridingUser)
 	})
 }
 
-func Values(clauses ...bob.Expression) bob.Mod[*dialect.InsertQuery] {
-	return mods.Values[*dialect.InsertQuery](clauses)
+func Values(clauses ...bob.Expression) bob.Mod[dialect.InsertEditor] {
+	return mods.Values[dialect.InsertEditor](clauses)
 }
 
-func Rows(rows ...[]bob.Expression) bob.Mod[*dialect.InsertQuery] {
-	return mods.Rows[*dialect.InsertQuery](rows)
+func Rows(rows ...[]bob.Expression) bob.Mod[dialect.InsertEditor] {
+	return mods.BatchRows[dialect.InsertEditor](rows)
 }
 
 // Insert from a query
-func Query(q bob.Query) bob.Mod[*dialect.InsertQuery] {
-	return bob.ModFunc[*dialect.InsertQuery](func(i *dialect.InsertQuery) {
-		i.Query = q
+func Query(q bob.Query) bob.Mod[dialect.InsertEditor] {
+	return bob.ModFunc[dialect.InsertEditor](func(i dialect.InsertEditor) {
+		i.SetInsertQuery(q)
 	})
 }
 
 // OnConflict starts an ON CONFLICT clause. Pass conflict target columns as
 // psql.Quote(...) or another Expression; strings are written as raw SQL.
-func OnConflict(columns ...any) mods.Conflict[*dialect.InsertQuery] {
-	return mods.ConflictColumns[*dialect.InsertQuery](columns...)
+func OnConflict(columns ...any) mods.Conflict[dialect.InsertEditor] {
+	return mods.ConflictColumns[dialect.InsertEditor](columns...)
 }
 
-func OnConflictOnConstraint(constraint string) mods.Conflict[*dialect.InsertQuery] {
-	return mods.ConflictOnConstraint[*dialect.InsertQuery](constraint)
+func OnConflictOnConstraint(constraint string) mods.Conflict[dialect.InsertEditor] {
+	return mods.ConflictOnConstraint[dialect.InsertEditor](constraint)
 }
 
-func Returning(clauses ...any) mods.Returning[*dialect.InsertQuery] {
-	return mods.Returning[*dialect.InsertQuery](clauses)
+func Returning(clauses ...any) mods.Returning[dialect.InsertEditor] {
+	return mods.Returning[dialect.InsertEditor](clauses)
 }
 
 //========================================

@@ -9,81 +9,81 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*dialect.UpdateQuery] {
-	return dialect.With[*dialect.UpdateQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.UpdateEditor] {
+	return dialect.With[dialect.UpdateEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Recursive[*dialect.UpdateQuery](r)
+func Recursive(r bool) bob.Mod[dialect.UpdateEditor] {
+	return mods.Recursive[dialect.UpdateEditor](r)
 }
 
-func LowPriority() bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(i *dialect.UpdateQuery) {
+func LowPriority() bob.Mod[dialect.UpdateEditor] {
+	return bob.ModFunc[dialect.UpdateEditor](func(i dialect.UpdateEditor) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func Ignore() bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(i *dialect.UpdateQuery) {
+func Ignore() bob.Mod[dialect.UpdateEditor] {
+	return bob.ModFunc[dialect.UpdateEditor](func(i dialect.UpdateEditor) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func Table(name any) dialect.FromChain[*dialect.UpdateQuery] {
-	return dialect.From[*dialect.UpdateQuery](name)
+func Table(name any) dialect.FromChain[dialect.UpdateEditor] {
+	return dialect.From[dialect.UpdateEditor](name)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.InnerJoin[*dialect.UpdateQuery](e)
+func InnerJoin(e any) dialect.JoinChain[dialect.UpdateEditor] {
+	return dialect.InnerJoin[dialect.UpdateEditor](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.LeftJoin[*dialect.UpdateQuery](e)
+func LeftJoin(e any) dialect.JoinChain[dialect.UpdateEditor] {
+	return dialect.LeftJoin[dialect.UpdateEditor](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.RightJoin[*dialect.UpdateQuery](e)
+func RightJoin(e any) dialect.JoinChain[dialect.UpdateEditor] {
+	return dialect.RightJoin[dialect.UpdateEditor](e)
 }
 
-func CrossJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.CrossJoin[*dialect.UpdateQuery](e)
+func CrossJoin(e any) dialect.JoinChain[dialect.UpdateEditor] {
+	return dialect.CrossJoin[dialect.UpdateEditor](e)
 }
 
-func StraightJoin(e any) dialect.JoinChain[*dialect.UpdateQuery] {
-	return dialect.StraightJoin[*dialect.UpdateQuery](e)
+func StraightJoin(e any) dialect.JoinChain[dialect.UpdateEditor] {
+	return dialect.StraightJoin[dialect.UpdateEditor](e)
 }
 
-func Set(sets ...bob.Expression) bob.Mod[*dialect.UpdateQuery] {
-	return bob.ModFunc[*dialect.UpdateQuery](func(q *dialect.UpdateQuery) {
-		q.Set.Set = append(q.Set.Set, internal.ToAnySlice(sets)...)
+func Set(sets ...bob.Expression) bob.Mod[dialect.UpdateEditor] {
+	return bob.ModFunc[dialect.UpdateEditor](func(q dialect.UpdateEditor) {
+		q.AppendSet(internal.ToAnySlice(sets)...)
 	})
 }
 
 // SetCol sets one column in UPDATE ... SET. The column name is quoted automatically.
 // For qualified names or other expressions on the LHS, use SetExpr.
-func SetCol(from string) mods.Set[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{Col: expr.Quote(from)}
+func SetCol(from string) mods.Set[dialect.UpdateEditor] {
+	return mods.Set[dialect.UpdateEditor]{Col: expr.Quote(from)}
 }
 
 // SetExpr is like SetCol but the column LHS is any expression (e.g. mysql.Quote("t", "col")).
-func SetExpr(col bob.Expression) mods.Set[*dialect.UpdateQuery] {
-	return mods.Set[*dialect.UpdateQuery]{Col: col}
+func SetExpr(col bob.Expression) mods.Set[dialect.UpdateEditor] {
+	return mods.Set[dialect.UpdateEditor]{Col: col}
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.UpdateQuery] {
-	return mods.Where[*dialect.UpdateQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.UpdateEditor] {
+	return mods.Where[dialect.UpdateEditor]{E: e}
 }
 
-func OrderBy(e any) dialect.OrderBy[*dialect.UpdateQuery] {
-	return dialect.OrderBy[*dialect.UpdateQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[dialect.UpdateEditor] {
+	return dialect.OrderBy[dialect.UpdateEditor](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count int64) bob.Mod[*dialect.UpdateQuery] {
-	return mods.Limit[*dialect.UpdateQuery]{
+func Limit(count int64) bob.Mod[dialect.UpdateEditor] {
+	return mods.Limit[dialect.UpdateEditor]{
 		Count: count,
 	}
 }

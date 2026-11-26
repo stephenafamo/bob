@@ -164,7 +164,7 @@ func Test{{$upperName}} (t *testing.T) {
       t.Fatalf("Error in beforeTesting: %v", beforeHookErr)
     }
 
-    query, args, err := bob.Build(ctxTx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $argNames}})))
+    query, args, err := bob.Build(ctxTx, tx, {{$.Dialect}}.{{$queryType}}({{$upperName}}({{join ", " $argNames}})))
     if err != nil {
       t.Fatal(err)
     }

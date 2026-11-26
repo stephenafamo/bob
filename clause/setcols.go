@@ -25,7 +25,7 @@ func (a columnsAssignment) WriteSQL(ctx context.Context, w io.StringWriter, d bo
 
 	if a.query != nil {
 		w.WriteString("(")
-		valArgs, err := a.query.WriteQuery(ctx, w, start+len(colArgs))
+		valArgs, err := bob.WriteQuery(ctx, w, start+len(colArgs), a.query)
 		if err != nil {
 			return nil, err
 		}

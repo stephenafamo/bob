@@ -13,7 +13,7 @@ type With struct {
 }
 
 func (w *With) AppendCTE(cte bob.Expression) {
-	w.CTEs = append(w.CTEs, cte)
+	w.CTEs = append(w.CTEs, copyClause(cte))
 }
 
 func (w *With) SetRecursive(r bool) {

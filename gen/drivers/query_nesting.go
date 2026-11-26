@@ -255,6 +255,60 @@ func (n nestedSlice) NotNull(currPkg string, types Types, rowName string, cols [
 	return strings.Join(assigns, " ||\n")
 }
 
+// TransformRows groups the scanned rows in first-seen order. Only the root
+// collection shares an index; child collections still belong to each parent.
+func (n nestedSlice) TransformRows(currPkg string, i language.Importer, types Types, cols []QueryCol, typeName string) string {
+	decl, lookup := n.parentIndex(currPkg, i, types, cols)
+	return decl + "\nfor _, row := range scanned {\n" +
+		n.transform(currPkg, i, types, cols, false, typeName, "final", "index", lookup) + "\n}\n"
+}
+
+// parentIndex emits a key equivalent to Compare: all direct scalar fields,
+// and no nested fields. A NULL in any key component never matches another row.
+func (n nestedSlice) parentIndex(currPkg string, i language.Importer, types Types, cols []QueryCol) (string, string) {
+	var scalars []nested
+	for _, child := range n {
+		if len(child.Children) != 0 {
+			continue
+		}
+		col := child.Col
+		if !types.CanCompareWithEquals(currPkg, col.TypeName) {
+			return "", ""
+		}
+		typ := types.GetWithoutImporting(currPkg, col.TypeName)
+		if typ == "any" || typ == "interface{}" {
+			return "", "" // the dynamic value need not be hashable
+		}
+		scalars = append(scalars, child)
+	}
+	if len(scalars) == 0 {
+		return "", ""
+	}
+
+	var fields, values, valid []string
+	for _, child := range scalars {
+		col := child.Col
+		field := "row." + cols[child.Index].Name
+		fields = append(fields, col.Name+" "+types.Get(currPkg, i, col.TypeName))
+		values = append(values, types.UnwrapNullExpr(currPkg, i, col.TypeName, field, *col.Nullable))
+		if *col.Nullable {
+			valid = append(valid, types.GetNullTypeValid(currPkg, col.TypeName, field))
+		}
+	}
+	decl := "type parentKey struct {\n" + strings.Join(fields, "\n") + "\n}\nparents := make(map[parentKey]int)\n"
+	lookup := `key := parentKey{` + strings.Join(values, ", ") + `}
+		if pos, ok := parents[key]; ok {
+			index = pos
+		} else {
+			parents[key] = len(final)
+		}
+	`
+	if len(valid) != 0 {
+		lookup = "if " + strings.Join(valid, " && ") + " {\n" + lookup + "}\n"
+	}
+	return decl, lookup
+}
+
 func (n nestedSlice) Transform(
 	currPkg string,
 	i language.Importer,
@@ -262,6 +316,13 @@ func (n nestedSlice) Transform(
 	cols []QueryCol,
 	isSingle bool,
 	typeName, collectedRowsVar, indexName string,
+) string {
+	return n.transform(currPkg, i, types, cols, isSingle, typeName, collectedRowsVar, indexName, "")
+}
+
+func (n nestedSlice) transform(
+	currPkg string, i language.Importer, types Types, cols []QueryCol,
+	isSingle bool, typeName, collectedRowsVar, indexName, lookup string,
 ) string {
 	nullable := n.Nullable()
 	transformation := &strings.Builder{}
@@ -309,25 +370,27 @@ func (n nestedSlice) Transform(
 		)
 
 	default: // isSingle == false
-		fmt.Fprintf(transformation, `
-        %s := -1
-        for i, existing := range %s {
+		fmt.Fprintf(transformation, "\n%s := -1\n", indexName)
+		if lookup != "" {
+			transformation.WriteString(lookup)
+		} else {
+			fmt.Fprintf(transformation, `for i, existing := range %s {
           if %s {
             %s = i
             break
           }
         }
+		`, collectedRowsVar, n.Compare(currPkg, i, types, "existing", "row", cols), indexName)
+		}
 
-        if %s == -1 {
+		fmt.Fprintf(transformation, `if %s == -1 {
           fresh := %s{}
           %s
           %s = append(%s, fresh)
           %s = len(%s) - 1
         }
 		`,
-			indexName, collectedRowsVar,
-			n.Compare(currPkg, i, types, "existing", "row", cols),
-			indexName, indexName, typeName,
+			indexName, typeName,
 			n.Assign(currPkg, i, types, "fresh", "row", cols),
 			collectedRowsVar, collectedRowsVar, indexName, collectedRowsVar)
 	}

@@ -11,29 +11,29 @@ type (
 	// while it can be used as a queryMod, it does not have any direct effect.
 	// if using manually, the ApplyPreload method should be called
 	// with the query's context AFTER other mods have been applied
-	Preloader   = orm.Preloader[*dialect.SelectQuery]
+	Preloader   = orm.Preloader[dialect.SelectEditor]
 	PreloadRel  = orm.PreloadRel[Expression]
 	PreloadSide = orm.PreloadSide[Expression]
 	// Settings for preloading relationships
-	PreloadSettings = orm.PreloadSettings[*dialect.SelectQuery]
+	PreloadSettings = orm.PreloadSettings[dialect.SelectEditor]
 	// Modifies preloading relationships
-	PreloadOption = orm.PreloadOption[*dialect.SelectQuery]
+	PreloadOption = orm.PreloadOption[dialect.SelectEditor]
 )
 
 func PreloadOnly(cols ...string) PreloadOption {
-	return orm.PreloadOnly[*dialect.SelectQuery](cols)
+	return orm.PreloadOnly[dialect.SelectEditor](cols)
 }
 
 func PreloadExcept(cols ...string) PreloadOption {
-	return orm.PreloadExcept[*dialect.SelectQuery](cols)
+	return orm.PreloadExcept[dialect.SelectEditor](cols)
 }
 
 func PreloadWhere(f ...func(from, to string) []bob.Expression) PreloadOption {
-	return orm.PreloadWhere[*dialect.SelectQuery](f)
+	return orm.PreloadWhere[dialect.SelectEditor](f)
 }
 
 func PreloadAs(alias string) PreloadOption {
-	return orm.PreloadAs[*dialect.SelectQuery](alias)
+	return orm.PreloadAs[dialect.SelectEditor](alias)
 }
 
 func Preload[T orm.Preloadable, Ts ~[]T](rel orm.PreloadRel[Expression], cols []string, mapper orm.PreloadMapper[T], opts ...PreloadOption) Preloader {

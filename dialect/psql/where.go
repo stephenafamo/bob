@@ -7,7 +7,7 @@ import (
 )
 
 type Filterable interface {
-	AppendWhere(...any)
+	AppendWhere(any)
 }
 
 func Where[Q Filterable, C any](name Expression) WhereMod[Q, C] {
@@ -97,7 +97,7 @@ func WhereNull[Q Filterable, C any](name Expression) WhereNullMod[Q, C] {
 }
 
 type WhereNullMod[Q interface {
-	AppendWhere(e ...any)
+	AppendWhere(e any)
 }, C any] struct {
 	WhereMod[Q, C]
 }

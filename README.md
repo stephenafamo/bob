@@ -6,6 +6,7 @@
 
 - [Documentation][docs]
 - [Reference][reference]
+- [bobcheck: check for discarded query results](cmd/bobcheck/)
 
 ## About
 

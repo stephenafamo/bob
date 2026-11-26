@@ -10,10 +10,14 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/stephenafamo/bob/analysis/bobcheck"
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/orm"
 	"github.com/volatiletech/strmangle"
+	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/analysis/checker"
+	"golang.org/x/tools/go/packages"
 )
 
 var (
@@ -117,7 +121,11 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	if relationLoadedName == "" {
 		relationLoadedName = defaultRelationLoadedName
 	} else if !rgxValidExportedIdent.MatchString(relationLoadedName) {
-		return fmt.Errorf("invalid relation_loaded_name %q: must be an exported Go identifier (matching %s)", relationLoadedName, rgxValidExportedIdent.String())
+		return fmt.Errorf(
+			"invalid relation_loaded_name %q: must be an exported Go identifier (matching %s)",
+			relationLoadedName,
+			rgxValidExportedIdent.String(),
+		)
 	}
 	if err := initAliases(s.Config.Aliases, dbInfo.Tables, relationships, relationLoadedName); err != nil {
 		return fmt.Errorf("initializing aliases: %w\nSee: https://bob.stephenafamo.com/docs/code-generation/configuration#aliases", err)
@@ -169,7 +177,72 @@ func Run[T, C, I any](ctx context.Context, s *State[C], driver drivers.Interface
 	// Plugins may change the relationships. Resolve bridge parents from the
 	// final column mappings before rendering any templates.
 	initBridgeRelationships(data.Relationships, data.Tables)
-	return generate(s, data)
+	if err := generate(s, data); err != nil {
+		return err
+	}
+	if !s.Config.DisableBobcheck {
+		if err := checkModule(ctx); err != nil {
+			return fmt.Errorf("bobcheck after generation: %w", err)
+		}
+	}
+	return nil
+}
+
+func checkModule(ctx context.Context) error {
+	root, err := language.ModuleRoot(".")
+	if err != nil {
+		return err
+	}
+	// bobcheck needs typed syntax only for the packages it checks, not their dependencies.
+	pkgs, err := packages.Load(&packages.Config{
+		Context: ctx, Dir: root, Mode: packages.LoadSyntax, Tests: true,
+	}, "./...")
+	if err != nil {
+		return bobcheckLoadError(err)
+	}
+	if len(pkgs) == 0 {
+		return errors.New("./... matched no packages")
+	}
+	var loadErrors []error
+	for pkg := range packages.Postorder(pkgs) {
+		for _, e := range pkg.Errors {
+			loadErrors = append(loadErrors, e)
+		}
+	}
+	if len(loadErrors) != 0 {
+		return bobcheckLoadError(loadErrors...)
+	}
+	graph, err := checker.Analyze([]*analysis.Analyzer{bobcheck.New()}, pkgs, nil)
+	if err != nil {
+		return err
+	}
+	var diagnostics strings.Builder
+	if err := graph.PrintText(&diagnostics, -1); err != nil {
+		return err
+	}
+	if diagnostics.Len() != 0 {
+		return errors.New(strings.TrimSpace(diagnostics.String()))
+	}
+	return nil
+}
+
+func bobcheckLoadError(errs ...error) error {
+	joined := errors.Join(errs...)
+	for _, err := range errs {
+		if e, ok := errors.AsType[packages.Error](err); ok && e.Kind != packages.ListError {
+			continue
+		}
+		// go/packages exposes module resolution failures as text from the go command.
+		msg := err.Error()
+		if strings.Contains(msg, "missing go.sum entry") ||
+			strings.Contains(msg, "no required module provides package ") ||
+			strings.Contains(msg, "is replaced but not required") ||
+			strings.Contains(msg, "import lookup disabled by -mod=readonly") ||
+			strings.Contains(msg, "updates to go.mod needed") {
+			return fmt.Errorf("%w\n\nFiles were generated. Run `go mod tidy` from the module root, then rerun the generator", joined)
+		}
+	}
+	return joined
 }
 
 func generate[T, C, I any](s *State[C], data *TemplateData[T, C, I]) error {

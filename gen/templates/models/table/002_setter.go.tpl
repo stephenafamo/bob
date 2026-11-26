@@ -44,11 +44,11 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 }
 
 {{block "setter_insert_mod" . -}}
-{{$.Importer.Import "io"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
+func (s *{{$tAlias.UpSingular}}Setter) Edit(q dialect.InsertEditor) {
   {{if $table.Constraints.Primary -}}
     q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
       return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
@@ -57,13 +57,13 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 
 	q.AppendValues(
   {{range $index, $column := $table.NonGeneratedColumns -}}
-    bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error){
+    genruntime.ValueOrDefault(func() (any, bool) {
         {{$colAlias := $tAlias.Column $column.Name -}}
         {{$colGetter := $.Types.FromOptional $.CurrentPackage $.Importer $column.Type (cat "s." $colAlias) $column.Nullable $column.Nullable -}}
         if {{$.Types.IsOptionalInvalid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-          return {{$.Dialect}}.Raw("DEFAULT").WriteSQL(ctx, w, d, start)
+          return nil, false
         }
-        return {{$.Dialect}}.Arg({{$colGetter}}).WriteSQL(ctx, w, d, start)
+        return {{$colGetter}}, true
     }),
   {{- end}})
 }
@@ -72,7 +72,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 {{block "setter_update_mod" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[dialect.UpdateEditor] {
   return um.Set(s.Expressions()...)
 }
 {{- end}}
@@ -84,16 +84,13 @@ func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] 
 func (s {{$tAlias.UpSingular}}Setter) Expressions(prefix ...string) []bob.Expression {
   exprs := make([]bob.Expression, 0, {{len $table.NonGeneratedColumns}})
 
-  {{$.Importer.Import "github.com/stephenafamo/bob/expr" }}
+  {{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime" }}
 	{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/um" $.Dialect)}}
 	{{range $column := $table.Columns -}}
 	{{if $column.Generated}}{{continue}}{{end -}}
 	{{$colAlias := $tAlias.Column $column.Name -}}
     if {{$.Types.IsOptionalValid $.CurrentPackage $column.Type $column.Nullable (cat "s." $colAlias)}} {
-      exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
-        {{$.Dialect}}.Quote(append(prefix, "{{$column.Name}}")...), 
-        {{$.Dialect}}.Arg(s.{{$colAlias}}),
-      }})
+      exprs = append(exprs, genruntime.SetField(prefix, {{quote $column.Name}}, s.{{$colAlias}}))
 		}
 
 	{{end -}}

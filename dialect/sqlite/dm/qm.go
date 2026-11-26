@@ -6,47 +6,47 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*dialect.DeleteQuery] {
-	return dialect.With[*dialect.DeleteQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.DeleteEditor] {
+	return dialect.With[dialect.DeleteEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Recursive[*dialect.DeleteQuery](r)
+func Recursive(r bool) bob.Mod[dialect.DeleteEditor] {
+	return mods.Recursive[dialect.DeleteEditor](r)
 }
 
-func From(name any) dialect.FromChain[*dialect.DeleteQuery] {
-	return dialect.From[*dialect.DeleteQuery](name)
+func From(name any) dialect.FromChain[dialect.DeleteEditor] {
+	return dialect.From[dialect.DeleteEditor](name)
 }
 
-func IndexedBy(i string) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
-		q.TableRef.IndexedBy = &i
+func IndexedBy(i string) bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(q dialect.DeleteEditor) {
+		q.SetIndexedBy(&i)
 	})
 }
 
-func NotIndexed() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(q *dialect.DeleteQuery) {
+func NotIndexed() bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(q dialect.DeleteEditor) {
 		var s string
-		q.TableRef.IndexedBy = &s
+		q.SetIndexedBy(&s)
 	})
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.DeleteEditor] {
+	return mods.Where[dialect.DeleteEditor]{E: e}
 }
 
-func Returning(clauses ...any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Returning[*dialect.DeleteQuery](clauses)
+func Returning(clauses ...any) bob.Mod[dialect.DeleteEditor] {
+	return mods.Returning[dialect.DeleteEditor](clauses)
 }
 
-func Limit(count any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Limit[*dialect.DeleteQuery]{
+func Limit(count any) bob.Mod[dialect.DeleteEditor] {
+	return mods.Limit[dialect.DeleteEditor]{
 		Count: count,
 	}
 }
 
-func Offset(count any) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Offset[*dialect.DeleteQuery]{
+func Offset(count any) bob.Mod[dialect.DeleteEditor] {
+	return mods.Offset[dialect.DeleteEditor]{
 		Count: count,
 	}
 }

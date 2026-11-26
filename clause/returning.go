@@ -3,6 +3,7 @@ package clause
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 )
@@ -27,6 +28,10 @@ func (r *Returning) SetNewAlias(alias string) {
 
 func (r *Returning) AppendReturning(columns ...any) {
 	r.Expressions = append(r.Expressions, columns...)
+}
+
+func (r *Returning) SetReturning(columns ...any) {
+	r.Expressions = slices.Clone(columns)
 }
 
 func (r Returning) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

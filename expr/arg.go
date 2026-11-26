@@ -3,6 +3,7 @@ package expr
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/internal"
@@ -47,7 +48,9 @@ func (a args) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, st
 		w.WriteString(closePar)
 	}
 
-	return a.vals, nil
+	// The renderer can append more parameters. It must not write through
+	// spare capacity in a reusable argument expression.
+	return slices.Clip(a.vals), nil
 }
 
 func ToArgs[T any](vals ...T) bob.Expression {

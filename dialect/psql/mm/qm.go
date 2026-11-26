@@ -1,6 +1,8 @@
 package mm
 
 import (
+	"slices"
+
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
@@ -10,33 +12,33 @@ import (
 )
 
 // With starts a CTE. The name and column list are quoted as SQL identifiers.
-func With(name string, columns ...string) dialect.CTEChain[*dialect.MergeQuery] {
-	return dialect.With[*dialect.MergeQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.MergeEditor] {
+	return dialect.With[dialect.MergeEditor](name, columns...)
 }
 
 // Into specifies the target table for the MERGE statement
-func Into(name any) bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.Table = clause.TableRef{
+func Into(name any) bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.SetTarget(clause.TableRef{
 			Expression: name,
-		}
+		})
 	})
 }
 
 // IntoAs specifies the target table with an alias for the MERGE statement
-func IntoAs(name any, alias string) bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.Table = clause.TableRef{
+func IntoAs(name any, alias string) bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.SetTarget(clause.TableRef{
 			Expression: name,
 			Alias:      alias,
-		}
+		})
 	})
 }
 
 // Only specifies ONLY modifier for the target table
-func Only() bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.Only = true
+func Only() bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.SetOnly(true)
 	})
 }
 
@@ -65,19 +67,19 @@ func (u UsingChain) Only() UsingChain {
 }
 
 // On sets the join condition for the USING clause.
-func (u UsingChain) On(condition bob.Expression) bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.Using = dialect.MergeUsing{
+func (u UsingChain) On(condition bob.Expression) bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.SetUsing(dialect.MergeUsing{
 			Only:      u.only,
 			Source:    u.source,
 			Alias:     u.alias,
 			Condition: condition,
-		}
+		})
 	})
 }
 
 // OnEQ is a shorthand for On(left.EQ(right)).
-func (u UsingChain) OnEQ(left, right bob.Expression) bob.Mod[*dialect.MergeQuery] {
+func (u UsingChain) OnEQ(left, right bob.Expression) bob.Mod[dialect.MergeEditor] {
 	return u.On(expr.X[dialect.Expression, dialect.Expression](left).EQ(right))
 }
 
@@ -96,9 +98,9 @@ func (b whenBase) andCondition(condition bob.Expression) whenBase {
 	return b
 }
 
-func (b whenBase) thenDoNothing() bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
+func (b whenBase) thenDoNothing() bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.AppendWhen(dialect.MergeWhen{
 			Type:      b.whenType,
 			Condition: b.condition,
 			Action:    dialect.MergeAction{Type: dialect.MergeActionDoNothing},
@@ -119,14 +121,14 @@ func (c WhenMatchedChain) And(condition bob.Expression) WhenMatchedChain {
 }
 
 // ThenDoNothing sets the action to DO NOTHING
-func (c WhenMatchedChain) ThenDoNothing() bob.Mod[*dialect.MergeQuery] {
+func (c WhenMatchedChain) ThenDoNothing() bob.Mod[dialect.MergeEditor] {
 	return c.thenDoNothing()
 }
 
 // ThenDelete sets the action to DELETE
-func (c WhenMatchedChain) ThenDelete() bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
+func (c WhenMatchedChain) ThenDelete() bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.AppendWhen(dialect.MergeWhen{
 			Type:      c.whenType,
 			Condition: c.condition,
 			Action:    dialect.MergeAction{Type: dialect.MergeActionDelete},
@@ -135,18 +137,18 @@ func (c WhenMatchedChain) ThenDelete() bob.Mod[*dialect.MergeQuery] {
 }
 
 // ThenUpdate sets the action to UPDATE with SET clauses
-func (c WhenMatchedChain) ThenUpdate(sets ...bob.Mod[*UpdateAction]) bob.Mod[*dialect.MergeQuery] {
+func (c WhenMatchedChain) ThenUpdate(sets ...bob.Mod[*UpdateAction]) bob.Mod[dialect.MergeEditor] {
 	ua := &UpdateAction{}
 	for _, s := range sets {
-		s.Apply(ua)
+		s.Edit(ua)
 	}
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.AppendWhen(dialect.MergeWhen{
 			Type:      c.whenType,
 			Condition: c.condition,
 			Action: dialect.MergeAction{
 				Type: dialect.MergeActionUpdate,
-				Set:  ua.Set,
+				Set:  slices.Clone(ua.Set),
 			},
 		})
 	})
@@ -165,24 +167,24 @@ func (c WhenNotMatchedChain) And(condition bob.Expression) WhenNotMatchedChain {
 }
 
 // ThenDoNothing sets the action to DO NOTHING
-func (c WhenNotMatchedChain) ThenDoNothing() bob.Mod[*dialect.MergeQuery] {
+func (c WhenNotMatchedChain) ThenDoNothing() bob.Mod[dialect.MergeEditor] {
 	return c.thenDoNothing()
 }
 
 // ThenInsert sets the action to INSERT
-func (c WhenNotMatchedChain) ThenInsert(mods ...bob.Mod[*InsertAction]) bob.Mod[*dialect.MergeQuery] {
+func (c WhenNotMatchedChain) ThenInsert(mods ...bob.Mod[*InsertAction]) bob.Mod[dialect.MergeEditor] {
 	ia := &InsertAction{}
 	for _, mod := range mods {
-		mod.Apply(ia)
+		mod.Edit(ia)
 	}
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.AppendWhen(dialect.MergeWhen{
 			Type:      c.whenType,
 			Condition: c.condition,
 			Action: dialect.MergeAction{
 				Type:       dialect.MergeActionInsert,
-				Columns:    ia.Columns,
-				Values:     ia.Values,
+				Columns:    slices.Clone(ia.Columns),
+				Values:     slices.Clone(ia.Values),
 				Overriding: ia.Overriding,
 			},
 		})
@@ -190,9 +192,9 @@ func (c WhenNotMatchedChain) ThenInsert(mods ...bob.Mod[*InsertAction]) bob.Mod[
 }
 
 // ThenInsertDefaultValues sets the action to INSERT DEFAULT VALUES
-func (c WhenNotMatchedChain) ThenInsertDefaultValues() bob.Mod[*dialect.MergeQuery] {
-	return bob.ModFunc[*dialect.MergeQuery](func(m *dialect.MergeQuery) {
-		m.When = append(m.When, dialect.MergeWhen{
+func (c WhenNotMatchedChain) ThenInsertDefaultValues() bob.Mod[dialect.MergeEditor] {
+	return bob.ModFunc[dialect.MergeEditor](func(m dialect.MergeEditor) {
+		m.AppendWhen(dialect.MergeWhen{
 			Type:      c.whenType,
 			Condition: c.condition,
 			Action:    dialect.MergeAction{Type: dialect.MergeActionInsert},
@@ -300,6 +302,6 @@ func OverridingUser() bob.Mod[*InsertAction] {
 }
 
 // Returning adds a RETURNING clause
-func Returning(clauses ...any) mods.Returning[*dialect.MergeQuery] {
-	return mods.Returning[*dialect.MergeQuery](clauses)
+func Returning(clauses ...any) mods.Returning[dialect.MergeEditor] {
+	return mods.Returning[dialect.MergeEditor](clauses)
 }

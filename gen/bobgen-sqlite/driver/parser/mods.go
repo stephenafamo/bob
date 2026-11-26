@@ -44,7 +44,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
 		core := ctx.Select_core()
 
 		if distinct := core.DISTINCT_(); distinct != nil {
-			sb.WriteString("q.Distinct = true\n")
+			sb.WriteString("q.SetDistinct(true)\n")
 		}
 
 		allResults := core.AllResult_column()
@@ -135,11 +135,7 @@ func (v *visitor) modSelect_stmt(ctx sqliteparser.ISelect_stmtContext, sb *strin
                         q.AppendCombine(clause.Combine{
                             Strategy: "%s",
                             All: %t,
-                            Query: bob.BaseQuery[bob.Expression]{
-                                Expression: EXPR.subExpr(%d, %d),
-                                QueryType: bob.QueryTypeSelect,
-                                Dialect: dialect.Dialect,
-                            },
+                            Query: bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect),
                         })
                     `, strategy, all, start, end)
 				return nil
@@ -220,7 +216,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.SetTable(EXPR.raw(%d, %d))\n", start, end)
 			return nil
 		},
 	)...)
@@ -231,7 +227,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Alias = %q\n", getName(alias))
+				fmt.Fprintf(sb, "q.SetInsertAlias(%q)\n", getName(alias))
 				return nil
 			},
 		)...)
@@ -243,7 +239,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 		for i, col := range allColumns {
 			colNames[i] = getName(col)
 		}
-		fmt.Fprintf(sb, "q.TableRef.Columns = %#v\n", colNames)
+		fmt.Fprintf(sb, "q.SetTableColumns(%#v...)\n", colNames)
 	}
 
 	if values := ctx.Values_clause(); values != nil {
@@ -251,11 +247,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			values.GetStart().GetStart(),
 			values.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: EXPR.subExpr(%d, %d),
-						Dialect: dialect.Dialect,
-						QueryType: bob.QueryTypeSelect,
-						}
+				fmt.Fprintf(sb, `q.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect))
 					`, start, end)
 				return nil
 			},
@@ -267,11 +259,7 @@ func (v *visitor) modInsert_stmt(ctx sqliteparser.IInsert_stmtContext, sb *strin
 			selectStmt.GetStart().GetStart(),
 			selectStmt.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, `q.Query = bob.BaseQuery[bob.Expression]{
-						Expression: EXPR.subExpr(%d, %d),
-						Dialect: dialect.Dialect,
-						QueryType: bob.QueryTypeSelect,
-						}
+				fmt.Fprintf(sb, `q.SetInsertQuery(bob.QueryFromExpression(EXPR.subExpr(%d, %d), dialect.Dialect, bob.QueryTypeSelect))
 					`, start, end)
 				return nil
 			},
@@ -329,7 +317,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.Table.Expression = EXPR.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.SetTargetName(EXPR.raw(%d, %d))\n", start, end)
 			return nil
 		},
 	)...)
@@ -340,7 +328,7 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.Table.Alias = %q\n", getName(alias))
+				fmt.Fprintf(sb, "q.SetTargetAlias(%q)\n", getName(alias))
 				return nil
 			},
 		)...)
@@ -351,11 +339,11 @@ func (v *visitor) modUpdate_stmt(ctx sqliteparser.IUpdate_stmtContext, sb *strin
 	case indexName != nil: // INDEXED BY
 		fmt.Fprintf(
 			sb,
-			"index := %q; q.Table.IndexedBy = &index\n",
+			"index := %q; q.SetTargetIndexedBy(&index)\n",
 			getName(indexName),
 		)
 	case ctx.Qualified_table_name().NOT_() != nil: // NOT INDEXED
-		sb.WriteString("index := \"\"; q.Table.IndexedBy = &index\n")
+		sb.WriteString("index := \"\"; q.SetTargetIndexedBy(&index)\n")
 	}
 
 	cols := ctx.AllColumn_name_or_list()
@@ -459,7 +447,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	v.StmtRules = append(v.StmtRules, internal.RecordPoints(
 		tableStart, tableStop,
 		func(start, end int) error {
-			fmt.Fprintf(sb, "q.TableRef.Expression = EXPR.raw(%d, %d)\n", start, end)
+			fmt.Fprintf(sb, "q.SetTable(EXPR.raw(%d, %d))\n", start, end)
 			return nil
 		},
 	)...)
@@ -470,7 +458,7 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 			alias.GetStart().GetStart(),
 			alias.GetStop().GetStop(),
 			func(start, end int) error {
-				fmt.Fprintf(sb, "q.TableRef.Alias = %q\n", getName(alias))
+				fmt.Fprintf(sb, "q.SetTableAlias(%q)\n", getName(alias))
 				return nil
 			},
 		)...)
@@ -481,11 +469,11 @@ func (v *visitor) modDelete_stmt(ctx sqliteparser.IDelete_stmtContext, sb *strin
 	case indexName != nil: // INDEXED BY
 		fmt.Fprintf(
 			sb,
-			"index := %q; q.TableRef.IndexedBy = &index\n",
+			"index := %q; q.SetIndexedBy(&index)\n",
 			getName(indexName),
 		)
 	case ctx.Qualified_table_name().NOT_() != nil: // NOT INDEXED
-		sb.WriteString("index := \"\"; q.TableRef.IndexedBy = &index\n")
+		sb.WriteString("index := \"\"; q.SetIndexedBy(&index)\n")
 	}
 
 	if where := ctx.Where_stmt(); where != nil {

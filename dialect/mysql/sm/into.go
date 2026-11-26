@@ -13,51 +13,51 @@ type intoChain struct {
 	into into
 }
 
-func (i *intoChain) Apply(q *dialect.SelectQuery) {
+func (i *intoChain) Edit(q dialect.SelectEditor) {
 	q.SetInto(i.into)
 }
 
-func (i *intoChain) CharacterSet(c string) *intoChain {
+func (i intoChain) CharacterSet(c string) *intoChain {
 	i.into.characterSet = c
-	return i
+	return &i
 }
 
-func (i *intoChain) FieldsTerminatedBy(str string) *intoChain {
+func (i intoChain) FieldsTerminatedBy(str string) *intoChain {
 	i.into.hasFieldOpt = true
 	i.into.fieldOptions.terminatedBy = str
-	return i
+	return &i
 }
 
-func (i *intoChain) FieldsEnclosedBy(str string) *intoChain {
+func (i intoChain) FieldsEnclosedBy(str string) *intoChain {
 	i.into.hasFieldOpt = true
 	i.into.fieldOptions.enclosedByOptional = false
 	i.into.fieldOptions.enclosedBy = str
-	return i
+	return &i
 }
 
-func (i *intoChain) FieldsOptionallyEnclosedBy(str string) *intoChain {
+func (i intoChain) FieldsOptionallyEnclosedBy(str string) *intoChain {
 	i.into.hasFieldOpt = true
 	i.into.fieldOptions.enclosedByOptional = true
 	i.into.fieldOptions.enclosedBy = str
-	return i
+	return &i
 }
 
-func (i *intoChain) FieldsEscapedBy(str string) *intoChain {
+func (i intoChain) FieldsEscapedBy(str string) *intoChain {
 	i.into.hasFieldOpt = true
 	i.into.fieldOptions.escapedBy = str
-	return i
+	return &i
 }
 
-func (i *intoChain) LinesStartingBy(str string) *intoChain {
+func (i intoChain) LinesStartingBy(str string) *intoChain {
 	i.into.hasLineOpt = true
 	i.into.lineOptions.startingBy = str
-	return i
+	return &i
 }
 
-func (i *intoChain) LinesTerminatedBy(str string) *intoChain {
+func (i intoChain) LinesTerminatedBy(str string) *intoChain {
 	i.into.hasLineOpt = true
 	i.into.lineOptions.terminatedBy = str
-	return i
+	return &i
 }
 
 type into struct {

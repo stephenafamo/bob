@@ -2,116 +2,121 @@ package mappings
 
 import (
 	"reflect"
-	"regexp"
 	"strings"
+
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/scan"
 )
 
-var (
-	matchFirstCapRe = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	matchAllCapRe   = regexp.MustCompile("([a-z0-9])([A-Z])")
-)
-
-type colProperties struct {
-	Name          string
-	IsPK          bool
-	IsGenerated   bool
-	AutoIncrement bool
+// SQLColumns uses the declared SQL names even when Scan sees several fields
+// inside one column. Without names, the default mapper needs Scan's leaf
+// fields; a custom mapper can read each top-level field as a single column.
+func SQLColumns[T any](columns bob.Expression, parent string, customScanner bool) expr.ColumnsExpr {
+	if c, ok := columns.(interface{ Names() []string }); ok {
+		return expr.NewColumnsExpr(c.Names()...).WithParent(parent)
+	}
+	if !customScanner {
+		return expr.ColsForStruct[T](parent)
+	}
+	var names []string
+	modelColumns[T](true, nil, func(name, _ string) {
+		names = append(names, name)
+	})
+	return expr.NewColumnsExpr(names...).WithParent(parent)
 }
 
-func getColProperties(tag string) colProperties {
-	var p colProperties
-	if tag == "" {
-		return p
+// A custom scanner can need a specific SQL expression. Without one, use
+// the physical columns qualified by the table's alias.
+func Projection(columns bob.Expression, physical expr.ColumnsExpr, customScanner bool) bob.Expression {
+	if customScanner && columns != nil {
+		return columns
 	}
-
-	parts := strings.Split(tag, ",")
-	p.Name = parts[0]
-
-	for _, part := range parts[1:] {
-		switch part {
-		case "pk":
-			p.IsPK = true
-		case "generated":
-			p.IsGenerated = true
-		case "autoincr":
-			p.AutoIncrement = true
-		}
-	}
-
-	return p
+	return physical
 }
 
 type Mapping struct {
-	All           []string
-	PKs           []string
-	NonPKs        []string
-	Generated     []string
 	NonGenerated  []string
 	AutoIncrement []string
 }
 
-func GetMappings(typ reflect.Type) Mapping {
-	c := Mapping{}
+// WriteColumns follows model declaration order, independent of the SELECT
+// projection. Setters append their VALUES in this order.
+func WriteColumns[T any](customScanner bool, physical []string) Mapping {
+	var c Mapping
+	var mapped bool
+	modelColumns[T](customScanner, physical, func(name, opts string) {
+		mapped = true
+		var generated bool
+		for opt := range strings.SplitSeq(opts, ",") {
+			switch opt {
+			case "generated":
+				generated = true
+			case "autoincr":
+				c.AutoIncrement = append(c.AutoIncrement, name)
+			}
+		}
+		if !generated {
+			c.NonGenerated = append(c.NonGenerated, name)
+		}
+	})
+	if !mapped && customScanner {
+		// A scalar model has no field order. Its declared physical
+		// columns are the only available positional mapping.
+		c.NonGenerated = physical
+	}
+	return c
+}
 
+// The default scanner reads leaves; custom scanners can read a whole
+// top-level field as one physical column. Embedded fields stay flattened.
+func modelColumns[T any](customScanner bool, physical []string, visit func(name, opts string)) {
+	typ := reflect.TypeFor[T]()
+	fields, _ := scan.StructMapperFields(typ)
 	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 
-	if typ.Kind() != reflect.Struct {
-		return c
-	}
-
-	c.All = make([]string, typ.NumField())
-	c.PKs = make([]string, typ.NumField())
-	c.NonPKs = make([]string, typ.NumField())
-	c.Generated = make([]string, typ.NumField())
-	c.NonGenerated = make([]string, typ.NumField())
-	c.AutoIncrement = make([]string, typ.NumField())
-
-	// Go through the struct fields and populate the map.
-	// Recursively go into any child structs, adding a prefix where necessary
-	for i := range typ.NumField() {
-		field := typ.Field(i)
-
-		// Don't consider unexported fields
-		if !field.IsExported() {
-			continue
-		}
-
-		// Skip columns that have the tag "-"
-		tag := field.Tag.Get("db")
-		if tag == "-" {
-			continue
-		}
-
-		if tag == "" {
-			tag = snakeCase(field.Name)
-		}
-
-		props := getColProperties(tag)
-
-		c.All[field.Index[0]] = props.Name
-		if props.IsPK {
-			c.PKs[field.Index[0]] = props.Name
-		} else {
-			c.NonPKs[field.Index[0]] = props.Name
-		}
-		if props.IsGenerated {
-			c.Generated[field.Index[0]] = props.Name
-		} else {
-			c.NonGenerated[field.Index[0]] = props.Name
-		}
-		if props.AutoIncrement {
-			c.AutoIncrement[field.Index[0]] = props.Name
+	// A custom scanner may explicitly name nested columns. Expand those
+	// parents, even when only one of their children is in the projection.
+	expanded := make(map[string]bool)
+	if customScanner {
+		for _, col := range physical {
+			for i := strings.LastIndexByte(col, '.'); i >= 0; i = strings.LastIndexByte(col, '.') {
+				col = col[:i]
+				expanded[col] = true
+			}
 		}
 	}
-
-	return c
-}
-
-// snakeCaseFieldFunc is a NameMapperFunc that maps struct field to snake case.
-func snakeCase(str string) string {
-	snake := matchFirstCapRe.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCapRe.ReplaceAllString(snake, "${1}_${2}")
-	return strings.ToLower(snake)
+	seen := make(map[string]bool)
+	for _, field := range fields {
+		name := field.Name
+		var column, options string
+		for path := field.Index; len(path) > 0 && name != ""; path = path[:len(path)-1] {
+			f := typ.FieldByIndex(path)
+			if f.Anonymous {
+				continue // Scan flattens embedded fields.
+			}
+			tag, opts, _ := strings.Cut(f.Tag.Get("db"), ",")
+			var parent string
+			if tag != "" && tag != name {
+				parent, _ = strings.CutSuffix(name, "."+tag)
+			} else if tag == "" {
+				if i := strings.LastIndexByte(name, '.'); i >= 0 {
+					parent = name[:i]
+				}
+			}
+			if column == "" || !expanded[name] {
+				column, options = name, opts
+			}
+			if !customScanner {
+				break
+			}
+			name = parent
+		}
+		if column != "" && !seen[column] {
+			visit(column, options)
+			seen[column] = true
+		}
+	}
 }

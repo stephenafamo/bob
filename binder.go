@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/stephenafamo/bob/internal/mappings"
+	"github.com/stephenafamo/scan"
 )
 
 //nolint:gochecknoglobals
@@ -16,6 +16,15 @@ var (
 	ErrTooManyNamedArgs = errors.New("too many named args for single arg binder")
 	driverValuerIntf    = reflect.TypeFor[driver.Valuer]()
 	timeType            = reflect.TypeFor[time.Time]()
+	// Write-only Valuers are single SQL arguments even if their Go type
+	// has exported fields that the default read mapper would traverse.
+	bindMappingSource = func() scan.StructMapperSource {
+		src, err := scan.NewStructMapperSource(scan.WithScannableTypes((*driver.Valuer)(nil)))
+		if err != nil {
+			panic(err)
+		}
+		return src
+	}()
 )
 
 type MissingArgError struct{ Name string }
@@ -56,9 +65,15 @@ func makeBinder[Arg any](args []any) (binder[Arg], error) {
 
 func canUseAsSingleValue(typ reflect.Type) bool {
 	if typ.Kind() == reflect.Pointer {
+		if typ.Implements(driverValuerIntf) {
+			return true
+		}
 		typ = typ.Elem()
 	}
 
+	if typ.Implements(driverValuerIntf) {
+		return true
+	}
 	switch typ.Kind() {
 	case reflect.Bool, reflect.String,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -69,15 +84,7 @@ func canUseAsSingleValue(typ reflect.Type) bool {
 		return typ.Elem().Kind() == reflect.Uint8
 	}
 
-	if typ == timeType {
-		return true
-	}
-
-	if typ.Implements(driverValuerIntf) {
-		return true
-	}
-
-	return false
+	return typ == timeType
 }
 
 func makeSingleArgBinder[Arg any](args []any) (binder[Arg], error) {
@@ -135,15 +142,9 @@ func (b emptyBinder[Arg]) toArgs(arg Arg) []any {
 }
 
 func makeStructBinder[Arg any](args []any) (binder[Arg], error) {
-	typ := reflect.TypeFor[Arg]()
-
-	isStruct := typ.Kind() == reflect.Struct
-	if typ.Kind() == reflect.Pointer {
-		isStruct = typ.Elem().Kind() == reflect.Struct
-	}
-
-	if !isStruct {
-		return structBinder[Arg]{}, errors.New("bind type must be a struct")
+	fields, err := scan.CustomStructMapperFields(bindMappingSource, reflect.TypeFor[Arg]())
+	if err != nil {
+		return nil, err
 	}
 
 	givenArg := make([]any, len(args))
@@ -157,8 +158,7 @@ func makeStructBinder[Arg any](args []any) (binder[Arg], error) {
 		givenArg[pos] = arg
 	}
 
-	fieldNames := mappings.GetMappings(typ).All
-	fieldPositions := make([]int, len(argPositions))
+	fieldPositions := make([][]int, len(argPositions))
 
 	// check if all positions have matching fields
 ArgLoop:
@@ -167,9 +167,9 @@ ArgLoop:
 			continue
 		}
 
-		for fieldIndex, field := range fieldNames {
-			if field == name {
-				fieldPositions[argIndex] = fieldIndex
+		for _, field := range fields {
+			if field.Name == name {
+				fieldPositions[argIndex] = field.Index
 				continue ArgLoop
 			}
 		}
@@ -185,7 +185,7 @@ ArgLoop:
 
 type structBinder[Arg any] struct {
 	args     []string
-	fields   []int
+	fields   [][]int
 	givenArg []any
 }
 
@@ -222,7 +222,10 @@ func (b structBinder[Arg]) toArgs(arg Arg) []any {
 			continue
 		}
 
-		values[index] = val.Field(b.fields[index]).Interface()
+		// A nil embedded or nested struct binds NULL for its descendants.
+		if field, err := val.FieldByIndexErr(b.fields[index]); err == nil {
+			values[index] = field.Interface()
+		}
 	}
 
 	return values

@@ -48,6 +48,7 @@ The values that exist for the drivers:
 | concurrency  | How many tables to fetch in parallel                                                                             | 10        |
 | column_order | Order of columns in generated models. `"name"` sorts alphabetically; `"ordinal"` preserves database column order | "ordinal" |
 
+
 ## Only/Except:
 
 The `only` and `except` configuration options can be used to specify which tables to include or exclude from code generation. You can either supply a list of table names or use regular expressions to match multiple tables.

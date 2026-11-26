@@ -7,89 +7,89 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func With(name string, columns ...string) dialect.CTEChain[*dialect.DeleteQuery] {
-	return dialect.With[*dialect.DeleteQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.DeleteEditor] {
+	return dialect.With[dialect.DeleteEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Recursive[*dialect.DeleteQuery](r)
+func Recursive(r bool) bob.Mod[dialect.DeleteEditor] {
+	return mods.Recursive[dialect.DeleteEditor](r)
 }
 
-func LowPriority() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+func LowPriority() bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(i dialect.DeleteEditor) {
 		i.AppendModifier("LOW_PRIORITY")
 	})
 }
 
-func Quick() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+func Quick() bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(i dialect.DeleteEditor) {
 		i.AppendModifier("QUICK")
 	})
 }
 
-func Ignore() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(i *dialect.DeleteQuery) {
+func Ignore() bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(i dialect.DeleteEditor) {
 		i.AppendModifier("IGNORE")
 	})
 }
 
-func From(name any, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Tables = append(u.Tables, clause.TableRef{
+func From(name any, partitions ...string) bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(u dialect.DeleteEditor) {
+		u.AppendDeleteTable(clause.TableRef{
 			Expression: name,
 		})
-		u.Partitions = partitions
+		u.SetPartitions(partitions...)
 	})
 }
 
-func FromAs(name any, alias string, partitions ...string) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Tables = append(u.Tables, clause.TableRef{
+func FromAs(name any, alias string, partitions ...string) bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(u dialect.DeleteEditor) {
+		u.AppendDeleteTable(clause.TableRef{
 			Expression: name,
 			Alias:      alias,
 		})
-		u.Partitions = partitions
+		u.SetPartitions(partitions...)
 	})
 }
 
-func Using(name any) dialect.FromChain[*dialect.DeleteQuery] {
-	return dialect.From[*dialect.DeleteQuery](name)
+func Using(name any) dialect.FromChain[dialect.DeleteEditor] {
+	return dialect.From[dialect.DeleteEditor](name)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.InnerJoin[*dialect.DeleteQuery](e)
+func InnerJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.InnerJoin[dialect.DeleteEditor](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.LeftJoin[*dialect.DeleteQuery](e)
+func LeftJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.LeftJoin[dialect.DeleteEditor](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.RightJoin[*dialect.DeleteQuery](e)
+func RightJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.RightJoin[dialect.DeleteEditor](e)
 }
 
-func CrossJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.CrossJoin[*dialect.DeleteQuery](e)
+func CrossJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.CrossJoin[dialect.DeleteEditor](e)
 }
 
-func StraightJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.StraightJoin[*dialect.DeleteQuery](e)
+func StraightJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.StraightJoin[dialect.DeleteEditor](e)
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.DeleteEditor] {
+	return mods.Where[dialect.DeleteEditor]{E: e}
 }
 
-func OrderBy(e any) dialect.OrderBy[*dialect.DeleteQuery] {
-	return dialect.OrderBy[*dialect.DeleteQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[dialect.DeleteEditor] {
+	return dialect.OrderBy[dialect.DeleteEditor](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count int64) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Limit[*dialect.DeleteQuery]{
+func Limit(count int64) bob.Mod[dialect.DeleteEditor] {
+	return mods.Limit[dialect.DeleteEditor]{
 		Count: count,
 	}
 }

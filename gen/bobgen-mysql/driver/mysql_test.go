@@ -180,4 +180,9 @@ func TestDriver(t *testing.T) {
 			})
 		})
 	}
+	t.Run("batch_keys", func(t *testing.T) {
+		testgen.TestBatchKeys(t, db, "mysql", gen.MySQLTemplates, New(Config{Config: helpers.Config{
+			Dsn: dsn, Only: map[string][]string{"batch_parents": nil, "batch_children": nil},
+		}}))
+	})
 }

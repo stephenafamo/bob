@@ -157,6 +157,10 @@ func TestSQLite(t *testing.T) {
 
 	t.Run("driver", func(t *testing.T) { testSQLiteDriver(t, config) })
 	t.Run("assemble", func(t *testing.T) { testSQLiteAssemble(t, config) })
+	t.Run("batch_keys", func(t *testing.T) {
+		config.Only = map[string][]string{"batch_parents": nil, "batch_children": nil}
+		testgen.TestBatchKeys(t, db, "sqlite", gen.SQLiteTemplates, New(config))
+	})
 }
 
 func testSQLiteDriver(t *testing.T, config Config) {

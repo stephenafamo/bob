@@ -75,7 +75,7 @@ func All[T bob.Expression, B builder[T]](exp bob.Expression) T {
 func subquery(exp bob.Expression) bob.Expression {
 	if q, ok := exp.(bob.Query); ok {
 		exp = bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, _ bob.Dialect, start int) ([]any, error) {
-			return q.WriteQuery(ctx, w, start)
+			return bob.WriteQuery(ctx, w, start, q)
 		})
 	}
 

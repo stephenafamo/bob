@@ -19,6 +19,8 @@ type Config[ConstraintExtra any] struct {
 	Tags []string `yaml:"tags"`
 	// Disable generating go test files
 	NoTests bool `yaml:"no_tests"`
+	// Skip the module-wide bobcheck run after generation.
+	DisableBobcheck bool `yaml:"disable_bobcheck"`
 	// Disable back referencing in the loaded relationship structs
 	NoBackReferencing bool `yaml:"no_back_referencing"`
 	// Decides the casing for go structure tag names. camel, title or snake (default snake)

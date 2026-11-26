@@ -458,17 +458,20 @@ func (s driver) tableInfo(ctx context.Context, schema, tableName string) ([]info
 
 // primaryKey looks up the primary key for a table.
 func (s driver) primaryKey(schema, tableName string, tinfo []info) *drivers.Constraint[any] {
-	var cols []string
+	n := 0
 	for _, c := range tinfo {
-		if c.Pk > 0 {
-			cols = append(cols, c.Name)
-		}
+		n = max(n, c.Pk)
 	}
-
-	if len(cols) == 0 {
+	if n == 0 {
 		return nil
 	}
-
+	// table_xinfo lists columns in table order; pk is the 1-based key position.
+	cols := make([]string, n)
+	for _, c := range tinfo {
+		if c.Pk > 0 {
+			cols[c.Pk-1] = c.Name
+		}
+	}
 	return &drivers.Constraint[any]{
 		Name:    fmt.Sprintf("pk_%s_%s", schema, tableName),
 		Columns: cols,

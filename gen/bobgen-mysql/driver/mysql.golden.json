@@ -3164,7 +3164,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(50, 92),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    "
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.QueryFromExpression(EXPR.subExpr(50, 92), dialect.Dialect, bob.QueryTypeSelect),\n                        })\n                    "
 						},
 						{
 							"type": 1,
@@ -3220,7 +3220,7 @@
 									"can_be_multiple": true
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(50, 92),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    "
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.QueryFromExpression(EXPR.subExpr(50, 92), dialect.Dialect, bob.QueryTypeSelect),\n                        })\n                    "
 						},
 						{
 							"type": 1,
@@ -3315,7 +3315,7 @@
 									"can_be_multiple": false
 								}
 							],
-							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.BaseQuery[bob.Expression]{\n                                Expression: EXPR.subExpr(50, 89),\n                                QueryType: bob.QueryTypeSelect,\n                                Dialect: dialect.Dialect,\n                            },\n                        })\n                    "
+							"mods": "q.AppendSelect(EXPR.subExpr(7, 11))\nq.SetTable(EXPR.subExpr(17, 24))\nq.AppendWhere(EXPR.subExpr(31, 42))\n\n                        q.AppendCombine(clause.Combine{\n                            Strategy: \"UNION\",\n                            All: false,\n                            Query: bob.QueryFromExpression(EXPR.subExpr(50, 89), dialect.Dialect, bob.QueryTypeSelect),\n                        })\n                    "
 						}
 					]
 				}

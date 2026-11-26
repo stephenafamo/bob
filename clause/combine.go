@@ -49,7 +49,7 @@ func (s Combine) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect,
 
 	w.WriteString("(")
 
-	args, err := s.Query.WriteQuery(ctx, w, start)
+	args, err := bob.WriteQuery(ctx, w, start, s.Query)
 	if err != nil {
 		return nil, err
 	}

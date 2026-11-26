@@ -3,12 +3,17 @@ package sqlite
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
+	"github.com/stephenafamo/bob/dialect/sqlite/im"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/scan"
+	_ "modernc.org/sqlite"
 )
 
 type someStruct struct {
@@ -38,7 +43,60 @@ func TestSomeViewQueryWithoutSchema(t *testing.T) {
 	}
 }
 
-func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], argsLen int) string {
+func TestCustomScannerPhysicalColumn(t *testing.T) {
+	type point struct{ X, Y int }
+	type model struct {
+		Pos point `db:"pos"`
+	}
+	mapper := func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any) (model, error)) {
+		before, after := scan.ColumnMapper[string]("pos")(ctx, cols)
+		return before, func(link any) (model, error) {
+			var m model
+			value, err := after(link)
+			if err == nil {
+				_, err = fmt.Sscan(value, &m.Pos.X, &m.Pos.Y)
+			}
+			return m, err
+		}
+	}
+	ctx := t.Context()
+	db, err := bob.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.ExecContext(ctx, `CREATE TABLE points (pos TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+	want := model{Pos: point{1, 2}}
+	for name, cols := range map[string]bob.Expression{
+		"named columns": expr.NewColumnsExpr("pos").WithParent("points"),
+		"expression":    Quote("points", "pos"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			tx, err := db.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := tx.Rollback(ctx); err != nil {
+					t.Error(err)
+				}
+			})
+			table := NewTablex[model, []model, setter[model]]("", "points", cols, mapper, orm.RowMapping[model, []model]{})
+			inserted, err := table.Insert(im.Values(Arg("1 2"))).One(ctx, tx)
+			if err != nil || inserted != want {
+				t.Fatalf("INSERT RETURNING: got %+v, %v; want %+v", inserted, err, want)
+			}
+			selected, err := table.Query().One(ctx, tx)
+			if err != nil || selected != want {
+				t.Fatalf("SELECT: got %+v, %v; want %+v", selected, err, want)
+			}
+		})
+	}
+}
+
+func selectToString(t *testing.T, query bob.QueryBuilder[dialect.SelectEditor], argsLen int) string {
 	t.Helper()
 	ctx := context.Background()
 	buf := new(bytes.Buffer)
@@ -56,5 +114,5 @@ func selectToString(t *testing.T, query bob.BaseQuery[*dialect.SelectQuery], arg
 
 func viewToString(t *testing.T, query *ViewQuery[*someStruct, []*someStruct]) string {
 	t.Helper()
-	return selectToString(t, query.BaseQuery, 3)
+	return selectToString(t, query.QueryBuilder, 3)
 }

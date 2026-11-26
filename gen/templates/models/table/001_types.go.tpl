@@ -38,7 +38,7 @@ type {{$tAlias.UpSingular}}Slice []*{{$tAlias.UpSingular}}
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- else -}}
 	// {{$tAlias.UpPlural}} contains methods to work with the {{$table.Name}} table
-	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper)
+	var {{$tAlias.UpPlural}} = {{$.Dialect}}.NewTablex[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice, *{{$tAlias.UpSingular}}Setter]("{{$table.Schema}}","{{$table.Name}}",build{{$tAlias.UpSingular}}Columns({{quote (tableColumnAlias $table.Schema $table.Name $table.Key)}}), {{$tAlias.DownSingular}}ScanMapper, {{$tAlias.DownSingular}}RowMapping)
 	// {{$tAlias.UpPlural}}Query is a query on the {{$table.Name}} table
 	type {{$tAlias.UpPlural}}Query = *{{$.Dialect}}.ViewQuery[*{{$tAlias.UpSingular}}, {{$tAlias.UpSingular}}Slice]
 {{- end}}
@@ -88,7 +88,7 @@ func build{{$tAlias.UpSingular}}Columns(tableName string) {{$tAlias.DownSingular
     tableAlias: tableName,
     {{range $column := $table.Columns -}}
     {{- $colAlias := $tAlias.Column $column.Name -}}
-    {{$colAlias}}: build{{$tAlias.UpSingular}}Column(tableName, {{quote $column.Name}}),
+    {{$colAlias}}: {{$tAlias.DownSingular}}Column{Expression: {{$.Dialect}}.Quote(tableName, {{quote $column.Name}}), columnName: {{quote $column.Name}}},
     {{end -}}
   }
 }
@@ -117,26 +117,7 @@ func (c {{$tAlias.DownSingular}}Columns) Unqualified() {{$tAlias.DownSingular}}C
   return build{{$tAlias.UpSingular}}Columns("")
 }
 
-func build{{$tAlias.UpSingular}}Column(alias, name string) {{$tAlias.DownSingular}}Column {
-	return {{$tAlias.DownSingular}}Column{
-		Expression: {{$.Dialect}}.Quote(alias, name),
-		alias:      alias,
-		name:       name,
-	}
-}
-
 type {{$tAlias.DownSingular}}Column struct {
 	{{$.Dialect}}.Expression
-	alias string
-	name  string
-}
-
-// Name returns the unqualified column name.
-func (c {{$tAlias.DownSingular}}Column) Name() string {
-	return c.name
-}
-
-// ShouldOmitParens prevents automatic parenthesis wrapping in expression builders.
-func (c {{$tAlias.DownSingular}}Column) ShouldOmitParens() bool {
-	return true
+	columnName
 }

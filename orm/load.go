@@ -15,7 +15,6 @@ import (
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
-	"github.com/stephenafamo/bob/internal/mappings"
 	"github.com/stephenafamo/bob/mods"
 	"github.com/stephenafamo/scan"
 )
@@ -35,8 +34,8 @@ func (l Loader[Q]) Load(ctx context.Context, exec bob.Executor, retrieved any) e
 	return l(ctx, exec, retrieved)
 }
 
-// Apply satisfies the bob.Mod[Q] interface
-func (l Loader[Q]) Apply(q Q) {
+// Edit satisfies the bob.Mod[Q] interface
+func (l Loader[Q]) Edit(q Q) {
 	q.AppendLoader(l)
 }
 
@@ -109,14 +108,14 @@ func (filters PreloadWhere[Q]) ModifyPreloadSettings(el *PreloadSettings[Q]) {
 // the mapper mod and loaders it returns can only be used after the returned mod is applied
 type Preloader[Q Loadable] func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader)
 
-// Apply satisfies bob.Mod[*dialect.SelectQuery].
+// Edit satisfies bob.Mod[dialect.SelectEditor].
 // 1. It modifies the query to join the preloading table and the extra columns to retrieve
 // 2. It modifies the mapper to scan the new columns.
 // 3. It calls the original object's Preload method with the loaded object
-func (l Preloader[Q]) Apply(q Q) {
+func (l Preloader[Q]) Edit(q Q) {
 	mod, mapperMod, afterLoaders := l("")
 
-	mod.Apply(q)                    // add preload columns
+	mod.Edit(q)                     // add preload columns
 	q.AppendMapperMod(mapperMod)    // add mapper
 	q.AppendLoader(afterLoaders...) // add the loader
 }
@@ -132,6 +131,7 @@ func (l Preloader[Q]) ModifyPreloadSettings(s *PreloadSettings[Q]) {
 func NewAfterPreloader[T any, Ts ~[]T]() *AfterPreloader {
 	var collected Ts
 	return &AfterPreloader{
+		newCollector: NewAfterPreloader[T, Ts],
 		appendCollected: func(v any) error {
 			t, ok := v.(T)
 			if !ok {
@@ -142,12 +142,14 @@ func NewAfterPreloader[T any, Ts ~[]T]() *AfterPreloader {
 		},
 		numCollected: func() int { return len(collected) },
 		toLoad: func() any {
+			batch := collected
+			collected = nil
 			// a single object is passed as-is (T); many are passed as the
 			// slice (Ts), matching the reflection-based implementation.
-			if len(collected) == 1 {
-				return collected[0]
+			if len(batch) == 1 {
+				return batch[0]
 			}
-			return collected
+			return batch
 		},
 	}
 }
@@ -158,7 +160,8 @@ func NewAfterPreloader[T any, Ts ~[]T]() *AfterPreloader {
 // later, when this object is called like any other [bob.Loader], it
 // calls the appended loaders with the collected objects
 type AfterPreloader struct {
-	funcs []bob.Loader
+	funcs        []bob.Loader
+	newCollector func() *AfterPreloader
 
 	// typed helpers set by [NewAfterPreloader]; they close over a Ts buffer
 	appendCollected func(any) error
@@ -166,11 +169,42 @@ type AfterPreloader struct {
 	toLoad          func() any
 }
 
+func (a *AfterPreloader) fresh() *AfterPreloader {
+	if len(a.funcs) == 0 {
+		return a
+	}
+	next := a.newCollector()
+	next.funcs = a.funcs
+	return next
+}
+
+func (a *AfterPreloader) LoaderContext(ctx context.Context) context.Context {
+	if len(a.funcs) == 0 {
+		return ctx
+	}
+	return context.WithValue(ctx, a, a.fresh())
+}
+
+func (a *AfterPreloader) collector(ctx context.Context) *AfterPreloader {
+	if len(a.funcs) != 0 {
+		if local, ok := ctx.Value(a).(*AfterPreloader); ok {
+			return local
+		}
+	}
+	return a
+}
+
 func (a *AfterPreloader) AppendLoader(fs ...bob.Loader) {
 	a.funcs = append(a.funcs, fs...)
 }
 
-func (a *AfterPreloader) Collect(v any) error {
+// Collect adds a scanned object to this execution's batch. Pass the context
+// supplied to the scan mapper so Load reads the same batch.
+func (a *AfterPreloader) Collect(ctx context.Context, v any) error {
+	return a.collector(ctx).collect(v)
+}
+
+func (a *AfterPreloader) collect(v any) error {
 	if len(a.funcs) == 0 {
 		return nil
 	}
@@ -179,6 +213,7 @@ func (a *AfterPreloader) Collect(v any) error {
 }
 
 func (a *AfterPreloader) Load(ctx context.Context, exec bob.Executor, _ any) error {
+	a = a.collector(ctx)
 	if len(a.funcs) == 0 || a.numCollected() == 0 {
 		return nil
 	}
@@ -224,6 +259,24 @@ type PreloadableQuery interface {
 	AppendPreloadSelect(columns ...any)
 }
 
+// Predicates matches the two sets of keys and applies each side's static
+// filters, qualified with the aliases in effect for this use of the path.
+func (s PreloadSide[E]) Predicates(from, to string) []bob.Expression {
+	on := make([]bob.Expression, 0, len(s.FromColumns)+len(s.FromWhere)+len(s.ToWhere))
+	for i, col := range s.FromColumns {
+		// Match the direct loader's target.column = argument. SQLite uses
+		// the left column's collation when the two declarations differ.
+		on = append(on, expr.OP("=", expr.Quote(to, s.ToColumns[i]), expr.Quote(from, col)))
+	}
+	for _, w := range s.FromWhere {
+		on = append(on, expr.OP("=", expr.Quote(from, w.Column), expr.Raw(w.SQLValue)))
+	}
+	for _, w := range s.ToWhere {
+		on = append(on, expr.OP("=", expr.Quote(to, w.Column), expr.Raw(w.SQLValue)))
+	}
+	return on
+}
+
 // PreloadMapper returns a mapper for the preloaded child rows of a query.
 // The prefix is the runtime-generated join alias followed by "." — every
 // column belonging to the child is prefixed with it in the result set.
@@ -241,7 +294,12 @@ type PreloadMapper[T any] func(prefix string) scan.Mapper[T]
 // Related rows with the same join key are shared as a single instance across
 // parent rows (the same semantics as ThenLoad), so preloaded structs should be
 // treated as read-only.
-func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel PreloadRel[E], cols []string, mapper PreloadMapper[T], opts ...PreloadOption[Q]) Preloader[Q] {
+func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](
+	rel PreloadRel[E],
+	cols []string,
+	mapper PreloadMapper[T],
+	opts ...PreloadOption[Q],
+) Preloader[Q] {
 	settings := NewPreloadSettings[T, Ts, Q](cols)
 	for _, o := range opts {
 		if o == nil {
@@ -269,29 +327,7 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 			if settings.Alias == "" {
 				alias = fmt.Sprintf("%s_%d", side.To.Alias(), nextUniqueInt(q))
 			}
-			on := make([]bob.Expression, 0, len(side.FromColumns)+len(side.FromWhere)+len(side.ToWhere))
-			for i, fromCol := range side.FromColumns {
-				toCol := side.ToColumns[i]
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(parent, fromCol),
-					expr.Quote(alias, toCol),
-				))
-			}
-			for _, from := range side.FromWhere {
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(parent, from.Column),
-					expr.Raw(from.SQLValue),
-				))
-			}
-			for _, to := range side.ToWhere {
-				on = append(on, expr.OP(
-					"=",
-					expr.Quote(alias, to.Column),
-					expr.Raw(to.SQLValue),
-				))
-			}
+			on := side.Predicates(parent, alias)
 
 			if len(settings.Mods) > i {
 				for _, additional := range settings.Mods[i] {
@@ -319,13 +355,21 @@ func Preload[T Preloadable, Ts ~[]T, E bob.Expression, Q PreloadableQuery](rel P
 	}, rel.Name, keyColumns, mapper, settings)
 }
 
-func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods[Q]), name string, keyColumns []string, mapper PreloadMapper[T], opt PreloadSettings[Q]) Preloader[Q] {
+func buildPreloader[T any, Q Loadable](
+	f func(Q, string) (string, mods.QueryMods[Q]),
+	name string,
+	keyColumns []string,
+	mapper PreloadMapper[T],
+	opt PreloadSettings[Q],
+) Preloader[Q] {
 	build := func(q Q, parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		alias, queryMods := f(q, parent)
 		prefix := alias + "."
 
 		var mapperMods []scan.MapperMod
-		extraLoaders := []bob.Loader{opt.ExtraLoader}
+		// Each occurrence needs its own key even if the same mod is applied twice.
+		slot := opt.ExtraLoader.fresh()
+		extraLoaders := []bob.Loader{slot}
 
 		for _, l := range opt.SubLoaders {
 			queryMod, mapperMod, extraLoader := l(alias)
@@ -343,6 +387,7 @@ func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods
 		}
 
 		return queryMods, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+			collector := slot.collector(ctx)
 			usingStructMapper := mapper == nil
 
 			var childMapper scan.Mapper[T]
@@ -372,7 +417,7 @@ func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods
 					return err
 				}
 
-				if err = opt.ExtraLoader.Collect(t); err != nil {
+				if err = collector.collect(t); err != nil {
 					return err
 				}
 
@@ -382,10 +427,10 @@ func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods
 			// per-execution state: scan runs this generator once per execution; no locking needed
 			if usingStructMapper {
 				if keyFromLink := preloadKeyFromLink[T](prefix, keyColumns, cols); keyFromLink != nil {
-					return before, preloadDedupByLink(name, keyFromLink, after, legacy, opt.ExtraLoader)
+					return before, preloadDedupByLink(name, keyFromLink, after, legacy, collector)
 				}
 			} else if keyFromValue := preloadKeyFromValue[T](prefix, keyColumns, cols); keyFromValue != nil {
-				return before, preloadDedupByValue(name, keyFromValue, after, legacy, opt.ExtraLoader)
+				return before, preloadDedupByValue(name, keyFromValue, after, legacy, collector)
 			}
 
 			// key not resolvable (e.g. dropped by PreloadOnly/PreloadExcept): keep the safe per-row path
@@ -401,7 +446,7 @@ func buildPreloader[T any, Q Loadable](f func(Q, string) (string, mods.QueryMods
 		apply := bob.ModFunc[Q](func(q Q) {
 			var queryMod bob.Mod[Q]
 			queryMod, mapperMod, loaders = build(q, parent)
-			queryMod.Apply(q)
+			queryMod.Edit(q)
 		})
 
 		return apply, func(ctx context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
@@ -422,6 +467,15 @@ func nextUniqueInt(q any) uint64 {
 
 // lazyLoaders are the loaders of a preloader, they are only known once its mod is applied
 type lazyLoaders []bob.Loader
+
+func (l *lazyLoaders) LoaderContext(ctx context.Context) context.Context {
+	for _, loader := range *l {
+		if local, ok := loader.(bob.LoaderContext); ok {
+			ctx = local.LoaderContext(ctx)
+		}
+	}
+	return ctx
+}
 
 func (l *lazyLoaders) Load(ctx context.Context, exec bob.Executor, retrieved any) error {
 	for _, loader := range *l {
@@ -487,7 +541,13 @@ func (c *preloadDedupCache[T]) store(key []byte, t T) {
 // preloadDedupByLink keys before construction (reflection mapper): a duplicate
 // row skips after(link) and with it any nested AfterMods/Collects — the cached
 // instance already carries that data.
-func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+func preloadDedupByLink[T any](
+	name string,
+	keyFromLink func([]byte, any) ([]byte, bool),
+	after func(any) (T, error),
+	legacy scan.AfterMod,
+	collector *AfterPreloader,
+) scan.AfterMod {
 	c := newPreloadDedupCache[T]()
 
 	return func(link, retrieved any) error {
@@ -518,7 +578,7 @@ func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byt
 
 		c.store(c.scratch, t)
 
-		if err = collector.Collect(t); err != nil {
+		if err = collector.collect(t); err != nil {
 			return err
 		}
 
@@ -528,7 +588,13 @@ func preloadDedupByLink[T any](name string, keyFromLink func([]byte, any) ([]byt
 
 // preloadDedupByValue keys after construction: a typed mapper's link is opaque,
 // so the key is read from the built value; construction still runs per row.
-func preloadDedupByValue[T any](name string, keyFromValue func([]byte, T) ([]byte, bool), after func(any) (T, error), legacy scan.AfterMod, collector *AfterPreloader) scan.AfterMod {
+func preloadDedupByValue[T any](
+	name string,
+	keyFromValue func([]byte, T) ([]byte, bool),
+	after func(any) (T, error),
+	legacy scan.AfterMod,
+	collector *AfterPreloader,
+) scan.AfterMod {
 	c := newPreloadDedupCache[T]()
 
 	return func(link, retrieved any) error {
@@ -550,7 +616,7 @@ func preloadDedupByValue[T any](name string, keyFromValue func([]byte, T) ([]byt
 		c.scratch, ok = keyFromValue(c.scratch[:0], t)
 		if !ok {
 			// unmatched LEFT JOIN row: keep the legacy behavior, never cache
-			if err = collector.Collect(t); err != nil {
+			if err = collector.collect(t); err != nil {
 				return err
 			}
 			return loader.Preload(name, t)
@@ -562,7 +628,7 @@ func preloadDedupByValue[T any](name string, keyFromValue func([]byte, T) ([]byt
 
 		c.store(c.scratch, t)
 
-		if err = collector.Collect(t); err != nil {
+		if err = collector.collect(t); err != nil {
 			return err
 		}
 
@@ -661,24 +727,21 @@ func preloadKeyFromValue[T any](prefix string, keyColumns, cols []string) func([
 		return nil
 	}
 
-	fieldNames := mappings.GetMappings(typ).All
-
-	keyIdx := make([]int, 0, len(keyColumns))
-	for _, key := range keyColumns {
-		idx := -1
-		for i, name := range fieldNames {
-			if name == key {
-				idx = i
-				break
-			}
-		}
-		if idx < 0 {
-			return nil
-		}
-		keyIdx = append(keyIdx, idx)
+	fields, err := scan.StructMapperFields(typ)
+	if err != nil {
+		return nil
 	}
 
-	composite := len(keyIdx) > 1
+	keyPaths := make([][]int, 0, len(keyColumns))
+	for _, key := range keyColumns {
+		i := slices.IndexFunc(fields, func(f scan.MappedField) bool { return f.Name == key })
+		if i < 0 || len(fields[i].Index) == 0 {
+			return nil
+		}
+		keyPaths = append(keyPaths, fields[i].Index)
+	}
+
+	composite := len(keyPaths) > 1
 
 	return func(dst []byte, t T) ([]byte, bool) {
 		rv := reflect.ValueOf(t)
@@ -687,8 +750,16 @@ func preloadKeyFromValue[T any](prefix string, keyColumns, cols []string) func([
 		}
 
 		rv = rv.Elem()
-		for _, idx := range keyIdx {
-			dst = appendPreloadKeyValue(dst, rv.Field(idx), composite)
+		for _, path := range keyPaths {
+			field, err := rv.FieldByIndexErr(path)
+			if err != nil {
+				return dst, false
+			}
+			field = reflect.Indirect(field)
+			if !field.IsValid() {
+				return dst, false
+			}
+			dst = appendPreloadKeyValue(dst, field, composite)
 		}
 
 		return dst, true

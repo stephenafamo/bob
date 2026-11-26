@@ -14,11 +14,13 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
+	"github.com/stephenafamo/bob/dialect/psql/im"
 	"github.com/stephenafamo/bob/dialect/psql/mm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/bob/orm/genruntime"
 	"github.com/stephenafamo/scan"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -81,7 +83,7 @@ type UserSetter struct {
 	Name  *string `db:"name"`
 	Email *string `db:"email"`
 
-	orm.Setter[*User, *dialect.InsertQuery, *dialect.UpdateQuery]
+	orm.Setter[*User, dialect.InsertEditor, dialect.UpdateEditor]
 }
 
 func (s UserSetter) Overwrite(t *User) {
@@ -98,7 +100,7 @@ func (s UserSetter) Overwrite(t *User) {
 	}
 }
 
-func (s UserSetter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+func (s UserSetter) UpdateMod() bob.Mod[dialect.UpdateEditor] {
 	return um.Set(s.Expressions()...)
 }
 
@@ -129,7 +131,37 @@ func (s UserSetter) Expressions(prefix ...string) []bob.Expression {
 	return exprs
 }
 
-var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"))
+var userTable = NewTable[*User, *UserSetter, bob.Expression]("", "users", expr.ColsForStruct[User]("users"), orm.RowMapping[*User, []*User]{
+	KeyColumns:  expr.NewColumnsExpr("id").WithParent("users"),
+	KeyValues:   func(u *User) bob.Expression { return Arg(u.ID) },
+	CopyColumns: copyUser,
+	CopyMatching: func(dst []*User, src ...*User) {
+		genruntime.CopyByKey(dst, src, func(u *User) int64 { return u.ID }, copyUser)
+	},
+})
+
+func copyUser(dst, src *User) { *dst = *src }
+
+func TestInsertWithReorderedProjection(t *testing.T) {
+	ctx := t.Context()
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.ExecContext(ctx, `CREATE TEMP TABLE users (id INTEGER, name TEXT, email TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+	// The read projection reverses the two strings and leaves out id.
+	table := NewTable[*User, *UserSetter]("", "users", expr.NewColumnsExpr("email", "name"), orm.RowMapping[*User, []*User]{})
+	user, err := table.Insert(im.Values(Arg(7), Arg("Ada"), Arg("ada@example.org"))).One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *user != (User{Name: "Ada", Email: "ada@example.org"}) {
+		t.Fatalf("unexpected returned row: %+v", user)
+	}
+}
 
 func TestUpdate(t *testing.T) {
 	ctx := t.Context()
@@ -242,7 +274,7 @@ func TestMerge(t *testing.T) {
 	)
 
 	// Get the SQL for debugging
-	sql, args, err := bob.Build(ctx, mergeQuery)
+	sql, args, err := bob.Build(ctx, nil, mergeQuery)
 	if err != nil {
 		t.Fatalf("could not build merge query: %v", err)
 	}
@@ -311,7 +343,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
@@ -338,7 +370,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
@@ -365,7 +397,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}

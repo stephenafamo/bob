@@ -38,7 +38,7 @@ psql.Insert(
 
 Using this query mod system, the mods closely match the allowed syntax for each specific query type.
 
-For conditional queries, the query object have an `Apply()` method which can be used to add more query mods.
+Use `WithMods` to add mods conditionally.
 
 ```go
 q := psql.Select(
@@ -46,15 +46,69 @@ q := psql.Select(
 ) // SELECT * FROM projects
 
 if !user.IsAdmin {
-	q.Apply(
+	q = q.WithMods(
 		sm.Where(psql.Quote("user_id").EQ(psql.Arg(user.ID))),
 	) // SELECT * FROM projects WHERE "user_id" = $1
 }
 ```
 
-> Since the mods modify the main query object any new mods added with `Apply()` will affect all instances of the query.
->
-> To reuse the base of a query and add new mods each time, first use the `Clone()` method.
+For PostgreSQL, SQLite, and MySQL builders, including table writes and generated
+SQL queries, `WithMods` returns a new query. Two callers can
+derive from the same base: `left := base.WithMods(leftFilter)` and
+`right := base.WithMods(rightFilter)`. To run the same query again, reuse `base`.
+Use the result: a bare `q.WithMods(filter)` leaves `q` unchanged. Run `bobcheck`
+after upgrading to find these calls.
+
+For a bulk insert, collect the rows first and use
+`psql.Insert(im.Into("jobs", "id"), im.Rows(rows...))`. A separate `WithMods`
+for each row has to preserve every intermediate query and copies the growing
+row list repeatedly.
+
+Custom mods can replace or append entries in the clause lists they
+receive. For example, changing an insert column or replacing a cell in a
+`VALUES` row affects only that query, even when another query uses the same
+`im.Into` or `im.Rows` mod. The same rule applies to nested clause lists such
+as `GROUPING SETS`. Do not retain the editor after the callback.
+Treat a reusable mod's inputs as read-only. Replace an expression in a clause
+instead of editing the expression, its bound values, or its callback state.
+
+Table and view query hooks run in order on one scoped editor per build.
+Each hook sees the previous hook's edits and context. Apply a mod with
+`Edit` and return the context and any error.
+
+```go
+models.Projects.SelectQueryHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, e psql.SelectEditor) (context.Context, error) {
+	sm.Where(psql.Quote("archived").EQ(psql.Arg(false))).Edit(e)
+	return ctx, nil
+})
+```
+
+Register hooks before constructing a table or view query. Later registrations
+apply to new queries. Existing queries and their `WithMods` branches keep their
+original hook list. Both `bob.Build(ctx, tx, q)` and `bob.One(ctx, tx, q, mapper)`
+run query hooks once per statement, including nested statements, with `tx`.
+Pass `nil` explicitly to build without an executor. A hook that needs one can
+return an error. Standalone builds do not run model lifecycle hooks.
+
+`bob.RunQueryHooks(ctx, exec, q)` accepts any `bob.Query`, including a table,
+view, bound query, or custom wrapper. It returns `(ctx, stmt, err)`. After
+checking `err`, build or execute `stmt` with the returned context. Its hooks
+have already run.
+
+A custom query can implement `bob.HookableQuery` to choose the statement:
+
+```go
+var _ bob.HookableQuery = filteredQuery{}
+
+func (q filteredQuery) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, bob.Query, error) {
+	return ctx, q.selectQuery.WithMods(sm.Where(q.filter)), nil
+}
+```
+
+Execution, caching, and preparation use the returned statement's SQL, mapper
+mods, and loaders. For a wrapper that also changes how SQL is written, return
+the wrapper around the resolved inner statement. A hook that only changes the
+context must still return the query to execute.
 
 ## Expressions
 

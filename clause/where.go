@@ -15,8 +15,8 @@ type Where struct {
 	Conditions []any
 }
 
-func (wh *Where) AppendWhere(e ...any) {
-	wh.Conditions = append(wh.Conditions, e...)
+func (wh *Where) AppendWhere(e any) {
+	wh.Conditions = append(wh.Conditions, e)
 }
 
 func (wh Where) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

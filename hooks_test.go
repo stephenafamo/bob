@@ -14,13 +14,13 @@ func TestHooks(t *testing.T) {
 
 	// Test Adding Hooks
 	for i := range 5 {
-		initial := len(H.hooks)
+		initial := len(H.GetHooks())
 		f := func(ctx context.Context, _ Executor, s *string) (context.Context, error) {
 			*s = *s + fmt.Sprintf("%d", initial+1)
 			return ctx, nil
 		}
 		H.AppendHooks(f)
-		if len(H.hooks) != initial+1 {
+		if len(H.GetHooks()) != initial+1 {
 			t.Fatalf("Did not add hook number %d", i+1)
 		}
 	}

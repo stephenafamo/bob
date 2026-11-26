@@ -4,43 +4,35 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 )
 
-func Cache(ctx context.Context, exec Executor, q Query) (BaseQuery[*cached], error) {
+// CachedQuery holds SQL and arguments built for a particular context and start index.
+type CachedQuery = ExpressionQuery[*cached]
+
+func Cache(ctx context.Context, exec Executor, q Query) (CachedQuery, error) {
 	return CacheN(ctx, exec, q, 1)
 }
 
-func CacheN(ctx context.Context, exec Executor, q Query, start int) (BaseQuery[*cached], error) {
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return BaseQuery[*cached]{}, err
-		}
-	}
-
-	query, args, err := BuildN(ctx, q, start)
+func CacheN(ctx context.Context, exec Executor, q Query, start int) (CachedQuery, error) {
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
-		return BaseQuery[*cached]{}, err
+		return CachedQuery{}, err
 	}
 
-	cached := BaseQuery[*cached]{
-		QueryType: q.Type(),
-		Expression: &cached{
-			query: query,
-			args:  args,
-			start: start,
-		},
+	query, args, err := render(ctx, exec, q, start)
+	if err != nil {
+		return ExpressionQuery[*cached]{}, err
 	}
 
-	if l, ok := q.(Loadable); ok {
-		cached.Expression.SetLoaders(l.GetLoaders()...)
-	}
+	cached := QueryFromExpression(&cached{
+		query: query,
+		args:  slices.Clone(args),
+		start: start,
+	}, nil, q.Type())
 
-	if m, ok := q.(MapperModder); ok {
-		cached.Expression.SetMapperMods(m.GetMapperMods()...)
-	}
+	cached.expression.SetLoaders(loadersFor(ctx, q)...)
+	cached.expression.SetMapperMods(mapperModsFor(ctx, q)...)
 
 	return cached, nil
 }
@@ -71,5 +63,5 @@ func (c *cached) WriteSQL(ctx context.Context, w io.StringWriter, d Dialect, sta
 		return nil, err
 	}
 
-	return c.args, nil
+	return slices.Clone(c.args), nil
 }

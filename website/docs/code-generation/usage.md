@@ -67,7 +67,7 @@ type JetSlice []*Jet
 // JetsTable contains methods to work with the jets table.
 // jetScanMapper is a generated reflection-free scan.Mapper used by
 // every query built from the table.
-var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets", buildJetColumns("jets"), jetScanMapper)
+var JetsTable = psql.NewTablex[*Jet, JetSlice, *JetSetter]("", "jets", buildJetColumns("jets"), jetScanMapper, jetRowMapping)
 ```
 
 :::tip
@@ -142,20 +142,23 @@ _, err := jets.DeleteAll(ctx, db)
 
 ### Reload
 
-Reload all columns from the database into the struct
+`Reload` reads the row by primary key and copies its column values into the
+existing model. Loaded relationships, counts, and fields added by plugins
+keep their values.
 
 ```go
-_, err := jet.Reload(ctx, db)
+err := jet.Reload(ctx, db)
 ```
 
 ### ReloadAll
 
 ReloadAll is a method on the collection type `JetSlice`.
 
-Works just like `Reload`, but for all the members of the slice.
+It uses one query and refreshes each matching model in place. Pointers to
+slice members remain valid. A member with no matching row keeps its values.
 
 ```go
-_, err := jets.ReloadAll(ctx, db)
+err := jets.ReloadAll(ctx, db)
 ```
 
 ## Generated Functions

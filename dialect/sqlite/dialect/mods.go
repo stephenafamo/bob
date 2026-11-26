@@ -1,6 +1,8 @@
 package dialect
 
 import (
+	"slices"
+
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
@@ -18,7 +20,7 @@ func With[Q interface{ AppendCTE(bob.Expression) }](name string, columns ...stri
 
 type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
 
-func (c CTEChain[Q]) Apply(q Q) {
+func (c CTEChain[Q]) Edit(q Q) {
 	q.AppendCTE(c())
 }
 
@@ -92,7 +94,7 @@ func From[Q fromable](table any) FromChain[Q] {
 
 type FromChain[Q fromable] func() clause.TableRef
 
-func (f FromChain[Q]) Apply(q Q) {
+func (f FromChain[Q]) Edit(q Q) {
 	from := f()
 
 	q.SetTable(from.Expression)
@@ -133,7 +135,7 @@ func (f FromChain[Q]) IndexedBy(indexName string) bob.Mod[Q] {
 
 type JoinChain[Q interface{ AppendJoin(clause.Join) }] func() clause.Join
 
-func (j JoinChain[Q]) Apply(q Q) {
+func (j JoinChain[Q]) Edit(q Q) {
 	q.AppendJoin(j())
 }
 
@@ -174,14 +176,14 @@ func (j JoinChain[Q]) Natural() bob.Mod[Q] {
 
 func (j JoinChain[Q]) On(on ...bob.Expression) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, on...)
+	jo.On = append(slices.Clip(jo.On), on...)
 
 	return mods.Join[Q](jo)
 }
 
 func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
+	jo.On = append(slices.Clip(jo.On), expr.X[Expression, Expression](a).EQ(b))
 
 	return mods.Join[Q](jo)
 }
@@ -195,7 +197,7 @@ func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 
 type CrossJoinChain[Q Joinable] func() clause.Join
 
-func (j CrossJoinChain[Q]) Apply(q Q) {
+func (j CrossJoinChain[Q]) Edit(q Q) {
 	q.AppendJoin(j())
 }
 
@@ -247,7 +249,7 @@ func CrossJoin[Q Joinable](e any) CrossJoinChain[Q] {
 
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
-func (s OrderBy[Q]) Apply(q Q) {
+func (s OrderBy[Q]) Edit(q Q) {
 	q.AppendOrder(s())
 }
 

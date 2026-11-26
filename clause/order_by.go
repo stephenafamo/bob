@@ -17,7 +17,7 @@ func (o *OrderBy) ClearOrderBy() {
 }
 
 func (o *OrderBy) AppendOrder(order bob.Expression) {
-	o.Expressions = append(o.Expressions, order)
+	o.Expressions = append(o.Expressions, copyClause(order))
 }
 
 func (o OrderBy) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

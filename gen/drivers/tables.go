@@ -146,10 +146,7 @@ func (tables Tables[C, I]) NeededBridgeRels(r orm.Relationship) []struct {
 	}{}
 
 	for _, side := range r.ValuedSides() {
-		if side.TableName == r.Local() {
-			continue
-		}
-		if side.TableName == r.Foreign() {
+		if side.Start || side.End {
 			continue
 		}
 		if side.TableName == "" {
@@ -268,24 +265,19 @@ func (tables Tables[C, I]) RelDependenciesTypSet(aliases Aliases, r orm.Relation
 }
 
 func (tables Tables[C, I]) SetFactoryDeps(currPkg string, i language.Importer, types Types, aliases Aliases, r orm.Relationship, inLoop bool) string {
-	local := r.Local()
-	foreign := r.Foreign()
 	ksides := r.ValuedSides()
 
 	ret := make([]string, 0, len(ksides))
 	for _, kside := range ksides {
-		switch kside.TableName {
-		case local, foreign:
-		default:
+		// Build has the two endpoint models, not any intermediate models.
+		if !kside.Start && !kside.End {
 			continue
 		}
 
 		mret := make([]string, 0, len(kside.Mapped))
 
 		for _, mapp := range kside.Mapped {
-			switch mapp.ExternalTable {
-			case local, foreign:
-			default:
+			if !mapp.ExternalStart && !mapp.ExternalEnd {
 				continue
 			}
 

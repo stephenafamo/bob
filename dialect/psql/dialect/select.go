@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the select query structure as documented in
 // https://www.postgresql.org/docs/current/sql-select.html
-type SelectQuery struct {
+type selectState struct {
 	clause.With
 	clause.SelectList
 	Distinct
@@ -28,7 +28,7 @@ type SelectQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*SelectQuery]
+	bob.ContextualModdable[SelectEditor]
 
 	CombinedOrder  clause.OrderBy
 	CombinedLimit  clause.Limit
@@ -37,19 +37,23 @@ type SelectQuery struct {
 }
 
 // AppendTableRef sets the primary FROM from_item on the query.
-func (s *SelectQuery) AppendTableRef(ref clause.TableRef) {
+func (s *selectState) AppendTableRef(ref clause.TableRef) {
+	ref = ref.Copy()
 	if len(s.TableRef.Joins) > 0 {
 		ref.Joins = append(s.TableRef.Joins, ref.Joins...)
 	}
 	s.TableRef = ref
 }
 
-func (s SelectQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (s selectState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = s.RunContextualMods(ctx, &s); err != nil {
-		return nil, err
+	if len(s.Mods) != 0 {
+		ctx, err = s.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), s.With,

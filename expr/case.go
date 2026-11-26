@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 )
@@ -29,14 +30,14 @@ func (c caseExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	w.WriteString("CASE")
 	for _, when := range c.whens {
 		w.WriteString(" WHEN ")
-		whenArgs, err := when.condition.WriteSQL(ctx, w, d, start+len(args))
+		whenArgs, err := bob.Express(ctx, w, d, start+len(args), when.condition)
 		if err != nil {
 			return nil, err
 		}
 		args = append(args, whenArgs...)
 
 		w.WriteString(" THEN ")
-		thenArgs, err := when.then.WriteSQL(ctx, w, d, start+len(args))
+		thenArgs, err := bob.Express(ctx, w, d, start+len(args), when.then)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +46,7 @@ func (c caseExpr) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 
 	if c.elseExpr != nil {
 		w.WriteString(" ELSE ")
-		elseArgs, err := c.elseExpr.WriteSQL(ctx, w, d, start+len(args))
+		elseArgs, err := bob.Express(ctx, w, d, start+len(args), c.elseExpr)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +69,7 @@ func (cc CaseChain[T, B]) WriteSQL(ctx context.Context, w io.StringWriter, d bob
 
 func (cc CaseChain[T, B]) When(condition, then bob.Expression) CaseChain[T, B] {
 	c := cc()
-	c.whens = append(c.whens, when{condition: condition, then: then})
+	c.whens = append(slices.Clip(c.whens), when{condition: condition, then: then})
 	return CaseChain[T, B](func() caseExpr { return c })
 }
 

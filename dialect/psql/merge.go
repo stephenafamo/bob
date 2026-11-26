@@ -5,15 +5,12 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 )
 
-func Merge(queryMods ...bob.Mod[*dialect.MergeQuery]) bob.BaseQuery[*dialect.MergeQuery] {
-	q := &dialect.MergeQuery{}
-	for _, mod := range queryMods {
-		mod.Apply(q)
-	}
+type (
+	MergeEditor = dialect.MergeEditor
+	MergeQuery  = bob.QueryBuilder[MergeEditor]
+	MergeMod    = bob.Mod[MergeEditor]
+)
 
-	return bob.BaseQuery[*dialect.MergeQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeMerge,
-	}
+func Merge(mods ...MergeMod) MergeQuery {
+	return dialect.NewMerge(nil, mods...)
 }

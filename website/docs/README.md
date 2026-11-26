@@ -80,7 +80,9 @@ type UserSetter struct {
 }
 
 // Includes methods for Selects, Inserts, Upserts, and Deletes
-var userTable = psql.NewTable[User, UserSetter]("public", "users")
+var userTable = psql.NewTable[*User, *UserSetter](
+    "public", "users", expr.ColsForStruct[User]("public.users"), userRowMapping,
+)
 ```
 
 To learn more about the methods attached to views and tables, see the [models documentation](./models/intro).

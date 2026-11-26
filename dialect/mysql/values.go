@@ -5,15 +5,12 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
-func Values(queryMods ...bob.Mod[*dialect.ValuesQuery]) bob.BaseQuery[*dialect.ValuesQuery] {
-	q := &dialect.ValuesQuery{}
-	for _, mod := range queryMods {
-		mod.Apply(q)
-	}
+type (
+	ValuesEditor = dialect.ValuesEditor
+	ValuesQuery  = bob.QueryBuilder[ValuesEditor]
+	ValuesMod    = bob.Mod[ValuesEditor]
+)
 
-	return bob.BaseQuery[*dialect.ValuesQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeValues,
-	}
+func Values(mods ...ValuesMod) ValuesQuery {
+	return dialect.NewValues(nil, mods...)
 }

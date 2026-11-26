@@ -172,7 +172,10 @@ func buildTestPreloadScanner(mapper PreloadMapper[*testPreloadChild], opts ...Pr
 
 // buildTestPreloadScannerLoaders also returns the preloader's extra loaders:
 // index 0 is the child's *AfterPreloader, then any nested preloaders' loaders.
-func buildTestPreloadScannerLoaders(mapper PreloadMapper[*testPreloadChild], opts ...PreloadOption[testPreloadQuery]) (scan.Mapper[*testPreloadParent], []bob.Loader) {
+func buildTestPreloadScannerLoaders(
+	mapper PreloadMapper[*testPreloadChild],
+	opts ...PreloadOption[testPreloadQuery],
+) (scan.Mapper[*testPreloadParent], []bob.Loader) {
 	rel := PreloadRel[bob.Expression]{
 		Name: "Child",
 		Sides: []PreloadSide[bob.Expression]{{
@@ -188,7 +191,7 @@ func buildTestPreloadScannerLoaders(mapper PreloadMapper[*testPreloadChild], opt
 		append([]PreloadOption[testPreloadQuery]{PreloadAs[testPreloadQuery]("c")}, opts...)...,
 	)
 	queryMod, mapperMod, loaders := loader("")
-	queryMod.Apply(testPreloadQuery{})
+	queryMod.Edit(testPreloadQuery{})
 
 	return scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod), flattenTestLoaders(loaders)
 }
@@ -208,7 +211,13 @@ func flattenTestLoaders(loaders []bob.Loader) []bob.Loader {
 	return flat
 }
 
-func runTestPreload(t *testing.T, mapper PreloadMapper[*testPreloadChild], cols []string, rows [][]any, opts ...PreloadOption[testPreloadQuery]) []*testPreloadParent {
+func runTestPreload(
+	t *testing.T,
+	mapper PreloadMapper[*testPreloadChild],
+	cols []string,
+	rows [][]any,
+	opts ...PreloadOption[testPreloadQuery],
+) []*testPreloadParent {
 	t.Helper()
 
 	full := buildTestPreloadScanner(mapper, opts...)
@@ -297,12 +306,13 @@ func BenchmarkAfterPreloader(b *testing.B) {
 			for range b.N {
 				ap := NewAfterPreloader[*testPreloadChild, testPreloadChildSlice]()
 				ap.AppendLoader(noop)
+				ctx := ap.LoaderContext(b.Context())
 				for _, c := range children[:n] {
-					if err := ap.Collect(c); err != nil {
+					if err := ap.Collect(ctx, c); err != nil {
 						b.Fatal(err)
 					}
 				}
-				if err := ap.Load(context.Background(), nil, nil); err != nil {
+				if err := ap.Load(ctx, nil, nil); err != nil {
 					b.Fatal(err)
 				}
 			}

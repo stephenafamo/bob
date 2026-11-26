@@ -46,19 +46,7 @@
               to := {{$toCols}}.AliasedAs({{$toCols}}.Alias() + uniqueSuffix)
               {{end -}}
               mods = append(mods, dialect.Join[Q](typ, {{$to.UpPlural}}.NameExpr().As(to.Alias())).On(
-                  {{range $i, $local := $side.FromColumns -}}
-                    {{- $fromCol := index $from.Columns $local -}}
-                    {{- $toCol := index $to.Columns (index $side.ToColumns $i) -}}
-                    to.{{$toCol}}.EQ(cols.{{$fromCol}}),
-                  {{- end}}
-                  {{- range $where := $side.FromWhere}}
-                    {{- $fromCol := index $from.Columns $where.Column}}
-                    cols.{{$fromCol}}.EQ({{relWhereSQL $.Importer $where}}),
-                  {{- end}}
-                  {{- range $where := $side.ToWhere}}
-                    {{- $toCol := index $to.Columns $where.Column}}
-                    to.{{$toCol}}.EQ({{relWhereSQL $.Importer $where}}),
-                  {{- end}}
+                  {{$tAlias.DownSingular}}Rel{{$relAlias}}.Sides[{{$index}}].Predicates(cols.Alias(), to.Alias())...,
               ))
             }
             {{end}}

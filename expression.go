@@ -65,6 +65,12 @@ func Express(ctx context.Context, w io.StringWriter, d Dialect, start int, e any
 		}
 		dn.WriteNamedArg(w, v.Name)
 		return []any{v}, nil
+	case HookableQuery:
+		ctx, q, err := v.RunHooks(ctx, writerExecutor(w))
+		if err != nil {
+			return nil, err
+		}
+		return q.WriteSQL(ctx, w, d, start)
 	case Expression:
 		return v.WriteSQL(ctx, w, d, start)
 	default:
