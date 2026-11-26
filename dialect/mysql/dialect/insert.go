@@ -11,7 +11,7 @@ import (
 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.4/en/insert.html
-type InsertQuery struct {
+type insertState struct {
 	hints
 	modifiers[string]
 	clause.TableRef
@@ -25,15 +25,18 @@ type InsertQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*InsertQuery]
+	bob.ContextualModdable[InsertEditor]
 }
 
-func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (i insertState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var args []any
 	var err error
 
-	if ctx, err = i.RunContextualMods(ctx, &i); err != nil {
-		return nil, err
+	if len(i.Mods) != 0 {
+		ctx, err = i.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	w.WriteString("INSERT ")
@@ -53,6 +56,10 @@ func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 	}
 
 	// no expected table args
+	if len(i.Sets) != 0 {
+		// SET supplies its own column names, including on model inserts.
+		i.TableRef.Columns = nil
+	}
 	_, err = bob.ExpressIf(ctx, w, d, start+len(args), i.TableRef, true, "INTO ", " ")
 	if err != nil {
 		return nil, err

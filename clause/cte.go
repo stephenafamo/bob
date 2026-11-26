@@ -36,7 +36,7 @@ func (c CTE) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, sta
 	}
 
 	w.WriteString("(")
-	args, err := c.Query.WriteQuery(ctx, w, start)
+	args, err := bob.WriteQuery(ctx, w, start, c.Query)
 	if err != nil {
 		return nil, err
 	}

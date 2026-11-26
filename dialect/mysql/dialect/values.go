@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
@@ -11,7 +12,7 @@ import (
 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.4/en/values.html
-type ValuesQuery struct {
+type valuesState struct {
 	// row constructor list
 	// each sub-slice is one set of values wrapped in ROW()
 	RowVals []Value
@@ -26,15 +27,15 @@ func (v Value) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, s
 	return bob.ExpressSlice(ctx, w, d, start, v, "ROW(", ", ", ")")
 }
 
-func (v *ValuesQuery) AppendValues(vals ...bob.Expression) {
+func (v *valuesState) AppendValues(vals ...bob.Expression) {
 	if len(vals) == 0 {
 		return
 	}
 
-	v.RowVals = append(v.RowVals, vals)
+	v.RowVals = append(v.RowVals, slices.Clone(vals))
 }
 
-func (v ValuesQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (v valuesState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 

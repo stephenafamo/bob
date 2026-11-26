@@ -264,8 +264,6 @@ github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c h1:ncq/mPwQF
 github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
 github.com/power-devops/perfstat v0.0.0-20260916203055-22a1a467d9f0 h1:XA01Vk/wv9YikCi1V51yRzIHPMT5of9+cMpZoZvDn/M=
 github.com/power-devops/perfstat v0.0.0-20260916203055-22a1a467d9f0/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
-github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494 h1:wSmWgpuccqS2IOfmYrbRiUgv+g37W5suLLLxwwniTSc=
-github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494/go.mod h1:yipyliwI08eQ6XwDm1fEwKPdF/xdbkiHtrU+1Hg+vc4=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=

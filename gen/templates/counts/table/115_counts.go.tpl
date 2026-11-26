@@ -44,7 +44,7 @@ type {{$tAlias.DownSingular}}CountPreloader struct {
 	{{range $rel := $rels -}}
 	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 	{{- $relAlias := $tAlias.Relationship $rel.Name -}}
-	{{$relAlias}} func(...bob.Mod[*dialect.SelectQuery]) {{$.Dialect}}.Preloader
+	{{$relAlias}} func(...bob.Mod[dialect.SelectEditor]) {{$.Dialect}}.Preloader
 	{{end -}}
 }
 
@@ -53,8 +53,8 @@ func build{{$tAlias.UpSingular}}CountPreloader() {{$tAlias.DownSingular}}CountPr
 		{{range $rel := $rels -}}
 		{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 		{{- $relAlias := $tAlias.Relationship $rel.Name -}}
-		{{$relAlias}}: func(mods ...bob.Mod[*dialect.SelectQuery]) {{$.Dialect}}.Preloader {
-			return genruntime.PreloadCount("{{$relAlias}}", func(parent string) bob.BaseQuery[*dialect.SelectQuery] {
+		{{$relAlias}}: func(mods ...bob.Mod[dialect.SelectEditor]) {{$.Dialect}}.Preloader {
+			return genruntime.PreloadCount("{{$relAlias}}", func(parent string) bob.QueryBuilder[dialect.SelectEditor] {
 				if parent == "" { parent = {{$tAlias.UpPlural}}.Alias() }
 				return correlatedQuery({{$tAlias.DownSingular}}Rel{{$relAlias}}, parent, {{$.Dialect}}.Raw("count(*)"), mods)
 			})
@@ -67,7 +67,7 @@ type {{$tAlias.DownSingular}}CountThenLoader[Q orm.Loadable] struct {
 	{{range $rel := $rels -}}
 	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 	{{- $relAlias := $tAlias.Relationship $rel.Name -}}
-	{{$relAlias}} func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q]
+	{{$relAlias}} func(...bob.Mod[dialect.SelectEditor]) orm.Loader[Q]
 	{{end -}}
 }
 
@@ -76,7 +76,7 @@ func build{{$tAlias.UpSingular}}CountThenLoader[Q orm.Loadable]() {{$tAlias.Down
 	{{- if not $rel.IsToMany}}{{continue}}{{end -}}
 	{{$relAlias := $tAlias.Relationship $rel.Name -}}
 	type {{$relAlias}}CountInterface interface {
-		LoadCount{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[*dialect.SelectQuery]) error
+		LoadCount{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[dialect.SelectEditor]) error
 	}
 	{{end}}
 
@@ -86,7 +86,7 @@ func build{{$tAlias.UpSingular}}CountThenLoader[Q orm.Loadable]() {{$tAlias.Down
 		{{$relAlias := $tAlias.Relationship $rel.Name -}}
 		{{$relAlias}}: countThenLoadBuilder[Q](
 			"{{$relAlias}}",
-			func(ctx context.Context, exec bob.Executor, retrieved {{$relAlias}}CountInterface, mods ...bob.Mod[*dialect.SelectQuery]) error {
+			func(ctx context.Context, exec bob.Executor, retrieved {{$relAlias}}CountInterface, mods ...bob.Mod[dialect.SelectEditor]) error {
 				return retrieved.LoadCount{{$relAlias}}(ctx, exec, mods...)
 			},
 		),
@@ -99,7 +99,7 @@ func build{{$tAlias.UpSingular}}CountThenLoader[Q orm.Loadable]() {{$tAlias.Down
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 
 // LoadCount{{$relAlias}} loads the count of {{$relAlias}} into the C struct
-func (o *{{$tAlias.UpSingular}}) LoadCount{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+func (o *{{$tAlias.UpSingular}}) LoadCount{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[dialect.SelectEditor]) error {
 	if o == nil {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (o *{{$tAlias.UpSingular}}) LoadCount{{$relAlias}}(ctx context.Context, exe
 }
 
 // LoadCount{{$relAlias}} loads the count of {{$relAlias}} for a slice in a single batch query
-func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[dialect.SelectEditor]) error {
 	if len(os) == 0 {
 		return nil
 	}

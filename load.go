@@ -2,6 +2,7 @@ package bob
 
 import (
 	"context"
+	"slices"
 
 	"github.com/stephenafamo/scan"
 )
@@ -10,7 +11,7 @@ import (
 // if a query implements this interface, the loaders are called
 // after executing the query
 type Loadable interface {
-	GetLoaders() []Loader
+	GetLoaders(context.Context) []Loader
 }
 
 // Loader is an object that is called after the main query is performed
@@ -20,6 +21,53 @@ type Loadable interface {
 // this is used for loading relationships
 type Loader interface {
 	Load(ctx context.Context, exec Executor, retrieved any) error
+}
+
+// LoaderContext lets a loader and its scan mapper share state for one
+// execution, including when the same query or prepared statement is reused.
+type LoaderContext interface {
+	LoaderContext(context.Context) context.Context
+}
+
+func loaderContext(ctx context.Context, loaders []Loader) context.Context {
+	for _, l := range loaders {
+		if local, ok := l.(LoaderContext); ok {
+			ctx = local.LoaderContext(ctx)
+		}
+	}
+	return ctx
+}
+
+func executionLoaders(ctx context.Context, q Query) (context.Context, []Loader) {
+	loaders := loadersFor(ctx, q)
+	return loaderContext(ctx, loaders), loaders
+}
+
+func loadersFor(ctx context.Context, e Expression) []Loader {
+	switch l := e.(type) {
+	case Loadable:
+		return l.GetLoaders(ctx)
+	case interface{ GetLoaders() []Loader }: // Existing custom queries.
+		return l.GetLoaders()
+	}
+	return nil
+}
+
+func mapperModsFor(ctx context.Context, e Expression) []scan.MapperMod {
+	switch m := e.(type) {
+	case MapperModder:
+		return m.GetMapperMods(ctx)
+	case interface{ GetMapperMods() []scan.MapperMod }:
+		return m.GetMapperMods()
+	}
+	return nil
+}
+
+func queryMapper[T any](ctx context.Context, q Query, m scan.Mapper[T]) scan.Mapper[T] {
+	if mods := mapperModsFor(ctx, q); len(mods) > 0 {
+		return scan.Mod(m, mods...)
+	}
+	return m
 }
 
 // Loader builds a query mod that makes an extra query after the object is retrieved
@@ -38,12 +86,18 @@ type Load struct {
 	uniqueCounter     uint64
 }
 
+// Clip prevents a branch from appending to the parent's callback storage.
+func (l *Load) Clip() {
+	l.loadFuncs = slices.Clip(l.loadFuncs)
+	l.preloadMapperMods = slices.Clip(l.preloadMapperMods)
+}
+
 func (l *Load) SetMapperMods(mods ...scan.MapperMod) {
-	l.preloadMapperMods = mods
+	l.preloadMapperMods = slices.Clone(mods)
 }
 
 // GetMapperMods implements the [MapperModder] interface
-func (l *Load) GetMapperMods() []scan.MapperMod {
+func (l *Load) GetMapperMods(context.Context) []scan.MapperMod {
 	return l.preloadMapperMods
 }
 
@@ -54,11 +108,11 @@ func (l *Load) AppendMapperMod(f scan.MapperMod) {
 
 // SetLoaders sets the query's loaders
 func (l *Load) SetLoaders(loaders ...Loader) {
-	l.loadFuncs = loaders
+	l.loadFuncs = slices.Clone(loaders)
 }
 
 // GetLoaders implements the [Loadable] interface
-func (l *Load) GetLoaders() []Loader {
+func (l *Load) GetLoaders(context.Context) []Loader {
 	return l.loadFuncs
 }
 

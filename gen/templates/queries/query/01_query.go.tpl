@@ -6,7 +6,6 @@
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm"}}
 {{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
-{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 
 //go:embed {{.QueryFile.BaseName}}.bob.sql
@@ -36,7 +35,7 @@ var formattedQueries_{{.QueryFile.BaseName}} string
 {{end}}
 
 {{$queryType := (lower $query.Type.String | titleCase)}}
-{{$dialectType := printf "*dialect.%sQuery" $queryType}}
+{{$dialectType := printf "dialect.%sEditor" $queryType}}
 {{$colParams :=  printf "%s, %s, %s" $queryResultTypeOne $queryResultTypeAll $queryResultTransformer }}
 {{if eq (len $query.Columns) 1}}
   {{$col := index $query.Columns 0}}
@@ -76,7 +75,7 @@ func {{$upperName}} ({{join ", " $args}}) *{{$upperName}}Query {
     {{end -}}
   }
   return genruntime.{{if $query.Columns}}NewModQuery[{{$queryResultTransformer}}]{{else}}NewModExecQuery{{end}}(
-    a, dialect.Dialect, bob.QueryType{{$queryType}}, {{$.Dialect}}.{{$queryType}},
+    a, dialect.Dialect, bob.QueryType{{$queryType}}, dialect.New{{$queryType}}Source,
     func(q {{$dialectType}}) {
       {{$mods := $query.Mods.IncludeInTemplate $.Importer -}}
       {{if contains "EXPR.subExpr(" $mods}}fragment := genruntime.BindSQL({{$lowerName}}SQL, a.args()...){{end}}

@@ -240,6 +240,7 @@ func testDriver[T, C, I any](
 		t.Fatalf("go mod edit cmd execution failed: %s", err)
 	}
 
+	config.DisableBobcheck = config.DisableBobcheck || SkipBobcheck
 	state := &gen.State[C]{Config: config}
 	allPlugins := append(plugins.Setup[T, C, I](plugins.PresetAll, tpls), extraPlugins...)
 

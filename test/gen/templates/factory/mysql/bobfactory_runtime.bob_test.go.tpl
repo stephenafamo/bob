@@ -8,11 +8,27 @@
 {{- if and $hasUsers $hasVideos -}}
 {{$.Importer.Import "context"}}
 {{$.Importer.Import "testing"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/dialect/mysql"}}
+{{$.Importer.Import "github.com/stephenafamo/bob/dialect/mysql/im"}}
 {{$.Importer.Import "models" (index $.OutputPackages "models") }}
 
 // =============================================================================
 // CRUD Operations Tests
 // =============================================================================
+
+func TestInsertSetReadback(t *testing.T) {
+	if testDB == nil { t.Skip("skipping test, no DSN provided") }
+	ctx := t.Context()
+	tx, err := testDB.Begin(ctx)
+	if err != nil { t.Fatal(err) }
+	defer tx.Rollback(ctx)
+	user := New().NewUserWithContext(ctx).CreateOrFail(ctx, t, tx)
+	video, err := models.Videos.Insert(im.Set("user_id", mysql.Arg(user.ID))).One(ctx, tx)
+	if err != nil { t.Fatal(err) }
+	if video.ID == 0 || video.UserID != user.ID {
+		t.Fatalf("unexpected INSERT SET readback: %+v", video)
+	}
+}
 
 // TestUserReload tests that Reload correctly refreshes a model from the database
 func TestUserReload(t *testing.T) {

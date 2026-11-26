@@ -5,15 +5,12 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
-func Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) bob.BaseQuery[*dialect.DeleteQuery] {
-	q := &dialect.DeleteQuery{}
-	for _, mod := range queryMods {
-		mod.Apply(q)
-	}
+type (
+	DeleteEditor = dialect.DeleteEditor
+	DeleteQuery  = bob.QueryBuilder[DeleteEditor]
+	DeleteMod    = bob.Mod[DeleteEditor]
+)
 
-	return bob.BaseQuery[*dialect.DeleteQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeDelete,
-	}
+func Delete(mods ...DeleteMod) DeleteQuery {
+	return dialect.NewDelete(nil, mods...)
 }

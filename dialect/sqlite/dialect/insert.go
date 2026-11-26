@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the select query structure as documented in
 // https://www.sqlite.org/lang_insert.html
-type InsertQuery struct {
+type insertState struct {
 	clause.With
 	or
 	clause.TableRef
@@ -20,15 +20,18 @@ type InsertQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*InsertQuery]
+	bob.ContextualModdable[InsertEditor]
 }
 
-func (i InsertQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (i insertState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = i.RunContextualMods(ctx, &i); err != nil {
-		return nil, err
+	if len(i.Mods) != 0 {
+		ctx, err = i.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), i.With,

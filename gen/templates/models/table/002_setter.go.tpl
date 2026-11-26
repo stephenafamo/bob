@@ -48,7 +48,7 @@ func (s {{$tAlias.UpSingular}}Setter) Overwrite(t *{{$tAlias.UpSingular}}) {
 {{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
+func (s *{{$tAlias.UpSingular}}Setter) Edit(q dialect.InsertEditor) {
   {{if $table.Constraints.Primary -}}
     q.AppendHooks(func(ctx context.Context, exec bob.Executor) (context.Context, error) {
       return {{$tAlias.UpPlural}}.BeforeInsertHooks.RunHooks(ctx, exec, s)
@@ -72,7 +72,7 @@ func (s *{{$tAlias.UpSingular}}Setter) Apply(q *dialect.InsertQuery) {
 {{block "setter_update_mod" . -}}
 {{$table := .Table}}
 {{$tAlias := .Aliases.Table $table.Key -}}
-func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+func (s {{$tAlias.UpSingular}}Setter) UpdateMod() bob.Mod[dialect.UpdateEditor] {
   return um.Set(s.Expressions()...)
 }
 {{- end}}

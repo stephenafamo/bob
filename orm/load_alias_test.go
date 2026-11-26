@@ -39,8 +39,7 @@ func TestPreloadAliases(t *testing.T) {
 	common := `SELECT "pilots"."id" AS "id", "pilots"."mentor_id" AS "mentor_id", "pilots_10001"."id" AS "pilots_10001.id", "pilots_10002"."id" AS "pilots_10002.id" FROM "pilots" LEFT JOIN "pilots" AS "pilots_10001" ON "pilots_10001"."id" = "pilots"."mentor_id" LEFT JOIN "pilots" AS "pilots_10002" ON `
 	nested := common + `"pilots_10002"."id" = "pilots_10001"."mentor_id"`
 
-	clone := aliasPilots.Query(preloadMentor()).Clone()
-	clone.Apply(preloadMentor())
+	base := aliasPilots.Query(preloadMentor())
 
 	examples := testutils.Testcases{
 		"nested preload": {
@@ -53,10 +52,10 @@ func TestPreloadAliases(t *testing.T) {
 			ExpectedSQL: nested,
 			Query:       aliasPilots.Query(preloadMentor(preloadMentor())),
 		},
-		"preload added to a clone": {
-			Doc:         "A clone continues the numbering of the query it was cloned from",
+		"preload added to a branch": {
+			Doc:         "A branch continues the numbering of the base query",
 			ExpectedSQL: common + `"pilots_10002"."id" = "pilots"."mentor_id"`,
-			Query:       clone,
+			Query:       base.WithMods(preloadMentor()),
 		},
 	}
 

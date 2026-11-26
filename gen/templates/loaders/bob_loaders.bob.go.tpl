@@ -26,9 +26,9 @@ func getPreloaders() preloaders {
 
 {{block "helpers/then_load_variables" . -}}
 var (
-	SelectThenLoad = getThenLoaders[*dialect.SelectQuery]()
-	InsertThenLoad = getThenLoaders[*dialect.InsertQuery]()
-	UpdateThenLoad = getThenLoaders[*dialect.UpdateQuery]()
+	SelectThenLoad = getThenLoaders[dialect.SelectEditor]()
+	InsertThenLoad = getThenLoaders[dialect.InsertEditor]()
+	UpdateThenLoad = getThenLoaders[dialect.UpdateEditor]()
 )
 {{- end}}
 
@@ -49,8 +49,8 @@ func getThenLoaders[Q orm.Loadable]() thenLoaders[Q] {
 }
 
 
-func thenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[*dialect.SelectQuery]) error) func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
-	return func(queryMods ...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
+func thenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[dialect.SelectEditor]) error) func(...bob.Mod[dialect.SelectEditor]) orm.Loader[Q] {
+	return func(queryMods ...bob.Mod[dialect.SelectEditor]) orm.Loader[Q] {
     return func(ctx context.Context, exec bob.Executor, retrieved any) error {
       loader, isLoader := retrieved.(T)
       if !isLoader {

@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql"
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
+	"github.com/stephenafamo/bob/dialect/mysql/vm"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/relbatch"
 )
@@ -34,10 +35,11 @@ func MatchParents[P any](
 	columns []string,
 	bindings []KeyBinding,
 	aliases ...string,
-) (bob.Mod[*dialect.SelectQuery], mysql.Expression) {
+) (bob.Mod[dialect.SelectEditor], mysql.Expression) {
 	names := relbatch.KeyNames(len(columns))
-	values := mysql.Values()
-	var probes bob.BaseQuery[*dialect.SelectQuery]
+	var values []bob.Mod[dialect.ValuesEditor]
+	var probes []bob.Mod[dialect.SelectEditor]
+	var first mysql.SelectQuery
 	direct := slices.Contains(bindings, Direct)
 	for i, p := range parents {
 		if p == nil {
@@ -47,10 +49,10 @@ func MatchParents[P any](
 		args := key(p)
 		if direct {
 			probe := probeKeys(target, columns, names, args, pos)
-			if probes.Expression == nil {
-				probes = probe
+			if first.Type() == bob.QueryTypeUnknown {
+				first = probe
 			} else {
-				probes.Apply(sm.UnionAll(probe))
+				probes = append(probes, sm.UnionAll(probe))
 			}
 			continue
 		}
@@ -65,32 +67,33 @@ func MatchParents[P any](
 				row = append(row, columnArg(v, target, columns[j]))
 			}
 		}
-		values.Expression.AppendValues(append(row, pos)...)
+		values = append(values, vm.RowValue(append(row, pos)...))
 	}
 	var input clause.TableRef
 	switch {
-	case probes.Expression != nil:
-		input = clause.TableRef{Expression: probes, Alias: "p"}
-	case len(values.Expression.RowVals) != 0:
-		input = clause.TableRef{Expression: values, Alias: "p", Columns: append(names, "pos")}
+	case first.Type() != bob.QueryTypeUnknown:
+		input = clause.TableRef{Expression: first.WithMods(probes...), Alias: "p"}
+	case len(values) != 0:
+		input = clause.TableRef{Expression: mysql.Values(values...), Alias: "p", Columns: append(names, "pos")}
 	default:
 		return sm.Where(mysql.Raw("0")), mysql.Raw("'[]'")
 	}
-	groups := mysql.Select(sm.From(input))
-	relbatch.Group(groups.Expression, "p", names, mysql.Raw("CAST(JSON_ARRAYAGG(p.pos) AS CHAR)"))
-	join, owners := relbatch.Join[*dialect.SelectQuery](target, columns, names, aliases, groups)
+	groups := mysql.Select(sm.From(input), relbatch.Group[dialect.SelectEditor]("p", names, mysql.Raw("CAST(JSON_ARRAYAGG(p.pos) AS CHAR)")))
+	join, owners := relbatch.Join[dialect.SelectEditor](target, columns, names, aliases, groups)
 	return join, mysql.Expression{}.New(owners)
 }
 
 // A parameter can match several distinct physical keys. Keep all those keys,
 // but don't repeat one because multiple children carry it.
-func probeKeys(target clause.TableRef, columns, names []string, args []any, pos bob.Expression) bob.BaseQuery[*dialect.SelectQuery] {
-	probe := mysql.Select(sm.Distinct(), sm.From(target.Expression).As("t"), sm.Columns(expr.OP("AS", pos, expr.Quote("pos"))))
-	for j, v := range args {
-		col := mysql.Quote("t", columns[j])
-		probe.Apply(sm.Columns(col.As(names[j])), sm.Where(col.EQ(mysql.Arg(v))))
-	}
-	return probe
+func probeKeys(target clause.TableRef, columns, names []string, args []any, pos bob.Expression) mysql.SelectQuery {
+	return mysql.Select(sm.Distinct(), sm.From(target.Expression).As("t"), sm.Columns(expr.OP("AS", pos, expr.Quote("pos"))),
+		bob.ModFunc[mysql.SelectEditor](func(e mysql.SelectEditor) {
+			for j, v := range args {
+				col := mysql.Quote("t", columns[j])
+				e.AppendSelect(col.As(names[j]))
+				e.AppendWhere(col.EQ(mysql.Arg(v)))
+			}
+		}))
 }
 
 // unsignedArg keeps a string-valued BIGINT UNSIGNED exact through binding.

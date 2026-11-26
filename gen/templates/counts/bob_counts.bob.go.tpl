@@ -6,8 +6,8 @@
 {{block "helpers/count_variables" . -}}
 var (
 	PreloadCount = getPreloadCount()
-	SelectThenLoadCount = getThenLoadCount[*dialect.SelectQuery]()
-	InsertThenLoadCount = getThenLoadCount[*dialect.InsertQuery]()
+	SelectThenLoadCount = getThenLoadCount[dialect.SelectEditor]()
+	InsertThenLoadCount = getThenLoadCount[dialect.InsertEditor]()
 )
 {{- end}}
 
@@ -67,8 +67,8 @@ func getThenLoadCount[Q orm.Loadable]() thenLoadCounts[Q] {
 	}
 }
 
-func countThenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[*dialect.SelectQuery]) error) func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
-	return func(queryMods ...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {
+func countThenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[dialect.SelectEditor]) error) func(...bob.Mod[dialect.SelectEditor]) orm.Loader[Q] {
+	return func(queryMods ...bob.Mod[dialect.SelectEditor]) orm.Loader[Q] {
 		return func(ctx context.Context, exec bob.Executor, retrieved any) error {
 			loader, isLoader := retrieved.(T)
 			if !isLoader {

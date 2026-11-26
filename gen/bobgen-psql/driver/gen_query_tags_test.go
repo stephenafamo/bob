@@ -16,6 +16,7 @@ import (
 	"github.com/stephenafamo/bob/gen/drivers"
 	"github.com/stephenafamo/bob/gen/language"
 	"github.com/stephenafamo/bob/gen/plugins"
+	testgen "github.com/stephenafamo/bob/test/gen"
 )
 
 // stubMods is a minimal drivers.TemplateInclude for a query with no mods.
@@ -133,9 +134,10 @@ func TestQueryRowStructHasConfiguredTags(t *testing.T) {
 	)
 
 	state := &gen.State[any]{Config: gen.Config[any]{
-		NoTests:   true,
-		Tags:      []string{"json", "yaml"},
-		TagIgnore: []string{"secret_token"},
+		DisableBobcheck: testgen.SkipBobcheck,
+		NoTests:         true,
+		Tags:            []string{"json", "yaml"},
+		TagIgnore:       []string{"secret_token"},
 	}}
 	if err := gen.Run[any, any, driver.IndexExtra](
 		t.Context(), state, stubDriver{types: helpers.Types(), info: info}, outputPlugins...,

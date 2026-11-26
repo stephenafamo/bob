@@ -68,7 +68,7 @@ type Windows struct {
 }
 
 func (wi *Windows) AppendWindow(w bob.Expression) {
-	wi.Windows = append(wi.Windows, w)
+	wi.Windows = append(wi.Windows, copyClause(w))
 }
 
 func (wi Windows) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

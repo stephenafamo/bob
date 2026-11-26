@@ -6,7 +6,6 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/mysql"
-	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 	"github.com/stephenafamo/bob/dialect/mysql/fm"
 	"github.com/stephenafamo/bob/dialect/mysql/sm"
 	"github.com/stephenafamo/bob/dialect/mysql/wm"
@@ -15,8 +14,8 @@ import (
 )
 
 var (
-	_ bob.Loadable     = &dialect.SelectQuery{}
-	_ bob.MapperModder = &dialect.SelectQuery{}
+	_ bob.Loadable     = mysql.SelectQuery{}
+	_ bob.MapperModder = mysql.SelectQuery{}
 )
 
 func TestSelect(t *testing.T) {

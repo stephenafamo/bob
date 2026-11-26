@@ -2,9 +2,9 @@
 {{$.Importer.Import "github.com/stephenafamo/bob/clause"}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 var (
-	SelectWhere = Where[*dialect.SelectQuery]()
-	UpdateWhere = Where[*dialect.UpdateQuery]()
-	DeleteWhere = Where[*dialect.DeleteQuery]()
+	SelectWhere = Where[dialect.SelectEditor]()
+	UpdateWhere = Where[dialect.UpdateEditor]()
+	DeleteWhere = Where[dialect.DeleteEditor]()
 	OnConflictWhere = Where[*clause.ConflictClause]() // Used in ON CONFLICT DO UPDATE
 )
 {{- end}}

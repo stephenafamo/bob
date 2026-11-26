@@ -33,9 +33,9 @@ const (
 	MergeActionUpdate    MergeActionType = "UPDATE"
 )
 
-// MergeQuery Trying to represent the merge query structure as documented in
+// mergeState Trying to represent the merge query structure as documented in
 // https://www.postgresql.org/docs/current/sql-merge.html
-type MergeQuery struct {
+type mergeState struct {
 	clause.With
 	Only  bool
 	Table clause.TableRef
@@ -45,15 +45,18 @@ type MergeQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*MergeQuery]
+	bob.ContextualModdable[MergeEditor]
 }
 
-func (m MergeQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (m mergeState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = m.RunContextualMods(ctx, &m); err != nil {
-		return nil, err
+	if len(m.Mods) != 0 {
+		ctx, err = m.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), m.With,
@@ -115,7 +118,7 @@ func (u MergeUsing) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Diale
 		w.WriteString("ONLY ")
 	}
 
-	// Write source (table or subquery). Subqueries are parenthesized by BaseQuery.WriteSQL.
+	// Write source (table or subquery). Subqueries include their own parentheses.
 	sourceArgs, err := bob.Express(ctx, w, d, start, u.Source)
 	if err != nil {
 		return nil, err

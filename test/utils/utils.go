@@ -78,7 +78,7 @@ func RunTests(t *testing.T, cases Testcases, format FormatFunc) {
 	t.Helper()
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			sql, args, err := bob.Build(context.Background(), tc.Query)
+			sql, args, err := bob.Build(context.Background(), nil, tc.Query)
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}

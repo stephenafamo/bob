@@ -17,15 +17,11 @@ import (
 func ParentCounts[Q ormruntime.Countable[Q]](ctx context.Context, exec bob.Executor, q orm.ExecQuery[Q],
 	n int, owners bob.Expression, groups ...any,
 ) ([]int64, error) {
-	ctx, err := q.RunHooks(ctx, exec)
-	if err != nil {
-		return nil, err
-	}
 	type result struct {
 		Parents types.JSON[[]int]
 		Count   int64
 	}
-	count := ormruntime.CountQuery(q.BaseQuery, []any{owners, "count(*) AS count"}, groups...)
+	count := ormruntime.CountQuery(q.QueryBuilder, []any{owners, "count(*) AS count"}, groups...)
 	rows, err := bob.All(ctx, exec, count, scan.StructMapper[result]())
 	if err != nil {
 		return nil, err
@@ -44,13 +40,13 @@ func ParentCounts[Q ormruntime.Countable[Q]](ctx context.Context, exec bob.Execu
 func PreloadCount[Q interface {
 	orm.PreloadableQuery
 	ormruntime.Countable[Q]
-}](name string, subquery func(string) bob.BaseQuery[Q]) orm.Preloader[Q] {
+}](name string, subquery func(string) bob.QueryBuilder[Q]) orm.Preloader[Q] {
 	column := "__count_" + name
 	return func(parent string) (bob.Mod[Q], scan.MapperMod, []bob.Loader) {
 		mod := bob.ModFunc[Q](func(q Q) {
 			value := ormruntime.CountQuery(subquery(parent), []any{"count(*)"})
 			q.AppendPreloadSelect(bob.ExpressionFunc(func(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
-				args, err := value.WriteSQL(ctx, w, d, start)
+				args, err := bob.Express(ctx, w, d, start, value)
 				if err != nil {
 					return nil, err
 				}

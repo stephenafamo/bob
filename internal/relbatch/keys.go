@@ -22,17 +22,18 @@ func KeyNames(n int) []string {
 
 // Group collects the input positions for each SQL key. source supplies keys
 // with the same comparison semantics as the target columns.
-func Group(q interface {
+func Group[Q interface {
 	AppendSelect(...any)
 	AppendGroup(any)
-}, source string, names []string, owners bob.Expression,
-) {
-	q.AppendSelect(expr.OP("AS", owners, expr.Quote("owners")))
-	for _, name := range names {
-		k := expr.Quote(source, name)
-		q.AppendSelect(k)
-		q.AppendGroup(k)
-	}
+}](source string, names []string, owners bob.Expression) bob.Mod[Q] {
+	return bob.ModFunc[Q](func(q Q) {
+		q.AppendSelect(expr.OP("AS", owners, expr.Quote("owners")))
+		for _, name := range names {
+			k := expr.Quote(source, name)
+			q.AppendSelect(k)
+			q.AppendGroup(k)
+		}
+	})
 }
 
 func Alias(name string, reserved []string) string {

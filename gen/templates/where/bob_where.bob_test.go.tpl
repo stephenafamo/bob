@@ -26,7 +26,7 @@ func Test{{$tAlias.UpSingular}}HasRelationsEmitExists(t *testing.T) {
 			sm.From({{$tAlias.UpPlural}}.NameExpr()),
 			SelectWhere.{{$tAlias.UpPlural}}.R.Has{{$relAlias}}(),
 		)
-		sql, _, err := bob.Build(ctx, q)
+		sql, _, err := bob.Build(ctx, nil, q)
 		if err != nil {
 			t.Fatalf("Has{{$relAlias}}: build error: %v", err)
 		}

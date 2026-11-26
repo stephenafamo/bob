@@ -12,11 +12,7 @@ var ErrHookableTypeMismatch = errors.New("hookable type mismatch: the slice type
 
 type (
 	MapperModder interface {
-		GetMapperMods() []scan.MapperMod
-	}
-
-	HookableQuery interface {
-		RunHooks(context.Context, Executor) (context.Context, error)
+		GetMapperMods(context.Context) []scan.MapperMod
 	}
 
 	// If a type implements this interface,
@@ -43,16 +39,12 @@ type Transaction interface {
 }
 
 func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return nil, err
-		}
+	ctx, q, err := resolveForExecution(ctx, exec, q)
+	if err != nil {
+		return nil, err
 	}
 
-	sql, args, err := Build(ctx, q)
+	sql, args, err := render(ctx, exec, q, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +54,10 @@ func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 		return nil, err
 	}
 
-	if l, ok := q.(Loadable); ok {
-		for _, loader := range l.GetLoaders() {
-			if err := loader.Load(ctx, exec, nil); err != nil {
-				return nil, err
-			}
+	ctx, loaders := executionLoaders(ctx, q)
+	for _, loader := range loaders {
+		if err := loader.Load(ctx, exec, nil); err != nil {
+			return nil, err
 		}
 	}
 
@@ -75,36 +66,27 @@ func Exec(ctx context.Context, exec Executor, q Query) (sql.Result, error) {
 
 func One[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (T, error) {
 	var t T
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return t, err
-		}
-	}
-
-	sql, args, err := Build(ctx, q)
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
 		return t, err
 	}
 
-	if l, ok := q.(MapperModder); ok {
-		if loaders := l.GetMapperMods(); len(loaders) > 0 {
-			m = scan.Mod(m, loaders...)
-		}
+	sql, args, err := render(ctx, exec, q, 1)
+	if err != nil {
+		return t, err
 	}
 
+	m = queryMapper(ctx, q, m)
+
+	ctx, loaders := executionLoaders(ctx, q)
 	t, err = scan.One(ctx, exec, m, sql, args...)
 	if err != nil {
 		return t, err
 	}
 
-	if l, ok := q.(Loadable); ok {
-		for _, loader := range l.GetLoaders() {
-			if err := loader.Load(ctx, exec, t); err != nil {
-				return t, err
-			}
+	for _, loader := range loaders {
+		if err := loader.Load(ctx, exec, t); err != nil {
+			return t, err
 		}
 	}
 
@@ -136,7 +118,6 @@ type Transformer[T any, V any] interface {
 // For common use cases, you can use [SliceTransformer] to transform a scanned slice of type T into a custom slice type like ~[]T.
 func Allx[Tr Transformer[T, V], T, V any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (V, error) {
 	var typedSlice V
-	var err error
 
 	_, isTransformedHookable := any(typedSlice).(HookableType)
 	_, isSingleHookable := any(*new(T)).(HookableType)
@@ -146,24 +127,19 @@ func Allx[Tr Transformer[T, V], T, V any](ctx context.Context, exec Executor, q 
 		return typedSlice, ErrHookableTypeMismatch
 	}
 
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return typedSlice, err
-		}
-	}
-
-	sql, args, err := Build(ctx, q)
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
 		return typedSlice, err
 	}
 
-	if l, ok := q.(MapperModder); ok {
-		if loaders := l.GetMapperMods(); len(loaders) > 0 {
-			m = scan.Mod(m, loaders...)
-		}
+	sql, args, err := render(ctx, exec, q, 1)
+	if err != nil {
+		return typedSlice, err
 	}
 
+	m = queryMapper(ctx, q, m)
+
+	ctx, loaders := executionLoaders(ctx, q)
 	rawSlice, err := scan.All(ctx, exec, m, sql, args...)
 	if err != nil {
 		return typedSlice, err
@@ -175,11 +151,9 @@ func Allx[Tr Transformer[T, V], T, V any](ctx context.Context, exec Executor, q 
 		return typedSlice, err
 	}
 
-	if l, ok := q.(Loadable); ok {
-		for _, loader := range l.GetLoaders() {
-			if err := loader.Load(ctx, exec, typedSlice); err != nil {
-				return typedSlice, err
-			}
+	for _, loader := range loaders {
+		if err := loader.Load(ctx, exec, typedSlice); err != nil {
+			return typedSlice, err
 		}
 	}
 
@@ -194,27 +168,19 @@ func Allx[Tr Transformer[T, V], T, V any](ctx context.Context, exec Executor, q 
 
 // Cursor returns a cursor that works similar to *sql.Rows
 func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (scan.ICursor[T], error) {
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	sql, args, err := Build(ctx, q)
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
 		return nil, err
 	}
 
-	if l, ok := q.(MapperModder); ok {
-		if loaders := l.GetMapperMods(); len(loaders) > 0 {
-			m = scan.Mod(m, loaders...)
-		}
+	sql, args, err := render(ctx, exec, q, 1)
+	if err != nil {
+		return nil, err
 	}
 
-	l, isLoadable := q.(Loadable)
+	m = queryMapper(ctx, q, m)
+
+	ctx, loaders := executionLoaders(ctx, q)
 	_, isHookable := any(*new(T)).(HookableType)
 
 	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
@@ -225,12 +191,9 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 				return t, err
 			}
 
-			if isLoadable {
-				for _, loader := range l.GetLoaders() {
-					err = loader.Load(ctx, exec, t)
-					if err != nil {
-						return t, err
-					}
+			for _, loader := range loaders {
+				if err := loader.Load(ctx, exec, t); err != nil {
+					return t, err
 				}
 			}
 
@@ -249,27 +212,19 @@ func Cursor[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]
 
 // Each returns a range-over-func that can be used to iterate over the rows of a query
 func Each[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) (func(func(T, error) bool), error) {
-	var err error
-
-	if h, ok := q.(HookableQuery); ok {
-		ctx, err = h.RunHooks(ctx, exec)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	sql, args, err := Build(ctx, q)
+	ctx, q, err := resolveForExecution(ctx, exec, q)
 	if err != nil {
 		return nil, err
 	}
 
-	if l, ok := q.(MapperModder); ok {
-		if loaders := l.GetMapperMods(); len(loaders) > 0 {
-			m = scan.Mod(m, loaders...)
-		}
+	sql, args, err := render(ctx, exec, q, 1)
+	if err != nil {
+		return nil, err
 	}
 
-	l, isLoadable := q.(Loadable)
+	m = queryMapper(ctx, q, m)
+
+	ctx, loaders := executionLoaders(ctx, q)
 	_, isHookable := any(*new(T)).(HookableType)
 
 	m2 := scan.Mapper[T](func(ctx context.Context, c []string) (scan.BeforeFunc, func(any) (T, error)) {
@@ -280,12 +235,9 @@ func Each[T any](ctx context.Context, exec Executor, q Query, m scan.Mapper[T]) 
 				return t, err
 			}
 
-			if isLoadable {
-				for _, loader := range l.GetLoaders() {
-					err = loader.Load(ctx, exec, t)
-					if err != nil {
-						return t, err
-					}
+			for _, loader := range loaders {
+				if err := loader.Load(ctx, exec, t); err != nil {
+					return t, err
 				}
 			}
 

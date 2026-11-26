@@ -6,7 +6,6 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/sqlite"
-	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 	"github.com/stephenafamo/bob/dialect/sqlite/fm"
 	"github.com/stephenafamo/bob/dialect/sqlite/sm"
 	"github.com/stephenafamo/bob/dialect/sqlite/wm"
@@ -15,8 +14,8 @@ import (
 )
 
 var (
-	_ bob.Loadable     = &dialect.SelectQuery{}
-	_ bob.MapperModder = &dialect.SelectQuery{}
+	_ bob.Loadable     = sqlite.SelectQuery{}
+	_ bob.MapperModder = sqlite.SelectQuery{}
 )
 
 func TestSelect(t *testing.T) {

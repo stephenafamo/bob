@@ -23,7 +23,7 @@ import (
 )
 
 type (
-	setter[T any]                = orm.Setter[T, *dialect.InsertQuery, *dialect.UpdateQuery]
+	setter[T any]                = orm.Setter[T, dialect.InsertEditor, dialect.UpdateEditor]
 	rowOperations[T any, S ~[]T] = ormruntime.Rows[T, S, *ViewQuery[T, S]]
 )
 
@@ -78,9 +78,9 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 	BeforeDeleteHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
 	AfterDeleteHooks  bob.Hooks[Tslice, bob.SkipModelHooksKey]
 
-	InsertQueryHooks bob.Hooks[*dialect.InsertQuery, bob.SkipQueryHooksKey]
-	UpdateQueryHooks bob.Hooks[*dialect.UpdateQuery, bob.SkipQueryHooksKey]
-	DeleteQueryHooks bob.Hooks[*dialect.DeleteQuery, bob.SkipQueryHooksKey]
+	InsertQueryHooks bob.QueryHooks[InsertEditor]
+	UpdateQueryHooks bob.QueryHooks[UpdateEditor]
+	DeleteQueryHooks bob.QueryHooks[DeleteEditor]
 
 	// The AUTO_INCREMENT column that we can use to retrieve values using lastInsertID
 	// If empty, there is no auto inc
@@ -91,46 +91,46 @@ type Table[T any, Tslice ~[]T, Tset setter[T], C bob.Expression] struct {
 }
 
 // Starts an insert query for this table
-func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) *insertQuery[T, Tslice, Tset, C] {
-	q := &insertQuery[T, Tslice, Tset, C]{
-		ExecQuery: orm.ExecQuery[*dialect.InsertQuery]{
-			BaseQuery: Insert(im.Into(t.NameExpr(), t.nonGeneratedCols...)),
-			Hooks:     &t.InsertQueryHooks,
+func (t *Table[T, Tslice, Tset, C]) Insert(queryMods ...bob.Mod[dialect.InsertEditor]) *insertQuery[T, Tslice, Tset, C] {
+	return &insertQuery[T, Tslice, Tset, C]{
+		ExecQuery: orm.ExecQuery[dialect.InsertEditor]{
+			QueryBuilder: dialect.NewInsert(t.InsertQueryHooks.GetHooks(), bob.ModFunc[dialect.InsertEditor](func(ast dialect.InsertEditor) {
+				im.Into(t.NameExpr(), t.nonGeneratedCols...).Edit(ast)
+				bob.Mods[dialect.InsertEditor](queryMods).Edit(ast)
+			})),
 		},
 		table: t,
 	}
-
-	q.Apply(queryMods...)
-
-	return q
 }
 
 // Starts an update query for this table
-func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[*dialect.UpdateQuery]) *orm.ExecQuery[*dialect.UpdateQuery] {
-	q := &orm.ExecQuery[*dialect.UpdateQuery]{
-		BaseQuery: Update(um.Table(t.NameAsExpr())),
-		Hooks:     &t.UpdateQueryHooks,
+func (t *Table[T, Tslice, Tset, C]) Update(queryMods ...bob.Mod[dialect.UpdateEditor]) *orm.ExecQuery[dialect.UpdateEditor] {
+	return &orm.ExecQuery[dialect.UpdateEditor]{
+		QueryBuilder: dialect.NewUpdate(t.UpdateQueryHooks.GetHooks(), bob.ModFunc[dialect.UpdateEditor](func(ast dialect.UpdateEditor) {
+			um.Table(t.NameAsExpr()).Edit(ast)
+			bob.Mods[dialect.UpdateEditor](queryMods).Edit(ast)
+		})),
 	}
-	q.Apply(queryMods...)
-
-	return q
 }
 
 // Starts a delete query for this table
-func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[*dialect.DeleteQuery]) *orm.ExecQuery[*dialect.DeleteQuery] {
-	q := &orm.ExecQuery[*dialect.DeleteQuery]{
-		BaseQuery: Delete(dm.From(t.NameAsExpr())),
-		Hooks:     &t.DeleteQueryHooks,
+func (t *Table[T, Tslice, Tset, C]) Delete(queryMods ...bob.Mod[dialect.DeleteEditor]) *orm.ExecQuery[dialect.DeleteEditor] {
+	return &orm.ExecQuery[dialect.DeleteEditor]{
+		QueryBuilder: dialect.NewDelete(t.DeleteQueryHooks.GetHooks(), bob.ModFunc[dialect.DeleteEditor](func(ast dialect.DeleteEditor) {
+			dm.From(t.NameAsExpr()).Edit(ast)
+			bob.Mods[dialect.DeleteEditor](queryMods).Edit(ast)
+		})),
 	}
-
-	q.Apply(queryMods...)
-
-	return q
 }
 
 type insertQuery[T any, Ts ~[]T, Tset setter[T], C bob.Expression] struct {
-	orm.ExecQuery[*dialect.InsertQuery]
+	orm.ExecQuery[dialect.InsertEditor]
 	table *Table[T, Ts, Tset, C]
+}
+
+func (t insertQuery[T, Ts, Tset, C]) WithMods(mods ...bob.Mod[dialect.InsertEditor]) *insertQuery[T, Ts, Tset, C] {
+	t.QueryBuilder = t.QueryBuilder.WithMods(mods...)
+	return &t
 }
 
 // Insert One Row
@@ -139,7 +139,7 @@ type insertQuery[T any, Ts ~[]T, Tset setter[T], C bob.Expression] struct {
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
 func (t *insertQuery[T, Ts, Tset, C]) One(ctx context.Context, exec bob.Executor) (T, error) {
-	q, err := t.insertAll(ctx, exec)
+	ctx, q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return *new(T), err
 	}
@@ -153,7 +153,7 @@ func (t *insertQuery[T, Ts, Tset, C]) One(ctx context.Context, exec bob.Executor
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
 func (t *insertQuery[T, Ts, Tset, C]) All(ctx context.Context, exec bob.Executor) (Ts, error) {
-	q, err := t.insertAll(ctx, exec)
+	ctx, q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (t *insertQuery[T, Ts, Tset, C]) All(ctx context.Context, exec bob.Executor
 // if there is no AUTO_INCREMENT column and the row was not inserted with unique values, it will return [orm.ErrCannotRetrieveRow]
 // [orm.ErrCannotRetrieveRow] is also returned if its a query of the form INSERT INTO ... SELECT ...
 func (t *insertQuery[T, Ts, Tset, C]) Cursor(ctx context.Context, exec bob.Executor) (scan.ICursor[T], error) {
-	q, err := t.insertAll(ctx, exec)
+	ctx, q, err := t.insertAll(ctx, exec)
 	if err != nil {
 		return nil, err
 	}
@@ -175,98 +175,114 @@ func (t *insertQuery[T, Ts, Tset, C]) Cursor(ctx context.Context, exec bob.Execu
 	return bob.Cursor(ctx, exec, q, t.table.scanner)
 }
 
-func (t *insertQuery[T, Tslice, Tset, C]) retrievable() error {
-	if t.Expression.Values.Query != nil {
+type insertBatch struct {
+	first   InsertQuery
+	columns []string
+	rows    []clause.Value
+}
+
+func (t *Table[T, Tslice, Tset, C]) retrievable(ast dialect.InsertEditor) error {
+	if ast.HasInsertQuery() {
 		return fmt.Errorf("inserting from query: %w", orm.ErrCannotRetrieveRow)
 	}
 
-	if len(t.Expression.DuplicateKeyUpdate.Set) > 0 {
+	if ast.HasDuplicateKeyUpdate() {
 		return fmt.Errorf("has duplicate key update: %w", orm.ErrCannotRetrieveRow)
 	}
 
-	if t.table.autoIncrementColumn != "" {
+	if t.autoIncrementColumn != "" {
 		return nil
 	}
 
-	if len(t.table.uniqueIdx) > 0 {
+	if ast.HasAssignments() {
+		return fmt.Errorf("INSERT SET readback requires an auto increment column: %w", orm.ErrCannotRetrieveRow)
+	}
+
+	if len(t.uniqueIdx) > 0 {
 		return nil
 	}
 
 	return fmt.Errorf("no auto increment column or unique index: %w", orm.ErrCannotRetrieveRow)
 }
 
-// inserts all and returns the select query
-func (t *insertQuery[T, Ts, Tset, C]) insertAll(ctx context.Context, exec bob.Executor) (bob.Query, error) {
-	if retrievalErr := t.retrievable(); retrievalErr != nil {
-		return nil, retrievalErr
-	}
-
-	var err error
-
-	// Save the existing values
-	oldVals := t.Expression.Values.Vals
-
-	// Save and clear loaders - they will be transferred to the SELECT query
-	// This prevents bob.Exec from calling them with nil
-	loaders := t.Expression.GetLoaders()
-	t.Expression.SetLoaders()
-
-	// Run hooks
-	ctx, err = t.RunHooks(ctx, exec)
+// insertAll returns the hook context for the SELECT and its loaders.
+func (t *insertQuery[T, Ts, Tset, C]) insertAll(ctx context.Context, exec bob.Executor) (context.Context, bob.Query, error) {
+	ctx, q, err := ormruntime.ResolveQueryBuilder(ctx, exec, t.QueryBuilder)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
-
-	// Clear hooks
-	t.Expression.SetHooks()
-
-	results := make([]sql.Result, len(oldVals))
-	for i := range oldVals {
-		rowVals := oldVals[i : i+1]
-		t.Expression.Values.Vals = rowVals
-
-		result, err := bob.Exec(ctx, exec, t.BaseQuery)
+	// Resolve the entire batch before splitting it. Both the write and the
+	// lookup must see the same columns, rows, and contextual-mod results.
+	var batch insertBatch
+	var n int
+	batch.first = q.WithMods(bob.ModFunc[dialect.InsertEditor](func(ast dialect.InsertEditor) {
+		ctx, err = ast.ResolveContextualMods(ctx)
 		if err != nil {
-			return nil, err
+			return
 		}
-
-		results[i] = result
+		if err = t.table.retrievable(ast); err != nil {
+			return
+		}
+		batch.columns, batch.rows = ast.ColumnNames(), ast.Rows()
+		n = len(batch.rows)
+		if ast.HasAssignments() {
+			n = 1 // INSERT ... SET always writes one row.
+		} else if n > 1 {
+			ast.SetRows(batch.rows[0])
+		}
+	}))
+	if err != nil {
+		return ctx, nil, err
+	}
+	if n == 0 {
+		return ctx, nil, fmt.Errorf("no insert rows: %w", orm.ErrCannotRetrieveRow)
 	}
 
-	// Restore the values
-	t.Expression.Values.Vals = oldVals
+	results := make([]sql.Result, n)
+	for i := range n {
+		stmt := batch.first
+		if i > 0 {
+			stmt = stmt.WithMods(bob.ModFunc[dialect.InsertEditor](func(ast dialect.InsertEditor) {
+				ast.SetRows(batch.rows[i])
+			}))
+		}
+		// Hooks have run; the readback SELECT owns the scan and load callbacks.
+		query, args, err := stmt.Build(ctx, exec)
+		if err != nil {
+			return ctx, nil, err
+		}
+		results[i], err = exec.ExecContext(ctx, query, args...)
+		if err != nil {
+			return ctx, nil, err
+		}
+	}
 
-	return t.getInserted(oldVals, results, loaders)
+	readback, err := t.table.getInserted(ctx, batch, results)
+	return ctx, readback, err
 }
 
-func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, results []sql.Result, loaders []bob.Loader) (bob.Query, error) {
+func (t *Table[T, Tslice, Tset, C]) getInserted(
+	ctx context.Context,
+	batch insertBatch,
+	results []sql.Result,
+) (bob.Query, error) {
 	w := &bytes.Buffer{}
 
-	if retrievalErr := t.retrievable(); retrievalErr != nil {
-		return nil, retrievalErr
-	}
-
-	query := Select(sm.Columns(t.table.projection), sm.From(t.table.NameAsExpr()))
-
-	// Change query type to Insert so that the correct hooks are run
-	query.QueryType = bob.QueryTypeInsert
-
-	// Transfer loaders to select query
-	query.Expression.SetLoaders(loaders...)
-
 	var autoIncrArgs []bob.Expression
-	idArgs := make([][]bob.Expression, len(t.table.uniqueIdx))
+	idArgs := make([][]bob.Expression, len(t.uniqueIdx))
 
-	for i, val := range vals {
-		if t.table.autoIncrementColumn != "" && len(t.Expression.DuplicateKeyUpdate.Set) == 0 {
-			lastID, err := results[i].LastInsertId()
+	if t.autoIncrementColumn != "" {
+		for _, result := range results {
+			lastID, err := result.LastInsertId()
 			if err != nil {
 				return nil, err
 			}
 
 			autoIncrArgs = append(autoIncrArgs, Arg(lastID))
-		} else {
-			uIdx, uArgs := t.uniqueSet(w, val)
+		}
+	} else {
+		for _, val := range batch.rows {
+			uIdx, uArgs := t.uniqueSet(ctx, w, batch.columns, val)
 			if uIdx == -1 || len(uArgs) == 0 {
 				return nil, fmt.Errorf("no unique index found: %w", orm.ErrCannotRetrieveRow)
 			}
@@ -275,9 +291,9 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 		}
 	}
 
-	filters := make([]bob.Expression, 0, len(t.table.uniqueIdx))
+	filters := make([]bob.Expression, 0, len(t.uniqueIdx))
 	if len(autoIncrArgs) > 0 {
-		filters = append(filters, Quote(t.table.autoIncrementColumn).In(autoIncrArgs...))
+		filters = append(filters, Quote(t.autoIncrementColumn).In(autoIncrArgs...))
 	}
 
 	for i, args := range idArgs {
@@ -285,18 +301,22 @@ func (t *insertQuery[T, Tslice, Tset, C]) getInserted(vals []clause.Value, resul
 			continue
 		}
 
-		uCols := t.table.uniqueIdx[i]
+		uCols := t.uniqueIdx[i]
 		if len(uCols) == 1 {
-			filters = append(filters, Quote(t.table.nonGeneratedCols[uCols[0]]).In(args...))
+			filters = append(filters, Quote(t.nonGeneratedCols[uCols[0]]).In(args...))
 			continue
 		}
 
-		filters = append(filters, Group(t.table.uniqueColNames(i)...).In(args...))
+		filters = append(filters, Group(t.uniqueColNames(i)...).In(args...))
 	}
 
-	query.Apply(sm.Where(Or(filters...)))
-
-	return query, nil
+	return bob.QueryFromExpression(Select(
+		sm.Columns(t.projection), sm.From(t.NameAsExpr()), sm.Where(Or(filters...)),
+		bob.ModFunc[dialect.SelectEditor](func(q dialect.SelectEditor) {
+			q.SetLoaders(batch.first.GetLoaders(ctx)...)
+			q.SetMapperMods(batch.first.GetMapperMods(ctx)...)
+		}),
+	), dialect.Dialect, bob.QueryTypeInsert), nil
 }
 
 func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {
@@ -320,14 +340,14 @@ func uniqueIndexes(allCols []string, uniques ...[]string) [][]int {
 	return indexes
 }
 
-func isDefaultOrNull(w *bytes.Buffer, e bob.Expression) bool {
+func isDefaultOrNull(ctx context.Context, w *bytes.Buffer, e bob.Expression) bool {
 	w.Reset()
 
 	if e == nil {
 		return true
 	}
 
-	args, err := e.WriteSQL(context.Background(), w, dialect.Dialect, 1)
+	args, err := e.WriteSQL(ctx, w, dialect.Dialect, 1)
 	if err != nil {
 		return false
 	}
@@ -349,19 +369,19 @@ func isDefaultOrNull(w *bytes.Buffer, e bob.Expression) bool {
 	return strings.EqualFold(s, "DEFAULT") || strings.EqualFold(s, "NULL")
 }
 
-func (t *insertQuery[T, Tslice, Tset, C]) uniqueSet(w *bytes.Buffer, row []bob.Expression) (int, []bob.Expression) {
+func (t *Table[T, Tslice, Tset, C]) uniqueSet(ctx context.Context, w *bytes.Buffer, columns []string, row []bob.Expression) (int, []bob.Expression) {
 Outer:
-	for whichUnique, unique := range t.table.uniqueIdx {
+	for whichUnique, unique := range t.uniqueIdx {
 		colVals := make([]bob.Expression, 0, len(unique))
 
 		for _, uniqueCol := range unique {
-			insertColIndex := slices.Index(t.Expression.Columns, t.table.nonGeneratedCols[uniqueCol])
+			insertColIndex := slices.Index(columns, t.nonGeneratedCols[uniqueCol])
 			if insertColIndex < 0 || insertColIndex >= len(row) {
 				continue Outer
 			}
 			insertedField := row[insertColIndex]
 
-			if insertedField == nil || isDefaultOrNull(w, insertedField) {
+			if insertedField == nil || isDefaultOrNull(ctx, w, insertedField) {
 				continue Outer
 			}
 

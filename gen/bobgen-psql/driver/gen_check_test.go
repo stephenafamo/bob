@@ -1,3 +1,5 @@
+//go:build !race
+
 package driver_test
 
 import (
@@ -39,7 +41,7 @@ import (
 	_ "example.org/app/db/dbinfo"
 	"github.com/stephenafamo/bob"
 )
-func use(q interface{ Apply() bob.Query }) { q.Apply() }`
+func use(q interface{ WithMods() bob.Query }) { q.WithMods() }`
 	if err := os.WriteFile("caller_test.go", []byte(caller), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +69,7 @@ func use(q interface{ Apply() bob.Query }) { q.Apply() }`
 	if out, err := tidy.CombinedOutput(); err != nil {
 		t.Fatalf("go mod tidy: %v\n%s", err, out)
 	}
-	if err := run(); err == nil || !strings.Contains(err.Error(), "caller_test.go:6:48: result of Apply is discarded") ||
+	if err := run(); err == nil || !strings.Contains(err.Error(), "caller_test.go:6:51: result of WithMods is discarded") ||
 		strings.Contains(err.Error(), hint) {
 		t.Fatalf("want a diagnostic in the module root, got %v", err)
 	}

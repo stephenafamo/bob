@@ -11,31 +11,13 @@ import (
 	"github.com/stephenafamo/bob"
 )
 
-type ExecQuery[Q bob.Expression] struct {
-	bob.BaseQuery[Q]
-	Hooks *bob.Hooks[Q, bob.SkipQueryHooksKey]
+type ExecQuery[Q any] struct {
+	bob.QueryBuilder[Q]
 }
 
-func (q ExecQuery[Q]) Clone() ExecQuery[Q] {
-	return ExecQuery[Q]{
-		BaseQuery: q.BaseQuery.Clone(),
-		Hooks:     q.Hooks,
-	}
-}
-
-func (q ExecQuery[Q]) RunHooks(ctx context.Context, exec bob.Executor) (context.Context, error) {
-	var err error
-
-	ctx, err = q.BaseQuery.RunHooks(ctx, exec)
-	if err != nil {
-		return ctx, err
-	}
-
-	if q.Hooks == nil {
-		return ctx, nil
-	}
-
-	return q.Hooks.RunHooks(ctx, exec, q.BaseQuery.Expression)
+func (q ExecQuery[Q]) WithMods(mods ...bob.Mod[Q]) *ExecQuery[Q] {
+	q.QueryBuilder = q.QueryBuilder.WithMods(mods...)
+	return &q
 }
 
 // Execute the query
@@ -48,16 +30,20 @@ func (q ExecQuery[Q]) Exec(ctx context.Context, exec bob.Executor) (int64, error
 	return result.RowsAffected()
 }
 
-type Query[Q bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
+type Query[Q any, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
 	ExecQuery[Q]
 	Scanner scan.Mapper[T]
 }
 
-func (q Query[Q, T, Ts, Tr]) Clone() Query[Q, T, Ts, Tr] {
-	return Query[Q, T, Ts, Tr]{
-		ExecQuery: q.ExecQuery.Clone(),
-		Scanner:   q.Scanner,
-	}
+func (q Query[Q, T, Ts, Tr]) WithMods(mods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
+	q.QueryBuilder = q.QueryBuilder.WithMods(mods...)
+	return &q
+}
+
+// WithScanner uses a different row mapper for this branch.
+func (q Query[Q, T, Ts, Tr]) WithScanner(mapper scan.Mapper[T]) *Query[Q, T, Ts, Tr] {
+	q.Scanner = mapper
+	return &q
 }
 
 // First matching row
@@ -80,36 +66,36 @@ func (q Query[Q, T, Ts, Tr]) Each(ctx context.Context, exec bob.Executor) (func(
 	return bob.Each(ctx, exec, q, q.Scanner)
 }
 
-type ModExecQuery[Q bob.Expression, E bob.Expression] struct {
-	ExecQuery[E]
-	Mod   bob.Mod[Q]
-	Build func(...bob.Mod[Q]) bob.BaseQuery[Q]
+type ModExecQuery[Q any, E bob.Expression] struct {
+	ExecQuery[Q]
+	Mod        bob.Mod[Q]
+	NewBuilder func(...bob.Mod[Q]) bob.QueryBuilder[Q]
 }
 
-func (q ModExecQuery[Q, E]) Apply(e Q) {
-	q.Mod.Apply(e)
+func (q ModExecQuery[Q, E]) Edit(e Q) {
+	q.Mod.Edit(e)
 }
 
-func (q ModExecQuery[Q, E]) With(mods ...bob.Mod[Q]) ExecQuery[Q] {
-	return ExecQuery[Q]{
-		BaseQuery: q.Build(append([]bob.Mod[Q]{q.Mod}, mods...)...),
+func (q ModExecQuery[Q, E]) With(mods ...bob.Mod[Q]) *ExecQuery[Q] {
+	return &ExecQuery[Q]{
+		QueryBuilder: q.NewBuilder(append([]bob.Mod[Q]{q.Mod}, mods...)...),
 	}
 }
 
-type ModQuery[Q bob.Expression, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
-	Query[E, T, Ts, Tr]
-	Mod   bob.Mod[Q]
-	Build func(...bob.Mod[Q]) bob.BaseQuery[Q]
+type ModQuery[Q any, E bob.Expression, T, Ts any, Tr bob.Transformer[T, Ts]] struct {
+	Query[Q, T, Ts, Tr]
+	Mod        bob.Mod[Q]
+	NewBuilder func(...bob.Mod[Q]) bob.QueryBuilder[Q]
 }
 
-func (q ModQuery[Q, E, T, Ts, Tr]) Apply(e Q) {
-	q.Mod.Apply(e)
+func (q ModQuery[Q, E, T, Ts, Tr]) Edit(e Q) {
+	q.Mod.Edit(e)
 }
 
-func (q ModQuery[Q, E, T, Ts, Tr]) With(mods ...bob.Mod[Q]) Query[Q, T, Ts, Tr] {
-	return Query[Q, T, Ts, Tr]{
+func (q ModQuery[Q, E, T, Ts, Tr]) With(mods ...bob.Mod[Q]) *Query[Q, T, Ts, Tr] {
+	return &Query[Q, T, Ts, Tr]{
 		ExecQuery: ExecQuery[Q]{
-			BaseQuery: q.Build(append([]bob.Mod[Q]{q.Mod}, mods...)...),
+			QueryBuilder: q.NewBuilder(append([]bob.Mod[Q]{q.Mod}, mods...)...),
 		},
 		Scanner: q.Scanner,
 	}

@@ -9,7 +9,7 @@
 func TestJoinThroughTableIsStable(t *testing.T) {
 	build := func() string {
 		q := models.Videos.Query(models.SelectJoins{{if eq $.Dialect "sqlite"}}(){{end}}.Videos.InnerJoin.Tags)
-		sql, _, err := bob.Build(context.Background(), q)
+		sql, _, err := bob.Build(context.Background(), nil, q)
 		if err != nil {
 			t.Fatalf("Build: %v", err)
 		}

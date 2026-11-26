@@ -12,6 +12,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/bob/orm/genruntime"
 	testutils "github.com/stephenafamo/bob/test/utils"
 )
 
@@ -28,28 +29,15 @@ func (r rawExpr) WriteSQL(_ context.Context, w io.StringWriter, _ bob.Dialect, _
 // generated query already carries.
 func newModQuery(
 	scanner scan.Mapper[int],
-	extra ...func(*dialect.SelectQuery),
-) orm.ModQuery[*dialect.SelectQuery, rawExpr, int, []int, bob.SliceTransformer[int, []int]] {
-	return orm.ModQuery[*dialect.SelectQuery, rawExpr, int, []int, bob.SliceTransformer[int, []int]]{
-		Query: orm.Query[rawExpr, int, []int, bob.SliceTransformer[int, []int]]{
-			ExecQuery: orm.ExecQuery[rawExpr]{
-				BaseQuery: bob.BaseQuery[rawExpr]{
-					Expression: rawExpr{sql: "SELECT id FROM todo"},
-					Dialect:    dialect.Dialect,
-					QueryType:  bob.QueryTypeSelect,
-				},
-			},
-			Scanner: scanner,
-		},
-		Mod: bob.ModFunc[*dialect.SelectQuery](func(q *dialect.SelectQuery) {
-			q.AppendSelect(psql.Quote("id"))
-			q.SetTable(psql.Quote("todo"))
-			for _, fn := range extra {
-				fn(q)
-			}
-		}),
-		Build: psql.Select,
-	}
+	extra ...func(dialect.SelectEditor),
+) orm.ModQuery[dialect.SelectEditor, rawExpr, int, []int, bob.SliceTransformer[int, []int]] {
+	return *genruntime.NewModQuery[bob.SliceTransformer[int, []int]](rawExpr{sql: "SELECT id FROM todo"}, dialect.Dialect, bob.QueryTypeSelect, dialect.NewSelectSource, func(q dialect.SelectEditor) {
+		q.AppendSelect(psql.Quote("id"))
+		q.SetTable(psql.Quote("todo"))
+		for _, fn := range extra {
+			fn(q)
+		}
+	}, scanner)
 }
 
 func TestModQueryWith(t *testing.T) {
@@ -84,7 +72,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 			Doc:          "A user sm.Where() ANDs onto the existing WHERE",
 			ExpectedSQL:  `SELECT id FROM todo WHERE done = $1 AND project_id = $2`,
 			ExpectedArgs: []any{true, 1},
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.AppendWhere(psql.Quote("done").EQ(psql.Arg(true)))
 			}).With(
 				sm.Where(psql.Quote("project_id").EQ(psql.Arg(1))),
@@ -94,7 +82,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 			Doc:          "Multiple user sm.Where() mods each AND on, preserving arg order",
 			ExpectedSQL:  `SELECT id FROM todo WHERE done = $1 AND project_id = $2 AND priority > $3`,
 			ExpectedArgs: []any{true, 1, 2},
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.AppendWhere(psql.Quote("done").EQ(psql.Arg(true)))
 			}).With(
 				sm.Where(psql.Quote("project_id").EQ(psql.Arg(1))),
@@ -104,7 +92,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 		"existing ORDER BY merges with the user ORDER BY": {
 			Doc:         "A user sm.OrderBy() appends into the existing ORDER BY clause",
 			ExpectedSQL: `SELECT id FROM todo ORDER BY created_at, id`,
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.AppendOrder(psql.Quote("created_at"))
 			}).With(
 				sm.OrderBy(psql.Quote("id")),
@@ -113,7 +101,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 		"existing LIMIT is replaced by the user LIMIT": {
 			Doc:         "A user sm.Limit() replaces the existing LIMIT",
 			ExpectedSQL: `SELECT id FROM todo LIMIT 10`,
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.SetLimit(5)
 			}).With(
 				sm.Limit(10),
@@ -122,7 +110,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 		"existing OFFSET is replaced by the user OFFSET": {
 			Doc:         "A user sm.Offset() replaces the existing OFFSET",
 			ExpectedSQL: `SELECT id FROM todo OFFSET 10`,
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.SetOffset(5)
 			}).With(
 				sm.Offset(10),
@@ -132,7 +120,7 @@ func TestModQueryWithExistingClauses(t *testing.T) {
 			Doc:          "Combined scenario across all three behaviors",
 			ExpectedSQL:  `SELECT id FROM todo WHERE done = $1 AND project_id = $2 ORDER BY created_at, id LIMIT 10`,
 			ExpectedArgs: []any{true, 1},
-			Query: newModQuery(nil, func(q *dialect.SelectQuery) {
+			Query: newModQuery(nil, func(q dialect.SelectEditor) {
 				q.AppendWhere(psql.Quote("done").EQ(psql.Arg(true)))
 				q.AppendOrder(psql.Quote("created_at"))
 				q.SetLimit(5)
@@ -165,20 +153,20 @@ func TestModQueryWithPreservesScanner(t *testing.T) {
 	}
 }
 
-func TestQueryClonePreservesScanner(t *testing.T) {
+func TestQueryWithModsPreservesScanner(t *testing.T) {
 	scannerCalled := false
 	scanner := func(context.Context, []string) (func(*scan.Row) (any, error), func(any) (int, error)) {
 		scannerCalled = true
 		return nil, nil
 	}
 
-	cloned := newModQuery(scanner).Query.Clone()
-	if cloned.Scanner == nil {
-		t.Fatal("Clone() dropped the scanner")
+	child := newModQuery(scanner).With().WithMods(sm.Limit(1))
+	if child.Scanner == nil {
+		t.Fatal("WithMods() dropped the scanner")
 	}
 
-	cloned.Scanner(context.Background(), nil)
+	child.Scanner(t.Context(), nil)
 	if !scannerCalled {
-		t.Fatal("Clone() did not preserve the original scanner")
+		t.Fatal("WithMods() did not preserve the original scanner")
 	}
 }

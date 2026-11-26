@@ -3,6 +3,7 @@ package clause
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 )
@@ -12,7 +13,7 @@ type Conflict struct {
 }
 
 func (c *Conflict) SetConflict(conflict bob.Expression) {
-	c.Expression = conflict
+	c.Expression = copyClause(conflict)
 }
 
 type ConflictClause struct {
@@ -20,6 +21,15 @@ type ConflictClause struct {
 	Target ConflictTarget
 	Set
 	Where
+}
+
+// Copy gives a query its own conflict target, assignments and conditions.
+func (c ConflictClause) Copy() ConflictClause {
+	c.Target.Columns = slices.Clone(c.Target.Columns)
+	c.Target.Where = slices.Clone(c.Target.Where)
+	c.Set.Set = slices.Clone(c.Set.Set)
+	c.Where.Conditions = slices.Clone(c.Where.Conditions)
+	return c
 }
 
 func (c ConflictClause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

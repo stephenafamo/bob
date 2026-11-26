@@ -1,6 +1,8 @@
 package mods
 
 import (
+	"slices"
+
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 )
@@ -32,13 +34,13 @@ func ConflictOnConstraint[Q interface{ SetConflict(bob.Expression) }](constraint
 	})
 }
 
-func (s Conflict[Q]) Apply(q Q) {
+func (s Conflict[Q]) Edit(q Q) {
 	q.SetConflict(s())
 }
 
 func (c Conflict[Q]) Where(where ...any) Conflict[Q] {
 	conflict := c()
-	conflict.Target.Where = append(conflict.Target.Where, where...)
+	conflict.Target.Where = append(slices.Clip(conflict.Target.Where), where...)
 
 	return Conflict[Q](func() clause.ConflictClause {
 		return conflict
@@ -55,11 +57,11 @@ func (c Conflict[Q]) DoNothing() bob.Mod[Q] {
 }
 
 func (c Conflict[Q]) DoUpdate(sets ...bob.Mod[*clause.ConflictClause]) bob.Mod[Q] {
-	conflict := c()
+	conflict := c().Copy()
 	conflict.Do = "UPDATE"
 
 	for _, set := range sets {
-		set.Apply(&conflict)
+		set.Edit(&conflict)
 	}
 
 	return Conflict[Q](func() clause.ConflictClause {

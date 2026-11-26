@@ -12,12 +12,12 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-// New returns an analyzer for direct calls to Apply methods that return a
-// single bob.Query. Apply methods that modify a query in place return nothing.
+// New returns an analyzer for direct calls to WithMods methods that return a
+// single bob.Query.
 func New() *analysis.Analyzer {
 	return &analysis.Analyzer{
 		Name:     "bobcheck",
-		Doc:      "report discarded results of query-returning Apply methods",
+		Doc:      "report discarded results of query-returning WithMods methods",
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 		Run:      run,
 	}
@@ -46,7 +46,7 @@ func checkCalls(pass *analysis.Pass, query *types.Interface) {
 			continue
 		}
 		sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
-		if !ok || sel.Sel.Name != "Apply" {
+		if !ok || sel.Sel.Name != "WithMods" {
 			continue
 		}
 		method := pass.TypesInfo.Selections[sel]
@@ -56,7 +56,7 @@ func checkCalls(pass *analysis.Pass, query *types.Interface) {
 		// Use the signature at the call site so generic results are instantiated.
 		results := method.Type().(*types.Signature).Results()
 		if results.Len() == 1 && types.Implements(results.At(0).Type(), query) {
-			pass.ReportRangef(sel.Sel, "result of Apply is discarded; use the returned query")
+			pass.ReportRangef(sel.Sel, "result of WithMods is discarded; use the returned query")
 		}
 	}
 }

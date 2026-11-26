@@ -1,6 +1,6 @@
 {{- define "helpers/join_variables"}}
 var (
-	SelectJoins = getJoins[*dialect.SelectQuery]
-	UpdateJoins = getJoins[*dialect.UpdateQuery]
+	SelectJoins = getJoins[dialect.SelectEditor]
+	UpdateJoins = getJoins[dialect.UpdateEditor]
 )
 {{end -}}

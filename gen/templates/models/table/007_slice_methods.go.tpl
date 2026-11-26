@@ -46,8 +46,8 @@ func (o {{$tAlias.UpSingular}}Slice) copyMatchingRows(from ...*{{$tAlias.UpSingu
 {{range $op := list "Update" "Delete" "Merge" -}}
 {{if and (eq $op "Merge") (ne $.Dialect "psql")}}{{continue}}{{end -}}
 // {{$op}}Mod installs the model hooks{{if ne $op "Merge"}} and filters by primary key{{end}}.
-func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[*dialect.{{$op}}Query] {
-  return bob.ModFunc[*dialect.{{$op}}Query](func(q *dialect.{{$op}}Query) {
+func (o {{$tAlias.UpSingular}}Slice) {{$op}}Mod() bob.Mod[dialect.{{$op}}Editor] {
+  return bob.ModFunc[dialect.{{$op}}Editor](func(q dialect.{{$op}}Editor) {
     genruntime.ApplyModelHooks(q, o, o.copyMatchingRows, &{{$tAlias.UpPlural}}.Before{{$op}}Hooks, &{{$tAlias.UpPlural}}.After{{$op}}Hooks)
     {{if ne $op "Merge" -}}
     q.AppendWhere({{$tAlias.DownSingular}}RowMapping.In(o))

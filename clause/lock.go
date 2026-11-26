@@ -28,7 +28,7 @@ type Locks struct {
 }
 
 func (f *Locks) AppendLock(lock bob.Expression) {
-	f.Locks = append(f.Locks, lock)
+	f.Locks = append(f.Locks, copyClause(lock))
 }
 
 type Lock struct {

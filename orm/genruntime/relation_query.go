@@ -56,7 +56,7 @@ func queryPath[E bob.Expression](rel orm.PreloadRel[E], parent string) []queryHo
 // EXISTS and COUNT subqueries. The dialect supplies its FROM mod.
 func Correlate[Q interface {
 	AppendJoin(clause.Join)
-	AppendWhere(...any)
+	AppendWhere(any)
 }, E bob.Expression](rel orm.PreloadRel[E], parent string, from func(Q, bob.Expression)) bob.Mod[Q] {
 	if parent == "" && len(rel.Sides) > 0 {
 		parent = rel.Sides[0].From.Alias()

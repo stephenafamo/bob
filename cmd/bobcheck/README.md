@@ -20,18 +20,19 @@ To run the check independently from the module root:
 go run github.com/stephenafamo/bob/cmd/bobcheck ./...
 ```
 
-`bobcheck` reports direct method calls to `Apply` that discard a single
+`bobcheck` reports direct method calls to `WithMods` that discard a single
 result implementing `bob.Query`, including calls to promoted methods on
-generated query wrappers. For example, if `Apply` returns a new query:
+generated query wrappers. For example, if `WithMods` returns a new query:
 
 ```go
-q.Apply(filter)          // Reported: q still has its old value.
-q = q.Apply(filter)      // OK: replace q.
-page := q.Apply(mods...) // OK: derive another query.
+q.WithMods(filter)          // Reported: q still has its old value.
+q = q.WithMods(filter)      // OK: replace q.
+page := q.WithMods(mods...) // OK: derive another query.
 ```
 
-Today's in-place `BaseQuery.Apply` returns nothing and is not reported.
-An explicit discard (`_ = q.Apply(filter)`) is also accepted.
+All dialects and `bob.QueryBuilder` return queries from `WithMods`. Calling
+`mod.Edit(editor)` returns nothing and is not reported.
+An explicit discard (`_ = q.WithMods(filter)`) is also accepted.
 
 In a Bob checkout, use `go run ./cmd/bobcheck ./...`. The command can also
 run as a vet tool (`go vet -vettool=/path/to/bobcheck ./...`).

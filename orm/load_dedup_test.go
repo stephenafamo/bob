@@ -411,7 +411,7 @@ func TestPreloadDedupCompositeKey(t *testing.T) {
 				PreloadAs[testPreloadQuery]("c"),
 			)
 			queryMod, mapperMod, _ := loader("")
-			queryMod.Apply(testPreloadQuery{})
+			queryMod.Edit(testPreloadQuery{})
 			scanner := scan.Mod(scan.StructMapper[*testPreloadParent](), mapperMod)
 
 			res := scanTestPreloadRows(t, scanner, cols, rows)

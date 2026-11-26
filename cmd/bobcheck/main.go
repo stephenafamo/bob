@@ -1,4 +1,4 @@
-// Command bobcheck reports discarded results of query-returning Apply methods.
+// Command bobcheck reports discarded results of query-returning WithMods methods.
 package main
 
 import (

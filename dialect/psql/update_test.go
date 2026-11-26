@@ -377,7 +377,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdateWhereCurrentOfConflict(t *testing.T) {
-	_, _, err := bob.Build(context.Background(), psql.Update(
+	_, _, err := bob.Build(context.Background(), nil, psql.Update(
 		um.Table("films"),
 		um.SetCol("kind").ToArg("Dramatic"),
 		um.Where(psql.Quote("kind").EQ(psql.Arg("Drama"))),
@@ -390,7 +390,7 @@ func TestUpdateWhereCurrentOfConflict(t *testing.T) {
 }
 
 func TestUpdateFromPlaceholderOffsetWithBuildN(t *testing.T) {
-	query, args, err := bob.BuildN(context.Background(), psql.Update(
+	query, args, err := bob.BuildN(context.Background(), nil, psql.Update(
 		um.Table("widgets"),
 		um.SetCol("changed_by").ToArg("tester"),
 		um.From(psql.Values(vm.RowValue(psql.Arg(int64(17))))),

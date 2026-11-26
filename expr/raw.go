@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/stephenafamo/bob"
@@ -20,11 +21,8 @@ func (r Raw) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, sta
 	return nil, nil
 }
 
-func RawQuery(d bob.Dialect, q string, args ...any) bob.BaseQuery[Clause] {
-	return bob.BaseQuery[Clause]{
-		Expression: Clause{query: q, args: args},
-		Dialect:    d,
-	}
+func RawQuery(d bob.Dialect, q string, args ...any) bob.ExpressionQuery[Clause] {
+	return bob.QueryFromExpression(Clause{query: q, args: slices.Clone(args)}, d, bob.QueryTypeUnknown)
 }
 
 // A Raw Clause with arguments
@@ -32,6 +30,8 @@ type Clause struct {
 	query string // The clause with ? used for placeholders
 	args  []any  // The replacements for the placeholders in order
 }
+
+func (r Clause) Clone() Clause { return r } // The argument list is private.
 
 // ShouldOmitParens reports that Clause is expected to be printed as it is.
 func (Clause) ShouldOmitParens() bool { return true }
@@ -44,7 +44,7 @@ func (r Clause) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, 
 	}
 
 	if len(r.args) != total {
-		return r.args, &rawError{args: len(r.args), placeholders: total, clause: r.query}
+		return slices.Clone(r.args), &rawError{args: len(r.args), placeholders: total, clause: r.query}
 	}
 
 	return args, nil
@@ -86,7 +86,7 @@ func (r Clause) convertQuestionMarks(ctx context.Context, w io.StringWriter, d b
 			arg = r.args[total]
 		}
 		if ex, ok := arg.(bob.Expression); ok {
-			eargs, err := ex.WriteSQL(ctx, w, d, startAt)
+			eargs, err := bob.Express(ctx, w, d, startAt, ex)
 			if err != nil {
 				return total, nil, err
 			}

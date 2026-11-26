@@ -83,7 +83,7 @@ type UserSetter struct {
 	Name  *string `db:"name"`
 	Email *string `db:"email"`
 
-	orm.Setter[*User, *dialect.InsertQuery, *dialect.UpdateQuery]
+	orm.Setter[*User, dialect.InsertEditor, dialect.UpdateEditor]
 }
 
 func (s UserSetter) Overwrite(t *User) {
@@ -100,7 +100,7 @@ func (s UserSetter) Overwrite(t *User) {
 	}
 }
 
-func (s UserSetter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
+func (s UserSetter) UpdateMod() bob.Mod[dialect.UpdateEditor] {
 	return um.Set(s.Expressions()...)
 }
 
@@ -274,7 +274,7 @@ func TestMerge(t *testing.T) {
 	)
 
 	// Get the SQL for debugging
-	sql, args, err := bob.Build(ctx, mergeQuery)
+	sql, args, err := bob.Build(ctx, nil, mergeQuery)
 	if err != nil {
 		t.Fatalf("could not build merge query: %v", err)
 	}
@@ -343,7 +343,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
@@ -370,7 +370,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
@@ -397,7 +397,7 @@ func TestTableMergeWithVersion(t *testing.T) {
 			),
 		)
 
-		sql, args, err := bob.Build(ctx, mergeQuery)
+		sql, args, err := bob.Build(ctx, nil, mergeQuery)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}

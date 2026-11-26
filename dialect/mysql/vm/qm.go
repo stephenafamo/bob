@@ -7,20 +7,20 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func RowValue(clauses ...bob.Expression) bob.Mod[*dialect.ValuesQuery] {
-	return mods.Values[*dialect.ValuesQuery](clauses)
+func RowValue(clauses ...bob.Expression) bob.Mod[dialect.ValuesEditor] {
+	return mods.Values[dialect.ValuesEditor](clauses)
 }
 
-func OrderBy(e any) dialect.OrderBy[*dialect.ValuesQuery] {
-	return dialect.OrderBy[*dialect.ValuesQuery](func() clause.OrderDef {
+func OrderBy(e any) dialect.OrderBy[dialect.ValuesEditor] {
+	return dialect.OrderBy[dialect.ValuesEditor](func() clause.OrderDef {
 		return clause.OrderDef{
 			Expression: e,
 		}
 	})
 }
 
-func Limit(count int64) bob.Mod[*dialect.ValuesQuery] {
-	return mods.Limit[*dialect.ValuesQuery]{
+func Limit(count int64) bob.Mod[dialect.ValuesEditor] {
+	return mods.Limit[dialect.ValuesEditor]{
 		Count: count,
 	}
 }

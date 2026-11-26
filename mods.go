@@ -4,23 +4,22 @@ import (
 	"context"
 )
 
-// Mod is a generic interface for modifying a query
-// It is the building block for creating queries
+// Mod edits its target in place. Query builders supply a scoped editor.
 type Mod[T any] interface {
-	Apply(T)
+	Edit(T)
 }
 
 type ModFunc[T any] func(T)
 
-func (m ModFunc[T]) Apply(query T) {
-	m(query)
+func (m ModFunc[T]) Edit(target T) {
+	m(target)
 }
 
 type Mods[T any] []Mod[T]
 
-func (m Mods[T]) Apply(query T) {
+func (m Mods[T]) Edit(target T) {
 	for _, v := range m {
-		v.Apply(query)
+		v.Edit(target)
 	}
 }
 
@@ -40,12 +39,12 @@ func ToMods[T Mod[Q], Q any](r ...T) Mods[Q] {
 // where possible, prefer using regular mods since they are applied once
 // while contextual mods are applied every time a query is built
 type ContextualMod[T any] interface {
-	Apply(context.Context, T) (context.Context, error)
+	Edit(context.Context, T) (context.Context, error)
 }
 
 type ContextualModFunc[T any] func(context.Context, T) (context.Context, error)
 
-func (c ContextualModFunc[T]) Apply(ctx context.Context, o T) (context.Context, error) {
+func (c ContextualModFunc[T]) Edit(ctx context.Context, o T) (context.Context, error) {
 	return c(ctx, o)
 }
 
@@ -75,7 +74,7 @@ func (h *ContextualModdable[T]) RunContextualMods(ctx context.Context, o T) (con
 	var err error
 
 	for _, mod := range h.Mods {
-		if ctx, err = mod.Apply(ctx, o); err != nil {
+		if ctx, err = mod.Edit(ctx, o); err != nil {
 			return ctx, err
 		}
 	}

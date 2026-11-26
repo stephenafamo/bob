@@ -3,6 +3,7 @@ package clause
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 )
@@ -14,11 +15,36 @@ type GroupBy struct {
 }
 
 func (g *GroupBy) SetGroups(groups ...any) {
-	g.Groups = groups
+	g.Groups = copyGroups(groups)
 }
 
 func (g *GroupBy) AppendGroup(e any) {
-	g.Groups = append(g.Groups, e)
+	g.Groups = append(g.Groups, copyGroup(e))
+}
+
+// Grouping sets can contain other grouping sets. Copy their lists, but
+// keep the column expressions in those lists as read-only inputs.
+func copyGroups(groups []any) []any {
+	groups = slices.Clone(groups)
+	for i, g := range groups {
+		groups[i] = copyGroup(g)
+	}
+	return groups
+}
+
+func copyGroup(e any) any {
+	switch g := e.(type) {
+	case Grouping:
+		return g.copy()
+	case GroupingSet:
+		return g.copy()
+	case *Grouping:
+		return copyPtr(g, Grouping.copy)
+	case *GroupingSet:
+		return copyPtr(g, GroupingSet.copy)
+	default:
+		return e
+	}
 }
 
 func (g *GroupBy) SetGroupWith(with string) {
@@ -60,6 +86,11 @@ type GroupingSet struct {
 	Type   string // GROUPING SETS | CUBE | ROLLUP
 }
 
+func (g GroupingSet) copy() GroupingSet {
+	g.Groups = copyGroups(g.Groups)
+	return g
+}
+
 func (g GroupingSet) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	w.WriteString(g.Type)
 	args, err := bob.ExpressSlice(ctx, w, d, start, g.Groups, " (", ", ", ")")
@@ -72,6 +103,11 @@ func (g GroupingSet) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 type Grouping struct {
 	Groups []any
+}
+
+func (g Grouping) copy() Grouping {
+	g.Groups = copyGroups(g.Groups)
+	return g
 }
 
 func (g Grouping) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

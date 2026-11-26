@@ -106,6 +106,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 
 	stmt := parseResult.Stmts[0]
 	info := w.walk(stmt.Stmt)
+	var mergeWhens int
 	switch node := stmt.Stmt.Node.(type) {
 	case *pg.Node_SelectStmt:
 		if len(node.SelectStmt.ValuesLists) > 0 {
@@ -129,7 +130,7 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 
 	case *pg.Node_MergeStmt:
 		info = info.children["MergeStmt"]
-		w.modMergeStatement(node, info)
+		mergeWhens = w.modMergeStatement(node, info)
 	}
 
 	source := w.getSource(stmt.Stmt, info)
@@ -141,6 +142,10 @@ func (p *Parser) ParseQuery(ctx context.Context, input string) (drivers.Query, e
 	formatted, err := w.formattedQuery()
 	if err != nil {
 		return drivers.Query{}, fmt.Errorf("format: %w", err)
+	}
+	// All fragment offsets are now known. Install the completed WHEN clauses.
+	for i := range mergeWhens {
+		fmt.Fprintf(w.mods, "q.AppendWhen(when%d)\n", i)
 	}
 
 	argTypes, resTypes, err := p.getArgsAndCols(ctx, formatted)
@@ -204,7 +209,10 @@ func wrapParseErrorWithReturningWithHint(stage, sql string, err error) error {
 		return wrapped
 	}
 
-	return fmt.Errorf("%w: RETURNING WITH (OLD|NEW AS ...) is not yet supported by the current sql parser dependency (github.com/wasilibs/go-pgquery)", wrapped)
+	return fmt.Errorf(
+		"%w: RETURNING WITH (OLD|NEW AS ...) is not yet supported by the current sql parser dependency (github.com/wasilibs/go-pgquery)",
+		wrapped,
+	)
 }
 
 func isReturningWithParseError(sql string, err error) bool {

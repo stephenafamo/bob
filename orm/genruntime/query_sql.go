@@ -109,24 +109,36 @@ func SQLGroups(n int, group func(int) bob.Expression) bob.Expression {
 }
 
 // NewModExecQuery connects the original SQL expression and its dialect builder.
-func NewModExecQuery[Q, E bob.Expression](e E, d bob.Dialect, typ bob.QueryType,
-	build func(...bob.Mod[Q]) bob.BaseQuery[Q], mod bob.ModFunc[Q],
+func NewModExecQuery[Q any, E bob.Expression](e E, d bob.Dialect, typ bob.QueryType,
+	newSource func(...bob.Mod[Q]) bob.QuerySource[Q], mod bob.ModFunc[Q],
 ) *orm.ModExecQuery[Q, E] {
 	return &orm.ModExecQuery[Q, E]{
-		ExecQuery: orm.ExecQuery[E]{BaseQuery: bob.BaseQuery[E]{Expression: e, Dialect: d, QueryType: typ}},
-		Build:     build,
-		Mod:       mod,
+		ExecQuery: orm.ExecQuery[Q]{QueryBuilder: bob.NewQueryBuilder(sqlQuerySource[Q]{e, mod, newSource}, d, typ)},
+		NewBuilder: func(mods ...bob.Mod[Q]) bob.QueryBuilder[Q] {
+			return bob.NewQueryBuilder(newSource(mods...), d, typ)
+		},
+		Mod: mod,
 	}
 }
 
 // NewModQuery also attaches the mapper used by One, All, Cursor and Each.
-func NewModQuery[Tr bob.Transformer[T, Ts], T, Ts any, Q, E bob.Expression](e E, d bob.Dialect, typ bob.QueryType,
-	build func(...bob.Mod[Q]) bob.BaseQuery[Q], mod bob.ModFunc[Q], mapper scan.Mapper[T],
+func NewModQuery[Tr bob.Transformer[T, Ts], T, Ts, Q any, E bob.Expression](e E, d bob.Dialect, typ bob.QueryType,
+	newSource func(...bob.Mod[Q]) bob.QuerySource[Q], mod bob.ModFunc[Q], mapper scan.Mapper[T],
 ) *orm.ModQuery[Q, E, T, Ts, Tr] {
-	q := NewModExecQuery(e, d, typ, build, mod)
+	q := NewModExecQuery(e, d, typ, newSource, mod)
 	return &orm.ModQuery[Q, E, T, Ts, Tr]{
-		Query: orm.Query[E, T, Ts, Tr]{ExecQuery: q.ExecQuery, Scanner: mapper},
-		Build: build,
-		Mod:   mod,
+		Query:      orm.Query[Q, T, Ts, Tr]{ExecQuery: q.ExecQuery, Scanner: mapper},
+		NewBuilder: q.NewBuilder,
+		Mod:        mod,
 	}
+}
+
+type sqlQuerySource[Q any] struct {
+	bob.Expression
+	mod       bob.Mod[Q]
+	newSource func(...bob.Mod[Q]) bob.QuerySource[Q]
+}
+
+func (s sqlQuerySource[Q]) WithMods(mods []bob.Mod[Q]) bob.QuerySource[Q] {
+	return s.newSource(append([]bob.Mod[Q]{s.mod}, mods...)...)
 }

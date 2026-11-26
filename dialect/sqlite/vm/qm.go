@@ -6,6 +6,6 @@ import (
 	"github.com/stephenafamo/bob/mods"
 )
 
-func RowValue(clauses ...bob.Expression) bob.Mod[*dialect.ValuesQuery] {
-	return mods.Values[*dialect.ValuesQuery](clauses)
+func RowValue(clauses ...bob.Expression) bob.Mod[dialect.ValuesEditor] {
+	return mods.Values[dialect.ValuesEditor](clauses)
 }

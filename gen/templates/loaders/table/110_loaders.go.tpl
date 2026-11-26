@@ -54,7 +54,7 @@ func build{{$tAlias.UpSingular}}Preloader() {{$tAlias.DownSingular}}Preloader {
 type {{$tAlias.DownSingular}}ThenLoader[Q orm.Loadable] struct {
   {{range $rel := $.Relationships.Get $table.Key -}}
   {{- $relAlias := $tAlias.Relationship $rel.Name -}}
-  {{$relAlias}} func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q]
+  {{$relAlias}} func(...bob.Mod[dialect.SelectEditor]) orm.Loader[Q]
   {{end -}}
 }
 
@@ -62,7 +62,7 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
   {{range $rel := $.Relationships.Get $table.Key -}}
     {{$relAlias := $tAlias.Relationship $rel.Name -}}
     type {{$relAlias}}LoadInterface interface{
-      Load{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[*dialect.SelectQuery]) error
+      Load{{$relAlias}}(context.Context, bob.Executor, ...bob.Mod[dialect.SelectEditor]) error
     }
   {{end}}
 
@@ -72,7 +72,7 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
     {{$fAlias := $.Aliases.Table $rel.Foreign -}}
     {{$relAlias}}: thenLoadBuilder[Q](
       "{{$relAlias}}",
-      func(ctx context.Context, exec bob.Executor, retrieved {{$relAlias}}LoadInterface, mods ...bob.Mod[*dialect.SelectQuery]) error {
+      func(ctx context.Context, exec bob.Executor, retrieved {{$relAlias}}LoadInterface, mods ...bob.Mod[dialect.SelectEditor]) error {
         return retrieved.Load{{$relAlias}}(ctx, exec, mods...)
       },
     ),
@@ -87,7 +87,7 @@ func build{{$tAlias.UpSingular}}ThenLoader[Q orm.Loadable]() {{$tAlias.DownSingu
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 
 // Load{{$relAlias}} loads the {{$tAlias.DownSingular}}'s {{$relAlias}} into the .R struct
-func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[dialect.SelectEditor]) error {
   if o == nil {
 	  return nil
 	}
@@ -110,17 +110,16 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 
 {{$side := index $rel.Sides 0 -}}
 // Load{{$relAlias}} loads the relationship for the whole slice with a single query.
-func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[dialect.SelectEditor]) error {
 	if len(os) == 0 { return nil }
 	parents := os{{if $side.FromWhere}}.matching{{$relAlias}}Sources(){{end}}
 	{{if $side.FromColumns -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
 	parents, keys, owners := parents.parentsFor{{$relAlias}}()
 	q := {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys, mods...)
-	q.Expression.AppendPreloadSelect(owners.As("related_.parents"))
+	q = q.WithMods(bob.ModFunc[dialect.SelectEditor](func(s dialect.SelectEditor) { s.AppendPreloadSelect(owners.As("related_.parents")) }))
 	indexes := make(genruntime.ParentIndexes[{{$fAlias.UpSingular}}])
-	q.Scanner = indexes.Mapper(q.Scanner, "related_.parents")
-	children, err := q.All(ctx, exec)
+	children, err := q.WithScanner(indexes.Mapper(q.Scanner, "related_.parents")).All(ctx, exec)
 	{{else -}}
 	children, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	{{end -}}

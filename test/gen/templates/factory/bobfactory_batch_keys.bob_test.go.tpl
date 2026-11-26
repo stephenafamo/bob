@@ -4,6 +4,7 @@
 {{$.Importer.Import "testing"}}
 {{$.Importer.Import "github.com/stephenafamo/bob"}}
 {{$.Importer.Import "github.com/stephenafamo/scan"}}
+{{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/sm" $.Dialect)}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 {{$.Importer.Import "models" (index $.OutputPackages "models")}}
@@ -90,15 +91,15 @@ func TestBatchKeyOwnership(t *testing.T) {
 		type countCalls struct{}
 		var calls int
 		countCtx := context.WithValue(ctx, countCalls{}, &calls)
-		models.BatchChildren.SelectQueryHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, q *dialect.SelectQuery) (context.Context, error) {
+		models.BatchChildren.SelectQueryHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, q {{$.Dialect}}.SelectEditor) (context.Context, error) {
 			if n, ok := ctx.Value(countCalls{}).(*int); ok {
 				(*n)++
-				q.AppendWhere("id > 1")
-				sm.OrderBy(models.BatchChildren.Columns.ID).Apply(q)
+				sm.Where({{$.Dialect}}.Raw("id > 1")).Edit(q)
+				sm.OrderBy(models.BatchChildren.Columns.ID).Edit(q)
 			}
 			return ctx, nil
 		})
-		mods := []bob.Mod[*dialect.SelectQuery]{sm.Limit(1), sm.Offset(3),
+		mods := []bob.Mod[dialect.SelectEditor]{sm.Limit(1), sm.Offset(3),
 			sm.Columns(models.BatchChildren.Columns.ID), sm.GroupBy(models.BatchChildren.Columns.ID)}
 		before := db.n
 		if err := parents.LoadCountChildren(countCtx, db, mods...); err != nil { t.Fatal(err) }
@@ -113,8 +114,8 @@ func TestBatchKeyOwnership(t *testing.T) {
 	})
 	// A table select hook must filter counts just as it filters single loads.
 	type hideChildren struct{}
-	models.BatchChildren.SelectQueryHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, q *dialect.SelectQuery) (context.Context, error) {
-		if ctx.Value(hideChildren{}) == true { q.AppendWhere("1 = 0") }
+	models.BatchChildren.SelectQueryHooks.AppendHooks(func(ctx context.Context, _ bob.Executor, q {{$.Dialect}}.SelectEditor) (context.Context, error) {
+		if ctx.Value(hideChildren{}) == true { sm.Where({{$.Dialect}}.Raw("1 = 0")).Edit(q) }
 		return ctx, nil
 	})
 	hidden := context.WithValue(ctx, hideChildren{}, true)

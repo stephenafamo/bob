@@ -1,6 +1,8 @@
 package dialect
 
 import (
+	"slices"
+
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
 	"github.com/stephenafamo/bob/expr"
@@ -34,7 +36,7 @@ func From[Q fromable](table any) FromChain[Q] {
 
 type FromChain[Q fromable] func() clause.TableRef
 
-func (f FromChain[Q]) Apply(q Q) {
+func (f FromChain[Q]) Edit(q Q) {
 	from := f()
 
 	q.SetTable(from.Expression)
@@ -70,7 +72,7 @@ func (f FromChain[Q]) Lateral() FromChain[Q] {
 
 func (f FromChain[Q]) Partition(partitions ...string) FromChain[Q] {
 	fr := f()
-	fr.Partitions = append(fr.Partitions, partitions...)
+	fr.Partitions = append(slices.Clip(fr.Partitions), partitions...)
 
 	return FromChain[Q](func() clause.TableRef {
 		return fr
@@ -79,7 +81,7 @@ func (f FromChain[Q]) Partition(partitions ...string) FromChain[Q] {
 
 func (f FromChain[Q]) index(Type, For, first string, others ...string) FromChain[Q] {
 	fr := f()
-	fr.IndexHints = append(fr.IndexHints, clause.IndexHint{
+	fr.IndexHints = append(slices.Clip(fr.IndexHints), clause.IndexHint{
 		Type:    Type,
 		Indexes: append([]string{first}, others...),
 		For:     For,
@@ -148,23 +150,23 @@ type IndexHintChain[Q interface{ AppendIndexHint(clause.IndexHint) }] struct {
 	hint clause.IndexHint
 }
 
-func (i *IndexHintChain[Q]) Apply(q Q) {
+func (i *IndexHintChain[Q]) Edit(q Q) {
 	q.AppendIndexHint(i.hint)
 }
 
-func (i *IndexHintChain[Q]) ForJoin() *IndexHintChain[Q] {
+func (i IndexHintChain[Q]) ForJoin() *IndexHintChain[Q] {
 	i.hint.For = "JOIN"
-	return i
+	return &i
 }
 
-func (i *IndexHintChain[Q]) ForOrderBy() *IndexHintChain[Q] {
+func (i IndexHintChain[Q]) ForOrderBy() *IndexHintChain[Q] {
 	i.hint.For = "ORDER BY"
-	return i
+	return &i
 }
 
-func (i *IndexHintChain[Q]) ForGroupBy() *IndexHintChain[Q] {
+func (i IndexHintChain[Q]) ForGroupBy() *IndexHintChain[Q] {
 	i.hint.For = "GROUP BY"
-	return i
+	return &i
 }
 
 type Joinable interface{ AppendJoin(clause.Join) }
@@ -200,7 +202,7 @@ func StraightJoin[Q Joinable](e any) JoinChain[Q] {
 
 type JoinChain[Q Joinable] func() clause.Join
 
-func (j JoinChain[Q]) Apply(q Q) {
+func (j JoinChain[Q]) Edit(q Q) {
 	q.AppendJoin(j())
 }
 
@@ -225,7 +227,7 @@ func (f JoinChain[Q]) Lateral() JoinChain[Q] {
 
 func (f JoinChain[Q]) Partition(partitions ...string) JoinChain[Q] {
 	jo := f()
-	jo.To.Partitions = append(jo.To.Partitions, partitions...)
+	jo.To.Partitions = append(slices.Clip(jo.To.Partitions), partitions...)
 
 	return JoinChain[Q](func() clause.Join {
 		return jo
@@ -241,14 +243,14 @@ func (j JoinChain[Q]) Natural() bob.Mod[Q] {
 
 func (j JoinChain[Q]) On(on ...bob.Expression) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, on...)
+	jo.On = append(slices.Clip(jo.On), on...)
 
 	return mods.Join[Q](jo)
 }
 
 func (j JoinChain[Q]) OnEQ(a, b bob.Expression) bob.Mod[Q] {
 	jo := j()
-	jo.On = append(jo.On, expr.X[Expression, Expression](a).EQ(b))
+	jo.On = append(slices.Clip(jo.On), expr.X[Expression, Expression](a).EQ(b))
 
 	return mods.Join[Q](jo)
 }
@@ -260,10 +262,10 @@ func (j JoinChain[Q]) Using(using ...string) bob.Mod[Q] {
 	return mods.Join[Q](jo)
 }
 
-type OrderCombined OrderBy[*SelectQuery]
+type OrderCombined OrderBy[SelectEditor]
 
-func (o OrderCombined) Apply(q *SelectQuery) {
-	q.CombinedOrder.AppendOrder(o())
+func (o OrderCombined) Edit(q SelectEditor) {
+	q.AppendCombinedOrder(o())
 }
 
 func (o OrderCombined) Asc() OrderCombined {
@@ -295,7 +297,7 @@ func (o OrderCombined) Collate(collationName string) OrderCombined {
 
 type OrderBy[Q interface{ AppendOrder(bob.Expression) }] func() clause.OrderDef
 
-func (s OrderBy[Q]) Apply(q Q) {
+func (s OrderBy[Q]) Edit(q Q) {
 	q.AppendOrder(s())
 }
 
@@ -328,7 +330,7 @@ func (o OrderBy[Q]) Collate(collationName string) OrderBy[Q] {
 
 type CTEChain[Q interface{ AppendCTE(bob.Expression) }] func() clause.CTE
 
-func (c CTEChain[Q]) Apply(q Q) {
+func (c CTEChain[Q]) Edit(q Q) {
 	q.AppendCTE(c())
 }
 
@@ -342,7 +344,7 @@ func (c CTEChain[Q]) As(q bob.Query) CTEChain[Q] {
 
 type LockChain[Q interface{ AppendLock(bob.Expression) }] func() clause.Lock
 
-func (l LockChain[Q]) Apply(q Q) {
+func (l LockChain[Q]) Edit(q Q) {
 	q.AppendLock(l())
 }
 

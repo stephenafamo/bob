@@ -57,7 +57,7 @@ type {{$tAlias.DownSingular}}WhereR[Q {{$.Dialect}}.Filterable] struct {
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/dialect" $.Dialect)}}
 {{$relAlias := $tAlias.Relationship $rel.Name -}}
 // Has{{$relAlias}} filters by a correlated EXISTS without multiplying the parent rows.
-func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[*dialect.SelectQuery]) mods.Where[Q] {
+func (w {{$tAlias.DownSingular}}WhereR[Q]) Has{{$relAlias}}(filters ...bob.Mod[dialect.SelectEditor]) mods.Where[Q] {
     q := correlatedQuery({{$tAlias.DownSingular}}Rel{{$relAlias}}, w.cols.Alias(), {{$.Dialect}}.Raw("1"), filters)
     return mods.Where[Q]{E: {{$.Dialect}}.Exists(q)}
 }

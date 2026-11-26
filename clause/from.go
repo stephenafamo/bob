@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/internal"
@@ -60,7 +61,7 @@ func (f *TableRef) SetTable(table any) {
 
 func (f *TableRef) SetTableAlias(alias string, columns ...string) {
 	f.Alias = alias
-	f.Columns = columns
+	f.Columns = slices.Clone(columns)
 }
 
 func (f *TableRef) SetOnly(only bool) {
@@ -69,7 +70,7 @@ func (f *TableRef) SetOnly(only bool) {
 
 func (f *TableRef) SetTableSample(method string, args ...any) {
 	f.TableSample = method
-	f.TableSampleArgs = args
+	f.TableSampleArgs = slices.Clone(args)
 }
 
 func (f *TableRef) SetTableSampleRepeatable(seed any) {
@@ -85,11 +86,16 @@ func (f *TableRef) SetWithOrdinality(to bool) {
 }
 
 func (f *TableRef) SetIndexedBy(i *string) {
-	f.IndexedBy = i
+	if i == nil {
+		f.IndexedBy = nil
+		return
+	}
+	name := *i
+	f.IndexedBy = &name
 }
 
 func (f *TableRef) AppendJoin(j Join) {
-	f.Joins = append(f.Joins, j)
+	f.Joins = append(f.Joins, j.copy())
 }
 
 func (f *TableRef) AppendPartition(partitions ...string) {
@@ -97,12 +103,31 @@ func (f *TableRef) AppendPartition(partitions ...string) {
 }
 
 func (f *TableRef) AppendIndexHint(i IndexHint) {
+	i.Indexes = slices.Clone(i.Indexes)
 	f.IndexHints = append(f.IndexHints, i)
+}
+
+// Copy gives a query its own table and join clause storage.
+// Nested expressions remain read-only inputs.
+func (f TableRef) Copy() TableRef {
+	f.Columns = slices.Clone(f.Columns)
+	f.TableSampleArgs = slices.Clone(f.TableSampleArgs)
+	f.Partitions = slices.Clone(f.Partitions)
+	f.IndexHints = slices.Clone(f.IndexHints)
+	for i := range f.IndexHints {
+		f.IndexHints[i].Indexes = slices.Clone(f.IndexHints[i].Indexes)
+	}
+	f.SetIndexedBy(f.IndexedBy)
+	f.Joins = slices.Clone(f.Joins)
+	for i := range f.Joins {
+		f.Joins[i] = f.Joins[i].copy()
+	}
+	return f
 }
 
 func (f TableRef) As(alias string, columns ...string) TableRef {
 	f.Alias = alias
-	f.Columns = append(f.Columns, columns...)
+	f.Columns = append(slices.Clip(f.Columns), columns...)
 
 	return f
 }

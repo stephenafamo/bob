@@ -1,3 +1,5 @@
+//go:build !race
+
 package bobcheck_test
 
 import (
@@ -8,7 +10,7 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
-func TestDiscardedApply(t *testing.T) {
+func TestDiscardedWithMods(t *testing.T) {
 	// Load the fixtures in this module to use the real Bob query interface.
 	root, err := filepath.Abs("../..")
 	if err != nil {

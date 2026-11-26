@@ -11,7 +11,7 @@
 {{- $relAlias := $tAlias.Relationship $rel.Name -}}
 {{- $path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
 // {{$relAlias}} starts a query for related objects on {{$rel.Foreign}}
-func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (o *{{$tAlias.UpSingular}}) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[dialect.SelectEditor]) {{$fAlias.UpPlural}}Query {
 	return {{$fAlias.UpPlural}}.Query(append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}
 		{{/* Index counts down */}}
@@ -67,7 +67,7 @@ func (os {{$tAlias.UpSingular}}Slice) matching{{$relAlias}}Sources() {{$tAlias.U
 
 {{if $firstSide.FromColumns -}}
 // keysFor{{$relAlias}} filters the first join table by this batch of source keys.
-func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.SelectQuery] {
+func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[dialect.SelectEditor] {
 	{{if and (eq $.Dialect "psql") (not $arrayKey) -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/dialect/psql/psqlrel"}}
 	return psqlrel.FilterRelationshipKeys({{$path}}[0].Table,
@@ -92,7 +92,7 @@ func (os {{$tAlias.UpSingular}}Slice) keysFor{{$relAlias}}() bob.Mod[*dialect.Se
 
 {{if $firstSide.FromColumns -}}
 {{$.Importer.Import (printf "github.com/stephenafamo/bob/dialect/%s/%srel" $.Dialect $.Dialect)}}
-func (os {{$tAlias.UpSingular}}Slice) parentsFor{{$relAlias}}() ({{$tAlias.UpSingular}}Slice, bob.Mod[*dialect.SelectQuery], {{$.Dialect}}.Expression) {
+func (os {{$tAlias.UpSingular}}Slice) parentsFor{{$relAlias}}() ({{$tAlias.UpSingular}}Slice, bob.Mod[dialect.SelectEditor], {{$.Dialect}}.Expression) {
 	{{if eq $.Dialect "psql" -}}
 	return psqlrel.MatchParents{{if $arrayKey}}WithArrayKey{{end}}(os, {{$path}}[0].Table, []psqlrel.BatchKey{
 		{{range $i, $name := $firstSide.FromColumns -}}
@@ -112,7 +112,7 @@ func (os {{$tAlias.UpSingular}}Slice) parentsFor{{$relAlias}}() ({{$tAlias.UpSin
 }
 {{end -}}
 
-func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(mods ...bob.Mod[dialect.SelectEditor]) {{$fAlias.UpPlural}}Query {
   {{if $firstSide.FromWhere -}}
     os = os.matching{{$relAlias}}Sources()
     if len(os) == 0 {
@@ -124,7 +124,7 @@ func (os {{$tAlias.UpSingular}}Slice) {{relQueryMethodName $tAlias $relAlias}}(m
 	return {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(os.keysFor{{$relAlias}}(), mods...)
 }
 
-func {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys bob.Mod[*dialect.SelectQuery], mods ...bob.Mod[*dialect.SelectQuery]) {{$fAlias.UpPlural}}Query {
+func {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys bob.Mod[dialect.SelectEditor], mods ...bob.Mod[dialect.SelectEditor]) {{$fAlias.UpPlural}}Query {
 	{{end -}}
 	return {{$fAlias.UpPlural}}.Query(append(mods,
 		{{- range $index := until (len $rel.Sides) | reverse -}}

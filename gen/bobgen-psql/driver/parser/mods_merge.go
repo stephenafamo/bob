@@ -8,7 +8,7 @@ import (
 	"github.com/stephenafamo/bob/internal"
 )
 
-func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
+func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) int {
 	if withInfo, ok := info.children["WithClause"]; ok {
 		w.modWithClause(stmt.MergeStmt.WithClause, withInfo)
 	}
@@ -21,9 +21,9 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 				int(tableInfo.end)-1,
 				func(start, end int) error {
 					if !stmt.MergeStmt.GetRelation().GetInh() {
-						fmt.Fprintln(w.mods, "q.Only = true")
+						fmt.Fprintln(w.mods, "q.SetOnly(true)")
 					}
-					fmt.Fprintf(w.mods, "q.Table.Expression = EXPR.subExpr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetTargetName(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -39,10 +39,10 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 				func(start, end int) error {
 					if src := stmt.MergeStmt.GetSourceRelation(); src != nil {
 						if rangeVar, ok := src.Node.(*pg.Node_RangeVar); ok && rangeVar.RangeVar != nil && !rangeVar.RangeVar.GetInh() {
-							fmt.Fprintln(w.mods, "q.Using.Only = true")
+							fmt.Fprintln(w.mods, "q.SetUsingOnly(true)")
 						}
 					}
-					fmt.Fprintf(w.mods, "q.Using.Source = EXPR.subExpr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetUsingSource(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -56,7 +56,7 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 				int(onInfo.start),
 				int(onInfo.end)-1,
 				func(start, end int) error {
-					fmt.Fprintf(w.mods, "q.Using.Condition = EXPR.subExpr(%d, %d)\n", start, end)
+					fmt.Fprintf(w.mods, "q.SetUsingCondition(EXPR.subExpr(%d, %d))\n", start, end)
 					return nil
 				},
 			)...,
@@ -85,7 +85,8 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 
 		fmt.Fprintf(
 			w.mods,
-			"q.When = append(q.When, dialect.MergeWhen{Type: %s, Action: dialect.MergeAction{Type: %s}})\n",
+			"when%d := dialect.MergeWhen{Type: %s, Action: dialect.MergeAction{Type: %s}}\n",
+			whenCount,
 			whenType,
 			actionType,
 		)
@@ -93,12 +94,12 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 		whenCount++
 
 		if overriding, ok := mergeOverridingToDialect(when.Override); ok {
-			fmt.Fprintf(w.mods, "q.When[%d].Action.Overriding = %s\n", currentWhenIndex, overriding)
+			fmt.Fprintf(w.mods, "when%d.Action.Overriding = %s\n", currentWhenIndex, overriding)
 		}
 
 		if when.CommandType == pg.CmdType_CMD_INSERT {
 			if cols := mergeInsertColumns(when); len(cols) > 0 {
-				fmt.Fprintf(w.mods, "q.When[%d].Action.Columns = %#v\n", currentWhenIndex, cols)
+				fmt.Fprintf(w.mods, "when%d.Action.Columns = %#v\n", currentWhenIndex, cols)
 			}
 		}
 
@@ -115,7 +116,7 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 						int(conditionInfo.start),
 						int(conditionInfo.end)-1,
 						func(start, end int) error {
-							fmt.Fprintf(w.mods, "q.When[%d].Condition = EXPR.subExpr(%d, %d)\n", currentWhenIndex, start, end)
+							fmt.Fprintf(w.mods, "when%d.Condition = EXPR.subExpr(%d, %d)\n", currentWhenIndex, start, end)
 							return nil
 						},
 					)...,
@@ -131,7 +132,13 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 							int(valuesInfo.start),
 							int(valuesInfo.end)-1,
 							func(start, end int) error {
-								fmt.Fprintf(w.mods, "q.When[%d].Action.Values = append(q.When[%d].Action.Values, EXPR.subExpr(%d, %d))\n", currentWhenIndex, currentWhenIndex, start, end)
+								fmt.Fprintf(
+									w.mods,
+									"when%[1]d.Action.Values = append(when%[1]d.Action.Values, EXPR.subExpr(%[2]d, %[3]d))\n",
+									currentWhenIndex,
+									start,
+									end,
+								)
 								return nil
 							},
 						)...,
@@ -146,7 +153,13 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 							int(setInfo.start),
 							int(setInfo.end)-1,
 							func(start, end int) error {
-								fmt.Fprintf(w.mods, "q.When[%d].Action.Set = append(q.When[%d].Action.Set, EXPR.subExpr(%d, %d))\n", currentWhenIndex, currentWhenIndex, start, end)
+								fmt.Fprintf(
+									w.mods,
+									"when%[1]d.Action.Set = append(when%[1]d.Action.Set, EXPR.subExpr(%[2]d, %[3]d))\n",
+									currentWhenIndex,
+									start,
+									end,
+								)
 								return nil
 							},
 						)...,
@@ -169,6 +182,7 @@ func (w *walker) modMergeStatement(stmt *pg.Node_MergeStmt, info nodeInfo) {
 			)...,
 		)
 	}
+	return whenCount
 }
 
 func mergeMatchKindToDialectWhenType(kind pg.MergeMatchKind) (string, bool) {

@@ -10,6 +10,7 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/dialect"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
+	"github.com/stephenafamo/bob/dialect/psql/vm"
 	"github.com/stephenafamo/bob/expr"
 	"github.com/stephenafamo/bob/internal/relbatch"
 	"github.com/stephenafamo/bob/types/pgtypes"
@@ -28,7 +29,7 @@ func MatchParents[P any](
 	target clause.TableRef,
 	keys []BatchKey,
 	aliases ...string,
-) ([]*P, bob.Mod[*dialect.SelectQuery], psql.Expression) {
+) ([]*P, bob.Mod[dialect.SelectEditor], psql.Expression) {
 	return matchParents(parents, target, keys, unnestInput, aliases)
 }
 
@@ -36,14 +37,14 @@ func MatchParents[P any](
 // one cell, even when the input arrays have different lengths.
 func MatchParentsWithArrayKey[P any](
 	parents []*P, target clause.TableRef, keys []BatchKey, aliases ...string,
-) ([]*P, bob.Mod[*dialect.SelectQuery], psql.Expression) {
+) ([]*P, bob.Mod[dialect.SelectEditor], psql.Expression) {
 	return matchParents(parents, target, keys, valuesInput, aliases)
 }
 
 func matchParents[P any](
 	parents []*P, target clause.TableRef, keys []BatchKey,
 	inputFor func(clause.TableRef, []BatchKey, int) clause.TableRef, aliases []string,
-) ([]*P, bob.Mod[*dialect.SelectQuery], psql.Expression) {
+) ([]*P, bob.Mod[dialect.SelectEditor], psql.Expression) {
 	// KeyValues skips nils. Keep the same order without modifying the
 	// caller's slice, and reuse it when there are no nils.
 	if gap := slices.Index(parents, nil); gap >= 0 {
@@ -64,12 +65,12 @@ func matchParents[P any](
 		columns[i] = k.Column
 	}
 	input := inputFor(target, keys, len(parents))
-	groups := psql.Select(sm.From(input.As("p", append(names, "pos")...)))
-	relbatch.Group(groups.Expression, "p", names, psql.Raw("json_agg(p.pos - 1 ORDER BY p.pos)::text"))
+	groups := psql.Select(sm.From(input.As("p", append(names, "pos")...)),
+		relbatch.Group[dialect.SelectEditor]("p", names, psql.Raw("json_agg(p.pos - 1 ORDER BY p.pos)::text")))
 	// An outer FOR UPDATE locks the physical relationship rows. PostgreSQL
 	// does not propagate it into a CTE (grouped subqueries cannot be locked).
 	ownersTable := psql.Select(sm.With("owners").As(groups), sm.From("owners"))
-	join, owners := relbatch.Join[*dialect.SelectQuery](target, columns, names, aliases, ownersTable)
+	join, owners := relbatch.Join[dialect.SelectEditor](target, columns, names, aliases, ownersTable)
 	return parents, join, psql.Expression{}.New(owners)
 }
 
@@ -96,15 +97,15 @@ func keyArray(target clause.TableRef, k BatchKey) psql.Expression {
 }
 
 func valuesInput(target clause.TableRef, keys []BatchKey, size int) clause.TableRef {
-	input := psql.Values()
+	input := make([]psql.ValuesMod, 0, size)
 	for i := range size {
 		row := make([]bob.Expression, len(keys), len(keys)+1)
 		for j, k := range keys {
 			row[j] = psql.Raw("COALESCE(?, ?)", psql.Arg(k.Values.Index(i)), emptyColumn(target, k.Column))
 		}
-		input.Expression.AppendValues(append(row, expr.Raw(strconv.Itoa(i+1)))...)
+		input = append(input, vm.RowValue(append(row, expr.Raw(strconv.Itoa(i+1)))...))
 	}
-	return clause.TableRef{Expression: input}
+	return clause.TableRef{Expression: psql.Values(input...)}
 }
 
 // KeyValues collects one key component from each non-nil parent.
@@ -137,7 +138,7 @@ func UniqueKeyValues[P any, K comparable](rows []*P, key func(*P) K) pgtypes.Arr
 
 // FilterRelationshipKeys tests membership of scalar keys without multiplying
 // rows. Use the target columns' types and collations, as in MatchParents.
-func FilterRelationshipKeys(target clause.TableRef, keys ...BatchKey) bob.Mod[*dialect.SelectQuery] {
+func FilterRelationshipKeys(target clause.TableRef, keys ...BatchKey) bob.Mod[dialect.SelectEditor] {
 	if len(keys) == 1 {
 		k := keys[0]
 		return sm.Where(psql.Quote(target.Alias, k.Column).EQ(psql.Any(keyArray(target, k))))

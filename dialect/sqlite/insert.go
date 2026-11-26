@@ -5,15 +5,12 @@ import (
 	"github.com/stephenafamo/bob/dialect/sqlite/dialect"
 )
 
-func Insert(queryMods ...bob.Mod[*dialect.InsertQuery]) bob.BaseQuery[*dialect.InsertQuery] {
-	q := &dialect.InsertQuery{}
-	for _, mod := range queryMods {
-		mod.Apply(q)
-	}
+type (
+	InsertEditor = dialect.InsertEditor
+	InsertQuery  = bob.QueryBuilder[InsertEditor]
+	InsertMod    = bob.Mod[InsertEditor]
+)
 
-	return bob.BaseQuery[*dialect.InsertQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeInsert,
-	}
+func Insert(mods ...InsertMod) InsertQuery {
+	return dialect.NewInsert(nil, mods...)
 }

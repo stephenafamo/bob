@@ -11,9 +11,9 @@ import (
 
 type QueryMods[T any] []bob.Mod[T]
 
-func (q QueryMods[T]) Apply(query T) {
+func (q QueryMods[T]) Edit(query T) {
 	for _, v := range q {
-		v.Apply(query)
+		v.Edit(query)
 	}
 }
 
@@ -27,39 +27,39 @@ func (m Moddable[T]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dial
 
 type With[Q interface{ AppendCTE(clause.CTE) }] clause.CTE
 
-func (f With[Q]) Apply(q Q) {
+func (f With[Q]) Edit(q Q) {
 	q.AppendCTE(clause.CTE(f))
 }
 
 type Recursive[Q interface{ SetRecursive(bool) }] bool
 
-func (r Recursive[Q]) Apply(q Q) {
+func (r Recursive[Q]) Edit(q Q) {
 	q.SetRecursive(bool(r))
 }
 
 type Select[Q interface{ AppendSelect(columns ...any) }] []any
 
-func (s Select[Q]) Apply(q Q) {
+func (s Select[Q]) Edit(q Q) {
 	q.AppendSelect(s...)
 }
 
 type Preload[Q interface{ AppendPreloadSelect(columns ...any) }] []any
 
-func (s Preload[Q]) Apply(q Q) {
+func (s Preload[Q]) Edit(q Q) {
 	q.AppendPreloadSelect(s...)
 }
 
 type Join[Q interface{ AppendJoin(clause.Join) }] clause.Join
 
-func (j Join[Q]) Apply(q Q) {
+func (j Join[Q]) Edit(q Q) {
 	q.AppendJoin(clause.Join(j))
 }
 
-type Where[Q interface{ AppendWhere(e ...any) }] struct {
+type Where[Q interface{ AppendWhere(e any) }] struct {
 	E bob.Expression
 }
 
-func (w Where[Q]) Apply(q Q) {
+func (w Where[Q]) Edit(q Q) {
 	q.AppendWhere(w.E)
 }
 
@@ -67,7 +67,7 @@ type WhereCurrentOf[Q interface{ SetCurrentOf(string) }] struct {
 	Cursor string
 }
 
-func (w WhereCurrentOf[Q]) Apply(q Q) {
+func (w WhereCurrentOf[Q]) Edit(q Q) {
 	q.SetCurrentOf(w.Cursor)
 }
 
@@ -75,43 +75,43 @@ type GroupBy[Q interface{ AppendGroup(any) }] struct {
 	E any
 }
 
-func (f GroupBy[Q]) Apply(q Q) {
+func (f GroupBy[Q]) Edit(q Q) {
 	q.AppendGroup(f.E)
 }
 
 type GroupWith[Q interface{ SetGroupWith(string) }] string
 
-func (f GroupWith[Q]) Apply(q Q) {
+func (f GroupWith[Q]) Edit(q Q) {
 	q.SetGroupWith(string(f))
 }
 
 type GroupByDistinct[Q interface{ SetGroupByDistinct(bool) }] bool
 
-func (f GroupByDistinct[Q]) Apply(q Q) {
+func (f GroupByDistinct[Q]) Edit(q Q) {
 	q.SetGroupByDistinct(bool(f))
 }
 
 type Having[Q interface{ AppendHaving(e ...any) }] []any
 
-func (d Having[Q]) Apply(q Q) {
+func (d Having[Q]) Edit(q Q) {
 	q.AppendHaving(d...)
 }
 
 type Window[Q interface{ SetWindow(clause.Window) }] clause.Window
 
-func (w Window[Q]) Apply(q Q) {
+func (w Window[Q]) Edit(q Q) {
 	q.SetWindow(clause.Window(w))
 }
 
 type NamedWindow[Q interface{ AppendWindow(bob.Expression) }] clause.NamedWindow
 
-func (w NamedWindow[Q]) Apply(q Q) {
+func (w NamedWindow[Q]) Edit(q Q) {
 	q.AppendWindow(clause.NamedWindow(w))
 }
 
 type OrderBy[Q interface{ AppendOrder(clause.OrderDef) }] clause.OrderDef
 
-func (f OrderBy[Q]) Apply(q Q) {
+func (f OrderBy[Q]) Edit(q Q) {
 	q.AppendOrder(clause.OrderDef(f))
 }
 
@@ -119,7 +119,7 @@ type Limit[Q interface{ SetLimit(limit any) }] struct {
 	Count any
 }
 
-func (f Limit[Q]) Apply(q Q) {
+func (f Limit[Q]) Edit(q Q) {
 	q.SetLimit(f.Count)
 }
 
@@ -127,45 +127,50 @@ type Offset[Q interface{ SetOffset(offset any) }] struct {
 	Count any
 }
 
-func (f Offset[Q]) Apply(q Q) {
+func (f Offset[Q]) Edit(q Q) {
 	q.SetOffset(f.Count)
 }
 
 type Fetch[Q interface{ SetFetch(clause.Fetch) }] clause.Fetch
 
-func (f Fetch[Q]) Apply(q Q) {
+func (f Fetch[Q]) Edit(q Q) {
 	q.SetFetch(clause.Fetch(f))
 }
 
 type Combine[Q interface{ AppendCombine(clause.Combine) }] clause.Combine
 
-func (f Combine[Q]) Apply(q Q) {
+func (f Combine[Q]) Edit(q Q) {
 	q.AppendCombine(clause.Combine(f))
 }
 
 type For[Q interface{ SetFor(clause.Lock) }] clause.Lock
 
-func (f For[Q]) Apply(q Q) {
+func (f For[Q]) Edit(q Q) {
 	q.SetFor(clause.Lock(f))
 }
 
 type Values[Q interface{ AppendValues(vals ...bob.Expression) }] []bob.Expression
 
-func (s Values[Q]) Apply(q Q) {
+func (s Values[Q]) Edit(q Q) {
 	q.AppendValues(s...)
 }
 
 type Rows[Q interface{ AppendValues(vals ...bob.Expression) }] [][]bob.Expression
 
-func (r Rows[Q]) Apply(q Q) {
+func (r Rows[Q]) Edit(q Q) {
 	for _, row := range r {
 		q.AppendValues(row...)
 	}
 }
 
+// BatchRows gives an INSERT its rows in one call.
+type BatchRows[Q interface{ AppendRows(...[]bob.Expression) }] [][]bob.Expression
+
+func (r BatchRows[Q]) Edit(q Q) { q.AppendRows(r...) }
+
 type Returning[Q interface{ AppendReturning(vals ...any) }] []any
 
-func (s Returning[Q]) Apply(q Q) {
+func (s Returning[Q]) Edit(q Q) {
 	q.AppendReturning(s...)
 }
 
@@ -189,7 +194,7 @@ type returningWithAliases[Q interface{ AppendReturning(vals ...any) }] struct {
 	newAlias string
 }
 
-func (s returningWithAliases[Q]) Apply(q Q) {
+func (s returningWithAliases[Q]) Edit(q Q) {
 	q.AppendReturning(s.clauses...)
 
 	if s.oldAlias != "" {
@@ -229,7 +234,7 @@ func (s Set[Q]) ToArg(to any) set[Q] {
 	return set[Q]{expr: expr.OP("=", s.Col, expr.Arg(to))}
 }
 
-// set is a single SET assignment usable as bob.Mod (Apply) or bob.Expression (WriteSQL).
+// set is a single SET assignment usable as bob.Mod (Edit) or bob.Expression (WriteSQL).
 type set[Q interface{ AppendSet(clauses ...any) }] struct {
 	expr bob.Expression
 }
@@ -238,12 +243,12 @@ func (s set[Q]) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, 
 	return bob.Express(ctx, w, d, start, s.expr)
 }
 
-func (s set[Q]) Apply(q Q) {
+func (s set[Q]) Edit(q Q) {
 	q.AppendSet(s.expr)
 }
 
 type Hook[Q interface{ AppendHooks(...bob.Hook[Q]) }] []bob.Hook[Q]
 
-func (h Hook[Q]) Apply(q Q) {
+func (h Hook[Q]) Edit(q Q) {
 	q.AppendHooks(h...)
 }

@@ -10,7 +10,7 @@ import (
 
 // Trying to represent the query structure as documented in
 // https://dev.mysql.com/doc/refman/8.4/en/delete.html
-type DeleteQuery struct {
+type deleteState struct {
 	hints
 
 	clause.With
@@ -27,25 +27,28 @@ type DeleteQuery struct {
 	clause.Limit
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*DeleteQuery]
+	bob.ContextualModdable[DeleteEditor]
 }
 
-func (d *DeleteQuery) AppendTable(expr bob.Expression) {
+func (d *deleteState) AppendTable(expr bob.Expression) {
 	d.Tables = append(d.Tables, clause.TableRef{
 		Expression: expr,
 	})
 }
 
-func (d *DeleteQuery) AppendPartition(partitions ...string) {
+func (d *deleteState) AppendPartition(partitions ...string) {
 	d.Partitions = append(d.Partitions, partitions...)
 }
 
-func (d DeleteQuery) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
+func (d deleteState) WriteSQL(ctx context.Context, w io.StringWriter, dl bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = d.RunContextualMods(ctx, &d); err != nil {
-		return nil, err
+	if len(d.Mods) != 0 {
+		ctx, err = d.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, dl, start+len(args), d.With,

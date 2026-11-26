@@ -47,7 +47,7 @@ type View[T any, Tslice ~[]T, C bob.Expression] struct {
 	Columns C
 
 	AfterSelectHooks bob.Hooks[Tslice, bob.SkipModelHooksKey]
-	SelectQueryHooks bob.Hooks[*dialect.SelectQuery, bob.SkipQueryHooksKey]
+	SelectQueryHooks bob.QueryHooks[SelectEditor]
 }
 
 // NameExpr returns the table name as an expression
@@ -80,36 +80,29 @@ func (v *View[T, Tslice, C]) ColumnsExpr() expr.ColumnsExpr {
 }
 
 // Query starts a select query on the view
-func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[*dialect.SelectQuery]) *ViewQuery[T, Tslice] {
-	q := &ViewQuery[T, Tslice]{
-		Query: orm.Query[*dialect.SelectQuery, T, Tslice, bob.SliceTransformer[T, Tslice]]{
-			ExecQuery: orm.ExecQuery[*dialect.SelectQuery]{
-				BaseQuery: Select(sm.From(v.NameAsExpr())),
-				Hooks:     &v.SelectQueryHooks,
-			},
-			Scanner: v.scanner,
-		},
-	}
-
-	q.BaseQuery.Expression.AppendContextualModFunc(
-		func(ctx context.Context, q *dialect.SelectQuery) (context.Context, error) {
-			if len(q.SelectList.Columns) == 0 {
+func (v *View[T, Tslice, C]) Query(queryMods ...bob.Mod[dialect.SelectEditor]) *ViewQuery[T, Tslice] {
+	q := dialect.NewSelect(v.SelectQueryHooks.GetHooks(), bob.ModFunc[dialect.SelectEditor](func(ast dialect.SelectEditor) {
+		sm.From(v.NameAsExpr()).Edit(ast)
+		ast.AppendContextualModFunc(func(ctx context.Context, q dialect.SelectEditor) (context.Context, error) {
+			if q.CountSelectCols() == 0 {
 				q.AppendSelect(v.projection)
 			}
 			return ctx, nil
-		},
-	)
-
-	q.Apply(queryMods...)
-
-	return q
+		})
+		bob.Mods[dialect.SelectEditor](queryMods).Edit(ast)
+	}))
+	return &ViewQuery[T, Tslice]{*ormruntime.ModelQuery[Tslice](q, v.scanner)}
 }
 
 type ViewQuery[T any, Ts ~[]T] struct {
-	orm.Query[*dialect.SelectQuery, T, Ts, bob.SliceTransformer[T, Ts]]
+	orm.Query[dialect.SelectEditor, T, Ts, bob.SliceTransformer[T, Ts]]
 }
 
-// Count the number of matching rows
+func (v ViewQuery[T, Ts]) WithMods(mods ...bob.Mod[dialect.SelectEditor]) *ViewQuery[T, Ts] {
+	v.QueryBuilder = v.QueryBuilder.WithMods(mods...)
+	return &v
+}
+
 func (v *ViewQuery[T, Tslice]) Count(ctx context.Context, exec bob.Executor) (int64, error) {
 	return ormruntime.Count(ctx, exec, v.ExecQuery)
 }

@@ -8,9 +8,9 @@ import (
 	clause "github.com/stephenafamo/bob/clause"
 )
 
-// UpdateQuery tries to represent the UPDATE query structure as documented in
+// updateState tries to represent the UPDATE query structure as documented in
 // https://www.postgresql.org/docs/current/sql-update.html
-type UpdateQuery struct {
+type updateState struct {
 	clause.With
 	Only  bool
 	Table clause.TableRef
@@ -22,14 +22,15 @@ type UpdateQuery struct {
 
 	bob.Load
 	bob.EmbeddedHook
-	bob.ContextualModdable[*UpdateQuery]
+	bob.ContextualModdable[UpdateEditor]
 }
 
 // AppendTableRef sets the primary FROM from_item on the query.
 // If the query has no FromItems, the new TableRef is set as the primary FROM from_item.
 // If the query has one FromItem and it is empty, the new TableRef is set as the primary FROM from_item.
 // If the query has one FromItem and it is not empty, the new TableRef is appended to the last FromItem.
-func (u *UpdateQuery) AppendTableRef(from clause.TableRef) {
+func (u *updateState) AppendTableRef(from clause.TableRef) {
+	from = from.Copy()
 	if len(u.FromItems) == 1 && u.FromItems[0].Expression == nil {
 		if len(u.FromItems[0].Joins) > 0 {
 			from.Joins = append(u.FromItems[0].Joins, from.Joins...)
@@ -42,10 +43,10 @@ func (u *UpdateQuery) AppendTableRef(from clause.TableRef) {
 	u.FromItems = append(u.FromItems, from)
 }
 
-// AppendJoin satisfies Joinable for JoinChain[*UpdateQuery].
+// AppendJoin satisfies Joinable for JoinChain[*updateState].
 // When FromItems is non-empty, the join is appended to the last FROM item (e.g. after um.From).
 // Otherwise the new FromItem is appended with an empty TableRef and the join is appended to it.
-func (u *UpdateQuery) AppendJoin(j clause.Join) {
+func (u *updateState) AppendJoin(j clause.Join) {
 	if len(u.FromItems) == 0 {
 		u.FromItems = append(u.FromItems, clause.TableRef{})
 	}
@@ -53,12 +54,15 @@ func (u *UpdateQuery) AppendJoin(j clause.Join) {
 	u.FromItems[len(u.FromItems)-1].AppendJoin(j)
 }
 
-func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (u updateState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 
-	if ctx, err = u.RunContextualMods(ctx, &u); err != nil {
-		return nil, err
+	if len(u.Mods) != 0 {
+		ctx, err = u.resolveMods(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,

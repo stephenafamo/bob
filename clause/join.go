@@ -3,6 +3,7 @@ package clause
 import (
 	"context"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/expr"
@@ -26,6 +27,13 @@ type Join struct {
 	On      []bob.Expression
 	Using   []string
 	UsingAs string
+}
+
+func (j Join) copy() Join {
+	j.To = j.To.Copy()
+	j.On = slices.Clone(j.On)
+	j.Using = slices.Clone(j.Using)
+	return j
 }
 
 func (j Join) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {

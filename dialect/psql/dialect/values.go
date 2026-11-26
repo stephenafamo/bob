@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/clause"
@@ -11,7 +12,7 @@ import (
 
 // Trying to represent the values query structure as doumented in
 // https://www.postgresql.org/docs/current/sql-values.html
-type ValuesQuery struct {
+type valuesState struct {
 	// rows of VALUES query
 	// each sub-slice is one set of values
 	RowVals []RowValue
@@ -28,15 +29,15 @@ func (v RowValue) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect
 	return bob.ExpressSlice(ctx, w, d, start, v, "(", ", ", ")")
 }
 
-func (v *ValuesQuery) AppendValues(vals ...bob.Expression) {
+func (v *valuesState) AppendValues(vals ...bob.Expression) {
 	if len(vals) == 0 {
 		return
 	}
 
-	v.RowVals = append(v.RowVals, vals)
+	v.RowVals = append(v.RowVals, slices.Clone(vals))
 }
 
-func (v ValuesQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+func (v valuesState) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
 	var err error
 	var args []any
 

@@ -5,15 +5,12 @@ import (
 	"github.com/stephenafamo/bob/dialect/mysql/dialect"
 )
 
-func Select(queryMods ...bob.Mod[*dialect.SelectQuery]) bob.BaseQuery[*dialect.SelectQuery] {
-	q := &dialect.SelectQuery{}
-	for _, mod := range queryMods {
-		mod.Apply(q)
-	}
+type (
+	SelectEditor = dialect.SelectEditor
+	SelectQuery  = bob.QueryBuilder[SelectEditor]
+	SelectMod    = bob.Mod[SelectEditor]
+)
 
-	return bob.BaseQuery[*dialect.SelectQuery]{
-		Expression: q,
-		Dialect:    dialect.Dialect,
-		QueryType:  bob.QueryTypeSelect,
-	}
+func Select(mods ...SelectMod) SelectQuery {
+	return dialect.NewSelect(nil, mods...)
 }

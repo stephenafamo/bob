@@ -8,38 +8,38 @@ import (
 )
 
 // With starts a CTE. The name and column list are quoted as SQL identifiers.
-func With(name string, columns ...string) dialect.CTEChain[*dialect.DeleteQuery] {
-	return dialect.With[*dialect.DeleteQuery](name, columns...)
+func With(name string, columns ...string) dialect.CTEChain[dialect.DeleteEditor] {
+	return dialect.With[dialect.DeleteEditor](name, columns...)
 }
 
-func Recursive(r bool) bob.Mod[*dialect.DeleteQuery] {
-	return mods.Recursive[*dialect.DeleteQuery](r)
+func Recursive(r bool) bob.Mod[dialect.DeleteEditor] {
+	return mods.Recursive[dialect.DeleteEditor](r)
 }
 
-func Only() bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(d *dialect.DeleteQuery) {
-		d.Only = true
+func Only() bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(d dialect.DeleteEditor) {
+		d.SetOnly(true)
 	})
 }
 
-func From(name any) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.TableRef{
+func From(name any) bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(u dialect.DeleteEditor) {
+		u.SetTarget(clause.TableRef{
 			Expression: name,
-		}
+		})
 	})
 }
 
-func FromAs(name any, alias string) bob.Mod[*dialect.DeleteQuery] {
-	return bob.ModFunc[*dialect.DeleteQuery](func(u *dialect.DeleteQuery) {
-		u.Table = clause.TableRef{
+func FromAs(name any, alias string) bob.Mod[dialect.DeleteEditor] {
+	return bob.ModFunc[dialect.DeleteEditor](func(u dialect.DeleteEditor) {
+		u.SetTarget(clause.TableRef{
 			Expression: name,
 			Alias:      alias,
-		}
+		})
 	})
 }
 
-func Using(table any, joins ...dialect.JoinChain[*dialect.DeleteQuery]) dialect.FromChain[*dialect.DeleteQuery] {
+func Using(table any, joins ...dialect.JoinChain[dialect.DeleteEditor]) dialect.FromChain[dialect.DeleteEditor] {
 	return dialect.From(table, joins...)
 }
 
@@ -49,34 +49,34 @@ func UsingFunction(funcs ...*dialect.Function) bob.Expression {
 	return dialect.TableFunctions(funcs...)
 }
 
-func InnerJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.InnerJoin[*dialect.DeleteQuery](e)
+func InnerJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.InnerJoin[dialect.DeleteEditor](e)
 }
 
-func LeftJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.LeftJoin[*dialect.DeleteQuery](e)
+func LeftJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.LeftJoin[dialect.DeleteEditor](e)
 }
 
-func RightJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.RightJoin[*dialect.DeleteQuery](e)
+func RightJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.RightJoin[dialect.DeleteEditor](e)
 }
 
-func FullJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.FullJoin[*dialect.DeleteQuery](e)
+func FullJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.FullJoin[dialect.DeleteEditor](e)
 }
 
-func CrossJoin(e any) dialect.JoinChain[*dialect.DeleteQuery] {
-	return dialect.CrossJoin[*dialect.DeleteQuery](e)
+func CrossJoin(e any) dialect.JoinChain[dialect.DeleteEditor] {
+	return dialect.CrossJoin[dialect.DeleteEditor](e)
 }
 
-func Where(e bob.Expression) mods.Where[*dialect.DeleteQuery] {
-	return mods.Where[*dialect.DeleteQuery]{E: e}
+func Where(e bob.Expression) mods.Where[dialect.DeleteEditor] {
+	return mods.Where[dialect.DeleteEditor]{E: e}
 }
 
-func WhereCurrentOf(cursor string) mods.WhereCurrentOf[*dialect.DeleteQuery] {
-	return mods.WhereCurrentOf[*dialect.DeleteQuery]{Cursor: cursor}
+func WhereCurrentOf(cursor string) mods.WhereCurrentOf[dialect.DeleteEditor] {
+	return mods.WhereCurrentOf[dialect.DeleteEditor]{Cursor: cursor}
 }
 
-func Returning(clauses ...any) mods.Returning[*dialect.DeleteQuery] {
-	return mods.Returning[*dialect.DeleteQuery](clauses)
+func Returning(clauses ...any) mods.Returning[dialect.DeleteEditor] {
+	return mods.Returning[dialect.DeleteEditor](clauses)
 }

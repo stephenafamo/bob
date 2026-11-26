@@ -2,13 +2,19 @@ package models
 
 import "github.com/stephenafamo/bob"
 
-type Query[T any] struct{ bob.BaseQuery[bob.Expression] }
+type Query[T any] struct {
+	bob.ExpressionQuery[bob.Expression]
+}
 
-func (q Query[T]) Apply(...int) Query[T] { return q }
-func (q Query[T]) Run()                  {}
+func (q Query[T]) WithMods(...int) Query[T] { return q }
+func (q Query[T]) Run()                     {}
 
 type Jobs struct{ Query[int] }
 
-type Mutable = bob.BaseQuery[bob.Expression]
+type Base = bob.QueryBuilder[int]
 
-func Apply(q Query[int]) Query[int] { return q }
+type Mutable struct{}
+
+func (Mutable) WithMods() {}
+
+func WithMods(q Query[int]) Query[int] { return q }

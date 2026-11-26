@@ -4,9 +4,9 @@
 
 {{block "helpers/join_variables" . -}}
 var (
-	SelectJoins = getJoins[*dialect.SelectQuery]()
-	UpdateJoins = getJoins[*dialect.UpdateQuery]()
-	DeleteJoins = getJoins[*dialect.DeleteQuery]()
+	SelectJoins = getJoins[dialect.SelectEditor]()
+	UpdateJoins = getJoins[dialect.UpdateEditor]()
+	DeleteJoins = getJoins[dialect.DeleteEditor]()
 )
 {{- end}}
 
@@ -60,8 +60,8 @@ type modAs[Q any, C interface{ AliasedAs(string) C }] struct {
   f func(Q, C) bob.Mod[Q]
 }
 
-func (m modAs[Q, C]) Apply(q Q) {
-  m.f(q, m.c).Apply(q)
+func (m modAs[Q, C]) Edit(q Q) {
+  m.f(q, m.c).Edit(q)
 }
 
 func (m modAs[Q, C]) AliasedAs(alias string) bob.Mod[Q] {

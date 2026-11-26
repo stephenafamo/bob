@@ -30,7 +30,7 @@ func Filter(e ...any) bob.Mod[*dialect.Function] {
 func Over(winMods ...bob.Mod[*clause.Window]) bob.Mod[*dialect.Function] {
 	w := clause.Window{}
 	for _, mod := range winMods {
-		mod.Apply(&w)
+		mod.Edit(&w)
 	}
 
 	return mods.Window[*dialect.Function](w)
