@@ -367,6 +367,8 @@ replacements:
     replace: 'mynull.String'
 ```
 
+Foreign key columns automatically inherit the type of their referenced column unless overridden by a subsequent explicit replacement rule.
+
 ### Relationships
 
 Relationships are automatically inferred from foreign key constraints. However, in certain cases, it is either not possible or not desirable to add a foreign key relationship.
