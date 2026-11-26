@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed `PreloadAs` on a relationship through another table giving the through table the same alias as the preloaded table, which made the query reference the same alias twice. The alias is now only used for the preloaded table, and the through tables keep a generated alias.
+
 ## [v0.51.0] - 2026-11-22
 
 ### Added
