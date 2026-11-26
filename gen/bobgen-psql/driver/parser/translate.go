@@ -210,6 +210,40 @@ func (t *Translator) primitiveArrayType(elemTyp string) string {
 	return t.addPgGenericArrayType(t.Types, elemTyp)
 }
 
+// ConfigurePlainSliceArrayTypes makes nullable array columns whose final type
+// is a plain slice (e.g. from a replacement) use the bare slice as their null
+// type, with nil meaning NULL. Native pgx scans plain slices with its array
+// codec, but hands wrapping sql.Scanner types such as null.Val the binary
+// format, which they cannot parse.
+// A null type configured by the user is left untouched.
+func ConfigurePlainSliceArrayTypes[C, I any](types *drivers.Types, tables drivers.Tables[C, I]) {
+	for _, table := range tables {
+		for _, column := range table.Columns {
+			if !column.Nullable || !strings.HasSuffix(column.DBType, "[]") {
+				continue
+			}
+
+			name, _ := types.GetNameAndDef("", column.Type)
+			if !strings.HasPrefix(name, "[]") {
+				continue
+			}
+
+			typeDef := types.Index(name)
+			if typeDef.NullType.Name != "" {
+				continue
+			}
+
+			typeDef.NullType = drivers.NullType{
+				Name:       name,
+				ValidExpr:  "SRC != nil",
+				UseExpr:    "SRC",
+				CreateExpr: "func() NULLTYPE { if NULLVAL { return SRC }; return nil }()",
+			}
+			types.Register(name, typeDef)
+		}
+	}
+}
+
 func arrayRandomExpr(arrTyp, elemTyp string) string {
 	return fmt.Sprintf(`arr := make(%s, f.IntBetween(1, 5))
             for i := range arr {

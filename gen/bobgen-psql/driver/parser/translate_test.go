@@ -52,6 +52,59 @@ func TestTranslateArrayType(t *testing.T) {
 	}
 }
 
+func TestConfigurePlainSliceArrayTypes(t *testing.T) {
+	t.Parallel()
+
+	userNullType := drivers.NullType{Name: "EventsOrNull", ValidExpr: "SRC.Valid"}
+
+	types := helpers.Types()
+	types.SetTypeModifier(drivers.AarondlNull{})
+	types.Register("[]types.JSON[Event]", drivers.Type{RandomExpr: "return nil"})
+	types.Register("[]Custom", drivers.Type{NullType: userNullType})
+	types.Register("Strings", drivers.Type{AliasOf: "[]string", RandomExpr: "return Strings{}"})
+	types.Register("[]string", drivers.Type{RandomExpr: "return nil"})
+
+	tables := drivers.Tables[any, any]{{
+		Columns: []drivers.Column{
+			{Name: "events", DBType: "jsonb[]", Type: "[]types.JSON[Event]", Nullable: true},
+			{Name: "nnull_ints", DBType: "integer[]", Type: "[]int64"},
+			{Name: "unregistered", DBType: "text[]", Type: "[]Unregistered", Nullable: true},
+			{Name: "custom", DBType: "text[]", Type: "[]Custom", Nullable: true},
+			{Name: "alias", DBType: "text[]", Type: "Strings", Nullable: true},
+			{Name: "generated", DBType: "uuid[]", Type: "pgtypes.Array[uuid.UUID]", Nullable: true},
+			{Name: "bytes", DBType: "bytea", Type: "[]byte", Nullable: true},
+		},
+	}}
+
+	ConfigurePlainSliceArrayTypes(&types, tables)
+
+	for _, typ := range []string{"[]types.JSON[Event]", "[]Unregistered", "[]string"} {
+		nullType := types.GetNullType("", typ)
+		if nullType.Name != typ {
+			t.Errorf("%s: got null type %q, want the bare slice", typ, nullType.Name)
+		}
+		if got := types.GetNullTypeValid("", typ, "x"); got != "x != nil" {
+			t.Errorf("%s: got valid expr %q, want %q", typ, got, "x != nil")
+		}
+	}
+
+	if got := types.Index("[]types.JSON[Event]").RandomExpr; got != "return nil" {
+		t.Errorf("random expression was not preserved: %q", got)
+	}
+	if got := types.Index("[]string").RandomExpr; got != "return nil" {
+		t.Errorf("alias random expression leaked into its target: %q", got)
+	}
+	if got := types.Index("[]Custom").NullType; got.Name != userNullType.Name || got.ValidExpr != userNullType.ValidExpr {
+		t.Errorf("user null type was overwritten: %+v", got)
+	}
+
+	for _, typ := range []string{"[]int64", "pgtypes.Array[uuid.UUID]", "[]byte"} {
+		if got := types.Index(typ).NullType.Name; got != "" {
+			t.Errorf("%s: unexpected null type %q", typ, got)
+		}
+	}
+}
+
 func TestTranslateTSVectorType(t *testing.T) {
 	t.Parallel()
 

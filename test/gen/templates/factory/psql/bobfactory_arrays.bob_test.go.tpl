@@ -65,6 +65,7 @@ func TestArrayRoundTrip(t *testing.T) {
 		{{- $cast := trimPrefix "_" $column.DBType -}}
 		{{- $isJSON := contains "types.JSON[" $column.Type -}}
 		{{- $elemTyp := trimPrefix "pgtypes.Array[" $column.Type | trimSuffix "]" -}}
+		{{- if hasPrefix "[]" $column.Type}}{{$elemTyp = trimPrefix "[]" $column.Type}}{{end -}}
 		{{- $nullT := $.Types.GetNullType $.CurrentPackage $column.Type -}}
 		{{- $_ := $.Importer.ImportList $nullT.CreateExprImports -}}
 		{{- $toNull := replace "SRC" "want" $nullT.CreateExpr | replace "NULLVAL" "true" | replace "BASETYPE" $colTyp | replace "NULLTYPE" $nullTyp -}}

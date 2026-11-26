@@ -44,6 +44,12 @@ func (d *driverWrapper[T, C, I]) Assemble(ctx context.Context) (*drivers.DBInfo[
 	return d.info, d.infoErr
 }
 
+func (d *driverWrapper[T, C, I]) ConfigureTypes(types *drivers.Types, tables drivers.Tables[C, I]) {
+	if configurator, ok := d.Interface.(drivers.TypeConfigurator[C, I]); ok {
+		configurator.ConfigureTypes(types, tables)
+	}
+}
+
 func (d *driverWrapper[T, C, I]) TestAssemble(t *testing.T) {
 	t.Helper()
 
@@ -96,6 +102,8 @@ type DriverTestConfig[T, C, I any] struct {
 	GoTestArgs      []string
 	// SkipAssembleGolden skips comparing the assembled DBInfo to the golden file
 	SkipAssembleGolden bool
+	Types              map[string]drivers.Type
+	Replacements       []gen.Replace
 }
 
 type AssembleTestConfig[T, C, I any] struct {
@@ -174,7 +182,10 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 
 		testDriver(
 			t, defaultFolder, config.Templates,
-			gen.Config[C]{}, d, goModFilePath, config.GoTestArgs,
+			gen.Config[C]{
+				Types:        config.Types,
+				Replacements: config.Replacements,
+			}, d, goModFilePath, config.GoTestArgs,
 			&aliasPlugin[T, C, I]{},
 			queryPathPlugin[T, C, I]{
 				outputPath:   defaultFolder,
@@ -192,7 +203,11 @@ func TestDriver[T, C, I any](t *testing.T, config DriverTestConfig[T, C, I]) {
 
 		testDriver(
 			t, aliasesFolder, config.Templates,
-			gen.Config[C]{Aliases: aliases}, d, goModFilePath, config.GoTestArgs,
+			gen.Config[C]{
+				Aliases:      aliases,
+				Types:        config.Types,
+				Replacements: config.Replacements,
+			}, d, goModFilePath, config.GoTestArgs,
 			&aliasPlugin[T, C, I]{},
 			queryPathPlugin[T, C, I]{
 				outputPath:   aliasesFolder,

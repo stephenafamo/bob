@@ -162,6 +162,7 @@ func testPostgresDriver(t *testing.T, dsn string) {
 // with the native pgx driver. It uses its own schema because the generated test
 // suite includes the type_monsters table, which has other columns (interval,
 // "char") that native pgx cannot yet scan into the generated Go types.
+// The *_plain_* columns are replaced with plain slices.
 func testNativePgxArrays(t *testing.T, dsn string) {
 	t.Helper()
 
@@ -189,7 +190,10 @@ func testNativePgxArrays(t *testing.T, dsn string) {
 			jsonb_null jsonb[],
 			jsonb_nnull jsonb[] NOT NULL,
 			enum_null `+schema+`.status[],
-			enum_nnull `+schema+`.status[] NOT NULL
+			enum_nnull `+schema+`.status[] NOT NULL,
+			text_plain_null text[],
+			text_plain_nnull text[] NOT NULL,
+			jsonb_plain_null jsonb[]
 		);
 		CREATE TABLE `+schema+`.tsvector_types (
 			id serial PRIMARY KEY,
@@ -216,7 +220,76 @@ func testNativePgxArrays(t *testing.T, dsn string) {
 		},
 		SkipAssembleGolden: true,
 		Dialect:            "psql",
+		Types: map[string]drivers.Type{
+			"[]string": {
+				DependsOn:           []string{"string"},
+				RandomExpr:          plainSliceRandomExpr("string"),
+				NoScannerValuerTest: true,
+				CompareExpr:         `slices.Equal(AAA, BBB)`,
+				CompareExprImports:  []string{`"slices"`},
+			},
+			"[]types.JSON[json.RawMessage]": {
+				DependsOn: []string{"types.JSON[json.RawMessage]"},
+				Imports: []string{
+					`"encoding/json"`,
+					`"github.com/stephenafamo/bob/types"`,
+				},
+				RandomExpr:          plainSliceRandomExpr("types.JSON[json.RawMessage]"),
+				NoScannerValuerTest: true,
+				CompareExpr: `slices.EqualFunc(AAA, BBB, func(a, b types.JSON[json.RawMessage]) bool {
+						return bytes.Equal(a.Val, b.Val)
+					})`,
+				CompareExprImports: []string{`"bytes"`, `"slices"`},
+			},
+		},
+		Replacements: []gen.Replace{
+			{
+				Match:   gen.ColumnFilter{Name: new("/^text_plain_/")},
+				Replace: "[]string",
+			},
+			{
+				Match:   gen.ColumnFilter{Name: new("jsonb_plain_null")},
+				Replace: "[]types.JSON[json.RawMessage]",
+			},
+		},
 	})
+}
+
+func TestConfigureTypesOnlyForNativePgx(t *testing.T) {
+	t.Parallel()
+
+	for _, driverName := range []string{pqDriver, pgxStdlibDriver, pgxDriver} {
+		t.Run(driverName, func(t *testing.T) {
+			t.Parallel()
+
+			d := New(Config{Config: helpers.Config{Driver: driverName}}).(*driver)
+			types := d.Types()
+			tables := drivers.Tables[any, IndexExtra]{{
+				Columns: []drivers.Column{
+					{DBType: "text[]", Type: "[]string", Nullable: true},
+				},
+			}}
+
+			d.ConfigureTypes(&types, tables)
+
+			got := types.Index("[]string").NullType.Name
+			want := ""
+			if driverName == pgxDriver {
+				want = "[]string"
+			}
+			if got != want {
+				t.Fatalf("got null type %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func plainSliceRandomExpr(elemTyp string) string {
+	return fmt.Sprintf(`arr := make([]%s, f.IntBetween(1, 5))
+		for i := range arr {
+			arr[i] = random_%s(f, limits...)
+		}
+		return arr`, elemTyp, gen.NormalizeType(elemTyp))
 }
 
 func testPostgresColumnOrderStarTypes(t *testing.T, dsn string) {
