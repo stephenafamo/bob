@@ -109,17 +109,35 @@ func (o *{{$tAlias.UpSingular}}) Load{{$relAlias}}(ctx context.Context, exec bob
 }
 
 {{$side := index $rel.Sides 0 -}}
+{{$from := $.Aliases.Table $side.From -}}
+{{$path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
+{{$comparable := true -}}
 // Load{{$relAlias}} loads the relationship for the whole slice with a single query.
 func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exec bob.Executor, mods ...bob.Mod[dialect.SelectEditor]) error {
 	if len(os) == 0 { return nil }
 	parents := os{{if $side.FromWhere}}.matching{{$relAlias}}Sources(){{end}}
 	{{if $side.FromColumns -}}
 	{{$.Importer.Import "github.com/stephenafamo/bob/orm/genruntime"}}
-	parents, keys, owners := parents.parentsFor{{$relAlias}}()
-	q := {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys, mods...)
-	q = q.WithMods(bob.ModFunc[dialect.SelectEditor](func(s dialect.SelectEditor) { s.AppendPreloadSelect(owners.As("related_.parents")) }))
-	indexes := make(genruntime.ParentIndexes[{{$fAlias.UpSingular}}])
-	children, err := q.WithScanner(indexes.Mapper(q.Scanner, "related_.parents")).All(ctx, exec)
+	{{$.Importer.Import "github.com/stephenafamo/scan"}}
+	type parentKey struct {
+		{{range $i, $name := $side.FromColumns -}}
+		{{$col := $table.GetColumn $name -}}
+		{{if not ($.Types.CanCompareWithEquals $.CurrentPackage $col.Type)}}{{$comparable = false}}{{end -}}
+		K{{$i}} {{$.Types.Get $.CurrentPackage $.Importer $col.Type}}
+		{{end -}}
+	}
+	q := parents.{{relQueryMethodName $tAlias $relAlias}}(mods...).WithMods(bob.ModFunc[dialect.SelectEditor](func(s dialect.SelectEditor) {
+		s.AppendPreloadSelect(
+			{{range $i, $name := $side.ToColumns -}}
+			{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $name}}).As("related_.key{{$i}}"),
+			{{end -}}
+		)
+	}))
+	keys := make(map[*{{$fAlias.UpSingular}}]parentKey)
+	mapper := scan.Mod(q.Scanner, genruntime.CollectRelationshipKey(keys, func(k *parentKey) []any {
+		return []any{ {{range $i, $_ := $side.FromColumns}}&k.K{{$i}},{{end}} }
+	}))
+	children, err := q.WithScanner(mapper).All(ctx, exec)
 	{{else -}}
 	children, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).All(ctx, exec)
 	{{end -}}
@@ -132,9 +150,36 @@ func (os {{$tAlias.UpSingular}}Slice) Load{{$relAlias}}(ctx context.Context, exe
 		}
 	}
 	{{if $side.FromColumns -}}
-	for _, child := range children {
-		for _, j := range indexes[child] { assignment.Link(parents[j], child) }
+	{{if $comparable -}}
+	genruntime.StitchByKey(parents, children,
+		func(o *{{$tAlias.UpSingular}}) (parentKey, bool) {
+			var key parentKey
+			{{range $i, $name := $side.FromColumns -}}
+			{{$col := $table.GetColumn $name -}}
+			{{$field := printf "o.%s" ($from.Column $name) -}}
+			{{if $col.Nullable}}if !({{$.Types.GetNullTypeValid $.CurrentPackage $col.Type $field}}) { return key, false }{{end}}
+			key.K{{$i}} = {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $col.Type $field $col.Nullable}}
+			{{end -}}
+			return key, true
+		},
+		func(_ int, child *{{$fAlias.UpSingular}}) (parentKey, bool) { key, ok := keys[child]; return key, ok },
+		assignment.Link)
+	{{else -}}
+	for _, o := range parents {
+		if o == nil { continue }
+		for _, child := range children {
+			key, ok := keys[child]
+			if !ok { continue }
+			{{range $i, $name := $side.FromColumns -}}
+			{{$col := $table.GetColumn $name -}}
+			{{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable false -}}
+			if !({{replace "AAA" (printf "o.%s" ($from.Column $name)) $compare | replace "BBB" (printf "key.K%d" $i)}}) { continue }
+			{{end -}}
+			assignment.Link(o, child)
+			{{if not $rel.IsToMany}}break{{end}}
+		}
 	}
+	{{end -}}
 	{{else -}}
 		// With no join keys, each eligible parent gets the same result.
 		for _, o := range parents {

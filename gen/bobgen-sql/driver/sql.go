@@ -24,6 +24,7 @@ import (
 
 const (
 	defaultPostgresDriverImage = "pgvector/pgvector:0.8.0-pg16"
+	defaultMySQLDriverImage    = "mysql:8.0.35"
 )
 
 type Config struct {
@@ -120,7 +121,7 @@ func RunMySQL(ctx context.Context, state *gen.State[any], config Config, plugins
 
 func getMySQLDriver(ctx context.Context, config Config) (mysqlDriver.Interface, error) {
 	if config.DriverImage == "" {
-		config.DriverImage = mysqlDriver.DefaultImage
+		config.DriverImage = defaultMySQLDriverImage
 	}
 
 	mysqlContainer, err := mysqltest.Run(

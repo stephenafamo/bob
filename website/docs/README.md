@@ -11,10 +11,8 @@ import DocCardList from '@theme/DocCardList';
 |               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
 | ------------- | ------- | ------ | ------- | ----------- | --------- |
 | Postgres      | ✅      | ✅     | ✅      | ✅          | ✅        |
-| MySQL 8.4+    | ✅      | ✅     | ✅      | ✅          | ✅        |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          | ✅        |
 | SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
-
-MariaDB compatibility with the MySQL dialect and generator is best-effort.
 
 Bob is a set of Go packages and tools to work with SQL databases.
 

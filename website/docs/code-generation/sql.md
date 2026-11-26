@@ -44,7 +44,7 @@ The values that exist for the drivers:
 | ------------- | --------------------------------------------------------------- | -------------------------------------------- |
 | dialect       | Database dialect to use. `psql`, `mysql` or `sqlite` (REQUIRED) |                                              |
 | driver        | Driver to use for generating driver-specific code               |                                              |
-| driver_image  | Container image used to apply MySQL or PostgreSQL migrations    | `mysql:8.4` or `pgvector/pgvector:0.8.0-pg16` |
+| driver_image  | Container image used to apply MySQL or PostgreSQL migrations    | `mysql:8.0.35` or `pgvector/pgvector:0.8.0-pg16` |
 | pattern       | Glob pattern of SQL migration files                             | \*.sql                                       |
 | schemas       | The database schemas to generate models for                     | public (psql dialect), main (sqlite dialect) |
 | shared_schema | Schema to not include prefix in model                           | first schema found                           |

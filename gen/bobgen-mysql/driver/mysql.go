@@ -21,9 +21,6 @@ import (
 
 var rgxEnum = regexp.MustCompile(`^enum\([^\)]+\)$`)
 
-// DefaultImage is the MySQL LTS series used for schema generation and tests.
-const DefaultImage = "mysql:8.4"
-
 type (
 	Interface = drivers.Interface[any, any, any]
 	DBInfo    = drivers.DBInfo[any, any, any]

@@ -8,31 +8,32 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/internal/ormruntime"
 	"github.com/stephenafamo/bob/orm"
-	"github.com/stephenafamo/bob/types"
 	"github.com/stephenafamo/scan"
 )
 
-// ParentCounts consumes a fresh relationship query. Group by the physical
-// key after hooks run, and deliver each group's count to all its owners.
-func ParentCounts[Q ormruntime.Countable[Q]](ctx context.Context, exec bob.Executor, q orm.ExecQuery[Q],
-	n int, owners bob.Expression, groups ...any,
-) ([]int64, error) {
-	type result struct {
-		Parents types.JSON[[]int]
-		Count   int64
+// CountByKey applies the count projection after the related table's hooks.
+func CountByKey[R any, Q ormruntime.Countable[Q]](ctx context.Context, exec bob.Executor, q bob.QueryBuilder[Q], columns, groups []any) ([]R, error) {
+	count := ormruntime.CountQuery(q, append(slices.Clip(columns), "count(*) AS count"), groups...)
+	return bob.All(ctx, exec, count, scan.StructMapper[R]())
+}
+
+// AssignCounts looks up each parent by its Go key and sets zero for misses.
+func AssignCounts[P, R any, K comparable](parents []*P, results []R, parentKey func(*P) (K, bool), result func(R) (K, int64), set func(*P, int64)) {
+	counts := make(map[K]int64, len(results))
+	for _, row := range results {
+		k, n := result(row)
+		counts[k] = n
 	}
-	count := ormruntime.CountQuery(q.QueryBuilder, []any{owners, "count(*) AS count"}, groups...)
-	rows, err := bob.All(ctx, exec, count, scan.StructMapper[result]())
-	if err != nil {
-		return nil, err
-	}
-	counts := make([]int64, n)
-	for _, r := range rows {
-		for _, i := range r.Parents.Val {
-			counts[i] += r.Count
+	for _, p := range parents {
+		if p == nil {
+			continue
 		}
+		var count int64
+		if k, ok := parentKey(p); ok {
+			count = counts[k]
+		}
+		set(p, count)
 	}
-	return counts, nil
 }
 
 // PreloadCount adds a correlated count to the select list and delivers it

@@ -122,14 +122,58 @@ func (os {{$tAlias.UpSingular}}Slice) LoadCount{{$relAlias}}(ctx context.Context
 	{{$firstSide := index $rel.Sides 0 -}}
 	parents := os{{if $firstSide.FromWhere}}.matching{{$relAlias}}Sources(){{end}}
 	{{if $firstSide.FromColumns -}}
-	parents, keys, owners := parents.parentsFor{{$relAlias}}()
-	q := {{$tAlias.DownSingular}}QueryFor{{$relAlias}}(keys, mods...)
-	counts, err := genruntime.ParentCounts(ctx, exec, q.ExecQuery, len(parents), {{$.Dialect}}.Raw("max(?)", owners).As("parents"),
-		{{range $col := $firstSide.ToColumns}}{{$.Dialect}}.Quote({{$tAlias.DownSingular}}PathFor{{$relAlias}}[0].Table.Alias, {{quote $col}}),{{end}}
-	)
+	{{$from := $.Aliases.Table $firstSide.From -}}
+	{{$path := printf "%sPathFor%s" $tAlias.DownSingular $relAlias -}}
+	{{$comparable := true -}}
+	type countResult struct {
+		{{range $i, $name := $firstSide.FromColumns -}}
+		{{$col := $table.GetColumn $name -}}
+		{{if not ($.Types.CanCompareWithEquals $.CurrentPackage $col.Type)}}{{$comparable = false}}{{end -}}
+		K{{$i}} {{$.Types.Get $.CurrentPackage $.Importer $col.Type}}
+		{{end -}}
+		Count int64
+	}
+	q := parents.{{relQueryMethodName $tAlias $relAlias}}(mods...)
+	results, err := genruntime.CountByKey[countResult](ctx, exec, q.QueryBuilder,
+		[]any{ {{range $i, $name := $firstSide.ToColumns}}{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote $name}}).As("k{{$i}}"),{{end}} },
+		[]any{ {{range $firstSide.ToColumns}}{{$.Dialect}}.Quote({{$path}}[0].Table.Alias, {{quote .}}),{{end}} })
 	if err != nil { return err }
 	{{if $firstSide.FromWhere}}for _, o := range os { if o != nil { o.C.{{$relAlias}} = new(int64) } }{{end}}
-	for i, o := range parents { if o != nil { n := counts[i]; o.C.{{$relAlias}} = &n } }
+	{{if $comparable -}}
+	type countKey struct {
+		{{range $i, $name := $firstSide.FromColumns -}}
+		K{{$i}} {{$.Types.Get $.CurrentPackage $.Importer ($table.GetColumn $name).Type}}
+		{{end -}}
+	}
+	genruntime.AssignCounts(parents, results,
+		func(o *{{$tAlias.UpSingular}}) (countKey, bool) {
+			var key countKey
+			{{range $i, $name := $firstSide.FromColumns -}}
+			{{$col := $table.GetColumn $name -}}
+			{{$field := printf "o.%s" ($from.Column $name) -}}
+			{{if $col.Nullable}}if !({{$.Types.GetNullTypeValid $.CurrentPackage $col.Type $field}}) { return key, false }{{end}}
+			key.K{{$i}} = {{$.Types.UnwrapNullExpr $.CurrentPackage $.Importer $col.Type $field $col.Nullable}}
+			{{end -}}
+			return key, true
+		},
+		func(r countResult) (countKey, int64) { return countKey{ {{range $i, $_ := $firstSide.FromColumns}}r.K{{$i}},{{end}} }, r.Count },
+		func(o *{{$tAlias.UpSingular}}, n int64) { o.C.{{$relAlias}} = &n })
+	{{else -}}
+	for _, o := range parents {
+		if o == nil { continue }
+		var count int64
+		for _, r := range results {
+			{{range $i, $name := $firstSide.FromColumns -}}
+			{{$col := $table.GetColumn $name -}}
+			{{$compare := $.Types.GetCompareExpr $.CurrentPackage $.Importer $col.Type $col.Nullable false -}}
+			if !({{replace "AAA" (printf "o.%s" ($from.Column $name)) $compare | replace "BBB" (printf "r.K%d" $i)}}) { continue }
+			{{end -}}
+			count = r.Count
+			break
+		}
+		o.C.{{$relAlias}} = &count
+	}
+	{{end -}}
 	{{else -}}
 	// No join keys: one shared count for all eligible parents.
 	count, err := os.{{relQueryMethodName $tAlias $relAlias}}(mods...).Count(ctx, exec)

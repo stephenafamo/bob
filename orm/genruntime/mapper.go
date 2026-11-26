@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
-	"github.com/stephenafamo/bob/types"
 	"github.com/stephenafamo/scan"
 )
 
@@ -69,28 +69,33 @@ func JoinedModelMapper[B, T any](prefix string, field func(string) func(*B) any,
 	}
 }
 
-// ParentIndexes associates the owner list with the actual scanned model.
-// Loaders and after-select hooks may reorder the slice before it is linked.
-type ParentIndexes[T any] map[*T][]int
-
-func (p ParentIndexes[T]) Mapper(m scan.Mapper[*T], name string) scan.Mapper[*T] {
-	return func(ctx context.Context, cols []string) (scan.BeforeFunc, func(any) (*T, error)) {
-		before, after := m(ctx, cols)
-		index := slices.Index(cols, name)
-		var owners types.JSON[[]int]
-		return func(row *scan.Row) (any, error) {
-				if index < 0 {
-					return nil, fmt.Errorf("missing relationship owner column %q", name)
-				}
-				owners.Val = nil // each child keeps its own decoded slice
-				row.ScheduleScanByIndex(index, &owners)
-				return before(row)
-			}, func(link any) (*T, error) {
-				child, err := after(link)
-				if err == nil {
-					p[child] = owners.Val
-				}
-				return child, err
+// CollectRelationshipKey scans hidden key columns beside the model. Associate
+// keys by pointer so after-select hooks may safely reorder the result slice.
+func CollectRelationshipKey[T, K any](keys map[*T]K, destinations func(*K) []any) scan.MapperMod {
+	return func(_ context.Context, cols []string) (scan.BeforeFunc, scan.AfterMod) {
+		var key K
+		dst := destinations(&key)
+		indexes := make([]int, len(dst))
+		for i := range indexes {
+			name := "related_.key" + strconv.Itoa(i)
+			indexes[i] = slices.Index(cols, name)
+			if indexes[i] < 0 {
+				return func(*scan.Row) (any, error) { return nil, fmt.Errorf("missing relationship key column %q", name) },
+					func(any, any) error { return nil }
 			}
+		}
+		before := func(row *scan.Row) (any, error) {
+			var zero K
+			key = zero
+			for i, index := range indexes {
+				row.ScheduleScanByIndex(index, dst[i])
+			}
+			return nil, nil
+		}
+		after := func(_, model any) error {
+			keys[model.(*T)] = key
+			return nil
+		}
+		return before, after
 	}
 }

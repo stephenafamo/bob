@@ -129,10 +129,8 @@ pilots, err := models.Pilots(
 ```
 
 Calling `LoadX` on a slice loads that relationship in one query for the
-whole batch. The database matches the keys and returns the positions of the
-matching input models. For example, if the target column treats `ABC` and
-`abc` as equal, both inputs receive the matching row. `LoadCountX` uses the
-same rule in its own single query.
+whole batch. `OrderBy`, `Limit`, and `Offset` apply to related rows across
+the batch, not to each parent separately.
 
 ## Checking if a relationship has been loaded
 

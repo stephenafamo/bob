@@ -69,11 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   readback `SELECT` runs the insert's mapper mods and loaders. `INSERT … SET`
   writes one row and reads it back by its auto-increment ID. Without an
   auto-increment column, it returns `orm.ErrCannotRetrieveRow` before the write.
-- **MySQL:** The minimum supported server version is 8.4. `bobgen-sql` uses
-  `mysql:8.4` by default.
-  Generated MySQL batch loaders group typed `VALUES ROW` inputs or use
-  direct key lookups when a conversion would change equality.
-  MariaDB compatibility is best-effort.
 
 - Custom SQL queries now share their argument rendering, query construction,
   and positional row scanning in `orm/genruntime`, reducing the Go emitted per query.
@@ -95,9 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   predicates as relationship preloads, including static filters. They
   automatically alias intermediate joins when a path repeats a table, as do
   single-row and batch relationship loads and counts.
-  PostgreSQL, MySQL, and SQLite now match batch relationship keys in SQL.
-  Each batch load or count takes one query and honors the target key's
-  collation, even when the selected columns omit the relationship key.
+  A batch load can link rows even when the selected columns omit the
+  relationship key.
 
 ## [v0.51.0] - 2026-11-22
 

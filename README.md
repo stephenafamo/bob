@@ -37,10 +37,8 @@ Check out [the documentation][docs] for more information.
 |               | Queries | Models | ORM Gen | Factory Gen | Query Gen |
 | ------------- | ------- | ------ | ------- | ----------- | --------- |
 | Postgres      | ✅      | ✅     | ✅      | ✅          | ✅        |
-| MySQL 8.4+    | ✅      | ✅     | ✅      | ✅          | ✅        |
+| MySQL/MariaDB | ✅      | ✅     | ✅      | ✅          | ✅        |
 | SQLite        | ✅      | ✅     | ✅      | ✅          | ✅        |
-
-MariaDB compatibility with the MySQL dialect and generator is best-effort.
 
 ## Comparisons
 
