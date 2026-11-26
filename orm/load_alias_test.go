@@ -62,3 +62,50 @@ func TestPreloadAliases(t *testing.T) {
 
 	testutils.RunTests(t, examples, nil)
 }
+
+type aliasMentorship struct {
+	PilotID  int64 `db:"pilot_id"`
+	MentorID int64 `db:"mentor_id"`
+}
+
+var aliasMentorships = psql.NewView[*aliasMentorship, bob.Expression]("", "mentorships", expr.ColsForStruct[aliasMentorship]("mentorships"))
+
+// preloads the mentor of a pilot through the mentorships table
+func preloadMentorThrough(opts ...psql.PreloadOption) psql.Preloader {
+	return psql.Preload[*aliasPilot, []*aliasPilot](psql.PreloadRel{
+		Name: "Mentor",
+		Sides: []psql.PreloadSide{
+			{
+				From:        aliasPilots,
+				To:          aliasMentorships,
+				FromColumns: []string{"id"},
+				ToColumns:   []string{"pilot_id"},
+			},
+			{
+				From:        aliasMentorships,
+				To:          aliasPilots,
+				FromColumns: []string{"mentor_id"},
+				ToColumns:   []string{"id"},
+			},
+		},
+	}, []string{"id"}, nil, opts...)
+}
+
+// PreloadAs names the preloaded table, so a relationship through another table
+// only uses it for the last join and keeps a generated alias for the others.
+func TestPreloadAsThroughTable(t *testing.T) {
+	examples := testutils.Testcases{
+		"explicit alias": {
+			Doc:         "Only the preloaded table gets the explicit alias",
+			ExpectedSQL: `SELECT "pilots"."id" AS "id", "pilots"."mentor_id" AS "mentor_id", "mentor"."id" AS "mentor.id" FROM "pilots" LEFT JOIN "mentorships" AS "mentorships_10001" ON "pilots"."id" = "mentorships_10001"."pilot_id" LEFT JOIN "pilots" AS "mentor" ON "mentorships_10001"."mentor_id" = "mentor"."id"`,
+			Query:       aliasPilots.Query(preloadMentorThrough(psql.PreloadAs("mentor"))),
+		},
+		"two explicit aliases": {
+			Doc:         "Preloading the same relationship twice gives each through table its own alias",
+			ExpectedSQL: `SELECT "pilots"."id" AS "id", "pilots"."mentor_id" AS "mentor_id", "a"."id" AS "a.id", "b"."id" AS "b.id" FROM "pilots" LEFT JOIN "mentorships" AS "mentorships_10001" ON "pilots"."id" = "mentorships_10001"."pilot_id" LEFT JOIN "pilots" AS "a" ON "mentorships_10001"."mentor_id" = "a"."id" LEFT JOIN "mentorships" AS "mentorships_10002" ON "pilots"."id" = "mentorships_10002"."pilot_id" LEFT JOIN "pilots" AS "b" ON "mentorships_10002"."mentor_id" = "b"."id"`,
+			Query:       aliasPilots.Query(preloadMentorThrough(psql.PreloadAs("a")), preloadMentorThrough(psql.PreloadAs("b"))),
+		},
+	}
+
+	testutils.RunTests(t, examples, nil)
+}
