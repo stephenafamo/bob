@@ -26,6 +26,8 @@ const (
 	QueryTypeDelete
 	QueryTypeValues
 	QueryTypeMerge
+	QueryTypeListen // Postgres only
+	QueryTypeNotify // Postgres only
 )
 
 func (q QueryType) String() string {
@@ -42,6 +44,10 @@ func (q QueryType) String() string {
 		return "VALUES"
 	case QueryTypeMerge:
 		return "MERGE"
+	case QueryTypeListen:
+		return "LISTEN"
+	case QueryTypeNotify:
+		return "NOTIFY"
 	default:
 		return "UNKNOWN"
 	}

@@ -16,14 +16,27 @@ func (v *visitor) addSourcesFromWithClause(ctx sqliteparser.IWith_clauseContext)
 	}
 
 	for _, cte := range ctx.AllCommon_table_expression() {
-		columns, ok := cte.Select_stmt().Accept(v).([]ReturnColumn)
-		if v.Err != nil {
-			v.Err = fmt.Errorf("CTE select stmt: %w", v.Err)
-			return
-		}
-		if !ok {
-			v.Err = fmt.Errorf("could not get stmt info")
-			return
+		var columns []ReturnColumn
+
+		selectStmt := cte.Select_stmt()
+		if valClause := selectStmt.Select_core().Values_clause(); valClause != nil && len(selectStmt.AllCompound_select()) == 0 {
+			valClause.Accept(v)
+			if v.Err != nil {
+				v.Err = fmt.Errorf("CTE values stmt: %w", v.Err)
+				return
+			}
+			columns = v.getSourceFromValuesClause(valClause).Columns
+		} else {
+			var ok bool
+			columns, ok = selectStmt.Accept(v).([]ReturnColumn)
+			if v.Err != nil {
+				v.Err = fmt.Errorf("CTE select stmt: %w", v.Err)
+				return
+			}
+			if !ok {
+				v.Err = fmt.Errorf("could not get stmt info")
+				return
+			}
 		}
 
 		source := QuerySource{
@@ -100,7 +113,21 @@ func (v *visitor) getSourceFromTableOrSubQuery(ctx sqliteparser.ITable_or_subque
 		return v.getSourceFromTable(ctx)
 
 	case ctx.Select_stmt() != nil:
-		columns, ok := ctx.Select_stmt().Accept(v).([]ReturnColumn)
+		selectStmt := ctx.Select_stmt()
+		if valClause := selectStmt.Select_core().Values_clause(); valClause != nil && len(selectStmt.AllCompound_select()) == 0 {
+			valClause.Accept(v)
+			if v.Err != nil {
+				v.Err = fmt.Errorf("table values stmt: %w", v.Err)
+				return QuerySource{}
+			}
+			source := v.getSourceFromValuesClause(valClause)
+			return QuerySource{
+				Name:    getName(ctx.Table_alias()),
+				Columns: source.Columns,
+			}
+		}
+
+		columns, ok := selectStmt.Accept(v).([]ReturnColumn)
 		if v.Err != nil {
 			v.Err = fmt.Errorf("table select stmt: %w", v.Err)
 			return QuerySource{}
@@ -122,6 +149,19 @@ func (v *visitor) getSourceFromTableOrSubQuery(ctx sqliteparser.ITable_or_subque
 		v.Err = fmt.Errorf("unknown table or subquery: %#v", antlrhelpers.Key(ctx))
 		return QuerySource{}
 	}
+}
+
+func (v *visitor) getSourceFromValuesClause(ctx sqliteparser.IValues_clauseContext) QuerySource {
+	rows := ctx.AllValue_row()
+	if len(rows) == 0 {
+		return QuerySource{}
+	}
+	exprs := rows[0].AllExpr()
+	columns := make([]ReturnColumn, len(exprs))
+	for i := range exprs {
+		columns[i] = ReturnColumn{Name: fmt.Sprintf("column%d", i)}
+	}
+	return QuerySource{Columns: columns}
 }
 
 func (v *visitor) getSourceFromTable(ctx interface {
