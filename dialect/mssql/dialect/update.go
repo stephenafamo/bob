@@ -1,0 +1,86 @@
+package dialect
+
+import (
+	"context"
+	"io"
+
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/clause"
+)
+
+// Trying to represent the update query structure as documented in
+// https://learn.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql
+type UpdateQuery struct {
+	clause.With
+	Top   *Top
+	Table clause.TableRef
+	clause.Set
+	Output
+	clause.TableRef
+	clause.Where
+
+	bob.Load
+	bob.EmbeddedHook
+	bob.ContextualModdable[*UpdateQuery]
+}
+
+func (u UpdateQuery) WriteSQL(ctx context.Context, w io.StringWriter, d bob.Dialect, start int) ([]any, error) {
+	var err error
+	var args []any
+
+	if ctx, err = u.RunContextualMods(ctx, &u); err != nil {
+		return nil, err
+	}
+
+	withArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.With,
+		len(u.With.CTEs) > 0, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, withArgs...)
+
+	w.WriteString("UPDATE ")
+
+	topArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Top,
+		u.Top != nil, "", " ")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, topArgs...)
+
+	tableArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Table, true, "", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, tableArgs...)
+
+	setArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Set, true, " SET\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, setArgs...)
+
+	// OUTPUT comes between SET and FROM in T-SQL
+	outputArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Output,
+		u.Output.HasOutput(), "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, outputArgs...)
+
+	fromArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.TableRef,
+		u.TableRef.Expression != nil, "\nFROM ", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, fromArgs...)
+
+	whereArgs, err := bob.ExpressIf(ctx, w, d, start+len(args), u.Where,
+		len(u.Where.Conditions) > 0, "\n", "")
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, whereArgs...)
+
+	return args, nil
+}

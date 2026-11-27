@@ -32,6 +32,7 @@ Read more about [the principles](./principles).
 | Postgres      | ✅  | ✅     | ✅     | ✅     | ✅     |
 | MySQL/MariaDB | ✅  | ✅     | ✅     | ✅     | ✅     |
 | SQLite        | ✅  | ✅     | ✅     | ✅     | ✅     |
+| SQL Server    | ✅  | ✅     | ✅     | ✅     | ✅     |
 
 ## Examples
 
@@ -40,5 +41,6 @@ Want to jump straight into examples?
 - [Postgres](psql/examples)
 - [MySQL](mysql/examples)
 - [SQLite](sqlite/examples)
+- [SQL Server](mssql/examples)
 
 <DocCardList items={useCurrentSidebarCategory().items.filter(i => i.label != 'Introduction')} />

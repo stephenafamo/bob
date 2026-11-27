@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING:** The minimum supported Go version is now 1.25 (`go 1.25.0` in `go.mod`), because `github.com/jackc/pgx/v5` v5.9 requires it. Projects on Go 1.24 or older can no longer build bob and must upgrade their Go toolchain.
 - Upgraded `github.com/jackc/pgx/v5` to v5.9.2, `golang.org/x/text` to v0.41.0, `golang.org/x/crypto` to v0.55.0, `github.com/moby/go-archive` to v0.3.0, `github.com/go-viper/mapstructure/v2` to v2.4.0 and `github.com/docker/docker` to v28.3.3 to fix advisories reported by `govulncheck`. Other modules moved only as required by these upgrades. `golang.org/x/crypto` v0.56.0, which fixes GO-2026-6354 and GO-2026-6355, requires Go 1.26 and is not included.
 
+### Added
+
+- Added a SQL Server (T-SQL) query builder dialect in `dialect/mssql`, with `Select`, `Insert`, `Update`, `Delete`, `Values` and `Merge` starters and the matching `sm`, `im`, `um`, `dm`, `vm`, `mm`, `fm` and `wm` mod packages. It uses `@p1` style positional arguments, `@name` named arguments and `[bracket]` quoting, and covers `TOP` (including `PERCENT` and `WITH TIES`), `OUTPUT`, `OFFSET ... FETCH NEXT` pagination and `MERGE`. Code generation for SQL Server is not included.
+
 ### Fixed
 
 - Fixed filtered relationship inserts referencing a related row before it was created. Generated relationship queries use the configured `sql_value` as SQL, consistent with preloading: quote SQL text literals in the config (e.g. `sql_value: "'active'"`). A relationship configured under the wrong source table now fails generation with a diagnostic instead of producing invalid Go ([#553](https://github.com/stephenafamo/bob/issues/553)).

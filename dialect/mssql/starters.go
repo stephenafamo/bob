@@ -1,0 +1,121 @@
+package mssql
+
+import (
+	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/mssql/dialect"
+	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/mods"
+)
+
+type Expression = dialect.Expression
+
+//nolint:gochecknoglobals
+var bmod = expr.Builder[Expression, Expression]{}
+
+// F creates a function expression with the given name and args
+//
+//	SQL: COUNT(1)
+//	Go: mssql.F("COUNT", 1)
+func F(name string, args ...any) mods.Moddable[*dialect.Function] {
+	f := dialect.NewFunction(name, args...)
+
+	return mods.Moddable[*dialect.Function](func(mods ...bob.Mod[*dialect.Function]) *dialect.Function {
+		for _, mod := range mods {
+			mod.Apply(f)
+		}
+
+		return f
+	})
+}
+
+// S creates a string literal
+// SQL: 'a string'
+// Go: mssql.S("a string")
+func S(s string) Expression {
+	return bmod.S(s)
+}
+
+// SQL: NOT true
+// Go: mssql.Not("true")
+func Not(exp bob.Expression) Expression {
+	return bmod.Not(exp)
+}
+
+// SQL: a OR b OR c
+// Go: mssql.Or("a", "b", "c")
+func Or(args ...bob.Expression) Expression {
+	return bmod.Or(args...)
+}
+
+// SQL: a AND b AND c
+// Go: mssql.And("a", "b", "c")
+func And(args ...bob.Expression) Expression {
+	return bmod.And(args...)
+}
+
+// SQL: a + b + c
+// Go: mssql.Concat("a", "b", "c")
+// Note: MSSQL uses + for string concatenation, not ||
+func Concat(args ...bob.Expression) Expression {
+	return expr.X[Expression, Expression](expr.Join{Exprs: args, Sep: " + "})
+}
+
+// SQL: @p1, @p2, @p3
+// Go: mssql.Arg("a", "b", "c")
+func Arg(args ...any) Expression {
+	return bmod.Arg(args...)
+}
+
+// SQL: (@p1, @p2, @p3)
+// Go: mssql.ArgGroup("a", "b", "c")
+func ArgGroup(args ...any) Expression {
+	return bmod.ArgGroup(args...)
+}
+
+// SQL: @p1, @p2, @p3
+// Go: mssql.Placeholder(3)
+func Placeholder(n uint) Expression {
+	return bmod.Placeholder(n)
+}
+
+// SQL: (a, b)
+// Go: mssql.Group("a", "b")
+func Group(exps ...bob.Expression) Expression {
+	return bmod.Group(exps...)
+}
+
+// SQL: [table].[column]
+// Go: mssql.Quote("table", "column")
+func Quote(ss ...string) Expression {
+	return bmod.Quote(ss...)
+}
+
+// SQL: where a = @p1
+// Go: mssql.Raw("where a = ?", "something")
+func Raw(query string, args ...any) Expression {
+	return bmod.Raw(query, args...)
+}
+
+// SQL: CAST(a AS int)
+// Go: mssql.Cast("a", "int")
+func Cast(exp bob.Expression, typname string) Expression {
+	return bmod.Cast(exp, typname)
+}
+
+// SQL: CASE WHEN a THEN b ELSE c END
+// Go: mssql.Case().When("a", "b").Else("c")
+func Case() expr.CaseChain[Expression, Expression] {
+	return expr.NewCase[Expression, Expression]()
+}
+
+// SQL: EXISTS ((SELECT 1))
+// Go: mssql.Exists(mssql.Select(sm.Columns("1")))
+func Exists(exp bob.Expression) Expression {
+	return bmod.Exists(exp)
+}
+
+// SQL: - 1 - 2
+// Go: mssql.Minus(mssql.Arg(1)).Minus(mssql.Arg(2))
+func Minus(exp bob.Expression) Expression {
+	return bmod.Minus(exp)
+}
