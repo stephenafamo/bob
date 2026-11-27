@@ -72,7 +72,7 @@ func (d *driver) Assemble(ctx context.Context) (*DBInfo, error) {
 	}
 
 	if config.DBName == "" {
-		return nil, fmt.Errorf("no database name given: %w", err)
+		return nil, fmt.Errorf("no database name given")
 	}
 	d.dbName = config.DBName
 
