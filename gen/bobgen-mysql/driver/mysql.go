@@ -240,6 +240,10 @@ func (d *driver) TableDetails(ctx context.Context, info drivers.TableInfo, colFi
 		columns = append(columns, column)
 	}
 
+	if err := rows.Err(); err != nil {
+		return "", "", nil, fmt.Errorf("unable to read columns for table %s: %w", tableName, err)
+	}
+
 	return "", tableName, columns, nil
 }
 
